@@ -1,0 +1,44 @@
+name: Release
+
+on:
+  release:
+    types:
+      - created
+
+jobs:
+  release-job:
+    name: Build and publish on PyPi
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
+    - name: Build sdist and wheel
+      run: |
+        python -m pip install -U pip
+        python -m pip install build
+        python -m build
+    - name: Check that the package version matches the Release name
+      run: |
+        grep -Rq "^Version: ${GITHUB_REF:10}$" outlines.egg-info/PKG-INFO
+    - name: Check sdist install and imports
+      run: |
+        mkdir -p test-sdist
+        cd test-sdist
+        python -m venv venv-sdist
+        venv-sdist/bin/python -m pip install ../dist/outlines-*.tar.gz
+        venv-sdist/bin/python -c "import outlines"
+    - name: Check wheel install and imports
+      run: |
+        mkdir -p test-wheel
+        cd test-wheel
+        python -m venv venv-wheel
+        venv-wheel/bin/python -m pip install ../dist/outlines-*.whl
+        venv-wheel/bin/python -c "import outlines"
+    - name: Publish to PyPi
+      uses: pypa/gh-action-pypi-publish@v1.4.2
+      with:
+        user: __token__
+        password: ${{ secrets.PYPI_TOKEN }}

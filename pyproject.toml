@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=45", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "outlines"
+authors= [{name = "Normal Computing", email = "support@normalcomputing.com"}]
+description = "Probabilistic Generative Model Programming"
+requires-python = ">=3.7"
+keywords=[
+    "normal computing",
+    "machine learning",
+    "deep learning",
+    "language models",
+    "diffusion models",
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Information Technology",
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+   "mako"
+]
+dynamic = ["version"]
+
+[tool.setuptools_scm]
+write_to = "outlines/_version.py"
