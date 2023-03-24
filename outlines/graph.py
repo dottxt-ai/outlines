@@ -1,6 +1,6 @@
 """Graph objects and manipulation functions.
 
-Manipulating Outlines templates and operations implicitly defines a graph that
+Manipulating Outlines prompts and operations implicitly defines a graph that
 can be explored, rewritten and compiled.
 
 This module defines the basic types these graphs are build from:
