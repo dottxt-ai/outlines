@@ -29,9 +29,10 @@ References
 
 """
 from outlines.compile import compile
-from outlines.text import string
+from outlines.text import script, string
 
 __all__ = [
     "compile",
+    "script",
     "string",
 ]
