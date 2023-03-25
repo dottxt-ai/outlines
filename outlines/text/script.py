@@ -20,6 +20,7 @@ class Script:
 
     def __init__(self, script):
         self.parsetree = lexer.Lexer(script).parse()
+        self.model_outputs = {}
 
     def __call__(self, **inputs: Dict[str, Union[StringVariable, Op]]):
         """Create an Outlines graph from a Mako template.
@@ -30,14 +31,14 @@ class Script:
 
         """
         nodes = self.parsetree.nodes
-        graph = self.parse_node(nodes[0], inputs)
+        graph = self.parse_node(nodes[0], inputs, "")
         for node in self.parsetree.nodes[1:]:
-            graph = graph + self.parse_node(node, inputs)
+            graph = graph + self.parse_node(node, inputs, graph)
 
         return graph
 
     @singledispatchmethod
-    def parse_node(self, node, inputs):
+    def parse_node(self, node, inputs, graph):
         raise NotImplementedError(f"Cannot transpile {node} to an Outlines graph.")
 
     @parse_node.register(Text)

@@ -47,3 +47,22 @@ def test_template_string_variable():
     assert isinstance(t.owner.inputs[0], StringVariable)
     assert isinstance(t.owner.inputs[1], StringConstant)
     assert t.owner.inputs[1].value == " test"
+
+
+def test_template_language_model():
+    from outlines.compile import compile
+    from outlines.text.models import LanguageModel
+
+    # Single occurence
+    lm = LanguageModel()
+    t = script("Test ${lm}")(lm=lm)
+    out = compile([], [t])
+    assert out() == "Test 2xTest "
+
+    # The first reference to the lamguage model should
+    # execute decoding, the following ones be replaced
+    # by the result of this evaluation.
+    lm = LanguageModel()
+    t = script("Test ${lm} more text ${lm}")(lm=lm)
+    out = compile([], [t])
+    assert out() == "Test 2xTest  more text 2xTest "

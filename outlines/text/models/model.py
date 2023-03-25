@@ -1,9 +1,8 @@
-from outlines.graph import Op, Apply
-from outlines.text.var import as_string, StringVariable
+from outlines.graph import Apply, Op
+from outlines.text.var import StringVariable, as_string
 
 
 class LanguageModel(Op):
-
     def make_node(self, prompt):
         prompt = as_string(prompt)
         out = StringVariable()
