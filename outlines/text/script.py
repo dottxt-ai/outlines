@@ -1,3 +1,4 @@
+import textwrap
 from functools import singledispatchmethod
 from typing import Dict, Union
 
@@ -19,6 +20,7 @@ class Script:
     """
 
     def __init__(self, script):
+        script = textwrap.dedent(script).lstrip().rstrip()
         self.parsetree = lexer.Lexer(script).parse()
         self.model_outputs = {}
 
