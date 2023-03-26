@@ -1,3 +1,5 @@
+import pytest
+
 from outlines import compile, script, string
 
 
@@ -30,3 +32,20 @@ def test_compile_scripts():
     o = script("This is a ${var}")(var=s)
     out = compile([s], [o])
     assert out("test") == "This is a test"
+
+
+@pytest.mark.skip
+def test_compile_hf():
+    """Move when we have found a better way to run these slow examples."""
+    import outlines
+    import outlines.text.models.hugging_face
+
+    gpt2 = outlines.text.models.hugging_face.GPT2()
+    o = script(
+        """
+    Here is a good joke: ${joke}
+    And a random fact: ${fact}
+    """
+    )(joke=gpt2, fact=gpt2)
+    fn = compile([], [o])
+    print(fn())
