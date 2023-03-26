@@ -28,5 +28,11 @@ dependencies = [
 ]
 dynamic = ["version"]
 
+[project.optional-dependencies]
+test = [
+    "pre-commit",
+    "pytest"
+]
+
 [tool.setuptools_scm]
 write_to = "outlines/_version.py"
