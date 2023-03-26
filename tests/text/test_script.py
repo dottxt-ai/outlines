@@ -2,6 +2,7 @@ import pytest
 
 from outlines.text import script, string
 from outlines.text.basic import Add
+from outlines.text.models import LanguageModel
 from outlines.text.var import StringConstant, StringVariable
 
 
@@ -49,20 +50,29 @@ def test_template_string_variable():
     assert t.owner.inputs[1].value == " test"
 
 
+class MockLanguageModel(LanguageModel):
+    def sample(self, prompt):
+        return f"2x{prompt}"
+
+
 def test_template_language_model():
-    from outlines.compile import compile
-    from outlines.text.models import LanguageModel
+    r"""Test the transpilation of scripts that contain one or
+    several `LanguageModel`\s.
+    """
 
     # Single occurence
-    lm = LanguageModel()
+    lm = MockLanguageModel()
     t = script("Test ${lm}")(lm=lm)
-    out = compile([], [t])
-    assert out() == "Test 2xTest "
+    assert isinstance(t.owner.op, Add)
+    assert isinstance(t.owner.inputs[1].owner.op, LanguageModel)
+
+    lm_input = t.owner.inputs[1].owner.inputs[0].value
+    assert lm_input == "Test "
 
     # The first reference to the lamguage model should
     # execute decoding, the following ones be replaced
     # by the result of this evaluation.
-    lm = LanguageModel()
+    lm = MockLanguageModel(name="lm")
     t = script("Test ${lm} more text ${lm}")(lm=lm)
-    out = compile([], [t])
-    assert out() == "Test 2xTest  more text 2xTest "
+    assert isinstance(t.owner.inputs[1].owner.op, MockLanguageModel)
+    assert t.owner.inputs[1].owner.inputs[0].value == "Test "
