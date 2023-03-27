@@ -15,6 +15,10 @@ def test_cast():
     with pytest.raises(TypeError):
         outlines.text.as_string(Variable())
 
+    s = outlines.text.as_string(StringConstant(""))
+    assert isinstance(s, StringConstant)
+    assert s.value == ""
+
     s = outlines.text.as_string(1)
     assert type(s) == StringConstant
     assert s.value == "1"
