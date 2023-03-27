@@ -49,3 +49,18 @@ def test_compile_hf():
     )(joke=gpt2, fact=gpt2)
     fn = compile([], [o])
     print(fn())
+
+
+@pytest.mark.skip
+def test_compile_diffusers():
+    """Move when we have found a better way to run these slow examples."""
+    import outlines
+    import outlines.image.models.hugging_face as hugging_face
+
+    sd = hugging_face.StableDiffusion()
+    o = outlines.text.as_string(
+        "Image of a Pokemon jumping off a skyscraper with a parachute. High resolution. 4k. In the style of Van Gohg"
+    )
+    img = sd(o)
+    fn = compile([], [img])
+    o = fn()

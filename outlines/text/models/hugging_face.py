@@ -13,7 +13,7 @@ except ImportError:
 
 
 class GPT2(LanguageModel):
-    def __init__(self):
+    def __init__(self, name=None):
         """Initialize the GPT2 model.
 
         We use HuggingFace's Flax implementation of GPT2. This method will download
@@ -26,7 +26,7 @@ class GPT2(LanguageModel):
 
         random.seed()
         self.seed = random.randint(0, 2**32)
-        super().__init__()
+        super().__init__(name)
 
     def sample(self, prompt_tokens: Dict[str, jax.Array]) -> jax.Array:
         """Sample new tokens give the tokenized prompt.
