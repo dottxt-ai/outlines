@@ -59,14 +59,12 @@ def as_string_variable_strings(x, name=None):
     return StringConstant(x, name)
 
 
-@as_string.register(Variable)
-def as_string_variable_Variable(x, name=None):
-    if not isinstance(x, StringVariable):
-        raise TypeError(f"{type(x)} cannot be cast as a `StringVariable`.")
-    return x
-
-
 @as_string.register(int)
 @as_string.register(float)
 def as_string_variable_numbers(x, name=None):
     return StringConstant(str(x), name)
+
+
+@as_string.register(StringVariable)
+def as_string_variable_StringVariable(x, name=None):
+    return x
