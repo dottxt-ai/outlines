@@ -28,12 +28,12 @@ References
 .. [1] Dohan, David, et al. "Language model cascades." arXiv preprint arXiv:2207.10342 (2022).
 
 """
-from outlines.compile import compile
 from outlines.image import as_image
 from outlines.text import script, string
+from outlines.program import program
 
 __all__ = [
-    "compile",
+    "program",
     "script",
     "string",
 ]
