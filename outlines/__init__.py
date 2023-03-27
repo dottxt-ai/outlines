@@ -29,6 +29,7 @@ References
 
 """
 from outlines.compile import compile
+from outlines.image import as_image
 from outlines.text import script, string
 
 __all__ = [
