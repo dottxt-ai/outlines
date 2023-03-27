@@ -23,10 +23,9 @@ class GPT2(LanguageModel):
         # when the graph is built.
 
         """
-
         random.seed()
         self.seed = random.randint(0, 2**32)
-        super().__init__(name)
+        super().__init__(name="HuggingFace GPT2")
 
     def sample(self, prompt_tokens: Dict[str, jax.Array]) -> jax.Array:
         """Sample new tokens give the tokenized prompt.
@@ -47,7 +46,7 @@ class GPT2(LanguageModel):
         returned_tokens = self.model.generate(
             **prompt_tokens,
             do_sample=True,
-            max_new_tokens=100,
+            max_new_tokens=20,
             prng_key=jax.random.PRNGKey(self.seed),
             pad_token_id=self.tokenizer.eos_token_id,
         ).sequences
