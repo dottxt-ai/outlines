@@ -69,7 +69,7 @@ class Script:
                 try:
                     return self.model_outputs[node.text]
                 except KeyError:
-                    output = user_input(graph)
+                    output = user_input(graph, name=node.text)
                     self.model_outputs[node.text] = output
                     return output
             else:
