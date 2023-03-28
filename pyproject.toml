@@ -37,3 +37,10 @@ test = [
 
 [tool.setuptools_scm]
 write_to = "outlines/_version.py"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = [
+    "error",
+    "ignore::FutureWarning:transformers.*"
+]
