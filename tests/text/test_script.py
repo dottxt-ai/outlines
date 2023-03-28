@@ -65,6 +65,7 @@ def test_template_language_model():
     t = script("Test ${lm}")(lm=lm)
     assert isinstance(t.owner.op, Add)
     assert isinstance(t.owner.inputs[1].owner.op, LanguageModel)
+    assert t.owner.inputs[1].name == "lm"
 
     lm_input = t.owner.inputs[1].owner.inputs[0].value
     assert lm_input == "Test "

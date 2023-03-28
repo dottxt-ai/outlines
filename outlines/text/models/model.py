@@ -16,6 +16,14 @@ class LanguageModel(Op):
         super().__init__()
         self.name = name
 
+    def __call__(self, prompt, name=None):
+        res = super().__call__(prompt)
+
+        if name is not None:
+            res.name = name
+
+        return res
+
     def make_node(self, prompt):
         prompt = as_string(prompt)
         out = StringVariable()
