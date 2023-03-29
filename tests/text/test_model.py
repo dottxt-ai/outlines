@@ -1,4 +1,4 @@
-from outlines import string
+from outlines.text import string
 from outlines.text.models.model import LanguageModel
 
 
