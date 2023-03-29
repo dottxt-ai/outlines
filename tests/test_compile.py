@@ -57,7 +57,7 @@ def test_compile_diffusers():
     import outlines
     import outlines.image.models.hugging_face as hugging_face
 
-    sd = hugging_face.StableDiffusion()
+    sd = hugging_face.HFDiffuser("runwayml/stable-diffusion-v1-5")
     o = outlines.text.as_string(
         "Image of a Pokemon jumping off a skyscraper with a parachute. High resolution. 4k. In the style of Van Gohg"
     )
