@@ -62,7 +62,7 @@ class Program:
         the color used in the `script` panel for the text they generate.
 
         """
-        model_str = "\n".join(
+        model_str = "\n\n".join(
             [f"[{self.lm_colors[lm]}] {lm.name} [/]" for lm in self.language_models]
         )
         return Panel(
@@ -157,6 +157,15 @@ class Program:
                 trace["script"] = decoded_script[0]
                 return trace
             return trace
+
+    def debug(self, *values):
+        storage_map = {s: v for s, v in zip(self.inputs, values)}
+        trace = {"script": "", "nodes": {}}
+        for node in self.frames:
+            self.process_frame_inputs(node, storage_map)
+            self.execute_frame(node, storage_map, trace)
+
+        return storage_map
 
     def process_frame_inputs(self, node, storage_map):
         """Process the nodes' inputs.
