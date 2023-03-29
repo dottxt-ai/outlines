@@ -1,11 +1,10 @@
-import outlines
 from outlines.graph import Apply
 from outlines.text.basic import Add, add
-from outlines.text.var import StringVariable
+from outlines.text.var import StringVariable, string
 
 
 def test_add_symbolic():
-    s, t = outlines.string(), outlines.string()
+    s, t = string(), string()
     w = add(s, t)
     assert isinstance(w, StringVariable)
     assert isinstance(w.owner, Apply)
@@ -25,7 +24,7 @@ def test_add_symbolic():
 
 
 def test_add_mixed():
-    s, t = "a string", outlines.string()
+    s, t = "a string", string()
     w = s + t
     assert isinstance(w, StringVariable)
     assert isinstance(w.owner, Apply)
@@ -33,7 +32,7 @@ def test_add_mixed():
     assert len(w.owner.inputs) == 2
     assert len(w.owner.outputs) == 1
 
-    s, t = outlines.string(), "a string"
+    s, t = string(), "a string"
     w = s + t
     assert isinstance(w, StringVariable)
     assert isinstance(w.owner, Apply)

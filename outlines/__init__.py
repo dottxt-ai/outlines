@@ -29,8 +29,8 @@ References
 
 """
 from outlines.image import as_image
-from outlines.text import script, string
 from outlines.program import program
+from outlines.text import as_string, script
 
 __all__ = [
     "program",
