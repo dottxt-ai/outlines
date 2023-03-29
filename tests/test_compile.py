@@ -59,10 +59,9 @@ def test_compile_mock():
 @pytest.mark.skip
 def test_compile_hf():
     """Move when we have found a better way to run these slow examples."""
-    import outlines
-    import outlines.text.models.hugging_face
+    import outlines.text.models.hugging_face as hugging_face
 
-    gpt2 = outlines.text.models.hugging_face.GPT2()
+    gpt2 = hugging_face.HFCausaLM()
     o = script(
         """
     Here is a good joke: ${joke}
