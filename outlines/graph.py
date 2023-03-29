@@ -13,7 +13,7 @@ This module defines the basic types these graphs are build from:
 This module is heavily inspired by `Aesara <https://github.com/aesara-devs/aesara`_.
 
 """
-from typing import Iterable, List, Optional, Reversible, Sequence, Union
+from typing import Any, Iterable, List, Optional, Reversible, Sequence, Tuple, Union
 
 
 class Node:
@@ -173,22 +173,21 @@ class Op:
         else:
             return node.outputs
 
-    def perform(self, node: Apply, *inputs):
+    def perform(self, inputs: Tuple[Any]) -> Tuple[Any]:
         """Apply the functions to the inputs and return the output.
 
         Parameters
         ----------
-        node
-            The symbolic `Apply` node that represents this computation.
         inputs
             Sequence of non-symbolic/numeric/text intputs.
 
         Returns
         -------
         The non-symbolic/numerica/text outputs of the function that this
-        operation represents
+        operation represents as a tuple.
 
         """
+        raise NotImplementedError
 
     def __str__(self):
         """Return a ``str`` representation of the `Op`."""
