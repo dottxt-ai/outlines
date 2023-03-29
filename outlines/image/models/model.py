@@ -25,6 +25,14 @@ class ImageModel(Op):
         super().__init__()
         self.name = name
 
+    def __call__(self, prompt, name=None):
+        res = super().__call__(prompt)
+
+        if name is not None:
+            res.name = name
+
+        return res
+
     def make_node(self, prompt: Variable) -> Apply:  # type: ignore
         prompt = as_string(prompt)
         out = ImageVariable()
