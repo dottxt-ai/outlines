@@ -8,15 +8,16 @@ except ImportError:
     )
 
 
-class StableDiffusion(ImageModel):
+class HFDiffuser(ImageModel):
     """A `StableDiffusion` distributed random image."""
 
-    def __init__(self, name=None):
+    def __init__(self, model_name: str, name=None):
+        self.model_name = model_name
         super().__init__(name)
 
     def sample(self, prompt):
         """Use HuggingFace's `StableDiffusion` pipeline to sample a new image."""
-        pipe = StableDiffusionPipeline.from_pretrained("runwayml/stable-diffusion-v1-5")
+        pipe = StableDiffusionPipeline.from_pretrained(self.model_name)
         pipe = pipe.to("cuda")
         image = pipe(prompt).images[0]
 
