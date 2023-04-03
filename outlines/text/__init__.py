@@ -1,5 +1,5 @@
 from .basic import *
-from .script import script
+from .compose import compose
 from .var import as_string, string
 
-__all__ = ["as_string", "string", "script"]
+__all__ = ["as_string", "string", "compose"]
