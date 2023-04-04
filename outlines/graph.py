@@ -1,6 +1,6 @@
 """Graph objects and manipulation functions.
 
-Manipulating Outlines prompts and operations implicitly defines a graph that
+Manipulating prompts and operations in Outlines implicitly defines a graph that
 can be explored, rewritten and compiled.
 
 This module defines the basic types these graphs are build from:
@@ -10,7 +10,10 @@ This module defines the basic types these graphs are build from:
 - `Apply` nodes represent the application of an `Op` onto one or several
   variables.
 
-This module is heavily inspired by `Aesara <https://github.com/aesara-devs/aesara`_.
+This graph structure is a simplified version of the graph `Aesara
+<https://github.com/aesara-devs/aesara>`_ uses to represents mathematical
+operations on arrays. It is possible that Aesara may be used as a backend for
+Outlines in the near future.
 
 """
 from typing import Any, Iterable, List, Optional, Reversible, Sequence, Tuple, Union
@@ -35,7 +38,8 @@ class Variable(Node):
 
     There are a few kind of `Variable` to be aware of:
 
-    - `StringVariable` subclass of `Variable` that represents a ``str`` object.
+    - `StringVariable` is a subclass of `Variable` that represents a ``str`` object.
+    - `ImageVariable` is a subclass of `Variable` that represents image objects.
 
     """
 
@@ -72,7 +76,7 @@ class Variable(Node):
 
 
 class Apply(Node):
-    """A `Node` represents the application of an `Op` to variables.
+    """An `Apply` node represents the application of an `Op` to variables.
 
     It is instantiated by calling the `Op.make_node` method with a list of
     inputs. The `Apply` node is in charge of filtering the inputs and outputs.
