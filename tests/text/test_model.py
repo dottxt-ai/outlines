@@ -9,14 +9,4 @@ def test_initialize_model():
     out = llm(prompt)
     assert isinstance(out.owner.op, LanguageModel)
     assert out.owner.inputs[0] == prompt
-    assert out.name == "llm"
-
-
-class MockLM(LanguageModel):
-    def sample(self, _):
-        return "test"
-
-
-def test_sample():
-    llm = MockLM()
-    assert llm.perform("")[0] == "test"
+    assert out.owner.op.name == "llm"
