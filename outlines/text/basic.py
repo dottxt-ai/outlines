@@ -7,9 +7,6 @@ __all__ = ["add"]
 
 
 class Add(Op):
-    def __init__(self):
-        pass
-
     def make_node(self, s, t):
         s = outlines.text.as_string(s)
         t = outlines.text.as_string(t)

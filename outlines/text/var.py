@@ -40,7 +40,8 @@ def as_string(x, name=None):
     """Convert `x` into an equivalent `StringVariable`.
 
     This function can be used to turn `str`, `int` and `float` instances into a
-    `StringVariable`.
+    `StringVariable`. It is mainly used in `Op`s' `make_node` method to convert
+    inputs to a `StringVariable` and add them to the graph.
 
     Parameters
     ----------
@@ -55,16 +56,16 @@ def as_string(x, name=None):
 
 
 @as_string.register(str)
-def as_string_variable_strings(x, name=None):
+def as_string_strings(x, name=None):
     return StringConstant(x, name)
 
 
 @as_string.register(int)
 @as_string.register(float)
-def as_string_variable_numbers(x, name=None):
+def as_string_numbers(x, name=None):
     return StringConstant(str(x), name)
 
 
 @as_string.register(StringVariable)
-def as_string_variable_StringVariable(x, name=None):
+def as_string_StringVariable(x, name=None):
     return x

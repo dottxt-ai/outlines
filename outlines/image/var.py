@@ -37,7 +37,7 @@ class ImageConstant(ImageVariable):
 
 @singledispatch
 def as_image(x, name=None):
-    """Convert `x` into an equivalent `StringVariable`
+    """Convert `x` into an equivalent `ImageVariable`.
 
     This function can be used to turn `pillow.Image` instances into an
     `ImageVariable`.
