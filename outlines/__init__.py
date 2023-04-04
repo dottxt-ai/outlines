@@ -30,10 +30,11 @@ References
 """
 from outlines.image import as_image
 from outlines.program import program
-from outlines.text import as_string, script
+from outlines.text import as_string, compose
 
 __all__ = [
+    "as_image",
+    "as_string",
     "program",
-    "script",
-    "string",
+    "compose",
 ]
