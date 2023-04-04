@@ -29,28 +29,24 @@ class HFCausalLM(LanguageModel):
 
     Attributes
     ----------
-    model_id
+    model_name
         The model string identifier in the `transformers` library.
-    name
-        The name of this `Op` in the graph.
 
     """
 
-    def __init__(self, model_name: str, name=None):
-        """Initialize the GPT2 model.
+    def __init__(self, model: str):
+        """Instantiate the model `Op`.
 
-        We use HuggingFace's Flax implementation of GPT2. This method will download
-        the model's weights if they are not yet cached on your machine.
-
-        # TODO: Download the pre-trained weight when the model is executed instead of
-        # when the graph is built.
+        Parameters
+        ----------
+        model
+            The model id of a model hosted inside a model repo on huggingface.co
 
         """
+        super().__init__(name=f"HuggingFace {model}")
+        self.model_name = model
 
-        super().__init__(name=f"HuggingFace {model_name}")
-        self.model_name = model_name
-
-    def sample(self, prompt_tokens: torch.Tensor) -> torch.Tensor:
+    def perform(self, prompt):
         """Sample new tokens give the tokenized prompt.
 
         Since HuggingFace's `generate` method returns the prompt along with the
@@ -63,15 +59,17 @@ class HFCausalLM(LanguageModel):
             prompt and the input mask. This is the default output of HuggingFace's
             tokenizers.
 
-
         """
-        self.model = AutoModelForCausalLM.from_pretrained(self.model_name)
+        tokenizer = AutoTokenizer.from_pretrained(self.model)
+        model = AutoModelForCausalLM.from_pretrained(self.model)
+
+        prompt_tokens = tokenizer(prompt, return_tensors="pt")
 
         if torch.cuda.is_available():
-            self.model = self.model.to("cuda")
+            model = model.to("cuda")
             prompt_tokens = prompt_tokens.to("cuda")
 
-        returned_tokens = self.model.generate(
+        returned_tokens = model.generate(
             **prompt_tokens,
             do_sample=True,
             max_new_tokens=20,
@@ -80,24 +78,4 @@ class HFCausalLM(LanguageModel):
         new_tokens = returned_tokens[:, prompt_tokens["input_ids"].shape[1] + 1 :]
         new_tokens = new_tokens.squeeze()
 
-        return new_tokens
-
-    def encode(self, sequence: str) -> torch.Tensor:
-        """Return a list of token ids from a text sequence.
-
-        Parameters
-        ----------
-        sequence
-            The text sequence to tokenize.
-
-        Returns
-        -------
-        A dictionary that contains the token ids and the input mask.
-        """
-
-        self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
-        return self.tokenizer(sequence, return_tensors="pt")
-
-    def decode(self, ids: torch.Tensor) -> str:
-        """Return a text sequence from a array of token ids."""
-        return self.tokenizer.decode(ids, skip_special_tokens=True)
+        return tokenizer.decode(new_tokens, skip_special_tokens=True)

@@ -1,5 +1,4 @@
 import os
-from typing import Optional
 
 from outlines.text.models import LanguageModel
 
@@ -13,12 +12,12 @@ except ImportError:
 class OpenAI(LanguageModel):
     """Represents any of OpenAI's language models
 
-    You should have the `openai` package installed, and store
-    you OpenAI key in the `OPENAI_API_KEY` environment variable.
+    You should have the `openai` package installed, and store you OpenAI key in
+    the `OPENAI_API_KEY` environment variable.
 
     """
 
-    def __init__(self, model_name: str, name: Optional[str] = None):
+    def __init__(self, model: str):
         """Initialize the OpenAI model."""
 
         try:
@@ -30,16 +29,16 @@ class OpenAI(LanguageModel):
 
         available_models = openai.Model.list()
         available_model_names = [model["id"] for model in available_models["data"]]
-        if model_name not in available_model_names:
-            raise OSError(f"{model_name} is not a valid OpenAI model name.")
+        if model not in available_model_names:
+            raise OSError(f"{model} is not a valid OpenAI model name.")
 
-        super().__init__(name=f"OpenAI {model_name}")
-        self.model_name = model_name
+        super().__init__(name=f"OpenAI {model}")
+        self.model = model
 
-    def sample(self, prompt: str) -> str:
+    def perform(self, prompt):
         try:
             resp = openai.Completion.create(
-                model=self.model_name,
+                model=self.model,
                 prompt=prompt,
                 max_tokens=128,
             )

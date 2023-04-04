@@ -22,10 +22,28 @@ class ImageModel(Op):
     """
 
     def __init__(self, name=None):
+        """Instantiate the `ImageModel` `Op`.
+
+        Parameters
+        ----------
+        name
+            The name of the `Op` in the graph.
+
+        """
         super().__init__()
         self.name = name
 
     def __call__(self, prompt, name=None):
+        """Create the `Apply` node that represents the `Op`'s application to inputs.
+
+        Parameters
+        ----------
+        prompt
+            The prompt used to condition the generative model's sampling procedure.
+        name
+            The name of the output variable in the graph.
+
+        """
         res = super().__call__(prompt)
 
         if name is not None:
@@ -36,8 +54,6 @@ class ImageModel(Op):
     def make_node(self, prompt: Variable) -> Apply:  # type: ignore
         prompt = as_string(prompt)
         out = ImageVariable()
-        if self.name is not None:
-            out.name = self.name
 
         return Apply(self, [prompt], [out])
 
