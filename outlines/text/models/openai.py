@@ -17,7 +17,7 @@ class OpenAI(LanguageModel):
 
     """
 
-    def __init__(self, model: str):
+    def __init__(self, model: str, stops_at=None):
         """Initialize the OpenAI model."""
 
         try:
@@ -32,13 +32,14 @@ class OpenAI(LanguageModel):
         if model not in available_model_names:
             raise OSError(f"{model} is not a valid OpenAI model name.")
 
+        if stops_at is not None and len(stops_at) > 4:
+            raise Exception("OpenAI's API does not accept more than 4 stop sequences.")
+        self.stops_at = stops_at
+
         super().__init__(name=f"OpenAI {model}")
         self.model = model
 
     def perform(self, prompt):
-        if self.stops_at is not None and len(self.stops_at) > 4:
-            raise Exception("OpenAI's API does not accept more than 4 stop sequences.")
-
         try:
             resp = openai.Completion.create(
                 model=self.model,

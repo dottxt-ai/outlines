@@ -37,8 +37,6 @@ class LanguageModel(Op):
         """
         res = super().__call__(prompt)
 
-        self.stops_at = stops_at
-
         if name is not None:
             res.name = name
 
