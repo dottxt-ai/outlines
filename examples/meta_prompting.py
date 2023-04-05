@@ -9,12 +9,14 @@ References
        https://arxiv.org/abs/2102.07350.
 
 """
+import argparse
+
 import outlines
 from outlines import compose
 from outlines.text.models.openai import OpenAI
 
 
-def split_into_steps(question, llm):
+def split_into_steps(question, model: str):
     prompt = compose(
         """
         ${question}
@@ -22,18 +24,21 @@ def split_into_steps(question, llm):
         """,
         question=question,
     )
-    return llm(prompt)
+    answer = OpenAI(model)(prompt)
+
+    return prompt, answer
 
 
-def fill_in_the_blanks(question, llm):
+def fill_in_the_blanks(question, model: str):
     meta_prompt = compose(
         """
         ${question}
-        To solve this problem, we will analyze each of the options and determine
+
+        In order to solve this problem, we will analyze each of the options and determine
         """,
         question=question,
     )
-    goal = llm(meta_prompt)
+    goal = OpenAI(model, stops_at=["."])(meta_prompt)
 
     prompt = compose(
         """
@@ -42,13 +47,13 @@ def fill_in_the_blanks(question, llm):
         meta_prompt=meta_prompt,
         goal=goal,
     )
-    answer = llm(prompt)
+    answer = OpenAI(model)(prompt)
 
-    return goal, answer
+    return prompt, answer
 
 
-def ask_an_expert(question, llm):
-    prompt = compose(
+def ask_an_expert(question, model: str):
+    meta_prompt = compose(
         """
         ${question}
         I entered my question into the Expert Generator
@@ -66,24 +71,24 @@ def ask_an_expert(question, llm):
         """,
         question=question,
     )
-    expert = llm(prompt, stops_at=['""'])
+    expert = OpenAI(model, stops_at=['"'])(meta_prompt)
 
     prompt = compose(
         """
-        ${prompt}${expert}
+        ${prompt}${expert}"
         I am ready to ask my question.
-        "${expert} I say,
+        "${expert}" I say,
         ${question}
         """,
-        prompt=prompt,
+        prompt=meta_prompt,
         expert=expert,
         question=question,
     )
-    answer = llm(prompt)
-    return prompt, expert, answer
+    answer = OpenAI(model)(prompt)
+    return prompt, answer
 
 
-def ask_an_expert_simple(question, llm):
+def ask_an_expert_simple(question, model: str):
     meta_prompt = compose(
         """
         Q: ${question}
@@ -91,48 +96,62 @@ def ask_an_expert_simple(question, llm):
         """,
         question=question,
     )
-    expert = llm(meta_prompt, stops_at=["/n", "."])
+    expert = OpenAI(model, stops_at=["/n", "."])(meta_prompt)
 
     prompt = compose(
         """
-        ${meta_prompt}${expert}
+        ${meta_prompt}${expert}.
 
         For instance,${expert} would answer
         """,
         meta_prompt=meta_prompt,
         expert=expert,
     )
-    answer = llm(prompt)
+    answer = OpenAI(model)(prompt)
 
-    return answer
+    return prompt, answer
 
 
-llm = OpenAI("text-davinci-001")
-fn = outlines.chain([], ask_an_expert_simple("What is the meaning of life?", llm))
-fn = outlines.chain([], split_into_steps("f(x) = x*x. What is f(f(3))?", llm))
-fn = outlines.chain(
-    [],
-    ask_an_expert(
-        "What should humankind do to ensure that artificial general intelligence is aligned?",
-        llm,
-    ),
-)
+def run_example(model_fn, question, model):
+    print("\n-----------------------------------------\n")
+    question_s = outlines.text.string()
+    fn = outlines.chain([question_s], model_fn(question_s, model))
+    prompt, answer = fn(question)
+    print(f"{prompt}{answer}")
 
-direction = compose(
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Run the Meta Prompting examples")
+    parser.add_argument(
+        "--model",
+        type=str,
+        default="text-davinci-001",
+        help="The Large Language Model to use to run the examples.",
+    )
+    args = parser.parse_args()
+
+    math_q = "f(x) = x*x. What is f(f(3))?"
+    sat_q = compose(
+        """
+    Directions: In the following question, a related
+    pair of words or phrases is followed by five
+    pairs of words or phrases. Choose the pair
+    that best expresses a relationship similar to
+    that in the original pair.
+    BRAGGART :: MODESTY
+    A) FLEDGLING : EXPERIENCE
+    B) EMBEZZLER : GREED
+    C) WALLFLOWER : TIMIDITY
+    D) INVALID : MALADY
+    E) CANDIDATE : AMBITION
+
     """
-Directions: In the following question, a related
-pair of words or phrases is followed by five
-pairs of words or phrases. Choose the pair
-that best expresses a relationship similar to
-that in the original pair.
-BRAGGART :: MODESTY
-A) FLEDGLING : EXPERIENCE
-B) EMBEZZLER : GREED
-C) WALLFLOWER : TIMIDITY
-D) INVALID : MALADY
-E) CANDIDATE : AMBITION
+    )
+    alignment_q = "What should humankind do to ensure that artificial general intelligence is aligned?"
+    meaning_q = "What is the meaning of life?"
 
-"""
-)
-fn = outlines.chain([], split_into_steps(direction, llm))
-fn = outlines.chain([], fill_in_the_blanks(direction, llm))
+    run_example(split_into_steps, math_q, args.model)
+    run_example(split_into_steps, sat_q, args.model)
+    run_example(fill_in_the_blanks, sat_q, args.model)
+    run_example(ask_an_expert, alignment_q, args.model)
+    run_example(ask_an_expert_simple, meaning_q, args.model)
