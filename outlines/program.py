@@ -2,7 +2,7 @@ import itertools
 import textwrap
 import time
 from functools import singledispatchmethod
-from typing import Iterable, Reversible
+from typing import Callable, Iterable, Reversible
 
 from rich.console import Console
 from rich.layout import Layout
@@ -223,3 +223,45 @@ class Program:
 
 
 program = Program
+
+
+def chain(input_vars, output_vars) -> Callable:
+    """Return a function that will compute the outputs of a chain from its outputs.
+
+    Parameters
+    ----------
+    input_vars
+        Sequence of symbolic variables that correspond to the function's
+        parameters.
+    output_vars
+        Symbolic variable(s) representing the expression(s) to compute.
+
+    """
+
+    if not isinstance(input_vars, (list, tuple)):
+        raise Exception(
+            "Input variables of the `compile` function should be contained in a list or a tupe, even when there is a single input."
+        )
+    if not isinstance(output_vars, (list, tuple)):
+        output_vars = (output_vars,)
+
+    sorted_nodes = io_toposort(input_vars, output_vars)
+
+    def function(*inputs):
+        storage_map = {s: v for s, v in zip(input_vars, inputs)}
+
+        for node in sorted_nodes:
+            for i in node.inputs:
+                if isinstance(i, StringConstant):
+                    storage_map[i] = i.value
+            inputs = [storage_map[i] for i in node.inputs]
+            results = node.op.perform(*inputs)
+            for i, o in enumerate(node.outputs):
+                storage_map[o] = results[i]
+
+        if len(output_vars) == 1:
+            return storage_map[output_vars[0]]
+        else:
+            return tuple(storage_map[o] for o in output_vars)
+
+    return function

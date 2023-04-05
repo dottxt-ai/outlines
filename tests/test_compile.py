@@ -1,33 +1,43 @@
-from outlines import program
+import outlines
 from outlines.text import compose, string
 
 
 def test_compile():
     s = string()
-    out = program([s], [s])
-    assert out.run("test")["script"] == "test"
+    chain = outlines.chain([s], s)
+    assert chain("test") == "test"
 
     s = string()
     p = "Test " + s
-    out = program([s], [p])
-    assert out.run("test")["script"] == "Test test"
+    chain = outlines.chain([s], p)
+    assert chain("test") == "Test test"
 
     s1 = string()
     s2 = string()
     p = s1 + s2
-    out = program([s1, s2], [p])
-    assert out.run("one", "two")["script"] == "onetwo"
+    chain = outlines.chain([s1, s2], p)
+    assert chain("one", "two") == "onetwo"
 
     s1 = string()
     s2 = string()
     p1 = s1 + s2
     p2 = s1 + "three"
-    out = program([s1, s2], [p1, p2])
-    assert out.run("one", "two")["script"] == ("onetwo", "onethree")
+    chain = outlines.chain([s1, s2], [p1, p2])
+    assert chain("one", "two") == ("onetwo", "onethree")
 
 
 def test_compile_scripts():
     s = string()
     o = compose("This is a ${var}", var=s)
-    out = program([s], [o])
-    assert out.run("test")["script"] == "This is a test"
+    chain = outlines.chain([s], o)
+    assert chain("test") == "This is a test"
+
+
+def test_eval():
+    s = string()
+    assert s.eval({s: "s"}) == "s"
+
+    s = string()
+    t = string()
+    o = s + t
+    assert o.eval({s: "one", t: "two"}) == "onetwo"
