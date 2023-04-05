@@ -24,7 +24,7 @@ class LanguageModel(Op):
         super().__init__()
         self.name = name
 
-    def __call__(self, prompt, name=None):
+    def __call__(self, prompt, stops_at=None, name=None):
         """Create the `Apply` node that represents the `Op`'s application to inputs.
 
         Parameters
@@ -36,6 +36,8 @@ class LanguageModel(Op):
 
         """
         res = super().__call__(prompt)
+
+        self.stops_at = stops_at
 
         if name is not None:
             res.name = name

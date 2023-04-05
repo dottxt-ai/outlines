@@ -36,11 +36,15 @@ class OpenAI(LanguageModel):
         self.model = model
 
     def perform(self, prompt):
+        if self.stops_at is not None and len(self.stops_at) > 4:
+            raise Exception("OpenAI's API does not accept more than 4 stop sequences.")
+
         try:
             resp = openai.Completion.create(
                 model=self.model,
                 prompt=prompt,
                 max_tokens=128,
+                stop=self.stops_at,
             )
         except error.APIConnectionError as e:
             raise OSError(f"Open API failed to connect: {e}")
@@ -57,4 +61,4 @@ class OpenAI(LanguageModel):
         except error.Timeout as e:
             raise OSError(f"Open API request timed out: {e}")
 
-        return resp["choices"][0]["text"]
+        return (resp["choices"][0]["text"],)
