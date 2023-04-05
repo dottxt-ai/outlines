@@ -28,6 +28,7 @@ References
 .. [1] Dohan, David, et al. "Language model cascades." arXiv preprint arXiv:2207.10342 (2022).
 
 """
+from outlines.function import fn
 from outlines.image import as_image
 from outlines.program import program
 from outlines.text import as_string, compose
@@ -35,6 +36,6 @@ from outlines.text import as_string, compose
 __all__ = [
     "as_image",
     "as_string",
-    "program",
+    "fn" "program",
     "compose",
 ]

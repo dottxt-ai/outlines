@@ -16,7 +16,17 @@ operations on arrays. It is possible that Aesara may be used as a backend for
 Outlines in the near future.
 
 """
-from typing import Any, Iterable, List, Optional, Reversible, Sequence, Tuple, Union
+from typing import (
+    Any,
+    Iterable,
+    List,
+    Optional,
+    Reversible,
+    Sequence,
+    Tuple,
+    Type,
+    Union,
+)
 
 
 class Node:
@@ -149,6 +159,9 @@ class Op:
 
     """
 
+    input_types: Optional[Sequence[Type[Variable]]] = None
+    output_types: Optional[Sequence[Type[Variable]]] = None
+
     def make_node(self, *inputs: Variable) -> Apply:
         r"""Construct an `Apply` node that represents the application of this
         operation to the given inputs.
@@ -166,7 +179,24 @@ class Op:
         The constructed `Apply` node.
 
         """
-        raise NotImplementedError
+        if self.input_types is None:
+            raise NotImplementedError(
+                "You need to either provide `input_types` and `output_types` or implement the `make_node` method."
+            )
+
+        if self.output_types is None:
+            raise NotImplementedError(
+                "You need to either provide `input_types` and `output_types` or implement the `make_node` method."
+            )
+
+        if len(inputs) != len(self.input_types):
+            raise ValueError(
+                f"You need to provide an input type for each input. Got {len(self.input_types)} type definitions and {len(inputs)} inputs."
+            )
+
+        # Check that the input types are valid
+
+        return Apply(self, inputs, [o() for o in self.output_types])
 
     def __call__(self, *inputs: Variable) -> Union[Variable, List[Variable]]:
         """Calls :meth:`Op.make_node` to construct an `Apply` node."""
