@@ -18,6 +18,7 @@ Outlines in the near future.
 """
 from typing import (
     Any,
+    Dict,
     Iterable,
     List,
     Optional,
@@ -83,6 +84,49 @@ class Variable(Node):
                 return f"{str(op)}.{str(self.index)}"
         else:
             return f"<{getattr(type(self), '__name__')}>"
+
+    def eval(self, inputs_to_values: Optional[Dict] = None):
+        r"""Evaluate the `Variable`.
+
+        This is a quick way to execute an Outlines graph, and be used for
+        instance for debugging.
+
+        Parameters
+        ----------
+        inputs_to_values :
+            A dictionary mapping Outlines `Variable`\s to values.
+
+        Examples
+        --------
+
+        When every upstream variable in the graph already has a value we can
+        call :meth:`eval` with no argument:
+
+        >>> import outlines
+        >>> prompt = "This is a test prompt"
+        >>> answer = outlines.text.model.OpenAI("davinci")(prompt)
+        >>> answer.eval()
+
+        Otherwise, we need to pass :math:`eval` a dictionnary that maps symbolic
+        `Variable`\s to the value to substitute for them:
+
+        >>> import outlines
+        >>> prompt = outlines.text.string()
+        >>> answer = outlines.text.model.OpenAI("davinci")(prompt)
+        >>> answer.eval({prompt: "This is a test prompt"})
+
+        """
+        from outlines.program import chain
+
+        if inputs_to_values is None:
+            inputs_to_values = {}
+
+        inputs = tuple(sorted(inputs_to_values.keys(), key=id))
+        args = [inputs_to_values[var] for var in inputs]
+
+        fn = chain(inputs, self)
+
+        return fn(*args)
 
 
 class Apply(Node):
