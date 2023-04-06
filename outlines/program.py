@@ -10,7 +10,7 @@ from rich.live import Live
 from rich.panel import Panel
 
 from outlines.graph import Variable, io_toposort
-from outlines.text.models.model import LanguageModel
+from outlines.text.models import LanguageModel
 from outlines.text.var import StringConstant
 
 COLORS = itertools.cycle(["deep_sky_blue2", "gold3", "deep_pink2"])

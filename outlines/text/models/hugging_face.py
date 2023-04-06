@@ -1,4 +1,4 @@
-from outlines.text.models.model import LanguageModel
+from outlines.text.models.language_model import LanguageModel
 
 try:
     import torch
