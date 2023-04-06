@@ -1,5 +1,5 @@
 import collections
-import textwrap
+import inspect
 from typing import Dict, Union
 
 from mako.runtime import Context
@@ -89,7 +89,7 @@ def compose(
     buf = OutlinesEncodingBuffer()
     ctx = Context(buf, **values)
 
-    outline = textwrap.dedent(template).lstrip().rstrip()
+    outline = inspect.cleandoc(template)
     mako_template = Template(outline, default_filters=[])
     mako_template.render_context(ctx)
 
