@@ -12,48 +12,42 @@ References
 import argparse
 
 import outlines
-from outlines import compose
-from outlines.text.models.openai import OpenAI
+import outlines.text as text
 
 
-def split_into_steps(question, model: str):
-    prompt = compose(
-        """
-        ${question}
+def split_into_steps(question, model_name: str):
+    @text.model(model_name)
+    def solve(question):
+        """${question}
         Let's solve this problem by splitting it into steps.
-        """,
-        question=question,
-    )
-    answer = OpenAI(model)(prompt)
+        """
+
+    answer, prompt = solve(question)
 
     return prompt, answer
 
 
-def fill_in_the_blanks(question, model: str):
-    meta_prompt = compose(
-        """
-        ${question}
+def fill_in_the_blanks(question, model_name: str):
+    @text.model(model_name, stops_at=["."])
+    def determine_goal(question):
+        """${question}
 
         In order to solve this problem, we will analyze each of the options and determine
-        """,
-        question=question,
-    )
-    goal = OpenAI(model, stops_at=["."])(meta_prompt)
-
-    prompt = compose(
         """
-        ${meta_prompt}${goal}. Let's begin.
-        """,
-        meta_prompt=meta_prompt,
-        goal=goal,
-    )
-    answer = OpenAI(model)(prompt)
 
-    return prompt, answer
+    @text.model(model_name, stops_at=["."])
+    def solve(memory):
+        """${memory}. Let's begin."""
+
+    _, memory = determine_goal(question)
+    answer, full_interaction = solve(memory)
+
+    return full_interaction, answer
 
 
-def ask_an_expert(question, model: str):
-    meta_prompt = compose(
+def ask_an_expert(question, model_name: str):
+    @text.model(model_name, stops_at=['"'])
+    def find_expert(question):
         """
         ${question}
         I entered my question into the Expert Generator
@@ -68,48 +62,43 @@ def ask_an_expert(question, model: str):
         The Expert Generator beeped, indicating that it has
         found the most qualified expert. The name displayed
         on the screen: "
-        """,
-        question=question,
-    )
-    expert = OpenAI(model, stops_at=['"'])(meta_prompt)
-
-    prompt = compose(
         """
-        ${prompt}${expert}"
+
+    @text.model(model_name)
+    def get_answer(question, expert, memory):
+        """
+        ${memory}
         I am ready to ask my question.
         "${expert}" I say,
         ${question}
-        """,
-        prompt=meta_prompt,
-        expert=expert,
-        question=question,
-    )
-    answer = OpenAI(model)(prompt)
-    return prompt, answer
+        """
+
+    expert, memory = find_expert(question)
+    answer, full_interaction = get_answer(question, expert, memory)
+
+    return full_interaction, answer
 
 
-def ask_an_expert_simple(question, model: str):
-    meta_prompt = compose(
+def ask_an_expert_simple(question, model_name: str):
+    @text.model(model_name, stops_at=["\n", "."])
+    def find_expert(question):
         """
         Q: ${question}
         A: A good person to answer this question would be
-        """,
-        question=question,
-    )
-    expert = OpenAI(model, stops_at=["/n", "."])(meta_prompt)
-
-    prompt = compose(
         """
-        ${meta_prompt}${expert}.
+
+    @text.model(model_name)
+    def get_answer(expert, memory):
+        """
+        ${memory}.
 
         For instance,${expert} would answer
-        """,
-        meta_prompt=meta_prompt,
-        expert=expert,
-    )
-    answer = OpenAI(model)(prompt)
+        """
 
-    return prompt, answer
+    expert, memory = find_expert(question)
+    answer, full_interaction = get_answer(expert, memory)
+
+    return full_interaction, answer
 
 
 def run_example(model_fn, question, model):
@@ -117,7 +106,7 @@ def run_example(model_fn, question, model):
     question_s = outlines.text.string()
     fn = outlines.chain([question_s], model_fn(question_s, model))
     prompt, answer = fn(question)
-    print(f"{prompt}{answer}")
+    print(f"{prompt}")
 
 
 if __name__ == "__main__":
@@ -125,14 +114,13 @@ if __name__ == "__main__":
     parser.add_argument(
         "--model",
         type=str,
-        default="text-davinci-001",
+        default="openai/text-davinci-001",
         help="The Large Language Model to use to run the examples.",
     )
     args = parser.parse_args()
 
     math_q = "f(x) = x*x. What is f(f(3))?"
-    sat_q = compose(
-        """
+    sat_q = """
     Directions: In the following question, a related
     pair of words or phrases is followed by five
     pairs of words or phrases. Choose the pair
@@ -146,7 +134,6 @@ if __name__ == "__main__":
     E) CANDIDATE : AMBITION
 
     """
-    )
     alignment_q = "What should humankind do to ensure that artificial general intelligence is aligned?"
     meaning_q = "What is the meaning of life?"
 
