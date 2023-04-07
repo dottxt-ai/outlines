@@ -40,7 +40,7 @@ class OutlinesEncodingBuffer:
             return output
 
 
-def compose(
+def render(
     template: str, **values: Dict[str, Union[str, StringVariable]]
 ) -> Union[str, StringVariable]:
     r"""Parse a Mako template and translate it into an Outlines graph.
@@ -51,21 +51,21 @@ def compose(
     Outlines follow Mako's syntax
 
     >>> import outlines
-    >>> outline = outlines.compose("I like ${food} and ${sport}", food="tomatoes", sport="tennis")
+    >>> outline = outlines.render("I like ${food} and ${sport}", food="tomatoes", sport="tennis")
     I like tomatoes and tennis
 
     When a variable in the template is assigne a `StringVariable` value, the
-    `compose` function builds the corresponding outlines graph and returns a
+    `render` function builds the corresponding outlines graph and returns a
     `StringVariable`:
 
     >>> s = outlines.text.string()
-    >>> outlines.compose("I like ${food}", food=food)
+    >>> outlines.render("I like ${food}", food=food)
     <StringVariable>
 
     It is also possible to use control flow inside templates:
 
     >>> examples = ["one", "two", "three"]
-    >>> outlines = outlines.compose(
+    >>> outlines = outlines.render(
     ...     '''
     ...     % for example in examples:
     ...     Example: ${example}

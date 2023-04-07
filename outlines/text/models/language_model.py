@@ -1,7 +1,7 @@
 import inspect
 
 from outlines.graph import Apply, Op
-from outlines.text.compose import compose
+from outlines.text.render import render
 from outlines.text.var import StringVariable, as_string
 
 
@@ -66,7 +66,7 @@ def model(name: str, stops_at=None):
     >>>
     >>> llm = OpenAI("davinci")
     >>> tpl = "I have a ${question}"
-    >>> prompt = outlines.compose(tpl, question="How are you?")
+    >>> prompt = outlines.render(tpl, question="How are you?")
     >>> answer = llm(prompt)
 
     While explicit, these 4 lines have the following defaults:
@@ -147,7 +147,7 @@ def model(name: str, stops_at=None):
             kwargs_data.update(kwargs)
             data = {**args_data, **kwargs_data}
 
-            prompt = compose(template, **data)
+            prompt = render(template, **data)
             result = llm(prompt)
             return result, prompt + result
 

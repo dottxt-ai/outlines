@@ -1,5 +1,5 @@
 import outlines
-from outlines.text import compose, string
+from outlines.text import render, string
 
 
 def test_compile():
@@ -28,7 +28,7 @@ def test_compile():
 
 def test_compile_scripts():
     s = string()
-    o = compose("This is a ${var}", var=s)
+    o = render("This is a ${var}", var=s)
     chain = outlines.chain([s], o)
     assert chain("test") == "This is a test"
 
