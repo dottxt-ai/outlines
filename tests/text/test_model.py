@@ -1,7 +1,7 @@
 import pytest
 
-from outlines.text import string
-from outlines.text.models.language_model import LanguageModel, model
+from outlines.text import completion, string
+from outlines.text.models.language_model import LanguageModel
 
 
 def test_initialize_LanguageModel():
@@ -17,14 +17,14 @@ def test_initialize_LanguageModel():
 def test_model_wrong_provide():
     with pytest.raises(NameError, match="not available"):
 
-        @model("aa/model_name")
+        @completion("aa/model_name")
         def test_function():
             """"""
 
 
 @pytest.mark.skip
 def test_model():
-    @model("openai/text-davinci-001", stops_at=["."])
+    @completion("openai/text-davinci-001", stops_at=["."])
     def test_function(question, type="bad"):
         """You're a witty and sarcastic AI.
 

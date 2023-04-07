@@ -1,6 +1,6 @@
 from .basic import *
+from .completion import completion
 from .render import render
-from .models import model
 from .var import as_string, string
 
-__all__ = ["as_string", "model", "string", "render"]
+__all__ = ["as_string", "completion", "string", "render"]

@@ -16,7 +16,7 @@ import outlines.text as text
 
 
 def split_into_steps(question, model_name: str):
-    @text.model(model_name)
+    @text.completion(model_name)
     def solve(question):
         """${question}
         Let's solve this problem by splitting it into steps.
@@ -28,14 +28,14 @@ def split_into_steps(question, model_name: str):
 
 
 def fill_in_the_blanks(question, model_name: str):
-    @text.model(model_name, stops_at=["."])
+    @text.completion(model_name, stops_at=["."])
     def determine_goal(question):
         """${question}
 
         In order to solve this problem, we will analyze each of the options and determine
         """
 
-    @text.model(model_name, stops_at=["."])
+    @text.completion(model_name, stops_at=["."])
     def solve(memory):
         """${memory}. Let's begin."""
 
@@ -46,7 +46,7 @@ def fill_in_the_blanks(question, model_name: str):
 
 
 def ask_an_expert(question, model_name: str):
-    @text.model(model_name, stops_at=['"'])
+    @text.completion(model_name, stops_at=['"'])
     def find_expert(question):
         """
         ${question}
@@ -64,7 +64,7 @@ def ask_an_expert(question, model_name: str):
         on the screen: "
         """
 
-    @text.model(model_name)
+    @text.completion(model_name)
     def get_answer(question, expert, memory):
         """
         ${memory}
@@ -80,14 +80,14 @@ def ask_an_expert(question, model_name: str):
 
 
 def ask_an_expert_simple(question, model_name: str):
-    @text.model(model_name, stops_at=["\n", "."])
+    @text.completion(model_name, stops_at=["\n", "."])
     def find_expert(question):
         """
         Q: ${question}
         A: A good person to answer this question would be
         """
 
-    @text.model(model_name)
+    @text.completion(model_name)
     def get_answer(expert, memory):
         """
         ${memory}.
@@ -114,18 +114,17 @@ if __name__ == "__main__":
     parser.add_argument(
         "--model",
         type=str,
-        default="openai/text-davinci-001",
+        default="openai/text-davinci-003",
         help="The Large Language Model to use to run the examples.",
     )
     args = parser.parse_args()
 
     math_q = "f(x) = x*x. What is f(f(3))?"
     sat_q = """
-    Directions: In the following question, a related
-    pair of words or phrases is followed by five
-    pairs of words or phrases. Choose the pair
-    that best expresses a relationship similar to
-    that in the original pair.
+    Directions: In the following question, a related  pair of words or phrases \
+    is followed by five  pairs of words or phrases. Choose the pair  that best \
+    expresses a relationship similar to that in the original pair. \
+
     BRAGGART :: MODESTY
     A) FLEDGLING : EXPERIENCE
     B) EMBEZZLER : GREED
