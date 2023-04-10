@@ -1,6 +1,6 @@
 import collections
 import inspect
-from typing import Dict, Union
+from typing import Callable, Dict, Union
 
 from mako.runtime import Context
 from mako.template import Template
@@ -94,3 +94,59 @@ def render(
     mako_template.render_context(ctx)
 
     return buf.get_value()
+
+
+def prompt(fn: Callable):
+    """Decorator around a function that contains a prompt template.
+
+    This allows to define prompts in the docstring of a function and ease their
+    manipulation by providing some degree of encapsulation.
+
+    >>> import outlines
+    >>>
+    >>> @outlines.prompt
+    >>> def answer_tpl(question):
+    ...    "I have a ${question}"
+    ...
+    >>> prompt = answer_tpl("How are you?")
+
+    This is syntactic sugar and uses the `render` function internally.
+    Therefore, the wrapped functions return `str` when called with `str`
+    arguments only, and a `StringVariable` when at least one argument is a
+    `StringVariable`.
+
+    """
+
+    # Get the names of the parameters to the function, which must correspond
+    # to the variables defined in the template.
+    var_names = []
+    kwargs_data = {}
+    sig = inspect.signature(fn)
+    for parameter in sig.parameters.values():
+        if parameter.default == inspect._empty:
+            var_names.append(parameter.name)
+        else:
+            kwargs_data[parameter.name] = parameter.default
+
+    # The docstring contains the template that will be rendered to be used
+    # as a prompt to the language model.
+    docstring = fn.__doc__
+    if docstring is None:
+        raise TypeError("Could not find a template in the function's docstring.")
+    else:
+        template = inspect.cleandoc(docstring)
+
+    def wrapper(*args, **kwargs):
+        """Render and return the template.
+
+        Returns
+        -------
+        A Python `str` when all arguments are Python `str`, a `StringVariable`
+        otherwise.
+
+        """
+        bound_arguments = sig.bind(*args, **kwargs)
+        bound_arguments.apply_defaults()
+        return render(template, **bound_arguments.arguments)
+
+    return wrapper

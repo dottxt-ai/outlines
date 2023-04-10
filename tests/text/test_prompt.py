@@ -1,5 +1,6 @@
 import pytest
 
+import outlines.text as text
 from outlines.text import render, string
 from outlines.text.basic import Add
 from outlines.text.var import StringConstant, StringVariable
@@ -58,4 +59,77 @@ def test_template_few_shots():
         wa=wa,
         examples=examples,
     )
+    assert isinstance(prompt, StringVariable)
+
+
+def test_prompt_basic():
+    @text.prompt
+    def test_tpl(variable):
+        """${variable} test"""
+
+    with pytest.raises(TypeError):
+        test_tpl(v="test")
+
+    p = test_tpl("test")
+    assert p == "test test"
+
+    p = test_tpl(variable="test")
+    assert p == "test test"
+
+    @text.prompt
+    def test_single_quote_tpl(variable):
+        "${variable} test"
+
+    p = test_tpl("test")
+    assert p == "test test"
+
+
+def test_prompt_kwargs():
+    @text.prompt
+    def test_kwarg_tpl(var, other_var="other"):
+        """${var} and ${other_var}"""
+
+    p = test_kwarg_tpl("test")
+    assert p == "test and other"
+
+    p = test_kwarg_tpl("test", other_var="kwarg")
+    assert p == "test and kwarg"
+
+    p = test_kwarg_tpl("test", "test")
+    assert p == "test and test"
+
+
+def test_not_prompt():
+    with pytest.raises(TypeError, match="template"):
+
+        @text.prompt
+        def test_empty(variable):
+            pass
+
+    with pytest.raises(TypeError, match="template"):
+
+        @text.prompt
+        def test_only_code(variable):
+            return variable
+
+
+def test_prompt_few_shots():
+    @text.prompt
+    def few_shots_tpl(w, examples):
+        """This is a test
+
+        ${w}
+
+        % for s, t in examples:
+        Search: ${s}
+        Trap: ${t}
+        % endfor
+        """
+
+    prompt = few_shots_tpl("Test", [["a", "b"], ["c", "d"]])
+    assert (
+        prompt == "This is a test\n\nTest\n\nSearch: a\nTrap: b\nSearch: c\nTrap: d\n"
+    )
+
+    prompt = few_shots_tpl(string(), [["a", "b"], ["c", "d"]])
     assert isinstance(prompt, StringVariable)
