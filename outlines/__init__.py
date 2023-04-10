@@ -31,7 +31,7 @@ References
 from outlines.function import fn
 from outlines.image import as_image
 from outlines.program import chain, program
-from outlines.text import as_string, completion, render
+from outlines.text import as_string, completion, prompt, render
 
 __all__ = [
     "chain",
@@ -39,5 +39,6 @@ __all__ = [
     "as_string",
     "fn",
     "program",
+    "prompt",
     "render",
 ]

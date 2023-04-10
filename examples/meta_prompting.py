@@ -11,7 +11,6 @@ References
 """
 import argparse
 
-import outlines
 import outlines.text as text
 
 
@@ -22,9 +21,9 @@ def split_into_steps(question, model_name: str):
         Let's solve this problem by splitting it into steps.
         """
 
-    answer, prompt = solve(question)
+    _, completed = solve(question)
 
-    return prompt, answer
+    return completed
 
 
 def fill_in_the_blanks(question, model_name: str):
@@ -39,10 +38,10 @@ def fill_in_the_blanks(question, model_name: str):
     def solve(memory):
         """${memory}. Let's begin."""
 
-    _, memory = determine_goal(question)
-    answer, full_interaction = solve(memory)
+    _, completed = determine_goal(question)
+    _, completed = solve(completed)
 
-    return full_interaction, answer
+    return completed
 
 
 def ask_an_expert(question, model_name: str):
@@ -73,10 +72,10 @@ def ask_an_expert(question, model_name: str):
         ${question}
         """
 
-    expert, memory = find_expert(question)
-    answer, full_interaction = get_answer(question, expert, memory)
+    expert, completed = find_expert(question)
+    _, completed = get_answer(question, expert, completed)
 
-    return full_interaction, answer
+    return completed
 
 
 def ask_an_expert_simple(question, model_name: str):
@@ -95,18 +94,16 @@ def ask_an_expert_simple(question, model_name: str):
         For instance,${expert} would answer
         """
 
-    expert, memory = find_expert(question)
-    answer, full_interaction = get_answer(expert, memory)
+    expert, completed = find_expert(question)
+    answer, completed = get_answer(expert, completed)
 
-    return full_interaction, answer
+    return completed
 
 
-def run_example(model_fn, question, model):
-    print("\n-----------------------------------------\n")
-    question_s = outlines.text.string()
-    fn = outlines.chain([question_s], model_fn(question_s, model))
-    prompt, answer = fn(question)
-    print(f"{prompt}")
+def run_example(model_fn, question, model_name):
+    completed = model_fn(question, model_name)
+    print(f"\n-----------------------")
+    print(f"{completed}")
 
 
 if __name__ == "__main__":
@@ -121,16 +118,17 @@ if __name__ == "__main__":
 
     math_q = "f(x) = x*x. What is f(f(3))?"
     sat_q = """
-    Directions: In the following question, a related  pair of words or phrases \
-    is followed by five  pairs of words or phrases. Choose the pair  that best \
-    expresses a relationship similar to that in the original pair. \
 
-    BRAGGART :: MODESTY
-    A) FLEDGLING : EXPERIENCE
-    B) EMBEZZLER : GREED
-    C) WALLFLOWER : TIMIDITY
-    D) INVALID : MALADY
-    E) CANDIDATE : AMBITION
+Directions: In the following question, a related  pair of words or phrases
+is followed by five  pairs of words or phrases. Choose the pair  that best
+expresses a relationship similar to that in the original pair.
+
+BRAGGART :: MODESTY
+A) FLEDGLING : EXPERIENCE
+B) EMBEZZLER : GREED
+C) WALLFLOWER : TIMIDITY
+D) INVALID : MALADY
+E) CANDIDATE : AMBITION
 
     """
     alignment_q = "What should humankind do to ensure that artificial general intelligence is aligned?"

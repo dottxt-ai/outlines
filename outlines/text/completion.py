@@ -1,6 +1,4 @@
-import inspect
-
-from outlines.text.render import render
+from outlines.text.prompt import prompt
 
 
 def completion(name: str, stops_at=None):
@@ -62,20 +60,7 @@ def completion(name: str, stops_at=None):
         raise NameError(f"The model provider {provider_name} is not available.")
 
     def decorator(fn):
-        # Get the names of the parameters to the function, which must correspond
-        # to the variables defined in the template.
-        var_names = []
-        kwargs_data = {}
-        sig = inspect.signature(fn)
-        for parameter in sig.parameters.values():
-            if parameter.default == inspect._empty:
-                var_names.append(parameter.name)
-            else:
-                kwargs_data[parameter.name] = parameter.default
-
-        # The docstring contains the template that will be rendered to be used
-        # as a prompt to the language model.
-        template = inspect.cleandoc(fn.__doc__)
+        prompt_fn = prompt(fn)
 
         def wrapper(*args, **kwargs):
             """Call the LLM with the rendered template.
@@ -91,11 +76,7 @@ def completion(name: str, stops_at=None):
             call.
 
             """
-            args_data = {name: arg for name, arg in zip(var_names, args)}
-            kwargs_data.update(kwargs)
-            data = {**args_data, **kwargs_data}
-
-            prompt = render(template, **data)
+            prompt = prompt_fn(*args, **kwargs)
             result = llm(prompt)
             return result, prompt + result
 
