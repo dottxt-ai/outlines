@@ -1,5 +1,6 @@
 import collections
 import inspect
+import re
 from typing import Callable, Dict, Union
 
 from mako.runtime import Context
@@ -134,6 +135,9 @@ def prompt(fn: Callable):
     if docstring is None:
         raise TypeError("Could not find a template in the function's docstring.")
     else:
+        docstring = re.sub(
+            " +", " ", docstring
+        )  # Remove extra whitespace due to linebreaks
         template = inspect.cleandoc(docstring)
 
     def wrapper(*args, **kwargs):
