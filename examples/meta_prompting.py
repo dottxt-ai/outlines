@@ -102,7 +102,7 @@ def ask_an_expert_simple(question, model_name: str):
 
 def run_example(model_fn, question, model_name):
     completed = model_fn(question, model_name)
-    print(f"\n-----------------------")
+    print("\n-----------------------")
     print(f"{completed}")
 
 

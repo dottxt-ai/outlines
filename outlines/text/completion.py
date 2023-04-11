@@ -1,7 +1,7 @@
 from outlines.text.prompt import prompt
 
 
-def completion(name: str, stops_at=None):
+def completion(name: str, *, stops_at=None, max_tokens=None, temperature=None):
     """Decorator that allows to simplify calls to language models.
 
     Prompts that are passed to language models are often rendered templates,
@@ -44,6 +44,14 @@ def completion(name: str, stops_at=None):
     be used in context where one expands an initial prompt with recursive calls
     to language models.
 
+    Parameters
+    ----------
+    stops_at
+        A list of tokens which, when found, stop the generation.
+    max_tokens
+        The maximum number of tokens to generate.
+    temperature
+        Value used to module the next token probabilities.
     """
     provider_name = name.split("/")[0]
     model_name = name[len(provider_name) + 1 :]
@@ -51,11 +59,11 @@ def completion(name: str, stops_at=None):
     if provider_name == "openai":
         from outlines.text.models.openai import OpenAI
 
-        llm = OpenAI(model_name, stops_at)  # type:ignore
+        llm = OpenAI(model_name, stops_at, max_tokens, temperature)  # type:ignore
     elif provider_name == "hf":
         from outlines.text.models.hugging_face import HFCausalLM
 
-        llm = HFCausalLM(model_name)  # type:ignore
+        llm = HFCausalLM(model_name, max_tokens, temperature)  # type:ignore
     else:
         raise NameError(f"The model provider {provider_name} is not available.")
 
