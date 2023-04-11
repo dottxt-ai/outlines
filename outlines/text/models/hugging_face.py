@@ -87,4 +87,4 @@ class HFCausalLM(LanguageModel):
         new_tokens = returned_tokens[:, prompt_tokens["input_ids"].shape[1] + 1 :]
         new_tokens = new_tokens.squeeze()
 
-        return tokenizer.decode(new_tokens, skip_special_tokens=True)
+        return (tokenizer.decode(new_tokens, skip_special_tokens=True),)
