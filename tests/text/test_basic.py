@@ -13,7 +13,7 @@ def test_add_symbolic():
     assert len(w.owner.outputs) == 1
 
     a = Add()
-    assert a.perform("a", "string")[0] == "astring"
+    assert a.perform(("a", "string"))[0] == "astring"
 
     w = s + t
     assert isinstance(w, StringVariable)

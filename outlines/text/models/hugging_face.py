@@ -54,7 +54,7 @@ class HFCausalLM(LanguageModel):
         super().__init__(name=f"HuggingFace {model}")
         self.model_name = model
 
-    def perform(self, prompt):
+    def perform(self, inputs):
         """Sample new tokens give the tokenized prompt.
 
         Since HuggingFace's `generate` method returns the prompt along with the
@@ -68,6 +68,8 @@ class HFCausalLM(LanguageModel):
             tokenizers.
 
         """
+        (prompt,) = inputs
+
         tokenizer = AutoTokenizer.from_pretrained(self.model_name)
         model = AutoModelForCausalLM.from_pretrained(self.model_name)
 

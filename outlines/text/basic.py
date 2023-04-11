@@ -13,7 +13,8 @@ class Add(Op):
         out = StringVariable()
         return Apply(self, [s, t], [out])
 
-    def perform(self, s, t):
+    def perform(self, inputs):
+        s, t = inputs
         return (s + t,)
 
 

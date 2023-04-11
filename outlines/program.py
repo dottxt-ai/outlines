@@ -11,6 +11,7 @@ from rich.panel import Panel
 
 from outlines.graph import Variable, io_toposort
 from outlines.text.models import LanguageModel
+from outlines.text.random import IntConstant
 from outlines.text.var import StringConstant
 
 COLORS = itertools.cycle(["deep_sky_blue2", "gold3", "deep_pink2"])
@@ -252,10 +253,10 @@ def chain(input_vars, output_vars) -> Callable:
 
         for node in sorted_nodes:
             for i in node.inputs:
-                if isinstance(i, StringConstant):
+                if isinstance(i, (StringConstant, IntConstant)):
                     storage_map[i] = i.value
             inputs = [storage_map[i] for i in node.inputs]
-            results = node.op.perform(*inputs)
+            results = node.op.perform(inputs)
             for i, o in enumerate(node.outputs):
                 storage_map[o] = results[i]
 

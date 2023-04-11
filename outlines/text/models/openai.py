@@ -47,7 +47,9 @@ class OpenAI(LanguageModel):
         super().__init__(name=f"OpenAI {model}")
         self.model = model
 
-    def perform(self, prompt):
+    def perform(self, inputs):
+        (prompt,) = inputs
+
         try:
             resp = openai.Completion.create(
                 model=self.model,

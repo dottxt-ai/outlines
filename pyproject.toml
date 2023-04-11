@@ -25,8 +25,9 @@ classifiers = [
 ]
 dependencies = [
    "mako",
+   "numpy",
    "pillow",
-   "rich"
+   "rich",
 ]
 dynamic = ["version"]
 

@@ -57,13 +57,14 @@ class ImageModel(Op):
 
         return Apply(self, [prompt], [out])
 
-    def perform(self, prompt: str) -> Tuple[PILImage]:  # type: ignore
+    def perform(self, inputs) -> Tuple[PILImage]:  # type: ignore
         """Perform the operations represented by this `Op` on the input prompt.
 
         This defaults to sampling a new image. Other decoding methods act by
         patching this method.
 
         """
+        (prompt,) = inputs
         return (self.sample(prompt),)
 
     def sample(self, prompt: str) -> PILImage:
