@@ -34,7 +34,7 @@ class HFCausalLM(LanguageModel):
 
     """
 
-    def __init__(self, model: str):
+    def __init__(self, model: str, max_tokens=None, temperature=None):
         """Instantiate the model `Op`.
 
         Parameters
@@ -43,6 +43,14 @@ class HFCausalLM(LanguageModel):
             The model id of a model hosted inside a model repo on huggingface.co
 
         """
+        if max_tokens is None:
+            max_tokens = 216
+        self.max_tokens = max_tokens
+
+        if temperature is None:
+            temperature = 1.0
+        self.temperature = temperature
+
         super().__init__(name=f"HuggingFace {model}")
         self.model_name = model
 
@@ -60,8 +68,8 @@ class HFCausalLM(LanguageModel):
             tokenizers.
 
         """
-        tokenizer = AutoTokenizer.from_pretrained(self.model)
-        model = AutoModelForCausalLM.from_pretrained(self.model)
+        tokenizer = AutoTokenizer.from_pretrained(self.model_name)
+        model = AutoModelForCausalLM.from_pretrained(self.model_name)
 
         prompt_tokens = tokenizer(prompt, return_tensors="pt")
 
@@ -72,8 +80,9 @@ class HFCausalLM(LanguageModel):
         returned_tokens = model.generate(
             **prompt_tokens,
             do_sample=True,
-            max_new_tokens=20,
-            pad_token_id=self.tokenizer.eos_token_id,
+            temperature=self.temperature,
+            max_new_tokens=self.max_tokens,
+            pad_token_id=tokenizer.eos_token_id,
         )
         new_tokens = returned_tokens[:, prompt_tokens["input_ids"].shape[1] + 1 :]
         new_tokens = new_tokens.squeeze()

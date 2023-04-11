@@ -17,7 +17,7 @@ class OpenAI(LanguageModel):
 
     """
 
-    def __init__(self, model: str, stops_at=None):
+    def __init__(self, model: str, stops_at=None, max_tokens=None, temperature=None):
         """Initialize the OpenAI model."""
 
         try:
@@ -36,6 +36,14 @@ class OpenAI(LanguageModel):
             raise Exception("OpenAI's API does not accept more than 4 stop sequences.")
         self.stops_at = stops_at
 
+        if max_tokens is None:
+            max_tokens = 216
+        self.max_tokens = max_tokens
+
+        if temperature is None:
+            temperature = 1.0
+        self.temperature = temperature
+
         super().__init__(name=f"OpenAI {model}")
         self.model = model
 
@@ -44,8 +52,9 @@ class OpenAI(LanguageModel):
             resp = openai.Completion.create(
                 model=self.model,
                 prompt=prompt,
-                max_tokens=128,
+                max_tokens=self.max_tokens,
                 stop=self.stops_at,
+                temperature=self.temperature,
             )
         except error.APIConnectionError as e:
             raise OSError(f"Open API failed to connect: {e}")
