@@ -1,4 +1,4 @@
-from outlines.text.prompt import prompt
+from outlines.text import prompt
 
 
 def generation(name: str):

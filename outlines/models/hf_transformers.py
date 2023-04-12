@@ -1,4 +1,4 @@
-from outlines.text.models.language_model import LanguageModel
+from typing import Optional
 
 try:
     import torch
@@ -9,7 +9,7 @@ except ImportError:
     )
 
 
-class HFCausalLM(LanguageModel):
+class HFCausalLM:
     """Represent any of HuggingFace's causal language model implementations.
 
     You should have the `torch` and `transformers` packages installed. First
@@ -34,7 +34,12 @@ class HFCausalLM(LanguageModel):
 
     """
 
-    def __init__(self, model: str, max_tokens=None, temperature=None):
+    def __init__(
+        self,
+        model: str,
+        max_tokens: Optional[int] = None,
+        temperature: Optional[float] = None,
+    ):
         """Instantiate the model `Op`.
 
         Parameters
@@ -51,10 +56,9 @@ class HFCausalLM(LanguageModel):
             temperature = 1.0
         self.temperature = temperature
 
-        super().__init__(name=f"HuggingFace {model}")
         self.model_name = model
 
-    def perform(self, prompt):
+    def __call__(self, prompt: str) -> str:
         """Sample new tokens give the tokenized prompt.
 
         Since HuggingFace's `generate` method returns the prompt along with the
@@ -87,4 +91,4 @@ class HFCausalLM(LanguageModel):
         new_tokens = returned_tokens[:, prompt_tokens["input_ids"].shape[1] + 1 :]
         new_tokens = new_tokens.squeeze()
 
-        return (tokenizer.decode(new_tokens, skip_special_tokens=True),)
+        return tokenizer.decode(new_tokens, skip_special_tokens=True)

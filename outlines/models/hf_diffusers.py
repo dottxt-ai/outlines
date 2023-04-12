@@ -1,5 +1,3 @@
-from outlines.image.models.model import ImageModel
-
 try:
     from diffusers import StableDiffusionPipeline
 except ImportError:
@@ -8,14 +6,13 @@ except ImportError:
     )
 
 
-class HFDiffuser(ImageModel):
+class HFDiffuser:
     """A `StableDiffusion` distributed random image."""
 
-    def __init__(self, model_name: str, name=None):
+    def __init__(self, model_name: str):
         self.model_name = model_name
-        super().__init__(name)
 
-    def sample(self, prompt):
+    def __call__(self, prompt: str) -> str:
         """Use HuggingFace's `StableDiffusion` pipeline to sample a new image."""
         pipe = StableDiffusionPipeline.from_pretrained(self.model_name)
         pipe = pipe.to("cuda")
