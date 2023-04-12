@@ -1,6 +1,5 @@
 import os
-
-from outlines.text.models import LanguageModel
+from typing import List, Optional
 
 try:
     import openai
@@ -9,7 +8,7 @@ except ImportError:
     raise ImportError("You need to install `openai` to run OpenAI's language models.")
 
 
-class OpenAI(LanguageModel):
+class OpenAI:
     """Represents any of OpenAI's language models
 
     You should have the `openai` package installed, and store you OpenAI key in
@@ -17,7 +16,13 @@ class OpenAI(LanguageModel):
 
     """
 
-    def __init__(self, model: str, stops_at=None, max_tokens=None, temperature=None):
+    def __init__(
+        self,
+        model: str,
+        stops_at: Optional[List[str]] = None,
+        max_tokens: Optional[int] = None,
+        temperature: Optional[float] = None,
+    ):
         """Initialize the OpenAI model."""
 
         try:
@@ -31,6 +36,7 @@ class OpenAI(LanguageModel):
         available_model_names = [model["id"] for model in available_models["data"]]
         if model not in available_model_names:
             raise OSError(f"{model} is not a valid OpenAI model name.")
+        self.model = model
 
         if stops_at is not None and len(stops_at) > 4:
             raise Exception("OpenAI's API does not accept more than 4 stop sequences.")
@@ -44,10 +50,7 @@ class OpenAI(LanguageModel):
             temperature = 1.0
         self.temperature = temperature
 
-        super().__init__(name=f"OpenAI {model}")
-        self.model = model
-
-    def perform(self, prompt):
+    def __call__(self, prompt: str) -> str:
         try:
             resp = openai.Completion.create(
                 model=self.model,
@@ -71,4 +74,4 @@ class OpenAI(LanguageModel):
         except error.Timeout as e:
             raise OSError(f"Open API request timed out: {e}")
 
-        return (resp["choices"][0]["text"],)
+        return resp["choices"][0]["text"]
