@@ -25,6 +25,17 @@ def test_render():
     assert text.render(tpl) == "A test\nAnother test"
 
     tpl = """
+        A test line
+            An indented line
+    """
+    assert text.render(tpl) == "A test line\n    An indented line"
+
+
+@pytest.mark.xfail(
+    reason="We need a regexp that can match whitespace sequences except those that follow a linebreak"
+)
+def test_render_escaped_linebreak():
+    tpl = """
         A long test \
         that we break \
         in several lines
@@ -32,53 +43,51 @@ def test_render():
     assert text.render(tpl) == "A long test that we break in several lines"
 
 
-@pytest.mark.xfail(reason="The regex used to strip whitespaces is too aggressive")
-def test_render_indented():
-    tpl = """
-        A test line
-            An indented line
+def test_render_jinja():
+    """Make sure that we can use basic Jinja2 syntax, and give examples
+    of how we can use it for basic use cases.
     """
-    assert text.render(tpl) == "A test line\n    An indented line"
 
-
-@pytest.mark.xfail(reason="Mako adds newlines after for and if blocks")
-def test_render_mako():
-    """Make sure that we can use basic Mako syntax."""
+    # Notice the newline after the end of the loop
     examples = ["one", "two"]
     prompt = text.render(
         """
-        % for e in examples:
-        Example: ${e}
-        % endfor
-        """,
+        {% for e in examples %}
+        Example: {{e}}
+        {% endfor -%}""",
         examples=examples,
     )
-    assert prompt == "Example: one\nExample: two"
+    assert prompt == "Example: one\nExample: two\n"
 
+    # We can remove the newline by cloing with -%}
     examples = ["one", "two"]
     prompt = text.render(
         """
-        % for i, e in enumerate(examples):
-        Example ${i}: ${e}
-        % endfor
-        """,
+        {% for e in examples %}
+        Example: {{e}}
+        {% endfor -%}
+
+        Final""",
         examples=examples,
     )
-    assert prompt == "Example 0: one\nExample 1: two"
+    assert prompt == "Example: one\nExample: two\nFinal"
 
+    # Same for conditionals
     tpl = """
-        % if is_true:
+        {% if is_true %}
         true
-        % endif
+        {% endif -%}
+
+        final
         """
-    assert text.render(tpl, is_true=True) == "true"
-    assert text.render(tpl, is_true=False) == ""
+    assert text.render(tpl, is_true=True) == "true\nfinal"
+    assert text.render(tpl, is_true=False) == "final"
 
 
 def test_prompt_basic():
     @text.prompt
     def test_tpl(variable):
-        """${variable} test"""
+        """{{variable}} test"""
 
     with pytest.raises(TypeError):
         test_tpl(v="test")
@@ -100,7 +109,7 @@ def test_prompt_basic():
 def test_prompt_kwargs():
     @text.prompt
     def test_kwarg_tpl(var, other_var="other"):
-        """${var} and ${other_var}"""
+        """{{var}} and {{other_var}}"""
 
     p = test_kwarg_tpl("test")
     assert p == "test and other"

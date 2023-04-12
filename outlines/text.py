@@ -1,12 +1,11 @@
 import inspect
-import re
 from typing import Any, Callable, Dict, List, Optional, Tuple, cast
 
-from mako.template import Template
+from jinja2 import Template
 
 
 def render(template: str, **values: Optional[Dict[str, Any]]) -> str:
-    r"""Parse a Mako template and translate it into an Outlines graph.
+    r"""Parse a Jinaj2 template and translate it into an Outlines graph.
 
     This function removes extra whitespaces and linebreaks from templates to
     allow users to enter prompt more naturally than if they used Python's
@@ -15,10 +14,10 @@ def render(template: str, **values: Optional[Dict[str, Any]]) -> str:
     Examples
     --------
 
-    Outlines follow Mako's syntax
+    Outlines follow Jinja2's syntax
 
     >>> import outlines
-    >>> outline = outlines.render("I like ${food} and ${sport}", food="tomatoes", sport="tennis")
+    >>> outline = outlines.render("I like {{food}} and {{sport}}", food="tomatoes", sport="tennis")
     I like tomatoes and tennis
 
     If the first line of the template is empty, `render` removes it
@@ -72,21 +71,10 @@ def render(template: str, **values: Optional[Dict[str, Any]]) -> str:
     >>> render(tpl)
     ... 'First Line\n  Second Line'
 
-    Finally, `render` removes the indentation introduced when using `\` to
-    escape linebreaks:
-
-    >>> tpl = '''
-    ...   Long test \
-    ...   That we break'''
-    >>> tpl
-    '\n  Long test   That we break'
-    >>> render(tpl)
-    'Long test That we break'
-
     Parameters
     ----------
     template
-        A string that contains a template written in the Mako syntax.
+        A string that contains a template written with the Jinja2 syntax.
     **values
         Map from the variables in the template to their value.
 
@@ -99,12 +87,9 @@ def render(template: str, **values: Optional[Dict[str, Any]]) -> str:
     # Dedent, and remove extra linebreak
     template = inspect.cleandoc(template)
 
-    # Remove extra whitespace due to linebreaks with "\"
-    # TODO: this will remove indentation, we need to only remove
-    # whitespaces when the sequence does not start with `\n`
-    template = re.sub(" +", " ", template)
-
-    mako_template = Template(template)
+    mako_template = Template(
+        template, trim_blocks=True, lstrip_blocks=True, keep_trailing_newline=False
+    )
     return mako_template.render(**values)
 
 
