@@ -51,6 +51,7 @@ module = [
     "diffusers",
     "jinja2",
     "openai",
+    "PIL.Image",
     "pytest",
     "torch",
     "transformers",

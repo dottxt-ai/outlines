@@ -1,22 +1,20 @@
+from typing import Any, Callable, Dict, List
+
+from PIL.Image import Image as PILImage
+
+import outlines.models.routers as routers
 from outlines.text import prompt
 
 
-def generation(name: str):
+def generation(model_path: str) -> Callable:
     """Decorator that allows to simplify calls to image generation models."""
-    provider_name = name.split("/")[0]
-    model_name = name[len(provider_name) + 1 :]
+    generative_model_builder = routers.image_generation(model_path)
+    generative_model = generative_model_builder()
 
-    if provider_name == "hf":
-        from outlines.image.models.hugging_face import HFDiffuser
-
-        generative_model = HFDiffuser(model_name)  # type:ignore
-    else:
-        raise NameError(f"The model provider {provider_name} is not available.")
-
-    def decorator(fn):
+    def decorator(fn: Callable):
         prompt_fn = prompt(fn)
 
-        def wrapper(*args, **kwargs):
+        def wrapper(*args: List[Any], **kwargs: Dict[str, Any]) -> PILImage:
             """Call the Diffuser with the rendered template.
 
             Returns
