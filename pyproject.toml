@@ -45,3 +45,14 @@ filterwarnings = [
     "error",
     "ignore::FutureWarning:transformers.*"
 ]
+
+[[tool.mypy.overrides]]
+module = [
+    "diffusers",
+    "jinja2",
+    "openai",
+    "pytest",
+    "torch",
+    "transformers",
+]
+ignore_missing_imports = true
