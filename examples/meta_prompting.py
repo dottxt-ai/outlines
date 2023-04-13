@@ -27,14 +27,14 @@ def split_into_steps(question, model_name: str):
 
 
 def fill_in_the_blanks(question, model_name: str):
-    @text.completion(model_name, stops_at=["."])
+    @text.completion(model_name, stop_at=["."])
     def determine_goal(question):
         """{{question}}
 
         In order to solve this problem, we will analyze each of the options and determine
         """
 
-    @text.completion(model_name, stops_at=["."])
+    @text.completion(model_name, stop_at=["."])
     def solve(memory):
         """{{memory}}. Let's begin."""
 
@@ -45,7 +45,7 @@ def fill_in_the_blanks(question, model_name: str):
 
 
 def ask_an_expert(question, model_name: str):
-    @text.completion(model_name, stops_at=['"'])
+    @text.completion(model_name, stop_at=['"'])
     def find_expert(question):
         """
         {{question}}
@@ -79,7 +79,7 @@ def ask_an_expert(question, model_name: str):
 
 
 def ask_an_expert_simple(question, model_name: str):
-    @text.completion(model_name, stops_at=["\n", "."])
+    @text.completion(model_name, stop_at=["\n", "."])
     def find_expert(question):
         """
         Q: {{question}}
