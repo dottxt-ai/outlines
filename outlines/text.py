@@ -3,6 +3,8 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, cast
 
 from jinja2 import Template
 
+import outlines.models.routers as routers
+
 
 def render(template: str, **values: Optional[Dict[str, Any]]) -> str:
     r"""Parse a Jinaj2 template and translate it into an Outlines graph.
@@ -135,9 +137,9 @@ def prompt(fn: Callable) -> Callable:
 
 
 def completion(
-    name: str,
+    model_path: str,
     *,
-    stops_at: Optional[List[str]] = None,
+    stop_at: Optional[List[str]] = None,
     max_tokens: Optional[int] = None,
     temperature: Optional[float] = None,
 ) -> Callable:
@@ -185,7 +187,9 @@ def completion(
 
     Parameters
     ----------
-    stops_at
+    model_path
+        A string of the form "model_provider/model_name"
+    stop_at
         A list of tokens which, when found, stop the generation.
     max_tokens
         The maximum number of tokens to generate.
@@ -193,19 +197,8 @@ def completion(
         Value used to module the next token probabilities.
 
     """
-    provider_name = name.split("/")[0]
-    model_name = name[len(provider_name) + 1 :]
-
-    if provider_name == "openai":
-        from outlines.text.models.openai import OpenAI
-
-        llm = OpenAI(model_name, stops_at, max_tokens, temperature)  # type:ignore
-    elif provider_name == "hf":
-        from outlines.text.models.hugging_face import HFCausalLM
-
-        llm = HFCausalLM(model_name, max_tokens, temperature)  # type:ignore
-    else:
-        raise NameError(f"The model provider {provider_name} is not available.")
+    llm_builder = routers.language_completion(model_path)
+    llm = llm_builder(stop_at=stop_at, max_tokens=max_tokens, temperature=temperature)
 
     def decorator(fn: Callable):
         prompt_fn = prompt(fn)
