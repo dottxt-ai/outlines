@@ -1,21 +1,26 @@
-try:
-    from diffusers import StableDiffusionPipeline
-except ImportError:
-    raise ImportError(
-        "You need to install `torch` and `diffusers` to run the StableDiffusion model."
-    )
+import functools
+
+from PIL.Image import Image as PILImage
 
 
-class HFDiffuser:
-    """A `StableDiffusion` distributed random image."""
+def HuggingFaceDiffuser(model_name: str) -> PILImage:
+    """Create a function that will call a stable diffusion pipeline.
 
-    def __init__(self, model_name: str):
-        self.model_name = model_name
+    Parameters
+    ----------
+    model_name: str
+        The name of the model as listed on HuggingFace's models page.
 
-    def __call__(self, prompt: str) -> str:
-        """Use HuggingFace's `StableDiffusion` pipeline to sample a new image."""
-        pipe = StableDiffusionPipeline.from_pretrained(self.model_name)
-        pipe = pipe.to("cuda")
+    """
+
+    @functools.lru_cache
+    def call(prompt: str) -> str:
+        import torch
+        from diffusers import StableDiffusionPipeline
+
+        pipe = StableDiffusionPipeline.from_pretrained(model_name)
+        if torch.cuda.is_available():
+            pipe = pipe.to("cuda")
         image = pipe(prompt).images[0]
 
         return image

@@ -8,12 +8,6 @@ import outlines.models as models
 def language_completion(model_path: str) -> Callable:
     """Return the model and model name corresponding to the model path.
 
-    Note
-    ----
-
-    We return both the model builder and the model name instead of partially
-    applying the model name to the model builder
-
     Parameters
     ----------
     model_path
@@ -28,6 +22,34 @@ def language_completion(model_path: str) -> Callable:
     registry: Dict[str, Callable] = {
         "openai": models.OpenAICompletion,
         "hf": models.HuggingFaceCompletion,
+    }
+
+    provider, model_name = parse_model_path(model_path)
+
+    try:
+        model = registry[provider]
+    except KeyError:
+        raise ValueError(f"The model provider {provider} is not available.")
+
+    return functools.partial(model, model_name)
+
+
+def image_generation(model_path: str) -> Callable:
+    """Return the model and model name corresponding to the model path.
+
+    Parameters
+    ----------
+    model_path
+        A string of the form "model_provider/model_name"
+
+    Returns
+    -------
+    The model builder with bound model name.
+
+    """
+
+    registry: Dict[str, Callable] = {
+        "hf": models.HuggingFaceDiffuser,
     }
 
     provider, model_name = parse_model_path(model_path)
