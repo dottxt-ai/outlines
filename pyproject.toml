@@ -25,6 +25,7 @@ classifiers = [
 ]
 dependencies = [
    "jinja2",
+   "joblib",
    "pillow",
    "rich"
 ]
@@ -50,6 +51,7 @@ filterwarnings = [
 module = [
     "diffusers",
     "jinja2",
+    "joblib",
     "openai",
     "PIL.Image",
     "pytest",
