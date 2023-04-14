@@ -1,6 +1,10 @@
-import functools
+"""Integration with OpenAI's API."""
 import os
 from typing import Callable, List, Optional, Tuple
+
+import outlines.cache as cache
+
+memory = cache.get()
 
 
 def OpenAICompletion(
@@ -65,7 +69,7 @@ def OpenAICompletion(
     return call
 
 
-@functools.lru_cache
+@memory.cache
 def call_completion_api(
     model: str,
     prompt: str,

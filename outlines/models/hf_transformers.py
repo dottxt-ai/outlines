@@ -1,5 +1,9 @@
-import functools
+"""Integration with HuggingFace's `transformers` library."""
 from typing import Callable, Optional
+
+import outlines.cache as cache
+
+memory = cache.get()
 
 
 def HuggingFaceCompletion(
@@ -46,7 +50,7 @@ def HuggingFaceCompletion(
     return call
 
 
-@functools.lru_cache
+@memory.cache
 def call_model_generate_method(
     model_name: str, prompt: str, max_tokens: int, temperature: float
 ) -> str:
