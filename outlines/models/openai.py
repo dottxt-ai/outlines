@@ -13,7 +13,7 @@ def OpenAICompletion(
     max_tokens: Optional[int] = None,
     temperature: Optional[float] = None,
 ) -> Callable:
-    """Create a function that will call the OpenAI API.
+    """Create a function that will call the completion OpenAI API.
 
     You should have the `openai` package installed. Available models are listed
     in the `OpenAI documentation <https://platform.openai.com/docs/models/overview>`_.
@@ -31,8 +31,8 @@ def OpenAICompletion(
 
     Returns
     -------
-    A function that will call OpenAI's API with the given parameters when passed
-    a prompt.
+    A function that will call OpenAI's completion API with the given parameters
+    when passed a prompt.
 
     """
     import openai
@@ -45,12 +45,12 @@ def OpenAICompletion(
             "OpenAI's APIs. Please make sure it is set before re-running your model."
         )
 
-    parameters = validate_parameters(stop_at, max_tokens, temperature)
+    parameters = validate_completion_parameters(stop_at, max_tokens, temperature)
 
     def call(prompt: str) -> str:
         try:
-            result = call_completion_api(model_name, prompt, *parameters)
-            return result
+            response = call_completion_api(model_name, prompt, *parameters)
+            return response["choices"][0]["text"]
         except (
             openai.error.RateLimitError,
             openai.error.Timeout,
@@ -87,10 +87,10 @@ def call_completion_api(
         stop=stop_sequences,
     )
 
-    return response["choices"][0]["text"]
+    return response
 
 
-def validate_parameters(
+def validate_completion_parameters(
     stop_at, max_tokens, temperature
 ) -> Tuple[Tuple[str], int, float]:
     if stop_at is not None and len(stop_at) > 4:

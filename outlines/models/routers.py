@@ -5,7 +5,7 @@ from typing import Callable, Dict, Tuple
 import outlines.models as models
 
 
-def language_completion(model_path: str) -> Callable:
+def text_completion(model_path: str) -> Callable:
     """Return the model and model name corresponding to the model path.
 
     Parameters
