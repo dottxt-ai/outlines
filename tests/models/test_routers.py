@@ -20,6 +20,19 @@ def test_text_model_router():
     assert llm_builder.args == (dummy_model_name,)
 
 
+def test_text_openai_router():
+    """Test that the router for completion fails when the model name is not
+    prefixed by either `test-` or `gpt`.
+
+    """
+    dummy_model_name = "model_name"
+    llm_builder = routers.text_completion(f"openai/{dummy_model_name}")
+    assert llm_builder.func == models.OpenAICompletion
+
+    with pytest.raises(NameError, match="not available"):
+        llm_builder(dummy_model_name)
+
+
 def test_invalid_model_path():
     with pytest.raises(ValueError, match="must be in the form"):
         routers.parse_model_path("hf")
