@@ -149,10 +149,10 @@ def completion(
     and the workflow typically looks like:
 
     >>> import outlines
-    >>> from outlines.models.openai import OpenAI
+    >>> from outlines.models import OpenAICompletion
     >>>
-    >>> llm = OpenAI("davinci")
-    >>> tpl = "I have a ${question}"
+    >>> llm = OpenAICompletion("davinci")
+    >>> tpl = "I have a {{question}}"
     >>> prompt = outlines.render(tpl, question="How are you?")
     >>> answer = llm(prompt)
 
@@ -171,11 +171,11 @@ def completion(
 
     The previous example is equivalent to the following:
 
-    >>> import outlines
+    >>> import outlines.text as text
     >>>
-    >>> @outlines.text.model("openai/davinci")
+    >>> @outlines.completion("openai/davinci")
     ... def answer(question):
-    ...     "I have a ${question}"
+    ...     "I have a {{question}}"
     ...
     >>> answer, _ = answer("How are you?")
 
@@ -197,7 +197,7 @@ def completion(
         Value used to module the next token probabilities.
 
     """
-    llm_builder = routers.language_completion(model_path)
+    llm_builder = routers.text_completion(model_path)
     llm = llm_builder(stop_at=stop_at, max_tokens=max_tokens, temperature=temperature)
 
     def decorator(fn: Callable):
