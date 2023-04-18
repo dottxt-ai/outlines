@@ -1,7 +1,7 @@
 import inspect
 from typing import Any, Callable, Dict, List, Optional, Tuple, cast
 
-from jinja2 import Template
+from jinja2 import StrictUndefined, Template
 
 import outlines.models.routers as routers
 
@@ -90,7 +90,11 @@ def render(template: str, **values: Optional[Dict[str, Any]]) -> str:
     template = inspect.cleandoc(template)
 
     mako_template = Template(
-        template, trim_blocks=True, lstrip_blocks=True, keep_trailing_newline=False
+        template,
+        trim_blocks=True,
+        lstrip_blocks=True,
+        keep_trailing_newline=False,
+        undefined=StrictUndefined,
     )
     return mako_template.render(**values)
 
