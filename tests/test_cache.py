@@ -1,9 +1,8 @@
 import os
 import shutil
 
-import pytest
-
 import joblib
+import pytest
 
 
 @pytest.fixture

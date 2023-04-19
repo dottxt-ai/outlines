@@ -12,7 +12,7 @@ repos:
     - id: isort
       args: [--profile, black]
 - repo: https://github.com/asottile/pyupgrade
-  rev: v2.31.1
+  rev: v3.3.1
   hooks:
     - id: pyupgrade
       args: [--py37-plus]
@@ -21,11 +21,11 @@ repos:
   hooks:
    - id: flake8
 - repo: https://github.com/psf/black
-  rev: 23.1.0
+  rev: 23.3.0
   hooks:
     - id: black
 - repo: https://github.com/pre-commit/mirrors-mypy
-  rev: v1.1.1
+  rev: v1.2.0
   hooks:
     - id: mypy
       args: [--allow-redefinition]
