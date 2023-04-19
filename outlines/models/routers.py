@@ -106,6 +106,7 @@ def image_generation(model_path: str) -> Callable:
 
     registry: Dict[str, Callable] = {
         "hf": models.HuggingFaceDiffuser,
+        "openai": models.OpenAIImageGeneration,
     }
 
     provider, model_name = parse_model_path(model_path)
