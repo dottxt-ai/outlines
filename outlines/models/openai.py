@@ -250,9 +250,7 @@ def OpenAIEmbeddings(model_name: str):
             "OpenAI's APIs. Please make sure it is set before re-running your model."
         )
 
-    def call(
-        query: str,
-    ) -> str:
+    def call(query: str) -> np.ndarray:
         try:
             api_response = call_embeddings_api(model_name, query)
             response = api_response["data"][0]["embedding"]
