@@ -1,7 +1,12 @@
-"""This example is a simplified translation of https://github.com/yoheinakajima/babyagi"""
+"""This example is a simplified translation of BabyAGI.
+
+It currently does not use the vector store retrieval
+
+The original repo can be found at https://github.com/yoheinakajima/babyagi
+"""
 from collections import deque
 from dataclasses import dataclass
-from typing import Callable, List
+from typing import Callable, Deque, List
 
 import outlines.text as text
 
@@ -51,17 +56,19 @@ def create_tasks_ppt(
     """You are an task creation AI that uses the result of an execution agent to \
     create new tasks with the following objective: {{objective}}.
 
-    The last completed task has the result: {{result}}. This result was based on this task \
-    description: {{previous_task}}.
+    The last completed task has the result: {{result}}.
 
-    These are incomplete tasks: {{task_list | join(task_list)}}.
+    This result was based on this task description: {{previous_task}}. These are \
+    incomplete tasks: {{task_list | join(task_list)}}.
 
     Based on the result, create new tasks to be completed by the AI system that \
-    do not overlap with incomplete tasks. Return the tasks as an array.
+    do not overlap with incomplete tasks.
+
+    Return the tasks as an array.
     """
 
 
-def create_tasks_fmt(result):
+def create_tasks_fmt(result: str) -> List[str]:
     new_tasks = result.split("\n")
 
     task_list = []
@@ -83,23 +90,27 @@ create_tasks = LLMFunction(MODEL, create_tasks_ppt, create_tasks_fmt)
 
 @text.prompt
 def prioritize_tasks_ppt(objective: str, task_names: List[str], next_task_id: int):
-    """You are an task prioritization AI tasked with cleaning the formatting of \
-    and reprioritizing the following tasks: {{task_names}}. Consider the ultimate \
-    objective of your team: {{objective}}. Do not remove any tasks. Return the \
-    result as a numbered list starting at {{next_task_id}}, like:
+    """You are a task prioritization AI tasked with cleaning the formatting of \
+    and reprioritizing the following tasks: {{task_names}}.
+
+    Consider the ultimate objective of your team: {{objective}}.
+
+    Do not remove any tasks. Return the result as a numbered list, like:
     #. First task
     #. Second task
+
+    Start the tasks list with the number {{next_task_id}}.
     """
 
 
-def prioritize_tasks_fmt(result):
+def prioritize_tasks_fmt(result: str):
     new_tasks = result.split("\n")
 
-    task_list = deque([])
+    task_list: Deque = deque([])
     for task in new_tasks:
         parts = task.strip().split(".", 1)
         if len(parts) == 2:
-            task_id = parts[0].strip()
+            task_id = int(parts[0].strip())
             task_name = parts[1].strip()
             task_list.append({"task_id": task_id, "task_name": task_name})
 
@@ -109,16 +120,16 @@ def prioritize_tasks_fmt(result):
 prioritize_tasks = LLMFunction(MODEL, prioritize_tasks_ppt, prioritize_tasks_fmt)
 
 
-task_id_counter = 1
 objective = "Becoming rich while doing nothing."
 first_task = {
     "task_id": 1,
     "task_name": "Find a repeatable, low-maintainance, scalable business.",
 }
+next_task_id = 1
 task_list = deque([first_task])
 
 
-def one_cycle(objective, task_list, task_id_counter):
+def one_cycle(objective: str, task_list, next_task_id: int):
     """One BabyAGI cycle.
 
     It consists in executing the highest-priority task, creating some new tasks
@@ -140,18 +151,29 @@ def one_cycle(objective, task_list, task_id_counter):
     new_tasks = create_tasks(
         objective, first_task["task_name"], result, [first_task["task_name"]]
     )
+
     for task in new_tasks:
-        task_id_counter += 1
-        task_list.append({"task_id": task_id_counter, "task_name": task})
+        next_task_id += 1
+        task_list.append({"task_id": next_task_id, "task_name": task})
 
     prioritized_tasks = prioritize_tasks(
-        objective, [task["task_name"] for task in task_list], task_id_counter
+        objective, [task["task_name"] for task in task_list], next_task_id
     )
 
-    return task, result, prioritized_tasks
+    return task, result, prioritized_tasks, next_task_id
 
 
 # Let's run it for 5 cycles to see how it works without spending a fortune.
 for _ in range(5):
-    task, result, task_list = one_cycle(objective, task_list, task_id_counter)
-    print(f"-------\n\nTASK:\n\n{task}\n\nRESULT:\n\n {result}\n\n")
+    print("\033[95m\033[1m" + "\n*****TASK LIST*****\n" + "\033[0m\033[0m")
+    for t in task_list:
+        print(" • " + str(t["task_name"]))
+
+    task, result, task_list, next_task_id = one_cycle(
+        objective, task_list, next_task_id
+    )
+
+    print("\033[92m\033[1m" + "\n*****NEXT TASK*****\n" + "\033[0m\033[0m")
+    print(task)
+    print("\033[93m\033[1m" + "\n*****TASK RESULT*****\n" + "\033[0m\033[0m")
+    print(result)
