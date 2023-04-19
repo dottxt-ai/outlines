@@ -1,8 +1,12 @@
 """Integration with OpenAI's API."""
+import base64
 import os
+from io import BytesIO
 from typing import Callable, Dict, List, Optional, Tuple
 
 import numpy as np
+from PIL import Image
+from PIL.Image import Image as PILImage
 
 import outlines.cache as cache
 
@@ -284,5 +288,69 @@ def call_embeddings_api(
         model=model,
         input=input,
     )
+
+    return response
+
+
+def OpenAIImageGeneration(model_name: str = "", size: str = "512x512"):
+    """Create a function that will call OpenAI's image generation endpoint.
+
+    You should have the `openai` package installed. Available models are listed
+    in the `OpenAI documentation <https://platform.openai.com/docs/models/overview>`_.
+
+    Parameters
+    ----------
+    model_name: str
+        The model name as listed in the OpenAI documentation.
+    size: str
+        The size of the image to generate. One of `256x256`, `512x512` or
+        `1024x1024`.
+
+    Returns
+    -------
+    A function that will call OpenAI's image API with the given parameters when
+    passed a prompt.
+
+    """
+    import openai
+
+    try:
+        os.environ["OPENAI_API_KEY"]
+    except KeyError:
+        raise OSError(
+            "Could not find the `OPENAI_API_KEY` environment variable, which is necessary to call "
+            "OpenAI's APIs. Please make sure it is set before re-running your model."
+        )
+
+    def call(prompt: str) -> PILImage:
+        try:
+            api_response = call_image_generation_api(prompt, size)
+            response = api_response["data"][0]["b64_json"]
+            img = Image.open(BytesIO(base64.b64decode(response)))
+
+            return img
+        except (
+            openai.error.RateLimitError,
+            openai.error.Timeout,
+            openai.error.TryAgain,
+            openai.error.APIConnectionError,
+            openai.error.ServiceUnavailableError,
+        ) as e:
+            raise OSError(f"Could not connect to the OpenAI API: {e}")
+        except (
+            openai.error.AuthenticationError,
+            openai.error.PermissionError,
+            openai.error.InvalidRequestError,
+        ) as e:
+            raise e
+
+    return call
+
+
+@memory.cache
+def call_image_generation_api(prompt: str, size: str):
+    import openai
+
+    response = openai.Image.create(prompt=prompt, size=size, response_format="b64_json")
 
     return response

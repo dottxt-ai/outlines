@@ -11,6 +11,7 @@ from .openai import (
     OpenAIChatCompletion,
     OpenAICompletion,
     OpenAIEmbeddings,
+    OpenAIImageGeneration,
     OpenAITextCompletion,
 )
-from .routers import chat_completion, embeddings, text_completion
+from .routers import chat_completion, embeddings, image_generation, text_completion

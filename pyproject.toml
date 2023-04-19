@@ -55,6 +55,7 @@ module = [
     "joblib",
     "numpy",
     "openai",
+    "PIL",
     "PIL.Image",
     "pytest",
     "torch",
