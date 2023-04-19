@@ -2,6 +2,8 @@
 import os
 from typing import Callable, Dict, List, Optional, Tuple
 
+import numpy as np
+
 import outlines.cache as cache
 
 memory = cache.get()
@@ -234,3 +236,55 @@ def validate_completion_parameters(
         temperature = 1.0
 
     return stop_at, max_tokens, temperature
+
+
+def OpenAIEmbeddings(model_name: str):
+    """Create a function that will call OpenAI's embeddings endpoint."""
+    import openai
+
+    try:
+        os.environ["OPENAI_API_KEY"]
+    except KeyError:
+        raise OSError(
+            "Could not find the `OPENAI_API_KEY` environment variable, which is necessary to call "
+            "OpenAI's APIs. Please make sure it is set before re-running your model."
+        )
+
+    def call(
+        query: str,
+    ) -> str:
+        try:
+            api_response = call_embeddings_api(model_name, query)
+            response = api_response["data"][0]["embedding"]
+            return np.array(response)
+        except (
+            openai.error.RateLimitError,
+            openai.error.Timeout,
+            openai.error.TryAgain,
+            openai.error.APIConnectionError,
+            openai.error.ServiceUnavailableError,
+        ) as e:
+            raise OSError(f"Could not connect to the OpenAI API: {e}")
+        except (
+            openai.error.AuthenticationError,
+            openai.error.PermissionError,
+            openai.error.InvalidRequestError,
+        ) as e:
+            raise e
+
+    return call
+
+
+@memory.cache
+def call_embeddings_api(
+    model: str,
+    input: str,
+):
+    import openai
+
+    response = openai.Embedding.create(
+        model=model,
+        input=input,
+    )
+
+    return response
