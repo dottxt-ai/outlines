@@ -85,6 +85,7 @@ def OpenAITextCompletion(
             openai.error.AuthenticationError,
             openai.error.PermissionError,
             openai.error.InvalidRequestError,
+            openai.error.InvalidAPIType,
         ) as e:
             raise e
 
@@ -174,6 +175,7 @@ def OpenAIChatCompletion(
             openai.error.AuthenticationError,
             openai.error.PermissionError,
             openai.error.InvalidRequestError,
+            openai.error.InvalidAPIType,
         ) as e:
             raise e
 
