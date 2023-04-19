@@ -7,4 +7,10 @@ codebase.
 """
 from .hf_diffusers import HuggingFaceDiffuser
 from .hf_transformers import HuggingFaceCompletion
-from .openai import OpenAIChatCompletion, OpenAICompletion, OpenAITextCompletion
+from .openai import (
+    OpenAIChatCompletion,
+    OpenAICompletion,
+    OpenAIEmbeddings,
+    OpenAITextCompletion,
+)
+from .routers import chat_completion, embeddings, text_completion

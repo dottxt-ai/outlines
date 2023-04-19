@@ -5,6 +5,34 @@ from typing import Callable, Dict, Tuple
 import outlines.models as models
 
 
+def embeddings(model_path: str) -> Callable:
+    """Return the model and model name corresponding to the model path.
+
+    Parameters
+    ----------
+    model_path
+        A string of the form "model_provider/model_name"
+
+    Returns
+    -------
+    The model builder with bound model name.
+
+    """
+
+    registry: Dict[str, Callable] = {
+        "openai": models.OpenAIEmbeddings,
+    }
+
+    provider, model_name = parse_model_path(model_path)
+
+    try:
+        model = registry[provider]
+    except KeyError:
+        raise ValueError(f"The model provider {provider} is not available.")
+
+    return model(model_name)
+
+
 def text_completion(model_path: str) -> Callable:
     """Return the model and model name corresponding to the model path.
 

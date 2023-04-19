@@ -26,6 +26,7 @@ classifiers = [
 dependencies = [
    "jinja2",
    "joblib",
+   "numpy",
    "pillow",
    "rich"
 ]
@@ -52,6 +53,7 @@ module = [
     "diffusers",
     "jinja2",
     "joblib",
+    "numpy",
     "openai",
     "PIL.Image",
     "pytest",
