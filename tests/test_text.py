@@ -31,9 +31,6 @@ def test_render():
     assert text.render(tpl) == "A test line\n    An indented line"
 
 
-@pytest.mark.xfail(
-    reason="We need a regexp that can match whitespace sequences except those that follow a linebreak"
-)
 def test_render_escaped_linebreak():
     tpl = """
         A long test \
@@ -41,6 +38,17 @@ def test_render_escaped_linebreak():
         in several lines
     """
     assert text.render(tpl) == "A long test that we break in several lines"
+
+    tpl = """
+        Break in \
+        several lines \
+        But respect the indentation
+            on line breaks.
+    """
+    assert (
+        text.render(tpl)
+        == "Break in several lines But respect the indentation\n    on line breaks."
+    )
 
 
 def test_render_jinja():
