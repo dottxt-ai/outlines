@@ -1,4 +1,5 @@
 import inspect
+import re
 from typing import Any, Callable, Dict, List, Optional, Tuple, cast
 
 from jinja2 import StrictUndefined, Template
@@ -88,6 +89,11 @@ def render(template: str, **values: Optional[Dict[str, Any]]) -> str:
 
     # Dedent, and remove extra linebreak
     template = inspect.cleandoc(template)
+
+    # Remove extra whitespaces, except those that immediately follow a newline symbol.
+    # This is necessary to avoid introducing whitespaces after backslash `\` characters
+    # used to continue to the next line without linebreak.
+    template = re.sub(r"(?![\r\n])(\b\s+)", " ", template)
 
     mako_template = Template(
         template,
