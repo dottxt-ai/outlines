@@ -10,6 +10,13 @@ from PIL.Image import Image as PILImage
 
 import outlines.cache as cache
 
+__all__ = [
+    "OpenAITextCompletion",
+    "OpenAIChatCompletion",
+    "OpenAIEmbeddings",
+    "OpenAIImageGeneration",
+]
+
 memory = cache.get()
 
 
@@ -41,7 +48,7 @@ def OpenAITextCompletion(
     max_tokens: Optional[int] = None,
     temperature: Optional[float] = None,
 ) -> Callable:
-    """Create a function that will call the completion OpenAI API.
+    """Create a function that will call the OpenAI conmpletion API.
 
     You should have the `openai` package installed. Available models are listed
     in the `OpenAI documentation <https://platform.openai.com/docs/models/overview>`_.
@@ -63,60 +70,35 @@ def OpenAITextCompletion(
     when passed a prompt.
 
     """
-    import openai
-
-    try:
-        os.environ["OPENAI_API_KEY"]
-    except KeyError:
-        raise OSError(
-            "Could not find the `OPENAI_API_KEY` environment variable, which is necessary to call "
-            "OpenAI's APIs. Please make sure it is set before re-running your model."
-        )
 
     parameters = validate_completion_parameters(stop_at, max_tokens, temperature)
 
-    def call(prompt: str) -> str:
-        try:
-            response = call_completion_api(model_name, prompt, *parameters)
-            return response["choices"][0]["text"]
-        except (
-            openai.error.RateLimitError,
-            openai.error.Timeout,
-            openai.error.TryAgain,
-            openai.error.APIConnectionError,
-            openai.error.ServiceUnavailableError,
-        ) as e:
-            raise OSError(f"Could not connect to the OpenAI API: {e}")
-        except (
-            openai.error.AuthenticationError,
-            openai.error.PermissionError,
-            openai.error.InvalidRequestError,
-            openai.error.InvalidAPIType,
-        ) as e:
-            raise e
+    @error_handler
+    @memory.cache
+    def call_completion_api(
+        model: str,
+        prompt: str,
+        stop_sequences: Tuple[str],
+        max_tokens: int,
+        temperature: float,
+    ):
+        import openai
 
-    return call
+        response = openai.Completion.create(
+            engine=model,
+            prompt=prompt,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            stop=stop_sequences,
+        )
 
+        return response
 
-@memory.cache
-def call_completion_api(
-    model: str,
-    prompt: str,
-    stop_sequences: Tuple[str],
-    max_tokens: int,
-    temperature: float,
-):
-    import openai
+    def generate(prompt: str) -> str:
+        response = call_completion_api(model_name, prompt, *parameters)
+        return response["choices"][0]["text"]
 
-    response = openai.Completion.create(
-        engine=model,
-        prompt=prompt,
-        temperature=temperature,
-        max_tokens=max_tokens,
-        stop=stop_sequences,
-    )
-
-    return response
+    return generate
 
 
 def OpenAIChatCompletion(
@@ -147,66 +129,36 @@ def OpenAIChatCompletion(
     parameters when passed a prompt.
 
     """
-    import openai
-
-    try:
-        os.environ["OPENAI_API_KEY"]
-    except KeyError:
-        raise OSError(
-            "Could not find the `OPENAI_API_KEY` environment variable, which is necessary to call "
-            "OpenAI's APIs. Please make sure it is set before re-running your model."
-        )
-
     parameters = validate_completion_parameters(stop_at, max_tokens, temperature)
 
-    def call(
-        query: str,
-        state: List[Tuple[str, str]] = [],
-    ) -> str:
-        try:
-            messages = create_chat_completion_messages(state)
-            api_response = call_chat_completion_api(model_name, messages, *parameters)
-            response = api_response["choices"][0]["message"]["content"]
-            return response
+    @error_handler
+    @memory.cache
+    def call_chat_completion_api(
+        model: str,
+        messages: List[Dict[str, str]],
+        stop_sequences: Tuple[str],
+        max_tokens: int,
+        temperature: float,
+    ):
+        import openai
 
-        except (
-            openai.error.RateLimitError,
-            openai.error.Timeout,
-            openai.error.TryAgain,
-            openai.error.APIConnectionError,
-            openai.error.ServiceUnavailableError,
-        ) as e:
-            raise OSError(f"Could not connect to the OpenAI API: {e}")
-        except (
-            openai.error.AuthenticationError,
-            openai.error.PermissionError,
-            openai.error.InvalidRequestError,
-            openai.error.InvalidAPIType,
-        ) as e:
-            raise e
+        response = openai.ChatCompletion.create(
+            model=model,
+            messages=messages,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            stop=stop_sequences,
+        )
 
-    return call
+        return response
 
+    def generate(query: str, state: List[Tuple[str, str]]) -> str:
+        messages = create_chat_completion_messages(state)
+        response = call_chat_completion_api(model_name, messages, *parameters)
+        answer = response["choices"][0]["message"]["content"]
+        return answer
 
-@memory.cache
-def call_chat_completion_api(
-    model: str,
-    messages: List[Dict[str, str]],
-    stop_sequences: Tuple[str],
-    max_tokens: int,
-    temperature: float,
-):
-    import openai
-
-    response = openai.ChatCompletion.create(
-        model=model,
-        messages=messages,
-        temperature=temperature,
-        max_tokens=max_tokens,
-        stop=stop_sequences,
-    )
-
-    return response
+    return generate
 
 
 def create_chat_completion_messages(
@@ -230,6 +182,7 @@ def create_chat_completion_messages(
 def validate_completion_parameters(
     stop_at, max_tokens, temperature
 ) -> Tuple[Tuple[str], int, float]:
+    """Validate the parameters passed to the completion APIs and set default values."""
     if stop_at is not None and len(stop_at) > 4:
         raise TypeError("OpenAI's API does not accept more than 4 stop sequences.")
     elif stop_at is not None:
@@ -243,53 +196,44 @@ def validate_completion_parameters(
 
 
 def OpenAIEmbeddings(model_name: str):
-    """Create a function that will call OpenAI's embeddings endpoint."""
-    import openai
+    """Create a function that will call OpenAI's embeddings endpoint.
 
-    try:
-        os.environ["OPENAI_API_KEY"]
-    except KeyError:
-        raise OSError(
-            "Could not find the `OPENAI_API_KEY` environment variable, which is necessary to call "
-            "OpenAI's APIs. Please make sure it is set before re-running your model."
+    You should have the `openai` package installed. Available models are listed
+    in the `OpenAI documentation <https://platform.openai.com/docs/models/overview>`_.
+
+    Parameters
+    ----------
+    model_name: str
+        The model name as listed in the OpenAI documentation.
+
+    Returns
+    -------
+    A function that will call OpenAI's embedding API with the given parameters when
+    passed a prompt.
+
+    """
+
+    @error_handler
+    @memory.cache
+    def call_embeddings_api(
+        model: str,
+        input: str,
+    ):
+        import openai
+
+        response = openai.Embedding.create(
+            model=model,
+            input=input,
         )
 
-    def call(query: str) -> np.ndarray:
-        try:
-            api_response = call_embeddings_api(model_name, query)
-            response = api_response["data"][0]["embedding"]
-            return np.array(response)
-        except (
-            openai.error.RateLimitError,
-            openai.error.Timeout,
-            openai.error.TryAgain,
-            openai.error.APIConnectionError,
-            openai.error.ServiceUnavailableError,
-        ) as e:
-            raise OSError(f"Could not connect to the OpenAI API: {e}")
-        except (
-            openai.error.AuthenticationError,
-            openai.error.PermissionError,
-            openai.error.InvalidRequestError,
-        ) as e:
-            raise e
+        return response
 
-    return call
+    def generate(query: str) -> np.ndarray:
+        api_response = call_embeddings_api(model_name, query)
+        response = api_response["data"][0]["embedding"]
+        return np.array(response)
 
-
-@memory.cache
-def call_embeddings_api(
-    model: str,
-    input: str,
-):
-    import openai
-
-    response = openai.Embedding.create(
-        model=model,
-        input=input,
-    )
-
-    return response
+    return generate
 
 
 def OpenAIImageGeneration(model_name: str = "", size: str = "512x512"):
@@ -312,6 +256,30 @@ def OpenAIImageGeneration(model_name: str = "", size: str = "512x512"):
     passed a prompt.
 
     """
+
+    @error_handler
+    @memory.cache
+    def call_image_generation_api(prompt: str, size: str):
+        import openai
+
+        response = openai.Image.create(
+            prompt=prompt, size=size, response_format="b64_json"
+        )
+
+        return response
+
+    def generate(prompt: str) -> PILImage:
+        api_response = call_image_generation_api(prompt, size)
+        response = api_response["data"][0]["b64_json"]
+        img = Image.open(BytesIO(base64.b64decode(response)))
+
+        return img
+
+    return generate
+
+
+def error_handler(api_call_fn: Callable) -> Callable:
+    """Handle OpenAI API errors and missing API key."""
     import openai
 
     try:
@@ -322,13 +290,9 @@ def OpenAIImageGeneration(model_name: str = "", size: str = "512x512"):
             "OpenAI's APIs. Please make sure it is set before re-running your model."
         )
 
-    def call(prompt: str) -> PILImage:
+    def call(*args, **kwargs):
         try:
-            api_response = call_image_generation_api(prompt, size)
-            response = api_response["data"][0]["b64_json"]
-            img = Image.open(BytesIO(base64.b64decode(response)))
-
-            return img
+            return api_call_fn(*args, **kwargs)
         except (
             openai.error.RateLimitError,
             openai.error.Timeout,
@@ -341,16 +305,8 @@ def OpenAIImageGeneration(model_name: str = "", size: str = "512x512"):
             openai.error.AuthenticationError,
             openai.error.PermissionError,
             openai.error.InvalidRequestError,
+            openai.error.InvalidAPIType,
         ) as e:
             raise e
 
     return call
-
-
-@memory.cache
-def call_image_generation_api(prompt: str, size: str):
-    import openai
-
-    response = openai.Image.create(prompt=prompt, size=size, response_format="b64_json")
-
-    return response
