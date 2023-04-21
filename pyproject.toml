@@ -28,7 +28,6 @@ dependencies = [
    "joblib",
    "numpy",
    "pillow",
-   "rich"
 ]
 dynamic = ["version"]
 
