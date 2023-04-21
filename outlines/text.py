@@ -11,7 +11,7 @@ def render(template: str, **values: Optional[Dict[str, Any]]) -> str:
     r"""Parse a Jinaj2 template and translate it into an Outlines graph.
 
     This function removes extra whitespaces and linebreaks from templates to
-    allow users to enter prompt more naturally than if they used Python's
+    allow users to enter prompts more naturally than if they used Python's
     constructs directly. See the examples for a detailed explanation.
 
     Examples
@@ -95,20 +95,20 @@ def render(template: str, **values: Optional[Dict[str, Any]]) -> str:
     # used to continue to the next line without linebreak.
     template = re.sub(r"(?![\r\n])(\b\s+)", " ", template)
 
-    mako_template = Template(
+    jinja_template = Template(
         template,
         trim_blocks=True,
         lstrip_blocks=True,
         keep_trailing_newline=False,
         undefined=StrictUndefined,
     )
-    return mako_template.render(**values)
+    return jinja_template.render(**values)
 
 
 def prompt(fn: Callable) -> Callable:
     """Decorate a function that contains a prompt template.
 
-    This allows to define prompts in the docstring of a function and ease their
+    This allows to define prompts in the docstring of a function and simplify their
     manipulation by providing some degree of encapsulation. It uses the `render`
     function internally to render templates.
 
@@ -119,6 +119,22 @@ def prompt(fn: Callable) -> Callable:
     ...    "I have a ${question}"
     ...
     >>> prompt = build_prompt("How are you?")
+
+    This API can also be helpful in an "agent" context where parts of the prompt
+    are set when the agent is initialized and never modified later. In this situation
+    we can partially apply the prompt function at initialization.
+
+    >>> import outlines
+    >>> import functools as ft
+    ...
+    >>> @outlines.prompt
+    ... def solve_task(name: str, objective: str, task: str):
+    ...     '''Your name is {{name}}.
+    ..      Your overall objective is to {{objective}}.
+    ...     Please solve the following task: {{task}}
+    ...     '''
+    ...
+    >>> hal = ft.partial(solve_taks, "HAL", "Travel to Jupiter")
 
     """
 
