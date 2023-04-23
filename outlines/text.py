@@ -4,7 +4,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, cast
 
 from jinja2 import StrictUndefined, Template
 
-import outlines.models.routers as routers
+import outlines.models as models
 
 
 def render(template: str, **values: Optional[Dict[str, Any]]) -> str:
@@ -183,7 +183,7 @@ def completion(
 
     >>> import outlines.text as text
     >>>
-    >>> @outlines.completion("openai/davinci")
+    >>> @text.completion("openai/davinci")
     ... def answer(question):
     ...     "I have a {{question}}"
     ...
@@ -207,8 +207,20 @@ def completion(
         Value used to module the next token probabilities.
 
     """
-    llm_builder = routers.text_completion(model_path)
-    llm = llm_builder(stop_at=stop_at, max_tokens=max_tokens, temperature=temperature)
+    if "/" not in model_path:
+        raise ValueError("Model names must be in the form 'provider_name/model_name'")
+
+    provider_name = model_path.split("/")[0]
+    model_name = model_path[len(provider_name) + 1 :]
+
+    try:
+        model_cls = getattr(models.text_completion, provider_name)
+    except KeyError:
+        raise ValueError(f"The model provider {provider_name} is not available.")
+
+    llm = model_cls(
+        model_name, stop_at=stop_at, max_tokens=max_tokens, temperature=temperature
+    )
 
     def decorator(fn: Callable):
         prompt_fn = prompt(fn)
