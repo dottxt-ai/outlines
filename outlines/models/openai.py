@@ -20,28 +20,6 @@ __all__ = [
 memory = cache.get()
 
 
-def OpenAICompletion(model_name: str, *args, **kwargs):
-    """Dispatch the model names to their respective completion API.
-
-    This ensures that chat completion models can also be called as text
-    completion models (with no instruction and no history).
-
-    Parameters
-    ----------
-    model_name
-        The name of the model in OpenAI's API.
-
-    """
-    if "text-" in model_name:
-        return OpenAITextCompletion(model_name, *args, **kwargs)
-    elif "gpt-" in model_name:
-        return OpenAIChatCompletion(model_name, *args, **kwargs)
-    else:
-        raise NameError(
-            f"The model {model_name} requested is not available. Only the completion and chat completion models are available for OpenAI."
-        )
-
-
 def OpenAITextCompletion(
     model_name: str,
     stop_at: Optional[List[str]] = None,

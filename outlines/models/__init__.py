@@ -5,13 +5,12 @@ completion, diffusers, etc.) and use routing functions everywhere else in the
 codebase.
 
 """
+from . import image_generation, text_completion
 from .hf_diffusers import HuggingFaceDiffuser
 from .hf_transformers import HuggingFaceCompletion
 from .openai import (
     OpenAIChatCompletion,
-    OpenAICompletion,
     OpenAIEmbeddings,
     OpenAIImageGeneration,
     OpenAITextCompletion,
 )
-from .routers import embeddings, image_generation, text_completion
