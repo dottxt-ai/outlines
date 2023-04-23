@@ -44,10 +44,12 @@ def test_render_escaped_linebreak():
         several lines \
         But respect the indentation
             on line breaks.
+        And after everything \
+        Goes back to normal
     """
     assert (
         text.render(tpl)
-        == "Break in several lines But respect the indentation\n    on line breaks."
+        == "Break in several lines But respect the indentation\n    on line breaks.\nAnd after everything Goes back to normal"
     )
 
 
