@@ -49,17 +49,17 @@ def ask_an_expert(question, model_name: str):
     def find_expert(question):
         """
         {{question}}
-        I entered my question into the Expert Generator
-        and waited. The Expert Generator will render a
-        simulation of an expert to answer my question.
-        The expert could be anyone, dead or alive, real
-        or fictional; the machine will find the person
-        most qualified to answer the question. For this
-        question in particular, the expert must be someone
-        who has thought a lot about the problem of
-        artificial intelligence and its alignment.
-        The Expert Generator beeped, indicating that it has
-        found the most qualified expert. The name displayed
+        I entered my question into the Expert Generator \
+        and waited. The Expert Generator will render a \
+        simulation of an expert to answer my question. \
+        The expert could be anyone, dead or alive, real \
+        or fictional; the machine will find the person \
+        most qualified to answer the question. For this \
+        question in particular, the expert must be someone \
+        who has thought a lot about the problem of \
+        artificial intelligence and its alignment. \
+        The Expert Generator beeped, indicating that it has \
+        found the most qualified expert. The name displayed \
         on the screen: "
         """
 
@@ -91,7 +91,7 @@ def ask_an_expert_simple(question, model_name: str):
         """
         {{memory}}.
 
-        For instance,{{expert}} would answer
+        For instance, {{expert}} would answer
         """
 
     expert, completed = find_expert(question)
@@ -111,7 +111,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--model",
         type=str,
-        default="openai/text-davinci-003",
+        default="openai/gpt-3.5-turbo",
         help="The Large Language Model to use to run the examples.",
     )
     args = parser.parse_args()
@@ -119,9 +119,9 @@ if __name__ == "__main__":
     math_q = "f(x) = x*x. What is f(f(3))?"
     sat_q = """
 
-Directions: In the following question, a related  pair of words or phrases
-is followed by five  pairs of words or phrases. Choose the pair  that best
-expresses a relationship similar to that in the original pair.
+Directions: In the following question, a related pair of words or phrases \
+is followed by five pairs of words or phrases. Choose the pair that best \
+expresses a relationship similar to that in the original pair. \
 
 BRAGGART :: MODESTY
 A) FLEDGLING : EXPERIENCE
