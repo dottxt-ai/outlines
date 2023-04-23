@@ -152,31 +152,13 @@ def OpenAIChatCompletion(
 
         return response
 
-    def generate(query: str, state: List[Tuple[str, str]]) -> str:
-        messages = create_chat_completion_messages(state)
+    def generate(query: str) -> str:
+        messages = [{"role": "user", "content": query}]
         response = call_chat_completion_api(model_name, messages, *parameters)
         answer = response["choices"][0]["message"]["content"]
         return answer
 
     return generate
-
-
-def create_chat_completion_messages(
-    state: List[Tuple[str, str]] = [],
-) -> List[Dict[str, str]]:
-    """Create chat completion messages in a form compatible with OpenAI's API.
-
-    Setting the `instruction` prompt and the `history` to `None` amounts to
-    calling the chat completion API as a simple completion API.
-
-    """
-    openai_names = {"user": "user", "model": "assistant", "prefix": "system"}
-
-    messages = []
-    for author, message in state:
-        messages.append({"role": openai_names[author], "content": message})
-
-    return messages
 
 
 def validate_completion_parameters(
