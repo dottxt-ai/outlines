@@ -28,6 +28,7 @@ dependencies = [
    "joblib",
    "numpy",
    "pillow",
+   "pydantic",
 ]
 dynamic = ["version"]
 
@@ -56,6 +57,7 @@ module = [
     "openai",
     "PIL",
     "PIL.Image",
+    "pydantic",
     "pytest",
     "torch",
     "transformers",

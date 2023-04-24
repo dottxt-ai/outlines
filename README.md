@@ -122,3 +122,66 @@ import outlines.image as image
 def generate(subject, location):
    "A photo of a {{subject}} riding a horse in {{location}}."
 ```
+
+## Natural language functions
+
+Large language models can be prompted so their output can be parsed into a data structure that can be manipulated by programming languages. The combination prompt + model call + output parser can thus be thought as a "natural language" function.
+
+``` python
+import json
+import outlines.text as text
+import outlines.models as models
+
+
+@text.prompt
+def prime_numbers(n: int):
+    """Return a list that contains all prime numbers between 1 and {{n}}.
+
+    The output must be parsable as a Python list.
+    """
+
+def parse(result):
+    return json.loads(result)
+
+get_prime_numbers = text.function(
+   models.text_completion.openai("gpt-3.5-turbo"),
+   prime_numbers,
+   parse
+)
+
+get_prime_numbers(10)
+# [2, 3, 5, 7]
+
+```
+
+For more complex outputs one can pass a Pydantic model to `text.function`, which will be used to parse the output:
+
+``` python
+from pydantic import BaseModel
+import outlines.text as text
+
+class Joke(BaseModel):
+    joke: str
+    explanation: str
+
+
+@text.prompt
+def joke_ppt(n: int):
+    """Tell a joke and explain why the joke is funny.
+
+    RESPONSE FORMAT:
+    {
+       "joke": "The joke"
+       "explanation": "The explanation of why the joke is funny"
+    }
+    """
+
+tell_a_joke = text.function(
+   models.text_completion.openai("gpt-3.5-turbo"),
+   joke_ppt,
+   Joke
+)
+
+get_prime_numbers(10)
+# [2, 3, 5, 7]
+```
