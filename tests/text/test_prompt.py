@@ -99,6 +99,9 @@ def test_prompt_basic():
     def test_tpl(variable):
         """{{variable}} test"""
 
+    assert test_tpl.template == "{{variable}} test"
+    assert test_tpl.parameters == ["variable"]
+
     with pytest.raises(TypeError):
         test_tpl(v="test")
 
@@ -120,6 +123,9 @@ def test_prompt_kwargs():
     @text.prompt
     def test_kwarg_tpl(var, other_var="other"):
         """{{var}} and {{other_var}}"""
+
+    assert test_kwarg_tpl.template == "{{var}} and {{other_var}}"
+    assert test_kwarg_tpl.parameters == ["var", "other_var"]
 
     p = test_kwarg_tpl("test")
     assert p == "test and other"
