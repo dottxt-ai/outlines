@@ -29,6 +29,7 @@ dependencies = [
    "numpy",
    "pillow",
    "pydantic",
+   "scipy",
 ]
 dynamic = ["version"]
 
@@ -53,12 +54,13 @@ module = [
     "diffusers",
     "jinja2",
     "joblib",
-    "numpy",
+    "numpy.*",
     "openai",
     "PIL",
     "PIL.Image",
     "pydantic",
     "pytest",
+    "scipy.*",
     "torch",
     "transformers",
 ]
