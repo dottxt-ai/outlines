@@ -1,8 +1,90 @@
 import inspect
 import re
+from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Optional, cast
 
 from jinja2 import StrictUndefined, Template
+
+
+@dataclass
+class Prompt:
+    """Represents a prompt function.
+
+    We return a `Prompt` class instead of a simple function so the
+    template defined in prompt functions can be accessed.
+
+    """
+
+    template: str
+    signature: inspect.Signature
+
+    def __post_init__(self):
+        self.parameters: List[str] = list(self.signature.parameters.keys())
+
+    def __call__(self, *args, **kwargs) -> str:
+        """Render and return the template.
+
+        Returns
+        -------
+        The rendered template as a Python ``str``.
+
+        """
+        bound_arguments = self.signature.bind(*args, **kwargs)
+        bound_arguments.apply_defaults()
+        return render(self.template, **bound_arguments.arguments)
+
+    def __str__(self):
+        return self.template
+
+
+def prompt(fn: Callable) -> Prompt:
+    """Decorate a function that contains a prompt template.
+
+    This allows to define prompts in the docstring of a function and simplify their
+    manipulation by providing some degree of encapsulation. It uses the `render`
+    function internally to render templates.
+
+    >>> import outlines
+    >>>
+    >>> @outlines.prompt
+    >>> def build_prompt(question):
+    ...    "I have a ${question}"
+    ...
+    >>> prompt = build_prompt("How are you?")
+
+    This API can also be helpful in an "agent" context where parts of the prompt
+    are set when the agent is initialized and never modified later. In this situation
+    we can partially apply the prompt function at initialization.
+
+    >>> import outlines
+    >>> import functools as ft
+    ...
+    >>> @outlines.prompt
+    ... def solve_task(name: str, objective: str, task: str):
+    ...     '''Your name is {{name}}.
+    ..      Your overall objective is to {{objective}}.
+    ...     Please solve the following task: {{task}}
+    ...     '''
+    ...
+    >>> hal = ft.partial(solve_taks, "HAL", "Travel to Jupiter")
+
+    Returns
+    -------
+    A `Prompt` callable class which will render the template when called.
+
+    """
+
+    signature = inspect.signature(fn)
+
+    # The docstring contains the template that will be rendered to be used
+    # as a prompt to the language model.
+    docstring = fn.__doc__
+    if docstring is None:
+        raise TypeError("Could not find a template in the function's docstring.")
+
+    template = cast(str, docstring)
+
+    return Prompt(template, signature)
 
 
 def render(template: str, **values: Optional[Dict[str, Any]]) -> str:
@@ -101,60 +183,3 @@ def render(template: str, **values: Optional[Dict[str, Any]]) -> str:
         undefined=StrictUndefined,
     )
     return jinja_template.render(**values)
-
-
-def prompt(fn: Callable) -> Callable:
-    """Decorate a function that contains a prompt template.
-
-    This allows to define prompts in the docstring of a function and simplify their
-    manipulation by providing some degree of encapsulation. It uses the `render`
-    function internally to render templates.
-
-    >>> import outlines
-    >>>
-    >>> @outlines.prompt
-    >>> def build_prompt(question):
-    ...    "I have a ${question}"
-    ...
-    >>> prompt = build_prompt("How are you?")
-
-    This API can also be helpful in an "agent" context where parts of the prompt
-    are set when the agent is initialized and never modified later. In this situation
-    we can partially apply the prompt function at initialization.
-
-    >>> import outlines
-    >>> import functools as ft
-    ...
-    >>> @outlines.prompt
-    ... def solve_task(name: str, objective: str, task: str):
-    ...     '''Your name is {{name}}.
-    ..      Your overall objective is to {{objective}}.
-    ...     Please solve the following task: {{task}}
-    ...     '''
-    ...
-    >>> hal = ft.partial(solve_taks, "HAL", "Travel to Jupiter")
-
-    """
-
-    sig = inspect.signature(fn)
-
-    # The docstring contains the template that will be rendered to be used
-    # as a prompt to the language model.
-    docstring = fn.__doc__
-    if docstring is None:
-        raise TypeError("Could not find a template in the function's docstring.")
-
-    def wrapper(*args: Optional[List[str]], **kwargs: Optional[Dict[str, str]]) -> str:
-        """Render and return the template.
-
-        Returns
-        -------
-        The rendered template as a Python ``str``.
-
-        """
-        template = cast(str, docstring)  # for typechecking
-        bound_arguments = sig.bind(*args, **kwargs)
-        bound_arguments.apply_defaults()
-        return render(template, **bound_arguments.arguments)
-
-    return wrapper

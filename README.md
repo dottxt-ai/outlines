@@ -49,6 +49,19 @@ def my_agent(name, goals):
 jarvis = ft.partial(my_agent, "JARVIS")
 ```
 
+The template contained in template functions remains accessible:
+
+``` python
+import outlines.text as text
+
+@text.prompt
+def prompt():
+    "I am accessible"
+
+prompt.template
+# I am accessible
+```
+
 ### Tools
 
 Prior work has shown that we can teach language models to call external functions to get additional informations or perform tasks, by encoding the functions' description in the prompt. To avoid duplicating information between the function definition and the description passed to the prompt we introduce a `@outlines.tool` decorator which automatically extracts the needed information from the function's definition:
