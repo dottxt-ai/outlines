@@ -64,7 +64,7 @@ prompt.template
 
 ### Tools
 
-Prior work has shown that we can teach language models to call external functions to get additional informations or perform tasks, by encoding the functions' description in the prompt. To avoid duplicating information between the function definition and the description passed to the prompt we introduce a `@outlines.tool` decorator which automatically extracts the needed information from the function's definition:
+Prior work has shown that we can teach language models to call external functions to get additional informations or perform tasks, by encoding the functions' description in the prompt. To avoid duplicating information between the function definition and the description passed to the prompt we define custom Jinja filters that can extract the function's name, description, signature and source:
 
 
 ``` python
@@ -73,13 +73,11 @@ import outlines
 import outlines.text as text
 
 
-@outlines.tool
 def google_search(query: str):
     """Google Search"""
     pass
 
 
-@outlines.tool
 def wikipedia_search(query: str):
     """Wikipedia Search"""
     pass
@@ -90,7 +88,9 @@ def my_commands(tools: List[Callable]):
     """AVAILABLE COMMANDS:
 
     {% for tool in tools %}
-    {{loop.counter}}. {{tool.name}}, {{tool.description}}, args: {{tool.signature}}
+    TOOL
+    {{ tool | name }}, {{ tool | description }}, args: {{ tool | signature }}
+    {{ tool | source }}
     {% endfor %}
     """
 

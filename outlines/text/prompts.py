@@ -1,9 +1,10 @@
 import inspect
 import re
+import textwrap
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Optional, cast
 
-from jinja2 import StrictUndefined, Template
+from jinja2 import Environment, StrictUndefined
 
 
 @dataclass
@@ -175,11 +176,74 @@ def render(template: str, **values: Optional[Dict[str, Any]]) -> str:
     # used to continue to the next line without linebreak.
     template = re.sub(r"(?![\r\n])(\b\s+)", " ", template)
 
-    jinja_template = Template(
-        template,
+    env = Environment(
         trim_blocks=True,
         lstrip_blocks=True,
         keep_trailing_newline=False,
         undefined=StrictUndefined,
     )
+    env.filters["name"] = get_fn_name
+    env.filters["description"] = get_fn_description
+    env.filters["source"] = get_fn_source
+    env.filters["signature"] = get_fn_signature
+
+    jinja_template = env.from_string(template)
+
     return jinja_template.render(**values)
+
+
+def get_fn_name(fn: Callable):
+    """Returns the name of a callable."""
+    if not callable(fn):
+        raise TypeError("The `name` filter only applies to callables.")
+
+    if not hasattr(fn, "__name__"):
+        name = type(fn).__name__
+    else:
+        name = fn.__name__
+
+    return name
+
+
+def get_fn_description(fn: Callable):
+    """Returns the first line of a callable's docstring."""
+    if not callable(fn):
+        raise TypeError("The `description` filter only applies to callables.")
+
+    docstring = inspect.getdoc(fn)
+    if docstring is None:
+        description = ""
+    else:
+        description = docstring.split("\n")[0].strip()
+
+    return description
+
+
+def get_fn_source(fn: Callable):
+    """Return the source code of a callable."""
+    if not callable(fn):
+        raise TypeError("The `source` filter only applies to callables.")
+
+    source = textwrap.dedent(inspect.getsource(fn))
+    re_search = re.search(re.compile(r"(\bdef\b.*)", re.DOTALL), source)
+    if re_search is not None:
+        source = re_search.group(0)
+    else:
+        raise TypeError("Could not read the function's source code")
+
+    return source
+
+
+def get_fn_signature(fn: Callable):
+    """Return the signature of a callable."""
+    if not callable(fn):
+        raise TypeError("The `source` filter only applies to callables.")
+
+    source = textwrap.dedent(inspect.getsource(fn))
+    re_search = re.search(re.compile(r"\(([^)]+)\)"), source)
+    if re_search is None:
+        signature = ""
+    else:
+        signature = re_search.group(1)
+
+    return signature
