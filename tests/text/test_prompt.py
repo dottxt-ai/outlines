@@ -1,3 +1,5 @@
+from typing import List
+
 import pytest
 
 import outlines.text as text
@@ -149,3 +151,51 @@ def test_no_prompt():
         @text.prompt
         def test_only_code(variable):
             return variable
+
+
+def test_prompt_function():
+    def empty_fn():
+        pass
+
+    def with_description():
+        """A description.
+
+        But this is ignored.
+        """
+        pass
+
+    @text.prompt
+    def name_description_ppt(fn):
+        """
+        {{fn|name}}: {{fn|description}}
+        """
+
+    rendered = name_description_ppt(empty_fn)
+    assert rendered == "empty_fn: "
+
+    rendered = name_description_ppt(with_description)
+    assert rendered == "with_description: A description."
+
+    def with_signature(one: int, two: List[str], three: float = 1.0):
+        pass
+
+    @text.prompt
+    def name_signature_ppt(fn):
+        """
+        {{fn|name}}: {{fn|signature}}
+        """
+
+    rendered = name_signature_ppt(with_signature)
+    assert rendered == "with_signature: one: int, two: List[str], three: float = 1.0"
+
+    def test_function_call(one, two=2):
+        return one + two
+
+    @text.prompt
+    def source_ppt(fn):
+        """
+        {{fn|source}}
+        """
+
+    rendered = source_ppt(test_function_call)
+    assert rendered == "def test_function_call(one, two=2):\n    return one + two\n"
