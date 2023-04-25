@@ -1,10 +1,12 @@
 import inspect
+import json
 import re
 import textwrap
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Optional, cast
 
 from jinja2 import Environment, StrictUndefined
+from pydantic import BaseModel
 
 
 @dataclass
@@ -186,6 +188,7 @@ def render(template: str, **values: Optional[Dict[str, Any]]) -> str:
     env.filters["description"] = get_fn_description
     env.filters["source"] = get_fn_source
     env.filters["signature"] = get_fn_signature
+    env.filters["schema"] = get_pydantic_schema
 
     jinja_template = env.from_string(template)
 
@@ -247,3 +250,38 @@ def get_fn_signature(fn: Callable):
         signature = re_search.group(1)
 
     return signature
+
+
+def get_pydantic_schema(model: type[BaseModel]):
+    """Return the schema of a Pydantic model."""
+    if not type(model) == type(BaseModel):
+        raise TypeError("The `schema` filter only applies to Pydantic models.")
+
+    raw_schema = model.schema()
+    definitions = raw_schema.get("definitions", None)
+    schema = parse_pydantic_schema(raw_schema, definitions)
+
+    return json.dumps(schema, indent=2)
+
+
+def parse_pydantic_schema(raw_schema, definitions):
+    """Parse the output of `Basemodel.schema()`.
+
+    This recursively follows the references to other schemas in case
+    of nested models. Other schemas are stored under the "definitions"
+    key in the schema of the top-level model.
+
+    """
+    simple_schema = {}
+    for name, value in raw_schema["properties"].items():
+        if "description" in value:
+            simple_schema[name] = value["description"]
+        elif "$ref" in value:
+            refs = value["$ref"].split("/")
+            simple_schema[name] = parse_pydantic_schema(
+                definitions[refs[2]], definitions
+            )
+        else:
+            simple_schema[name] = f"<{name}>"
+
+    return simple_schema
