@@ -69,7 +69,6 @@ Prior work has shown that we can teach language models to call external function
 
 ``` python
 from typing import Callable, List
-import outlines
 import outlines.text as text
 
 
@@ -95,6 +94,36 @@ def my_commands(tools: List[Callable]):
     """
 
 prompt = my_commands([google_search, wikipedia_search])
+```
+
+### Response models
+
+We can instruct models to return their output in a pre-defined format, often JSON. To avoid duplicating information between the function definition and the description passed to the prompt we define a custom Jinja filter that can extract the expected response's schema:
+
+``` python
+from pydantic import BaseModel
+import outlines.text as text
+
+class Joke(BaseModel):
+    joke: str
+    explanation: str
+
+@text.prompt
+def joke_ppt(response):
+    """Tell a joke and explain why the joke is funny.
+
+    RESPONSE FORMAT:
+    {{ response | schema }}
+    """
+
+joke_ppt(Joke)
+# Tell a joke and explain why the joke is funny.
+#
+# RESPONSE FORMAT:
+# {
+#    "joke": "The joke"
+#    "explanation": "The explanation of why the joke is funny"
+#  }
 ```
 
 ## Text completion

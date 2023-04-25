@@ -1,6 +1,7 @@
 from typing import List
 
 import pytest
+from pydantic import BaseModel, Field
 
 import outlines.text as text
 
@@ -199,3 +200,36 @@ def test_prompt_function():
 
     rendered = source_ppt(test_function_call)
     assert rendered == "def test_function_call(one, two=2):\n    return one + two\n"
+
+
+def test_prompt_response_model():
+    class SimpleResponse(BaseModel):
+        one: str = Field(description="a description")
+        two: str
+
+    @text.prompt
+    def source_ppt(model):
+        "{{model | schema }}"
+
+    prompt = source_ppt(SimpleResponse)
+    assert prompt == '{\n  "one": "a description",\n  "two": "<two>"\n}'
+
+    class NestedResponse(BaseModel):
+        answer: str
+        thought: SimpleResponse
+
+    prompt = source_ppt(NestedResponse)
+    assert (
+        prompt
+        == '{\n  "answer": "<answer>",\n  "thought": {\n    "one": "a description",\n    "two": "<two>"\n  }\n}'
+    )
+
+    class ConvolutedResponse(BaseModel):
+        part_one: NestedResponse
+        part_two: SimpleResponse
+
+    prompt = source_ppt(ConvolutedResponse)
+    assert (
+        prompt
+        == '{\n  "part_one": {\n    "answer": "<answer>",\n    "thought": {\n      "one": "a description",\n      "two": "<two>"\n    }\n  },\n  "part_two": {\n    "one": "a description",\n    "two": "<two>"\n  }\n}'
+    )
