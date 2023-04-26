@@ -1,6 +1,13 @@
+<div align="center">
+
+<img src="./docs/source/_static/logo.png" alt="Outlines Logo" width=300></img>
+
 # Outlines
 
-Build _reliable_ workflow based on interactions with large language models.
+Build _reliable_ workflows based on interactions with large language models.
+
+</div>
+
 
 ## Prompt management
 
@@ -24,7 +31,7 @@ def few_shot_examples(question, examples):
     EXAMPLE: {{ example }}
     {% endfor %}
 
-    QUESTION: {{question}}
+    QUESTION: {{ question }}
     Let's think step by step.
 
     """
@@ -36,15 +43,17 @@ Functions can also be _partially evaluated_ just like any function, which can be
 import functools as ft
 import outlines.text as text
 
+
 @text.prompt
 def my_agent(name, goals):
-    """Your name is {{name}}.
+    """Your name is {{ name }}.
 
     GOALS:
     {% for goal in goals %}
-    {{loop.counter}}. {{goal}}
+    {{ loop.counter }}. {{ goal }}
     {% endfor %}
     """
+
 
 jarvis = ft.partial(my_agent, "JARVIS")
 ```
@@ -54,9 +63,11 @@ The template contained in template functions remains accessible:
 ``` python
 import outlines.text as text
 
+
 @text.prompt
 def prompt():
     "I am accessible"
+
 
 prompt.template
 # I am accessible
@@ -93,6 +104,7 @@ def my_commands(tools: List[Callable]):
     {% endfor %}
     """
 
+
 prompt = my_commands([google_search, wikipedia_search])
 ```
 
@@ -104,17 +116,20 @@ We can instruct models to return their output in a pre-defined format, often JSO
 from pydantic import BaseModel
 import outlines.text as text
 
+
 class Joke(BaseModel):
     joke: str
     explanation: str
 
+
 @text.prompt
-def joke_ppt(response):
+def joke_ppt(response_model):
     """Tell a joke and explain why the joke is funny.
 
     RESPONSE FORMAT:
-    {{ response | schema }}
+    {{ response_model | schema }}
     """
+
 
 joke_ppt(Joke)
 # Tell a joke and explain why the joke is funny.
@@ -141,11 +156,11 @@ def few_shot_examples(question, examples):
     """You are a question answering AI.
 
     {% for example in examples %}
-    QUESTION: {{example.question}}
-    ANSWER: {{example.answer}}
+    QUESTION: {{ example.question }}
+    ANSWER: {{ example.answer }}
     {% endfor %}
 
-    QUESTION: {{question}}
+    QUESTION: {{ question }}
     Let's think step by step.
 
     """
@@ -160,9 +175,10 @@ A similar syntax can be used with image generation models:
 ``` python
 import outlines.image as image
 
+
 @image.generation("hf/stabilityai/stable-diffusion-2.1")
 def generate(subject, location):
-   "A photo of a {{subject}} riding a horse in {{location}}."
+   "A photo of a {{ subject }} riding a horse in {{ location }}."
 ```
 
 ## Natural language functions
@@ -177,13 +193,15 @@ import outlines.models as models
 
 @text.prompt
 def prime_numbers(n: int):
-    """Return a list that contains all prime numbers between 1 and {{n}}.
+    """Return a list that contains all prime numbers between 1 and {{ n }}.
 
     The output must be parsable as a Python list.
     """
 
+
 def parse(result):
     return json.loads(result)
+
 
 get_prime_numbers = text.function(
    models.text_completion.openai("gpt-3.5-turbo"),
@@ -191,9 +209,9 @@ get_prime_numbers = text.function(
    parse
 )
 
+
 get_prime_numbers(10)
 # [2, 3, 5, 7]
-
 ```
 
 For more complex outputs one can pass a Pydantic model to `text.function`, which will be used to parse the output:
@@ -202,20 +220,18 @@ For more complex outputs one can pass a Pydantic model to `text.function`, which
 from pydantic import BaseModel
 import outlines.text as text
 
+
 class Joke(BaseModel):
     joke: str
     explanation: str
 
 
 @text.prompt
-def joke_ppt(n: int):
+def joke_ppt(response_model):
     """Tell a joke and explain why the joke is funny.
 
     RESPONSE FORMAT:
-    {
-       "joke": "The joke"
-       "explanation": "The explanation of why the joke is funny"
-    }
+    {{ response_model | schema }}
     """
 
 tell_a_joke = text.function(
@@ -224,6 +240,6 @@ tell_a_joke = text.function(
    Joke
 )
 
-get_prime_numbers(10)
+tell_a_joke(Joke)
 # [2, 3, 5, 7]
 ```
