@@ -9,6 +9,7 @@ import tiktoken
 from PIL import Image
 from PIL.Image import Image as PILImage
 
+import outlines
 import outlines.cache as cache
 
 __all__ = [
@@ -72,24 +73,27 @@ def OpenAITextCompletion(
 
         return response
 
-    async def generate(prompt: str, *, stop_at=None, is_in=None):
+    @outlines.elemwise
+    async def generate(prompt: str, *, num_samples: int = 1, stop_at=None, is_in=None):
         if stop_at is not None:
             stop_at = tuple(stop_at)
 
         if is_in is not None and stop_at is not None:
             raise TypeError("You cannot set `is_in` and `stop_at` at the same time.")
         elif is_in is not None:
-            return generate_choice(prompt, is_in)
+            return await generate_choice(prompt, is_in, num_samples)
         else:
-            return generate_base(prompt, stop_at)
+            return await generate_base(prompt, stop_at, num_samples)
 
-    async def generate_base(prompt: str, stop_at: Optional[Tuple[str]]) -> str:
+    async def generate_base(
+        prompt: str, stop_at: Optional[Tuple[str]], num_samples: int
+    ) -> Union[str, List[str]]:
         response = await call_completion_api(
-            model_name, prompt, stop_at, {}, max_tokens, temperature
+            model_name, prompt, num_samples, stop_at, {}, max_tokens, temperature
         )
-        return response["choices"][0]["text"]
+        return [response["choices"][i]["text"] for i in range(num_samples)]
 
-    async def generate_choice(prompt: str, is_in: List[str]) -> str:
+    async def generate_choice(prompt: str, is_in: List[str], num_samples: int) -> str:
         """Generate a a sequence that must be one of many options.
 
         We tokenize every choice, iterate over the token lists, create a mask
@@ -117,7 +121,7 @@ def OpenAITextCompletion(
                 break
 
             response = await call_completion_api(
-                model_name, prompt, None, mask, 1, temperature
+                model_name, prompt, num_samples, None, mask, 1, temperature
             )
             decoded.append(response["choices"][0]["text"])
             prompt = prompt + "".join(decoded)
@@ -178,8 +182,8 @@ def OpenAIChatCompletion(
 
         return response
 
-    @elemwise
-    async def generate(prompt: str, *, num_samples: int=1, stop_at=None, is_in=None):
+    @outlines.elemwise
+    async def generate(prompt: str, *, num_samples: int = 1, stop_at=None, is_in=None):
         if stop_at is not None:
             stop_at = tuple(stop_at)
 
@@ -190,12 +194,16 @@ def OpenAIChatCompletion(
         else:
             return await generate_base(prompt, stop_at, num_samples)
 
-    async def generate_base(query: str, stop_at: Optional[Tuple[str]], num_samples: int) -> str:
+    async def generate_base(
+        query: str, stop_at: Optional[Tuple[str]], num_samples: int
+    ) -> Union[str, List[str]]:
         messages = [{"role": "user", "content": query}]
-        response = call_chat_completion_api(
+        response = await call_chat_completion_api(
             model_name, messages, num_samples, stop_at, {}, max_tokens, temperature
         )
-        answer = response["choices"][0]["message"]["content"]
+        answer = [
+            response["choices"][i]["message"]["content"] for i in range(num_samples)
+        ]
         return answer
 
     async def generate_choice(prompt: str, is_in: List[str], num_samples: int) -> str:
@@ -295,6 +303,7 @@ def OpenAIEmbeddings(model_name: str):
 
         return response
 
+    @outlines.elemwise
     def generate(query: str) -> np.ndarray:
         api_response = call_embeddings_api(model_name, query)
         response = api_response["data"][0]["embedding"]
@@ -335,6 +344,7 @@ def OpenAIImageGeneration(model_name: str = "", size: str = "512x512"):
 
         return response
 
+    @outlines.elemwise
     def generate(prompt: str) -> PILImage:
         api_response = call_image_generation_api(prompt, size)
         response = api_response["data"][0]["b64_json"]
