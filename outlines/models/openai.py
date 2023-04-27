@@ -52,6 +52,7 @@ def OpenAITextCompletion(
     def call_completion_api(
         model: str,
         prompt: str,
+        num_samples: int,
         stop_sequences: Tuple[str],
         logit_bias: Dict[str, int],
         max_tokens: int,
@@ -62,6 +63,7 @@ def OpenAITextCompletion(
         response = openai.Completion.create(
             engine=model,
             prompt=prompt,
+            n=num_samples,
             temperature=temperature,
             max_tokens=max_tokens,
             stop=stop_sequences,
@@ -70,6 +72,7 @@ def OpenAITextCompletion(
 
         return response
 
+<<<<<<< HEAD
     def generate(prompt: str, *, stop_at=None, is_in=None):
         if stop_at is not None:
             stop_at = tuple(stop_at)
@@ -86,6 +89,17 @@ def OpenAITextCompletion(
             model_name, prompt, stop_at, {}, max_tokens, temperature
         )
         return response["choices"][0]["text"]
+=======
+    def generate(prompt: str, num_samples: int = 1) -> Union[List[str], str]:
+        response = call_completion_api(model_name, prompt, num_samples, *parameters)
+
+        choices = response["choices"]
+        answers = [choice["text"] for choice in choices]
+        if len(answers) == 1:
+            return answers[0]
+        else:
+            return answers
+>>>>>>> ce00ca4 (Allow generation of several samples with OpenAI API)
 
     def generate_choice(prompt: str, is_in: List[str]) -> str:
         """Generate a a sequence that must be one of many options.
@@ -156,6 +170,7 @@ def OpenAIChatCompletion(
     def call_chat_completion_api(
         model: str,
         messages: List[Dict[str, str]],
+        num_samples: int,
         stop_sequences: Tuple[str],
         logit_bias: Dict[str, int],
         max_tokens: int,
@@ -166,6 +181,7 @@ def OpenAIChatCompletion(
         response = openai.ChatCompletion.create(
             model=model,
             messages=messages,
+            n=num_samples,
             temperature=temperature,
             max_tokens=max_tokens,
             stop=stop_sequences,
