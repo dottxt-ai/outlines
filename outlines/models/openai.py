@@ -49,7 +49,7 @@ def OpenAITextCompletion(
 
     @error_handler
     @memory.cache
-    def call_completion_api(
+    async def call_completion_api(
         model: str,
         prompt: str,
         num_samples: int,
@@ -60,7 +60,7 @@ def OpenAITextCompletion(
     ):
         import openai
 
-        response = openai.Completion.create(
+        response = await openai.Completion.acreate(
             engine=model,
             prompt=prompt,
             n=num_samples,
@@ -72,8 +72,7 @@ def OpenAITextCompletion(
 
         return response
 
-<<<<<<< HEAD
-    def generate(prompt: str, *, stop_at=None, is_in=None):
+    async def generate(prompt: str, *, stop_at=None, is_in=None):
         if stop_at is not None:
             stop_at = tuple(stop_at)
 
@@ -84,24 +83,13 @@ def OpenAITextCompletion(
         else:
             return generate_base(prompt, stop_at)
 
-    def generate_base(prompt: str, stop_at: Optional[Tuple[str]]) -> str:
-        response = call_completion_api(
+    async def generate_base(prompt: str, stop_at: Optional[Tuple[str]]) -> str:
+        response = await call_completion_api(
             model_name, prompt, stop_at, {}, max_tokens, temperature
         )
         return response["choices"][0]["text"]
-=======
-    def generate(prompt: str, num_samples: int = 1) -> Union[List[str], str]:
-        response = call_completion_api(model_name, prompt, num_samples, *parameters)
 
-        choices = response["choices"]
-        answers = [choice["text"] for choice in choices]
-        if len(answers) == 1:
-            return answers[0]
-        else:
-            return answers
->>>>>>> ce00ca4 (Allow generation of several samples with OpenAI API)
-
-    def generate_choice(prompt: str, is_in: List[str]) -> str:
+    async def generate_choice(prompt: str, is_in: List[str]) -> str:
         """Generate a a sequence that must be one of many options.
 
         We tokenize every choice, iterate over the token lists, create a mask
@@ -128,7 +116,7 @@ def OpenAITextCompletion(
             if len(mask) == 0:
                 break
 
-            response = call_completion_api(
+            response = await call_completion_api(
                 model_name, prompt, None, mask, 1, temperature
             )
             decoded.append(response["choices"][0]["text"])
@@ -167,7 +155,7 @@ def OpenAIChatCompletion(
 
     @error_handler
     @memory.cache
-    def call_chat_completion_api(
+    async def call_chat_completion_api(
         model: str,
         messages: List[Dict[str, str]],
         num_samples: int,
@@ -178,7 +166,7 @@ def OpenAIChatCompletion(
     ):
         import openai
 
-        response = openai.ChatCompletion.create(
+        response = await openai.ChatCompletion.acreate(
             model=model,
             messages=messages,
             n=num_samples,
@@ -190,26 +178,27 @@ def OpenAIChatCompletion(
 
         return response
 
-    def generate(prompt: str, *, stop_at=None, is_in=None):
+    @elemwise
+    async def generate(prompt: str, *, num_samples: int=1, stop_at=None, is_in=None):
         if stop_at is not None:
             stop_at = tuple(stop_at)
 
         if is_in is not None and stop_at is not None:
             raise TypeError("You cannot set `is_in` and `stop_at` at the same time.")
         elif is_in is not None:
-            return generate_choice(prompt, is_in)
+            return await generate_choice(prompt, is_in, num_samples)
         else:
-            return generate_base(prompt, stop_at)
+            return await generate_base(prompt, stop_at, num_samples)
 
-    def generate_base(query: str, stop_at: Optional[Tuple[str]]) -> str:
+    async def generate_base(query: str, stop_at: Optional[Tuple[str]], num_samples: int) -> str:
         messages = [{"role": "user", "content": query}]
         response = call_chat_completion_api(
-            model_name, messages, stop_at, {}, max_tokens, temperature
+            model_name, messages, num_samples, stop_at, {}, max_tokens, temperature
         )
         answer = response["choices"][0]["message"]["content"]
         return answer
 
-    def generate_choice(prompt: str, is_in=List[str]) -> str:
+    async def generate_choice(prompt: str, is_in: List[str], num_samples: int) -> str:
         """Generate a a sequence that must be one of many options.
 
         We tokenize every choice, iterate over the token lists, create a mask
@@ -237,8 +226,8 @@ def OpenAIChatCompletion(
                 break
 
             messages = [{"role": "user", "content": prompt}]
-            response = call_chat_completion_api(
-                model_name, messages, None, mask, 1, temperature
+            response = await call_chat_completion_api(
+                model_name, messages, num_samples, None, mask, 1, temperature
             )
             decoded.append(response["choices"][0]["message"]["content"])
             prompt = prompt + "".join(decoded)
