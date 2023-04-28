@@ -5,25 +5,12 @@ It currently does not use the vector store retrieval
 The original repo can be found at https://github.com/yoheinakajima/babyagi
 """
 from collections import deque
-from dataclasses import dataclass
-from typing import Callable, Deque, List
+from typing import Deque, List
 
+import outlines.models as models
 import outlines.text as text
 
-MODEL = "openai/gpt-3.5-turbo"
-
-
-@dataclass
-class LLMFunction:
-    model_name: str
-    prompt_fn: Callable
-    format_fn: Callable = lambda x: x
-
-    def __call__(self, *args, **kwargs):
-        prompt = self.prompt_fn(*args, **kwargs)
-        model, init_state = text.chat_completion(self.model_name)
-        result, _ = model(prompt, init_state)
-        return self.format_fn(result)
+model = models.text_completion.openai("gpt-3.5-turbo")
 
 
 #################
@@ -41,7 +28,7 @@ def perform_task_ppt(objective: str, task: str):
     """
 
 
-perform_task = LLMFunction(MODEL, perform_task_ppt)
+perform_task = text.function(model, perform_task_ppt)
 
 
 #####################
@@ -80,7 +67,7 @@ def create_tasks_fmt(result: str) -> List[str]:
     return task_list
 
 
-create_tasks = LLMFunction(MODEL, create_tasks_ppt, create_tasks_fmt)
+create_tasks = text.function(model, create_tasks_ppt, create_tasks_fmt)
 
 
 ########################
@@ -117,7 +104,7 @@ def prioritize_tasks_fmt(result: str):
     return task_list
 
 
-prioritize_tasks = LLMFunction(MODEL, prioritize_tasks_ppt, prioritize_tasks_fmt)
+prioritize_tasks = text.function(model, prioritize_tasks_ppt, prioritize_tasks_fmt)
 
 
 objective = "Becoming rich while doing nothing."
