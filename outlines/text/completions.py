@@ -4,6 +4,45 @@ import outlines.models as models
 import outlines.text as text
 
 
+def get_model_from_path(
+    model_path: str,
+    *,
+    stop_at: Optional[List[str]] = None,
+    max_tokens: Optional[int] = None,
+    temperature: Optional[float] = None,
+) -> Callable:
+    """Obtain a text completion provider model object from a model path.
+
+    Parameters
+    ----------
+    model_path
+        A string of the form "model_provider/model_name"
+    stop_at
+        A list of tokens which, when found, stop the generation.
+    max_tokens
+        The maximum number of tokens to generate.
+    temperature
+        Value used to module the next token probabilities.
+
+    """
+    if "/" not in model_path:
+        raise ValueError("Model names must be in the form 'provider_name/model_name'")
+
+    provider_name = model_path.split("/")[0]
+    model_name = model_path[len(provider_name) + 1 :]
+
+    try:
+        model_cls = getattr(models.text_completion, provider_name)
+    except KeyError:
+        raise ValueError(f"The model provider {provider_name} is not available.")
+
+    llm = model_cls(
+        model_name, stop_at=stop_at, max_tokens=max_tokens, temperature=temperature
+    )
+
+    return llm
+
+
 def completion(
     model_path: str,
     *,
@@ -65,19 +104,8 @@ def completion(
         Value used to module the next token probabilities.
 
     """
-    if "/" not in model_path:
-        raise ValueError("Model names must be in the form 'provider_name/model_name'")
-
-    provider_name = model_path.split("/")[0]
-    model_name = model_path[len(provider_name) + 1 :]
-
-    try:
-        model_cls = getattr(models.text_completion, provider_name)
-    except KeyError:
-        raise ValueError(f"The model provider {provider_name} is not available.")
-
-    llm = model_cls(
-        model_name, stop_at=stop_at, max_tokens=max_tokens, temperature=temperature
+    llm = get_model_from_path(
+        model_path, stop_at=stop_at, max_tokens=max_tokens, temperature=temperature
     )
 
     def decorator(fn: Callable):
