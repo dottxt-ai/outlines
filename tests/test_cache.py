@@ -1,5 +1,5 @@
 import os
-import shutil
+import tempfile
 
 import joblib
 import pytest
@@ -29,17 +29,16 @@ def refresh_environment():
 @pytest.fixture
 def test_cache(refresh_environment):
     """Initialize a temporary cache and delete it after the test has run."""
-    os.environ["OUTLINES_CACHE_DIR"] = "~/.cache/outlines_tests"
-    import outlines
+    with tempfile.TemporaryDirectory() as tempdir:
+        os.environ["OUTLINES_CACHE_DIR"] = tempdir
+        import outlines
 
-    memory = outlines.cache.get()
-    assert memory.location == "~/.cache/outlines_tests"
+        memory = outlines.cache.get()
+        assert memory.location == tempdir
 
-    yield memory
+        yield memory
 
-    memory.clear()
-    home_dir = os.path.expanduser("~")
-    shutil.rmtree(f"{home_dir}/.cache/outlines_tests")
+        memory.clear()
 
 
 def test_get_cache(test_cache):
