@@ -5,6 +5,7 @@ from io import BytesIO
 from typing import Callable, Dict, List, Optional, Tuple
 
 import numpy as np
+import tiktoken
 from PIL import Image
 from PIL.Image import Image as PILImage
 
@@ -23,6 +24,7 @@ memory = cache.get()
 def OpenAITextCompletion(
     model_name: str,
     stop_at: Optional[List[str]] = None,
+    is_in: Optional[List[str]] = None,
     max_tokens: Optional[int] = None,
     temperature: Optional[float] = None,
 ) -> Callable:
@@ -37,6 +39,8 @@ def OpenAITextCompletion(
         The name of the model as listed in the OpenAI documentation.
     stop_at
         A list of tokens which, when found, stop the generation.
+    is_in
+        A list of strings among which the results will be chosen.
     max_tokens
         The maximum number of tokens to generate.
     temperature
@@ -49,7 +53,7 @@ def OpenAITextCompletion(
 
     """
 
-    parameters = validate_completion_parameters(stop_at, max_tokens, temperature)
+    parameters = validate_completion_parameters(stop_at, is_in, max_tokens, temperature)
 
     @error_handler
     @memory.cache
@@ -57,6 +61,7 @@ def OpenAITextCompletion(
         model: str,
         prompt: str,
         stop_sequences: Tuple[str],
+        logit_bias: Dict[str, int],
         max_tokens: int,
         temperature: float,
     ):
@@ -68,6 +73,7 @@ def OpenAITextCompletion(
             temperature=temperature,
             max_tokens=max_tokens,
             stop=stop_sequences,
+            logit_bias=logit_bias,
         )
 
         return response
@@ -82,6 +88,7 @@ def OpenAITextCompletion(
 def OpenAIChatCompletion(
     model_name: str,
     stop_at: Optional[List[str]] = None,
+    is_in: Optional[List[str]] = None,
     max_tokens: Optional[int] = None,
     temperature: Optional[float] = None,
 ) -> Callable:
@@ -96,6 +103,8 @@ def OpenAIChatCompletion(
         The name of the model as listed in the OpenAI documentation.
     stop_at
         A list of tokens which, when found, stop the generation.
+    is_in
+        A list of strings among which the results will be chosen.
     max_tokens
         The maximum number of tokens to generate.
     temperature
@@ -107,7 +116,7 @@ def OpenAIChatCompletion(
     parameters when passed a prompt.
 
     """
-    parameters = validate_completion_parameters(stop_at, max_tokens, temperature)
+    parameters = validate_completion_parameters(stop_at, is_in, max_tokens, temperature)
 
     @error_handler
     @memory.cache
@@ -115,6 +124,7 @@ def OpenAIChatCompletion(
         model: str,
         messages: List[Dict[str, str]],
         stop_sequences: Tuple[str],
+        logit_bias: Dict[str, int],
         max_tokens: int,
         temperature: float,
     ):
@@ -126,6 +136,7 @@ def OpenAIChatCompletion(
             temperature=temperature,
             max_tokens=max_tokens,
             stop=stop_sequences,
+            logit_bias=logit_bias,
         )
 
         return response
@@ -140,9 +151,15 @@ def OpenAIChatCompletion(
 
 
 def validate_completion_parameters(
-    stop_at, max_tokens, temperature
-) -> Tuple[Tuple[str], int, float]:
+    stop_at, is_in, max_tokens, temperature
+) -> Tuple[Tuple[str], Dict[str, int], int, float]:
     """Validate the parameters passed to the completion APIs and set default values."""
+    if is_in is not None:
+        enc = tiktoken.get_encoding("p50k_base")
+        is_in = sum([enc.encode(word) for word in is_in], [])
+        is_in = {f"{token}": 100 for token in is_in}
+    else:
+        is_in = {}
     if stop_at is not None and len(stop_at) > 4:
         raise TypeError("OpenAI's API does not accept more than 4 stop sequences.")
     elif stop_at is not None:
@@ -152,7 +169,7 @@ def validate_completion_parameters(
     if temperature is None:
         temperature = 1.0
 
-    return stop_at, max_tokens, temperature
+    return stop_at, is_in, max_tokens, temperature
 
 
 def OpenAIEmbeddings(model_name: str):

@@ -30,6 +30,7 @@ dependencies = [
    "pillow",
    "pydantic",
    "scipy",
+   "tiktoken",
 ]
 dynamic = ["version"]
 
@@ -61,6 +62,7 @@ module = [
     "pydantic",
     "pytest",
     "scipy.*",
+    "tiktoken.*",
     "torch",
     "transformers",
 ]
