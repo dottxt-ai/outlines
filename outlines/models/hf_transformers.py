@@ -50,7 +50,7 @@ def HuggingFaceCompletion(
     return call
 
 
-@memory.cache
+@memory.cache()
 def call_model_generate_method(
     model_name: str, prompt: str, max_tokens: int, temperature: float
 ) -> str:
