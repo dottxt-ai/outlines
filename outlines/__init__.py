@@ -1,13 +1,9 @@
 """Outlines is a Generative Model Programming Framework."""
-from outlines.image import generation
 from outlines.parallel import elemwise
-from outlines.text import prompt, render
+
+from . import cache
 
 __all__ = [
-    "completion",
+    "cache",
     "elemwise",
-    "generation",
-    "map",
-    "prompt",
-    "render",
 ]
