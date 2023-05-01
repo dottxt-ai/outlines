@@ -4,16 +4,38 @@ from typing import Callable, Optional, Union
 
 from pydantic import BaseModel
 
+from outlines.parallel import elemwise
+
 FunctionType = type(lambda x: None)
 BaseModelType = type(BaseModel)
 
 
 @dataclass
 class function:
+    """Represents a function that uses a language model to generate its output.
+
+    When called, the `function` instance passes the arguments to the prompt
+    function, the rendered prompt is passed to the language model, and its
+    result to an (optional) validation function.
+
+    Attributes
+    ----------
+    model
+        A function that takes a string and returns a string that contains the
+        model's return value.
+    prompt
+        A prompt-generating function.
+    validator
+        A function that takes the output of the language model, parses it and
+        returns it in a normalized format.
+
+    """
+
     model: Callable
     prompt: Callable
     validator: Optional[Union[Callable, BaseModel]] = None
 
+    @elemwise
     def __call__(self, *args, **kwargs):
         rendered_prompt = self.prompt(*args, **kwargs)
         result = self.model(rendered_prompt)
@@ -33,9 +55,9 @@ def validate(validator, result):
 
 @validate.register(BaseModelType)
 def validate_pydantic(validator, result):
-    return validator.parse_raw(result)
+    return elemwise(validator.parse_raw)(result)
 
 
 @validate.register(FunctionType)
 def validate_function(validator, result):
-    return validator(result)
+    return elemwise(validator)(result)
