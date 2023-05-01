@@ -243,3 +243,10 @@ tell_a_joke = text.function(
 tell_a_joke(Joke)
 # [2, 3, 5, 7]
 ```
+
+# Examples
+
+- [Pick the odd one out](https://github.com/normal-computing/outlines/blob/main/examples/pick_odd_one_out.py)
+- [Meta prompting](https://github.com/normal-computing/outlines/blob/main/examples/meta_prompting.py)
+- [Generate code to solve math problems](https://github.com/normal-computing/outlines/blob/main/examples/dust/math-generate-code.py)
+- [BabyAGI](https://github.com/normal-computing/outlines/blob/main/examples/babyagi.py)
