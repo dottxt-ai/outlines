@@ -33,6 +33,13 @@ def test_render():
     """
     assert text.render(tpl) == "A test line\n    An indented line"
 
+    tpl = """
+        A test line
+            An indented line
+
+    """
+    assert text.render(tpl) == "A test line\n    An indented line\n"
+
 
 def test_render_escaped_linebreak():
     tpl = """
