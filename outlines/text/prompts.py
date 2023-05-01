@@ -128,6 +128,18 @@ def render(template: str, **values: Optional[Dict[str, Any]]) -> str:
     >>> render(tpl)
     ... 'A new string'
 
+    If you want to insert a linebreak at the end of the rendered template, you will
+    need to leave an empty line at the end of the template:
+
+    >>> tpl = '''
+    ... A new string
+    ...
+    ... '''
+    >>> tpl
+    ... '\nA new string\n\n'
+    >>> render(tpl)
+    ... 'A new string\n'
+
     `render` removes the identation in docstrings. This is particularly important
     when using prompt functions
 
@@ -169,19 +181,24 @@ def render(template: str, **values: Optional[Dict[str, Any]]) -> str:
     A string that contains the rendered template.
 
     """
-
     # Dedent, and remove extra linebreak
-    template = inspect.cleandoc(template)
+    cleaned_template = inspect.cleandoc(template)
+
+    # Add linebreak if there were any extra linebreaks that
+    # `cleandoc` would have removed
+    ends_with_linebreak = template.replace(" ", "").endswith("\n\n")
+    if ends_with_linebreak:
+        cleaned_template += "\n"
 
     # Remove extra whitespaces, except those that immediately follow a newline symbol.
     # This is necessary to avoid introducing whitespaces after backslash `\` characters
     # used to continue to the next line without linebreak.
-    template = re.sub(r"(?![\r\n])(\b\s+)", " ", template)
+    cleaned_template = re.sub(r"(?![\r\n])(\b\s+)", " ", cleaned_template)
 
     env = Environment(
         trim_blocks=True,
         lstrip_blocks=True,
-        keep_trailing_newline=False,
+        keep_trailing_newline=True,
         undefined=StrictUndefined,
     )
     env.filters["name"] = get_fn_name
@@ -190,7 +207,7 @@ def render(template: str, **values: Optional[Dict[str, Any]]) -> str:
     env.filters["signature"] = get_fn_signature
     env.filters["schema"] = get_pydantic_schema
 
-    jinja_template = env.from_string(template)
+    jinja_template = env.from_string(cleaned_template)
 
     return jinja_template.render(**values)
 
