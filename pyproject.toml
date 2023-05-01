@@ -50,6 +50,9 @@ filterwarnings = [
     "ignore::FutureWarning:transformers.*"
 ]
 
+[tool.mypy]
+exclude=["examples"]
+
 [[tool.mypy.overrides]]
 module = [
     "diffusers",
