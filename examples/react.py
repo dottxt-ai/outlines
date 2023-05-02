@@ -47,33 +47,26 @@ def search_wikipedia(query: str):
     return ".".join(list(page.values())[0]["extract"].split(".")[:2])
 
 
-mode_model = models.text_completion.openai(
-    "gpt-3.5-turbo", is_in=["Tho", "Act"], max_tokens=2
-)
-action_model = models.text_completion.openai(
-    "text-davinci-003", is_in=["Search", "Finish"], max_tokens=2
-)
-thought_model = models.text_completion.openai(
-    "text-davinci-003", stop_at=["\n"], max_tokens=128
-)
-subject_model = models.text_completion.openai(
-    "text-davinci-003", stop_at=["'"], max_tokens=128
-)
-
 prompt = build_reAct_prompt("Where is Apple Computers headquarted? ")
+complete = models.text_completion.openai(
+    "gpt-3.5-turbo", max_tokens=128, temperature=1.0
+)
 
 for i in range(1, 10):
-    mode = mode_model(prompt)
+    mode = complete(prompt, is_in=["Tho", "Act"])
+    prompt = add_mode(i, mode, "", prompt)
+
     if mode == "Tho":
-        prompt = add_mode(i, mode, "", prompt)
-        thought = thought_model(prompt)
+        thought = complete(prompt, stop_at="\n")
         prompt += f"{thought}"
-    if mode == "Act":
-        prompt = add_mode(i, mode, "", prompt)
-        action = action_model(prompt)
+    elif mode == "Act":
+        action = complete(prompt, is_in=["Search", "Finish"])
         prompt += f"{action} '"
-        subject = " ".join(subject_model(prompt).split()[:2])
+
+        subject = complete(prompt, stop_at=["'"])  # Apple Computers headquartered
+        subject = " ".join(subject.split()[:2])
         prompt += f"{subject}'"
+
         if action == "Search":
             result = search_wikipedia(subject)
             prompt = add_mode(i, "Obs", result, prompt)
