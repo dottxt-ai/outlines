@@ -244,6 +244,10 @@ tell_a_joke(Joke)
 # [2, 3, 5, 7]
 ```
 
+# Controlled generation
+
+Outlines offers mechanisms to specify high-level constraints on the text generations. Passing `stop_at` to model call the user can stop the generation once a particular word, sequence of symbol is reached. Passing `is_in` to the model call the user can constraint the model to generate an answer chosen among a set of possible answers.
+
 # Examples
 
 - [Pick the odd one out](https://github.com/normal-computing/outlines/blob/main/examples/pick_odd_one_out.py)
