@@ -2,7 +2,7 @@
 import base64
 import os
 from io import BytesIO
-from typing import Callable, Dict, List, Optional, Tuple
+from typing import Callable, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 import tiktoken
@@ -79,8 +79,48 @@ def OpenAITextCompletion(
         return response
 
     def generate(prompt: str) -> str:
-        response = call_completion_api(model_name, prompt, *parameters)
+        response = call_completion_api(model_name, prompt, **parameters)
         return response["choices"][0]["text"]
+
+    def generate_choice(prompt: str) -> str:
+        """Generate a a sequence that must be one of many options.
+
+        We tokenize every choice, iterate over the token lists, create a mask
+        with the current tokens and generate one token. We progressively
+        eliminate the choices that don't start with the currently decoded
+        sequence.
+
+        """
+        assert is_in is not None
+        tokenizer = tiktoken.get_encoding("p50k_base")
+        encoded: List[List[int]] = [tokenizer.encode(word) for word in is_in]
+
+        decoded: List[str] = []
+        for i in range(max([len(word) for word in encoded])):
+            mask = {}
+            for word, tokenized_word in zip(is_in, encoded):
+                if not word.startswith("".join(decoded)):
+                    continue
+                try:
+                    mask[tokenized_word[i]] = 100
+                except IndexError:
+                    pass
+
+            if len(mask) == 0:
+                break
+
+            parameters["logit_bias"] = mask
+            parameters["max_tokens"] = 1
+            response = call_completion_api(model_name, prompt, **parameters)
+            decoded.append(response["choices"][0]["text"])
+            prompt = prompt + "".join(decoded)
+
+        return "".join(decoded)
+
+    if is_in is not None:
+        return generate_choice
+    else:
+        return generate
 
     return generate
 
@@ -147,19 +187,56 @@ def OpenAIChatCompletion(
         answer = response["choices"][0]["message"]["content"]
         return answer
 
-    return generate
+    def generate_choice(prompt: str) -> str:
+        """Generate a a sequence that must be one of many options.
+
+        We tokenize every choice, iterate over the token lists, create a mask
+        with the current tokens and generate one token. We progressively
+        eliminate the choices that don't start with the currently decoded
+        sequence.
+
+        """
+        assert is_in is not None
+        tokenizer = tiktoken.get_encoding("cl100k_base")
+        encoded: List[List[int]] = [tokenizer.encode(word) for word in is_in]
+
+        decoded: List[str] = []
+        for i in range(max([len(word) for word in encoded])):
+            mask = {}
+            for word, tokenized_word in zip(is_in, encoded):
+                if not word.startswith("".join(decoded)):
+                    continue
+                try:
+                    mask[tokenized_word[i]] = 100
+                except IndexError:
+                    pass
+
+            if len(mask) == 0:
+                break
+
+            parameters["logit_bias"] = mask
+            parameters["max_tokens"] = 1
+            messages = [{"role": "user", "content": prompt}]
+            response = call_chat_completion_api(model_name, messages, **parameters)
+            decoded.append(response["choices"][0]["message"]["content"])
+            prompt = prompt + "".join(decoded)
+
+        return "".join(decoded)
+
+    if is_in is not None:
+        return generate_choice
+    else:
+        return generate
 
 
 def validate_completion_parameters(
     stop_at, is_in, max_tokens, temperature
-) -> Tuple[Tuple[str], Dict[str, int], int, float]:
+) -> Dict[str, Union[Tuple[str], Dict[int, int], int, float]]:
     """Validate the parameters passed to the completion APIs and set default values."""
     if is_in is not None:
-        enc = tiktoken.get_encoding("p50k_base")
-        is_in = sum([enc.encode(word) for word in is_in], [])
-        is_in = {f"{token}": 100 for token in is_in}
+        mask: Dict[int, int] = {}
     else:
-        is_in = {}
+        mask = {}
     if stop_at is not None and len(stop_at) > 4:
         raise TypeError("OpenAI's API does not accept more than 4 stop sequences.")
     elif stop_at is not None:
@@ -169,7 +246,12 @@ def validate_completion_parameters(
     if temperature is None:
         temperature = 1.0
 
-    return stop_at, is_in, max_tokens, temperature
+    return {
+        "stop_sequences": stop_at,
+        "logit_bias": mask,
+        "max_tokens": max_tokens,
+        "temperature": temperature,
+    }
 
 
 def OpenAIEmbeddings(model_name: str):
