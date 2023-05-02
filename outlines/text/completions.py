@@ -126,7 +126,7 @@ def completion(
 
             """
             prompt = prompt_fn(*args, **kwargs)
-            result = llm(prompt)
+            result = llm(prompt, stop_at=stop_at)
             return result, prompt + result
 
         return wrapper

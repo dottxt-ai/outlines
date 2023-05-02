@@ -23,10 +23,8 @@ memory = cache.get()
 
 def OpenAITextCompletion(
     model_name: str,
-    stop_at: Optional[List[str]] = None,
-    is_in: Optional[List[str]] = None,
-    max_tokens: Optional[int] = None,
-    temperature: Optional[float] = None,
+    max_tokens: Optional[int] = 216,
+    temperature: Optional[float] = 1.0,
 ) -> Callable:
     """Create a function that will call the OpenAI conmpletion API.
 
@@ -37,10 +35,6 @@ def OpenAITextCompletion(
     ----------
     model_name: str
         The name of the model as listed in the OpenAI documentation.
-    stop_at
-        A list of tokens which, when found, stop the generation.
-    is_in
-        A list of strings among which the results will be chosen.
     max_tokens
         The maximum number of tokens to generate.
     temperature
@@ -52,8 +46,6 @@ def OpenAITextCompletion(
     when passed a prompt.
 
     """
-
-    parameters = validate_completion_parameters(stop_at, is_in, max_tokens, temperature)
 
     @error_handler
     @memory.cache
@@ -78,11 +70,24 @@ def OpenAITextCompletion(
 
         return response
 
-    def generate(prompt: str) -> str:
-        response = call_completion_api(model_name, prompt, **parameters)
+    def generate(prompt: str, *, stop_at=None, is_in=None):
+        if stop_at is not None:
+            stop_at = tuple(stop_at)
+
+        if is_in is not None and stop_at is not None:
+            raise TypeError("You cannot set `is_in` and `stop_at` at the same time.")
+        elif is_in is not None:
+            return generate_choice(prompt, is_in)
+        else:
+            return generate_base(prompt, stop_at)
+
+    def generate_base(prompt: str, stop_at: Optional[Tuple[str]]) -> str:
+        response = call_completion_api(
+            model_name, prompt, stop_at, {}, max_tokens, temperature
+        )
         return response["choices"][0]["text"]
 
-    def generate_choice(prompt: str) -> str:
+    def generate_choice(prompt: str, is_in: List[str]) -> str:
         """Generate a a sequence that must be one of many options.
 
         We tokenize every choice, iterate over the token lists, create a mask
@@ -109,28 +114,21 @@ def OpenAITextCompletion(
             if len(mask) == 0:
                 break
 
-            parameters["logit_bias"] = mask
-            parameters["max_tokens"] = 1
-            response = call_completion_api(model_name, prompt, **parameters)
+            response = call_completion_api(
+                model_name, prompt, None, mask, 1, temperature
+            )
             decoded.append(response["choices"][0]["text"])
             prompt = prompt + "".join(decoded)
 
         return "".join(decoded)
-
-    if is_in is not None:
-        return generate_choice
-    else:
-        return generate
 
     return generate
 
 
 def OpenAIChatCompletion(
     model_name: str,
-    stop_at: Optional[List[str]] = None,
-    is_in: Optional[List[str]] = None,
-    max_tokens: Optional[int] = None,
-    temperature: Optional[float] = None,
+    max_tokens: Optional[int] = 128,
+    temperature: Optional[float] = 1.0,
 ) -> Callable:
     """Create a function that will call the chat completion OpenAI API.
 
@@ -141,10 +139,6 @@ def OpenAIChatCompletion(
     ----------
     model_name: str
         The name of the model as listed in the OpenAI documentation.
-    stop_at
-        A list of tokens which, when found, stop the generation.
-    is_in
-        A list of strings among which the results will be chosen.
     max_tokens
         The maximum number of tokens to generate.
     temperature
@@ -156,7 +150,6 @@ def OpenAIChatCompletion(
     parameters when passed a prompt.
 
     """
-    parameters = validate_completion_parameters(stop_at, is_in, max_tokens, temperature)
 
     @error_handler
     @memory.cache
@@ -181,13 +174,26 @@ def OpenAIChatCompletion(
 
         return response
 
-    def generate(query: str) -> str:
+    def generate(prompt: str, *, stop_at=None, is_in=None):
+        if stop_at is not None:
+            stop_at = tuple(stop_at)
+
+        if is_in is not None and stop_at is not None:
+            raise TypeError("You cannot set `is_in` and `stop_at` at the same time.")
+        elif is_in is not None:
+            return generate_choice(prompt, is_in)
+        else:
+            return generate_base(prompt, stop_at)
+
+    def generate_base(query: str, stop_at: Optional[Tuple[str]]) -> str:
         messages = [{"role": "user", "content": query}]
-        response = call_chat_completion_api(model_name, messages, *parameters)
+        response = call_chat_completion_api(
+            model_name, messages, stop_at, {}, max_tokens, temperature
+        )
         answer = response["choices"][0]["message"]["content"]
         return answer
 
-    def generate_choice(prompt: str) -> str:
+    def generate_choice(prompt: str, is_in=List[str]) -> str:
         """Generate a a sequence that must be one of many options.
 
         We tokenize every choice, iterate over the token lists, create a mask
@@ -214,19 +220,16 @@ def OpenAIChatCompletion(
             if len(mask) == 0:
                 break
 
-            parameters["logit_bias"] = mask
-            parameters["max_tokens"] = 1
             messages = [{"role": "user", "content": prompt}]
-            response = call_chat_completion_api(model_name, messages, **parameters)
+            response = call_chat_completion_api(
+                model_name, messages, None, mask, 1, temperature
+            )
             decoded.append(response["choices"][0]["message"]["content"])
             prompt = prompt + "".join(decoded)
 
         return "".join(decoded)
 
-    if is_in is not None:
-        return generate_choice
-    else:
-        return generate
+    return generate
 
 
 def validate_completion_parameters(
