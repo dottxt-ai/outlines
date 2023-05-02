@@ -11,41 +11,51 @@ References
 """
 import argparse
 
+import outlines.models as models
 import outlines.text as text
 
 
 def split_into_steps(question, model_name: str):
-    @text.completion(model_name)
+    @text.prompt
     def solve(question):
         """{{question}}
         Let's solve this problem by splitting it into steps.
         """
 
-    _, completed = solve(question)
+    complete = models.text_completion.openai(model_name)
+
+    prompt = solve(question)
+    answer = complete(prompt)
+    completed = prompt + answer
 
     return completed
 
 
 def fill_in_the_blanks(question, model_name: str):
-    @text.completion(model_name, stop_at=["."])
+    @text.prompt
     def determine_goal(question):
         """{{question}}
 
         In order to solve this problem, we will analyze each of the options and determine
         """
 
-    @text.completion(model_name, stop_at=["."])
+    @text.prompt
     def solve(memory):
         """{{memory}}. Let's begin."""
 
-    _, completed = determine_goal(question)
-    _, completed = solve(completed)
+    complete = models.text_completion.openai(model_name, stop_at=["."])
+
+    prompt = determine_goal(question)
+    answer = complete(prompt)
+    prompt = solve(prompt + answer)
+    answer = complete(prompt)
+    completed = prompt + answer
 
     return completed
 
 
 def ask_an_expert(question, model_name: str):
-    @text.completion(model_name, stop_at=['"'])
+    @text.prompt
     def find_expert(question):
         """
         {{question}}
@@ -63,7 +73,7 @@ def ask_an_expert(question, model_name: str):
         on the screen: "
         """
 
-    @text.completion(model_name)
+    @text.prompt
     def get_answer(question, expert, memory):
         """
         {{memory}}
@@ -72,21 +82,27 @@ def ask_an_expert(question, model_name: str):
         {{question}}
         """
 
-    expert, completed = find_expert(question)
-    _, completed = get_answer(question, expert, completed)
+    complete_expert = models.text_completion.openai(model_name, stop_at=['"'])
+    complete_answer = models.text_completion.openai(model_name)
+
+    prompt = find_expert(question)
+    expert = complete_expert(prompt)
+    prompt = get_answer(question, expert, prompt + expert)
+    answer = complete_answer(prompt)
+    completed = prompt + answer
 
     return completed
 
 
 def ask_an_expert_simple(question, model_name: str):
-    @text.completion(model_name, stop_at=["\n", "."])
+    @text.prompt
     def find_expert(question):
         """
         Q: {{question}}
         A: A good person to answer this question would be
         """
 
-    @text.completion(model_name)
+    @text.prompt
     def get_answer(expert, memory):
         """
         {{memory}}.
@@ -94,8 +110,14 @@ def ask_an_expert_simple(question, model_name: str):
         For instance, {{expert}} would answer
         """
 
-    expert, completed = find_expert(question)
-    answer, completed = get_answer(expert, completed)
+    model_expert = models.text_completion.openai(model_name, stop_at=["\n", "."])
+    model_answer = models.text_completion.openai(model_name)
+
+    prompt = find_expert(question)
+    expert = model_expert(prompt)
+    prompt = get_answer(expert, prompt + expert)
+    answer = model_answer(prompt)
+    completed = prompt + answer
 
     return completed
 
@@ -111,7 +133,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--model",
         type=str,
-        default="openai/gpt-3.5-turbo",
+        default="gpt-3.5-turbo",
         help="The Large Language Model to use to run the examples.",
     )
     args = parser.parse_args()

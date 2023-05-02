@@ -1,4 +1,5 @@
 """Example from https://dust.tt/spolu/a/d12ac33169"""
+import outlines.models as models
 import outlines.text as text
 
 examples = [
@@ -13,9 +14,11 @@ examples = [
     },
 ]
 
+question = "Carla is downloading a 200 GB file. She can download 2 GB/minute, but 40% of the way through the download, the download fails. Then Carla has to restart the download from the beginning. How load did it take her to download the file in minutes?"
 
-@text.completion("openai/text-davinci-003", stop_at=["QUESTION"])
-def answer_with_code(question, examples):
+
+@text.prompt
+def answer_with_code_prompt(question, examples):
     """
     {% for example in examples %}
     QUESTION: {{example.question}}
@@ -31,7 +34,11 @@ def execute_code(code):
     return result
 
 
-question = "Carla is downloading a 200 GB file. She can download 2 GB/minute, but 40% of the way through the download, the download fails. Then Carla has to restart the download from the beginning. How load did it take her to download the file in minutes?"
-result_code, _ = answer_with_code(question, examples)
-result = execute_code(result_code)
-print(result)
+answer_with_code = text.function(
+    models.text_completion.openai("text-davinci-003"),
+    answer_with_code_prompt,
+    execute_code,
+)
+
+result = answer_with_code(question, examples)
+print(f"It takes Carla {result:.0f} minutes to download the file.")
