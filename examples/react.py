@@ -48,7 +48,7 @@ def search_wikipedia(query: str):
 
 
 mode_model = models.text_completion.openai(
-    "text-davinci-003", is_in=["Tho", "Act"], max_tokens=2
+    "gpt-3.5-turbo", is_in=["Tho", "Act"], max_tokens=2
 )
 action_model = models.text_completion.openai(
     "text-davinci-003", is_in=["Search", "Finish"], max_tokens=2
@@ -63,17 +63,14 @@ subject_model = models.text_completion.openai(
 prompt = build_reAct_prompt("Where is Apple Computers headquarted? ")
 
 for i in range(1, 10):
-    response = mode_model(prompt)
-    mode = response[:3]
+    mode = mode_model(prompt)
     if mode == "Tho":
         prompt = add_mode(i, mode, "", prompt)
         thought = thought_model(prompt)
         prompt += f"{thought}"
     if mode == "Act":
         prompt = add_mode(i, mode, "", prompt)
-        response = action_model(prompt)
-        action = response[:6]
-
+        action = action_model(prompt)
         prompt += f"{action} '"
         subject = " ".join(subject_model(prompt).split()[:2])
         prompt += f"{subject}'"
