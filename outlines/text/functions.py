@@ -35,7 +35,6 @@ class function:
     prompt: Callable
     validator: Optional[Union[Callable, BaseModel]] = None
 
-    @elemwise
     def __call__(self, *args, **kwargs):
         rendered_prompt = self.prompt(*args, **kwargs)
         result = self.model(rendered_prompt)
