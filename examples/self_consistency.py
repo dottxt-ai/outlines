@@ -57,7 +57,7 @@ def few_shots(question, examples):
 
 model = models.text_completion.openai("text-davinci-003", max_tokens=128)
 prompt = few_shots(question, examples)
-answers = model(prompt, 100)
+answers = model(prompt, num_samples=20)
 
 digits = []
 for answer in answers:

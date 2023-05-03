@@ -29,15 +29,12 @@ def build_ooo_prompt(options):
     """
 
 
-reasoning_model = models.text_completion.openai(
-    "text-davinci-003", stop_at=["Pick the odd word", "So the odd one"]
-)
-result_model = models.text_completion.openai("text-davinci-003")
+complete = models.text_completion.openai("text-davinci-003")
 
 options = ["sea", "mountains", "plains", "sock"]
 prompt = build_ooo_prompt(options)
-reasoning = reasoning_model(prompt)
+reasoning = complete(prompt, stop_at=["Pick the odd word", "So the odd one"])
 prompt += reasoning
-result = result_model(prompt)
+result = complete(prompt)
 prompt += result
 print(prompt)

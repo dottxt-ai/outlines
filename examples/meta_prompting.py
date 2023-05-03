@@ -11,8 +11,8 @@ References
 """
 import argparse
 
-import outlines.models as models
-import outlines.text as text
+import outlines.models as models  # noqa
+import outlines.text as text  # noqa
 
 
 def split_into_steps(question, model_name: str):
@@ -43,10 +43,10 @@ def fill_in_the_blanks(question, model_name: str):
     def solve(memory):
         """{{memory}}. Let's begin."""
 
-    complete = models.text_completion.openai(model_name, stop_at=["."])
+    complete = models.text_completion.openai(model_name)
 
     prompt = determine_goal(question)
-    answer = complete(prompt)
+    answer = complete(prompt, stop_at=["."])
     prompt = solve(prompt + answer)
     answer = complete(prompt)
     completed = prompt + answer
@@ -82,13 +82,12 @@ def ask_an_expert(question, model_name: str):
         {{question}}
         """
 
-    complete_expert = models.text_completion.openai(model_name, stop_at=['"'])
-    complete_answer = models.text_completion.openai(model_name)
+    complete = models.text_completion.openai(model_name)
 
     prompt = find_expert(question)
-    expert = complete_expert(prompt)
+    expert = complete(prompt, stop_at=['""'])
     prompt = get_answer(question, expert, prompt + expert)
-    answer = complete_answer(prompt)
+    answer = complete(prompt)
     completed = prompt + answer
 
     return completed
@@ -110,13 +109,12 @@ def ask_an_expert_simple(question, model_name: str):
         For instance, {{expert}} would answer
         """
 
-    model_expert = models.text_completion.openai(model_name, stop_at=["\n", "."])
-    model_answer = models.text_completion.openai(model_name)
+    complete = models.text_completion.openai(model_name)
 
     prompt = find_expert(question)
-    expert = model_expert(prompt)
+    expert = complete(prompt, stop_at=["\n", "."])
     prompt = get_answer(expert, prompt + expert)
-    answer = model_answer(prompt)
+    answer = complete(prompt)
     completed = prompt + answer
 
     return completed
@@ -133,7 +131,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--model",
         type=str,
-        default="gpt-3.5-turbo",
+        default="text-davinci-003",
         help="The Large Language Model to use to run the examples.",
     )
     args = parser.parse_args()
