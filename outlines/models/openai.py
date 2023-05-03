@@ -1,6 +1,7 @@
 """Integration with OpenAI's API."""
 import base64
 import os
+import warnings
 from io import BytesIO
 from typing import Callable, Dict, List, Optional, Tuple, Union
 
@@ -78,13 +79,13 @@ def OpenAITextCompletion(
             stop_at = tuple(stop_at)
 
         mask = {}
-        if type == "int":
+        if type is not None:
             encoder = tiktoken.encoding_for_model(model_name)
-            mask = create_int_mask(encoder)
+            mask = create_type_mask(type, encoder)
 
         if is_in is not None and stop_at is not None:
             raise TypeError("You cannot set `is_in` and `stop_at` at the same time.")
-        elif is_in is not None and mask != {}:
+        elif is_in is not None and len(mask) > 0:
             raise TypeError("You cannot set `is_in` and `mask` at the same time.")
         elif is_in is not None:
             return generate_choice(prompt, is_in, samples)
@@ -105,7 +106,9 @@ def OpenAITextCompletion(
 
         return results
 
-    def generate_choice(prompt: str, is_in: List[str], samples: int) -> str:
+    def generate_choice(
+        prompt: str, is_in: List[str], samples: int
+    ) -> Union[List[str], str]:
         """Generate a a sequence that must be one of many options.
 
         We tokenize every choice, iterate over the token lists, create a mask
@@ -120,27 +123,34 @@ def OpenAITextCompletion(
         tokenizer = tiktoken.encoding_for_model(model_name)
         encoded: List[List[int]] = [tokenizer.encode(word) for word in is_in]
 
-        decoded: List[str] = []
-        for i in range(max([len(word) for word in encoded])):
-            mask = {}
-            for word, tokenized_word in zip(is_in, encoded):
-                if not word.startswith("".join(decoded)):
-                    continue
-                try:
-                    mask[tokenized_word[i]] = 100
-                except IndexError:
-                    pass
+        decoded_samples = []
+        for _ in range(samples):
+            decoded: List[str] = []
+            for i in range(max([len(word) for word in encoded])):
+                mask = {}
+                for word, tokenized_word in zip(is_in, encoded):
+                    if not word.startswith("".join(decoded)):
+                        continue
+                    try:
+                        mask[tokenized_word[i]] = 100
+                    except IndexError:
+                        pass
 
-            if len(mask) == 0:
-                break
+                if len(mask) == 0:
+                    break
 
-            response = call_completion_api(
-                model_name, prompt, 1, temperature, None, mask, samples
-            )
-            decoded.append(response["choices"][0]["text"])
-            prompt = prompt + "".join(decoded)
+                response = call_completion_api(
+                    model_name, prompt, 1, temperature, None, mask, samples
+                )
+                decoded.append(response["choices"][0]["text"])
+                prompt = prompt + "".join(decoded)
 
-        return "".join(decoded)
+            decoded_samples.append("".join(decoded))
+
+        if samples == 1:
+            return decoded_samples[0]
+
+        return decoded_samples
 
     return generate
 
@@ -196,25 +206,32 @@ def OpenAIChatCompletion(
 
         return response
 
-    def generate(prompt: str, *, samples: int = 1, stop_at=None, is_in=None, type=None):
+    def generate(
+        prompt: str,
+        *,
+        samples: int = 1,
+        stop_at=None,
+        is_in=None,
+        type: Optional[str] = None,
+    ):
         import tiktoken
 
         if stop_at is not None:
             stop_at = tuple(stop_at)
 
         mask = {}
-        if type == "int":
+        if type is not None:
             encoder = tiktoken.encoding_for_model(model_name)
-            mask = create_int_mask(encoder)
+            mask = create_type_mask(type, encoder)
 
         if is_in is not None and stop_at is not None:
             raise TypeError("You cannot set `is_in` and `stop_at` at the same time.")
-        elif is_in is not None and mask is not None:
+        elif is_in is not None and len(mask) > 0:
             raise TypeError("You cannot set `is_in` and `mask` at the same time.")
         elif is_in is not None:
             return generate_choice(prompt, is_in, samples)
         else:
-            return generate_base(prompt, stop_at, mask)
+            return generate_base(prompt, stop_at, samples, mask)
 
     def generate_base(
         query: str, stop_at: Optional[Tuple[str]], samples: int, mask: Dict[int, int]
@@ -233,7 +250,9 @@ def OpenAIChatCompletion(
 
         return results
 
-    def generate_choice(prompt: str, is_in: List[str], samples: int) -> str:
+    def generate_choice(
+        prompt: str, is_in: List[str], samples: int
+    ) -> Union[List[str], str]:
         """Generate a a sequence that must be one of many options.
 
         We tokenize every choice, iterate over the token lists, create a mask
@@ -248,28 +267,35 @@ def OpenAIChatCompletion(
         tokenizer = tiktoken.encoding_for_model(model_name)
         encoded: List[List[int]] = [tokenizer.encode(word) for word in is_in]
 
-        decoded: List[str] = []
-        for i in range(max([len(word) for word in encoded])):
-            mask = {}
-            for word, tokenized_word in zip(is_in, encoded):
-                if not word.startswith("".join(decoded)):
-                    continue
-                try:
-                    mask[tokenized_word[i]] = 100
-                except IndexError:
-                    pass
+        decoded_samples = []
+        for _ in range(samples):
+            decoded: List[str] = []
+            for i in range(max([len(word) for word in encoded])):
+                mask = {}
+                for word, tokenized_word in zip(is_in, encoded):
+                    if not word.startswith("".join(decoded)):
+                        continue
+                    try:
+                        mask[tokenized_word[i]] = 100
+                    except IndexError:
+                        pass
 
-            if len(mask) == 0:
-                break
+                if len(mask) == 0:
+                    break
 
-            messages = [{"role": "user", "content": prompt}]
-            response = call_chat_completion_api(
-                model_name, messages, max_tokens, temperature, None, mask, 1
-            )
-            decoded.append(response["choices"][0]["message"]["content"])
-            prompt = prompt + "".join(decoded)
+                messages = [{"role": "user", "content": prompt}]
+                response = call_chat_completion_api(
+                    model_name, messages, 1, temperature, None, mask, 1
+                )
+                decoded.append(response["choices"][0]["message"]["content"])
+                prompt = prompt + "".join(decoded)
 
-        return "".join(decoded)
+            decoded_samples.append("".join(decoded))
+
+        if samples == 1:
+            return decoded_samples[0]
+
+        return decoded_samples
 
     return generate
 
@@ -424,11 +450,12 @@ def error_handler(api_call_fn: Callable) -> Callable:
 
 
 def create_int_mask(encoder):
-    """Create an exclusive mask for digit tokens.
+    """Create an exclusive mask for digit tokens."""
+    warnings.warn(
+        "The OpenAI API only allows for limited type control; results may not be accurate",
+        UserWarning,
+    )
 
-    #TODO: I am not a token expert, and I may be missing
-    # something by only looking for strictly digit keys.
-    """
     int_token_ids = []
 
     tokens = encoder._mergeable_ranks
@@ -438,6 +465,41 @@ def create_int_mask(encoder):
 
     # TODO: This is a hack because OpenAI's API does not
     # allow more than 300 entries for `logit_bias`
-    mask = {int_token_ids[i]: 100 for i in range(300)}
+    special_tokens = encoder._special_tokens
+    mask = {special_tokens["<|endoftext|>"]: 100}
+    mask.update({int_token_ids[i]: 100 for i in range(300 - len(special_tokens))})
 
     return mask
+
+
+def create_float_mask(encoder):
+    """Create an exclusive mask for digit tokens."""
+    warnings.warn(
+        "The OpenAI API only allows for limited type control; results may not be accurate",
+        UserWarning,
+    )
+
+    int_token_ids = []
+
+    tokens = encoder._mergeable_ranks
+    for token, token_id in tokens.items():
+        if all([c.isdigit() or c == "." for c in encoder.decode([token_id])]):
+            int_token_ids.append(token_id)
+
+    # TODO: This is a hack because OpenAI's API does not
+    # allow more than 300 entries for `logit_bias`
+    special_tokens = encoder._special_tokens.values()
+    mask = {special_tokens["<|endoftext|>"]: 100}
+    mask.update({int_token_ids[i]: 100 for i in range(300 - len(special_tokens))})
+
+    return mask
+
+
+type_to_mask = {
+    "float": create_float_mask,
+    "int": create_int_mask,
+}
+
+
+def create_type_mask(type: str, encoder):
+    return type_to_mask[type](encoder)
