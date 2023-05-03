@@ -244,6 +244,49 @@ tell_a_joke(Joke)
 # [2, 3, 5, 7]
 ```
 
+## Sampling different answers
+
+You can generate several samples for a given prompt by passing the `num_samples` keyword argument to the model call:
+
+``` python
+import outlines.models as models
+
+complete = models.text_completion.hf("sshleifer/tiny-gpt2")
+answer = complete("Write me a poem about Python", num_samples=10)
+```
+
+## Vectorized calls
+
+You can pass a list of prompts to a model call:
+
+``` python
+import outlines.models as models
+
+complete = models.text_completion.hf("sshleifer/tiny-gpt2")
+answer = complete(["Bonjour", "Au revoir"], num_samples=10)
+```
+
+The generation happens asynchronously for models that call an API, in batch with HuggingFace models. This can be combined with `num_samples` in which case the model returns nested lists.
+
+## Python code
+
+You can use arbitrary Python pythons with Outlines. These calls can also be vectorized using the `@outlines.elemwise` decorator: if called with a list of inputs the function will be mapped over the list. We recommend you use `async` code when the python function calls an API.
+
+``` python
+import outlines
+import outlines.models as models
+
+@outlines.elemwise
+async def google_search(query: str):
+    ...
+    return result
+
+
+complete = models.text_generation.openai("text-davinci-003")
+answers = complete(["smt", "smt"])
+results = google_search(answers)
+```
+
 # Controlled generation
 
 Outlines offers mechanisms to specify high-level constraints on the text generations. Passing `stop_at` to model call the user can stop the generation once a particular word, sequence of symbol is reached. Passing `is_in` to the model call the user can constraint the model to generate an answer chosen among a set of possible answers.
