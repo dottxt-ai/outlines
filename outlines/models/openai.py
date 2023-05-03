@@ -91,7 +91,12 @@ def OpenAITextCompletion(
         response = await call_completion_api(
             model_name, prompt, num_samples, stop_at, {}, max_tokens, temperature
         )
-        return [response["choices"][i]["text"] for i in range(num_samples)]
+
+        responses = response["choices"]
+        if num_samples == 1:
+            return responses[0]["text"]
+        else:
+            return [responses[i]["text"] for i in range(num_samples)]
 
     async def generate_choice(prompt: str, is_in: List[str], num_samples: int) -> str:
         """Generate a a sequence that must be one of many options.
@@ -201,10 +206,12 @@ def OpenAIChatCompletion(
         response = await call_chat_completion_api(
             model_name, messages, num_samples, stop_at, {}, max_tokens, temperature
         )
-        answer = [
-            response["choices"][i]["message"]["content"] for i in range(num_samples)
-        ]
-        return answer
+
+        responses = response["choices"]
+        if num_samples == 1:
+            return responses[0]["message"]["content"]
+        else:
+            return [responses[i]["message"]["content"] for i in range(num_samples)]
 
     async def generate_choice(prompt: str, is_in: List[str], num_samples: int) -> str:
         """Generate a a sequence that must be one of many options.
