@@ -4,7 +4,7 @@
 
 # Outlines
 
-Build _reliable_ workflows based on interactions with large language models.
+Build _reliable_ workflows based on interactions with generative models.
 
 </div>
 
