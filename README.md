@@ -246,7 +246,17 @@ tell_a_joke(Joke)
 
 # Controlled generation
 
-Outlines offers mechanisms to specify high-level constraints on the text generations. Passing `stop_at` to model call the user can stop the generation once a particular word, sequence of symbol is reached. Passing `is_in` to the model call the user can constraint the model to generate an answer chosen among a set of possible answers.
+Outlines offers mechanisms to specify high-level constraints on the text generations:
+
+- `stop_at` allows to stop the generation once a particular word, sequence of symbol had been generated;
+- `is_in` allows to constrain the model to generate an answer chosen among a set of possible answers;
+- `type` allows to constrain the model's output to either `"int"`s or `"float"`s;
+
+Coming:
+
+- Ability to constrain the output to a JSON with a given structure;
+- Ability to constrain the output to a List;
+- Ability to constrain the output to be Python code;
 
 # Examples
 
