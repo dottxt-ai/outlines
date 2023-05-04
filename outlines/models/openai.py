@@ -5,7 +5,6 @@ from io import BytesIO
 from typing import Callable, Dict, List, Optional, Tuple, Union
 
 import numpy as np
-import tiktoken
 from PIL import Image
 from PIL.Image import Image as PILImage
 
@@ -96,6 +95,8 @@ def OpenAITextCompletion(
         sequence.
 
         """
+        import tiktoken
+
         assert is_in is not None
         tokenizer = tiktoken.get_encoding("p50k_base")
         encoded: List[List[int]] = [tokenizer.encode(word) for word in is_in]
@@ -202,6 +203,8 @@ def OpenAIChatCompletion(
         sequence.
 
         """
+        import tiktoken
+
         assert is_in is not None
         tokenizer = tiktoken.get_encoding("cl100k_base")
         encoded: List[List[int]] = [tokenizer.encode(word) for word in is_in]
