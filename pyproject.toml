@@ -30,7 +30,6 @@ dependencies = [
    "pillow",
    "pydantic",
    "scipy",
-   "tiktoken",
 ]
 dynamic = ["version"]
 
