@@ -80,6 +80,14 @@ A toy implementation of an agent (similar to BabyAGI or AutoGPT) with Outlines:
        [google_search, execute_code],
    )
 
+📜 Features
+-----------
+
+- A powerful domain-specific language to write and render prompts;
+- OpenAI integration: language models, embeddings and Dall-E;
+- HuggingFace integration: ``transformers`` and ``diffusers``;
+- Parallel model and tool calls with the ``outlines.elemwise`` decorator;
+- Map your chains over different inputs in parallel to avoid overfitting;
 
 .. toctree::
    :maxdepth: 1
