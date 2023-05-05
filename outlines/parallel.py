@@ -22,8 +22,21 @@ def elemwise(fn: Union[Callable, Awaitable]) -> Callable:
 
     """
 
+    def run(*args, **kwargs):
+        """Map the decorated function over lists of arguments."""
+        args, kwargs, num_elements = prepare_elemwise_inputs(*args, **kwargs)
+
+        if asyncio.iscoroutinefunction(fn):
+            return async_elemwise(num_elements, *args, **kwargs)
+        elif callable(fn):
+            return sync_elemwise(num_elements, *args, **kwargs)
+        else:
+            raise TypeError(
+                "The `outlines.elemwise` only works on callables and coroutines."
+            )
+
     async def async_elemwise(num_elements, *args, **kwargs):
-        """Execute async functions in parallel."""
+        """Execute async functions concurrently."""
 
         if num_elements == 0:
             return await fn(*args, **kwargs)
@@ -37,7 +50,11 @@ def elemwise(fn: Union[Callable, Awaitable]) -> Callable:
         return await asyncio.gather(*tasks)
 
     def sync_elemwise(num_elements, *args, **kwargs):
-        """Execute sync functions sequentially in a `for` loop."""
+        """Execute sync functions sequentially in a `for` loop.
+
+        # TODO: Use a pool of processes to accelerate the execution.
+
+        """
 
         if num_elements == 0:
             return fn(*args, **kwargs)
@@ -49,27 +66,6 @@ def elemwise(fn: Union[Callable, Awaitable]) -> Callable:
             results.append(fn(*current_args, **current_kwargs))
 
         return results
-
-    def run(*args, **kwargs):
-        """Map the function over lists of inputs.
-
-        Dispatches to different functions depending on whether
-        the decorated object is a coroutine or a function.
-
-        """
-        args, kwargs, num_elements = prepare_elemwise_inputs(*args, **kwargs)
-        loop = asyncio.new_event_loop()
-        try:
-            if asyncio.iscoroutinefunction(fn):
-                result = loop.run_until_complete(
-                    async_elemwise(num_elements, *args, **kwargs)
-                )
-                return result
-
-            else:
-                return sync_elemwise(num_elements, *args, **kwargs)
-        finally:
-            loop.close()
 
     return run
 

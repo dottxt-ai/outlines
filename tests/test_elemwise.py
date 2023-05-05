@@ -1,3 +1,5 @@
+import asyncio
+
 import pytest
 
 from outlines import elemwise
@@ -20,10 +22,10 @@ def test_single_input_async():
     async def async_function(query):
         return query
 
-    result = async_function("test")
+    result = asyncio.run(async_function("test"))
     assert result == "test"
 
-    result = async_function(["test1", "test2"])
+    result = asyncio.run(async_function(["test1", "test2"]))
     assert result == ["test1", "test2"]
 
 
@@ -55,7 +57,7 @@ def test_lists():
     async def async_function(a, b):
         return a + b
 
-    result = async_function(["a", "b"], ["c", "d"])
+    result = asyncio.run(async_function(["a", "b"], ["c", "d"]))
     assert result == ["ac", "bd"]
 
 
@@ -71,7 +73,7 @@ def test_broadcasting():
     async def async_function(a, b):
         return a + b
 
-    result = async_function(["a", "b"], "c")
+    result = asyncio.run(async_function(["a", "b"], "c"))
     assert result == ["ac", "bc"]
 
 
@@ -90,8 +92,8 @@ def test_kwargs():
     async def async_function(a, b="b"):
         return a + b
 
-    result = async_function(["a", "c"])
+    result = asyncio.run(async_function(["a", "c"]))
     assert result == ["ab", "cb"]
 
-    result = async_function(["a", "c"], b="d")
+    result = asyncio.run(async_function(["a", "c"], b="d"))
     assert result == ["ad", "cd"]
