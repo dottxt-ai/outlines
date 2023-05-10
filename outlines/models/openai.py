@@ -341,21 +341,28 @@ def OpenAIImageGeneration(model_name: str = "", size: str = "512x512"):
 
     @error_handler
     @memory.cache()
-    def call_image_generation_api(prompt: str, size: str):
+    def call_image_generation_api(prompt: str, size: str, samples: int):
         import openai
 
         response = openai.Image.create(
-            prompt=prompt, size=size, response_format="b64_json"
+            prompt=prompt, size=size, n=samples, response_format="b64_json"
         )
 
         return response
 
-    def generate(prompt: str) -> PILImage:
-        api_response = call_image_generation_api(prompt, size)
-        response = api_response["data"][0]["b64_json"]
-        img = Image.open(BytesIO(base64.b64decode(response)))
+    def generate(prompt: str, samples: int = 1) -> PILImage:
+        api_response = call_image_generation_api(prompt, size, samples)
 
-        return img
+        if samples == 1:
+            response = api_response["data"][0]["b64_json"]
+            return Image.open(BytesIO(base64.b64decode(response)))
+
+        images = []
+        for i in range(samples):
+            response = api_response["data"][i]["b64_json"]
+            images.append(Image.open(BytesIO(base64.b64decode(response))))
+
+        return images
 
     return generate
 
