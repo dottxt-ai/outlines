@@ -44,15 +44,17 @@ def HuggingFaceCompletion(
     if temperature is None:
         temperature = 1.0
 
-    def call(prompt: str) -> str:
-        return call_model_generate_method(model_name, prompt, max_tokens, temperature)
+    def call(prompt: str, samples: int = 1) -> str:
+        return call_model_generate_method(
+            model_name, prompt, max_tokens, temperature, samples
+        )
 
     return call
 
 
 @memory.cache
 def call_model_generate_method(
-    model_name: str, prompt: str, max_tokens: int, temperature: float
+    model_name: str, prompt: str, max_tokens: int, temperature: float, samples: int
 ) -> str:
     import torch
     from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -72,8 +74,14 @@ def call_model_generate_method(
         temperature=temperature,
         max_new_tokens=max_tokens,
         pad_token_id=tokenizer.eos_token_id,
+        num_return_sequences=samples,
     )
     new_tokens = returned_tokens[:, prompt_tokens["input_ids"].shape[1] + 1 :]
     new_tokens = new_tokens.squeeze()
 
-    return tokenizer.decode(new_tokens, skip_special_tokens=True)
+    if samples == 1:
+        results = tokenizer.decode(new_tokens, skip_special_tokens=True)
+    else:
+        results = tokenizer.batch_decode(new_tokens, skip_special_tokens=True)
+
+    return results
