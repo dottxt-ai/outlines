@@ -1,10 +1,12 @@
 import os
 
-import joblib
+from perscache import Cache, NoCache
+from perscache.serializers import JSONSerializer
+from perscache.storage import LocalFileStorage
 
 home_dir = os.path.expanduser("~")
 cache_dir = os.environ.get("OUTLINES_CACHE_DIR", f"{home_dir}/.cache/outlines")
-memory = joblib.Memory(cache_dir, verbose=0)  # type: ignore[attr-defined]
+memory = Cache(serializer=JSONSerializer(), storage=LocalFileStorage(cache_dir))
 
 
 def get():
@@ -42,10 +44,10 @@ def disable():
 
     """
     global memory
-    memory = joblib.Memory(None)
+    memory = NoCache()
 
 
 def clear():
     """Erase the cache completely."""
     cache = get()
-    cache.clear()
+    cache.storage.clear()

@@ -20,7 +20,7 @@ def HuggingFaceDiffuser(model_name: str) -> PILImage:
         return call_stable_diffusion_pipeline(model_name, prompt)
 
 
-@memory.cache
+@memory.cache()
 def call_stable_diffusion_pipeline(model_name: str, prompt: str) -> PILImage:
     """Build and call the Stable Diffusion pipeline."""
     import torch
