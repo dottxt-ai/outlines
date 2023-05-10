@@ -25,9 +25,9 @@ classifiers = [
 ]
 dependencies = [
    "jinja2",
-   "joblib",
    "numpy",
    "pillow",
+   "perscache",
    "pydantic",
    "scipy",
 ]
@@ -59,6 +59,7 @@ module = [
     "joblib",
     "numpy.*",
     "openai",
+    "perscache.*",
     "PIL",
     "PIL.Image",
     "pydantic",

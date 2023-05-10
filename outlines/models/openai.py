@@ -47,7 +47,7 @@ def OpenAITextCompletion(
     """
 
     @error_handler
-    @memory.cache
+    @memory.cache()
     def call_completion_api(
         model: str,
         prompt: str,
@@ -153,7 +153,7 @@ def OpenAIChatCompletion(
     """
 
     @error_handler
-    @memory.cache
+    @memory.cache()
     def call_chat_completion_api(
         model: str,
         messages: List[Dict[str, str]],
@@ -279,7 +279,7 @@ def OpenAIEmbeddings(model_name: str):
     """
 
     @error_handler
-    @memory.cache
+    @memory.cache()
     def call_embeddings_api(
         model: str,
         input: str,
@@ -323,7 +323,7 @@ def OpenAIImageGeneration(model_name: str = "", size: str = "512x512"):
     """
 
     @error_handler
-    @memory.cache
+    @memory.cache()
     def call_image_generation_api(prompt: str, size: str):
         import openai
 
