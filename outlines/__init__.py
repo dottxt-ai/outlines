@@ -1,10 +1,7 @@
 """Outlines is a Generative Model Programming Framework."""
-from outlines.image import generation
-from outlines.text import prompt, render
+import outlines.cache as cache
+from outlines.text import prompt
 
 __all__ = [
-    "completion",
-    "generation",
     "prompt",
-    "render",
 ]

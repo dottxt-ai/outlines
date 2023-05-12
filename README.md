@@ -141,45 +141,6 @@ joke_ppt(Joke)
 #  }
 ```
 
-## Text completion
-
-Prompts are often attached to a given model and specific settings, but this can
-be hard to find in codebases. Following this logic, we abstract calls to any
-model that takes prompts as an input by decorating template functions:
-
-``` python
-import outlines.text as text
-
-
-@text.completion("openai/text-davinci-003", stop_at=["\n"])
-def few_shot_examples(question, examples):
-    """You are a question answering AI.
-
-    {% for example in examples %}
-    QUESTION: {{ example.question }}
-    ANSWER: {{ example.answer }}
-    {% endfor %}
-
-    QUESTION: {{ question }}
-    Let's think step by step.
-
-    """
-
-result, completed = few_shot_examples(question, examples)
-```
-
-## Image generation
-
-A similar syntax can be used with image generation models:
-
-``` python
-import outlines.image as image
-
-
-@image.generation("hf/stabilityai/stable-diffusion-2.1")
-def generate(subject, location):
-   "A photo of a {{ subject }} riding a horse in {{ location }}."
-```
 
 ## Natural language functions
 
