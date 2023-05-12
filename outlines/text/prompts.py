@@ -1,3 +1,4 @@
+import functools
 import inspect
 import json
 import re
@@ -205,7 +206,7 @@ def render(template: str, **values: Optional[Dict[str, Any]]) -> str:
     env.filters["description"] = get_fn_description
     env.filters["source"] = get_fn_source
     env.filters["signature"] = get_fn_signature
-    env.filters["schema"] = get_pydantic_schema
+    env.filters["schema"] = get_schema
 
     jinja_template = env.from_string(cleaned_template)
 
@@ -269,7 +270,21 @@ def get_fn_signature(fn: Callable):
     return signature
 
 
-def get_pydantic_schema(model: type[BaseModel]):
+@functools.singledispatch
+def get_schema(model: Any):
+    raise NotImplementedError(
+        f"No schema rendering function defined for type {type(model)}."
+    )
+
+
+@get_schema.register(dict)
+def get_schema_dict(model: Dict):
+    """Return a pretty-printed dictionary"""
+    return json.dumps(model, indent=2)
+
+
+@get_schema.register(type(BaseModel))
+def get_schema_pydantic(model: type[BaseModel]):
     """Return the schema of a Pydantic model."""
     if not type(model) == type(BaseModel):
         raise TypeError("The `schema` filter only applies to Pydantic models.")

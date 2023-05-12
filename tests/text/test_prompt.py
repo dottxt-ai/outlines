@@ -209,7 +209,7 @@ def test_prompt_function():
     assert rendered == "def test_function_call(one, two=2):\n    return one + two\n"
 
 
-def test_prompt_response_model():
+def test_prompt_pydantic_response():
     class SimpleResponse(BaseModel):
         one: str = Field(description="a description")
         two: str
@@ -240,3 +240,14 @@ def test_prompt_response_model():
         prompt
         == '{\n  "part_one": {\n    "answer": "<answer>",\n    "thought": {\n      "one": "a description",\n      "two": "<two>"\n    }\n  },\n  "part_two": {\n    "one": "a description",\n    "two": "<two>"\n  }\n}'
     )
+
+
+def test_prompt_dict_response():
+    response = {"one": "a description", "two": ""}
+
+    @text.prompt
+    def source_ppt(model):
+        "{{model | schema }}"
+
+    prompt = source_ppt(response)
+    assert prompt == '{\n  "one": "a description",\n  "two": ""\n}'
