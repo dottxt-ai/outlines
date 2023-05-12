@@ -1,4 +1,5 @@
 import os
+from typing import Callable
 
 from perscache import Cache, NoCache
 from perscache.serializers import JSONSerializer
@@ -9,7 +10,11 @@ cache_dir = os.environ.get("OUTLINES_CACHE_DIR", f"{home_dir}/.cache/outlines")
 memory = Cache(serializer=JSONSerializer(), storage=LocalFileStorage(cache_dir))
 
 
-def get():
+def cache(fn: Callable):
+    return memory.cache()(fn)
+
+
+def get_cache():
     """Get the context object that contains previously-computed return values.
 
     The cache is used to avoid unnecessary computations and API calls, which can
@@ -23,7 +28,7 @@ def get():
     return memory
 
 
-def disable():
+def disable_cache():
     """Disable the cache for this session.
 
     Generative models output different results each time they are called when
@@ -47,7 +52,7 @@ def disable():
     memory = NoCache()
 
 
-def clear():
+def clear_cache():
     """Erase the cache completely."""
-    cache = get()
-    cache.storage.clear()
+    global memory
+    memory.storage.clear()

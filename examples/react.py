@@ -12,11 +12,8 @@ References
 """
 import requests  # type: ignore
 
-import outlines
 import outlines.models as models
 import outlines.text as text
-
-outlines.cache.disable()
 
 
 @text.prompt
