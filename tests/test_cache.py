@@ -34,10 +34,10 @@ def test_cache(refresh_environment):
         os.environ["OUTLINES_CACHE_DIR"] = tempdir
         import outlines
 
-        memory = outlines.cache.get()
+        memory = outlines.get_cache()
         assert memory.storage.location == Path(tempdir)
 
-        yield memory
+        yield outlines.caching.cache
 
         memory.storage.clear()
 
@@ -45,7 +45,7 @@ def test_cache(refresh_environment):
 def test_get_cache(test_cache):
     import outlines
 
-    memory = outlines.cache.get()
+    memory = outlines.get_cache()
     assert isinstance(memory, perscache.Cache)
     assert isinstance(memory.storage, perscache.storage.LocalFileStorage)
 
@@ -54,7 +54,7 @@ def test_get_cache(test_cache):
     # second time `f` is called.
     store = list()
 
-    @memory.cache()
+    @test_cache
     def f(x):
         store.append(1)
         return x
@@ -73,15 +73,14 @@ def test_disable_cache(test_cache):
     """Make sure that we can disable the cache."""
     import outlines
 
-    outlines.cache.disable()
-    memory = outlines.cache.get()
+    outlines.disable_cache()
 
     # If the cache is disabled then the size
     # of `store` should increase every time
     # `f` is called.
     store = list()
 
-    @memory.cache()
+    @test_cache
     def f(x):
         store.append(1)
         return x
@@ -94,10 +93,11 @@ def test_disable_cache(test_cache):
 
 def test_clear_cache(test_cache):
     """Make sure that we can clear the cache."""
+    import outlines
 
     store = list()
 
-    @test_cache.cache
+    @test_cache
     def f(x):
         store.append(1)
         return x
@@ -111,6 +111,6 @@ def test_clear_cache(test_cache):
 
     # The size of `store` should increase if we call `f`
     # after clearing the cache.
-    test_cache.storage.clear()
+    outlines.clear_cache()
     f(1)
     assert len(store) == store_size + 1

@@ -1,9 +1,7 @@
 """Integration with HuggingFace's `transformers` library."""
 from typing import Callable, Optional
 
-import outlines.cache as cache
-
-memory = cache.get()
+from outlines.caching import cache
 
 
 def HuggingFaceCompletion(
@@ -52,7 +50,7 @@ def HuggingFaceCompletion(
     return call
 
 
-@memory.cache()
+@cache
 def call_model_generate_method(
     model_name: str,
     prompt: str,

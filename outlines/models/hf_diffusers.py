@@ -1,9 +1,7 @@
 """Integration with HuggingFace's `diffusers` library."""
 from PIL.Image import Image as PILImage
 
-import outlines.cache as cache
-
-memory = cache.get()
+from outlines.caching import cache
 
 
 def HuggingFaceDiffuser(model_name: str) -> PILImage:
@@ -22,7 +20,7 @@ def HuggingFaceDiffuser(model_name: str) -> PILImage:
     return call
 
 
-@memory.cache()
+@cache
 def call_stable_diffusion_pipeline(
     model_name: str, prompt: str, samples: int
 ) -> PILImage:
