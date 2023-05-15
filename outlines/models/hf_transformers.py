@@ -92,7 +92,7 @@ def call_model_generate_method(
             raise ValueError(
                 "You cannot both restrict to a set of choices with `is_in` and to a type with `type`"
             )
-        logit_processor, stopping_criterion, postprocessing = create_type_mask(
+        logit_processor, stopping_criterion, postprocessing = create_type_constraint(
             type, tokenizer, prompt_tokens["input_ids"]
         )
         logit_processors = [logit_processor]
@@ -106,7 +106,7 @@ def call_model_generate_method(
             raise ValueError(
                 "You cannot both restrict to a set of choices with `is_in` and set a stopping criterion"
             )
-        logit_processor, stopping_criterion, postprocessing = create_choice_mask(
+        logit_processor, stopping_criterion, postprocessing = create_choice_constraint(
             is_in, tokenizer, prompt_tokens["input_ids"]
         )
         logit_processors = [logit_processor]
@@ -116,7 +116,7 @@ def call_model_generate_method(
             raise NotImplementedError(
                 "It is currently not possible to control the generation of several samples with the `transformers` integration"
             )
-        logit_processor, stopping_criterion, postprocessing = create_stop_mask(
+        logit_processor, stopping_criterion, postprocessing = create_stop_constraint(
             stop_at, tokenizer, prompt_tokens["input_ids"]
         )
         logit_processors = [logit_processor]
@@ -148,16 +148,34 @@ def call_model_generate_method(
     return results
 
 
-def create_stop_mask(
+def create_stop_constraint(
     stop_at: List[str],
     tokenizer: "PreTrainedTokenizerBase",
     prompt_tokens: "torch.Tensor",
 ) -> Tuple[Callable, Callable, Callable]:
+    """Create a constraint that stops generation after a sequence has been found.
+
+    Parameters
+    ----------
+    stop_at
+        The list of sequences which, once generated, the generation is stopped.
+    tokenizer
+        The tokenizer that corresponds to the model used for generation.
+    prompt_tokens
+        An array that contains the tokenized prompt.
+
+    """
     import torch
 
     num_prompt_tokens = prompt_tokens.shape[-1]
 
     def stopping_criterion(input_ids: torch.Tensor, _) -> bool:
+        """Choose whether to stop the generation after this step.
+
+        We check whether either of the stopping sequences is present in the
+        current generation. If either one is found we stop the generation.
+
+        """
         decoded_input = tokenizer.decode(
             input_ids[0, num_prompt_tokens:], skip_special_tokens=True
         )
@@ -167,28 +185,52 @@ def create_stop_mask(
 
         return False
 
-    def postprocess(output: str) -> str:
-        for stopping_sequence in stop_at:
-            idx = output.find(stopping_sequence)
-            if idx != -1:
-                return output[:idx]
+    def postprocess(generated_sequence: str) -> str:
+        """Postprocess the generated text.
 
-        return output
+        We need to remove the stopping sequence that triggered the end of
+        the generation at the end.
+
+        """
+        for stopping_sequence in stop_at:
+            idx = generated_sequence.find(stopping_sequence)
+            if idx != -1:
+                return generated_sequence[:idx]
+
+        return generated_sequence
 
     return lambda _, x: x, stopping_criterion, postprocess
 
 
-def create_choice_mask(
+def create_choice_constraint(
     choices: List[str],
     tokenizer: "PreTrainedTokenizerBase",
     prompt_tokens: "torch.Tensor",
 ) -> Tuple[Callable, Callable, Callable]:
+    """Create a constraint that forces the generation to be among a list of choices.
+
+    Parameters
+    ----------
+    choices
+        The list of sequences to which the generated sequences must belong.
+    tokenizer
+        The tokenizer that corresponds to the model used for generation.
+    prompt_tokens
+        An array that contains the tokenized prompt.
+
+    """
     import torch
 
     num_prompt_tokens = prompt_tokens.shape[-1]
     tokenized_choices = [tokenizer.encode(word) for word in choices]
 
-    def processor(input_ids: torch.Tensor, scores: torch.Tensor) -> torch.Tensor:
+    def logit_processor(input_ids: torch.Tensor, scores: torch.Tensor) -> torch.Tensor:
+        """Pre-process the model's output logits before generating the next token.
+
+        At each step we forbid the tokens that do not steer the generation in the
+        direction of being either of the choices.
+
+        """
         output = input_ids[0, num_prompt_tokens:]
         decoded_output = tokenizer.decode(output, skip_special_tokens=True)
 
@@ -205,9 +247,13 @@ def create_choice_mask(
         return scores
 
     def stopping_criterion(input_ids: torch.Tensor, _) -> bool:
-        """
-        TODO: We can stop the generation once we have excluded all possibilities but one, and the
-        full sequence can be recovered during post-processing.
+        """Choose whether to stop the generation after this step.
+
+        We stop generation when either of the choices has been found.
+
+        TODO: We can stop the generation once we have excluded all possibilities
+        but one, and the full sequence can be recovered during post-processing.
+
         """
         decoded_input = tokenizer.decode(
             input_ids[0, num_prompt_tokens:], skip_special_tokens=True
@@ -217,15 +263,22 @@ def create_choice_mask(
 
         return False
 
-    def postprocessing(output: str) -> str:
-        return output
-
-    return processor, stopping_criterion, postprocessing
+    return logit_processor, stopping_criterion, lambda x: x
 
 
-def create_int_mask(
+def create_int_constraint(
     tokenizer: "PreTrainedTokenizerBase", prompt_tokens: "torch.Tensor"
 ) -> Tuple[Callable, Callable, Callable]:
+    """Create a constraints that forces the generated sequence to be an integer.
+
+    Parameters
+    ----------
+    tokenizer
+        The tokenizer that corresponds to the model used for generation.
+    prompt_tokens
+        An array that contains the tokenized prompt.
+
+    """
     import torch
 
     num_prompt_tokens = prompt_tokens.shape[-1]
@@ -240,38 +293,39 @@ def create_int_mask(
 
     mask[tokenizer.eos_token_id] = False
 
-    def processor(input_ids: torch.Tensor, scores: torch.Tensor) -> torch.Tensor:
+    def logit_processor(input_ids: torch.Tensor, scores: torch.Tensor) -> torch.Tensor:
+        """Pre-process the model's output logits before generating the next token.
+
+        At each step we forbid the tokens that do not correspond to a digit. We forbid
+        EOS tokens until at least one digit has been generated.
+
+        # TODO: Do we need to allow " ", "\n", "\r" and other delimiters?
+
+        """
         if input_ids.shape[1] > num_prompt_tokens + 1:
             mask[tokenizer.eos_token_id] = True
         expanded_mask = mask.expand_as(scores)
         scores[~expanded_mask] = -float("inf")
         return scores
 
-    def stopping_criterion(input_ids: torch.Tensor, _) -> bool:
-        decoded_input = tokenizer.decode(
-            input_ids[0, num_prompt_tokens:], skip_special_tokens=True
-        )
-        is_starting_new_sequence = all([c.isdigit() for c in decoded_input]) and (
-            decoded_input[-1] == " "
-            or decoded_input[-1] == "\n"
-            or decoded_input[-1] == "\r"
-        )
-        if len(decoded_input) > 1 and is_starting_new_sequence:
-            return True
-
-        return False
-
-    def postprocessing(output: str) -> str:
-        return output
-
-    return processor, stopping_criterion, postprocessing
+    return logit_processor, lambda *_: False, lambda x: x
 
 
-def create_float_mask(
+def create_float_constraint(
     tokenizer: "PreTrainedTokenizerBase",
     prompt_tokens: "torch.Tensor",
     decimals: int = 3,
 ) -> Tuple[Callable, Callable, Callable]:
+    """Create a constraints that forces the generated sequence to be an floating point number.
+
+    Parameters
+    ----------
+    tokenizer
+        The tokenizer that corresponds to the model used for generation.
+    prompt_tokens
+        An array that contains the tokenized prompt.
+
+    """
     import torch
 
     num_prompt_tokens = prompt_tokens.shape[-1]
@@ -288,7 +342,15 @@ def create_float_mask(
 
     mask[tokenizer.eos_token_id] = False
 
-    def processor(input_ids: torch.Tensor, scores: torch.Tensor) -> torch.Tensor:
+    def logit_processor(input_ids: torch.Tensor, scores: torch.Tensor) -> torch.Tensor:
+        """Pre-process the model's output logits before generating the next token.
+
+        At each step we forbid the tokens that do not correspond to a digit. We forbid
+        EOS tokens until at least one digit has been generated.
+
+        # TODO: Do we need to allow " ", "\n", "\r" and other delimiters?
+
+        """
         if input_ids.shape[1] > num_prompt_tokens + 1:
             mask[tokenizer.eos_token_id] = True
         expanded_mask = mask.expand_as(scores)
@@ -296,6 +358,12 @@ def create_float_mask(
         return scores
 
     def stopping_criterion(input_ids: torch.Tensor, _) -> bool:
+        """Choose whether to stop the generation after this step.
+
+        We stop generation if the sequence contains more than one period, or
+        if the desired number of decimals has been generated.
+
+        """
         decoded_input = tokenizer.decode(
             input_ids[0, num_prompt_tokens:], skip_special_tokens=True
         )
@@ -308,32 +376,27 @@ def create_float_mask(
         ):
             return True
 
-        if len(decoded_input) > 1:
-            is_starting_new_sequence = all(
-                [c.isdigit() for c in decoded_input[:-1]]
-            ) and (
-                decoded_input[-1] == " "
-                or decoded_input[-1] == "\n"
-                or decoded_input[-1] == "\r"
-            )
-            if is_starting_new_sequence:
-                return True
-
         return False
 
     def postprocessing(output: str) -> str:
+        """Postprocess the generated text.
+
+        We need to remove the trailing period, present if the generation
+        was stopped because a second period was found.
+
+        """
         return output.rstrip(".")
 
-    return processor, stopping_criterion, postprocessing
+    return logit_processor, stopping_criterion, postprocessing
 
 
 type_to_mask: Dict[str, Callable] = {
-    "float": create_float_mask,
-    "int": create_int_mask,
+    "float": create_float_constraint,
+    "int": create_int_constraint,
 }
 
 
-def create_type_mask(
+def create_type_constraint(
     type: str, tokenizer: "PreTrainedTokenizerBase", prompt_tokens: "torch.Tensor"
 ) -> Tuple[Callable, Callable, Callable]:
     if type not in ["int", "float"]:
