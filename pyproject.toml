@@ -36,7 +36,9 @@ dynamic = ["version"]
 [project.optional-dependencies]
 test = [
     "pre-commit",
-    "pytest"
+    "pytest",
+    "torch",
+    "transformers"
 ]
 
 [tool.setuptools_scm]
@@ -46,7 +48,8 @@ write_to = "outlines/_version.py"
 testpaths = ["tests"]
 filterwarnings = [
     "error",
-    "ignore::FutureWarning:transformers.*"
+    "ignore::FutureWarning:transformers.*",
+    "ignore::UserWarning:torch.cuda.*"
 ]
 
 [tool.mypy]

@@ -1,7 +1,11 @@
 """Integration with HuggingFace's `transformers` library."""
-from typing import Callable, Optional
+from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Tuple
 
 from outlines.caching import cache
+
+if TYPE_CHECKING:
+    import torch
+    from transformers import PreTrainedTokenizerBase
 
 
 def HuggingFaceCompletion(
@@ -67,15 +71,19 @@ def call_model_generate_method(
 
     prompt_tokens = tokenizer(prompt, return_tensors="pt")
 
-    logit_processor, stopping_criterion = None, None
+    logit_processors: Optional[List[Callable]] = None
+    stopping_criteria: Optional[List[Callable]] = None
+    postprocessing: Callable = lambda x: x
     if type is not None:
         if samples > 1:
             raise NotImplementedError(
                 "It is currently not possible to control the generation of several samples with the `transformers` integration"
             )
-        logit_processor, stopping_criterion = create_type_mask(
+        logit_processor, stopping_criterion, postprocessing = create_type_mask(
             type, tokenizer, prompt_tokens["input_ids"]
         )
+        logit_processors = [logit_processor]
+        stopping_criteria = [stopping_criterion]
 
     if torch.cuda.is_available():
         model = model.to("cuda")
@@ -88,29 +96,31 @@ def call_model_generate_method(
         max_new_tokens=max_tokens,
         pad_token_id=tokenizer.eos_token_id,
         num_return_sequences=samples,
-        logits_processor=[logit_processor],
-        stopping_criteria=[stopping_criterion],
+        logits_processor=logit_processors,
+        stopping_criteria=stopping_criteria,
     )
-    new_tokens = returned_tokens[:, prompt_tokens["input_ids"].shape[1] + 1 :]
+    new_tokens = returned_tokens[:, prompt_tokens["input_ids"].shape[1] :]
     new_tokens = new_tokens.squeeze()
 
     if samples == 1:
         results = tokenizer.decode(new_tokens, skip_special_tokens=True)
+        results = postprocessing(results)
     else:
         results = tokenizer.batch_decode(new_tokens, skip_special_tokens=True)
 
     return results
 
 
-def create_int_mask(tokenizer, prompt_tokens):
-    """TODO: Make sure that we catch all cases."""
+def create_int_mask(
+    tokenizer: "PreTrainedTokenizerBase", prompt_tokens: "torch.Tensor"
+) -> Tuple[Callable, Callable, Callable]:
     import torch
 
     num_prompt_tokens = prompt_tokens.shape[-1]
 
     mask = torch.zeros(len(tokenizer), dtype=torch.bool)
 
-    for token, token_id in tokenizer.get_vocab().items():
+    for _, token_id in tokenizer.get_vocab().items():
         token = tokenizer.decode(token_id)
         are_all_digits = all([c.isdigit() for c in token])
         if are_all_digits:
@@ -118,14 +128,14 @@ def create_int_mask(tokenizer, prompt_tokens):
 
     mask[tokenizer.eos_token_id] = False
 
-    def processor(input_ids, scores):
+    def processor(input_ids: torch.Tensor, scores: torch.Tensor) -> torch.Tensor:
         if input_ids.shape[1] > num_prompt_tokens + 1:
             mask[tokenizer.eos_token_id] = True
         expanded_mask = mask.expand_as(scores)
         scores[~expanded_mask] = -float("inf")
         return scores
 
-    def stopping_criterion(input_ids, _):
+    def stopping_criterion(input_ids: torch.Tensor, _) -> bool:
         decoded_input = tokenizer.decode(
             input_ids[0, num_prompt_tokens:], skip_special_tokens=True
         )
@@ -139,18 +149,24 @@ def create_int_mask(tokenizer, prompt_tokens):
 
         return False
 
-    return processor, stopping_criterion
+    def postprocessing(output: str) -> str:
+        return output
+
+    return processor, stopping_criterion, postprocessing
 
 
-def create_float_mask(tokenizer, prompt_tokens, decimals=3):
-    """TODO: Make sure that we catch all cases."""
+def create_float_mask(
+    tokenizer: "PreTrainedTokenizerBase",
+    prompt_tokens: "torch.Tensor",
+    decimals: int = 3,
+) -> Tuple[Callable, Callable, Callable]:
     import torch
 
     num_prompt_tokens = prompt_tokens.shape[-1]
 
     mask = torch.zeros(len(tokenizer), dtype=torch.bool)
 
-    for token, token_id in tokenizer.get_vocab().items():
+    for _, token_id in tokenizer.get_vocab().items():
         token = tokenizer.decode(token_id)
         is_valid_float_or_int = (
             all([c.isdigit() or c == "." for c in token]) and token.count(".") <= 1
@@ -160,14 +176,14 @@ def create_float_mask(tokenizer, prompt_tokens, decimals=3):
 
     mask[tokenizer.eos_token_id] = False
 
-    def processor(input_ids, scores):
+    def processor(input_ids: torch.Tensor, scores: torch.Tensor) -> torch.Tensor:
         if input_ids.shape[1] > num_prompt_tokens + 1:
             mask[tokenizer.eos_token_id] = True
         expanded_mask = mask.expand_as(scores)
         scores[~expanded_mask] = -float("inf")
         return scores
 
-    def stopping_criterion(input_ids, _):
+    def stopping_criterion(input_ids: torch.Tensor, _) -> bool:
         decoded_input = tokenizer.decode(
             input_ids[0, num_prompt_tokens:], skip_special_tokens=True
         )
@@ -193,16 +209,21 @@ def create_float_mask(tokenizer, prompt_tokens, decimals=3):
 
         return False
 
-    return processor, stopping_criterion
+    def postprocessing(output: str) -> str:
+        return output.rstrip(".")
+
+    return processor, stopping_criterion, postprocessing
 
 
-type_to_mask = {
+type_to_mask: Dict[str, Callable] = {
     "float": create_float_mask,
     "int": create_int_mask,
 }
 
 
-def create_type_mask(type, tokenizer, prompt_tokens):
+def create_type_mask(
+    type: str, tokenizer: "PreTrainedTokenizerBase", prompt_tokens: "torch.Tensor"
+) -> Tuple[Callable, Callable, Callable]:
     if type not in ["int", "float"]:
         raise NotImplementedError(f"Cannot restrict the generation to type {type}")
 
