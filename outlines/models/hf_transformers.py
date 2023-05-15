@@ -111,6 +111,7 @@ def create_int_mask(tokenizer, prompt_tokens):
     mask = torch.zeros(len(tokenizer), dtype=torch.bool)
 
     for token, token_id in tokenizer.get_vocab().items():
+        token = tokenizer.decode(token_id)
         are_all_digits = all([c.isdigit() for c in token])
         if are_all_digits:
             mask[token_id] = True
@@ -148,6 +149,7 @@ def create_float_mask(tokenizer, prompt_tokens, decimals=3):
     mask = torch.zeros(len(tokenizer), dtype=torch.bool)
 
     for token, token_id in tokenizer.get_vocab().items():
+        token = tokenizer.decode(token_id)
         is_valid_float_or_int = (
             all([c.isdigit() or c == "." for c in token]) and token.count(".") <= 1
         )
