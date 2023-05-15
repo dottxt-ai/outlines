@@ -116,9 +116,11 @@ def create_int_mask(tokenizer, prompt_tokens):
         if are_all_digits:
             mask[token_id] = True
 
-    mask[tokenizer.eos_token_id] = True
+    mask[tokenizer.eos_token_id] = False
 
     def processor(input_ids, scores):
+        if input_ids.shape[1] > num_prompt_tokens + 1:
+            mask[tokenizer.eos_token_id] = True
         expanded_mask = mask.expand_as(scores)
         scores[~expanded_mask] = -float("inf")
         return scores
@@ -156,9 +158,11 @@ def create_float_mask(tokenizer, prompt_tokens, decimals=3):
         if is_valid_float_or_int:
             mask[token_id] = True
 
-    mask[tokenizer.eos_token_id] = True
+    mask[tokenizer.eos_token_id] = False
 
     def processor(input_ids, scores):
+        if input_ids.shape[1] > num_prompt_tokens + 1:
+            mask[tokenizer.eos_token_id] = True
         expanded_mask = mask.expand_as(scores)
         scores[~expanded_mask] = -float("inf")
         return scores
