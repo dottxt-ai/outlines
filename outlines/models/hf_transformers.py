@@ -46,9 +46,16 @@ def HuggingFaceCompletion(
     if temperature is None:
         temperature = 1.0
 
-    def call(prompt: str, *, samples: int = 1, type: Optional[str] = None) -> str:
+    def call(
+        prompt: str,
+        *,
+        samples: int = 1,
+        stop_at: Optional[List[str]] = None,
+        is_in: Optional[List[str]] = None,
+        type: Optional[str] = None,
+    ) -> str:
         return call_model_generate_method(
-            model_name, prompt, max_tokens, temperature, samples, type
+            model_name, prompt, max_tokens, temperature, samples, stop_at, is_in, type
         )
 
     return call
@@ -61,6 +68,8 @@ def call_model_generate_method(
     max_tokens: int,
     temperature: float,
     samples: int,
+    stop_at: List[str],
+    is_in: List[str],
     type: str,
 ) -> str:
     import torch
@@ -79,8 +88,22 @@ def call_model_generate_method(
             raise NotImplementedError(
                 "It is currently not possible to control the generation of several samples with the `transformers` integration"
             )
+        if is_in is not None:
+            raise ValueError(
+                "You cannot both restrict to a set of choices with `is_in` and to a type with `type`"
+            )
         logit_processor, stopping_criterion, postprocessing = create_type_mask(
             type, tokenizer, prompt_tokens["input_ids"]
+        )
+        logit_processors = [logit_processor]
+        stopping_criteria = [stopping_criterion]
+    elif is_in is not None:
+        if stop_at is not None:
+            raise ValueError(
+                "You cannot both restrict to a set of choices with `is_in` and set a stopping criterion"
+            )
+        logit_processor, stopping_criterion, postprocessing = create_choice_mask(
+            is_in, tokenizer, prompt_tokens["input_ids"]
         )
         logit_processors = [logit_processor]
         stopping_criteria = [stopping_criterion]
@@ -109,6 +132,51 @@ def call_model_generate_method(
         results = tokenizer.batch_decode(new_tokens, skip_special_tokens=True)
 
     return results
+
+
+def create_choice_mask(
+    choices: List[str],
+    tokenizer: "PreTrainedTokenizerBase",
+    prompt_tokens: "torch.Tensor",
+) -> Tuple[Callable, Callable, Callable]:
+    import torch
+
+    num_prompt_tokens = prompt_tokens.shape[-1]
+    tokenized_choices = [tokenizer.encode(word) for word in choices]
+
+    def processor(input_ids: torch.Tensor, scores: torch.Tensor) -> torch.Tensor:
+        output = input_ids[0, num_prompt_tokens:]
+        decoded_output = tokenizer.decode(output, skip_special_tokens=True)
+
+        mask = torch.zeros(len(tokenizer), dtype=torch.bool)
+        for choice, tokens in zip(choices, tokenized_choices):
+            if not choice.startswith(decoded_output):
+                continue
+            else:
+                mask[tokens[len(output)]] = True
+
+        expanded_mask = mask.expand_as(scores)
+        scores[~expanded_mask] = -float("inf")
+
+        return scores
+
+    def stopping_criterion(input_ids: torch.Tensor, _) -> bool:
+        """
+        TODO: We can stop the generation once we have excluded all possibilities but one, and the
+        full sequence can be recovered during post-processing.
+        """
+        decoded_input = tokenizer.decode(
+            input_ids[0, num_prompt_tokens:], skip_special_tokens=True
+        )
+        if decoded_input in choices:
+            return True
+
+        return False
+
+    def postprocessing(output: str) -> str:
+        return output
+
+    return processor, stopping_criterion, postprocessing
 
 
 def create_int_mask(

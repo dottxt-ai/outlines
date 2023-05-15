@@ -35,6 +35,21 @@ def test_type_float():
     float(answer)
 
 
+def test_incompatible_constraints():
+    model = HuggingFaceCompletion(MODEL, max_tokens=10)
+
+    with pytest.raises(ValueError):
+        model("test", type="float", is_in=["test"])
+
+
+def test_choices():
+    model = HuggingFaceCompletion(MODEL, max_tokens=50)
+
+    choices = ["a", "and a long sequence", "with\n line break"]
+    answer = model("test", is_in=choices)
+    assert answer in choices
+
+
 @pytest.mark.xfail
 def test_type_multiple_samples():
     model = HuggingFaceCompletion(MODEL, max_tokens=10)
