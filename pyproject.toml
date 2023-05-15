@@ -49,6 +49,7 @@ testpaths = ["tests"]
 filterwarnings = [
     "error",
     "ignore::FutureWarning:transformers.*",
+    "ignore::FutureWarning:diffusers.*",
     "ignore::UserWarning:torch.cuda.*"
 ]
 
