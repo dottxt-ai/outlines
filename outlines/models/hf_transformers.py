@@ -98,12 +98,26 @@ def call_model_generate_method(
         logit_processors = [logit_processor]
         stopping_criteria = [stopping_criterion]
     elif is_in is not None:
+        if samples > 1:
+            raise NotImplementedError(
+                "It is currently not possible to control the generation of several samples with the `transformers` integration"
+            )
         if stop_at is not None:
             raise ValueError(
                 "You cannot both restrict to a set of choices with `is_in` and set a stopping criterion"
             )
         logit_processor, stopping_criterion, postprocessing = create_choice_mask(
             is_in, tokenizer, prompt_tokens["input_ids"]
+        )
+        logit_processors = [logit_processor]
+        stopping_criteria = [stopping_criterion]
+    elif stop_at is not None:
+        if samples > 1:
+            raise NotImplementedError(
+                "It is currently not possible to control the generation of several samples with the `transformers` integration"
+            )
+        logit_processor, stopping_criterion, postprocessing = create_stop_mask(
+            stop_at, tokenizer, prompt_tokens["input_ids"]
         )
         logit_processors = [logit_processor]
         stopping_criteria = [stopping_criterion]
@@ -132,6 +146,36 @@ def call_model_generate_method(
         results = tokenizer.batch_decode(new_tokens, skip_special_tokens=True)
 
     return results
+
+
+def create_stop_mask(
+    stop_at: List[str],
+    tokenizer: "PreTrainedTokenizerBase",
+    prompt_tokens: "torch.Tensor",
+) -> Tuple[Callable, Callable, Callable]:
+    import torch
+
+    num_prompt_tokens = prompt_tokens.shape[-1]
+
+    def stopping_criterion(input_ids: torch.Tensor, _) -> bool:
+        decoded_input = tokenizer.decode(
+            input_ids[0, num_prompt_tokens:], skip_special_tokens=True
+        )
+        for stopping_sequence in stop_at:
+            if stopping_sequence in decoded_input:
+                return True
+
+        return False
+
+    def postprocess(output: str) -> str:
+        for stopping_sequence in stop_at:
+            idx = output.find(stopping_sequence)
+            if idx != -1:
+                return output[:idx]
+
+        return output
+
+    return lambda _, x: x, stopping_criterion, postprocess
 
 
 def create_choice_mask(
