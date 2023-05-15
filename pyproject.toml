@@ -35,6 +35,7 @@ dynamic = ["version"]
 
 [project.optional-dependencies]
 test = [
+    "diffusers",
     "pre-commit",
     "pytest",
     "torch",
