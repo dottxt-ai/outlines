@@ -9,6 +9,7 @@
 
 **Outlines** is a Python library to write reliable programs for interactions with generative models: language models, diffusers, multimodal models, classifiers, etc. It provides a Domain Specific Language (DSL) to make prompting easier, constrained text generation and is natively concurrent. It integrates well with the rest of the Python ecosystem: tools, vector stores, etc.
 
+*Outlines aims to be the library frameworks are made with. It is more like NumPy than LangChain.*
 
 .. grid:: 2
 
@@ -45,7 +46,7 @@ A toy implementation of an agent (similar to BabyAGI or AutoGPT) with Outlines:
    from my_response_models import command_response
 
 
-   @outlines.prompt
+   @text.prompt
    def agent_prompt(objective, goals, tools, response_model):
        """You are an AI with the following objective: {{ objective }}
 
@@ -64,11 +65,10 @@ A toy implementation of an agent (similar to BabyAGI or AutoGPT) with Outlines:
        """
 
 
-   @outlines.chain
-   async def agent(objective, goals, tools)
+   def agent(objective, goals, tools)
       complete = models.text_completion.hf("sshleifer/tiny-gpt2")
       prompt = agent_prompt(objective, goals, tools , command_response)
-      answer = await complete(prompt)
+      answer = complete(prompt)
       command = command_response(answer)
 
       return command
@@ -82,12 +82,16 @@ A toy implementation of an agent (similar to BabyAGI or AutoGPT) with Outlines:
 
 📜 Features
 -----------
+ Simple and powerful prompting primitives based on the Jinja templating engine.
+ Integration with OpenAI and HuggingFace models
 
 - A powerful domain-specific language to write and render prompts;
+- Interleave completions with loops, conditionals, and custom Python functions;
 - OpenAI integration: language models, embeddings and Dall-E;
 - HuggingFace integration: ``transformers`` and ``diffusers``;
-- Parallel model and tool calls with the ``outlines.elemwise`` decorator;
-- Map your chains over different inputs in parallel to avoid overfitting;
+- Caching;
+- Sampling multiple sequences;
+- Controlled generation, including multiple choice, type constraints and dynamic stopping.
 
 .. toctree::
    :maxdepth: 1
@@ -105,12 +109,3 @@ A toy implementation of an agent (similar to BabyAGI or AutoGPT) with Outlines:
    reference/controlled_generation
    reference/multimodel
    reference/batching
-
-.. toctree::
-   :maxdepth: 1
-   :caption: Integrations
-   :hidden:
-
-   integrations/python.rst
-   integrations/llamaindex.rst
-   integrations/messaging.rst
