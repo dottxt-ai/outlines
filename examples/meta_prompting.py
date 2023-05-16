@@ -43,12 +43,12 @@ def fill_in_the_blanks(question, model_name: str):
     def solve(memory):
         """{{memory}}. Let's begin."""
 
-    complete = models.text_completion.openai(model_name, stop_at=["."])
+    complete = models.text_completion.openai(model_name)
 
     prompt = determine_goal(question)
-    answer = complete(prompt)
+    answer = complete(prompt, stop_at=["."])
     prompt = solve(prompt + answer)
-    answer = complete(prompt)
+    answer = complete(prompt, stop_at=["."])
     completed = prompt + answer
 
     return completed
@@ -82,11 +82,11 @@ def ask_an_expert(question, model_name: str):
         {{question}}
         """
 
-    complete_expert = models.text_completion.openai(model_name, stop_at=['"'])
+    complete_expert = models.text_completion.openai(model_name)
     complete_answer = models.text_completion.openai(model_name)
 
     prompt = find_expert(question)
-    expert = complete_expert(prompt)
+    expert = complete_expert(prompt, stop_at=['"'])
     prompt = get_answer(question, expert, prompt + expert)
     answer = complete_answer(prompt)
     completed = prompt + answer
@@ -110,11 +110,11 @@ def ask_an_expert_simple(question, model_name: str):
         For instance, {{expert}} would answer
         """
 
-    model_expert = models.text_completion.openai(model_name, stop_at=["\n", "."])
+    model_expert = models.text_completion.openai(model_name)
     model_answer = models.text_completion.openai(model_name)
 
     prompt = find_expert(question)
-    expert = model_expert(prompt)
+    expert = model_expert(prompt, stop_at=["\n", "."])
     prompt = get_answer(expert, prompt + expert)
     answer = model_answer(prompt)
     completed = prompt + answer
