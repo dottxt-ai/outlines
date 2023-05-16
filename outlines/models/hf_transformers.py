@@ -258,12 +258,30 @@ def create_choice_constraint(
         decoded_input = tokenizer.decode(
             input_ids[0, num_prompt_tokens:], skip_special_tokens=True
         )
-        if decoded_input in choices:
+
+        is_present_in_output = []
+        for choice in choices:
+            if choice == decoded_input:
+                return True
+            elif choice.startswith(decoded_input):
+                is_present_in_output.append(1)
+            else:
+                is_present_in_output.append(0)
+
+        # If we have eliminated all possibilities but one, return
+        if sum(is_present_in_output) == 1:
             return True
 
         return False
 
-    return logit_processor, stopping_criterion, lambda x: x
+    def postprocess(output_sequence: str) -> str:
+        for choice in choices:
+            if choice.startswith(output_sequence):
+                return choice
+
+        return output_sequence
+
+    return logit_processor, stopping_criterion, postprocess
 
 
 def create_int_constraint(
