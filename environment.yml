@@ -1,0 +1,23 @@
+# To use:
+#
+#   $ conda env create -f environment.yml  # `mamba` works too for this command
+#   $ conda activate outlines-dev
+#
+name: outlines-dev
+channels:
+  - conda-forge
+  - huggingface
+dependencies:
+  - python<3.11.0
+  - jinja2
+  - numpy
+  - pillow
+  - pydantic
+  - scipy
+  - diffusers
+  - pytest
+  - pre-commit
+  - transformers
+  - pip
+  - pip:
+    - -e ".[test]"
