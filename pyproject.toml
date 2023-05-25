@@ -42,6 +42,15 @@ test = [
     "transformers"
 ]
 
+[project.urls]
+homepage = "https://github.com/normal-computing/outlines"
+documentation = "https://normal-computing.github.io/outlines/"
+repository = "https://github.com/normal-computing/outlines"
+
+[project.readme]
+file="README.md"
+content-type = "text/markdown"
+
 [tool.setuptools_scm]
 write_to = "outlines/_version.py"
 
