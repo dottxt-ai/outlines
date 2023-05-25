@@ -241,5 +241,5 @@ Do not hesitate to open a draft PR before your contribution is ready, especially
 - [ReAct](https://github.com/normal-computing/outlines/blob/main/examples/meta_prompting.py)
 - [Generate code to solve math problems](https://github.com/normal-computing/outlines/blob/main/examples/dust/math-generate-code.py)
 - [BabyAGI](https://github.com/normal-computing/outlines/blob/main/examples/babyagi.py)
-- [Uncertainty](https://github.com/normal-computing/outlines/blob/readme/examples/sampling.ipynb)
-- [Simulation-based inference](https://github.com/normal-computing/outlines/blob/readme/examples/simulation_based_inference.ipynb)
+- [Uncertainty](https://github.com/normal-computing/outlines/blob/main/examples/sampling.ipynb)
+- [Simulation-based inference](https://github.com/normal-computing/outlines/blob/main/examples/simulation_based_inference.ipynb)
