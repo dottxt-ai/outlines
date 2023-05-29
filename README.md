@@ -73,7 +73,7 @@ def labelling(to_label, examples):
     {{ to_label }} //
     """
 
-model = models.text_completion.openai("text-davinci-003")
+complete = models.text_completion.openai("text-davinci-003")
 prompt = labelling("Just awesome", examples)
 answer = complete(prompt)
 ```
