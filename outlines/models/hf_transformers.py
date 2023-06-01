@@ -462,7 +462,7 @@ def HuggingFaceEmbeddings(model_name: str):
 
         Parameters
         ----------
-        sentences: List[str] | str
+        sentences
             The strings to be embedded
         batch_size: Optional[int]
         The batch size. If it is not provided, or if a negative value is given, the embeddings will be run as a single batch.
