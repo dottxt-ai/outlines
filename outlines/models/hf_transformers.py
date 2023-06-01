@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Tuple, Union
 import numpy as np
 
 import outlines
+from outlines.text.masks import create_float_mask, create_int_mask
 
 if TYPE_CHECKING:
     import torch
@@ -331,16 +332,7 @@ def create_int_constraint(
     import torch
 
     num_prompt_tokens = prompt_tokens.shape[-1]
-
-    mask = torch.zeros(len(tokenizer), dtype=torch.bool)
-
-    for _, token_id in tokenizer.get_vocab().items():
-        token = tokenizer.decode(token_id)
-        are_all_digits = all([c.isdigit() for c in token])
-        if are_all_digits:
-            mask[token_id] = True
-
-    mask[tokenizer.eos_token_id] = False
+    mask = torch.from_numpy(create_int_mask(tokenizer.get_vocab()))
 
     def logit_processor(input_ids: torch.Tensor, scores: torch.Tensor) -> torch.Tensor:
         """Pre-process the model's output logits before generating the next token.
@@ -378,18 +370,7 @@ def create_float_constraint(
     import torch
 
     num_prompt_tokens = prompt_tokens.shape[-1]
-
-    mask = torch.zeros(len(tokenizer), dtype=torch.bool)
-
-    for _, token_id in tokenizer.get_vocab().items():
-        token = tokenizer.decode(token_id)
-        is_valid_float_or_int = (
-            all([c.isdigit() or c == "." for c in token]) and token.count(".") <= 1
-        )
-        if is_valid_float_or_int:
-            mask[token_id] = True
-
-    mask[tokenizer.eos_token_id] = False
+    mask = torch.from_numpy(create_float_mask(tokenizer.get_vocab()))
 
     def logit_processor(input_ids: torch.Tensor, scores: torch.Tensor) -> torch.Tensor:
         """Pre-process the model's output logits before generating the next token.
