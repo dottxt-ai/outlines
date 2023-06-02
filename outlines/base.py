@@ -1,8 +1,15 @@
 import asyncio
 import functools
 import inspect
+from typing import Callable, Optional
 
 import numpy as np
+from numpy.lib.function_base import (
+    _calculate_shapes,
+    _parse_gufunc_signature,
+    _parse_input_dimensions,
+    _update_dim_sizes,
+)
 
 
 class vectorize:
@@ -19,17 +26,19 @@ class vectorize:
 
     """
 
-    def __init__(self, func, signature=None):
+    def __init__(self, func: Callable, signature: Optional[str] = None):
         self.func = func
         self.signature = signature
         self.is_coroutine_fn = inspect.iscoroutinefunction(func)
 
         functools.update_wrapper(self, func)
 
-        if self.signature is not None:
-            raise NotImplementedError(
-                "Vectorization of non-scalar functions is not implemented yet."
-            )
+        if signature is not None:
+            # Parse the signature string into a Python data structure.
+            # For instance "(m),(s)->(s,m)" becomes `([(m,),(s,)],[(s,m)])`.
+            self._in_and_out_core_dimensions = _parse_gufunc_signature(signature)
+        else:
+            self._in_and_out_core_dimensions = None
 
     def __call__(self, *args, **kwargs):
         """Call the vectorized function."""
@@ -102,7 +111,82 @@ class vectorize:
 
         return outputs[0] if n_results == 1 else outputs
 
-    def vectorize_call(self, broadcast_shape, flat_args, flat_kwargs):
+    def call_with_signature(self, *args, **kwargs):
+        """Call functions and coroutines when a signature is specified."""
+        input_core_dims, output_core_dims = self._in_and_out_core_dimensions
+
+        # Make sure that the numbers of arguments passed is compatible with
+        # the signature.
+        num_args = len(args) + len(kwargs)
+        if num_args != len(input_core_dims):
+            raise TypeError(
+                "wrong number of positional arguments: "
+                "expected %r, got %r" % (len(input_core_dims), len(args))
+            )
+
+        # Convert args and kwargs to arrays
+        args = [np.asarray(arg) for arg in args]
+        kwargs = {key: np.array(value) for key, value in kwargs.items()}
+
+        # Find the arguments' broadcast shape, and map placeholder
+        # variables in the signature to the number of dimensions
+        # they correspond to given the arguments.
+        broadcast_shape, dim_sizes = _parse_input_dimensions(
+            args + list(kwargs.values()), input_core_dims
+        )
+
+        # Calculate the shape to which each of the arguments should be broadcasted
+        # and reshape them accordingly.
+        input_shapes = _calculate_shapes(broadcast_shape, dim_sizes, input_core_dims)
+        args = [
+            np.broadcast_to(arg, shape, subok=True)
+            for arg, shape in zip(args, input_shapes)
+        ]
+        kwargs = {
+            key: np.broadcast_to(value, broadcast_shape)
+            for key, value in kwargs.items()
+        }
+
+        n_out = len(output_core_dims)
+
+        if self.is_coroutine_fn:
+            outputs = self.vectorize_call_coroutine(broadcast_shape, args, kwargs)
+        else:
+            outputs = self.vectorize_call(broadcast_shape, args, kwargs)
+
+        outputs = [
+            results if isinstance(results, tuple) else (results,) for results in outputs
+        ]
+
+        flat_outputs = list(zip(*outputs))
+        n_results = len(flat_outputs)
+
+        if n_out != n_results:
+            raise ValueError(
+                f"wrong number of outputs from the function, expected {n_out}, got {n_results}"
+            )
+
+        # The number of dimensions of the outputs are not necessarily known in
+        # advance. The following iterates over the results and updates the
+        # number of dimensions of the outputs accordingly.
+        for results, core_dims in zip(flat_outputs, output_core_dims):
+            for result in results:
+                _update_dim_sizes(dim_sizes, result, core_dims)
+
+        # Calculate the shape to which each of the outputs should be broadcasted
+        # and reshape them.
+        shapes = _calculate_shapes(broadcast_shape, dim_sizes, output_core_dims)
+        outputs = tuple(
+            [
+                np.hstack(results).reshape(shape).squeeze()
+                for shape, results in zip(shapes, zip(*outputs))
+            ]
+        )
+        outputs = tuple([x.item() if np.ndim(x) == 0 else x for x in outputs])
+
+        return outputs[0] if n_results == 1 else outputs
+
+    def vectorize_call(self, broadcast_shape, args, kwargs):
         """Run the function in a for loop.
 
         A possible extension would be to parallelize the calls.
@@ -111,17 +195,17 @@ class vectorize:
         ----------
         broadcast_shape
             The brodcast shape of the input arrays.
-        flat_args
-            A flat array that contains the function's arguments.
-        flat_kwargs
-            A flat array that contains the function's keyword arguments.
+        args
+            The function's broadcasted arguments.
+        kwargs
+            The function's broadcasted keyword arguments.
 
         """
         outputs = []
         for index in np.ndindex(*broadcast_shape):
-            args = tuple(arg[index] for arg in flat_args)
-            kwargs = {key: value[index] for key, value in flat_kwargs.items()}
-            outputs.append(self.func(*args, **kwargs))
+            current_args = tuple(arg[index] for arg in args)
+            current_kwargs = {key: value[index] for key, value in kwargs.items()}
+            outputs.append(self.func(*current_args, **current_kwargs))
 
         return outputs
 
@@ -160,3 +244,32 @@ class vectorize:
             loop.close()
 
         return outputs
+
+
+def _update_arrays_type(arrays, results):
+    """Update the dtype of arrays.
+
+    String arrays contain strings of fixed length. Here they are initialized with
+    the type of the first results, so that if the next results contain longer
+    strings they will be truncated when added to the output arrays. Here we
+    update the type if the current results contain longer strings than in the
+    current output array.
+
+    Parameters
+    ----------
+    arrays
+        Arrays that contain the vectorized function's results.
+    results
+        The current output of the function being vectorized.
+
+    """
+
+    updated_arrays = []
+    for array, result in zip(arrays, results):
+        if array.dtype.type == np.str_:
+            if array.dtype < np.array(result).dtype:
+                array = array.astype(np.array(result).dtype)
+
+        updated_arrays.append(array)
+
+    return tuple(updated_arrays)
