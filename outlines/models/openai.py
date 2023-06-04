@@ -9,6 +9,12 @@ from typing import Callable, Dict, List, Optional, Union
 import numpy as np
 from PIL import Image
 from PIL.Image import Image as PILImage
+from tenacity import (
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_random_exponential,
+)
 
 import outlines
 from outlines.caching import cache
@@ -177,21 +183,6 @@ def OpenAIEmbeddings(model_name: str):
 
     """
 
-    @error_handler
-    @cache
-    def call_embeddings_api(
-        model: str,
-        input: str,
-    ):
-        import openai
-
-        response = openai.Embedding.create(
-            model=model,
-            input=list(input),
-        )
-
-        return response
-
     @functools.partial(outlines.vectorize, signature="()->(s)")
     def generate(query: str) -> np.ndarray:
         api_response = call_embeddings_api(model_name, query)
@@ -221,17 +212,6 @@ def OpenAIImageGeneration(model_name: str = "", size: str = "512x512"):
     passed a prompt.
 
     """
-
-    @error_handler
-    @cache
-    async def call_image_generation_api(prompt: str, size: str, samples: int):
-        import openai
-
-        response = await openai.Image.acreate(
-            prompt=prompt, size=size, n=int(samples), response_format="b64_json"
-        )
-
-        return response
 
     @functools.partial(outlines.vectorize, signature="(),()->(s)")
     async def generate(prompt: str, samples: int = 1) -> PILImage:
@@ -312,7 +292,7 @@ def error_handler(api_call_fn: Callable) -> Callable:
         try:
             os.environ["OPENAI_API_KEY"]
         except KeyError:
-            raise OSError(
+            raise KeyError(
                 "Could not find the `OPENAI_API_KEY` environment variable, which is necessary to call "
                 "OpenAI's APIs. Please make sure it is set before re-running your model."
             )
@@ -338,6 +318,14 @@ def error_handler(api_call_fn: Callable) -> Callable:
     return call
 
 
+retry_config = {
+    "wait": wait_random_exponential(min=1, max=30),
+    "stop": stop_after_attempt(6),
+    "retry": retry_if_exception_type(OSError),
+}
+
+
+@retry(**retry_config)
 @error_handler
 @cache
 async def call_completion_api(
@@ -360,10 +348,10 @@ async def call_completion_api(
         logit_bias=logit_bias,
         n=int(num_samples),
     )
-
     return response
 
 
+@retry(**retry_config)
 @error_handler
 @cache
 async def call_chat_completion_api(
@@ -385,6 +373,36 @@ async def call_chat_completion_api(
         stop=list(stop_sequences) if len(stop_sequences) > 0 else None,
         logit_bias=logit_bias,
         n=int(num_samples),
+    )
+
+    return response
+
+
+@retry(**retry_config)
+@error_handler
+@cache
+def call_embeddings_api(
+    model: str,
+    input: str,
+):
+    import openai
+
+    response = openai.Embedding.create(
+        model=model,
+        input=input,
+    )
+
+    return response
+
+
+@retry(**retry_config)
+@error_handler
+@cache
+def call_image_generation_api(prompt: str, size: str, samples: int):
+    import openai
+
+    response = openai.Image.create(
+        prompt=prompt, size=size, n=samples, response_format="b64_json"
     )
 
     return response

@@ -30,6 +30,7 @@ dependencies = [
    "perscache",
    "pydantic",
    "scipy",
+   "tenacity",
 ]
 dynamic = ["version"]
 
@@ -79,6 +80,7 @@ module = [
     "pydantic",
     "pytest",
     "scipy.*",
+    "tenacity.*",
     "tiktoken.*",
     "torch",
     "transformers",
