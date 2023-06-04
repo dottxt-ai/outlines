@@ -23,7 +23,7 @@ def OpenAICompletion(
     max_tokens: Optional[int] = 216,
     temperature: Optional[float] = 1.0,
 ) -> Callable:
-    """Create a function that will call the OpenAI conmpletion API.
+    """Create a function that will call the OpenAI completion API.
 
     You should have the `openai` package installed. Available models are listed
     in the `OpenAI documentation <https://platform.openai.com/docs/models/overview>`_.
@@ -100,7 +100,7 @@ def OpenAICompletion(
     def generate_choice(
         prompt: str, is_in: List[str], samples: int
     ) -> Union[List[str], str]:
-        """Generate a a sequence that must be one of many options.
+        """Generate a sequence that must be one of many options.
 
         We tokenize every choice, iterate over the token lists, create a mask
         with the current tokens and generate one token. We progressively
