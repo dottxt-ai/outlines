@@ -1,14 +1,16 @@
 """Integration with OpenAI's API."""
 import base64
+import functools
 import os
 import warnings
 from io import BytesIO
-from typing import Callable, Dict, List, Optional, Tuple, Union
+from typing import Callable, Dict, List, Optional, Union
 
 import numpy as np
 from PIL import Image
 from PIL.Image import Image as PILImage
 
+import outlines
 from outlines.caching import cache
 
 __all__ = [
@@ -57,18 +59,22 @@ def OpenAICompletion(
             f"The model {model_name} requested is not available. Only the completion and chat completion models are available for OpenAI."
         )
 
-    def generate(prompt: str, *, samples=1, stop_at=None, is_in=None, type=None):
+    def generate(
+        prompt: str,
+        *,
+        samples=1,
+        stop_at: List[Optional[str]] = [],
+        is_in=None,
+        type=None,
+    ):
         import tiktoken
-
-        if stop_at is not None:
-            stop_at = tuple(stop_at)
 
         mask = {}
         if type is not None:
             encoder = tiktoken.encoding_for_model(model_name)
             mask = create_type_mask(type, encoder)
 
-        if is_in is not None and stop_at is not None:
+        if is_in is not None and stop_at:
             raise TypeError("You cannot set `is_in` and `stop_at` at the same time.")
         elif is_in is not None and len(mask) > 0:
             raise TypeError("You cannot set `is_in` and `mask` at the same time.")
@@ -77,10 +83,11 @@ def OpenAICompletion(
         else:
             return generate_base(prompt, stop_at, samples, mask)
 
-    def generate_base(
-        prompt: str, stop_at: Optional[Tuple[str]], samples: int, mask: Dict[int, int]
+    @functools.partial(outlines.vectorize, signature="(),(m),(),()->(s)")
+    async def generate_base(
+        prompt: str, stop_at: List[Optional[str]], samples: int, mask: Dict[int, int]
     ) -> str:
-        responses = call_api(
+        responses = await call_api(
             model_name,
             format_prompt(prompt),
             max_tokens,
@@ -91,13 +98,16 @@ def OpenAICompletion(
         )
 
         if samples == 1:
-            results = extract_choice(responses["choices"][0])
+            results = np.array([extract_choice(responses["choices"][0])])
         else:
-            results = [extract_choice(responses["choices"][i]) for i in range(samples)]
+            results = np.array(
+                [extract_choice(responses["choices"][i]) for i in range(samples)]
+            )
 
         return results
 
-    def generate_choice(
+    @functools.partial(outlines.vectorize, signature="(),(m),()->(s)")
+    async def generate_choice(
         prompt: str, is_in: List[str], samples: int
     ) -> Union[List[str], str]:
         """Generate a a sequence that must be one of many options.
@@ -130,12 +140,12 @@ def OpenAICompletion(
                 if len(mask) == 0:
                     break
 
-                response = call_api(
+                response = await call_api(
                     model_name,
                     format_prompt(prompt),
                     1,
                     temperature,
-                    None,
+                    [],
                     mask,
                     samples,
                 )
@@ -144,10 +154,7 @@ def OpenAICompletion(
 
             decoded_samples.append("".join(decoded))
 
-        if samples == 1:
-            return decoded_samples[0]
-
-        return decoded_samples
+        return np.array(decoded_samples)
 
     return generate
 
@@ -180,11 +187,12 @@ def OpenAIEmbeddings(model_name: str):
 
         response = openai.Embedding.create(
             model=model,
-            input=input,
+            input=list(input),
         )
 
         return response
 
+    @functools.partial(outlines.vectorize, signature="()->(s)")
     def generate(query: str) -> np.ndarray:
         api_response = call_embeddings_api(model_name, query)
         response = api_response["data"][0]["embedding"]
@@ -216,28 +224,25 @@ def OpenAIImageGeneration(model_name: str = "", size: str = "512x512"):
 
     @error_handler
     @cache
-    def call_image_generation_api(prompt: str, size: str, samples: int):
+    async def call_image_generation_api(prompt: str, size: str, samples: int):
         import openai
 
-        response = openai.Image.create(
-            prompt=prompt, size=size, n=samples, response_format="b64_json"
+        response = await openai.Image.acreate(
+            prompt=prompt, size=size, n=int(samples), response_format="b64_json"
         )
 
         return response
 
-    def generate(prompt: str, samples: int = 1) -> PILImage:
-        api_response = call_image_generation_api(prompt, size, samples)
-
-        if samples == 1:
-            response = api_response["data"][0]["b64_json"]
-            return Image.open(BytesIO(base64.b64decode(response)))
+    @functools.partial(outlines.vectorize, signature="(),()->(s)")
+    async def generate(prompt: str, samples: int = 1) -> PILImage:
+        api_response = await call_image_generation_api(prompt, size, samples)
 
         images = []
         for i in range(samples):
             response = api_response["data"][i]["b64_json"]
             images.append(Image.open(BytesIO(base64.b64decode(response))))
 
-        return images
+        return np.array(images, dtype="object")
 
     return generate
 
@@ -335,25 +340,25 @@ def error_handler(api_call_fn: Callable) -> Callable:
 
 @error_handler
 @cache
-def call_completion_api(
+async def call_completion_api(
     model: str,
     prompt: str,
     max_tokens: int,
     temperature: float,
-    stop_sequences: Tuple[str],
+    stop_sequences: List[str],
     logit_bias: Dict[str, int],
     num_samples: int,
 ):
     import openai
 
-    response = openai.Completion.create(
+    response = await openai.Completion.acreate(
         engine=model,
         prompt=prompt,
         temperature=temperature,
         max_tokens=max_tokens,
-        stop=stop_sequences,
+        stop=list(stop_sequences) if len(stop_sequences) > 0 else None,
         logit_bias=logit_bias,
-        n=num_samples,
+        n=int(num_samples),
     )
 
     return response
@@ -361,25 +366,25 @@ def call_completion_api(
 
 @error_handler
 @cache
-def call_chat_completion_api(
+async def call_chat_completion_api(
     model: str,
     messages: List[Dict[str, str]],
     max_tokens: int,
     temperature: float,
-    stop_sequences: Tuple[str],
+    stop_sequences: List[str],
     logit_bias: Dict[str, int],
     num_samples: int,
 ):
     import openai
 
-    response = openai.ChatCompletion.create(
+    response = await openai.ChatCompletion.acreate(
         model=model,
         messages=messages,
         max_tokens=max_tokens,
         temperature=temperature,
-        stop=stop_sequences,
+        stop=list(stop_sequences) if len(stop_sequences) > 0 else None,
         logit_bias=logit_bias,
-        n=num_samples,
+        n=int(num_samples),
     )
 
     return response
