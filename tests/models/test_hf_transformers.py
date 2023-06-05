@@ -1,10 +1,7 @@
-import outlines
+import numpy as np
+import pytest
 
-outlines.disable_cache()
-
-import pytest  # noqa
-
-from outlines.models.hf_transformers import HuggingFaceCompletion  # noqa
+from outlines.models.hf_transformers import HuggingFaceCompletion
 
 TEST_MODEL = "hf-internal-testing/tiny-random-GPTJForCausalLM"
 
@@ -19,7 +16,7 @@ def test_samples():
     assert isinstance(answer, str)
 
     answers = model("test", samples=3)
-    assert isinstance(answers, list)
+    assert isinstance(answers, np.ndarray)
     assert len(answers) == 3
 
 
