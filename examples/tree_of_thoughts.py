@@ -11,7 +11,6 @@ References
 
 """
 import re
-from collections import deque
 import backoff
 import numpy as np
 import openai
@@ -291,7 +290,7 @@ def tree_of_thoughts(x: str) -> list[str]:
     n_steps = 4  # max 4 steps for this problem (4 numbers)
     n_eval = 3  # how many samples to calculate value
 
-    queue = deque([""])  # current output candidates
+    queue = [""]  # current output candidates
     for _ in range(n_steps):
         # 1. generate proposals/next_steps
         proposals = []
