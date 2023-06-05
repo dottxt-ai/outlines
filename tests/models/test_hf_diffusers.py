@@ -1,3 +1,4 @@
+import numpy as np
 from PIL.Image import Image as PILImage
 
 from outlines.models.hf_diffusers import HuggingFaceDiffuser
@@ -12,7 +13,7 @@ def test_stable_diffusion():
     assert isinstance(image, PILImage)
 
     images = model("test", samples=3)
-    assert isinstance(images, list)
+    assert isinstance(images, np.ndarray)
     assert len(images) == 3
     for img in images:
         assert isinstance(image, PILImage)
