@@ -10,6 +10,7 @@ Build _reliable_ workflows based on interactions with generative models.
 [Controlled generation](#controlled-generation) •
 [Agents](#agents-example) •
 [Sampling](#sampling-uncertainty-simulation-based-inference) •
+[Parallel execution](#vectorization-and-parallel-execution) •
 [Examples](#examples)
 
 </div>
@@ -27,6 +28,7 @@ Build _reliable_ workflows based on interactions with generative models.
 - [x] Integration with OpenAI and HuggingFace models
 - [x] Controlled generation, including multiple choice, type constraints and dynamic stopping
 - [x] Sampling of multiple sequences
+- [x] Vectorized execution
 
 
 ## Installation
@@ -219,6 +221,47 @@ print(answer)
 ```
 
 The focus on sampling allows us to explore different ideas, such as [using the diversity of answers to evaluate the model's uncertainty](https://github.com/normal-computing/outlines/blob/readme/examples/sampling.ipynb), or [simulation-based inference to optimize the prompt](https://github.com/normal-computing/outlines/blob/readme/examples/simulation_based_inference.ipynb).
+
+## Vectorization and parallel execution
+
+You can pass prompts in a NumPy array to Outlines models:
+
+``` python
+import numpy as np
+import outlines.models as models
+
+model = models.text_completion.openai("text-davinci-003")
+
+prompts = [
+    ["Translate 'Hello' in Italian", "Translate 'Hello' in French"],
+    ["Translate 'Hello' in Spanish", "Translate 'Hello' in German"],
+]
+answers = model(prompts)
+
+print(answers.shape)
+# (2, 2)
+```
+
+Outlines also provide a `outlines.vectorize` decorator that will vectorize any function. If the function is async the requests will be run concurrently:
+
+``` python
+import aiohttp
+import numpy as np
+import outlines
+
+@outlines.vectorize
+async def wikipedia_search(query):
+    url = f"https://en.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&exintro&explaintext&redirects=1&titles={query}&origin=*"
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as response:
+            return await response.text()
+
+results = wikipedia_search([["Cat", "Dog"],["Bird", "Horse"]])
+print(results.shape)
+# (2, 2)
+```
+
+This feature allows you to run multiple workflows in parallel, for instance to avoid overfitting when iterating over a workflow or in production to run workflows over several different inputs.
 
 ## Contributing
 
