@@ -1,7 +1,11 @@
 """Integration with HuggingFace's `transformers` library."""
-from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Tuple
+import functools
+from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Tuple, Union
 
-from outlines.caching import cache
+import numpy as np
+
+import outlines
+from outlines.text.masks import create_float_mask, create_int_mask
 
 if TYPE_CHECKING:
     import torch
@@ -47,38 +51,52 @@ def HuggingFaceCompletion(
         temperature = 1.0
 
     def call(
-        prompt: str,
+        prompt: Union[str, List[str]],
         *,
         samples: int = 1,
-        stop_at: Optional[List[str]] = None,
-        is_in: Optional[List[str]] = None,
+        stop_at: List[Optional[str]] = [],
+        is_in: List[Optional[str]] = [],
         type: Optional[str] = None,
     ) -> str:
+        if isinstance(prompt, str):
+            prompt = [prompt]
+
         return call_model_generate_method(
-            model_name, prompt, max_tokens, temperature, samples, stop_at, is_in, type
+            model_name,
+            prompt,
+            max_tokens,
+            temperature,
+            samples,
+            stop_at,
+            is_in,
+            type,
         )
 
     return call
 
 
-@cache
+@functools.partial(outlines.vectorize, signature="(),(m),(),(),(),(i),(j),()->(m,s)")
 def call_model_generate_method(
     model_name: str,
     prompt: str,
     max_tokens: int,
     temperature: float,
     samples: int,
-    stop_at: List[str],
-    is_in: List[str],
+    stop_at: List[Optional[str]],
+    is_in: np.ndarray,
     type: str,
 ) -> str:
     import torch
     from transformers import AutoModelForCausalLM, AutoTokenizer
 
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    # `generate` does not accept NumPy arrays
+    prompt = list(prompt)
+
+    tokenizer = AutoTokenizer.from_pretrained(model_name, padding_size="left")
     model = AutoModelForCausalLM.from_pretrained(model_name)
 
-    prompt_tokens = tokenizer(prompt, return_tensors="pt")
+    tokenizer.pad_token = tokenizer.eos_token
+    prompt_tokens = tokenizer(prompt, return_tensors="pt", padding=True)
 
     logit_processors: Optional[List[Callable]] = None
     stopping_criteria: Optional[List[Callable]] = None
@@ -88,7 +106,7 @@ def call_model_generate_method(
             raise NotImplementedError(
                 "It is currently not possible to control the generation of several samples with the `transformers` integration"
             )
-        if is_in is not None:
+        if is_in.size > 0:
             raise ValueError(
                 "You cannot both restrict to a set of choices with `is_in` and to a type with `type`"
             )
@@ -97,12 +115,12 @@ def call_model_generate_method(
         )
         logit_processors = [logit_processor]
         stopping_criteria = [stopping_criterion]
-    elif is_in is not None:
+    elif is_in.size > 0:
         if samples > 1:
             raise NotImplementedError(
                 "It is currently not possible to control the generation of several samples with the `transformers` integration"
             )
-        if stop_at is not None:
+        if stop_at.size > 0:
             raise ValueError(
                 "You cannot both restrict to a set of choices with `is_in` and set a stopping criterion"
             )
@@ -111,7 +129,7 @@ def call_model_generate_method(
         )
         logit_processors = [logit_processor]
         stopping_criteria = [stopping_criterion]
-    elif stop_at is not None:
+    elif stop_at.size > 0:
         if samples > 1:
             raise NotImplementedError(
                 "It is currently not possible to control the generation of several samples with the `transformers` integration"
@@ -132,18 +150,32 @@ def call_model_generate_method(
         temperature=temperature,
         max_new_tokens=max_tokens,
         pad_token_id=tokenizer.eos_token_id,
-        num_return_sequences=samples,
+        num_return_sequences=int(samples),
         logits_processor=logit_processors,
         stopping_criteria=stopping_criteria,
     )
     new_tokens = returned_tokens[:, prompt_tokens["input_ids"].shape[1] :]
-    new_tokens = new_tokens.squeeze()
+    if len(prompt) == 1:
+        new_tokens = new_tokens.squeeze()
 
-    if samples == 1:
+    if new_tokens.ndim < 2:
         results = tokenizer.decode(new_tokens, skip_special_tokens=True)
-        results = postprocessing(results)
+        results = np.array([postprocessing(results)])
     else:
         results = tokenizer.batch_decode(new_tokens, skip_special_tokens=True)
+        results = [postprocessing(result) for result in results]
+        results = np.array(results)
+
+    if len(prompt) == 1:
+        results = np.expand_dims(results, 0)
+    else:
+        results = np.expand_dims(results, 1)
+
+    # If we pass a batch of prompts to the model and ask for
+    # several samples we get a list of results that we need
+    # to reshape to the right dimensions.
+    if len(prompt) > 1 and samples > 1:
+        results = np.reshape(results, (-1, samples))
 
     return results
 
@@ -300,16 +332,7 @@ def create_int_constraint(
     import torch
 
     num_prompt_tokens = prompt_tokens.shape[-1]
-
-    mask = torch.zeros(len(tokenizer), dtype=torch.bool)
-
-    for _, token_id in tokenizer.get_vocab().items():
-        token = tokenizer.decode(token_id)
-        are_all_digits = all([c.isdigit() for c in token])
-        if are_all_digits:
-            mask[token_id] = True
-
-    mask[tokenizer.eos_token_id] = False
+    mask = torch.from_numpy(create_int_mask(tokenizer.get_vocab()))
 
     def logit_processor(input_ids: torch.Tensor, scores: torch.Tensor) -> torch.Tensor:
         """Pre-process the model's output logits before generating the next token.
@@ -347,18 +370,7 @@ def create_float_constraint(
     import torch
 
     num_prompt_tokens = prompt_tokens.shape[-1]
-
-    mask = torch.zeros(len(tokenizer), dtype=torch.bool)
-
-    for _, token_id in tokenizer.get_vocab().items():
-        token = tokenizer.decode(token_id)
-        is_valid_float_or_int = (
-            all([c.isdigit() or c == "." for c in token]) and token.count(".") <= 1
-        )
-        if is_valid_float_or_int:
-            mask[token_id] = True
-
-    mask[tokenizer.eos_token_id] = False
+    mask = torch.from_numpy(create_float_mask(tokenizer.get_vocab()))
 
     def logit_processor(input_ids: torch.Tensor, scores: torch.Tensor) -> torch.Tensor:
         """Pre-process the model's output logits before generating the next token.
