@@ -93,7 +93,7 @@ def call_model_generate_method(
     prompt = list(prompt)
 
     tokenizer = AutoTokenizer.from_pretrained(model_name, padding_size="left")
-    model = AutoModelForCausalLM.from_pretrained(model_name)
+    model = AutoModelForCausalLM.from_pretrained(model_name, trust_remote_code=True)
 
     tokenizer.pad_token = tokenizer.eos_token
     prompt_tokens = tokenizer(prompt, return_tensors="pt", padding=True)
