@@ -44,6 +44,8 @@ test = [
     "transformers",
     "coverage[toml]>=5.1",
     "diff-cover",
+    "lark",
+    "regex",
 ]
 
 [project.urls]
@@ -87,6 +89,8 @@ module = [
     "tiktoken.*",
     "torch",
     "transformers.*",
+    "lark.*",
+    "regex.*",
 ]
 ignore_missing_imports = true
 
