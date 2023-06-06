@@ -91,10 +91,11 @@ def call_model_generate_method(
     # `generate` does not accept NumPy arrays
     prompt = list(prompt)
 
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    tokenizer = AutoTokenizer.from_pretrained(model_name, padding_size="left")
     model = AutoModelForCausalLM.from_pretrained(model_name)
 
-    prompt_tokens = tokenizer(prompt, return_tensors="pt")
+    tokenizer.pad_token = tokenizer.eos_token
+    prompt_tokens = tokenizer(prompt, return_tensors="pt", padding=True)
 
     logit_processors: Optional[List[Callable]] = None
     stopping_criteria: Optional[List[Callable]] = None
@@ -153,15 +154,29 @@ def call_model_generate_method(
         stopping_criteria=stopping_criteria,
     )
     new_tokens = returned_tokens[:, prompt_tokens["input_ids"].shape[1] :]
-    new_tokens = new_tokens.squeeze()
+    if len(prompt) == 1:
+        new_tokens = new_tokens.squeeze()
 
-    if samples == 1:
+    if new_tokens.ndim < 2:
         results = tokenizer.decode(new_tokens, skip_special_tokens=True)
-        results = [postprocessing(results)]
+        results = np.array([postprocessing(results)])
     else:
         results = tokenizer.batch_decode(new_tokens, skip_special_tokens=True)
+        results = [postprocessing(result) for result in results]
+        results = np.array(results)
 
-    return np.atleast_2d(results)
+    if len(prompt) == 1:
+        results = np.expand_dims(results, 0)
+    else:
+        results = np.expand_dims(results, 1)
+
+    # If we pass a batch of prompts to the model and ask for
+    # several samples we get a list of results that we need
+    # to reshape to the right dimensions.
+    if len(prompt) > 1 and samples > 1:
+        results = np.reshape(results, (-1, samples))
+
+    return results
 
 
 def create_stop_constraint(
