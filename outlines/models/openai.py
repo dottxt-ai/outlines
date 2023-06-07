@@ -69,11 +69,14 @@ def OpenAICompletion(
         prompt: str,
         *,
         samples=1,
-        stop_at: List[Optional[str]] = [],
+        stop_at: Union[List[Optional[str]], str] = [],
         is_in=None,
         type=None,
     ):
         import tiktoken
+
+        if isinstance(stop_at, str):
+            stop_at = [stop_at]
 
         mask = {}
         if type is not None:
