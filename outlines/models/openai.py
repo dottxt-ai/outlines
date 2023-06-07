@@ -184,8 +184,8 @@ def OpenAIEmbeddings(model_name: str):
     """
 
     @functools.partial(outlines.vectorize, signature="()->(s)")
-    def generate(query: str) -> np.ndarray:
-        api_response = call_embeddings_api(model_name, query)
+    async def generate(query: str) -> np.ndarray:
+        api_response = await call_embeddings_api(model_name, query)
         response = api_response["data"][0]["embedding"]
         return np.array(response)
 
@@ -213,8 +213,11 @@ def OpenAIImageGeneration(model_name: str = "", size: str = "512x512"):
 
     """
 
+    def generate(prompt: str, samples: int = 1):
+        return generate_base(prompt, samples)
+
     @functools.partial(outlines.vectorize, signature="(),()->(s)")
-    async def generate(prompt: str, samples: int = 1) -> PILImage:
+    async def generate_base(prompt: str, samples: int) -> PILImage:
         api_response = await call_image_generation_api(prompt, size, samples)
 
         images = []
@@ -381,13 +384,13 @@ async def call_chat_completion_api(
 @retry(**retry_config)
 @error_handler
 @cache
-def call_embeddings_api(
+async def call_embeddings_api(
     model: str,
     input: str,
 ):
     import openai
 
-    response = openai.Embedding.create(
+    response = await openai.Embedding.acreate(
         model=model,
         input=input,
     )
@@ -398,11 +401,11 @@ def call_embeddings_api(
 @retry(**retry_config)
 @error_handler
 @cache
-def call_image_generation_api(prompt: str, size: str, samples: int):
+async def call_image_generation_api(prompt: str, size: str, samples: int):
     import openai
 
-    response = openai.Image.create(
-        prompt=prompt, size=size, n=samples, response_format="b64_json"
+    response = await openai.Image.acreate(
+        prompt=prompt, size=size, n=int(samples), response_format="b64_json"
     )
 
     return response
