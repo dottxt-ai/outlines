@@ -143,6 +143,9 @@ def call_model_generate_method(
     if torch.cuda.is_available():
         model = model.to("cuda")
         prompt_tokens = prompt_tokens.to("cuda")
+    elif torch.backends.mps.is_available():
+        model = model.to("mps")
+        prompt_tokens = prompt_tokens.to("mps")
 
     returned_tokens = model.generate(
         **prompt_tokens,
