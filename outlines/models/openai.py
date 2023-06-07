@@ -228,7 +228,11 @@ def OpenAIImageGeneration(model_name: str = "", size: str = "512x512"):
             response = api_response["data"][i]["b64_json"]
             images.append(Image.open(BytesIO(base64.b64decode(response))))
 
-        return np.array(images, dtype="object")
+        array = np.empty((samples,), dtype="object")
+        for idx, image in enumerate(images):
+            array[idx] = image
+
+        return np.atleast_2d(array)
 
     return generate
 
