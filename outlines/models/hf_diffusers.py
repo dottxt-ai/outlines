@@ -46,6 +46,8 @@ def call_stable_diffusion_pipeline(
     pipe = StableDiffusionPipeline.from_pretrained(model_name)
     if torch.cuda.is_available():
         pipe = pipe.to("cuda")
+    elif torch.backends.mps.is_available():
+        pipe = pipe.to("mps")
 
     images = pipe(prompt, num_images_per_prompt=samples).images
     if not isinstance(images, list):
