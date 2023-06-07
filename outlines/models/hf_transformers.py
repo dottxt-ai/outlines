@@ -16,6 +16,7 @@ def HuggingFaceCompletion(
     model_name: str,
     max_tokens: Optional[int] = None,
     temperature: Optional[float] = None,
+    **model_kwargs,
 ) -> Callable:
     """Create a function that will call the `generate` method of a `transformers` model.
 
@@ -38,17 +39,27 @@ def HuggingFaceCompletion(
         The maximum number of tokens to generate.
     temperature
         Value used to module the next token probabilities.
+    model_kwargs
+        Kwargs passed to initialize AutomodelForCausalLM.
 
     Returns
     -------
     A function that will generate tokens from the model when passed a prompt.
 
     """
+    from transformers import AutoModelForCausalLM, AutoTokenizer
+
     if max_tokens is None:
         max_tokens = 216
 
     if temperature is None:
         temperature = 1.0
+
+    # TODO: Left-padding should only be applied when using decoder-only models
+    # Attentions masks should also be passed to the generation function.
+    tokenizer = AutoTokenizer.from_pretrained(model_name, padding_size="left")
+    model = AutoModelForCausalLM.from_pretrained(model_name, **model_kwargs)
+    generate = build_generator(model, tokenizer)
 
     def call(
         prompt: Union[str, List[str]],
@@ -61,8 +72,7 @@ def HuggingFaceCompletion(
         if isinstance(prompt, str):
             prompt = [prompt]
 
-        return call_model_generate_method(
-            model_name,
+        return generate(
             prompt,
             max_tokens,
             temperature,
@@ -75,112 +85,121 @@ def HuggingFaceCompletion(
     return call
 
 
-@functools.partial(outlines.vectorize, signature="(),(m),(),(),(),(i),(j),()->(m,s)")
-def call_model_generate_method(
-    model_name: str,
-    prompt: str,
-    max_tokens: int,
-    temperature: float,
-    samples: int,
-    stop_at: List[Optional[str]],
-    is_in: np.ndarray,
-    type: str,
-) -> str:
-    import torch
-    from transformers import AutoModelForCausalLM, AutoTokenizer
+def build_generator(model, tokenizer):
+    @functools.partial(outlines.vectorize, signature="(m),(),(),(),(i),(j),()->(m,s)")
+    def generate(
+        prompt: str,
+        max_tokens: int,
+        temperature: float,
+        samples: int,
+        stop_at: List[Optional[str]],
+        is_in: np.ndarray,
+        type: str,
+        **model_kwargs,
+    ) -> str:
+        import torch
 
-    # `generate` does not accept NumPy arrays
-    prompt = list(prompt)
+        nonlocal model
+        nonlocal tokenizer
 
-    tokenizer = AutoTokenizer.from_pretrained(model_name, padding_size="left")
-    model = AutoModelForCausalLM.from_pretrained(model_name)
+        # `generate` does not accept NumPy arrays
+        prompt = list(prompt)
 
-    tokenizer.pad_token = tokenizer.eos_token
-    prompt_tokens = tokenizer(prompt, return_tensors="pt", padding=True)
+        tokenizer.pad_token = tokenizer.eos_token
 
-    logit_processors: Optional[List[Callable]] = None
-    stopping_criteria: Optional[List[Callable]] = None
-    postprocessing: Callable = lambda x: x
-    if type is not None:
-        if samples > 1:
-            raise NotImplementedError(
-                "It is currently not possible to control the generation of several samples with the `transformers` integration"
-            )
-        if is_in.size > 0:
-            raise ValueError(
-                "You cannot both restrict to a set of choices with `is_in` and to a type with `type`"
-            )
-        logit_processor, stopping_criterion, postprocessing = create_type_constraint(
-            type, tokenizer, prompt_tokens["input_ids"]
+        prompt_tokens = tokenizer(prompt, return_tensors="pt", padding=True)
+
+        logit_processors: Optional[List[Callable]] = None
+        stopping_criteria: Optional[List[Callable]] = None
+        postprocessing: Callable = lambda x: x
+        if type is not None:
+            if samples > 1:
+                raise NotImplementedError(
+                    "It is currently not possible to control the generation of several samples with the `transformers` integration"
+                )
+            if is_in.size > 0:
+                raise ValueError(
+                    "You cannot both restrict to a set of choices with `is_in` and to a type with `type`"
+                )
+            (
+                logit_processor,
+                stopping_criterion,
+                postprocessing,
+            ) = create_type_constraint(type, tokenizer, prompt_tokens["input_ids"])
+            logit_processors = [logit_processor]
+            stopping_criteria = [stopping_criterion]
+        elif is_in.size > 0:
+            if samples > 1:
+                raise NotImplementedError(
+                    "It is currently not possible to control the generation of several samples with the `transformers` integration"
+                )
+            if stop_at.size > 0:
+                raise ValueError(
+                    "You cannot both restrict to a set of choices with `is_in` and set a stopping criterion"
+                )
+            (
+                logit_processor,
+                stopping_criterion,
+                postprocessing,
+            ) = create_choice_constraint(is_in, tokenizer, prompt_tokens["input_ids"])
+            logit_processors = [logit_processor]
+            stopping_criteria = [stopping_criterion]
+        elif stop_at.size > 0:
+            if samples > 1:
+                raise NotImplementedError(
+                    "It is currently not possible to control the generation of several samples with the `transformers` integration"
+                )
+            (
+                logit_processor,
+                stopping_criterion,
+                postprocessing,
+            ) = create_stop_constraint(stop_at, tokenizer, prompt_tokens["input_ids"])
+            logit_processors = [logit_processor]
+            stopping_criteria = [stopping_criterion]
+
+        if torch.cuda.is_available():
+            model = model.to("cuda")
+            prompt_tokens = prompt_tokens.to("cuda")
+        elif torch.backends.mps.is_available():
+            model = model.to("mps")
+            prompt_tokens = prompt_tokens.to("mps")
+
+        returned_tokens = model.generate(
+            **prompt_tokens,
+            do_sample=True,
+            temperature=temperature,
+            max_new_tokens=max_tokens,
+            pad_token_id=tokenizer.eos_token_id,
+            num_return_sequences=int(samples),
+            logits_processor=logit_processors,
+            stopping_criteria=stopping_criteria,
         )
-        logit_processors = [logit_processor]
-        stopping_criteria = [stopping_criterion]
-    elif is_in.size > 0:
-        if samples > 1:
-            raise NotImplementedError(
-                "It is currently not possible to control the generation of several samples with the `transformers` integration"
-            )
-        if stop_at.size > 0:
-            raise ValueError(
-                "You cannot both restrict to a set of choices with `is_in` and set a stopping criterion"
-            )
-        logit_processor, stopping_criterion, postprocessing = create_choice_constraint(
-            is_in, tokenizer, prompt_tokens["input_ids"]
-        )
-        logit_processors = [logit_processor]
-        stopping_criteria = [stopping_criterion]
-    elif stop_at.size > 0:
-        if samples > 1:
-            raise NotImplementedError(
-                "It is currently not possible to control the generation of several samples with the `transformers` integration"
-            )
-        logit_processor, stopping_criterion, postprocessing = create_stop_constraint(
-            stop_at, tokenizer, prompt_tokens["input_ids"]
-        )
-        logit_processors = [logit_processor]
-        stopping_criteria = [stopping_criterion]
+        new_tokens = returned_tokens[:, prompt_tokens["input_ids"].shape[1] :]
+        if len(prompt) == 1:
+            new_tokens = new_tokens.squeeze()
 
-    if torch.cuda.is_available():
-        model = model.to("cuda")
-        prompt_tokens = prompt_tokens.to("cuda")
-    elif torch.backends.mps.is_available():
-        model = model.to("mps")
-        prompt_tokens = prompt_tokens.to("mps")
+        if new_tokens.ndim < 2:
+            results = tokenizer.decode(new_tokens, skip_special_tokens=True)
+            results = np.array([postprocessing(results)])
+        else:
+            results = tokenizer.batch_decode(new_tokens, skip_special_tokens=True)
+            results = [postprocessing(result) for result in results]
+            results = np.array(results)
 
-    returned_tokens = model.generate(
-        **prompt_tokens,
-        do_sample=True,
-        temperature=temperature,
-        max_new_tokens=max_tokens,
-        pad_token_id=tokenizer.eos_token_id,
-        num_return_sequences=int(samples),
-        logits_processor=logit_processors,
-        stopping_criteria=stopping_criteria,
-    )
-    new_tokens = returned_tokens[:, prompt_tokens["input_ids"].shape[1] :]
-    if len(prompt) == 1:
-        new_tokens = new_tokens.squeeze()
+        if len(prompt) == 1:
+            results = np.expand_dims(results, 0)
+        else:
+            results = np.expand_dims(results, 1)
 
-    if new_tokens.ndim < 2:
-        results = tokenizer.decode(new_tokens, skip_special_tokens=True)
-        results = np.array([postprocessing(results)])
-    else:
-        results = tokenizer.batch_decode(new_tokens, skip_special_tokens=True)
-        results = [postprocessing(result) for result in results]
-        results = np.array(results)
+        # If we pass a batch of prompts to the model and ask for
+        # several samples we get a list of results that we need
+        # to reshape to the right dimensions.
+        if len(prompt) > 1 and samples > 1:
+            results = np.reshape(results, (-1, samples))
 
-    if len(prompt) == 1:
-        results = np.expand_dims(results, 0)
-    else:
-        results = np.expand_dims(results, 1)
+        return results
 
-    # If we pass a batch of prompts to the model and ask for
-    # several samples we get a list of results that we need
-    # to reshape to the right dimensions.
-    if len(prompt) > 1 and samples > 1:
-        results = np.reshape(results, (-1, samples))
-
-    return results
+    return generate
 
 
 def create_stop_constraint(
