@@ -14,10 +14,10 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Set up Python 3.9
+      - name: Set up Python 3.10
         uses: actions/setup-python@v1
         with:
-          python-version: 3.9
+          python-version: "3.10"
 
       - name: Build the documentation with Sphinx
         run: |
