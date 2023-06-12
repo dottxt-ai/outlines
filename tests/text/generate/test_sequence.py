@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 from numpy.testing import assert_array_equal
 
-from outlines.text.sequences.sequence import Sequence, vectorized_random_choice
+from outlines.text.generate.sequence import Sequence, vectorized_random_choice
 
 
 def test_vectorized_random_choice():

@@ -29,6 +29,9 @@ class Sequence:
             "`Sequence.is_finished` must be implemented by subclasses."
         )
 
+    def postprocess_completions(self, completions: List[str]) -> List[str]:
+        return completions
+
     def step(
         self,
         rng: Generator,
@@ -202,6 +205,7 @@ class Sequence:
             is_finished[~is_finished] = self.is_finished(token_ids_unfinished).flatten()
 
         result = self.model.tokenizer.decode(token_ids)
+        result = self.postprocess_completions(result)
 
         if len(result) == 1:
             return result[0]
