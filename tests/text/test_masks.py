@@ -24,11 +24,12 @@ def test_float_mask():
         "1.": 5,
         "0.": 6,
         "1.2.3": 7,
+        ".": 8,
     }
 
     mask = create_float_mask(vocabulary)
     assert_array_equal(
-        mask, np.array([True, True, False, False, True, True, True, False])
+        mask, np.array([True, True, False, False, True, True, True, False, True])
     )
 
 
