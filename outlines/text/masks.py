@@ -42,7 +42,7 @@ def create_int_mask(vocabulary: Dict[str, int]) -> np.ndarray:
 
 def create_float_mask(vocabulary: Dict[str, int]) -> np.ndarray:
     """Create a mask to generate floating point numbers."""
-    mask = create_mask_from_regex(vocabulary, r"^([0-9]+([.][0-9]*)?|[.][0-9]+)$")
+    mask = create_mask_from_regex(vocabulary, r"^(([0-9]+)?([.]([0-9]*)?)?|[.][0-9]+)$")
 
     return mask
 
