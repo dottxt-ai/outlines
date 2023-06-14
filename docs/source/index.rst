@@ -29,7 +29,7 @@
       :width: 75%
       :margin: 4 4 auto auto
 
-      The development of Outlines is entirely funded by `Normal Computing <https://normalcomputing.ai>`_
+      Outlines is built with ❤️ by `Normal Computing <https://normalcomputing.ai>`_
 
 
 👀 Sneak Peek
