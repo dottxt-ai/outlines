@@ -86,7 +86,7 @@ module = [
     "tenacity.*",
     "tiktoken.*",
     "torch",
-    "transformers",
+    "transformers.*",
 ]
 ignore_missing_imports = true
 
