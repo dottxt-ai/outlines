@@ -38,8 +38,11 @@ test = [
     "diffusers",
     "pre-commit",
     "pytest",
+    "pytest-cov",
     "torch",
-    "transformers"
+    "transformers",
+    "coverage[toml]>=5.1",
+    "diff-cover",
 ]
 
 [project.urls]
@@ -84,3 +87,24 @@ module = [
     "transformers",
 ]
 ignore_missing_imports = true
+
+[tool.coverage.run]
+omit = [
+    "outlines/_version.py",
+    "tests/*",
+]
+branch = true
+
+[tool.coverage.report]
+omit = [
+    "tests/*",
+]
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+]
+show_missing = true
+
+[tool.diff_cover]
+compare_branch = "origin/main"
+diff_range_notation = ".."
