@@ -286,3 +286,4 @@ Do not hesitate to open a draft PR before your contribution is ready, especially
 - [BabyAGI](https://github.com/normal-computing/outlines/blob/main/examples/babyagi.py)
 - [Uncertainty](https://github.com/normal-computing/outlines/blob/main/examples/sampling.ipynb)
 - [Simulation-based inference](https://github.com/normal-computing/outlines/blob/main/examples/simulation_based_inference.ipynb)
+     
