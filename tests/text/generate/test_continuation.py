@@ -7,11 +7,12 @@ from outlines.text.generate.continuation import Continuation, continuation
 class Tokenizer:
     eos_token = "<EOS>"
     eos_token_id = 0
-    pad_token_ids = -1
+    pad_token_id = -1
 
 
 class Model:
     tokenizer = Tokenizer()
+    device = "cpu"
 
 
 def test_continuation_is_finished():

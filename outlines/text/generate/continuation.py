@@ -1,7 +1,6 @@
 from typing import List, Optional
 
-import numpy as np
-from numpy.typing import NDArray
+import torch
 
 from outlines.text.generate.sequence import Sequence
 
@@ -19,8 +18,11 @@ class Continuation(Sequence):
 
     def __init__(self, model, max_tokens: Optional[int]):
         super().__init__(model, max_tokens)
+        self.eos_token_id = torch.tensor(
+            [self.model.tokenizer.eos_token_id], device=self.device
+        )
 
-    def is_finished(self, token_ids: NDArray[np.int64]) -> NDArray[np.bool_]:
+    def is_finished(self, token_ids: torch.LongTensor) -> torch.BoolTensor:
         """Determine whether the sequences reached maximum length of end with
         and EOS token.
 
@@ -35,10 +37,7 @@ class Continuation(Sequence):
             The input sequences.
 
         """
-        is_finished = np.zeros((token_ids.shape[0],), dtype=np.bool_)
-        is_finished[token_ids[:, -1] == self.model.tokenizer.eos_token_id] = True
-
-        return is_finished
+        return token_ids[:, -1] == self.model.tokenizer.eos_token_id
 
     def postprocess_completions(self, completions: List[str]) -> List[str]:
         """Remove the EOS token from the completion."""

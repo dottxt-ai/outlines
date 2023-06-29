@@ -31,6 +31,7 @@ dependencies = [
    "pydantic",
    "scipy",
    "tenacity",
+   "torch",
 ]
 dynamic = ["version"]
 
@@ -40,7 +41,6 @@ test = [
     "pre-commit",
     "pytest",
     "pytest-cov",
-    "torch",
     "transformers",
     "coverage[toml]>=5.1",
     "diff-cover",

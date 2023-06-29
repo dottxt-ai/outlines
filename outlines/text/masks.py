@@ -1,7 +1,7 @@
 import re
 from typing import Dict, Iterable
 
-import numpy as np
+import torch
 
 __all__ = [
     "create_char_set_mask",
@@ -11,7 +11,7 @@ __all__ = [
 ]
 
 
-def create_mask_from_regex(vocabulary: Dict[str, int], regex: str) -> np.ndarray:
+def create_mask_from_regex(vocabulary: Dict[str, int], regex: str) -> torch.BoolTensor:
     """Create a token mask from a regex.
 
     Parameters
@@ -25,7 +25,7 @@ def create_mask_from_regex(vocabulary: Dict[str, int], regex: str) -> np.ndarray
     """
     program = re.compile(regex)
 
-    mask = np.zeros(len(vocabulary), dtype=np.bool_)
+    mask = torch.zeros(len(vocabulary), dtype=torch.bool)
     for token, token_id in vocabulary.items():
         if program.match(token) is not None:
             mask[token_id] = True
@@ -33,14 +33,14 @@ def create_mask_from_regex(vocabulary: Dict[str, int], regex: str) -> np.ndarray
     return mask
 
 
-def create_int_mask(vocabulary: Dict[str, int]) -> np.ndarray:
+def create_int_mask(vocabulary: Dict[str, int]) -> torch.BoolTensor:
     """Create a mask to generate integers."""
     mask = create_mask_from_regex(vocabulary, "^[0-9]+$")
 
     return mask
 
 
-def create_float_mask(vocabulary: Dict[str, int]) -> np.ndarray:
+def create_float_mask(vocabulary: Dict[str, int]) -> torch.BoolTensor:
     """Create a mask to generate floating point numbers."""
     mask = create_mask_from_regex(vocabulary, r"^(([0-9]+)?([.]([0-9]*)?)?|[.][0-9]+)$")
 
@@ -49,7 +49,7 @@ def create_float_mask(vocabulary: Dict[str, int]) -> np.ndarray:
 
 def create_char_set_mask(
     vocabulary: Dict[str, int], char_set: Iterable[str]
-) -> np.ndarray:
+) -> torch.BoolTensor:
     """Create a mask to only generate characters in a given set.
 
     Parameters

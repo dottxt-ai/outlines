@@ -1,6 +1,5 @@
-import numpy as np
 import pytest
-from numpy.testing import assert_array_equal
+import torch
 from transformers.models.gpt2 import GPT2TokenizerFast
 
 from outlines.models.transformers import TransformersTokenizer, transformers
@@ -17,23 +16,23 @@ def test_tokenizer():
     token_ids, attention_mask = tokenizer.encode("Test")
     assert token_ids.ndim == 2
     assert token_ids.shape[0] == 1
-    assert isinstance(token_ids, np.ndarray)
+    assert isinstance(token_ids, torch.LongTensor)
     assert token_ids.shape == attention_mask.shape
 
     token_ids, attention_mask = tokenizer.encode(["Test", "Test"])
     assert token_ids.ndim == 2
     assert token_ids.shape[0] == 2
-    assert isinstance(token_ids, np.ndarray)
+    assert isinstance(token_ids, torch.LongTensor)
     assert token_ids.shape == attention_mask.shape
 
     token_ids, attention_mask = tokenizer.encode(["Test", "A long sentence"])
     assert token_ids.shape == attention_mask.shape
     assert attention_mask[0][0] == tokenizer.pad_token_id
 
-    text = tokenizer.decode(np.array([[0, 1, 2]]))
+    text = tokenizer.decode(torch.tensor([[0, 1, 2]]))
     isinstance(text, str)
 
-    text = tokenizer.decode(np.array([[0, 1, 2], [3, 4, 5]]))
+    text = tokenizer.decode(torch.tensor([[0, 1, 2], [3, 4, 5]]))
     isinstance(text, list)
     isinstance(text[0], str)
     isinstance(text[1], str)
@@ -47,21 +46,21 @@ def test_model():
     assert isinstance(model.tokenizer, TransformersTokenizer)
     assert model.device == "cpu"
 
-    input_ids = np.array([[0, 1, 2]])
-    logits = model(input_ids, np.ones_like(input_ids))
-    assert isinstance(logits, np.ndarray)
+    input_ids = torch.tensor([[0, 1, 2]])
+    logits = model(input_ids, torch.ones_like(input_ids))
+    assert logits.type() == "torch.FloatTensor"
     assert logits.ndim == 2
     assert logits.shape[0] == 1
 
-    input_ids = np.array([[0, 1, 2], [3, 4, 5], [6, 7, 8]])
-    logits = model(input_ids, np.ones_like(input_ids))
-    assert isinstance(logits, np.ndarray)
+    input_ids = torch.tensor([[0, 1, 2], [3, 4, 5], [6, 7, 8]])
+    logits = model(input_ids, torch.ones_like(input_ids))
+    assert logits.type() == "torch.FloatTensor"
     assert logits.ndim == 2
     assert logits.shape[0] == 3
 
-    input_ids = np.array([[[0, 1, 2], [3, 4, 5]], [[6, 7, 8], [0, 1, 2]]])
-    logits = model(input_ids, np.ones_like(input_ids))
+    input_ids = torch.tensor([[[0, 1, 2], [3, 4, 5]], [[6, 7, 8], [0, 1, 2]]])
+    logits = model(input_ids, torch.ones_like(input_ids))
     assert logits.ndim == 3
     assert logits.shape[0] == 2
     assert logits.shape[1] == 2
-    assert_array_equal(logits[0][0], logits[1][1])
+    assert torch.equal(logits[0][0], logits[1][1])
