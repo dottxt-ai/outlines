@@ -25,6 +25,12 @@ class Sequence:
             model.tokenizer.pad_token_id, device=model.device
         )
 
+    def create_proposal(
+        self, generated_token_ids: torch.LongTensor, logits: torch.DoubleTensor
+    ) -> torch.DoubleTensor:
+        """Create a new proposal from the next-token logits."""
+        return logits
+
     def is_finished(self, token_ids: torch.LongTensor) -> torch.BoolTensor:
         """Determine whether we should stop the generation."""
         raise NotImplementedError(
@@ -37,6 +43,7 @@ class Sequence:
     def step(
         self,
         rng: torch.Generator,
+        num_prompt_tokens: int,
         token_ids: torch.LongTensor,
         attention_mask: torch.LongTensor,
         samples: int = 1,
@@ -51,6 +58,8 @@ class Sequence:
         ----------
         rng
             NumPy random number Generator instance
+        num_prompt_tokens
+            The number of tokens in the prompt.
         token_ids
             The token ids passed as an input to the model, of shape `batch_shape
             + (num_tokens,)`, where `num_tokens` is the sequences' length.
@@ -70,6 +79,8 @@ class Sequence:
         """
         num_input_dims = token_ids.ndim
         probs = self.model(token_ids, attention_mask)
+        probs = self.create_proposal(token_ids[:, num_prompt_tokens:], probs)
+        probs = torch.nn.functional.softmax(probs, dim=-1)
 
         # Sample `samples`-many new tokens
         next_token_ids = vectorized_random_choice(rng, probs, samples)
@@ -192,7 +203,9 @@ class Sequence:
         num_prompt_tokens = token_ids.shape[-1]
 
         if samples > 1:
-            token_ids, _ = self.step(rng, token_ids, attention_mask, samples)
+            token_ids, _ = self.step(
+                rng, num_prompt_tokens, token_ids, attention_mask, samples
+            )
             is_finished = self.is_finished(token_ids)
 
             num_batch_dims = token_ids.ndim - 1
@@ -209,7 +222,10 @@ class Sequence:
                 break
 
             updated_token_ids, _ = self.step(
-                rng, token_ids[~is_finished], attention_mask[~is_finished]
+                rng,
+                num_prompt_tokens,
+                token_ids[~is_finished],
+                attention_mask[~is_finished],
             )
             token_ids = self.update_token_ids(is_finished, token_ids, updated_token_ids)
             attention_mask = self.expand_attention_mask(attention_mask)
@@ -254,7 +270,6 @@ def vectorized_random_choice(
     An array of shape `(num_samples, batch_size)`
 
     """
-
     cumsum = torch.unsqueeze(p.cumsum(axis=-1), 0)
     rand = torch.rand(
         (samples,) + p.shape[:-1] + (1,), generator=rng, device=rng.device
