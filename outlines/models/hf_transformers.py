@@ -335,7 +335,7 @@ def create_int_constraint(
     import torch
 
     num_prompt_tokens = prompt_tokens.shape[-1]
-    mask = torch.from_numpy(create_int_mask(tokenizer.get_vocab()))
+    mask = create_int_mask(tokenizer.get_vocab())
 
     def logit_processor(input_ids: torch.Tensor, scores: torch.Tensor) -> torch.Tensor:
         """Pre-process the model's output logits before generating the next token.
@@ -373,7 +373,7 @@ def create_float_constraint(
     import torch
 
     num_prompt_tokens = prompt_tokens.shape[-1]
-    mask = torch.from_numpy(create_float_mask(tokenizer.get_vocab()))
+    mask = create_float_mask(tokenizer.get_vocab())
 
     def logit_processor(input_ids: torch.Tensor, scores: torch.Tensor) -> torch.Tensor:
         """Pre-process the model's output logits before generating the next token.

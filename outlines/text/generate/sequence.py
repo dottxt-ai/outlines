@@ -1,8 +1,6 @@
 from typing import List, Optional, Tuple, Union
 
-import numpy as np
-from numpy.random import Generator
-from numpy.typing import NDArray
+import torch
 
 
 class Sequence:
@@ -21,9 +19,13 @@ class Sequence:
 
         """
         self.model = model
+        self.device = model.device
         self.max_tokens = max_tokens
+        self.pad_token_id = torch.tensor(
+            model.tokenizer.pad_token_id, device=model.device
+        )
 
-    def is_finished(self, token_ids: NDArray[np.int64]) -> NDArray[np.bool_]:
+    def is_finished(self, token_ids: torch.LongTensor) -> torch.BoolTensor:
         """Determine whether we should stop the generation."""
         raise NotImplementedError(
             "`Sequence.is_finished` must be implemented by subclasses."
@@ -34,11 +36,11 @@ class Sequence:
 
     def step(
         self,
-        rng: Generator,
-        token_ids: NDArray[np.int64],
-        attention_mask: NDArray[np.int64],
+        rng: torch.Generator,
+        token_ids: torch.LongTensor,
+        attention_mask: torch.LongTensor,
         samples: int = 1,
-    ) -> Tuple[NDArray[np.int64], NDArray[float]]:
+    ) -> Tuple[torch.LongTensor, torch.FloatTensor]:
         """Generate one or several tokens that complete the input sequence.
 
         The sampling step consists in using a model to generate next-token
@@ -73,42 +75,48 @@ class Sequence:
         next_token_ids = vectorized_random_choice(rng, probs, samples)
 
         # Add the missing `num_tokens` and `num_sample` dimensions
-        next_token_ids = np.expand_dims(next_token_ids, -1)
-        token_ids = np.expand_dims(token_ids, 0)
+        next_token_ids = torch.unsqueeze(next_token_ids, -1)
+        token_ids = torch.unsqueeze(token_ids, 0)
 
         # Expand the input `token_ids` array to be able to concatenate several
         # samples.
         if samples > 1:
             repetitions = (samples,) + (1,) * num_input_dims
-            token_ids = np.tile(token_ids, repetitions)
-            probs = np.tile(probs, repetitions)
+            token_ids = torch.tile(token_ids, repetitions)
+            probs = torch.tile(probs, repetitions)
 
-        token_ids = np.concatenate([token_ids, next_token_ids], axis=-1)
+        token_ids = torch.concatenate([token_ids, next_token_ids], axis=-1)
 
         # Merge sample and batch dimensions by removing dimensions of length
         # 1. The shape of the resulting arrays is `new_batch_shape + (num_tokens,)`
         # and `new_batch_shape + (vocab_size,)` respectively.
-        token_ids = np.atleast_2d(token_ids.squeeze())
-        probs = np.atleast_2d(probs.squeeze())
+        token_ids = torch.atleast_2d(token_ids.squeeze())
+        probs = torch.atleast_2d(probs.squeeze())
 
         return token_ids, probs
 
     def expand_attention_mask(
-        self, attention_mask: NDArray[np.int64]
-    ) -> NDArray[np.int64]:
+        self, attention_mask: torch.LongTensor
+    ) -> torch.LongTensor:
         """Expand the attention mask after the last completion."""
         batch_shape = attention_mask.shape[:-1]
-        attention_mask = np.concatenate(
-            [attention_mask, np.broadcast_to([1], batch_shape + (1,))], axis=-1
+        attention_mask = torch.concatenate(
+            [
+                attention_mask,
+                torch.broadcast_to(
+                    torch.tensor([1], device=self.device), batch_shape + (1,)
+                ),
+            ],
+            axis=-1,
         )
         return attention_mask
 
     def update_token_ids(
         self,
-        is_finished: NDArray[np.bool_],
-        token_ids: NDArray[np.int64],
-        token_ids_unfinished: NDArray[np.int64],
-    ) -> NDArray[np.int64]:
+        is_finished: torch.BoolTensor,
+        token_ids: torch.LongTensor,
+        token_ids_unfinished: torch.LongTensor,
+    ) -> torch.LongTensor:
         """Update the array of token ids after the last completion.
 
         We only generate new tokens for the sequences that are not finished. We thus
@@ -133,15 +141,15 @@ class Sequence:
         """
         batch_shape = token_ids.shape[:-1]
         num_tokens = token_ids.shape[-1]
-        new_token_ids = np.empty(batch_shape + (num_tokens + 1,), dtype=np.int64)
-
-        token_ids_finished = token_ids[is_finished]
-        batch_shape_finished = token_ids_finished.shape[:-1]
-        token_ids_finished = np.concatenate(
+        new_token_ids = torch.empty(
+            batch_shape + (num_tokens + 1,), dtype=torch.int64, device=self.device
+        )
+        token_ids_finished = torch.concatenate(
             [
-                token_ids_finished,
-                np.broadcast_to(
-                    [self.model.tokenizer.pad_token_id], batch_shape_finished + (1,)
+                token_ids[is_finished],
+                torch.broadcast_to(
+                    self.pad_token_id,
+                    token_ids[is_finished].shape[:-1] + (1,),
                 ),
             ],
             axis=-1,
@@ -152,11 +160,12 @@ class Sequence:
 
         return new_token_ids
 
+    @torch.inference_mode()
     def __call__(
         self,
         prompt: Union[str, List[str]],
         samples: int = 1,
-        rng: Generator = np.random.default_rng(),
+        rng: Optional[torch.Generator] = None,
     ) -> Union[str, List[str]]:
         """Generate a new sequence given a prompt.
 
@@ -173,6 +182,13 @@ class Sequence:
 
         """
         token_ids, attention_mask = self.model.tokenizer.encode(prompt)
+
+        token_ids = token_ids.to(self.device)
+        attention_mask = attention_mask.to(self.device)
+
+        if rng is None:
+            rng = torch.Generator(device=self.device)
+
         num_prompt_tokens = token_ids.shape[-1]
 
         if samples > 1:
@@ -181,28 +197,23 @@ class Sequence:
 
             num_batch_dims = token_ids.ndim - 1
             repetitions = (samples,) + (1,) * num_batch_dims
-            attention_mask = np.tile(attention_mask, repetitions)
+            attention_mask = torch.tile(attention_mask, repetitions)
             attention_mask = self.expand_attention_mask(attention_mask)
         else:
             batch_shape = token_ids.shape[:-1]
-            is_finished = np.zeros(batch_shape, dtype=np.bool_)
+            is_finished = torch.zeros(batch_shape, dtype=torch.bool, device=self.device)
 
         while True:
             num_generated_tokens = token_ids.shape[-1] - num_prompt_tokens
-            if np.all(is_finished) or num_generated_tokens == self.max_tokens:
+            if torch.all(is_finished) or num_generated_tokens == self.max_tokens:
                 break
 
-            token_ids_unfinished = token_ids[~is_finished]
-            attention_mask_unfinished = attention_mask[~is_finished]
-            token_ids_unfinished, _ = self.step(
-                rng, token_ids_unfinished, attention_mask_unfinished
+            updated_token_ids, _ = self.step(
+                rng, token_ids[~is_finished], attention_mask[~is_finished]
             )
-
-            token_ids = self.update_token_ids(
-                is_finished, token_ids, token_ids_unfinished
-            )
+            token_ids = self.update_token_ids(is_finished, token_ids, updated_token_ids)
             attention_mask = self.expand_attention_mask(attention_mask)
-            is_finished[~is_finished] = self.is_finished(token_ids_unfinished).flatten()
+            is_finished[~is_finished] = self.is_finished(updated_token_ids).flatten()
 
         result = self.model.tokenizer.decode(token_ids)
         result = self.postprocess_completions(result)
@@ -213,12 +224,9 @@ class Sequence:
         return result
 
 
-vsearchsorted = np.vectorize(np.searchsorted, otypes=[int], signature="(n),()->()")
-
-
 def vectorized_random_choice(
-    rng: Generator,
-    p: NDArray[np.float64],
+    rng: torch.Generator,
+    p: torch.FloatTensor,
     samples: int = 1,
 ):
     """Vectorized implementation of `np.random.choice`.
@@ -228,13 +236,13 @@ def vectorized_random_choice(
 
     Note
     ----
-    `searchsorted` might be more efficient here since the number of elements
-    can be quite large.
+    `torch.searchsorted` may be more efficient, but it is not implemented for
+    every backend, for instance MPS.
 
     Parameters
     ----------
     rng
-        NumPy random number Generator instance
+        Torch random number Generator instance
     p
         An array of probability of shape `(num_probability_vectors, num_items)`
         that must sum to 1.
@@ -247,8 +255,10 @@ def vectorized_random_choice(
 
     """
 
-    cumsum = np.expand_dims(p.cumsum(axis=-1), 0)
-    rand = rng.random((samples,) + p.shape[:-1])
-    idx = vsearchsorted(cumsum, rand)
+    cumsum = torch.unsqueeze(p.cumsum(axis=-1), 0)
+    rand = torch.rand(
+        (samples,) + p.shape[:-1] + (1,), generator=rng, device=rng.device
+    )
+    idx = (cumsum < rand).sum(axis=-1)
 
     return idx

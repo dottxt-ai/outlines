@@ -1,8 +1,7 @@
 import math
 from typing import TYPE_CHECKING, List, Optional, Tuple, Union
 
-import numpy as np
-from numpy.typing import NDArray
+import torch
 
 from outlines.models.tokenizer import Tokenizer
 
@@ -27,29 +26,28 @@ class Transformers:
         self.tokenizer = tokenizer
 
     def __call__(
-        self, input_ids: NDArray[np.int64], attention_mask: NDArray[np.int64]
-    ) -> NDArray[np.float64]:
-        import torch
-
+        self, input_ids: torch.LongTensor, attention_mask: torch.LongTensor
+    ) -> torch.FloatTensor:
         # `transformers` model accept `input_ids` of size at most equal to 2. We
         # thus reshape the input array, call the model and reshape the output
         # logits.
         batch_shape = input_ids.shape[:-1]
         num_tokens = input_ids.shape[-1]
         input_ids = input_ids.reshape(math.prod(batch_shape), num_tokens)
+        output = self.model(
+            input_ids,
+            attention_mask=attention_mask,
+            return_dict=True,
+            output_attentions=False,
+            output_hidden_states=False,
+        )
+        next_token_logits = output.logits[:, -1, :]
+        probs = torch.nn.functional.softmax(next_token_logits, dim=-1).squeeze()
 
-        with torch.no_grad():
-            input_ids = torch.from_numpy(input_ids).to(self.device)
-            attention_mask = torch.from_numpy(attention_mask).to(self.device)
+        probs = torch.atleast_2d(probs)
+        probs = probs.reshape(batch_shape + (-1,))
 
-            output = self.model(input_ids, attention_mask=attention_mask)
-
-            next_token_logits = output.logits[:, -1, :]
-            probs = torch.nn.functional.softmax(next_token_logits, dim=-1).squeeze()
-            probs = torch.atleast_2d(probs)
-            numpy_probs = probs.cpu().detach().numpy()
-
-        return numpy_probs.reshape(batch_shape + (-1,))
+        return probs
 
 
 class TransformersTokenizer(Tokenizer):
@@ -72,13 +70,13 @@ class TransformersTokenizer(Tokenizer):
 
     def encode(
         self, prompt: Union[str, List[str]], **kwargs
-    ) -> Tuple[NDArray[np.int64], NDArray[np.int64]]:
+    ) -> Tuple[torch.LongTensor, torch.LongTensor]:
         kwargs["padding"] = True
-        kwargs["return_tensors"] = "np"
+        kwargs["return_tensors"] = "pt"
         output = self.tokenizer(prompt, **kwargs)
         return output["input_ids"], output["attention_mask"]
 
-    def decode(self, token_ids: NDArray[np.int64]) -> List[str]:
+    def decode(self, token_ids: torch.LongTensor) -> List[str]:
         text = self.tokenizer.batch_decode(token_ids)
         return text
 
