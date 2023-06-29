@@ -1,3 +1,4 @@
+import math
 from typing import Dict, List, Union
 
 import pytest
@@ -109,13 +110,13 @@ def test_sequence_step():
     rng = torch.Generator()
     rng.manual_seed(0)
 
-    logits = torch.tensor([0, 1, 0, 0])
+    logits = torch.tensor([-math.inf, 1, -math.inf, -math.inf], dtype=torch.double)
     model = ModelStep(MockTokenizer(None), logits)
 
     sequence = Sequence(model)
 
     input_ids = torch.tensor([[1, 2]])
-    token_ids, probs = sequence.step(rng, input_ids, torch.ones((1, 2)))
+    token_ids, probs = sequence.step(rng, 2, input_ids, torch.ones((1, 2)))
     assert torch.equal(token_ids, torch.tensor([[1, 2, 1]]))
     assert probs.shape == (1, 4)
 
@@ -124,13 +125,13 @@ def test_sequence_step_batch():
     rng = torch.Generator()
     rng.manual_seed(0)
 
-    logits = torch.tensor([0, 1, 0, 0])
+    logits = torch.tensor([-math.inf, 1, -math.inf, -math.inf], dtype=torch.double)
     model = ModelStep(MockTokenizer(None), logits)
 
     sequence = Sequence(model)
 
     input_ids = torch.tensor([[1, 2], [3, 4]])
-    token_ids, probs = sequence.step(rng, input_ids, torch.ones((2, 2)))
+    token_ids, probs = sequence.step(rng, 2, input_ids, torch.ones((2, 2)))
     assert torch.equal(token_ids, torch.tensor([[1, 2, 1], [3, 4, 1]]))
     assert probs.shape == (2, 4)
 
@@ -139,12 +140,12 @@ def test_sequence_step_sample():
     rng = torch.Generator()
     rng.manual_seed(0)
 
-    logits = torch.tensor([0, 1, 0, 0])
+    logits = torch.tensor([-math.inf, 1, -math.inf, -math.inf], dtype=torch.double)
     model = ModelStep(MockTokenizer(None), logits)
 
     sequence = Sequence(model)
     input_ids = torch.tensor([[1, 2]])
-    token_ids, probs = sequence.step(rng, input_ids, torch.ones((1, 2)), samples=3)
+    token_ids, probs = sequence.step(rng, 2, input_ids, torch.ones((1, 2)), samples=3)
     assert torch.equal(token_ids, torch.tensor([[1, 2, 1], [1, 2, 1], [1, 2, 1]]))
     assert probs.shape == (3, 4)
 
@@ -153,12 +154,12 @@ def test_sequence_step_sample_batch():
     rng = torch.Generator()
     rng.manual_seed(0)
 
-    logits = torch.tensor([0, 1, 0, 0])
+    logits = torch.tensor([-math.inf, 1, -math.inf, -math.inf], dtype=torch.double)
     model = ModelStep(MockTokenizer(None), logits)
 
     sequence = Sequence(model)
     input_ids = torch.tensor([[1, 2, 1], [3, 4, 1]])
-    token_ids, probs = sequence.step(rng, input_ids, torch.ones((2, 3)), samples=3)
+    token_ids, probs = sequence.step(rng, 3, input_ids, torch.ones((2, 3)), samples=3)
     assert torch.equal(
         token_ids,
         torch.tensor(
@@ -177,26 +178,26 @@ def test_sequence_step_loop():
     rng = torch.Generator()
     rng.manual_seed(0)
 
-    logits = torch.tensor([0, 1, 0, 0])
+    logits = torch.tensor([-math.inf, 1, -math.inf, -math.inf], dtype=torch.double)
     model = ModelStep(MockTokenizer(None), logits)
 
     sequence = Sequence(model)
     input_ids = torch.tensor([[1, 2]])
-    token_ids, _ = sequence.step(rng, input_ids, torch.ones((1, 2)))
-    token_ids, probs = sequence.step(rng, token_ids, torch.ones((1, 3)))
+    token_ids, _ = sequence.step(rng, 2, input_ids, torch.ones((1, 2)))
+    token_ids, probs = sequence.step(rng, 2, token_ids, torch.ones((1, 3)))
     assert torch.equal(token_ids, torch.tensor([[1, 2, 1, 1]]))
     assert probs.shape == (1, 4)
 
     input_ids = torch.tensor([[1, 2], [3, 4]])
-    token_ids, _ = sequence.step(rng, input_ids, torch.ones((2, 2)))
-    token_ids, probs = sequence.step(rng, token_ids, torch.ones((2, 3)))
+    token_ids, _ = sequence.step(rng, 2, input_ids, torch.ones((2, 2)))
+    token_ids, probs = sequence.step(rng, 2, token_ids, torch.ones((2, 3)))
     assert torch.equal(token_ids, torch.tensor([[1, 2, 1, 1], [3, 4, 1, 1]]))
     assert probs.shape == (2, 4)
 
     # The number of samples becomes the batch size at the next iteration.
     input_ids = torch.tensor([[1, 2]])
-    token_ids, _ = sequence.step(rng, input_ids, torch.ones((1, 2)), samples=3)
-    token_ids, probs = sequence.step(rng, token_ids, torch.ones((3, 3)))
+    token_ids, _ = sequence.step(rng, 2, input_ids, torch.ones((1, 2)), samples=3)
+    token_ids, probs = sequence.step(rng, 2, token_ids, torch.ones((3, 3)))
     assert torch.equal(
         token_ids, torch.tensor([[1, 2, 1, 1], [1, 2, 1, 1], [1, 2, 1, 1]])
     )
@@ -207,13 +208,13 @@ def test_sequence_step_loop_general():
     rng = torch.Generator()
     rng.manual_seed(0)
 
-    logits = torch.tensor([0, 1, 0, 0])
+    logits = torch.tensor([-math.inf, 1, -math.inf, -math.inf], dtype=torch.double)
     model = ModelStep(MockTokenizer(None), logits)
 
     sequence = Sequence(model)
     input_ids = torch.tensor([[1, 2, 1], [3, 4, 1]])
-    token_ids, _ = sequence.step(rng, input_ids, torch.ones((1, 3)), samples=3)
-    result, _ = sequence.step(rng, token_ids, torch.ones((3, 4)))
+    token_ids, _ = sequence.step(rng, 3, input_ids, torch.ones((1, 3)), samples=3)
+    result, _ = sequence.step(rng, 3, token_ids, torch.ones((3, 4)))
     assert result.shape == (3, 2, 5)
     assert torch.equal(
         result,
@@ -277,7 +278,10 @@ def test_call_single_prompt():
                 return torch.tensor([True])
 
     tokenizer = MockTokenizer({"Test": 0, "a": 1, "b": 2})
-    model = MockModel(tokenizer, torch.tensor([[1.0, 0, 0], [0, 1.0, 0]]))
+    model = MockModel(
+        tokenizer,
+        torch.tensor([[1.0, -math.inf, -math.inf], [-math.inf, 1.0, -math.inf]]),
+    )
     sequence = FinishAfterTwo(model)
 
     result = sequence("Test")
@@ -325,7 +329,11 @@ def test_call_prompt_list():
     model = MockModel(
         tokenizer,
         torch.tensor(
-            [[0, 0, 1.0, 0, 0, 0], [0, 0, 0, 1.0, 0, 0], [0, 0, 0, 0, 1.0, 0]]
+            [
+                [-math.inf, -math.inf, 1.0, -math.inf, -math.inf, -math.inf],
+                [-math.inf, -math.inf, -math.inf, 1.0, -math.inf, -math.inf],
+                [-math.inf, -math.inf, -math.inf, -math.inf, 1.0, -math.inf],
+            ]
         ),
     )
     sequence = FinishAfterThree(model)
@@ -350,7 +358,16 @@ def test_call_single_prompt_samples():
                 return torch.tensor([True, True, True])
 
     tokenizer = MockTokenizer({"a": 0, "b": 1, "c": 2, "Test": 4})
-    model = MockModel(tokenizer, torch.tensor([[1, 0, 0, 0], [0, 1, 0, 0]]))
+    model = MockModel(
+        tokenizer,
+        torch.tensor(
+            [
+                [1, -math.inf, -math.inf, -math.inf],
+                [-math.inf, 1, -math.inf, -math.inf],
+            ],
+            dtype=torch.double,
+        ),
+    )
     sequence = FinishAfterTwo(model)
     result = sequence("Test", samples=3)
     assert torch.equal(result, torch.tensor([[4, 0, 1], [4, 0, 1], [4, 0, 1]]))
@@ -363,7 +380,16 @@ def test_call_single_prompt_samples():
             return torch.tensor([True, True, True])
 
     tokenizer = MockTokenizer({"a": 0, "b": 1, "c": 3, "Test": 4})
-    model = MockModel(tokenizer, torch.tensor([[1, 0, 0, 0], [0, 1, 0, 0]]))
+    model = MockModel(
+        tokenizer,
+        torch.tensor(
+            [
+                [1, -math.inf, -math.inf, -math.inf],
+                [-math.inf, 1, -math.inf, -math.inf],
+            ],
+            dtype=torch.double,
+        ),
+    )
     sequence = FinishAfterOne(model)
     result = sequence("Test", samples=3)
     assert torch.equal(result, torch.tensor([[4, 0], [4, 0], [4, 0]]))
@@ -393,7 +419,14 @@ def test_call_prompt_list_samples():
     )
     model = MockModel(
         tokenizer,
-        torch.tensor([[1, 0, 0, 0, 0, 0], [0, 1, 0, 0, 0, 0], [0, 0, 1, 0, 0, 0]]),
+        torch.tensor(
+            [
+                [1, -math.inf, -math.inf, -math.inf, -math.inf, -math.inf],
+                [-math.inf, 1, -math.inf, -math.inf, -math.inf, -math.inf],
+                [-math.inf, -math.inf, 1, -math.inf, -math.inf, -math.inf],
+            ],
+            dtype=torch.double,
+        ),
     )
     sequence = FinishAfterThree(model)
 

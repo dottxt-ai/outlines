@@ -8,11 +8,12 @@ from outlines.text.generate.sequence import Sequence
 class Continuation(Sequence):
     """Represents a completion generation model.
 
-    `Completion` instances are unconstrained generation models that stop when an EOS token
-    has been found or when the maximum number of tokens has been reached.
+    `Continuation` instances are unconstrained generation models that stop when
+    an EOS token has been found or when the maximum number of tokens has been
+    reached.
 
-    >> import outlines.text as text
-    >> sequence = text.sequence(model)("Say something")
+    >>> import outlines.text as text
+    >>> sequence = text.generate.continuation(model)("Say something")
 
     """
 
