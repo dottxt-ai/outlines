@@ -46,6 +46,7 @@ test = [
     "diff-cover",
     "lark",
     "regex",
+    "interegular",
 ]
 
 [project.urls]
@@ -91,6 +92,7 @@ module = [
     "transformers.*",
     "lark.*",
     "regex.*",
+    "interegular.*",
 ]
 ignore_missing_imports = true
 
