@@ -52,7 +52,10 @@ def validate(validator, result):
 
 @validate.register(BaseModelType)
 def validate_pydantic(validator, result):
-    return validator.parse_raw(result)
+    if hasattr(validator, "model_validate_json"):
+        return validator.model_validate_json(result)
+    else:  # pragma: no cover
+        return validator.parse_raw(result)
 
 
 @validate.register(FunctionType)
