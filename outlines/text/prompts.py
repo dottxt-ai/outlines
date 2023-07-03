@@ -289,15 +289,21 @@ def get_schema_pydantic(model: type[BaseModel]):
     if not type(model) == type(BaseModel):
         raise TypeError("The `schema` filter only applies to Pydantic models.")
 
-    raw_schema = model.schema()
-    definitions = raw_schema.get("definitions", None)
+    if hasattr(model, "model_json_schema"):
+        def_key = "$defs"
+        raw_schema = model.model_json_schema()
+    else:  # pragma: no cover
+        def_key = "definitions"
+        raw_schema = model.schema()
+
+    definitions = raw_schema.get(def_key, None)
     schema = parse_pydantic_schema(raw_schema, definitions)
 
     return json.dumps(schema, indent=2)
 
 
 def parse_pydantic_schema(raw_schema, definitions):
-    """Parse the output of `Basemodel.schema()`.
+    """Parse the output of `Basemodel.[schema|model_json_schema]()`.
 
     This recursively follows the references to other schemas in case
     of nested models. Other schemas are stored under the "definitions"
