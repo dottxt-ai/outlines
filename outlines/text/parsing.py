@@ -7,7 +7,7 @@ import interegular
 import regex
 from interegular.fsm import FSM, anything_else
 from interegular.patterns import Unsupported
-from lark import Lark
+from lark import Lark, Token
 from lark.exceptions import (
     LexError,
     UnexpectedCharacters,
@@ -15,9 +15,10 @@ from lark.exceptions import (
     UnexpectedToken,
 )
 from lark.indenter import PythonIndenter
-from lark.lexer import BasicLexer, LexerState, Scanner, Token
+from lark.lexer import BasicLexer, LexerState, Scanner
+from lark.parsers.lalr_analysis import Shift
 from lark.parsers.lalr_interactive_parser import InteractiveParser
-from lark.parsers.lalr_parser import ParserState
+from lark.parsers.lalr_parser import ParseConf, ParserState
 from lark.utils import get_regexp_width
 
 if TYPE_CHECKING:
@@ -221,7 +222,7 @@ def copy_lexer_thread(lexer_thread: "LexerThread") -> "LexerThread":
     return res
 
 
-def copy_parser_state(parser_state: "ParserState") -> "ParserState":
+def copy_parser_state(parser_state: ParserState) -> ParserState:
     res = copy(parser_state)
     res.lexer = copy_lexer_thread(res.lexer)
 
@@ -234,7 +235,7 @@ def copy_ip(ip: "InteractiveParser") -> "InteractiveParser":
     return res
 
 
-def parse_to_end(parser_state: "ParserState") -> Tuple["ParserState", Set[str]]:
+def parse_to_end(parser_state: ParserState) -> Tuple[ParserState, Set[str]]:
     """Continue parsing from the current parse state and return partial next tokens."""
 
     parser_state = copy_parser_state(parser_state)
@@ -381,8 +382,6 @@ def map_partial_states_to_vocab(
 
 
 def terminals_to_lalr_states(lp: Lark) -> DefaultDict[str, Set[int]]:
-    from lark.parsers.lalr_analysis import Shift
-
     terminals_to_states = defaultdict(set)
     parse_table = lp.parser.parser.parser.parse_table
     for state, tokens_to_ops in parse_table.states.items():
@@ -401,11 +400,16 @@ def create_pmatch_parser_states(
     ptoken: str,
     pmatch: Tuple[int, Tuple[int, ...]],
 ) -> Tuple[ParserState, ...]:
-    from lark import Token
-    from lark.parsers.lalr_parser import ParseConf, ParserState
-
     parse_table = lp.parser.parser.parser.parse_table
-    parse_conf = ParseConf(parse_table, lp._callbacks, lp.options.start[0])
+
+    # TODO: We need to effectively disable the callbacks that build the
+    # trees, because we aren't actually parsing a valid state that can, say,
+    # be reduced
+    def noop(*args, **kwargs):
+        pass
+
+    callbacks = {rule: noop for rule, cb in lp._callbacks.items()}
+    parse_conf = ParseConf(parse_table, callbacks, lp.options.start[0])
     lexer_thread = lp.parser._make_lexer_thread(ptoken)
     lexer_state = lexer_thread.state
     lexer_state.line_ctr.char_pos = pmatch[0] + 1
