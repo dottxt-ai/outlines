@@ -1,3 +1,6 @@
+import random
+import re
+
 import interegular
 import pytest
 from lark import Lark
@@ -155,7 +158,7 @@ def test_partial_match():
     }
 
 
-def test_partial_match_preprocessing():
+def test_map_partial_states_to_vocab_python():
     pyparser = Lark.open_from_package(
         "lark",
         "python.lark",
@@ -171,28 +174,20 @@ def test_partial_match_preprocessing():
         k: v for k, v in symbol_names_and_fsms.items() if k in test_symbols
     }
 
-    vocabulary = {"d", "e", "ef foo", "f ", " "}
+    vocabulary = ["d", "e", "ef foo", "f ", " "]
 
     pstate_to_vocab = map_partial_states_to_vocab(
         vocabulary, symbol_names_and_fsms, False
     )
 
     assert dict(pstate_to_vocab) == {
-        ("NAME", 1): {"d", "e", "ef foo", "f "},
-        ("NAME", 2): {"d", "e", "ef foo", "f "},
-        ("DEF", 1): {
-            "d",
-        },
-        ("DEF", 2): {"e", "ef foo"},
-        ("DEF", 3): {
-            "f ",
-        },
-        ("__IGNORE_0", 1): {
-            " ",
-        },
-        ("__IGNORE_0", 2): {
-            " ",
-        },
+        ("__IGNORE_0", 2): {4},
+        ("__IGNORE_0", 1): {4},
+        ("NAME", 2): {0, 1, 2, 3},
+        ("NAME", 1): {0, 1, 2, 3},
+        ("DEF", 1): {0},
+        ("DEF", 2): {1, 2},
+        ("DEF", 3): {3},
     }
 
     pstate_to_vocab = map_partial_states_to_vocab(
@@ -200,25 +195,15 @@ def test_partial_match_preprocessing():
     )
 
     assert dict(pstate_to_vocab) == {
-        ("DEF", 1): {"e", "ef foo"},
-        ("DEF", 2): {
-            "f ",
-        },
-        ("DEF", 0): {
-            "d",
-        },
-        ("NAME", 1): {"d", "e", "ef foo", "f "},
-        ("NAME", 2): {"d", "e", "ef foo", "f "},
-        ("NAME", 0): {"d", "e", "ef foo", "f "},
-        ("__IGNORE_0", 1): {
-            " ",
-        },
-        ("__IGNORE_0", 2): {
-            " ",
-        },
-        ("__IGNORE_0", 0): {
-            " ",
-        },
+        ("__IGNORE_0", 1): {4},
+        ("__IGNORE_0", 2): {4},
+        ("__IGNORE_0", 0): {4},
+        ("NAME", 1): {0, 1, 2, 3},
+        ("NAME", 2): {0, 1, 2, 3},
+        ("NAME", 0): {0, 1, 2, 3},
+        ("DEF", 0): {0},
+        ("DEF", 1): {1, 2},
+        ("DEF", 2): {3},
     }
 
 
@@ -278,3 +263,67 @@ NAME: /[^\W\d]\w*/
     )
     with pytest.raises(UnexpectedToken):
         parse_to_end(parser_state)
+
+
+def test_map_partial_states_to_vocab_regex():
+    regex_string = r"(([0-9]+)?([.]([0-9]*)?)?|[.][0-9]+)"
+    regex_pattern = interegular.parse_pattern(regex_string)
+    regex_fsm = regex_pattern.simplify().to_fsm()
+
+    vocabulary = ["1.", "2", "3.", ".", ".80", "42", "1a", " ", "0", "a", "b", "$"]
+
+    # We want the vocabulary strings to entirely match the regex--not just the
+    # prefixes of the vocabulary strings
+    def partial_match_filter(string, end_idx, state_seq):
+        if end_idx is not None and end_idx < len(string) - 1:
+            return False
+        return True
+
+    pstate_to_vocab = map_partial_states_to_vocab(
+        vocabulary, {"FLOAT": regex_fsm}, True, partial_match_filter
+    )
+
+    assert dict(pstate_to_vocab) == {
+        ("FLOAT", 0): {0, 1, 2, 3, 4, 5, 8},
+        ("FLOAT", 3): {0, 1, 2, 3, 4, 5, 8},
+        ("FLOAT", 1): {0, 1, 2, 3, 4, 5, 8},
+        ("FLOAT", 5): {1, 5, 8},
+        ("FLOAT", 7): {1, 5, 8},
+        ("FLOAT", 4): {1, 5, 8},
+        ("FLOAT", 6): {1, 5, 8},
+        ("FLOAT", 2): {1, 5, 8},
+    }
+
+    pstate_to_vocab = {k: tuple(v) for k, v in pstate_to_vocab.items()}
+
+    random.seed(24080)
+
+    # Start at the initial state
+    pstate = ("FLOAT", regex_fsm.initial)
+
+    sample_seq = ""
+
+    for i in range(10):
+        next_support = pstate_to_vocab[pstate]
+
+        (next_sample_idx,) = random.sample(next_support, 1)
+
+        next_sample = vocabulary[next_sample_idx]
+        sample_seq += next_sample
+
+        # Parse the entire sampled sequence/string
+        # TODO: We could continue from the previous parse state, but this is
+        # easier for now and only for demonstration purposes.
+        partial_matches = find_partial_matches(regex_fsm, sample_seq)
+
+        # Use the/a longest match
+        pmatch = max(partial_matches, key=lambda x: x[0] if x[0] is not None else -1)
+
+        # Create the next state
+        pstate = (pstate[0], pmatch[1][-1])
+
+        # TODO: We could check if the FSM is done (i.e. in an final/accept
+        # state) and end the sampling loop
+
+    # Make sure the whole thing matches the regex
+    assert re.fullmatch(regex_string, sample_seq) is not None

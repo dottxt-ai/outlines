@@ -1,7 +1,17 @@
 from collections import ChainMap, defaultdict
 from copy import copy
 from itertools import chain
-from typing import TYPE_CHECKING, Any, DefaultDict, Dict, Iterable, Optional, Set, Tuple
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    DefaultDict,
+    Dict,
+    Iterable,
+    Optional,
+    Set,
+    Tuple,
+)
 
 import interegular
 import regex
@@ -329,7 +339,10 @@ def map_partial_states_to_vocab(
     vocabulary: Iterable[str],
     terminals_to_fsms_map: Dict[str, FSM],
     map_to_antecedents: bool = False,
-) -> DefaultDict[PartialParseState, Set[str]]:
+    partial_match_filter: Callable[
+        [str, Optional[int], Tuple[int, ...]], bool
+    ] = lambda *args: True,
+) -> DefaultDict[PartialParseState, Set[int]]:
     """Construct a map from partial parse states to the vocabulary elements that start in those states.
 
     Parameters
@@ -342,13 +355,18 @@ def map_partial_states_to_vocab(
         When ``True``, return a map with keys that are the antecedent partial
         parse states.  In other words, this is a map that can be used to
         determine valid next tokens given a parse state.
+    partial_match_filter
+        A callable that determines which partial matches to keep.  The first
+        argument is the string being match, the rest are the unpacked partial
+        match return values of `find_partial_matches`.
     """
 
     pstate_to_vocab = defaultdict(set)
     for symbol_name, fsm in terminals_to_fsms_map.items():
-        for tk in vocabulary:
-            for _, states in find_partial_matches(fsm, tk):
-                pstate_to_vocab[(symbol_name, states[0])].add(tk)
+        for i, vocab_string in enumerate(vocabulary):
+            for end_idx, state_seq in find_partial_matches(fsm, vocab_string):
+                if partial_match_filter(vocab_string, end_idx, state_seq):
+                    pstate_to_vocab[(symbol_name, state_seq[0])].add(i)
 
     if not map_to_antecedents:
         return pstate_to_vocab
@@ -373,7 +391,7 @@ def map_partial_states_to_vocab(
 
     # A version of `pstate_to_vocab` that is keyed on states that *transition to*
     # the original keys of `pstate_to_vocab`.
-    _pstate_to_vocab: DefaultDict[PartialParseState, Set[str]] = defaultdict(set)
+    _pstate_to_vocab: DefaultDict[PartialParseState, Set[int]] = defaultdict(set)
     for pstate, vocab in pstate_to_vocab.items():
         for next_pstate in rev_ts_pstate_to_substates[pstate]:
             _pstate_to_vocab[next_pstate] |= vocab
