@@ -224,54 +224,57 @@ def test_partial_match_preprocessing():
 
 def test_parse_from_partial_match():
     """Make sure we can continue parsing from an FSM-based partial match."""
-    pyparser = Lark(
+    lp = Lark(
         r"""
 start: funcdef
 
-funcdef: "def" name "(" ")" ":"
+funcdef: "def" name "(" ")" ":" attr_pattern
+
+attr_pattern: NAME ("." NAME)+ -> value
 
 %ignore /[\t \f]+/  // WS
 
 !name: NAME | "match" | "case"
 NAME: /[^\W\d]\w*/
 
+
     """,
         parser="lalr",
         postlex=PartialPythonIndenter(),
     )
 
-    terminals_to_states = terminals_to_lalr_states(pyparser)
-    symbol_names_and_fsms = terminals_to_fsms(pyparser)
+    terminals_to_states = terminals_to_lalr_states(lp)
+    symbol_names_and_fsms = terminals_to_fsms(lp)
 
     term_type = "DEF"
-    def_fsm = symbol_names_and_fsms[term_type]
+    term_fsm = symbol_names_and_fsms[term_type]
 
-    # TODO FIXME: This is broken, and it's a bug in `lark`'s Python grammar!
+    # TODO FIXME: This is broken, and it's a bug in `lark`'s Python grammar?
     # ptoken = "defx"
 
     ptoken = "ef foo"
-    pmatch = find_partial_matches(def_fsm, ptoken)
-    first_pmatch = next(pm for pm in pmatch if pm[0] is not None)
+    pmatches = find_partial_matches(term_fsm, ptoken)
+    first_pmatch = next(pm for pm in pmatches if pm[0] is not None)
     (parser_state,) = create_pmatch_parser_states(
-        pyparser, terminals_to_states, term_type, ptoken, first_pmatch
+        lp, terminals_to_states, term_type, ptoken, first_pmatch
     )
     new_parser_state, expected_next_tokens = parse_to_end(parser_state)
     assert expected_next_tokens == {"NAME"}
 
     ptoken = "ef foo():"
-    pmatch = find_partial_matches(def_fsm, ptoken)
-    first_pmatch = next(pm for pm in pmatch if pm[0] is not None)
+    pmatches = find_partial_matches(term_fsm, ptoken)
+    first_pmatch = next(pm for pm in pmatches if pm[0] is not None)
     (parser_state,) = create_pmatch_parser_states(
-        pyparser, terminals_to_states, term_type, ptoken, first_pmatch
+        lp, terminals_to_states, term_type, ptoken, first_pmatch
     )
     new_parser_state, expected_next_tokens = parse_to_end(parser_state)
     assert not expected_next_tokens
 
     ptoken = "ef ("
-    pmatch = find_partial_matches(def_fsm, ptoken)
-    first_pmatch = next(pm for pm in pmatch if pm[0] is not None)
+    pmatches = find_partial_matches(term_fsm, ptoken)
+    first_pmatch = next(pm for pm in pmatches if pm[0] is not None)
     (parser_state,) = create_pmatch_parser_states(
-        pyparser, terminals_to_states, term_type, ptoken, first_pmatch
+        lp, terminals_to_states, term_type, ptoken, first_pmatch
     )
     with pytest.raises(UnexpectedToken):
         parse_to_end(parser_state)
