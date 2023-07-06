@@ -54,7 +54,7 @@ class ParserLogitsProcessor(LogitsProcessor):
 
     def __init__(self, parser):
         ip = parser.parse_interactive("")
-        self.parser_state = ip.parser_state
+        self.parser_state = copy_parser_state(ip.parser_state)
         self.states_stack = [self.parser_state]
         self.token_seq = None
         self.token_idx = 0
