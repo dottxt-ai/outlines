@@ -250,9 +250,14 @@ def copy_ip(ip: "InteractiveParser") -> "InteractiveParser":
 
 
 def parse_to_end(parser_state: ParserState) -> Tuple[ParserState, Set[str]]:
-    """Continue parsing from the current parse state and return partial next tokens."""
+    """Continue parsing from the current parse state and return partial next tokens.
 
-    parser_state = copy_parser_state(parser_state)
+    .. warning::
+        The parse state `parser_state` is updated in-place and must be patched
+        to work with this function.  Either patch it manually or use
+        `copy_parser_state` before calling this.
+
+    """
 
     expected_next_tokens: Set[str] = set()
     try:
