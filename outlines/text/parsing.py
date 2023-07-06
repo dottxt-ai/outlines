@@ -24,7 +24,7 @@ from lark.exceptions import (
     UnexpectedToken,
 )
 from lark.indenter import PythonIndenter
-from lark.lexer import BasicLexer, LexerState, Scanner
+from lark.lexer import BasicLexer, ContextualLexer, LexerState, Scanner
 from lark.parsers.lalr_analysis import Shift
 from lark.parsers.lalr_interactive_parser import InteractiveParser
 from lark.parsers.lalr_parser import ParseConf, ParserState
@@ -205,28 +205,33 @@ def copy_lexer_thread(lexer_thread: "LexerThread") -> "LexerThread":
     res = copy(lexer_thread)
     res.lexer = copy(res.lexer)
 
-    if (
-        res.lexer.postlexer
-        and isinstance(res.lexer.postlexer, PythonIndenter)
-        and not isinstance(res.lexer.postlexer, PartialPythonIndenter)
-    ):
-        # Patch these methods so that the post lexer keeps its state
-        # XXX: This won't really work in generality.
-        postlexer = PartialPythonIndenter()
-        postlexer.paren_level = res.lexer.postlexer.paren_level
-        postlexer.indent_level = res.lexer.postlexer.indent_level
-        res.lexer.postlexer = postlexer
+    if getattr(res.lexer, "postlexer", None):
+        if isinstance(res.lexer.postlexer, PythonIndenter) and not isinstance(
+            res.lexer.postlexer, PartialPythonIndenter
+        ):
+            # Patch these methods so that the post lexer keeps its state
+            # XXX: This won't really work in generality.
+            postlexer = PartialPythonIndenter()
+            postlexer.paren_level = res.lexer.postlexer.paren_level
+            postlexer.indent_level = res.lexer.postlexer.indent_level
+            res.lexer.postlexer = postlexer
+        else:
+            res.lexer.postlexer = copy(res.lexer.postlexer)
 
     # Patch/replace the lexer objects so that they support partial matches
-    lexer = res.lexer.lexer
-    if not isinstance(lexer.root_lexer, PartialBasicLexer):
-        lexer.root_lexer = PartialBasicLexer(lexer.root_lexer)
+    context_lexer = res.lexer
 
-        basic_lexers = res.lexer.lexer.lexers
+    if not isinstance(context_lexer, ContextualLexer):
+        # XXX: The layouts change with the grammars
+        context_lexer = context_lexer.lexer
+        assert isinstance(context_lexer, ContextualLexer)
+
+    if not isinstance(context_lexer.root_lexer, PartialBasicLexer):
+        context_lexer.root_lexer = PartialBasicLexer(context_lexer.root_lexer)
+
+        basic_lexers = context_lexer.lexers
         for idx, lexer in basic_lexers.items():
             basic_lexers[idx] = PartialBasicLexer(lexer)
-
-    res.lexer.postlexer = copy(res.lexer.postlexer)
 
     return res
 
