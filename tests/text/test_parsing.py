@@ -10,67 +10,115 @@ from lark.lexer import UnexpectedCharacters, UnexpectedToken
 from outlines.text.parsing import (
     PartialLark,
     PartialPythonIndenter,
-    create_pmatch_parser_states,
     find_partial_matches,
+    fsm_union,
+    get_sub_fsms_from_seq,
     make_deterministic_fsm,
     map_partial_states_to_vocab,
-    parse_to_end,
     terminals_to_fsms,
-    terminals_to_lalr_states,
 )
 
 
-def test_parse_to_end():
-    pyparser = PartialLark.open_from_package(
-        "lark",
-        "python.lark",
-        ["grammars"],
+def test_partial_parsing():
+    lp = PartialLark.open_from_package(
+        "tests",
+        "partial_python.lark",
+        ["text"],
         parser="lalr",
         postlex=PartialPythonIndenter(),
         start="file_input",
+        deterministic=True,
     )
 
-    ip = pyparser.parse_interactive("x")
-    parser_state = copy(ip.parser_state)
-    parser_state, expected_next_tokens = parse_to_end(parser_state)
-    assert not parser_state.value_stack
-    assert expected_next_tokens == {"NAME"}
+    # End with a potentially unfinished NAME
+    parser_state = lp.parse("x")
+    assert parser_state.state_stack == [0]
+    last_token = parser_state.lexer.state.last_token
+    assert last_token.type == "partial"
+    assert last_token.value.fsm_state_seq == (0, 15)
+    assert last_token.value.is_not_finished is True
 
-    ip = pyparser.parse_interactive("x = '")
-    parser_state = copy(ip.parser_state)
-    parser_state, expected_next_tokens = parse_to_end(parser_state)
-    assert parser_state.value_stack[-1].type == "EQUAL"
-    assert expected_next_tokens == {"LONG_STRING", "STRING"}
+    # End with an ignored token
+    parser_state = lp.parse("x ")
+    assert parser_state.state_stack == [0, 692]
+    last_token = parser_state.lexer.state.last_token
+    assert last_token.type == "partial"
+    assert last_token.value.fsm_state_seq == (0, 1)
+    assert last_token.value.is_not_finished is True
 
-    ip = pyparser.parse_interactive("x = 'hi")
-    parser_state = copy(ip.parser_state)
-    parser_state, expected_next_tokens = parse_to_end(parser_state)
-    assert parser_state.value_stack[-1].type == "EQUAL"
-    assert expected_next_tokens == {"STRING"}
+    # Could be a complete `=` or the start of a `==`
+    parser_state = lp.parse("x =")
+    assert parser_state.state_stack == [0, 692]
+    last_token = parser_state.lexer.state.last_token
+    assert last_token.type == "partial"
+    assert any(
+        term_info.terminal_name == "EQUAL"
+        for term_info in last_token.value.terminals_and_info
+    )
 
-    ip = pyparser.parse_interactive("x = ('hi")
-    parser_state = copy(ip.parser_state)
-    parser_state, expected_next_tokens = parse_to_end(parser_state)
-    assert parser_state.value_stack[-1].type == "LPAR"
-    assert expected_next_tokens == {"STRING"}
+    parser_state = lp.parse("x = '")
+    assert parser_state.state_stack == [0, 58, 59]
+    last_token = parser_state.lexer.state.last_token
+    assert last_token.type == "partial"
+    assert last_token.value.fsm_state_seq == (0, 6)
+    assert last_token.value.is_not_finished is True
 
-    ip = pyparser.parse_interactive("def")
-    parser_state = copy(ip.parser_state)
-    parser_state, expected_next_tokens = parse_to_end(parser_state)
-    assert not parser_state.value_stack
-    assert expected_next_tokens == {"NAME", "DEF"}
+    parser_state = lp.parse("x = 'hi")
+    assert parser_state.state_stack == [0, 58, 59]
+    last_token = parser_state.lexer.state.last_token
+    assert last_token.type == "partial"
+    assert last_token.value.fsm_state_seq == (0, 6, 6, 6)
+    assert last_token.value.is_not_finished is True
+
+    parser_state = lp.parse("x = ('hi")
+    assert parser_state.state_stack == [0, 58, 59, 254]
+    last_token = parser_state.lexer.state.last_token
+    assert last_token.type == "partial"
+    assert last_token.value.fsm_state_seq == (0, 6, 6, 6)
+    assert last_token.value.is_not_finished is True
+
+    parser_state = lp.parse("def")
+    assert parser_state.state_stack == [0]
+    last_token = parser_state.lexer.state.last_token
+    assert last_token.type == "partial"
+    assert last_token.value.fsm_state_seq == (0, 26, 99, 100)
+    assert last_token.value.is_not_finished is True
 
     # Now, try something incremental
-    parser_state = copy(parser_state)
     last_lexer_state = parser_state.lexer.state
-    last_lexer_state.text = "def blah()"
-
-    (parser_state, expected_next_tokens) = parse_to_end(parser_state)
+    last_lexer_state.text += " blah()"
+    lp.parse_from_state(parser_state, is_end=False)
+    last_token = parser_state.lexer.state.last_token
 
     last_lexer_state = parser_state.lexer.state
     last_valid_token = last_lexer_state.last_token
     assert last_valid_token.type == "RPAR"
-    assert not expected_next_tokens
+
+    # Something incremental and a little more complicated
+    parser_state = lp.parse("x = 1\ndef foo(x):\n  ")
+    assert parser_state.state_stack == [0, 94, 600, 601, 602, 607, 608, 269]
+    last_lexer_state = parser_state.lexer.state
+    last_lexer_state.text += "  return x"
+
+    lp.parse_from_state(parser_state, is_end=False)
+    assert parser_state.state_stack == [
+        0,
+        94,
+        600,
+        601,
+        602,
+        607,
+        608,
+        269,
+        764,
+        95,
+        305,
+    ]
+    last_token = parser_state.lexer.state.last_token
+    assert last_token.type == "partial"
+
+    with pytest.raises(UnexpectedToken):
+        lp.parse("def \n")
 
 
 def test_sequential_parse_example():
@@ -90,20 +138,21 @@ def test_sequential_parse_example():
         "z ",
         "= ",
         "foo(",
-        '"hi' '")',
+        '"hi',
+        '")\n',
     ]
-    vocab = set(input_tokens)
+    vocab = sorted(set(input_tokens))
 
-    pyparser = PartialLark.open_from_package(
-        "lark",
-        "python.lark",
-        ["grammars"],
+    lp = PartialLark.open_from_package(
+        "tests",
+        "partial_python.lark",
+        ["text"],
         parser="lalr",
         postlex=PartialPythonIndenter(),
         start="file_input",
+        deterministic=True,
     )
-    ip = pyparser.parse_interactive("")
-    parser_state = ip.parser_state
+    parser_state = lp.parse("")
 
     token_seq = ""
     for i, token in enumerate(input_tokens):
@@ -112,7 +161,7 @@ def test_sequential_parse_example():
         lex_state = parser_state.lexer.state
         lex_state.text = token_seq
 
-        parser_state, partial_tokens = parse_to_end(parser_state)
+        lp.parse_from_state(parser_state, is_end=False)
 
         next_vocab = set()
         for test_token in vocab:
@@ -120,20 +169,21 @@ def test_sequential_parse_example():
             ls = ps.lexer.state
             ls.text = token_seq + test_token
 
-            try:
-                # TODO: The resulting states could possibly be reused?
-                parse_to_end(ps)
+            if i + 1 < len(input_tokens) and test_token == input_tokens[i + 1]:
+                lp.parse_from_state(ps, is_end=False)
                 next_vocab.add(test_token)
-            except (UnexpectedToken, UnexpectedCharacters, DedentError):
-                pass
+            else:
+                try:
+                    lp.parse_from_state(ps, is_end=False)
+                    next_vocab.add(test_token)
+                except (EOFError, UnexpectedToken, UnexpectedCharacters, DedentError):
+                    pass
 
-        if i + 1 < len(input_tokens):
-            assert input_tokens[i + 1] in next_vocab
-        else:
+        if i + 1 == len(input_tokens):
             assert all(tk in next_vocab for tk in ["\n", "\nde", "  ", " + 1"])
 
 
-def test_partial_match():
+def test_find_partial_matches():
     name_pattern = interegular.parse_pattern(r"[^\W\d]\w*")
     name_fsm, _ = make_deterministic_fsm(name_pattern.to_fsm().reduce())
     assert name_fsm.initial == 0
@@ -143,12 +193,12 @@ def test_partial_match():
     assert def_fsm.initial == 0
 
     assert find_partial_matches(def_fsm, "def") == {(2, (0, 1, 2, 3))}
-    assert find_partial_matches(def_fsm, "de") == {(None, (0, 1, 2))}
-    assert find_partial_matches(def_fsm, "d") == {(None, (0, 1))}
+    assert find_partial_matches(def_fsm, "de") == {(1, (0, 1, 2))}
+    assert find_partial_matches(def_fsm, "d") == {(0, (0, 1))}
     assert find_partial_matches(def_fsm, "") == set()
     assert find_partial_matches(def_fsm, "df") == set()
     assert find_partial_matches(def_fsm, "ef") == {(1, (1, 2, 3))}
-    assert find_partial_matches(def_fsm, "e") == {(None, (1, 2))}
+    assert find_partial_matches(def_fsm, "e") == {(0, (1, 2))}
     assert find_partial_matches(def_fsm, "f") == {(0, (2, 3))}
     assert find_partial_matches(def_fsm, "ef foo") == {(1, (1, 2, 3))}
 
@@ -176,14 +226,28 @@ def test_partial_match():
     assert 2 not in float_fsm.finals
 
     res = find_partial_matches(float_fsm, ".")
-    assert res == {(0, (3, 5)), (0, (4, 5)), (None, (0, 2))}
+    assert res == {(0, (3, 5)), (0, (4, 5)), (0, (0, 2))}
+
+    joins_fsm, _ = make_deterministic_fsm(
+        interegular.parse_pattern(r"(JOIN LEFT|JOIN)").to_fsm().reduce()
+    )
+    res = find_partial_matches(
+        joins_fsm, "JOIN BLAH", joins_fsm.initial, full_match=False
+    )
+    assert res == {(3, (0, 1, 2, 3, 4))}
+
+    res = find_partial_matches(joins_fsm, "JOIN L", joins_fsm.initial, full_match=False)
+    assert res == {(5, (0, 1, 2, 3, 4, 5, 6))}
+
+    res = find_partial_matches(joins_fsm, "JOI", joins_fsm.initial, full_match=False)
+    assert res == {(2, (0, 1, 2, 3))}
 
 
 def test_map_partial_states_to_vocab_python():
     pyparser = PartialLark.open_from_package(
-        "lark",
-        "python.lark",
-        ["grammars"],
+        "tests",
+        "partial_python.lark",
+        ["text"],
         parser="lalr",
         postlex=PartialPythonIndenter(),
         start="file_input",
@@ -243,69 +307,6 @@ def test_map_partial_states_to_vocab_python():
     assert possible_paths["__IGNORE_0"] == {0: {1}, 1: {1}}
     assert possible_paths["NAME"] == {0: {1}, 1: {1}}
     assert possible_paths["DEF"] == {0: {1}, 1: {2, 3}, 2: {3}}
-
-
-def test_parse_from_partial_match():
-    """Make sure we can continue parsing from an FSM-based partial match."""
-    lp = PartialLark(
-        r"""
-start: funcdef
-
-funcdef: "def" name "(" ")" ":" attr_pattern
-
-attr_pattern: NAME ("." NAME)+ -> value
-
-%ignore /[\t \f]+/  // WS
-
-!name: NAME | "match" | "case"
-NAME: /[^\W\d]\w*/
-
-
-    """,
-        parser="lalr",
-        postlex=PartialPythonIndenter(),
-    )
-
-    terminals_to_states = terminals_to_lalr_states(lp)
-    symbol_names_and_fsms = terminals_to_fsms(lp)
-
-    term_type = "DEF"
-    term_fsm = symbol_names_and_fsms[term_type]
-
-    # TODO FIXME: This is broken, and it's a bug in `lark`'s Python grammar?
-    # ptoken = "defx"
-
-    ptoken = "ef foo"
-    pmatches = find_partial_matches(term_fsm, ptoken)
-    first_pmatch = next(pm for pm in pmatches if pm[0] is not None)
-    (parser_state,) = create_pmatch_parser_states(
-        lp, terminals_to_states, term_type, ptoken, first_pmatch
-    )
-    # These copies also patch the lexers in the parse state, which is now
-    # needed for use with `parse_to_end`
-    parser_state = copy(parser_state)
-    new_parser_state, expected_next_tokens = parse_to_end(parser_state)
-    assert expected_next_tokens == {"NAME"}
-
-    ptoken = "ef foo():"
-    pmatches = find_partial_matches(term_fsm, ptoken)
-    first_pmatch = next(pm for pm in pmatches if pm[0] is not None)
-    (parser_state,) = create_pmatch_parser_states(
-        lp, terminals_to_states, term_type, ptoken, first_pmatch
-    )
-    parser_state = copy(parser_state)
-    new_parser_state, expected_next_tokens = parse_to_end(parser_state)
-    assert not expected_next_tokens
-
-    ptoken = "ef ("
-    pmatches = find_partial_matches(term_fsm, ptoken)
-    first_pmatch = next(pm for pm in pmatches if pm[0] is not None)
-    (parser_state,) = create_pmatch_parser_states(
-        lp, terminals_to_states, term_type, ptoken, first_pmatch
-    )
-    parser_state = copy(parser_state)
-    with pytest.raises(UnexpectedToken):
-        parse_to_end(parser_state)
 
 
 def test_map_partial_states_to_vocab_regex():
@@ -383,3 +384,153 @@ def test_map_partial_states_to_vocab_regex():
 
         # Make sure the whole thing matches the regex
         assert re.fullmatch(regex_string, sample_seq) is not None
+
+
+def test_get_sub_fsms_from_seq():
+    name_pattern = interegular.parse_pattern(r"[^\W\d]\w*")
+    name_fsm, _ = make_deterministic_fsm(name_pattern.to_fsm().reduce())
+
+    def_pattern = interegular.parse_pattern("def")
+    def_fsm, _ = make_deterministic_fsm(def_pattern.to_fsm().reduce())
+
+    match_pattern = interegular.parse_pattern("match")
+    match_fsm, _ = make_deterministic_fsm(match_pattern.to_fsm().reduce())
+
+    peq_pattern = interegular.parse_pattern(r"\+=")
+    peq_fsm, _ = make_deterministic_fsm(peq_pattern.to_fsm().reduce())
+
+    plus_pattern = interegular.parse_pattern(r"\+")
+    plus_fsm, _ = make_deterministic_fsm(plus_pattern.to_fsm().reduce())
+
+    fsms = [def_fsm, match_fsm, name_fsm, peq_fsm, plus_fsm]
+
+    fsm, fsms_to_trans_finals = fsm_union(fsms)
+
+    assert fsms_to_trans_finals == {
+        0: ({(0, 3), (3, 9), (9, 10)}, {10}, {0: {0}, 1: {3}, 2: {9}, 3: {10}}),
+        1: (
+            {(0, 4), (4, 5), (5, 6), (6, 7), (7, 8)},
+            {8},
+            {0: {0}, 1: {4}, 2: {5}, 3: {6}, 4: {7}, 5: {8}},
+        ),
+        2: (
+            {
+                (0, 2),
+                (0, 3),
+                (0, 4),
+                (2, 2),
+                (3, 2),
+                (3, 9),
+                (4, 2),
+                (4, 5),
+                (5, 2),
+                (5, 6),
+                (6, 2),
+                (6, 7),
+                (7, 2),
+                (7, 8),
+                (8, 2),
+                (9, 2),
+                (9, 10),
+                (10, 2),
+            },
+            {2, 3, 4, 5, 6, 7, 8, 9, 10},
+            {0: {0}, 1: {2, 3, 4, 5, 6, 7, 8, 9, 10}},
+        ),
+        3: ({(0, 1), (1, 11)}, {11}, {0: {0}, 1: {1}, 2: {11}}),
+        4: ({(0, 1)}, {1}, {0: {0}, 1: {1}}),
+    }
+
+    assert not fsm.accepts("1a")
+    assert fsm.accepts("a1")
+    assert fsm.accepts("def")
+    assert fsm.accepts("match")
+    assert fsm.accepts("+=")
+    assert fsm.accepts("+")
+
+    ((_, state_seq),) = find_partial_matches(fsm, "def", start_state=fsm.initial)
+
+    res = list(get_sub_fsms_from_seq(state_seq, fsms_to_trans_finals))
+    assert res == [(0, False, True), (2, True, True)]
+
+    # Make sure the old-to-new state map is correct
+    ((_, def_state_seq),) = find_partial_matches(
+        def_fsm, "def", start_state=fsm.initial
+    )
+    def_old_to_new_states = fsms_to_trans_finals[0][2]
+    assert all(
+        new_state in def_old_to_new_states[old_state]
+        for old_state, new_state in zip(def_state_seq, state_seq)
+    )
+
+    ((_, state_seq),) = find_partial_matches(fsm, "ef", start_state=fsm.initial)
+
+    res = list(get_sub_fsms_from_seq(state_seq, fsms_to_trans_finals))
+    assert res == [(2, True, True)]
+
+    ((_, name_state_seq),) = find_partial_matches(
+        name_fsm, "ef", start_state=fsm.initial
+    )
+    name_old_to_new_states = fsms_to_trans_finals[2][2]
+    assert all(
+        new_state in name_old_to_new_states[old_state]
+        for old_state, new_state in zip(name_state_seq, state_seq)
+    )
+
+    ((_, state_seq),) = find_partial_matches(fsm, "match", start_state=fsm.initial)
+
+    res = list(get_sub_fsms_from_seq(state_seq, fsms_to_trans_finals))
+    assert res == [(1, False, True), (2, True, True)]
+
+    ((_, match_state_seq),) = find_partial_matches(
+        match_fsm, "match", start_state=fsm.initial
+    )
+    match_old_to_new_states = fsms_to_trans_finals[1][2]
+    assert all(
+        new_state in match_old_to_new_states[old_state]
+        for old_state, new_state in zip(match_state_seq, state_seq)
+    )
+
+    ((_, state_seq),) = find_partial_matches(fsm, "defa", start_state=fsm.initial)
+
+    res = list(get_sub_fsms_from_seq(state_seq, fsms_to_trans_finals))
+    assert res == [(2, True, True)]
+
+    ((_, state_seq),) = find_partial_matches(fsm, "de", start_state=fsm.initial)
+
+    res = list(get_sub_fsms_from_seq(state_seq, fsms_to_trans_finals))
+    assert res == [(0, True, False), (2, True, True)]
+
+    ((_, state_seq),) = find_partial_matches(fsm, "+", start_state=fsm.initial)
+
+    res = list(get_sub_fsms_from_seq(state_seq, fsms_to_trans_finals))
+    assert res == [(3, True, False), (4, False, True)]
+
+    ((_, state_seq),) = find_partial_matches(fsm, "+=", start_state=fsm.initial)
+
+    res = list(get_sub_fsms_from_seq(state_seq, fsms_to_trans_finals))
+    assert res == [(3, False, True)]
+
+    # Test some overlapping patterns
+    join_fsms = [
+        interegular.parse_pattern(r"JOIN").to_fsm().reduce(),
+        interegular.parse_pattern(r"JOIN LEFT").to_fsm().reduce(),
+    ]
+    fsm, fsms_to_trans_finals = fsm_union(join_fsms)
+    ((_, state_seq),) = find_partial_matches(
+        fsm, "OI", start_state=None, full_match=False
+    )
+    res = list(get_sub_fsms_from_seq(state_seq, fsms_to_trans_finals))
+    assert res == [(0, True, False), (1, True, False)]
+
+    ((_, state_seq),) = find_partial_matches(
+        fsm, "N", start_state=None, full_match=False
+    )
+    res = list(get_sub_fsms_from_seq(state_seq, fsms_to_trans_finals))
+    assert res == [(0, False, True), (1, True, False)]
+
+    ((_, state_seq),) = find_partial_matches(
+        fsm, " ", start_state=None, full_match=False
+    )
+    res = list(get_sub_fsms_from_seq(state_seq, fsms_to_trans_finals))
+    assert res == [(1, True, False)]

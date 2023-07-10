@@ -50,7 +50,6 @@ test = [
     "coverage[toml]>=5.1",
     "diff-cover",
     "lark",
-    "regex",
     "interegular",
 ]
 
@@ -99,7 +98,6 @@ module = [
     "torch",
     "transformers.*",
     "lark.*",
-    "regex.*",
     "interegular.*",
 ]
 ignore_missing_imports = true
