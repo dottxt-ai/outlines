@@ -1,6 +1,5 @@
 from collections import ChainMap, defaultdict
 from copy import copy
-from itertools import chain
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -282,11 +281,11 @@ def find_partial_matches(
 
     Returns
     -------
-    A set of tuples corresponding to each valid starting state in the FSM.
-    The first element of each tuple contains either ``None`` or an integer
+    A set of tuples corresponding to each valid starting state in the FSM.  The
+    first element of each tuple contains either ``None`` or an integer
     indicating the position in `input_string` at which the FSM terminated.  The
-    second element is a tuple of the states visited during execution of the
-    FSM.
+    second element is the tuple of states visited during execution of the FSM
+    plus the next, unvisited transition state.
 
     """
     if len(input_string) == 0 or input_string[0] not in fsm.alphabet:
@@ -294,11 +293,11 @@ def find_partial_matches(
 
     trans_key = fsm.alphabet[input_string[0]]
 
-    # TODO: We could probably memoize this easily (i.e. no need to recompute
-    # paths shared by different starting states)
+    # TODO: We could probably reuse parts of the computed paths when computing
+    # results for multiple starting points.
     def _partial_match(
         trans: Dict[int, int]
-    ) -> Optional[Tuple[Optional[int], Tuple[int, ...]]]:
+    ) -> Tuple[Optional[int], Optional[Tuple[int, ...]]]:
         fsm_map = ChainMap({fsm.initial: trans}, fsm.map)
         state = fsm.initial
         accepted_states: Tuple[int, ...] = ()
@@ -313,7 +312,7 @@ def find_partial_matches(
                 if state in fsm.finals:
                     i -= 1
                     break
-                return None
+                return None, None
 
             state = fsm_map[state][trans_key]
 
@@ -321,19 +320,19 @@ def find_partial_matches(
 
         terminated = state in fsm.finals
         if not terminated and state == fsm.initial:
-            return None
+            return None, None
 
         return None if not terminated else i, accepted_states
 
     res = set()
     transition_maps = (
-        fsm.map.values() if start_state is None else [fsm.map[start_state]]
+        fsm.map if start_state is None else {start_state: fsm.map[start_state]}
     )
-    for trans in transition_maps:
+    for state, trans in transition_maps.items():
         if trans_key in trans:
-            path = _partial_match(trans)
+            n_matched, path = _partial_match(trans)
             if path is not None:
-                res.add(path)
+                res.add((n_matched, (state,) + path))
 
     return res
 
@@ -346,7 +345,7 @@ def terminals_to_fsms(lp: Lark) -> Dict[str, FSM]:
         pattern = interegular.parse_pattern(terminal.pattern.to_regexp())
         # TODO: Use `pyparser.terminals[0].pattern.flags`?
         try:
-            fsm = pattern.to_fsm()
+            fsm = pattern.to_fsm().reduce()
         except Unsupported:
             fsm = None
 
@@ -358,7 +357,6 @@ def terminals_to_fsms(lp: Lark) -> Dict[str, FSM]:
 def map_partial_states_to_vocab(
     vocabulary: Iterable[str],
     terminals_to_fsms_map: Dict[str, FSM],
-    map_to_antecedents: bool = False,
     partial_match_filter: Callable[
         [str, Optional[int], Tuple[int, ...]], bool
     ] = lambda *args: True,
@@ -375,10 +373,6 @@ def map_partial_states_to_vocab(
         The vocabulary composed of strings.
     terminals_to_fsms_map
         Terminal symbol names mapped to FSMs, as provided by `terminals_to_fsms`.
-    map_to_antecedents
-        When ``True``, return a map with keys that are the antecedent partial
-        parse states.  In other words, this is a map that can be used to
-        determine valid next tokens given a parse state.
     partial_match_filter
         A callable that determines which partial matches to keep.  The first
         argument is the string being match, the rest are the unpacked partial
@@ -400,41 +394,13 @@ def map_partial_states_to_vocab(
                 if partial_match_filter(vocab_string, end_idx, state_seq):
                     pstate_to_vocab[(symbol_name, state_seq[0])].add(i)
 
-    if not map_to_antecedents:
-        return pstate_to_vocab
-
-    # Partial parse states to their valid next/transition states
-    ts_pstate_to_substates = dict(
-        chain.from_iterable(
-            [
-                ((symbol_name, s), {(symbol_name, v) for v in ts.values()})
-                for s, ts in fsm.map.items()
-            ]
-            for symbol_name, fsm in terminals_to_fsms_map.items()
-        )
-    )
-
-    # Reverse the state transitions map
-    # TODO: We could construct this more directly.
-    rev_ts_pstate_to_substates = defaultdict(set)
-    for pstate, to_pstates in ts_pstate_to_substates.items():
-        for to_pstate in to_pstates:
-            rev_ts_pstate_to_substates[to_pstate].add(pstate)
-
-    # A version of `pstate_to_vocab` that is keyed on states that *transition to*
-    # the original keys of `pstate_to_vocab`.
-    _pstate_to_vocab: DefaultDict[PartialParseState, Set[int]] = defaultdict(set)
-    for pstate, vocab in pstate_to_vocab.items():
-        for next_pstate in rev_ts_pstate_to_substates[pstate]:
-            _pstate_to_vocab[next_pstate] |= vocab
-
     if final_state_string_idx is not None:
         # Allow transitions to EOS from all terminals FSM states
         for symbol_name, fsm in terminals_to_fsms_map.items():
             for state in fsm.finals:
-                _pstate_to_vocab[(symbol_name, state)].add(final_state_string_idx)
+                pstate_to_vocab[(symbol_name, state)].add(final_state_string_idx)
 
-    return _pstate_to_vocab
+    return pstate_to_vocab
 
 
 def terminals_to_lalr_states(lp: Lark) -> DefaultDict[str, Set[int]]:
