@@ -18,7 +18,7 @@ Here is a simple Outlines program that highlights some of its key features:
 
    hello_world = where_from("Hello world")
    foobar = where_from("Foo Bar")
-   answer = complete([hello_world, foobar], num_samples=3, stop_at=["."])
+   answer = complete([hello_world, foobar], samples=3, stop_at=["."])
 
 
 - **Prompt management**. You can use functions with the ``@outlines.text.prompt`` decorator. "Prompt functions" use the `Jinja templating language <https://jinja.palletsprojects.com/en/3.1.x/>`_ to render the prompt written in the docstring. We also added a few filters to help with common worflows, like building agents. Of course, for simple prompts, you can also use Python strings directly.
