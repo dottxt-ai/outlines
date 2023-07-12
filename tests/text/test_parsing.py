@@ -129,33 +129,53 @@ def test_sequential_parse_example():
 
 def test_partial_match():
     name_pattern = interegular.parse_pattern(r"[^\W\d]\w*")
-    name_fsm = name_pattern.to_fsm()
+    name_fsm = name_pattern.to_fsm().reduce()
+    assert name_fsm.initial == 0
 
     def_pattern = interegular.parse_pattern("def")
-    def_fsm = def_pattern.to_fsm()
+    def_fsm = def_pattern.to_fsm().reduce()
+    assert def_fsm.initial == 0
 
-    assert find_partial_matches(def_fsm, "def") == {(2, (1, 2, 3))}
-    assert find_partial_matches(def_fsm, "de") == {(None, (1, 2))}
-    assert find_partial_matches(def_fsm, "d") == {(None, (1,))}
+    assert find_partial_matches(def_fsm, "def") == {(2, (0, 1, 2, 3))}
+    assert find_partial_matches(def_fsm, "de") == {(None, (0, 1, 2))}
+    assert find_partial_matches(def_fsm, "d") == {(None, (0, 1))}
     assert find_partial_matches(def_fsm, "") == set()
     assert find_partial_matches(def_fsm, "df") == set()
-    assert find_partial_matches(def_fsm, "ef") == {(1, (2, 3))}
-    assert find_partial_matches(def_fsm, "e") == {(None, (2,))}
-    assert find_partial_matches(def_fsm, "f") == {(0, (3,))}
-    assert find_partial_matches(def_fsm, "ef foo") == {(1, (2, 3))}
+    assert find_partial_matches(def_fsm, "ef") == {(1, (1, 2, 3))}
+    assert find_partial_matches(def_fsm, "e") == {(None, (1, 2))}
+    assert find_partial_matches(def_fsm, "f") == {(0, (2, 3))}
+    assert find_partial_matches(def_fsm, "ef foo") == {(1, (1, 2, 3))}
 
     # This string has a `DEF` token in it, but should ultimately not lex one
-    assert find_partial_matches(def_fsm, "defb") == {(2, (1, 2, 3))}
+    assert find_partial_matches(def_fsm, "defb") == {(2, (0, 1, 2, 3))}
 
     # `NAME` can have multiple start states for this input
-    assert find_partial_matches(name_fsm, "d") == {(0, (1,)), (0, (2,))}
+    assert find_partial_matches(name_fsm, "d") == {
+        (0, (0, 1)),
+        (0, (1, 1)),
+    }
     # Not this case
-    assert find_partial_matches(name_fsm, "1d") == {(1, (2, 2))}
+    assert find_partial_matches(name_fsm, "1d") == {(1, (1, 1, 1))}
 
     assert find_partial_matches(name_fsm, "blah") == {
-        (3, (1, 2, 2, 2)),
-        (3, (2, 2, 2, 2)),
+        (3, (0, 1, 1, 1, 1)),
+        (3, (1, 1, 1, 1, 1)),
     }
+
+    float_pattern = interegular.parse_pattern(
+        r"([+-]?((0|[1-9]+)([.][0-9]*)?)|([.][0-9]+))"
+    )
+    float_fsm = float_pattern.to_fsm().reduce()
+
+    # XXX: It look like there's a lot of set/frozenset usage that prevents us
+    # from adequately reproducing the exact state sequences in this case.
+    # It seems to stem from `_CharGroup`s and the FSM map construction process.
+    res = find_partial_matches(float_fsm, ".")
+    assert {v[0] for v in res} == {0, 0, None}
+    # Make sure that the terminated sequences actually end in final states
+    assert all(v[1][-1] in float_fsm.finals for v in res if v[0] == 0)
+    # Make sure that the non-terminated sequences don't end in final states
+    assert all(v[1][-1] not in float_fsm.finals for v in res if v[0] != 0)
 
 
 def test_map_partial_states_to_vocab_python():
@@ -174,54 +194,45 @@ def test_map_partial_states_to_vocab_python():
         k: v for k, v in symbol_names_and_fsms.items() if k in test_symbols
     }
 
-    vocabulary = ["d", "e", "ef foo", "f ", " "]
+    assert len(symbol_names_and_fsms["DEF"].states) == 4
+    assert len(symbol_names_and_fsms["NAME"].states) == 2
+    assert len(symbol_names_and_fsms["__IGNORE_0"].states) == 2
 
-    pstate_to_vocab = map_partial_states_to_vocab(
-        vocabulary, symbol_names_and_fsms, False
-    )
+    vocabulary = ["d", "e", "ef foo", "f ", " ", "1d", "<EOS>"]
 
-    assert dict(pstate_to_vocab) == {
-        ("__IGNORE_0", 2): {4},
-        ("__IGNORE_0", 1): {4},
-        ("NAME", 2): {0, 1, 2, 3},
-        ("NAME", 1): {0, 1, 2, 3},
-        ("DEF", 1): {0},
-        ("DEF", 2): {1, 2},
-        ("DEF", 3): {3},
-    }
-
-    pstate_to_vocab = map_partial_states_to_vocab(
-        vocabulary, symbol_names_and_fsms, True
-    )
+    pstate_to_vocab = map_partial_states_to_vocab(vocabulary, symbol_names_and_fsms)
 
     assert dict(pstate_to_vocab) == {
-        ("__IGNORE_0", 1): {4},
-        ("__IGNORE_0", 2): {4},
         ("__IGNORE_0", 0): {4},
-        ("NAME", 1): {0, 1, 2, 3},
-        ("NAME", 2): {0, 1, 2, 3},
+        ("__IGNORE_0", 1): {4},
         ("NAME", 0): {0, 1, 2, 3},
-        ("DEF", 0): {0},
-        ("DEF", 1): {1, 2},
-        ("DEF", 2): {3},
-    }
-
-    vocabulary = list(vocabulary) + ["<EOS>"]
-    pstate_to_vocab = map_partial_states_to_vocab(
-        vocabulary, symbol_names_and_fsms, True, final_state_string="<EOS>"
-    )
-
-    assert dict(pstate_to_vocab) == {
-        ("__IGNORE_0", 1): {4, 5},
-        ("__IGNORE_0", 2): {4, 5},
-        ("__IGNORE_0", 0): {4},
         ("NAME", 1): {0, 1, 2, 3, 5},
-        ("NAME", 2): {0, 1, 2, 3, 5},
-        ("NAME", 0): {0, 1, 2, 3},
         ("DEF", 0): {0},
         ("DEF", 1): {1, 2},
         ("DEF", 2): {3},
-        ("DEF", 3): {5},
+    }
+
+    pstate_to_vocab = map_partial_states_to_vocab(
+        vocabulary, symbol_names_and_fsms, final_state_string="<EOS>"
+    )
+
+    assert dict(pstate_to_vocab) == {
+        ("__IGNORE_0", 0): {
+            4,
+        },
+        ("__IGNORE_0", 1): {4, 6},
+        ("NAME", 0): {0, 1, 2, 3},
+        ("NAME", 1): {0, 1, 2, 3, 5, 6},
+        ("DEF", 0): {
+            0,
+        },
+        ("DEF", 1): {1, 2},
+        ("DEF", 2): {
+            3,
+        },
+        ("DEF", 3): {
+            6,
+        },
     }
 
 
@@ -286,7 +297,7 @@ NAME: /[^\W\d]\w*/
 def test_map_partial_states_to_vocab_regex():
     regex_string = r"([0-9]+([.][0-9]*)?|[.][0-9]+)"
     regex_pattern = interegular.parse_pattern(regex_string)
-    regex_fsm = regex_pattern.simplify().to_fsm()
+    regex_fsm = regex_pattern.to_fsm().reduce()
 
     vocabulary = [
         "1.",
@@ -312,19 +323,15 @@ def test_map_partial_states_to_vocab_regex():
         return True
 
     pstate_to_vocab = map_partial_states_to_vocab(
-        vocabulary, {"FLOAT": regex_fsm}, True, partial_match_filter, "<EOS>"
+        vocabulary, {"FLOAT": regex_fsm}, partial_match_filter, "<EOS>"
     )
 
-    assert tuple(pstate_to_vocab.values()) == (
+    assert sorted(pstate_to_vocab.values(), key=lambda x: -len(x)) == [
+        {0, 1, 2, 3, 4, 5, 8, 12},
         {0, 1, 2, 3, 4, 5, 8},
-        {0, 1, 2, 3, 4, 5, 8, 12},
-        {0, 1, 2, 3, 4, 5, 8, 12},
-        {1, 5, 8, 12},
-        {1, 5, 8, 12},
-        {1, 5, 8, 12},
         {1, 5, 8, 12},
         {1, 5, 8},
-    )
+    ]
 
     pstate_to_vocab = {k: tuple(v) for k, v in pstate_to_vocab.items()}
 
@@ -348,16 +355,9 @@ def test_map_partial_states_to_vocab_regex():
 
             sample_seq += next_sample
 
-            # Parse the entire sampled sequence/string
-            # TODO: We could continue from the previous parse state, but this is
-            # easier for now and only for demonstration purposes.
-            partial_matches = find_partial_matches(
-                regex_fsm, sample_seq, start_state=regex_fsm.initial
-            )
-
-            # Use the/a longest match
-            pmatch = max(
-                partial_matches, key=lambda x: x[0] if x[0] is not None else -1
+            # Continue matching from where we left off
+            (pmatch,) = find_partial_matches(
+                regex_fsm, next_sample, start_state=pstate[-1]
             )
 
             # Create the next state
