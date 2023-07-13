@@ -200,3 +200,9 @@ def float(model, max_tokens: Optional[int] = None):
 
     """
     return Regex(model, r"([+-]?((0|[1-9]+)([.][0-9]*)?)|([.][0-9]+))", max_tokens)
+
+
+def choice(model, choices: List[str], max_tokens: Optional[int] = None):
+    """Choose between different sequences."""
+    regex_str = r"(" + r"|".join(choices) + r")"
+    return Regex(model, regex_str, max_tokens)
