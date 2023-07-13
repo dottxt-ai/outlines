@@ -98,6 +98,19 @@ def test_transformers_integration_float():
     float(generated)
 
 
+def test_transformers_integration_choice():
+    rng = torch.Generator()
+    rng.manual_seed(0)
+
+    model_name = "hf-internal-testing/tiny-random-GPTJForCausalLM"
+    model = models.transformers(model_name, device="cpu")
+    prompt = "Write a short sentence "
+    sequence = generate.choice(model, ["test", "choice"])(prompt, rng=rng)
+
+    generated = sequence[len(prompt) :]
+    assert generated == "test" or generated == "choice"
+
+
 def test_transformers_integration_with_pad_token():
     model_name = "hf-internal-testing/tiny-random-XLMRobertaXLForCausalLM"
     model = models.transformers(model_name, device="cpu")

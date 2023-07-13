@@ -106,6 +106,35 @@ def test_integer_proposal(input_ids, proposal):
     )
 
 
+def test_choice_proposal():
+    model = Model()
+    generator = generate.choice(model, ["1", "431a", "431A-"])
+    logits = torch.ones(len(model.tokenizer.vocabulary))
+    result = generator.create_proposal(torch.tensor([[]]), logits)
+    assert torch.equal(
+        result,
+        torch.tensor(
+            [[-math.inf, -math.inf, 1.0, -math.inf, 1.0, -math.inf, -math.inf]]
+        ),
+    )
+
+    result = generator.create_proposal(torch.tensor([[4]]), logits)
+    assert torch.equal(
+        result,
+        torch.tensor(
+            [[-math.inf, -math.inf, -math.inf, -math.inf, -math.inf, 1.0, 1.0]]
+        ),
+    )
+
+    result = generator.create_proposal(torch.tensor([[4, 6]]), logits)
+    assert torch.equal(
+        result,
+        torch.tensor(
+            [[-math.inf, 1.0, -math.inf, -math.inf, -math.inf, -math.inf, -math.inf]]
+        ),
+    )
+
+
 @pytest.mark.parametrize(
     "input_ids, proposal",
     [
