@@ -229,7 +229,9 @@ class Sequence:
             )
             token_ids = self.update_token_ids(is_finished, token_ids, updated_token_ids)
             attention_mask = self.expand_attention_mask(attention_mask)
-            is_finished[~is_finished] = self.is_finished(updated_token_ids).flatten()
+            is_finished[~is_finished] = self.is_finished(
+                updated_token_ids[:, num_prompt_tokens:]
+            ).flatten()
 
         result = self.model.tokenizer.decode(token_ids)
         result = self.postprocess_completions(result)
