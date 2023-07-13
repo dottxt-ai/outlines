@@ -13,20 +13,24 @@ def test_transformers_integration_continuation():
 
     model_name = "hf-internal-testing/tiny-random-GPTJForCausalLM"
     model = models.transformers(model_name, device="cpu")
-    sequence = generate.continuation(model)("Write a short sentence", rng=rng)
+    sequence = generate.continuation(model)("Write a short sentence ", rng=rng)
     assert isinstance(sequence, str)
     assert model.tokenizer.eos_token not in sequence
 
     sequence = generate.continuation(model, max_tokens=10)(
-        "Write a short sentence", rng=rng
+        "Write a short sentence ", rng=rng
     )
     assert isinstance(sequence, str)
 
-    prompts = ["Write a short sentence", "And another one"]
+    prompts = ["Write a short sentence ", "And another one "]
     sequence = generate.continuation(model, max_tokens=10)(prompts, rng=rng)
     assert isinstance(sequence, list)
     assert len(sequence) == 2
     assert isinstance(sequence[0], str)
+
+    prompt = "Write a short sentence "
+    sequence = generate.continuation(model, stop="a")(prompt, rng=rng)
+    assert sequence[len(prompt) :].find("a") == -1
 
 
 @pytest.mark.xfail

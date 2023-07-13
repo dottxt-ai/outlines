@@ -135,6 +135,18 @@ class Regex(Continuation):
 
 
 def regex(model, regex_string: str, max_tokens: Optional[int] = None):
+    """Generate text sequences that match the input regex.
+
+    Parameters
+    ----------
+    model
+        The model to use to computes the next-token logits.
+    regex
+        The regular expression generated expressions must match.
+    max_tokens
+        The maximum number of tokens to generate.
+
+    """
     return Regex(model, regex_string, max_tokens)
 
 
@@ -144,6 +156,15 @@ def integer(model, max_tokens: Optional[int] = None):
     The regex used to constrain the generation optionally matches plus or minus
     signs and forbids leading zeros (even if the `int` function in Python allows
     them).
+
+    Parameters
+    ----------
+    model
+        The model to use to computes the next-token logits.
+    regex
+        The regular expression generated expressions must match.
+    max_tokens
+        The maximum number of tokens to generate.
 
     """
     return Regex(model, r"[-+]?\d+", max_tokens)
@@ -155,6 +176,15 @@ def float(model, max_tokens: Optional[int] = None):
     The regex used to constrain the generation optionally matches plus or minus
     signs, and forbids leading zeros (even if the `float` function in Python
     allows them).
+
+    Parameters
+    ----------
+    model
+        The model to use to computes the next-token logits.
+    regex
+        The regular expression generated expressions must match.
+    max_tokens
+        The maximum number of tokens to generate.
 
     """
     return Regex(model, r"([+-]?((0|[1-9]+)([.][0-9]*)?)|([.][0-9]+))", max_tokens)
