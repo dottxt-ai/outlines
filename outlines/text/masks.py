@@ -34,15 +34,15 @@ def create_mask_from_regex(vocabulary: Dict[str, int], regex: str) -> torch.Bool
 
 
 def create_int_mask(vocabulary: Dict[str, int]) -> torch.BoolTensor:
-    """Create a mask to generate integers."""
-    mask = create_mask_from_regex(vocabulary, "^[0-9]+$")
+    """Create a mask to generate signed integers."""
+    mask = create_mask_from_regex(vocabulary, r"^[-+]?\d+$")
 
     return mask
 
 
 def create_float_mask(vocabulary: Dict[str, int]) -> torch.BoolTensor:
-    """Create a mask to generate floating point numbers."""
-    mask = create_mask_from_regex(vocabulary, r"^(([0-9]+)?([.]([0-9]*)?)?|[.][0-9]+)$")
+    """Create a mask to generate signed floating point numbers."""
+    mask = create_mask_from_regex(vocabulary, r"^[-+]?([0-9]+(\.[0-9]*)?|\.[0-9]+)$")
 
     return mask
 

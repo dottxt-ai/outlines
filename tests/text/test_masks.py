@@ -24,11 +24,13 @@ def test_float_mask():
         "0.": 6,
         "1.2.3": 7,
         ".": 8,
+        ".0": 9,
     }
 
     mask = create_float_mask(vocabulary)
     assert torch.equal(
-        mask, torch.tensor([True, True, False, False, True, True, True, False, True])
+        mask,
+        torch.tensor([True, True, False, False, True, True, True, False, False, True]),
     )
 
 
