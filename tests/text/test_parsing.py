@@ -205,7 +205,9 @@ def test_map_partial_states_to_vocab_python():
 
     vocabulary = ["d", "e", "ef foo", "f ", " ", "1d", "<EOS>"]
 
-    pstate_to_vocab = map_partial_states_to_vocab(vocabulary, symbol_names_and_fsms)
+    pstate_to_vocab, possible_paths = map_partial_states_to_vocab(
+        vocabulary, symbol_names_and_fsms
+    )
 
     assert dict(pstate_to_vocab) == {
         ("__IGNORE_0", 0): {4},
@@ -216,8 +218,11 @@ def test_map_partial_states_to_vocab_python():
         ("DEF", 1): {1, 2},
         ("DEF", 2): {3},
     }
+    assert possible_paths["__IGNORE_0"] == {0: {1}, 1: {1}}
+    assert possible_paths["NAME"] == {0: {1}, 1: {1}}
+    assert possible_paths["DEF"] == {0: {1}, 1: {2, 3}, 2: {3}}
 
-    pstate_to_vocab = map_partial_states_to_vocab(
+    pstate_to_vocab, possible_paths = map_partial_states_to_vocab(
         vocabulary, symbol_names_and_fsms, final_state_string="<EOS>"
     )
 
@@ -239,6 +244,9 @@ def test_map_partial_states_to_vocab_python():
             6,
         },
     }
+    assert possible_paths["__IGNORE_0"] == {0: {1}, 1: {1}}
+    assert possible_paths["NAME"] == {0: {1}, 1: {1}}
+    assert possible_paths["DEF"] == {0: {1}, 1: {2, 3}, 2: {3}}
 
 
 def test_parse_from_partial_match():
@@ -332,7 +340,7 @@ def test_map_partial_states_to_vocab_regex():
             return False
         return True
 
-    pstate_to_vocab = map_partial_states_to_vocab(
+    pstate_to_vocab, possible_paths = map_partial_states_to_vocab(
         vocabulary, {"FLOAT": regex_fsm}, partial_match_filter, "<EOS>"
     )
 
@@ -342,6 +350,7 @@ def test_map_partial_states_to_vocab_regex():
         {1, 5, 8, 12},
         {1, 5, 8},
     ]
+    assert possible_paths["FLOAT"] == {0: {1, 2, 3}, 1: {1, 3}, 2: {3}, 3: {3}}
 
     pstate_to_vocab = {k: tuple(v) for k, v in pstate_to_vocab.items()}
 
