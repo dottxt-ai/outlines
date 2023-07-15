@@ -371,7 +371,9 @@ def map_partial_states_to_vocab(
         [str, Optional[int], Tuple[int, ...]], bool
     ] = lambda *args: True,
     final_state_string: Optional[str] = None,
-) -> DefaultDict[PartialParseState, Set[int]]:
+) -> Tuple[
+    DefaultDict[PartialParseState, Set[int]], Dict[str, DefaultDict[int, Set[int]]]
+]:
     """Construct a map from partial parse states to subsets of `vocabulary`.
 
     The subsets of `vocabulary` consist of elements that are accepted by--or
@@ -393,16 +395,22 @@ def map_partial_states_to_vocab(
     """
 
     final_state_string_idx = None
+
     # Partial parse states to the subsets of the vocabulary that accept them
     pstate_to_vocab = defaultdict(set)
+    possible_paths = {}
     for symbol_name, fsm in terminals_to_fsms_map.items():
+        terminal_possible_paths = defaultdict(set)
         for i, vocab_string in enumerate(vocabulary):
             if vocab_string == final_state_string:
                 final_state_string_idx = i
 
             for end_idx, state_seq in find_partial_matches(fsm, vocab_string):
                 if partial_match_filter(vocab_string, end_idx, state_seq):
+                    terminal_possible_paths[state_seq[0]].add(state_seq[-1])
                     pstate_to_vocab[(symbol_name, state_seq[0])].add(i)
+
+        possible_paths[symbol_name] = terminal_possible_paths
 
     if final_state_string_idx is not None:
         # Allow transitions to EOS from all terminals FSM states
@@ -410,7 +418,7 @@ def map_partial_states_to_vocab(
             for state in fsm.finals:
                 pstate_to_vocab[(symbol_name, state)].add(final_state_string_idx)
 
-    return pstate_to_vocab
+    return pstate_to_vocab, possible_paths
 
 
 def terminals_to_lalr_states(lp: Lark) -> DefaultDict[str, Set[int]]:
