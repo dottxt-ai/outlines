@@ -22,3 +22,14 @@ class Tokenizer(Protocol):
     def decode(self, token_ids: NDArray[np.int64]) -> List[str]:
         """Translate an array of token ids to a string or list of strings."""
         ...
+
+    @abstractmethod
+    def convert_token_to_string(self, token: str) -> str:
+        """Convert a token to its equivalent string.
+
+        This is for instance useful for BPE tokenizers where whitespaces are
+        represented by the special characted `Ġ`. This prevents matching a raw
+        token that includes `Ġ` with a string.
+
+        """
+        ...

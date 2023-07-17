@@ -26,7 +26,8 @@ class Regex(Continuation):
 
         vocabulary = model.tokenizer.vocabulary
         sorted_vocabulary = [
-            k for k, v in sorted(vocabulary.items(), key=lambda kv: kv[1])
+            model.tokenizer.convert_token_to_string(k)
+            for k, v in sorted(vocabulary.items(), key=lambda kv: kv[1])
         ]
 
         regex_pattern = interegular.parse_pattern(regex_string)

@@ -81,6 +81,10 @@ class TransformersTokenizer(Tokenizer):
         text = self.tokenizer.batch_decode(token_ids)
         return text
 
+    def convert_token_to_string(self, token: str) -> str:
+        string = self.tokenizer.convert_tokens_to_string([token])
+        return string
+
 
 def transformers(model_name: str, device: Optional[str] = None, **model_kwargs):
     from transformers import AutoModelForCausalLM
