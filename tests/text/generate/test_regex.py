@@ -21,6 +21,9 @@ class Tokenizer:
 
         return decoded
 
+    def convert_token_to_string(self, token):
+        return token
+
 
 class Model:
     tokenizer = Tokenizer()
