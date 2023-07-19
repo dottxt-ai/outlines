@@ -91,7 +91,7 @@ module = [
     "scipy.*",
     "tenacity.*",
     "tiktoken.*",
-    "torch",
+    "torch.*",
     "transformers.*",
     "lark.*",
     "regex.*",
