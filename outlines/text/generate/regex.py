@@ -119,7 +119,11 @@ class Regex(Continuation):
 
         masks = []
         for pstate in self.pstates:
-            mask = torch.full((len(self.model.tokenizer.vocabulary),), -math.inf)
+            mask = torch.full(
+                (len(self.model.tokenizer.vocabulary),),
+                -math.inf,
+                device=self.model.device,
+            )
 
             if pstate[1] > -1:
                 next_support = self.pstate_to_vocab[pstate[:2]]

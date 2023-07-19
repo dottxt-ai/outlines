@@ -56,7 +56,9 @@ class Continuation(Sequence):
 
             contains_stop_sequence.append(found)
 
-        contains_stop_sequence = torch.tensor(contains_stop_sequence, dtype=torch.bool)
+        contains_stop_sequence = torch.tensor(
+            contains_stop_sequence, dtype=torch.bool, device=self.model.device
+        )
         contains_eos = token_ids[:, -1] == self.model.tokenizer.eos_token_id
 
         return torch.logical_or(contains_eos, contains_stop_sequence)
