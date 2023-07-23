@@ -2,33 +2,55 @@
 
 <img src="./docs/source/_static/logo.png" alt="Outlines Logo" width=300></img>
 
-# Outlines
+# Outlines 〰️
 
-Build _reliable_ workflows based on interactions with generative models.
+Fast and reliable neural text generation.
 
-[Prompting](#prompting) •
-[Controlled generation](#controlled-generation) •
-[Agents](#agents-example) •
-[Sampling](#sampling-uncertainty-simulation-based-inference) •
-[Parallel execution](#vectorization-and-parallel-execution) •
-[Examples](#examples)
+[Install](#installation) •
+[Prompting primitives](#prompting) •
+[Guided generation](#guided-generation) •
+[Examples](#examples) •
+[Stay tuned](#stay-tuned-for)
 
 </div>
 
-**Outlines** allows you to control and diagnose interactions with LLMs more effectively. Modern language models are powerful and versatile, but the way they interface with existing systems [can be very brittle](https://github.com/Significant-Gravitas/Auto-GPT/labels/invalid_json), their outputs [can be unreliable](https://arxiv.org/abs/2302.04023), and complex workflows (agents) can introduce a lot of error-prone code duplication. Outlines provides robust prompting primitives that separate the prompting from the execution logic and lead to simple implementations of few-shot generations, ReAct, meta-prompting, agents, etc. Outlines helps developers control text generation and produce predictable outputs that make the interaction with user code more robust. Its sampling-first approach allows one to diagnose issues with model-generated output more easily, and implement more robust generation methods such as [self-consistency](https://arxiv.org/abs/2203.11171) or [DiVeRSe](https://arxiv.org/abs/2206.02336).
+**Outlines** 〰 is a library for neural text generation. You can think of it as a
+more flexible replacement for the `generate` method in the
+[transformers](https://github.com/huggingface/transformers) library.
 
-**Outlines** is designed as a library that integrates well with the broader Python environment. Generation can be interleaved with control flow or custom function calls, prompts can be imported from other modules or libraries.
+**Outlines** 〰 helps developers *guide text generation* to build robust
+interfaces with external systems.
 
+**Outlines** 〰 provides *robust prompting primitives* that separate the prompting
+from the execution logic and lead to simple implementations of few-shot
+generations, ReAct, meta-prompting, agents, etc.
+
+**Outlines** 〰 is designed as a *library* that is meant to be compatible the
+broader ecosystem, not to replace it. We use as few abstractions as possible,
+and generation can be interleaved with control flow, conditionals, custom Python
+functions and calls to other libraries.
+
+**Outlines** 〰 is *compatible with all models*. It only interfaces with models
+via the next-token logits. It can be used with API-based models as well.
 
 ## Features
 
-- [x] Simple and powerful prompting primitives based on the [Jinja templating engine](https://jinja.palletsprojects.com/).
-- [x] Interleave completions with loops, conditionals, and custom Python functions
-- [x] Caching of generations
-- [x] Integration with OpenAI and HuggingFace models
-- [x] Controlled generation, including multiple choice, type constraints and dynamic stopping
-- [x] Sampling of multiple sequences
-- [x] Vectorized execution
+- [x] 🖍️Simple and powerful prompting primitives based on the [Jinja templating engine](https://jinja.palletsprojects.com/)
+- [x] 🚄 Guided generation, including multiple choice, type constraints and dynamic stopping
+- [x] ⚡ Fast regex-guided generation
+- [x] 🐍 Interleave completions with loops, conditionals, and custom Python functions
+- [x] 💾 Caching of generations
+- [x] 🤗 Integration with HuggingFace's `transformers` models
+
+
+## Stay tuned for
+
+- Context-Free Grammar guided generation ([#178](https://github.com/normal-computing/outlines/pull/178));
+- Generate JSON with a defined structure ([#140](https://github.com/normal-computing/outlines/pull/140))
+- Prompt-token alignment so you don't have to think about tokenization details ([#201](https://github.com/normal-computing/outlines/pull/201))
+- An infilling DSL ([#182](https://github.com/normal-computing/outlines/issues/182))
+
+You can follow [@NormalComputing](https://twitter.com/NormalComputing), [@remilouf](https://twitter.com/remilouf) or [@BrandonTWillard](https://twitter.com/BrandonTWillard) for regular updates!
 
 
 ## Installation
@@ -75,36 +97,18 @@ def labelling(to_label, examples):
     {{ to_label }} //
     """
 
-complete = models.text_completion.openai("text-davinci-003")
+model = models.transformers("gpt2")
 prompt = labelling("Just awesome", examples)
-answer = complete(prompt)
+answer = text.generate.continuation(model, max_tokens=100)(prompt)
 ```
-
-## Chaining with loops and conditionals ([example](https://github.com/normal-computing/outlines/blob/readme/examples/react.py))
-
-**Outlines** comes with very few abstractions, and is designed to blend into existing code and integrate with the rest of the ecosystem.
-
-``` python
-reviews = ["Just awesome", "Avoid", "Will come back"]
-
-def send_notification(review):
-    """This function sends a notification with the review's content."""
-    ...
-
-for review in reviews:
-    prompt = labelling(review, examples)
-    answer = model(prompt)
-    if answer == "Positive":
-        send_notification(review)
-```
-
-## Agents ([example](https://github.com/normal-computing/outlines/blob/readme/examples/babyagi.py))
-
-**Outlines** makes building agents like [AutoGPT](https://github.com/Significant-Gravitas/Auto-GPT), [BabyAGI](https://github.com/yoheinakajima/babyagi), [ViperGPT](https://viper.cs.columbia.edu/) or [Transformers Agent](https://huggingface.co/docs/transformers/transformers_agents) easier by removing boilerplate prompting code.
 
 ### Tools
 
-We can teach language models to call external functions to get additional informations or perform tasks, by encoding the functions' description in the prompt. To avoid duplicating information between the function definition and the description passed to the prompt, we define custom Jinja filters that can extract the function's name, description, signature and source:
+We can teach language models to call external functions to get additional
+informations or perform tasks, by encoding the functions' description in the
+prompt. To avoid duplicating information between the function definition and the
+description passed to the prompt, we define custom Jinja filters that can
+extract the function's name, description, signature and source:
 
 
 ``` python
@@ -139,7 +143,10 @@ prompt = my_commands([google_search, wikipedia_search])
 
 ### Response models
 
-We can instruct models to return their output in a pre-defined format, often JSON. To avoid duplicating information between the function definition and the description passed to the prompt we define a custom Jinja filter that can extract the expected response's schema:
+We can instruct models to return their output in a pre-defined format, often
+JSON. To avoid duplicating information between the function definition and the
+description passed to the prompt we define a custom Jinja filter that can
+extract the expected response's schema:
 
 ``` python
 from pydantic import BaseModel
@@ -170,104 +177,132 @@ joke_ppt(Joke)
 #  }
 ```
 
-## Controlled generation
+With these prompting primitives **Outlines** makes building agents like
+[AutoGPT](https://github.com/Significant-Gravitas/Auto-GPT),
+[BabyAGI](https://github.com/yoheinakajima/babyagi),
+[ViperGPT](https://viper.cs.columbia.edu/) or [Transformers
+Agent](https://huggingface.co/docs/transformers/transformers_agents) easier by
+removing boilerplate prompting code.
 
-The first step towards reliability of systems that include large language models is to ensure that there is a well-defined interface between their output and user-defined code. **Outlines** provides ways to control the generation of language models to make their output more predictable.
+## Guided generation
+
+The first step towards reliability of systems that include large language models
+is to ensure that there is a well-defined interface between their output and
+user-defined code. **Outlines** provides ways to control the generation of
+language models to make their output more predictable.
+
+### Early stopping
 
 You can stop the generation after a given sequence has been found:
 
 ``` python
-answer = model("Tell me a one-sentence joke.", stop_at=["."])
+import outlines.text.generate as generate
+import outlines.models as models
+
+model = models.transformers("gpt2")
+answer = generate.continuation(model, stop=["."])("Tell me a one-sentence joke.")
 ```
+
+### Multiple choices
 
 You can reduce the completion to a choice between multiple possibilities:
 
 ``` python
+import outlines.text.generate as generate
+import outlines.models as models
+
+model = models.transformers("gpt2")
+
 prompt = labelling("Just awesome", examples)
-answer = model(prompt, is_in=["Positive", "Negative"])
+answer = generate.choice(model, ["Positive", "Negative"])(prompt)
 ```
 
+### Type constraint
 
-You can require the generated sequence to be an int or a float:
+You can instruct the model to only return integers or floats:
+
+
+``` python
+import outlines.text.generate as generate
+import outlines.models as models
+
+model = models.transformers("gpt2")
+
+prompt = "1+1="
+answer = generate.integer(model)(prompt)
+
+prompt = "sqrt(2)="
+answer = generate.float(model)(prompt)
+```
+
+### Efficient regex-guided generation
+
+Outlines also comes with fast regex-guided generation. In fact, the `choice`,
+`integer` and `float` functions above all use regex-guided generation under the
+hood:
 
 ``` python
 import outlines.models as models
+import outlines.text.generate as generate
 
 
-model = models.text_completion.hf("sshleifer/tiny-gpt2")
-answer = model("2 + 2 = ", type="int")
-print(answer)
-# 4
+model = models.transformers("gpt2-medium")
 
-model = models.text_completion.hf("sshleifer/tiny-gpt2")
-answer = model("1.7 + 3.2 = ", type="float")
-print(answer)
-# 4.9
+prompt = "Is 1+1=2? "
+unguided = generate.continuation(model, max_tokens=30)(prompt)
+guided = generate.regex(model, r"\s*([Yy]es|[Nn]o|[Nn]ever|[Aa]lways)", max_tokens=30)(
+    prompt
+)
+
+print(unguided)
+# Is 1+1=2?
+#
+# This is probably the most perplexing question.
+# As I said in one of my articles describing how
+# I call 2 and 1, there isn't
+
+print(guided)
+# Is 1+1=2? Always
 ```
-
-
-## Sampling ([uncertainty](https://github.com/normal-computing/outlines/blob/readme/examples/sampling.ipynb), [simulation-based inference](https://github.com/normal-computing/outlines/blob/readme/examples/simulation_based_inference.ipynb))
-
-Outlines is strictly sampling based, and focused on using methods such as [self-consistency](https://arxiv.org/abs/2203.11171), [adaptive consistency](https://arxiv.org/abs/2305.11860), [DiVeRSe](https://arxiv.org/abs/2206.02336), [Tree of thoughts](https://arxiv.org/abs/2305.10601), [lattice sampling](https://arxiv.org/abs/2112.07660), etc. Several samples can be obtained using the `num_samples` keyword argument:
 
 ``` python
 import outlines.models as models
+import outlines.text.generate as generate
 
 
-model = models.text_completion.hf("sshleifer/tiny-gpt2")
-answer = model("2 + 2 = ", num_samples=5)
-print(answer)
-# [4, 5, 4, 4, 4]
+model = models.transformers("gpt2-medium")
+
+prompt = "What is the IP address of the Google DNS servers? "
+unguided = generate.continuation(model, max_tokens=30)(prompt)
+guided = generate.regex(
+    model,
+    r"((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)",
+    max_tokens=30,
+)(prompt)
+
+print(unguided)
+# What is the IP address of the Google DNS servers?
+#
+# Passive DNS servers are at DNS servers that are private.
+# In other words, both IP servers are private. The database
+# does not contain Chelsea Manning
+
+print(guided)
+# What is the IP address of the Google DNS servers?
+# 2.2.6.1
 ```
 
-The focus on sampling allows us to explore different ideas, such as [using the diversity of answers to evaluate the model's uncertainty](https://github.com/normal-computing/outlines/blob/readme/examples/sampling.ipynb), or [simulation-based inference to optimize the prompt](https://github.com/normal-computing/outlines/blob/readme/examples/simulation_based_inference.ipynb).
-
-## Vectorization and parallel execution
-
-You can pass prompts in a NumPy array to Outlines models:
-
-``` python
-import numpy as np
-import outlines.models as models
-
-model = models.text_completion.openai("text-davinci-003")
-
-prompts = [
-    ["Translate 'Hello' in Italian", "Translate 'Hello' in French"],
-    ["Translate 'Hello' in Spanish", "Translate 'Hello' in German"],
-]
-answers = model(prompts)
-
-print(answers.shape)
-# (2, 2)
-```
-
-Outlines also provide a `outlines.vectorize` decorator that will vectorize any function. If the function is async the requests will be run concurrently:
-
-``` python
-import aiohttp
-import numpy as np
-import outlines
-
-@outlines.vectorize
-async def wikipedia_search(query):
-    url = f"https://en.wikipedia.org/w/api.php?format=json&action=query&prop=extracts&exintro&explaintext&redirects=1&titles={query}&origin=*"
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url) as response:
-            return await response.text()
-
-results = wikipedia_search([["Cat", "Dog"],["Bird", "Horse"]])
-print(results.shape)
-# (2, 2)
-```
-
-This feature allows you to run multiple workflows in parallel, for instance to avoid overfitting when iterating over a workflow or in production to run workflows over several different inputs.
+Unlike other libraries, regex-guided generation in Outlines is almost as fast
+as non-guided generation.
 
 ## Contributing
 
 ### What contributions?
 
-We curently only accept bug fixes and documentation contributions. If you have a feature request, please start a new [discussions](https://github.com/normal-computing/outlines/discussions). The issue tracker is only intended for actionable items.
+We curently only accept bug fixes and documentation contributions. If you have a
+feature request, please start a new
+[discussion](https://github.com/normal-computing/outlines/discussions). The
+issue tracker is only intended for actionable items.
 
 ### How to contribute?
 
@@ -286,3 +321,15 @@ Do not hesitate to open a draft PR before your contribution is ready, especially
 - [BabyAGI](https://github.com/normal-computing/outlines/blob/main/examples/babyagi.py)
 - [Uncertainty](https://github.com/normal-computing/outlines/blob/main/examples/sampling.ipynb)
 - [Simulation-based inference](https://github.com/normal-computing/outlines/blob/main/examples/simulation_based_inference.ipynb)
+
+
+## Cite Outlines
+
+```
+@article{willard2023efficient,
+  title={Efficient Guided Generation for LLMs},
+  author={Willard, Brandon T and Louf, R{\'e}mi},
+  journal={arXiv preprint arXiv:2307.09702},
+  year={2023}
+}
+```
