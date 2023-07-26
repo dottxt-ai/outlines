@@ -1,4 +1,5 @@
 """Integration with OpenAI's API."""
+import asyncio
 import base64
 import functools
 import os
@@ -20,10 +21,65 @@ import outlines
 from outlines.caching import cache
 
 __all__ = [
+    "openai",
     "OpenAICompletion",
     "OpenAIEmbeddings",
     "OpenAIImageGeneration",
 ]
+
+
+class OpenAI:
+    """Represents a model available via the OpenAI API."""
+
+    def __init__(self, model_name: str):
+        if "text-" in model_name:
+            self.call_api = call_completion_api
+            self.format_prompt = lambda x: x
+            self.extract_choice = lambda x: x["text"]
+        elif "gpt-" in model_name:
+            self.call_api = call_chat_completion_api
+            self.format_prompt = lambda x: [{"role": "user", "content": x}]
+            self.extract_choice = lambda x: x["message"]["content"]
+        else:
+            raise NameError(
+                f"The model {model_name} requested is not available. Only the completion and chat completion models are available for OpenAI."
+            )
+
+        self.model_name = model_name
+
+    def __call__(
+        self,
+        prompt: str,
+        max_tokens: Optional[int],
+        *,
+        samples=1,
+        stop: Union[List[Optional[str]], str] = [],
+    ):
+        loop = asyncio.get_event_loop()
+        responses = loop.run_until_complete(
+            self.call_api(
+                self.model_name,
+                self.format_prompt(prompt),
+                max_tokens,
+                1.0,
+                stop,
+                {},
+                samples,
+            )
+        )
+
+        if samples == 1:
+            results = np.array([self.extract_choice(responses["choices"][0])])
+        else:
+            results = np.array(
+                [self.extract_choice(responses["choices"][i]) for i in range(samples)]
+            )
+
+        return results
+
+
+def openai(model_name):
+    return OpenAI(model_name)
 
 
 def OpenAICompletion(

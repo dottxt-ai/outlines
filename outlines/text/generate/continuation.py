@@ -1,7 +1,10 @@
+import functools
 from typing import List, Optional, Union
 
 import torch
 
+from outlines.models.openai import OpenAI
+from outlines.models.transformers import Transformers
 from outlines.text.generate.sequence import Sequence
 
 
@@ -88,10 +91,16 @@ class Continuation(Sequence):
         return completions_without_stop
 
 
-def continuation(
+@functools.singledispatch
+def continuation(model, max_tokens):
+    raise NotImplementedError(f"Model {model} not supported")
+
+
+@continuation.register(Transformers)
+def transformers_continuation(
     model, max_tokens: Optional[int] = None, *, stop: Union[str, List[str]] = []
 ):
-    """Generate text sequences.
+    """Generate text sequences using a model from the `Transformers` library.
 
     Parameters
     ----------
@@ -105,3 +114,27 @@ def continuation(
 
     """
     return Continuation(model, max_tokens, stop)
+
+
+@continuation.register(OpenAI)
+def openai_continuation(
+    model, max_tokens: Optional[int] = None, *, stop: Union[str, List[str]] = []
+):
+    """Generate text sequences using a model available via the OpenAI API.
+
+    Parameters
+    ----------
+    model
+        The model to use to computes the next-token logits.
+    max_tokens
+        The maximum number of tokens to generate.
+    stop
+        A string or list of strings which, when generated, stops
+        the generation for this sequence.
+
+    """
+
+    def call_model(prompt):
+        return model(prompt, max_tokens, stop=stop)
+
+    return call_model

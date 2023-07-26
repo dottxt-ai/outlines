@@ -8,5 +8,5 @@ codebase.
 from . import embeddings, image_generation, text_completion
 from .hf_diffusers import HuggingFaceDiffuser
 from .hf_transformers import HuggingFaceCompletion
-from .openai import OpenAICompletion, OpenAIEmbeddings, OpenAIImageGeneration
+from .openai import OpenAICompletion, OpenAIEmbeddings, OpenAIImageGeneration, openai
 from .transformers import transformers
