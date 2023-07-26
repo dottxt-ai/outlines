@@ -1,22 +1,13 @@
 from collections import ChainMap, defaultdict
-from copy import copy
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Callable,
-    DefaultDict,
-    Dict,
-    Iterable,
-    Optional,
-    Set,
-    Tuple,
-)
+from copy import copy, deepcopy
+from typing import Any, Callable, DefaultDict, Dict, Iterable, Optional, Set, Tuple
 
 import interegular
 import regex
 from interegular.fsm import FSM, anything_else
 from interegular.patterns import Unsupported
 from lark import Lark, Token
+from lark.common import LexerConf, ParserConf
 from lark.exceptions import (
     LexError,
     UnexpectedCharacters,
@@ -24,15 +15,24 @@ from lark.exceptions import (
     UnexpectedToken,
 )
 from lark.indenter import PythonIndenter
-from lark.lexer import BasicLexer, ContextualLexer, LexerState, Scanner
-from lark.parsers.lalr_analysis import Shift
+from lark.lexer import (
+    BasicLexer,
+    CallChain,
+    ContextualLexer,
+    LexerState,
+    LexerThread,
+    Scanner,
+    _create_unless,
+)
+from lark.parser_frontends import (
+    ParsingFrontend,
+    PostLexConnector,
+    _validate_frontend_args,
+)
+from lark.parsers.lalr_analysis import IntParseTable, LALR_Analyzer, ParseTable, Shift
 from lark.parsers.lalr_interactive_parser import InteractiveParser
-from lark.parsers.lalr_parser import ParseConf, ParserState
+from lark.parsers.lalr_parser import LALR_Parser, ParseConf, ParserState, _Parser
 from lark.utils import get_regexp_width
-
-if TYPE_CHECKING:
-    from lark.lexer import LexerThread
-
 
 PartialParseState = Tuple[str, int]
 
@@ -41,15 +41,185 @@ class PartialTokenEOF(UnexpectedEOF):
     pass
 
 
+class PartialParserConf(ParserConf):
+    __serialize_fields__ = "rules", "start", "parser_type", "deterministic"
+
+    def __init__(self, rules, callbacks, start, deterministic):
+        super().__init__(rules, callbacks, start)
+        self.deterministic = deterministic
+
+
+class PartialLark(Lark):
+    __serialize_fields__ = "parser", "rules", "options", "deterministic"
+
+    def __init__(self, grammar, **options):
+        # TODO: Could've extended `LarkOptions`, but all these extensions are
+        # already way too much (and brittle).  This library really needs a
+        # complete refactoring.
+        self.deterministic = options.pop("deterministic", False)
+        options["regex"] = True
+        super().__init__(grammar, **options)
+        assert self.options.parser == "lalr"
+
+    def _build_lexer(self, dont_ignore: bool = False) -> "PartialBasicLexer":
+        lexer_conf = self.lexer_conf
+        if dont_ignore:
+            from copy import copy
+
+            lexer_conf = copy(lexer_conf)
+            lexer_conf.ignore = ()
+
+        return PartialBasicLexer(lexer_conf)
+
+    def _build_parser(self) -> "PartialParsingFrontend":
+        self._prepare_callbacks()
+        _validate_frontend_args(self.options.parser, self.options.lexer)
+        parser_conf = PartialParserConf(
+            self.rules, self._callbacks, self.options.start, self.deterministic
+        )
+
+        # This is `_construct_parsing_frontend` expanded/inlined
+        parser_type = self.options.parser
+        lexer_type = self.options.lexer
+        lexer_conf = self.lexer_conf
+
+        assert isinstance(lexer_conf, LexerConf)
+        assert isinstance(parser_conf, ParserConf)
+        parser_conf.parser_type = parser_type
+        self.lexer_conf.lexer_type = lexer_type
+        return PartialParsingFrontend(lexer_conf, parser_conf, self.options)
+
+    def __repr__(self):
+        return "{}(open({!r}), parser={!r}, lexer={!r}, ...)".format(
+            type(self).__name__,
+            self.source_path,
+            self.options.parser,
+            self.options.lexer,
+        )
+
+
+class PartialLexerThread(LexerThread):
+    def __copy__(self):
+        return type(self)(copy(self.lexer), copy(self.state))
+
+    def __repr__(self):
+        return f"{type(self).__name__}(lexer={self.lexer!r}, state={self.state!r})"
+
+
+class PartialPostLexConnector(PostLexConnector):
+    def __copy__(self):
+        return type(self)(self.lexer, copy(self.postlexer))
+
+    def __repr__(self):
+        return (
+            f"{type(self).__name__}(lexer={self.lexer!r}, postlexer={self.postlexer!r})"
+        )
+
+
+class PartialParsingFrontend(ParsingFrontend):
+    def __init__(self, lexer_conf, parser_conf, options, parser=None):
+        assert parser_conf.parser_type == "lalr"
+
+        options._plugins["LALR_Parser"] = PartialLALRParser
+        options._plugins["BasicLexer"] = PartialBasicLexer
+        options._plugins["ContextualLexer"] = PartialContextualLexer
+        options._plugins["LexerThread"] = PartialLexerThread
+
+        super().__init__(lexer_conf, parser_conf, options, parser=parser)
+
+        if lexer_conf.postlex:
+            self.lexer = PartialPostLexConnector(self.lexer.lexer, lexer_conf.postlex)
+
+
+class PartialLALRParser(LALR_Parser):
+    def __init__(self, parser_conf, debug=False, strict=False):
+        analysis = LALR_Analyzer(
+            parser_conf, debug=debug if not parser_conf.deterministic else True
+        )
+        analysis.compute_lalr()
+        callbacks = parser_conf.callbacks
+
+        self.parser_conf = parser_conf
+        self._parse_table = analysis.parse_table
+
+        if parser_conf.deterministic:
+            old_to_new = {}
+
+            def to_tuple(v):
+                new = old_to_new.get(v)
+                if new is None:
+                    new = tuple(sorted(v, key=lambda y: str(y)))
+                    old_to_new[v] = new
+                return new
+
+            enum = sorted(
+                self._parse_table.states.keys(),
+                key=lambda x: str(sorted(x, key=lambda y: str(y))),
+            )
+
+            new_states = {}
+            for s in enum:
+                transitions = {
+                    term: op if op[0] is not Shift else (op[0], to_tuple(op[1]))
+                    for term, op in self._parse_table.states[s].items()
+                }
+                new_states[to_tuple(s)] = transitions
+
+            self._parse_table = type(self._parse_table)(
+                new_states,
+                {k: to_tuple(v) for k, v in self._parse_table.start_states.items()},
+                {k: to_tuple(v) for k, v in self._parse_table.end_states.items()},
+            )
+
+            if not debug:
+                self._parse_table = IntParseTable.from_ParseTable(self._parse_table)
+                self.states_to_rulesets = dict(
+                    zip(self._parse_table.states.keys(), new_states.keys())
+                )
+
+        self.parser = PartialParser(self._parse_table, callbacks, debug)
+
+    @classmethod
+    def deserialize(cls, data, memo, callbacks, debug=False):
+        inst = cls.__new__(cls)
+        inst._parse_table = ParseTable.deserialize(data, memo)
+        inst.parser = PartialParser(inst._parse_table, callbacks, debug)
+        return inst
+
+
+class PartialParserState(ParserState):
+    def __copy__(self):
+        return type(self)(
+            self.parse_conf,
+            copy(self.lexer),
+            copy(self.state_stack),
+            deepcopy(self.value_stack),
+        )
+
+    def __repr__(self):
+        return f"{type(self).__name__}(lexer={self.lexer!r}, state_stack={self.state_stack!r})"
+
+
+class PartialParser(_Parser):
+    def parse(
+        self, lexer, start, value_stack=None, state_stack=None, start_interactive=False
+    ):
+        parse_conf = ParseConf(self.parse_table, self.callbacks, start)
+        parser_state = PartialParserState(parse_conf, lexer, state_stack, value_stack)
+        if start_interactive:
+            return InteractiveParser(self, parser_state, parser_state.lexer)
+        return self.parse_from_state(parser_state)
+
+
 class PartialScanner(Scanner):
-    def __init__(self, scanner: Scanner):
-        self.terminals = scanner.terminals
-        self.g_regex_flags = scanner.g_regex_flags
+    def __init__(self, terminals, g_regex_flags, re_, use_bytes, match_whole=False):
+        self.terminals = terminals
+        self.g_regex_flags = g_regex_flags
         self.re_ = regex
-        self.use_bytes = scanner.use_bytes
-        self.match_whole = scanner.match_whole
-        self.allowed_types = scanner.allowed_types
-        self._mres = scanner._mres
+        self.use_bytes = use_bytes
+        self.match_whole = match_whole
+        self.allowed_types = {t.name for t in self.terminals}
+        self._mres = self._build_mres(terminals, len(terminals))
 
     def match(self, text, pos) -> Optional[Tuple[str, Optional[str], bool]]:
         for mre in self._mres:
@@ -59,24 +229,38 @@ class PartialScanner(Scanner):
         return None
 
 
-class PartialBasicLexer(BasicLexer):
-    def __init__(self, basic_lexer: BasicLexer):
-        self.re = regex
-        self.newline_types = basic_lexer.newline_types
-        self.ignore_types = basic_lexer.ignore_types
-        self.terminals = basic_lexer.terminals
-        self.user_callbacks = basic_lexer.user_callbacks
-        self.g_regex_flags = basic_lexer.g_regex_flags
-        self.use_bytes = basic_lexer.use_bytes
-        self.terminals_by_name = basic_lexer.terminals_by_name
-        self.callback = getattr(basic_lexer, "callback", None)
+class PartialContextualLexer(ContextualLexer):
+    def __init__(self, conf: "LexerConf", states, always_accept=()):
+        terminals = list(conf.terminals)
+        terminals_by_name = conf.terminals_by_name
 
-        if basic_lexer._scanner is not None:
-            self._scanner: Optional[PartialScanner] = PartialScanner(
-                basic_lexer._scanner
-            )
-        else:
-            self._scanner = None
+        trad_conf = copy(conf)
+        trad_conf.terminals = terminals
+
+        lexer_by_tokens: Dict = {}
+        self.lexers = {}
+        for state, accepts in states.items():
+            key = frozenset(accepts)
+            try:
+                lexer = lexer_by_tokens[key]
+            except KeyError:
+                accepts = set(accepts) | set(conf.ignore) | set(always_accept)
+                lexer_conf = copy(trad_conf)
+                lexer_conf.terminals = [
+                    terminals_by_name[n] for n in accepts if n in terminals_by_name
+                ]
+                lexer = PartialBasicLexer(lexer_conf)
+                lexer_by_tokens[key] = lexer
+
+            self.lexers[state] = lexer
+
+        assert trad_conf.terminals is terminals
+        self.root_lexer = PartialBasicLexer(trad_conf)
+
+
+class PartialBasicLexer(BasicLexer):
+    def __init__(self, conf: "LexerConf"):
+        super().__init__(conf)
 
         # This is used to determine the token type for partial matches
         self.terminal_to_regex = {}
@@ -86,8 +270,23 @@ class PartialBasicLexer(BasicLexer):
             )
 
     def _build_scanner(self):
-        super()._build_scanner()
-        self._scanner = PartialScanner(self._scanner)
+        terminals, self.callback = _create_unless(
+            self.terminals, self.g_regex_flags, self.re, self.use_bytes
+        )
+        assert all(self.callback.values())
+
+        for type_, f in self.user_callbacks.items():
+            if type_ in self.callback:
+                # Already a callback there, probably UnlessCallback
+                self.callback[type_] = CallChain(
+                    self.callback[type_], f, lambda t: t.type == type_
+                )
+            else:
+                self.callback[type_] = f
+
+        self._scanner = PartialScanner(
+            terminals, self.g_regex_flags, self.re, self.use_bytes
+        )
 
     def partial_matches(self, value, type_):
         partial_matches = set()
@@ -200,62 +399,18 @@ class PartialPythonIndenter(PythonIndenter):
         res.indent_level = copy(self.indent_level)
         return res
 
-
-def copy_lexer_thread(lexer_thread: "LexerThread") -> "LexerThread":
-    res = copy(lexer_thread)
-    res.lexer = copy(res.lexer)
-
-    if getattr(res.lexer, "postlexer", None):
-        if isinstance(res.lexer.postlexer, PythonIndenter) and not isinstance(
-            res.lexer.postlexer, PartialPythonIndenter
-        ):
-            # Patch these methods so that the post lexer keeps its state
-            # XXX: This won't really work in generality.
-            postlexer = PartialPythonIndenter()
-            postlexer.paren_level = res.lexer.postlexer.paren_level
-            postlexer.indent_level = res.lexer.postlexer.indent_level
-            res.lexer.postlexer = postlexer
-        else:
-            res.lexer.postlexer = copy(res.lexer.postlexer)
-
-    # Patch/replace the lexer objects so that they support partial matches
-    context_lexer = res.lexer
-
-    if not isinstance(context_lexer, ContextualLexer):
-        # XXX: The layouts change with the grammars
-        context_lexer = context_lexer.lexer
-        assert isinstance(context_lexer, ContextualLexer)
-
-    if not isinstance(context_lexer.root_lexer, PartialBasicLexer):
-        context_lexer.root_lexer = PartialBasicLexer(context_lexer.root_lexer)
-
-        basic_lexers = context_lexer.lexers
-        for idx, lexer in basic_lexers.items():
-            basic_lexers[idx] = PartialBasicLexer(lexer)
-
-    return res
+    def __repr__(self):
+        return f"{type(self).__name__}(paren_level={self.paren_level!r}, indent_level={self.indent_level!r})"
 
 
-def copy_parser_state(parser_state: ParserState) -> ParserState:
-    res = copy(parser_state)
-    res.lexer = copy_lexer_thread(res.lexer)
-
-    return res
-
-
-def copy_ip(ip: "InteractiveParser") -> "InteractiveParser":
-    res = copy(ip)
-    res.lexer_thread = copy_lexer_thread(res.lexer_thread)
-    return res
-
-
-def parse_to_end(parser_state: ParserState) -> Tuple[ParserState, Set[str]]:
+def parse_to_end(
+    parser_state: PartialParserState,
+) -> Tuple[PartialParserState, Set[str]]:
     """Continue parsing from the current parse state and return partial next tokens.
 
     .. warning::
         The parse state `parser_state` is updated in-place and must be patched
-        to work with this function.  Either patch it manually or use
-        `copy_parser_state` before calling this.
+        to work with this function.
 
     """
 
@@ -347,7 +502,7 @@ def find_partial_matches(
     return res
 
 
-def terminals_to_fsms(lp: Lark) -> Dict[str, FSM]:
+def terminals_to_fsms(lp: PartialLark) -> Dict[str, FSM]:
     """Construct a ``dict`` mapping terminal symbol names to their finite state machines."""
 
     symbol_names_and_fsms = {}
@@ -421,7 +576,7 @@ def map_partial_states_to_vocab(
     return pstate_to_vocab, possible_paths
 
 
-def terminals_to_lalr_states(lp: Lark) -> DefaultDict[str, Set[int]]:
+def terminals_to_lalr_states(lp: PartialLark) -> DefaultDict[str, Set[int]]:
     terminals_to_states = defaultdict(set)
     parse_table = lp.parser.parser.parser.parse_table
     for state, tokens_to_ops in parse_table.states.items():
@@ -434,12 +589,12 @@ def terminals_to_lalr_states(lp: Lark) -> DefaultDict[str, Set[int]]:
 
 
 def create_pmatch_parser_states(
-    lp: Lark,
+    lp: PartialLark,
     terminals_to_states: Dict[str, Set[int]],
     term_type: str,
     ptoken: str,
     pmatch: Tuple[int, Tuple[int, ...]],
-) -> Tuple[ParserState, ...]:
+) -> Tuple[PartialParserState, ...]:
     parse_table = lp.parser.parser.parser.parse_table
 
     # TODO: We need to effectively disable the callbacks that build the
@@ -455,7 +610,7 @@ def create_pmatch_parser_states(
     lexer_state.line_ctr.char_pos = pmatch[0] + 1
     lexer_state.last_token = Token(term_type, "")
     res = tuple(
-        ParserState(parse_conf, lexer_thread, [state], None)
+        PartialParserState(parse_conf, lexer_thread, [state], None)
         for state in terminals_to_states[term_type]
     )
     return res

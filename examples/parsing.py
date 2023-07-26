@@ -2,9 +2,9 @@
 import math
 import time
 import urllib.request
+from copy import copy
 
 import torch
-from lark import Lark
 from lark.indenter import DedentError
 from lark.lexer import UnexpectedCharacters, UnexpectedToken
 from transformers import (
@@ -15,7 +15,7 @@ from transformers import (
     set_seed,
 )
 
-from outlines.text.parsing import PartialPythonIndenter, copy_parser_state, parse_to_end
+from outlines.text.parsing import PartialLark, PartialPythonIndenter, parse_to_end
 
 revision = None
 checkpoint = "Salesforce/codegen-350M-mono"
@@ -34,12 +34,12 @@ sql_grammar = "".join(
 with open("sql_grammar.lark", "w") as f:
     f.write(sql_grammar)
 
-sqlparser = Lark.open(
+sqlparser = PartialLark.open(
     "sql_grammar.lark",
     parser="lalr",
 )
 
-pyparser = Lark.open_from_package(
+pyparser = PartialLark.open_from_package(
     "lark",
     "python.lark",
     ["grammars"],
@@ -54,7 +54,7 @@ class ParserLogitsProcessor(LogitsProcessor):
 
     def __init__(self, parser):
         ip = parser.parse_interactive("")
-        self.parser_state = copy_parser_state(ip.parser_state)
+        self.parser_state = ip.parser_state
         self.states_stack = [self.parser_state]
         self.token_seq = None
         self.token_idx = 0
@@ -88,7 +88,7 @@ class ParserLogitsProcessor(LogitsProcessor):
         # those should dramatically reduce the amount of work done here.
         t0 = time.perf_counter()
         for test_token, token_id in tokenizer.vocab.items():
-            ps = copy_parser_state(self.parser_state)
+            ps = copy(self.parser_state)
             ls = ps.lexer.state
             ls.text = self.token_seq + test_token
 

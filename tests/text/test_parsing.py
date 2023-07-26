@@ -1,15 +1,15 @@
 import random
 import re
+from copy import copy
 
 import interegular
 import pytest
-from lark import Lark
 from lark.indenter import DedentError
 from lark.lexer import UnexpectedCharacters, UnexpectedToken
 
 from outlines.text.parsing import (
+    PartialLark,
     PartialPythonIndenter,
-    copy_parser_state,
     create_pmatch_parser_states,
     find_partial_matches,
     map_partial_states_to_vocab,
@@ -20,7 +20,7 @@ from outlines.text.parsing import (
 
 
 def test_parse_to_end():
-    pyparser = Lark.open_from_package(
+    pyparser = PartialLark.open_from_package(
         "lark",
         "python.lark",
         ["grammars"],
@@ -30,37 +30,37 @@ def test_parse_to_end():
     )
 
     ip = pyparser.parse_interactive("x")
-    parser_state = copy_parser_state(ip.parser_state)
+    parser_state = copy(ip.parser_state)
     parser_state, expected_next_tokens = parse_to_end(parser_state)
     assert not parser_state.value_stack
     assert expected_next_tokens == {"NAME"}
 
     ip = pyparser.parse_interactive("x = '")
-    parser_state = copy_parser_state(ip.parser_state)
+    parser_state = copy(ip.parser_state)
     parser_state, expected_next_tokens = parse_to_end(parser_state)
     assert parser_state.value_stack[-1].type == "EQUAL"
     assert expected_next_tokens == {"LONG_STRING", "STRING"}
 
     ip = pyparser.parse_interactive("x = 'hi")
-    parser_state = copy_parser_state(ip.parser_state)
+    parser_state = copy(ip.parser_state)
     parser_state, expected_next_tokens = parse_to_end(parser_state)
     assert parser_state.value_stack[-1].type == "EQUAL"
     assert expected_next_tokens == {"STRING"}
 
     ip = pyparser.parse_interactive("x = ('hi")
-    parser_state = copy_parser_state(ip.parser_state)
+    parser_state = copy(ip.parser_state)
     parser_state, expected_next_tokens = parse_to_end(parser_state)
     assert parser_state.value_stack[-1].type == "LPAR"
     assert expected_next_tokens == {"STRING"}
 
     ip = pyparser.parse_interactive("def")
-    parser_state = copy_parser_state(ip.parser_state)
+    parser_state = copy(ip.parser_state)
     parser_state, expected_next_tokens = parse_to_end(parser_state)
     assert not parser_state.value_stack
     assert expected_next_tokens == {"NAME", "DEF"}
 
     # Now, try something incremental
-    parser_state = copy_parser_state(parser_state)
+    parser_state = copy(parser_state)
     last_lexer_state = parser_state.lexer.state
     last_lexer_state.text = "def blah()"
 
@@ -93,7 +93,7 @@ def test_sequential_parse_example():
     ]
     vocab = set(input_tokens)
 
-    pyparser = Lark.open_from_package(
+    pyparser = PartialLark.open_from_package(
         "lark",
         "python.lark",
         ["grammars"],
@@ -102,7 +102,7 @@ def test_sequential_parse_example():
         start="file_input",
     )
     ip = pyparser.parse_interactive("")
-    parser_state = copy_parser_state(ip.parser_state)
+    parser_state = ip.parser_state
 
     token_seq = ""
     for i, token in enumerate(input_tokens):
@@ -115,7 +115,7 @@ def test_sequential_parse_example():
 
         next_vocab = set()
         for test_token in vocab:
-            ps = copy_parser_state(parser_state)
+            ps = copy(parser_state)
             ls = ps.lexer.state
             ls.text = token_seq + test_token
 
@@ -184,7 +184,7 @@ def test_partial_match():
 
 
 def test_map_partial_states_to_vocab_python():
-    pyparser = Lark.open_from_package(
+    pyparser = PartialLark.open_from_package(
         "lark",
         "python.lark",
         ["grammars"],
@@ -251,7 +251,7 @@ def test_map_partial_states_to_vocab_python():
 
 def test_parse_from_partial_match():
     """Make sure we can continue parsing from an FSM-based partial match."""
-    lp = Lark(
+    lp = PartialLark(
         r"""
 start: funcdef
 
@@ -287,7 +287,7 @@ NAME: /[^\W\d]\w*/
     )
     # These copies also patch the lexers in the parse state, which is now
     # needed for use with `parse_to_end`
-    parser_state = copy_parser_state(parser_state)
+    parser_state = copy(parser_state)
     new_parser_state, expected_next_tokens = parse_to_end(parser_state)
     assert expected_next_tokens == {"NAME"}
 
@@ -297,7 +297,7 @@ NAME: /[^\W\d]\w*/
     (parser_state,) = create_pmatch_parser_states(
         lp, terminals_to_states, term_type, ptoken, first_pmatch
     )
-    parser_state = copy_parser_state(parser_state)
+    parser_state = copy(parser_state)
     new_parser_state, expected_next_tokens = parse_to_end(parser_state)
     assert not expected_next_tokens
 
@@ -307,7 +307,7 @@ NAME: /[^\W\d]\w*/
     (parser_state,) = create_pmatch_parser_states(
         lp, terminals_to_states, term_type, ptoken, first_pmatch
     )
-    parser_state = copy_parser_state(parser_state)
+    parser_state = copy(parser_state)
     with pytest.raises(UnexpectedToken):
         parse_to_end(parser_state)
 
