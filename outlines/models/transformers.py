@@ -90,6 +90,6 @@ def transformers(model_name: str, device: Optional[str] = None, **model_kwargs):
     from transformers import AutoModelForCausalLM
 
     model = AutoModelForCausalLM.from_pretrained(model_name, **model_kwargs)
-    tokenizer = TransformersTokenizer(model_name)
+    tokenizer = TransformersTokenizer(model_name, **model_kwargs)
 
     return Transformers(model, tokenizer, device)
