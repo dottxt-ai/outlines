@@ -12,6 +12,7 @@ from outlines.text.parsing import (
     PartialPythonIndenter,
     create_pmatch_parser_states,
     find_partial_matches,
+    make_deterministic_fsm,
     map_partial_states_to_vocab,
     parse_to_end,
     terminals_to_fsms,
@@ -134,11 +135,11 @@ def test_sequential_parse_example():
 
 def test_partial_match():
     name_pattern = interegular.parse_pattern(r"[^\W\d]\w*")
-    name_fsm = name_pattern.to_fsm().reduce()
+    name_fsm, _ = make_deterministic_fsm(name_pattern.to_fsm().reduce())
     assert name_fsm.initial == 0
 
     def_pattern = interegular.parse_pattern("def")
-    def_fsm = def_pattern.to_fsm().reduce()
+    def_fsm, _ = make_deterministic_fsm(def_pattern.to_fsm().reduce())
     assert def_fsm.initial == 0
 
     assert find_partial_matches(def_fsm, "def") == {(2, (0, 1, 2, 3))}
@@ -170,17 +171,12 @@ def test_partial_match():
     float_pattern = interegular.parse_pattern(
         r"([+-]?((0|[1-9]+)([.][0-9]*)?)|([.][0-9]+))"
     )
-    float_fsm = float_pattern.to_fsm().reduce()
+    float_fsm, _ = make_deterministic_fsm(float_pattern.to_fsm().reduce())
+    assert 5 in float_fsm.finals
+    assert 2 not in float_fsm.finals
 
-    # XXX: It look like there's a lot of set/frozenset usage that prevents us
-    # from adequately reproducing the exact state sequences in this case.
-    # It seems to stem from `_CharGroup`s and the FSM map construction process.
     res = find_partial_matches(float_fsm, ".")
-    assert {v[0] for v in res} == {0, 0, None}
-    # Make sure that the terminated sequences actually end in final states
-    assert all(v[1][-1] in float_fsm.finals for v in res if v[0] == 0)
-    # Make sure that the non-terminated sequences don't end in final states
-    assert all(v[1][-1] not in float_fsm.finals for v in res if v[0] != 0)
+    assert res == {(0, (3, 5)), (0, (4, 5)), (None, (0, 2))}
 
 
 def test_map_partial_states_to_vocab_python():
@@ -315,7 +311,7 @@ NAME: /[^\W\d]\w*/
 def test_map_partial_states_to_vocab_regex():
     regex_string = r"([0-9]+([.][0-9]*)?|[.][0-9]+)"
     regex_pattern = interegular.parse_pattern(regex_string)
-    regex_fsm = regex_pattern.to_fsm().reduce()
+    regex_fsm, _ = make_deterministic_fsm(regex_pattern.to_fsm().reduce())
 
     vocabulary = [
         "1.",
@@ -350,7 +346,7 @@ def test_map_partial_states_to_vocab_regex():
         {1, 5, 8, 12},
         {1, 5, 8},
     ]
-    assert possible_paths["FLOAT"] == {0: {1, 2, 3}, 1: {1, 3}, 2: {3}, 3: {3}}
+    assert possible_paths["FLOAT"] == {2: {2, 3}, 0: {1, 2, 3}, 3: {3}, 1: {3}}
 
     pstate_to_vocab = {k: tuple(v) for k, v in pstate_to_vocab.items()}
 
