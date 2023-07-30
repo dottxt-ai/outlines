@@ -9,7 +9,11 @@ from pydantic import BaseModel
 
 from outlines.text.generate.continuation import Continuation
 from outlines.text.json_schema import build_regex_from_schema
-from outlines.text.parsing import find_partial_matches, map_partial_states_to_vocab
+from outlines.text.parsing import (
+    find_partial_matches,
+    make_deterministic_fsm,
+    map_partial_states_to_vocab,
+)
 
 
 class Regex(Continuation):
@@ -35,7 +39,7 @@ class Regex(Continuation):
         ]
 
         regex_pattern = interegular.parse_pattern(regex_string)
-        self.regex_fsm = regex_pattern.to_fsm().reduce()
+        self.regex_fsm, _ = make_deterministic_fsm(regex_pattern.to_fsm().reduce())
 
         def partial_match_filter(string, end_idx, state_seq):
             if end_idx is not None and end_idx < len(string) - 1:
@@ -55,7 +59,7 @@ class Regex(Continuation):
         queue = collections.deque([self.regex_fsm.initial])
         while queue:
             symbol = queue.popleft()
-            for prev_state in paths["REGEX"][symbol]:
+            for prev_state in paths["REGEX"].get(symbol, ()):
                 if prev_state not in traversed_states:
                     traversed_states.add(prev_state)
                     queue.append(prev_state)

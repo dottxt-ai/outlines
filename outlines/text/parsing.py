@@ -4,7 +4,7 @@ from typing import Any, Callable, DefaultDict, Dict, Iterable, Optional, Set, Tu
 
 import interegular
 import regex
-from interegular.fsm import FSM, anything_else
+from interegular.fsm import FSM, Alphabet, anything_else
 from interegular.patterns import Unsupported
 from lark import Lark, Token
 from lark.common import LexerConf, ParserConf
@@ -35,6 +35,80 @@ from lark.parsers.lalr_parser import LALR_Parser, ParseConf, ParserState, _Parse
 from lark.utils import get_regexp_width
 
 PartialParseState = Tuple[str, int]
+
+
+def make_deterministic_fsm(fsm: FSM) -> Tuple[FSM, Dict[int, int]]:
+    """Construct an equivalent FSM with deterministic state labels."""
+    old_to_new_trans_keys = {
+        trans_key: i
+        for i, (trans_key, _) in enumerate(
+            sorted(fsm.alphabet.by_transition.items(), key=lambda x: sorted(x[1]))
+        )
+    }
+
+    new_symbol_mapping = {
+        symbol: old_to_new_trans_keys[trans_key]
+        for symbol, trans_key in fsm.alphabet._symbol_mapping.items()
+    }
+
+    new_alphabet = Alphabet(new_symbol_mapping)
+
+    new_map = {
+        from_state: {
+            old_to_new_trans_keys[trans_key]: to_state
+            for trans_key, to_state in trans_map.items()
+        }
+        for from_state, trans_map in fsm.map.items()
+    }
+
+    old_to_new_states = {}
+    old_to_new_states[fsm.initial] = 0
+
+    i = 0
+    seen = {fsm.initial}
+    old_state_queue = [fsm.initial]
+    while old_state_queue:
+        old_state = old_state_queue.pop(-1)
+        transitions = new_map[old_state]
+        sorted_transitions = sorted(transitions.items(), key=lambda v: v[0])
+        for _, old_state in sorted_transitions:
+            if old_state not in seen:
+                old_state_queue.append(old_state)
+                seen.add(old_state)
+            if old_state not in old_to_new_states:
+                i += 1
+                old_to_new_states[old_state] = i
+
+    new_map = dict(
+        sorted(
+            (
+                (
+                    old_to_new_states[from_state],
+                    dict(
+                        sorted(
+                            (
+                                (trans_key, old_to_new_states[to_state])
+                                for trans_key, to_state in trans_map.items()
+                            ),
+                            key=lambda v: v[0],
+                        )
+                    ),
+                )
+                for from_state, trans_map in new_map.items()
+            ),
+            key=lambda v: v[0],
+        )
+    )
+
+    new_initial = 0
+    new_finals = frozenset(
+        sorted(old_to_new_states[old_state] for old_state in fsm.finals)
+    )
+    new_states = frozenset(sorted(new_map.keys()))
+
+    new_fsm = FSM(new_alphabet, new_states, new_initial, new_finals, new_map)
+
+    return new_fsm, old_to_new_states
 
 
 class PartialTokenEOF(UnexpectedEOF):
@@ -510,7 +584,7 @@ def terminals_to_fsms(lp: PartialLark) -> Dict[str, FSM]:
         pattern = interegular.parse_pattern(terminal.pattern.to_regexp())
         # TODO: Use `pyparser.terminals[0].pattern.flags`?
         try:
-            fsm = pattern.to_fsm().reduce()
+            fsm, _ = make_deterministic_fsm(pattern.to_fsm().reduce())
         except Unsupported:
             fsm = None
 
@@ -526,9 +600,7 @@ def map_partial_states_to_vocab(
         [str, Optional[int], Tuple[int, ...]], bool
     ] = lambda *args: True,
     final_state_string: Optional[str] = None,
-) -> Tuple[
-    DefaultDict[PartialParseState, Set[int]], Dict[str, DefaultDict[int, Set[int]]]
-]:
+) -> Tuple[Dict[PartialParseState, Set[int]], Dict[str, Dict[int, Set[int]]]]:
     """Construct a map from partial parse states to subsets of `vocabulary`.
 
     The subsets of `vocabulary` consist of elements that are accepted by--or
@@ -552,18 +624,22 @@ def map_partial_states_to_vocab(
     final_state_string_idx = None
 
     # Partial parse states to the subsets of the vocabulary that accept them
-    pstate_to_vocab = defaultdict(set)
+    pstate_to_vocab: Dict[Tuple[str, int], Set[int]] = {}
     possible_paths = {}
     for symbol_name, fsm in terminals_to_fsms_map.items():
-        terminal_possible_paths = defaultdict(set)
+        terminal_possible_paths: Dict[int, Set[int]] = {}
         for i, vocab_string in enumerate(vocabulary):
             if vocab_string == final_state_string:
                 final_state_string_idx = i
 
             for end_idx, state_seq in find_partial_matches(fsm, vocab_string):
                 if partial_match_filter(vocab_string, end_idx, state_seq):
-                    terminal_possible_paths[state_seq[0]].add(state_seq[-1])
-                    pstate_to_vocab[(symbol_name, state_seq[0])].add(i)
+                    terminal_possible_paths.setdefault(state_seq[0], set()).add(
+                        state_seq[-1]
+                    )
+                    pstate_to_vocab.setdefault((symbol_name, state_seq[0]), set()).add(
+                        i
+                    )
 
         possible_paths[symbol_name] = terminal_possible_paths
 
@@ -571,7 +647,9 @@ def map_partial_states_to_vocab(
         # Allow transitions to EOS from all terminals FSM states
         for symbol_name, fsm in terminals_to_fsms_map.items():
             for state in fsm.finals:
-                pstate_to_vocab[(symbol_name, state)].add(final_state_string_idx)
+                pstate_to_vocab.setdefault((symbol_name, state), set()).add(
+                    final_state_string_idx
+                )
 
     return pstate_to_vocab, possible_paths
 
