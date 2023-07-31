@@ -1,11 +1,14 @@
 import collections
 import math
-from typing import List, Optional, Tuple
+from json import dumps
+from typing import List, Optional, Tuple, Union
 
 import interegular
 import torch
+from pydantic import BaseModel
 
 from outlines.text.generate.continuation import Continuation
+from outlines.text.json_schema import build_regex_from_schema
 from outlines.text.parsing import find_partial_matches, map_partial_states_to_vocab
 
 
@@ -203,4 +206,25 @@ def float(model, max_tokens: Optional[int] = None):
 def choice(model, choices: List[str], max_tokens: Optional[int] = None):
     """Choose between different sequences."""
     regex_str = r"(" + r"|".join(choices) + r")"
+    return Regex(model, regex_str, max_tokens)
+
+
+def json(model, schema: Union[str, BaseModel], max_tokens: Optional[int] = None):
+    """Generate a text sequence that follows a JSON schema.
+
+    Parameters
+    ---------
+    model
+        The model to use to computes the next-token logits.
+    schema
+        The JSON schema, or Pydantic model, that guides the generation.
+    max_tokens
+        The maximum number of tokens to generate at each step.
+
+    """
+    if isinstance(schema, type(BaseModel)):
+        schema = dumps(schema.model_json_schema())
+
+    regex_str = build_regex_from_schema(schema)
+
     return Regex(model, regex_str, max_tokens)
