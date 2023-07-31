@@ -1,7 +1,11 @@
+import json
 import re
+from enum import Enum
+from typing import List, Union
 
 import pytest
 import torch
+from pydantic import BaseModel, constr
 
 import outlines.models as models
 import outlines.text.generate as generate
@@ -113,3 +117,111 @@ def test_transformers_integration_with_pad_token():
     model = models.transformers(model_name, device="cpu")
     assert model.tokenizer.pad_token_id == 1
     assert model.tokenizer.pad_token == "<pad>"
+
+
+def test_transformers_json_basic():
+    model_name = "hf-internal-testing/tiny-random-GPTJForCausalLM"
+    model = models.transformers(model_name, device="cpu")
+    prompt = "Output some JSON "
+
+    class Spam(BaseModel):
+        foo: int
+        bar: float
+        spam: constr(max_length=10)
+        fuzz: bool
+
+    rng = torch.Generator()
+    rng.manual_seed(0)  # make sure that `bar` is not an int
+
+    sequence = generate.json(model, Spam, max_tokens=1000)(prompt, rng=rng)
+    parsed = json.loads(sequence)
+    assert isinstance(parsed["foo"], int)
+    assert isinstance(parsed["bar"], float)
+    assert isinstance(parsed["spam"], str)
+    assert isinstance(parsed["fuzz"], bool)
+    assert len(parsed["spam"]) == 10
+
+
+def test_transformers_json_str_enum():
+    model_name = "hf-internal-testing/tiny-random-GPTJForCausalLM"
+    model = models.transformers(model_name, device="cpu")
+    prompt = "Output some JSON "
+
+    rng = torch.Generator()
+    rng.manual_seed(0)
+
+    class Name(str, Enum):
+        john = "John"
+        marc = "Marc"
+        michel = "Michel"
+
+    class User(BaseModel):
+        user_id: int
+        name: Name
+
+    sequence = generate.json(model, User)(prompt, rng=rng)
+    parsed = json.loads(sequence)
+    assert isinstance(parsed["user_id"], int)
+    assert parsed["name"] in ["John", "Marc", "Michel"]
+
+
+def test_transformers_json_int_enum():
+    model_name = "hf-internal-testing/tiny-random-GPTJForCausalLM"
+    model = models.transformers(model_name, device="cpu")
+    prompt = "Output some JSON "
+
+    rng = torch.Generator()
+    rng.manual_seed(0)
+
+    class Id(int, Enum):
+        one = 1
+        two = 2
+
+    class User(BaseModel):
+        user_id: Id
+
+    sequence = generate.json(model, User)(prompt, rng=rng)
+    parsed = json.loads(sequence)
+    assert isinstance(parsed["user_id"], int)
+    assert parsed["user_id"] in [1, 2]
+
+
+def test_transformers_json_array():
+    model_name = "hf-internal-testing/tiny-random-GPTJForCausalLM"
+    model = models.transformers(model_name, device="cpu")
+    prompt = "Output some JSON "
+
+    class User(BaseModel):
+        user_id: int
+        value: List[float]
+
+    rng = torch.Generator()
+    rng.manual_seed(0)
+
+    sequence = generate.json(model, User)(prompt, rng=rng)
+    parsed = json.loads(sequence)
+    assert isinstance(parsed["user_id"], int)
+    assert isinstance(parsed["value"], list)
+    for value in parsed["value"]:
+        assert isinstance(value, float) or isinstance(value, int)
+
+
+def test_transformers_json_union():
+    model_name = "hf-internal-testing/tiny-random-GPTJForCausalLM"
+    model = models.transformers(model_name, device="cpu")
+    prompt = "Output some JSON "
+
+    class Spam(BaseModel):
+        foo: int
+        bar: Union[constr(max_length=10), float]
+
+    rng = torch.Generator()
+    rng.manual_seed(4)
+
+    sequence = generate.json(model, Spam, max_tokens=100)(prompt, rng=rng)
+    parsed = json.loads(sequence)
+    assert (
+        isinstance(parsed["bar"], int)
+        or isinstance(parsed["bar"], float)
+        or isinstance(parsed["bar"], str)
+    )
