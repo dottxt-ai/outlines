@@ -31,7 +31,7 @@ class CTranslate2_Model:
     ) -> torch.FloatTensor:
         # `forward_batch` method of `Generator` accepts `tokens` in a list of list of str
         tokens = [self.tokenizer.tokenizer.convert_ids_to_tokens(iids) for iids in input_ids]
-        logits = self.model.forward_batch([tokens], return_log_probs=True)
+        logits = self.model.forward_batch(tokens, return_log_probs=True)
         logits = torch.as_tensor(logits)
         next_token_logits = logits[:, -1, :]
 
