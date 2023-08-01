@@ -10,3 +10,4 @@ from .hf_diffusers import HuggingFaceDiffuser
 from .hf_transformers import HuggingFaceCompletion
 from .openai import OpenAICompletion, OpenAIEmbeddings, OpenAIImageGeneration
 from .transformers import transformers
+from .ctranslate2 import ctranslate2

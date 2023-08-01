@@ -51,6 +51,7 @@ test = [
     "lark",
     "regex",
     "interegular",
+    "ctranslate2",
 ]
 
 [project.urls]
