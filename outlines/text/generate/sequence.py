@@ -233,7 +233,7 @@ class Sequence:
                 updated_token_ids[:, num_prompt_tokens:]
             ).flatten()
 
-        result = self.model.tokenizer.decode(token_ids)
+        result = self.model.tokenizer.decode(token_ids[..., num_prompt_tokens:])
         result = self.postprocess_completions(result)
 
         if len(result) == 1:

@@ -53,7 +53,7 @@ def test_transformers_various_regexes():
     prompt = "Write an email address"
     regex_str = r"([a-z]{10})@([a-z]{5})\.([a-z]{3})"
     sequence = generate.regex(model, regex_str)(prompt, rng=rng)
-    assert re.fullmatch(regex_str, sequence[len(prompt) :]) is not None
+    assert re.fullmatch(regex_str, sequence) is not None
 
 
 def test_transformers_integration_integer():
@@ -65,9 +65,8 @@ def test_transformers_integration_integer():
     prompt = "Write a short sentence"
     sequence = generate.integer(model, max_tokens=10)(prompt, rng=rng)
 
-    generated = sequence[len(prompt) :]
-    assert generated[0] != 0
-    int(generated)
+    assert sequence[0] != 0
+    int(sequence)
 
 
 def test_transformers_integration_integer_array():
@@ -80,8 +79,8 @@ def test_transformers_integration_integer_array():
     sequence = generate.integer(model, max_tokens=10)(prompts, rng=rng)
     assert isinstance(sequence, list)
     assert len(sequence) == 2
-    int(sequence[0][len(prompts[0]) :])
-    int(sequence[1][len(prompts[1]) :])
+    int(sequence[0])
+    int(sequence[1])
 
 
 def test_transformers_integration_float():
@@ -93,9 +92,8 @@ def test_transformers_integration_float():
     prompt = "Write a short sentence"
     sequence = generate.float(model, max_tokens=10)(prompt, rng=rng)
 
-    generated = sequence[len(prompt) :]
-    assert generated[0] != 0
-    float(generated)
+    assert sequence[0] != 0
+    float(sequence)
 
 
 def test_transformers_integration_choice():
@@ -107,8 +105,7 @@ def test_transformers_integration_choice():
     prompt = "Write a short sentence "
     sequence = generate.choice(model, ["test", "choice"])(prompt, rng=rng)
 
-    generated = sequence[len(prompt) :]
-    assert generated == "test" or generated == "choice"
+    assert sequence == "test" or sequence == "choice"
 
 
 def test_transformers_integration_with_pad_token():
