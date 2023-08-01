@@ -14,7 +14,7 @@ __all__ = ["ctranslate2"]
 
 
 class CTranslate2_Model:
-    """Represents a `transformers` model."""
+    """Represents a `ctranslate2` model."""
 
     def __init__(
         self,
@@ -64,7 +64,7 @@ class TransformersTokenizer(Tokenizer):
         kwargs["padding"] = True
         kwargs["return_tensors"] = "pt"
         output = self.tokenizer(prompt, **kwargs)
-        
+
         return output["input_ids"], output["attention_mask"]
 
     def decode(self, token_ids: torch.LongTensor) -> List[str]:
@@ -76,9 +76,11 @@ class TransformersTokenizer(Tokenizer):
         return string
 
 
-def ctranslate2(ctr2_model: str, tokenizer_name: str, device: Optional[str] = None, **model_kwargs):
+def ctranslate2(
+    ctr2_model: str, tokenizer_name: str, device: Optional[str] = None, **model_kwargs
+):
     import ctranslate2
-    
+
     model = ctranslate2.Generator(ctr2_model, device=device)
     tokenizer = TransformersTokenizer(tokenizer_name, **model_kwargs)
 
