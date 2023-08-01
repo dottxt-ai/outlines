@@ -285,7 +285,7 @@ def test_call_single_prompt():
     sequence = FinishAfterTwo(model)
 
     result = sequence("Test")
-    assert torch.equal(result, torch.tensor([0, 0, 1]))
+    assert torch.equal(result, torch.tensor([0, 1]))
 
 
 def test_call_prompt_list():
@@ -339,9 +339,7 @@ def test_call_prompt_list():
     sequence = FinishAfterThree(model)
 
     result = sequence(["Test1", "Test2", "Test3"])
-    assert torch.equal(
-        result, torch.tensor([[0, 2, 3, -1], [1, 2, 3, 4], [5, 2, 3, -1]])
-    )
+    assert torch.equal(result, torch.tensor([[2, 3, -1], [2, 3, 4], [2, 3, -1]]))
 
 
 def test_call_single_prompt_samples():
@@ -370,7 +368,7 @@ def test_call_single_prompt_samples():
     )
     sequence = FinishAfterTwo(model)
     result = sequence("Test", samples=3)
-    assert torch.equal(result, torch.tensor([[4, 0, 1], [4, 0, 1], [4, 0, 1]]))
+    assert torch.equal(result, torch.tensor([[0, 1], [0, 1], [0, 1]]))
 
     class FinishAfterOne(Sequence):
         def __init__(self, model):
@@ -392,7 +390,7 @@ def test_call_single_prompt_samples():
     )
     sequence = FinishAfterOne(model)
     result = sequence("Test", samples=3)
-    assert torch.equal(result, torch.tensor([[4, 0], [4, 0], [4, 0]]))
+    assert torch.equal(result, torch.tensor([[0], [0], [0]]))
 
 
 def test_call_prompt_list_samples():
@@ -433,7 +431,5 @@ def test_call_prompt_list_samples():
     result = sequence(["Test1", "Test2", "Test3"], samples=3)
     assert torch.equal(
         result,
-        torch.tile(
-            torch.tensor([[3, 0, 1, -1], [4, 0, 1, 2], [5, 0, 1, -1]]), (3, 1, 1)
-        ),
+        torch.tile(torch.tensor([[0, 1, -1], [0, 1, 2], [0, 1, -1]]), (3, 1, 1)),
     )
