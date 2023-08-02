@@ -32,7 +32,7 @@ class CTranslate2_Model:
         # `forward_batch` method of `Generator` accepts `tokens` in a list of list of str
         tokens = [self.tokenizer.tokenizer.convert_ids_to_tokens(iids) for iids in input_ids]
         logits = self.model.forward_batch(tokens, return_log_probs=True)
-        logits = torch.as_tensor(logits)
+        logits = torch.as_tensor(logits) # this could be making the code slow
         next_token_logits = logits[:, -1, :]
 
         return next_token_logits
