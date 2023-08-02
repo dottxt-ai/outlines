@@ -31,13 +31,15 @@ __all__ = [
 class OpenAI:
     """Represents a model available via the OpenAI API."""
 
-    def __init__(self, model_name: str):
+    def __init__(self, model_name: str, temperature: Optional[float] = 1.0):
         if "text-" in model_name:
             self.call_api = call_completion_api
+            self.temperature = temperature
             self.format_prompt = lambda x: x
             self.extract_choice = lambda x: x["text"]
         elif "gpt-" in model_name:
             self.call_api = call_chat_completion_api
+            self.temperature = temperature
             self.format_prompt = lambda x: [{"role": "user", "content": x}]
             self.extract_choice = lambda x: x["message"]["content"]
         else:
@@ -61,9 +63,9 @@ class OpenAI:
                 self.model_name,
                 self.format_prompt(prompt),
                 max_tokens,
-                1.0,
+                self.temperature,
                 stop,
-                {},
+                {}, # TODO this is for logit biases which we don't support yet
                 samples,
             )
         )
