@@ -37,6 +37,7 @@ def test_partial_parsing():
     assert last_token.type == "partial"
     assert last_token.value.fsm_state_seq == (0, 15)
     assert last_token.value.is_not_finished is True
+    assert not parser_state.value_stack
 
     # End with an ignored token
     parser_state = lp.parse("x ")
@@ -45,6 +46,7 @@ def test_partial_parsing():
     assert last_token.type == "partial"
     assert last_token.value.fsm_state_seq == (0, 1)
     assert last_token.value.is_not_finished is True
+    assert not parser_state.value_stack
 
     # Could be a complete `=` or the start of a `==`
     parser_state = lp.parse("x =")
@@ -55,6 +57,7 @@ def test_partial_parsing():
         term_info.terminal_name == "EQUAL"
         for term_info in last_token.value.terminals_and_info
     )
+    assert not parser_state.value_stack
 
     parser_state = lp.parse("x = '")
     assert parser_state.state_stack == [0, 58, 59]
@@ -62,6 +65,7 @@ def test_partial_parsing():
     assert last_token.type == "partial"
     assert last_token.value.fsm_state_seq == (0, 6)
     assert last_token.value.is_not_finished is True
+    assert not parser_state.value_stack
 
     parser_state = lp.parse("x = 'hi")
     assert parser_state.state_stack == [0, 58, 59]
@@ -69,6 +73,7 @@ def test_partial_parsing():
     assert last_token.type == "partial"
     assert last_token.value.fsm_state_seq == (0, 6, 6, 6)
     assert last_token.value.is_not_finished is True
+    assert not parser_state.value_stack
 
     parser_state = lp.parse("x = ('hi")
     assert parser_state.state_stack == [0, 58, 59, 254]
@@ -76,6 +81,7 @@ def test_partial_parsing():
     assert last_token.type == "partial"
     assert last_token.value.fsm_state_seq == (0, 6, 6, 6)
     assert last_token.value.is_not_finished is True
+    assert not parser_state.value_stack
 
     parser_state = lp.parse("def")
     assert parser_state.state_stack == [0]
@@ -83,16 +89,19 @@ def test_partial_parsing():
     assert last_token.type == "partial"
     assert last_token.value.fsm_state_seq == (0, 26, 99, 100)
     assert last_token.value.is_not_finished is True
+    assert not parser_state.value_stack
 
     # Now, try something incremental
     last_lexer_state = parser_state.lexer.state
     last_lexer_state.text += " blah()"
     lp.parse_from_state(parser_state, is_end=False)
     last_token = parser_state.lexer.state.last_token
+    assert not parser_state.value_stack
 
     last_lexer_state = parser_state.lexer.state
     last_valid_token = last_lexer_state.last_token
     assert last_valid_token.type == "RPAR"
+    assert not parser_state.value_stack
 
     # Something incremental and a little more complicated
     parser_state = lp.parse("x = 1\ndef foo(x):\n  ")
@@ -119,6 +128,20 @@ def test_partial_parsing():
 
     with pytest.raises(UnexpectedToken):
         lp.parse("def \n")
+
+    lp = PartialLark.open_from_package(
+        "tests",
+        "partial_python.lark",
+        ["text"],
+        parser="lalr",
+        postlex=PartialPythonIndenter(),
+        start="file_input",
+        use_value_stack=True,
+    )
+    parser_state = lp.parse("x = ('hi")
+    lp.parse_from_state(parser_state, is_end=False)
+    assert len(parser_state.state_stack) == 4
+    assert parser_state.value_stack[-1].type == "LPAR"
 
 
 def test_sequential_parse_example():
