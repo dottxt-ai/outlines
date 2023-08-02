@@ -1,14 +1,13 @@
-import math
-from typing import TYPE_CHECKING, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Optional
 
-import torch
 import numpy as np
+import torch
 
 from outlines.models.transformers import TransformersTokenizer
 
 if TYPE_CHECKING:
-    from transformers import PreTrainedTokenizer
     from ctranslate2 import Generator
+    from transformers import PreTrainedTokenizer
 
 
 __all__ = ["ctranslate2"]
@@ -31,10 +30,12 @@ class CTranslate2_Model:
         self, input_ids: torch.LongTensor, attention_mask: torch.LongTensor
     ) -> torch.FloatTensor:
         # `forward_batch` method of `Generator` accepts `tokens` in a list of list of str
-        
-        tokens = [self.tokenizer.tokenizer.convert_ids_to_tokens(iids) for iids in input_ids]
+
+        tokens = [
+            self.tokenizer.tokenizer.convert_ids_to_tokens(iids) for iids in input_ids
+        ]
         logits = self.model.forward_batch(tokens, return_log_probs=True)
-        if self.device == 'cpu':
+        if self.device == "cpu":
             # See: https://github.com/OpenNMT/CTranslate2/issues/1386
             logits = np.array(logits)
         logits = torch.as_tensor(logits)
@@ -43,9 +44,11 @@ class CTranslate2_Model:
         return next_token_logits
 
 
-def ctranslate2(ctr2_model: str, tokenizer_name: str, device: Optional[str] = None, **model_kwargs):
+def ctranslate2(
+    ctr2_model: str, tokenizer_name: str, device: Optional[str] = None, **model_kwargs
+):
     import ctranslate2
-    
+
     model = ctranslate2.Generator(ctr2_model, device=device)
     tokenizer = TransformersTokenizer(tokenizer_name, **model_kwargs)
 
