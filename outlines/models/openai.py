@@ -65,7 +65,7 @@ class OpenAI:
                 max_tokens,
                 self.temperature,
                 stop,
-                {}, # TODO this is for logit biases which we don't support yet
+                {},  # TODO this is for logit biases which we don't support yet
                 samples,
             )
         )
