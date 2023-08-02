@@ -80,8 +80,8 @@ class OpenAI:
         return results
 
 
-def openai(model_name):
-    return OpenAI(model_name)
+def openai(model_name: str, temperature: Optional[float] = 1.0):
+    return OpenAI(model_name, temperature)
 
 
 def OpenAICompletion(
