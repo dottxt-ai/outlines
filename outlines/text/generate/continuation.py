@@ -92,7 +92,7 @@ class Continuation(Sequence):
 
 
 @functools.singledispatch
-def continuation(model, max_tokens):
+def continuation(model, max_tokens: Optional[int] = None, *, stop: Union[str, List[str]] = []):
     raise NotImplementedError(f"Model {model} not supported")
 
 
