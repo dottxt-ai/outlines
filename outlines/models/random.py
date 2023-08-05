@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, List, Optional, Tuple, Union
 import torch
 
 import functools
-from outlines.models.tokenizer import Tokenizer
+from outlines.models.transformers import TransformersTokenizer
 
 if TYPE_CHECKING:
     from transformers import PreTrainedTokenizer
@@ -14,7 +14,7 @@ __all__ = ["random"]
 
 
 class RandomModel:
-    """Represents a `random` model, that samples from a given distribution everytime"""
+    """Represents a `random` model, that samples from a given distribution."""
 
     def __init__(
         self,
@@ -47,43 +47,6 @@ class RandomModel:
         next_token_logits = next_token_logits.reshape(batch_shape + (-1,))
 
         return next_token_logits
-
-
-class TransformersTokenizer(Tokenizer):
-    """Represents a tokenizer for models in the `transformers` library."""
-
-    def __init__(self, model_name: str, **kwargs):
-        from transformers import AutoTokenizer
-
-        kwargs.setdefault("padding_side", "left")
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name, **kwargs)
-        self.eos_token_id = self.tokenizer.eos_token_id
-        self.eos_token = self.tokenizer.eos_token
-
-        if not self.tokenizer.pad_token_id:
-            self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
-            self.pad_token_id = self.eos_token_id
-        else:
-            self.pad_token_id = self.tokenizer.pad_token_id
-            self.pad_token = self.tokenizer.pad_token
-
-        self.vocabulary = self.tokenizer.get_vocab()
-
-    def encode(
-        self, prompt: Union[str, List[str]], **kwargs
-    ) -> Tuple[torch.LongTensor, torch.LongTensor]:
-        kwargs["padding"] = True
-        kwargs["return_tensors"] = "pt"
-        output = self.tokenizer(prompt, **kwargs)
-        return output["input_ids"], output["attention_mask"]
-
-    def decode(self, token_ids: torch.LongTensor) -> List[str]:
-        text = self.tokenizer.batch_decode(token_ids)
-        return text
-
-    def convert_token_to_string(self, token: str) -> str:
-        string = self.tokenizer.convert_tokens_to_string([token])
-        return string
 
 
 def random(tokenizer: str, dist: str = 'uniform', seed: Optional[int] = None, device: Optional[str] = None):
