@@ -276,7 +276,7 @@ def create_float_mask(encoder):
 
     # TODO: This is a hack because OpenAI's API does not
     # allow more than 300 entries for `logit_bias`
-    special_tokens = encoder._special_tokens.values()
+    special_tokens = encoder._special_tokens
     mask = {special_tokens["<|endoftext|>"]: 100}
     mask.update({int_token_ids[i]: 100 for i in range(300 - len(special_tokens))})
 
