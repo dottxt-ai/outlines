@@ -7,8 +7,8 @@
 Fast and reliable neural text generation.
 
 [Install](#installation) •
-[Prompting primitives](#prompting) •
 [Guided generation](#guided-generation) •
+[Prompting primitives](#prompting) •
 [Examples](#examples) •
 [Stay tuned](#stay-tuned-for)
 
@@ -19,7 +19,9 @@ more flexible replacement for the `generate` method in the
 [transformers](https://github.com/huggingface/transformers) library.
 
 **Outlines** 〰 helps developers *guide text generation* to build robust
-interfaces with external systems.
+interfaces with external systems. Provides generation methods that
+guarantee that the output will match a regular expressions, or follow
+a JSON schema.
 
 **Outlines** 〰 provides *robust prompting primitives* that separate the prompting
 from the execution logic and lead to simple implementations of few-shot
@@ -37,16 +39,17 @@ via the next-token logits. It can be used with API-based models as well.
 
 - [x] 🖍️Simple and powerful prompting primitives based on the [Jinja templating engine](https://jinja.palletsprojects.com/)
 - [x] 🚄 Guided generation, including multiple choice, type constraints and dynamic stopping
-- [x] ⚡ Fast regex-guided generation
+- [x] ⚡ Fast [regex-guided generation](#efficient-regex-guided-generation)
+- [x] 🔥 Fast [JSON generation](#efficient-json-generation-following-a-pydantic-model) following a JSON schema or a Pydantic model
 - [x] 🐍 Interleave completions with loops, conditionals, and custom Python functions
 - [x] 💾 Caching of generations
 - [x] 🤗 Integration with HuggingFace's `transformers` models
 
+Outlines 〰 has new releases and features coming every week! Make sure to ⭐ star and 👀 watch this repository to stay up to date.
 
 ## Stay tuned for
 
 - Context-Free Grammar guided generation ([#178](https://github.com/normal-computing/outlines/pull/178));
-- Generate JSON with a defined structure ([#140](https://github.com/normal-computing/outlines/pull/140))
 - Prompt-token alignment so you don't have to think about tokenization details ([#201](https://github.com/normal-computing/outlines/pull/201))
 - An infilling DSL ([#182](https://github.com/normal-computing/outlines/issues/182))
 
@@ -60,6 +63,172 @@ You can follow [@NormalComputing](https://twitter.com/NormalComputing), [@remilo
 ``` bash
 pip install outlines
 ```
+
+
+## Guided generation
+
+The first step towards reliability of systems that include large language models
+is to ensure that there is a well-defined interface between their output and
+user-defined code. **Outlines** provides ways to control the generation of
+language models to make their output more predictable.
+
+### Early stopping
+
+You can stop the generation after a given sequence has been found:
+
+``` python
+import outlines.text.generate as generate
+import outlines.models as models
+
+model = models.transformers("gpt2")
+answer = generate.continuation(model, stop=["."])("Tell me a one-sentence joke.")
+```
+
+### Multiple choices
+
+You can reduce the completion to a choice between multiple possibilities:
+
+``` python
+import outlines.text.generate as generate
+import outlines.models as models
+
+model = models.transformers("gpt2")
+
+prompt = labelling("Just awesome", examples)
+answer = generate.choice(model, ["Positive", "Negative"])(prompt)
+```
+
+### Type constraint
+
+You can instruct the model to only return integers or floats:
+
+
+``` python
+import outlines.text.generate as generate
+import outlines.models as models
+
+model = models.transformers("gpt2")
+
+prompt = "1+1="
+answer = generate.integer(model)(prompt)
+
+prompt = "sqrt(2)="
+answer = generate.float(model)(prompt)
+```
+
+### Efficient regex-guided generation
+
+Outlines also comes with fast regex-guided generation. In fact, the `choice`,
+`integer` and `float` functions above all use regex-guided generation under the
+hood:
+
+``` python
+import outlines.models as models
+import outlines.text.generate as generate
+
+
+model = models.transformers("gpt2-medium")
+
+prompt = "Is 1+1=2? "
+unguided = generate.continuation(model, max_tokens=30)(prompt)
+guided = generate.regex(model, r"\s*([Yy]es|[Nn]o|[Nn]ever|[Aa]lways)", max_tokens=30)(
+    prompt
+)
+
+print(unguided)
+# Is 1+1=2?
+#
+# This is probably the most perplexing question.
+# As I said in one of my articles describing how
+# I call 2 and 1, there isn't
+
+print(guided)
+# Is 1+1=2? Always
+```
+
+``` python
+import outlines.models as models
+import outlines.text.generate as generate
+
+
+model = models.transformers("gpt2-medium")
+
+prompt = "What is the IP address of the Google DNS servers? "
+unguided = generate.continuation(model, max_tokens=30)(prompt)
+guided = generate.regex(
+    model,
+    r"((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)",
+    max_tokens=30,
+)(prompt)
+
+print(unguided)
+# What is the IP address of the Google DNS servers?
+#
+# Passive DNS servers are at DNS servers that are private.
+# In other words, both IP servers are private. The database
+# does not contain Chelsea Manning
+
+print(guided)
+# What is the IP address of the Google DNS servers?
+# 2.2.6.1
+```
+
+Unlike other libraries, regex-guided generation in Outlines is almost as fast
+as non-guided generation.
+
+### Efficient JSON generation following a Pydantic model
+
+Outlines 〰 allows to guide the generation process so the output is *guaranteed* to follow a [JSON schema](https://json-schema.org/) or [Pydantic model](https://docs.pydantic.dev/latest/):
+
+```python
+from typing import List
+from enum import Enum
+from pydantic import BaseModel, constr
+
+import outlines.models as models
+import outlines.text.generate as generate
+
+
+class Weapon(str, Enum):
+    sword = "sword"
+    axe = "axe"
+    mace = "mace"
+    spear = "spear"
+    bow = "bow"
+    crossbow = "crossbow"
+
+
+class Armor(str, Enum):
+    leather = "leather"
+    chainmail = "chainmail"
+    plate = "plate"
+
+
+class Character(BaseModel):
+    name: constr(max_length=10)
+    age: int
+    armor: Armor
+    weapon: Weapon
+    strength: int
+
+
+model = models.transformers("gpt2")
+sequence = generate.json(model, Character)("Give me a character description")
+print(sequence)
+# {
+#   "name": "ranbelt",
+#   "age": 26,
+#   "armor": "chainmail",
+#   "weapon": "bow",
+#   "strength": 5
+# }
+
+parsed = Character.model_validate_json(sequence)
+print(parsed)
+# name='ranbelt' age=26 armor=<Armor.chainmail: 'chainmail'> weapon=<Weapon.bow: 'bow'> strength=5
+```
+
+The method works with union types, optional types, arrays, nested schemas, etc. Some field constraints are [not supported yet](https://github.com/normal-computing/outlines/issues/215), but everything else should work.
 
 ## Prompting
 
@@ -184,117 +353,6 @@ With these prompting primitives **Outlines** makes building agents like
 Agent](https://huggingface.co/docs/transformers/transformers_agents) easier by
 removing boilerplate prompting code.
 
-## Guided generation
-
-The first step towards reliability of systems that include large language models
-is to ensure that there is a well-defined interface between their output and
-user-defined code. **Outlines** provides ways to control the generation of
-language models to make their output more predictable.
-
-### Early stopping
-
-You can stop the generation after a given sequence has been found:
-
-``` python
-import outlines.text.generate as generate
-import outlines.models as models
-
-model = models.transformers("gpt2")
-answer = generate.continuation(model, stop=["."])("Tell me a one-sentence joke.")
-```
-
-### Multiple choices
-
-You can reduce the completion to a choice between multiple possibilities:
-
-``` python
-import outlines.text.generate as generate
-import outlines.models as models
-
-model = models.transformers("gpt2")
-
-prompt = labelling("Just awesome", examples)
-answer = generate.choice(model, ["Positive", "Negative"])(prompt)
-```
-
-### Type constraint
-
-You can instruct the model to only return integers or floats:
-
-
-``` python
-import outlines.text.generate as generate
-import outlines.models as models
-
-model = models.transformers("gpt2")
-
-prompt = "1+1="
-answer = generate.integer(model)(prompt)
-
-prompt = "sqrt(2)="
-answer = generate.float(model)(prompt)
-```
-
-### Efficient regex-guided generation
-
-Outlines also comes with fast regex-guided generation. In fact, the `choice`,
-`integer` and `float` functions above all use regex-guided generation under the
-hood:
-
-``` python
-import outlines.models as models
-import outlines.text.generate as generate
-
-
-model = models.transformers("gpt2-medium")
-
-prompt = "Is 1+1=2? "
-unguided = generate.continuation(model, max_tokens=30)(prompt)
-guided = generate.regex(model, r"\s*([Yy]es|[Nn]o|[Nn]ever|[Aa]lways)", max_tokens=30)(
-    prompt
-)
-
-print(unguided)
-# Is 1+1=2?
-#
-# This is probably the most perplexing question.
-# As I said in one of my articles describing how
-# I call 2 and 1, there isn't
-
-print(guided)
-# Is 1+1=2? Always
-```
-
-``` python
-import outlines.models as models
-import outlines.text.generate as generate
-
-
-model = models.transformers("gpt2-medium")
-
-prompt = "What is the IP address of the Google DNS servers? "
-unguided = generate.continuation(model, max_tokens=30)(prompt)
-guided = generate.regex(
-    model,
-    r"((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)",
-    max_tokens=30,
-)(prompt)
-
-print(unguided)
-# What is the IP address of the Google DNS servers?
-#
-# Passive DNS servers are at DNS servers that are private.
-# In other words, both IP servers are private. The database
-# does not contain Chelsea Manning
-
-print(guided)
-# What is the IP address of the Google DNS servers?
-# 2.2.6.1
-```
-
-Unlike other libraries, regex-guided generation in Outlines is almost as fast
-as non-guided generation.
-
 ## Contributing
 
 ### What contributions?
@@ -333,3 +391,7 @@ Do not hesitate to open a draft PR before your contribution is ready, especially
   year={2023}
 }
 ```
+
+## License
+
+Outlines is open-source and licensed under the [Apache License 2.0](LICENSE).
