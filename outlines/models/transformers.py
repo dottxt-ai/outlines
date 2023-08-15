@@ -22,7 +22,7 @@ class Transformers:
         device: Optional[str] = None,
     ):
         self.device = device if device is not None else "cpu"
-        self.model = model.to(self.device)
+        self.model = model.to(self.device) if model.config.quantization_config is None else model
         self.tokenizer = tokenizer
 
     def __call__(
