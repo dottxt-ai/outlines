@@ -199,6 +199,7 @@ class Sequence:
 
         if rng is None:
             rng = torch.Generator(device=self.device)
+            rng.seed()
 
         num_prompt_tokens = token_ids.shape[-1]
 
