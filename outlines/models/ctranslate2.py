@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 __all__ = ["ctranslate2"]
 
 
-class CTranslate2_CausalLM:
+class CTranslate2:
     """Represents a `ctranslate2` CausalLM."""
 
     def __init__(
@@ -47,9 +47,14 @@ class CTranslate2_CausalLM:
 def ctranslate2(
     ctr2_model: str, tokenizer_name: str, device: Optional[str] = None, **model_kwargs
 ):
-    import ctranslate2
-
-    model = ctranslate2.Generator(ctr2_model, device=device)
+    try:
+        from ctranslate2 import Generator
+    except ImportError:
+        raise ImportError(
+            "The `ctranslate2` library needs to be installed in order to use `ctranslate2` models."
+        )
+    
+    model = Generator(ctr2_model, device=device)
     tokenizer = TransformersTokenizer(tokenizer_name, **model_kwargs)
 
-    return CTranslate2_CausalLM(model, tokenizer)
+    return CTranslate2(model, tokenizer)
