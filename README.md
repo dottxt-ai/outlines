@@ -98,7 +98,11 @@ import outlines.models as models
 
 model = models.transformers("gpt2")
 
-prompt = labelling("Just awesome", examples)
+prompt = """You are a sentiment-labelling assistant.
+Is the following review positive or negative?
+
+Review: This restaurant is just awesome!
+"""
 answer = generate.choice(model, ["Positive", "Negative"])(prompt)
 ```
 
