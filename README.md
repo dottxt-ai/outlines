@@ -64,6 +64,10 @@ You can follow [@NormalComputing](https://twitter.com/NormalComputing), [@remilo
 pip install outlines
 ```
 
+The dependencies needed to use models are not installed by default. You will need to run:
+
+- `pip install openai` to be able to use OpenAI [models](https://platform.openai.com/docs/api-reference).
+- `pip install transformers` to be able to use HuggingFace `transformers` [models](https://huggingface.co/models?pipeline_tag=text-generation).
 
 ## Guided generation
 

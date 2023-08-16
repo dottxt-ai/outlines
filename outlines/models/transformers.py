@@ -87,7 +87,12 @@ class TransformersTokenizer(Tokenizer):
 
 
 def transformers(model_name: str, device: Optional[str] = None, **model_kwargs):
-    from transformers import AutoModelForCausalLM
+    try:
+        from transformers import AutoModelForCausalLM
+    except ImportError:
+        raise ImportError(
+            "The `transformers` library needs to be installed in order to use `transformers` models."
+        )
 
     model = AutoModelForCausalLM.from_pretrained(model_name, **model_kwargs)
     tokenizer = TransformersTokenizer(model_name)
