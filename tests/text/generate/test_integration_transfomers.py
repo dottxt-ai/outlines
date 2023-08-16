@@ -225,3 +225,23 @@ def test_transformers_json_union():
         or isinstance(parsed["bar"], float)
         or isinstance(parsed["bar"], str)
     )
+
+
+def test_transformers_logits_vocab_size():
+    model_name = "hf-internal-testing/tiny-random-GPTJForCausalLM"
+    model = models.transformers(model_name, device="cpu")
+
+    # Artificially increase the weights/logits size relative
+    # to the vocabulary
+    model.model.resize_token_embeddings(pad_to_multiple_of=2)
+
+    assert len(model.tokenizer.vocabulary) == 1024
+    assert model.model.base_model.wte.weight.shape[0] == 1026
+
+    generator = generate.choice(model, ["True", "False"])
+
+    rng = torch.Generator()
+    rng.manual_seed(4)
+
+    masked_logits = generator("blah", rng=rng)
+    assert masked_logits == "True"
