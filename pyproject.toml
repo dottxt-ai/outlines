@@ -62,6 +62,9 @@ repository = "https://github.com/normal-computing/outlines"
 file="README.md"
 content-type = "text/markdown"
 
+[tool.setuptools]
+packages = ["outlines"]
+
 [tool.setuptools_scm]
 write_to = "outlines/_version.py"
 
