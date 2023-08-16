@@ -22,10 +22,10 @@ class Transformers:
         device: Optional[str] = None,
     ):
         self.device = device if device is not None else "cpu"
-        if getattr(model.config, "quantization_config", None) is None:
-            self.model = model.to(device)
-        else:
+        if isinstance(getattr(model.config, "quantization_config", None), dict):
             self.model = model
+        else:
+            self.model = model.to(device)
         self.tokenizer = tokenizer
 
     def __call__(
