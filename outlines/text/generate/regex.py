@@ -133,10 +133,9 @@ class Regex(Continuation):
             self.pstates = new_pstates
 
         masks = []
+        mask_shape = (logits.shape[-1],)
         for pstate in self.pstates:
-            mask = torch.full(
-                (len(self.model.tokenizer.vocabulary),), -math.inf, device=self.device
-            )
+            mask = torch.full(mask_shape, -math.inf, device=self.device)
 
             if pstate[1] > -1:
                 next_support = self.pstate_to_vocab[pstate[:2]]
