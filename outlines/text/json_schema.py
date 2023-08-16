@@ -1,5 +1,6 @@
 import itertools
 import json
+import re
 from typing import Dict
 
 STRING = r'".*"'
@@ -192,7 +193,7 @@ def match_step_to_regex(step):
     Parameters
     ----------
     step:
-        A string that represents the schema's structure, or a dictionnary
+        A string that represents the schema's structure, or a dictionary
         that represents a field in the schema.
 
     Returns
@@ -203,13 +204,13 @@ def match_step_to_regex(step):
     """
     match step:
         case str() as step:
-            return step
+            return re.escape(step)
 
         case {"enum": choices, "type": "string"}:
-            choices = [f'"{choice}"' for choice in choices]
+            choices = [f'"{re.escape(choice)}"' for choice in choices]
             return f"({'|'.join(choices)})"
         case {"enum": choices}:
-            choices = [str(choice) for choice in choices]
+            choices = [re.escape(str(choice)) for choice in choices]
             return f"({'|'.join(choices)})"
 
         case {"type": "array", "items": items}:
