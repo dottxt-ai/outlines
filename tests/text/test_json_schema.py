@@ -300,6 +300,11 @@ def test_match_number(pattern, does_match):
             [('"Marc"', True), ('"Jean"', True), ('"John"', False)],
         ),
         (
+            {"title": "Foo", "enum": [".*", r"\s*"], "type": "string"},
+            r'("\.\*"|"\\s\*")',
+            [('".*"', True), (r'"\s*"', True), (r'"\.\*"', False)],
+        ),
+        (
             {"title": "Foo", "enum": [0, 1], "type": "integer"},
             "(0|1)",
             [("0", True), ("1", True), ("a", False)],
@@ -310,7 +315,7 @@ def test_match_number(pattern, does_match):
                 "type": "object",
                 "properties": {"count": {"title": "Count", "type": "integer"}},
             },
-            '{\n  "count": ' + INTEGER + "\n}",
+            '\\{\\\n\\ \\ "count":\\ ' + INTEGER + "\\\n\\}",
             [('{\n  "count": 100\n}', True)],
         ),
         (
@@ -339,16 +344,20 @@ def test_match_number(pattern, does_match):
                     }
                 },
             },
-            '{\n  "fuzz": {\n    "spam": ' + INTEGER + "\n  }\n}",
+            '\\{\\\n\\ \\ "fuzz":\\ \\{\\\n\\ \\ \\ \\ "spam":\\ '
+            + INTEGER
+            + "\\\n\\ \\ \\}\\\n\\}",
             [('{\n  "fuzz": {\n    "spam": 100\n  }\n}', True)],
         ),
     ],
 )
 def test_match(step, regex, examples):
-    assert match_step_to_regex(step) == regex
+    test_regex = match_step_to_regex(step)
+
+    assert test_regex == regex
 
     for string, does_match in examples:
-        match = re.fullmatch(regex, string)
+        match = re.fullmatch(test_regex, string)
         if does_match:
             assert match[0] == string
             assert match.span() == (0, len(string))
