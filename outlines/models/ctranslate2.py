@@ -53,7 +53,7 @@ def ctranslate2(
         raise ImportError(
             "The `ctranslate2` library needs to be installed in order to use `ctranslate2` models."
         )
-    
+
     model = Generator(ctr2_model, device=device)
     tokenizer = TransformersTokenizer(tokenizer_name, **model_kwargs)
 
