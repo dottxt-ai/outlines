@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "outlines"
 authors= [{name = "Normal Computing", email = "support@normalcomputing.com"}]
 description = "Probabilistic Generative Model Programming"
-requires-python = ">=3.7"
+requires-python = ">=3.10"
 keywords=[
     "normal computing",
     "machine learning",
