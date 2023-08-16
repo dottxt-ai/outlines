@@ -6,15 +6,15 @@ import torch
 from outlines.models.transformers import TransformersTokenizer
 
 if TYPE_CHECKING:
-    from ctranslate2 import Generator
+    from ctranslate2 import Generator  # type: ignore
     from transformers import PreTrainedTokenizer
 
 
 __all__ = ["ctranslate2"]
 
 
-class CTranslate2_Model:
-    """Represents a `ctranslate2` model."""
+class CTranslate2_CausalLM:
+    """Represents a `ctranslate2` CausalLM."""
 
     def __init__(
         self,
@@ -52,4 +52,4 @@ def ctranslate2(
     model = ctranslate2.Generator(ctr2_model, device=device)
     tokenizer = TransformersTokenizer(tokenizer_name, **model_kwargs)
 
-    return CTranslate2_Model(model, tokenizer)
+    return CTranslate2_CausalLM(model, tokenizer)
