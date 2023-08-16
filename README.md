@@ -357,7 +357,7 @@ removing boilerplate prompting code.
 
 ### What contributions?
 
-We curently only accept bug fixes and documentation contributions. If you have a
+We currently only accept bug fixes and documentation contributions. If you have a
 feature request, please start a new
 [discussion](https://github.com/normal-computing/outlines/discussions). The
 issue tracker is only intended for actionable items.
