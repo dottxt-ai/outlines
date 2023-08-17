@@ -116,11 +116,9 @@ def test_sequence_step():
     sequence = Sequence(model)
 
     input_ids = torch.tensor([[1, 2]])
-    token_ids = sequence.step(rng, 2, input_ids, torch.ones((1, 2)))
+    token_ids, probs = sequence.step(rng, 2, input_ids, torch.ones((1, 2)))
     assert torch.equal(token_ids, torch.tensor([[1, 2, 1]]))
-
-    logits_out = sequence._next_token_logits(2, input_ids, torch.ones((1, 2)))
-    assert logits_out.shape == (1, 4)
+    assert probs.shape == (1, 4)
 
 
 def test_sequence_step_batch():
@@ -133,11 +131,9 @@ def test_sequence_step_batch():
     sequence = Sequence(model)
 
     input_ids = torch.tensor([[1, 2], [3, 4]])
-    token_ids = sequence.step(rng, 2, input_ids, torch.ones((2, 2)))
+    token_ids, probs = sequence.step(rng, 2, input_ids, torch.ones((2, 2)))
     assert torch.equal(token_ids, torch.tensor([[1, 2, 1], [3, 4, 1]]))
-
-    logits_out = sequence._next_token_logits(2, input_ids, torch.ones((2, 2)))
-    assert logits_out.shape == (2, 4)
+    assert probs.shape == (2, 4)
 
 
 def test_sequence_step_sample():
@@ -149,8 +145,9 @@ def test_sequence_step_sample():
 
     sequence = Sequence(model)
     input_ids = torch.tensor([[1, 2]])
-    token_ids = sequence.step(rng, 2, input_ids, torch.ones((1, 2)), samples=3)
+    token_ids, probs = sequence.step(rng, 2, input_ids, torch.ones((1, 2)), samples=3)
     assert torch.equal(token_ids, torch.tensor([[1, 2, 1], [1, 2, 1], [1, 2, 1]]))
+    assert probs.shape == (3, 4)
 
 
 def test_sequence_step_sample_batch():
@@ -162,7 +159,7 @@ def test_sequence_step_sample_batch():
 
     sequence = Sequence(model)
     input_ids = torch.tensor([[1, 2, 1], [3, 4, 1]])
-    token_ids = sequence.step(rng, 3, input_ids, torch.ones((2, 3)), samples=3)
+    token_ids, probs = sequence.step(rng, 3, input_ids, torch.ones((2, 3)), samples=3)
     assert torch.equal(
         token_ids,
         torch.tensor(
@@ -173,6 +170,7 @@ def test_sequence_step_sample_batch():
             ]
         ),
     )
+    assert probs.shape == (3, 2, 4)
 
 
 def test_sequence_step_loop():
@@ -185,22 +183,25 @@ def test_sequence_step_loop():
 
     sequence = Sequence(model)
     input_ids = torch.tensor([[1, 2]])
-    token_ids = sequence.step(rng, 2, input_ids, torch.ones((1, 2)))
-    token_ids = sequence.step(rng, 2, token_ids, torch.ones((1, 3)))
+    token_ids, _ = sequence.step(rng, 2, input_ids, torch.ones((1, 2)))
+    token_ids, probs = sequence.step(rng, 2, token_ids, torch.ones((1, 3)))
     assert torch.equal(token_ids, torch.tensor([[1, 2, 1, 1]]))
+    assert probs.shape == (1, 4)
 
     input_ids = torch.tensor([[1, 2], [3, 4]])
-    token_ids = sequence.step(rng, 2, input_ids, torch.ones((2, 2)))
-    token_ids = sequence.step(rng, 2, token_ids, torch.ones((2, 3)))
+    token_ids, _ = sequence.step(rng, 2, input_ids, torch.ones((2, 2)))
+    token_ids, probs = sequence.step(rng, 2, token_ids, torch.ones((2, 3)))
     assert torch.equal(token_ids, torch.tensor([[1, 2, 1, 1], [3, 4, 1, 1]]))
+    assert probs.shape == (2, 4)
 
     # The number of samples becomes the batch size at the next iteration.
     input_ids = torch.tensor([[1, 2]])
-    token_ids = sequence.step(rng, 2, input_ids, torch.ones((1, 2)), samples=3)
-    token_ids = sequence.step(rng, 2, token_ids, torch.ones((3, 3)))
+    token_ids, _ = sequence.step(rng, 2, input_ids, torch.ones((1, 2)), samples=3)
+    token_ids, probs = sequence.step(rng, 2, token_ids, torch.ones((3, 3)))
     assert torch.equal(
         token_ids, torch.tensor([[1, 2, 1, 1], [1, 2, 1, 1], [1, 2, 1, 1]])
     )
+    assert probs.shape == (3, 4)
 
 
 def test_sequence_step_loop_general():
@@ -212,8 +213,8 @@ def test_sequence_step_loop_general():
 
     sequence = Sequence(model)
     input_ids = torch.tensor([[1, 2, 1], [3, 4, 1]])
-    token_ids = sequence.step(rng, 3, input_ids, torch.ones((1, 3)), samples=3)
-    result = sequence.step(rng, 3, token_ids, torch.ones((3, 4)))
+    token_ids, _ = sequence.step(rng, 3, input_ids, torch.ones((1, 3)), samples=3)
+    result, _ = sequence.step(rng, 3, token_ids, torch.ones((3, 4)))
     assert result.shape == (3, 2, 5)
     assert torch.equal(
         result,
