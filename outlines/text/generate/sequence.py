@@ -1,4 +1,4 @@
-from typing import List, Optional, Tuple, Union
+from typing import List, Optional, Union
 
 import torch
 
@@ -79,7 +79,7 @@ class Sequence:
         token_ids: torch.LongTensor,
         attention_mask: torch.LongTensor,
         samples: int = 1,
-    ) -> Tuple[torch.LongTensor, torch.FloatTensor]:
+    ) -> torch.LongTensor:
         """Generate one or several tokens that complete the input sequence.
 
         The sampling step consists in using a model to generate next-token
@@ -103,8 +103,7 @@ class Sequence:
         -------
         A tuple with an array of shape `new_batch_shape + (num_tokens+1,)`that
         contains the completed sequences (input token ids and generated token
-        ids) and an array of shape `new_batch_shape + (vocab_size,)` that
-        contains the next token probabilities.
+        ids).
         `new_batch_shape` is computed by removing dimensions of size one in
         `(samples,) + batch_shape`.
 
@@ -135,7 +134,7 @@ class Sequence:
         token_ids = torch.atleast_2d(token_ids.squeeze())
         probs = torch.atleast_2d(probs.squeeze())
 
-        return token_ids, probs
+        return token_ids
 
     def expand_attention_mask(
         self, attention_mask: torch.LongTensor
@@ -234,7 +233,7 @@ class Sequence:
         num_prompt_tokens = token_ids.shape[-1]
 
         if samples > 1:
-            token_ids, _ = self.step(
+            token_ids = self.step(
                 rng, num_prompt_tokens, token_ids, attention_mask, samples
             )
             is_finished = self.is_finished(token_ids)
@@ -252,7 +251,7 @@ class Sequence:
             if torch.all(is_finished) or num_generated_tokens == self.max_tokens:
                 break
 
-            updated_token_ids, _ = self.step(
+            updated_token_ids = self.step(
                 rng,
                 num_prompt_tokens,
                 token_ids[~is_finished],
