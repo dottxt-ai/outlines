@@ -40,7 +40,7 @@ class Sequence:
     def postprocess_completions(self, completions: List[str]) -> List[str]:
         return completions
 
-    def _logits(
+    def _next_token_logits(
         self,
         num_prompt_tokens: int,
         token_ids: torch.LongTensor,
@@ -50,7 +50,7 @@ class Sequence:
         logits = self.create_proposal(token_ids[:, num_prompt_tokens:], logits)
         return logits
 
-    def logits(self, prompt: Union[str, List[str]]) -> torch.FloatTensor:
+    def next_token_logits(self, prompt: Union[str, List[str]]) -> torch.FloatTensor:
         """Compute the next-token logits for a given prompt.
 
         Parameters
@@ -60,15 +60,15 @@ class Sequence:
 
         Returns
         -------
-        An array containing the logits (unnormalised log probabilities)
-        for the next token generation.
+        An array of shape `(batch_size, vocab_size)` containing the logits 
+        (unnormalised log probabilities) for the next token generation.
 
         """
         token_ids, attention_mask = self.model.tokenizer.encode(prompt)
         num_prompt_tokens = token_ids.shape[-1]
         token_ids = token_ids.to(self.device)
         attention_mask = attention_mask.to(self.device)
-        return self._logits(num_prompt_tokens, token_ids, attention_mask).squeeze()
+        return self._next_token_logits(num_prompt_tokens, token_ids, attention_mask).squeeze()
 
     def step(
         self,
@@ -108,7 +108,7 @@ class Sequence:
 
         """
         num_input_dims = token_ids.ndim
-        logits = self._logits(num_prompt_tokens, token_ids, attention_mask)
+        logits = self._next_token_logits(num_prompt_tokens, token_ids, attention_mask)
         probs = torch.nn.functional.softmax(logits, dim=-1)
 
         # Sample `samples`-many new tokens
