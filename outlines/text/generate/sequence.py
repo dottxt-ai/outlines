@@ -60,7 +60,7 @@ class Sequence:
 
         Returns
         -------
-        An array of shape `(batch_size, vocab_size)` containing the logits 
+        An array of shape `(batch_size, vocab_size)` containing the logits
         (unnormalised log probabilities) for the next token generation.
 
         """
@@ -68,7 +68,9 @@ class Sequence:
         num_prompt_tokens = token_ids.shape[-1]
         token_ids = token_ids.to(self.device)
         attention_mask = attention_mask.to(self.device)
-        return self._next_token_logits(num_prompt_tokens, token_ids, attention_mask).squeeze()
+        return self._next_token_logits(
+            num_prompt_tokens, token_ids, attention_mask
+        ).squeeze()
 
     def step(
         self,
