@@ -86,6 +86,7 @@ module = [
     "jinja2",
     "joblib",
     "openai",
+    "litellm",
     "numpy.*",
     "perscache.*",
     "PIL",

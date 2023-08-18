@@ -374,8 +374,9 @@ async def call_chat_completion_api(
     num_samples: int,
 ):
     import openai
+    from litellm import acompletion
 
-    response = await openai.ChatCompletion.acreate(
+    response = await acompletion(
         model=model,
         messages=messages,
         max_tokens=max_tokens,
