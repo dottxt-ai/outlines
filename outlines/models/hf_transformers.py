@@ -26,7 +26,7 @@ def HuggingFaceCompletion(
     Note
     ----
 
-    To my knowledge `tranformers` does not simply allow to stop the generation
+    To my knowledge `transformers` does not simply allow to stop the generation
     after a given sequence has been generated. We will need to implement this
     manually for this integration to have the same features as `OpenAICompletion`.
 
