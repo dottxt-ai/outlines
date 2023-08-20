@@ -304,7 +304,7 @@ def wikipedia_search(query: str):
 
 
 @text.prompt
-def agent(tools: List[Callable]):
+def my_commands(tools: List[Callable]):
     """AVAILABLE COMMANDS:
 
     {% for tool in tools %}
