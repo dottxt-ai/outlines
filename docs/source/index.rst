@@ -83,12 +83,12 @@ A toy implementation of an agent (similar to BabyAGI or AutoGPT) with Outlines:
 📜 Features
 -----------
  Simple and powerful prompting primitives based on the Jinja templating engine.
- Integration with OpenAI and HuggingFace models
+ Integration with OpenAI and Hugging Face models
 
 - A powerful domain-specific language to write and render prompts;
 - Interleave completions with loops, conditionals, and custom Python functions;
 - OpenAI integration: language models, embeddings and Dall-E;
-- HuggingFace integration: ``transformers`` and ``diffusers``;
+- Hugging Face integration: ``transformers`` and ``diffusers``;
 - Caching;
 - Sampling multiple sequences;
 - Controlled generation, including multiple choice, type constraints and dynamic stopping.

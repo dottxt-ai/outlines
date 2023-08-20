@@ -1,4 +1,4 @@
-"""Integration with HuggingFace's `diffusers` library."""
+"""Integration with Hugging Face's `diffusers` library."""
 import functools
 from typing import List, Union
 
@@ -14,7 +14,7 @@ def HuggingFaceDiffuser(model_name: str) -> PILImage:
     Parameters
     ----------
     model_name: str
-        The name of the model as listed on HuggingFace's models page.
+        The name of the model as listed on Hugging Face's models page.
 
     """
 

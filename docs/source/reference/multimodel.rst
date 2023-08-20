@@ -24,10 +24,10 @@ It is also possible to use DALL-E to generate images:
    generate = models.image_generation.openai("dall-e")
 
 
-HuggingFace
+Hugging Face
 -----------
 
-Outlines can call models from HuggingFace's `transformers` and `diffusers` libraries. The models are then run locally.
+Outlines can call models from Hugging Face's `transformers` and `diffusers` libraries. The models are then run locally.
 
 .. code::
 

@@ -24,10 +24,10 @@ To use OpenAI models you first have to run:
     You also need to set your API credentials by defining the ``OPENAI_API_KEY`` environment variable.
 
 
-HuggingFace
+Hugging Face
 -----------
 
-To use the integrations with HuggingFace's `transformers <https://huggingface.co/docs/transformers/index>`_ and `diffusers <https://huggingface.co/docs/diffusers/index>`_ libraries you first need to run:
+To use the integrations with Hugging Face's `transformers <https://huggingface.co/docs/transformers/index>`_ and `diffusers <https://huggingface.co/docs/diffusers/index>`_ libraries you first need to run:
 
 .. code::
 
@@ -36,7 +36,7 @@ To use the integrations with HuggingFace's `transformers <https://huggingface.co
 
 .. attention::
 
-   HuggingFace models are run locally. Outlines uses the `PyTorch <https://pytorch.org/>`_ versions of the models. Please refer to the `PyTorch documentation <https://pytorch.org/get-started/locally/>`_ for questions related to **GPU support**.
+   Hugging Face models are run locally. Outlines uses the `PyTorch <https://pytorch.org/>`_ versions of the models. Please refer to the `PyTorch documentation <https://pytorch.org/get-started/locally/>`_ for questions related to **GPU support**.
 
 The integration is fairly basic for now, and if you have specific performance needs please `open an issue <https://github.com/normal-computing/outlines/issues>`_
 

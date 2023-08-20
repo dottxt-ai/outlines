@@ -1,4 +1,4 @@
-"""Integration with HuggingFace's `transformers` library."""
+"""Integration with Hugging Face's `transformers` library."""
 import functools
 from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Tuple, Union
 
@@ -21,7 +21,7 @@ def HuggingFaceCompletion(
 
     You should have the `torch` and `transformers` packages installed. First
     execution may take a while since the pre-trained weights will be downloaded.
-    Available models are listed on `HuggingFace's model page <https://huggingface.co/models>`_.
+    Available models are listed on `Hugging Face's model page <https://huggingface.co/models>`_.
 
     Note
     ----
@@ -33,7 +33,7 @@ def HuggingFaceCompletion(
     Parameters
     ----------
     model_name: str
-        The name of the model as listed on HuggingFace's models page.
+        The name of the model as listed on Hugging Face's models page.
     max_tokens
         The maximum number of tokens to generate.
     temperature
