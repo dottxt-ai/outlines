@@ -189,7 +189,6 @@ as non-guided generation.
 Outlines 〰 allows to guide the generation process so the output is *guaranteed* to follow a [JSON schema](https://json-schema.org/) or [Pydantic model](https://docs.pydantic.dev/latest/):
 
 ```python
-from typing import List
 from enum import Enum
 from pydantic import BaseModel, constr
 
