@@ -114,7 +114,7 @@ def test_transformers_integration_choice():
 
 def test_transformers_integration_with_pad_token():
     model_name = "hf-internal-testing/tiny-random-XLMRobertaXLForCausalLM"
-    model = models.transformers(model_name, device="cpu")
+    model = models.transformers(model_name, device="meta")
     assert model.tokenizer.pad_token_id == 1
     assert model.tokenizer.pad_token == "<pad>"
 

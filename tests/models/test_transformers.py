@@ -39,12 +39,12 @@ def test_tokenizer():
 
 
 def test_model():
-    with pytest.raises(RuntimeError, match="Expected one of cpu, cuda"):
+    with pytest.raises(ValueError, match="When passing device_map as a string"):
         transformers(TEST_MODEL, device="non_existent")
 
     model = transformers(TEST_MODEL, device="cpu")
     assert isinstance(model.tokenizer, TransformersTokenizer)
-    assert model.device == "cpu"
+    assert model.device.type == "cpu"
 
     input_ids = torch.tensor([[0, 1, 2]])
     logits = model(input_ids, torch.ones_like(input_ids))
