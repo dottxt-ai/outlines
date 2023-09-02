@@ -8,7 +8,6 @@ from outlines.models.tokenizer import Tokenizer
 if TYPE_CHECKING:
     from transformers import PreTrainedModel, PreTrainedTokenizer
 
-
 __all__ = ["transformers"]
 
 
@@ -19,10 +18,9 @@ class Transformers:
         self,
         model: "PreTrainedModel",
         tokenizer: "PreTrainedTokenizer",
-        device: Optional[str] = None,
     ):
-        self.device = device if device is not None else "cpu"
-        self.model = model.to(self.device)
+        self.device = model.device
+        self.model = model
         self.tokenizer = tokenizer
 
     def __call__(
@@ -86,7 +84,33 @@ class TransformersTokenizer(Tokenizer):
         return string
 
 
-def transformers(model_name: str, device: Optional[str] = None, **model_kwargs):
+def transformers(
+    model_name: str,
+    device: Optional[str] = None,
+    model_kwargs: dict = {},
+    tokenizer_kwargs: dict = {},
+):
+    """Instantiate a model from the `transformers` library and its tokenizer.
+
+    Parameters
+    ----------
+    model_name
+        The name of the model as listed on Hugging Face's model page.
+    device_map
+        The device(s) on which the model should be loaded. This overrides
+        the value passed for `device_map` in `model_kwargs`.
+    model_kwargs
+        A dictionary that contains the keyword arguments to pass to the
+        `from_pretrained` method when loading the model.
+    tokenizer_kwargs
+        A dictionary that contains the keyword arguments to pass to the
+        `from_pretrained` method when loading the tokenizer.
+
+    Returns
+    -------
+    A `TransformersModel` model instance.
+
+    """
     try:
         from transformers import AutoModelForCausalLM
     except ImportError:
@@ -94,7 +118,8 @@ def transformers(model_name: str, device: Optional[str] = None, **model_kwargs):
             "The `transformers` library needs to be installed in order to use `transformers` models."
         )
 
+    model_kwargs["device_map"] = device
     model = AutoModelForCausalLM.from_pretrained(model_name, **model_kwargs)
-    tokenizer = TransformersTokenizer(model_name)
+    tokenizer = TransformersTokenizer(model_name, **tokenizer_kwargs)
 
-    return Transformers(model, tokenizer, device)
+    return Transformers(model, tokenizer)

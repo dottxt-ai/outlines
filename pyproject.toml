@@ -35,6 +35,7 @@ dependencies = [
    "scipy",
    "tenacity",
    "torch",
+   "accelerate",
 ]
 dynamic = ["version"]
 
