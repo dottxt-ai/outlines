@@ -96,7 +96,7 @@ def continuation(
     Parameters
     ----------
     model
-        The model to use to computes the next-token logits.
+        The language model to use to compute the next-token logits.
     max_tokens
         The maximum number of tokens to generate.
     stop

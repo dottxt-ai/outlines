@@ -57,7 +57,7 @@ class Sequence:
         Parameters
         ----------
         rng
-            NumPy random number Generator instance
+            NumPy random number Generator instance.
         num_prompt_tokens
             The number of tokens in the prompt.
         token_ids
@@ -82,10 +82,10 @@ class Sequence:
         probs = self.create_proposal(token_ids[:, num_prompt_tokens:], probs)
         probs = torch.nn.functional.softmax(probs, dim=-1)
 
-        # Sample `samples`-many new tokens
+        # Sample `samples`-many new tokens.
         next_token_ids = vectorized_random_choice(rng, probs, samples)
 
-        # Add the missing `num_tokens` and `num_sample` dimensions
+        # Add the missing `num_tokens` and `num_sample` dimensions.
         next_token_ids = torch.unsqueeze(next_token_ids, -1)
         token_ids = torch.unsqueeze(token_ids, 0)
 

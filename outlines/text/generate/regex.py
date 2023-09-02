@@ -74,7 +74,7 @@ class Regex(Continuation):
     def create_proposal(
         self, generated_token_ids: torch.LongTensor, logits: torch.DoubleTensor
     ) -> torch.DoubleTensor:
-        """Modify the next-token logits so that only integers can be generated.
+        """Modify the next-token logits so that only valid tokens can be generated.
 
         Parameters
         ----------
@@ -97,16 +97,16 @@ class Regex(Continuation):
                 generated_token_ids,
                 self.pstates,
             ):
-                # Get the tokens we haven't already processed
+                # Get the tokens we haven't already processed,
                 readable_tokens = token_seq[last_token_idx:]
-                # excluding any EOS tokens
+                # excluding any EOS tokens.
                 not_eos_mask = [
                     tk != self.model.tokenizer.eos_token_id for tk in readable_tokens
                 ]
                 readable_tokens = readable_tokens[not_eos_mask]
                 if len(readable_tokens) > 0:
                     # If we previously ended with an EOS, we shouldn't be
-                    # getting/sampling any more non-EOS tokens
+                    # getting/sampling any more non-EOS tokens.
                     assert last_fsm_state > -1
 
                     sequence = self.model.tokenizer.decode(readable_tokens)
@@ -153,9 +153,9 @@ def regex(model, regex_string: str, max_tokens: Optional[int] = None):
     Parameters
     ----------
     model
-        The model to use to computes the next-token logits.
-    regex
-        The regular expression generated expressions must match.
+        The language model to use to compute the next-token logits.
+    regex_string
+        The regular expression that generated expressions must match.
     max_tokens
         The maximum number of tokens to generate.
 
@@ -173,9 +173,7 @@ def integer(model, max_tokens: Optional[int] = None):
     Parameters
     ----------
     model
-        The model to use to computes the next-token logits.
-    regex
-        The regular expression generated expressions must match.
+        The language model to use to compute the next-token logits.
     max_tokens
         The maximum number of tokens to generate.
 
@@ -193,9 +191,7 @@ def float(model, max_tokens: Optional[int] = None):
     Parameters
     ----------
     model
-        The model to use to computes the next-token logits.
-    regex
-        The regular expression generated expressions must match.
+        The language model to use to compute the next-token logits.
     max_tokens
         The maximum number of tokens to generate.
 
@@ -210,16 +206,16 @@ def choice(model, choices: List[str], max_tokens: Optional[int] = None):
 
 
 def json(model, schema: Union[str, BaseModel], max_tokens: Optional[int] = None):
-    """Generate a text sequence that follows a JSON schema.
+    """Generate a text sequence that follows a JSON schema or Pydantic model.
 
     Parameters
     ---------
     model
-        The model to use to computes the next-token logits.
+        The language model to use to compute the next-token logits.
     schema
-        The JSON schema, or Pydantic model, that guides the generation.
+        The JSON schema or Pydantic model that guides the generation.
     max_tokens
-        The maximum number of tokens to generate at each step.
+        The maximum number of tokens to generate.
 
     """
     if isinstance(schema, type(BaseModel)):
