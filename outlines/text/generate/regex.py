@@ -111,11 +111,14 @@ class Regex(Continuation):
 
                     sequence = self.model.tokenizer.decode(readable_tokens)
 
-                    ((_, state_seq),) = find_partial_matches(
+                    partial_matches = find_partial_matches(
                         self.regex_fsm,
                         "".join(sequence),
                         start_state=last_fsm_state,
                     )
+                    if not partial_matches:
+                        continue
+                    ((_, state_seq),) = partial_matches
                     pstate = (
                         "REGEX",
                         state_seq[-1],
@@ -142,7 +145,7 @@ class Regex(Continuation):
             mask[next_support] = 0
             masks.append(mask.unsqueeze(0))
 
-        mask = torch.concatenate(masks, dim=0)
+        mask = torch.concatenate(masks, dim=0) if len(masks) > 1 else torch.full_like(logits, -math.inf, device=self.device)
 
         return logits + mask
 
