@@ -153,7 +153,7 @@ def regex(model, regex_string: str, max_tokens: Optional[int] = None):
     Parameters
     ----------
     model
-        The model to use to compute the next-token logits.
+        The language model to use to compute the next-token logits.
     regex_string
         The regular expression that generated expressions must match.
     max_tokens
@@ -173,7 +173,7 @@ def integer(model, max_tokens: Optional[int] = None):
     Parameters
     ----------
     model
-        The model to use to compute the next-token logits.
+        The language model to use to compute the next-token logits.
     max_tokens
         The maximum number of tokens to generate.
 
@@ -191,7 +191,7 @@ def float(model, max_tokens: Optional[int] = None):
     Parameters
     ----------
     model
-        The model to use to compute the next-token logits.
+        The language model to use to compute the next-token logits.
     max_tokens
         The maximum number of tokens to generate.
 
@@ -211,7 +211,7 @@ def json(model, schema: Union[str, BaseModel], max_tokens: Optional[int] = None)
     Parameters
     ---------
     model
-        The model to use to compute the next-token logits.
+        The language model to use to compute the next-token logits.
     schema
         The JSON schema or Pydantic model that guides the generation.
     max_tokens
