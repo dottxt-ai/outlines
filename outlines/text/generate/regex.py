@@ -1,19 +1,14 @@
-import collections
 import math
 from json import dumps
-from typing import List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Set, Tuple, Union
 
 import interegular
 import torch
 from pydantic import BaseModel
 
+from outlines.text.fsm import create_fsm_index_tokenizer, make_deterministic_fsm
 from outlines.text.generate.continuation import Continuation
 from outlines.text.json_schema import build_regex_from_schema
-from outlines.text.parsing import (
-    find_partial_matches,
-    make_deterministic_fsm,
-    map_partial_states_to_vocab,
-)
 
 
 class Regex(Continuation):
@@ -29,51 +24,72 @@ class Regex(Continuation):
 
     """
 
-    def __init__(self, model, regex_string: str, max_tokens: Optional[int]):
+    def __init__(
+        self,
+        model,
+        regex_string: str,
+        max_tokens: Optional[int] = None,
+        allow_empty_tokens: bool = True,
+        initial_state: Optional[int] = None,
+        final_states: Optional[Set[int]] = None,
+        states_to_token_maps: Optional[Dict[int, Dict[int, int]]] = None,
+        empty_token_ids: Optional[Set[int]] = None,
+    ):
+        """
+
+        Parameters
+        ----------
+        regex_string
+            The regex with which the token sampling process is guided/constrained.
+        max_tokens
+            The maximum number of tokens to be sampled.
+        allow_empty_tokens
+            Allow sampling of tokens corresponding to empty strings.
+        states_to_token_maps
+            Pre-computed map of FSM start states to maps between token ids and their
+            corresponding FSM end states.
+        empty_token_ids
+            Pre-computed set of token ids for tokens that are empty strings.
+
+        """
         super().__init__(model, max_tokens)
 
-        vocabulary = model.tokenizer.vocabulary
-        sorted_vocabulary = [
-            model.tokenizer.convert_token_to_string(k)
-            for k, v in sorted(vocabulary.items(), key=lambda kv: kv[1])
-        ]
+        if (
+            states_to_token_maps is None
+            or empty_token_ids is None
+            or initial_state is None
+            or final_states is None
+        ):
+            regex_pattern = interegular.parse_pattern(regex_string)
+            regex_fsm, _ = make_deterministic_fsm(regex_pattern.to_fsm().reduce())
 
-        regex_pattern = interegular.parse_pattern(regex_string)
-        self.regex_fsm, _ = make_deterministic_fsm(regex_pattern.to_fsm().reduce())
-
-        def partial_match_filter(string, end_idx, state_seq):
-            if end_idx is not None and end_idx < len(string) - 1:
-                return False
-            return True
-
-        pstate_to_vocab, paths = map_partial_states_to_vocab(
-            list(sorted_vocabulary),
-            {"REGEX": self.regex_fsm},
-            partial_match_filter,
-            final_state_string=model.tokenizer.eos_token,
-        )
+            (
+                self.states_to_token_maps,
+                self.empty_token_ids,
+            ) = create_fsm_index_tokenizer(regex_fsm, model.tokenizer)
+            self.initial_state = regex_fsm.initial
+            self.final_states = regex_fsm.finals
+        else:
+            self.initial_state = initial_state
+            self.final_states = final_states
+            self.states_to_token_maps = states_to_token_maps
+            self.empty_token_ids = empty_token_ids
 
         # Check whether a terminal path (from the initial state of the FSM to
         # one of its terminal states) exists, raise an exception otherwise.
-        traversed_states = set()
-        queue = collections.deque([self.regex_fsm.initial])
-        while queue:
-            symbol = queue.popleft()
-            for prev_state in paths["REGEX"].get(symbol, ()):
-                if prev_state not in traversed_states:
-                    traversed_states.add(prev_state)
-                    queue.append(prev_state)
-
-        if traversed_states.intersection(self.regex_fsm.finals) == set():
+        if not any(
+            self.final_states.intersection(v.values())
+            for v in self.states_to_token_maps.values()
+        ):
             raise ValueError(
                 "The vocabulary does not allow us to build a sequence that matches the input regex"
             )
 
-        self.pstate_to_vocab = {k: list(v) for k, v in pstate_to_vocab.items()}
-        # These tuples are comprised of the FSM name, last FSM state, and
-        # number of processed tokens.
         # When an EOS is observed, the last FSM state becomes `-1`.
-        self.pstates: List[Tuple[str, int, int]] = []
+        self.last_fsm_states: List[int] = []
+        self.mask_cache: Dict[Tuple[int, int], torch.LongTensor] = {}
+        self.regex_string = regex_string
+        self.allow_empty_tokens = allow_empty_tokens
 
     def create_proposal(
         self, generated_token_ids: torch.LongTensor, logits: torch.DoubleTensor
@@ -89,72 +105,106 @@ class Regex(Continuation):
 
         """
 
-        if len(self.pstates) == 0:
-            self.pstates = [
-                ("REGEX", self.regex_fsm.initial, 0)
-                for _ in range(generated_token_ids.shape[0])
+        assert generated_token_ids.ndim == 2
+
+        if len(self.last_fsm_states) == 0:
+            self.last_fsm_states = [
+                self.initial_state for _ in range(generated_token_ids.shape[0])
             ]
 
-        if generated_token_ids.shape[-1] > 0:
-            new_pstates = []
-            for token_seq, (_, last_fsm_state, last_token_idx) in zip(
+        masks = []
+
+        for i, (token_seq, last_state) in enumerate(
+            zip(
                 generated_token_ids,
-                self.pstates,
-            ):
-                # Get the tokens we haven't already processed,
-                readable_tokens = token_seq[last_token_idx:]
-                # excluding any EOS tokens.
-                not_eos_mask = [
-                    tk != self.model.tokenizer.eos_token_id for tk in readable_tokens
-                ]
-                readable_tokens = readable_tokens[not_eos_mask]
-                if len(readable_tokens) > 0:
+                self.last_fsm_states,
+            )
+        ):
+            if token_seq.shape[0] > 0:
+                # Get the last token that was sampled
+                last_token = int(token_seq[-1])
+
+                if last_token in self.empty_token_ids:
+                    # An empty token was sampled, so the FSM state hasn't changed
+                    next_state = last_state
+                    next_token_ids = list(self.states_to_token_maps[last_state].keys())
+
+                elif last_token != self.model.tokenizer.eos_token_id:
                     # If we previously ended with an EOS, we shouldn't be
                     # getting/sampling any more non-EOS tokens.
-                    assert last_fsm_state > -1
+                    assert last_state > -1
 
-                    sequence = self.model.tokenizer.decode(readable_tokens)
+                    last_token_to_end_state = self.states_to_token_maps[last_state]
 
-                    ((_, state_seq),) = find_partial_matches(
-                        self.regex_fsm,
-                        "".join(sequence),
-                        start_state=last_fsm_state,
+                    next_state = last_token_to_end_state[last_token]
+
+                    next_tokens_to_end_states = self.states_to_token_maps.get(
+                        next_state
                     )
-                    pstate = (
-                        "REGEX",
-                        state_seq[-1],
-                        last_token_idx + len(sequence),
-                    )
+
+                    if next_tokens_to_end_states is None:
+                        # If there are no transitions from the current state,
+                        # then we must've been in a final state of the FSM.
+                        # We produce EOS tokens from here on.
+                        assert next_state in self.final_states
+                        next_state = -1
+                        next_token_ids = [self.model.tokenizer.eos_token_id]
+                    else:
+                        next_token_ids = list(next_tokens_to_end_states.keys())
                 else:
-                    pstate = ("REGEX", -1, last_token_idx)
-
-                new_pstates.append(pstate)
-
-            self.pstates = new_pstates
-
-        masks = []
-        mask_shape = (logits.shape[-1],)
-        for pstate in self.pstates:
-            mask = torch.full(mask_shape, -math.inf, device=self.device)
-
-            if pstate[1] > -1:
-                next_support = self.pstate_to_vocab[pstate[:2]]
+                    # Since we already have an EOS, only sample EOS tokes from
+                    # here on.
+                    next_state = -1
+                    next_token_ids = [self.model.tokenizer.eos_token_id]
             else:
-                next_support = [self.model.tokenizer.eos_token_id]
+                # There weren't any previous tokens, so we can't update the state
+                next_state = last_state
+                next_token_ids = list(self.states_to_token_maps[last_state].keys())
 
-            mask[next_support] = 0
-            masks.append(mask.unsqueeze(0))
+            mask = self._get_mask_for_state(
+                next_state, logits.shape[-1], next_token_ids
+            )
+            masks.append(mask)
+            self.last_fsm_states[i] = next_state
 
         mask = torch.concatenate(masks, dim=0)
 
         return logits + mask
 
+    def _get_mask_for_state(
+        self, state: int, size: int, next_token_ids: List[int]
+    ) -> torch.LongTensor:
+        mask = self.mask_cache.get((state, size))
+
+        if mask is None:
+            mask = torch.full(
+                (size,),
+                -math.inf,
+                device=self.device,
+            )
+
+            if self.allow_empty_tokens:
+                token_ids = list(self.empty_token_ids) + next_token_ids
+            else:
+                token_ids = next_token_ids
+
+            mask[token_ids] = 0
+            mask = mask.unsqueeze(0)
+            self.mask_cache[(state, size)] = mask
+
+        return mask
+
     def postprocess_completions(self, completions: List[str]) -> List[str]:
-        self.pstates.clear()
+        self.last_fsm_states.clear()
         return super().postprocess_completions(completions)
 
 
-def regex(model, regex_string: str, max_tokens: Optional[int] = None):
+def regex(
+    model,
+    regex_string: str,
+    max_tokens: Optional[int] = None,
+    allow_empty_tokens: bool = True,
+):
     """Generate text sequences that match the input regex.
 
     Parameters
@@ -165,12 +215,14 @@ def regex(model, regex_string: str, max_tokens: Optional[int] = None):
         The regular expression that generated expressions must match.
     max_tokens
         The maximum number of tokens to generate.
+    allow_empty_tokens
+        Allow sampling of tokens corresponding to empty strings.
 
     """
-    return Regex(model, regex_string, max_tokens)
+    return Regex(model, regex_string, max_tokens, allow_empty_tokens)
 
 
-def integer(model, max_tokens: Optional[int] = None):
+def integer(model, max_tokens: Optional[int] = None, allow_empty_tokens: bool = True):
     """Generate integers.
 
     The regex used to constrain the generation optionally matches plus or minus
@@ -183,12 +235,14 @@ def integer(model, max_tokens: Optional[int] = None):
         The language model to use to compute the next-token logits.
     max_tokens
         The maximum number of tokens to generate.
+    allow_empty_tokens
+        Allow sampling of tokens corresponding to empty strings.
 
     """
-    return Regex(model, r"[-+]?\d+", max_tokens)
+    return Regex(model, r"[-+]?\d+", max_tokens, allow_empty_tokens)
 
 
-def float(model, max_tokens: Optional[int] = None):
+def float(model, max_tokens: Optional[int] = None, allow_empty_tokens: bool = True):
     """Generate floating-point numbers.
 
     The regex used to constrain the generation optionally matches plus or minus
@@ -201,18 +255,35 @@ def float(model, max_tokens: Optional[int] = None):
         The language model to use to compute the next-token logits.
     max_tokens
         The maximum number of tokens to generate.
+    allow_empty_tokens
+        Allow sampling of tokens corresponding to empty strings.
 
     """
-    return Regex(model, r"([+-]?((0|[1-9]+)([.][0-9]*)?)|([.][0-9]+))", max_tokens)
+    return Regex(
+        model,
+        r"([+-]?((0|[1-9]+)([.][0-9]*)?)|([.][0-9]+))",
+        max_tokens,
+        allow_empty_tokens,
+    )
 
 
-def choice(model, choices: List[str], max_tokens: Optional[int] = None):
+def choice(
+    model,
+    choices: List[str],
+    max_tokens: Optional[int] = None,
+    allow_empty_tokens: bool = True,
+):
     """Choose between different sequences."""
     regex_str = r"(" + r"|".join(choices) + r")"
-    return Regex(model, regex_str, max_tokens)
+    return Regex(model, regex_str, max_tokens, allow_empty_tokens)
 
 
-def json(model, schema: Union[str, BaseModel], max_tokens: Optional[int] = None):
+def json(
+    model,
+    schema: Union[str, BaseModel],
+    max_tokens: Optional[int] = None,
+    allow_empty_tokens: bool = True,
+):
     """Generate a text sequence that follows a JSON schema or Pydantic model.
 
     Parameters
@@ -223,6 +294,8 @@ def json(model, schema: Union[str, BaseModel], max_tokens: Optional[int] = None)
         The JSON schema or Pydantic model that guides the generation.
     max_tokens
         The maximum number of tokens to generate.
+    allow_empty_tokens
+        Allow sampling of tokens corresponding to empty strings.
 
     """
     if isinstance(schema, type(BaseModel)):
@@ -230,4 +303,4 @@ def json(model, schema: Union[str, BaseModel], max_tokens: Optional[int] = None)
 
     regex_str = build_regex_from_schema(schema)
 
-    return Regex(model, regex_str, max_tokens)
+    return Regex(model, regex_str, max_tokens, allow_empty_tokens)

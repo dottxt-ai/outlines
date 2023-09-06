@@ -9,6 +9,8 @@ from pydantic import BaseModel, constr
 
 import outlines.models as models
 import outlines.text.generate as generate
+from outlines.models.transformers import TransformersTokenizer
+from outlines.text.fsm import reduced_vocabulary
 
 
 def test_transformers_integration_continuation():
@@ -245,3 +247,16 @@ def test_transformers_logits_vocab_size():
 
     masked_logits = generator("blah", rng=rng)
     assert masked_logits == "True"
+
+
+def test_transformers_reduced_vocabulary_caching():
+    tokenizer = TransformersTokenizer("gpt2")
+    tokenizer2 = TransformersTokenizer("gpt2")
+
+    # TODO: We might actually want only one copy of a given tokenizer.
+    assert tokenizer is not tokenizer2
+
+    vocab = reduced_vocabulary(tokenizer)
+    vocab2 = reduced_vocabulary(tokenizer2)
+
+    assert vocab2 is vocab

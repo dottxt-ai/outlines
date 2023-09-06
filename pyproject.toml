@@ -33,6 +33,8 @@ dependencies = [
    "scipy",
    "tenacity",
    "torch",
+   "numba",
+   "joblib",
 ]
 dynamic = ["version"]
 
@@ -72,6 +74,7 @@ write_to = "outlines/_version.py"
 testpaths = ["tests"]
 filterwarnings = [
     "error",
+    "ignore::numba.core.errors.NumbaPendingDeprecationWarning",
     "ignore::FutureWarning:transformers.*",
     "ignore::FutureWarning:diffusers.*",
     "ignore::UserWarning:torch.cuda.*"
@@ -84,7 +87,7 @@ exclude=["examples"]
 module = [
     "diffusers",
     "jinja2",
-    "joblib",
+    "joblib.*",
     "openai",
     "numpy.*",
     "perscache.*",
@@ -99,8 +102,8 @@ module = [
     "transformers.*",
     "lark.*",
     "interegular.*",
-    "numba.*",
     "datasets.*",
+    "numba.*",
 ]
 ignore_missing_imports = true
 

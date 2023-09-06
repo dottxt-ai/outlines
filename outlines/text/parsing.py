@@ -1,24 +1,10 @@
-from collections import ChainMap
 from copy import copy, deepcopy
 from dataclasses import dataclass
 from functools import lru_cache
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    FrozenSet,
-    Generator,
-    Iterable,
-    Iterator,
-    Optional,
-    Sequence,
-    Set,
-    Tuple,
-    Union,
-)
+from typing import Any, Dict, FrozenSet, Iterator, Optional, Set, Tuple, Union
 
 import interegular
-from interegular.fsm import FSM, Alphabet, OblivionError
+from interegular.fsm import FSM
 from interegular.patterns import Unsupported
 from lark import Lark, Token
 from lark.common import LexerConf, ParserConf
@@ -52,6 +38,13 @@ from lark.parsers.lalr_analysis import (
 from lark.parsers.lalr_interactive_parser import InteractiveParser
 from lark.parsers.lalr_parser import LALR_Parser, ParseConf, ParserState, _Parser
 
+from outlines.text.fsm import (
+    fsm_union,
+    get_sub_fsms_from_seq,
+    make_deterministic_fsm,
+    walk_fsm,
+)
+
 PartialParseState = Tuple[str, int]
 ParseStateType = Union[int, FrozenSet]
 
@@ -70,80 +63,6 @@ class PartialTokensInfo:
     is_not_finished: bool
     terminals_and_info: Tuple[PartialTerminalInfo, ...]
     final_terminals_and_info: Tuple[PartialTerminalInfo, ...]
-
-
-def make_deterministic_fsm(fsm: FSM) -> Tuple[FSM, Dict[int, int]]:
-    """Construct an equivalent FSM with deterministic state labels."""
-    old_to_new_trans_keys = {
-        trans_key: i
-        for i, (trans_key, _) in enumerate(
-            sorted(fsm.alphabet.by_transition.items(), key=lambda x: sorted(x[1]))
-        )
-    }
-
-    new_symbol_mapping = {
-        symbol: old_to_new_trans_keys[trans_key]
-        for symbol, trans_key in fsm.alphabet._symbol_mapping.items()
-    }
-
-    new_alphabet = Alphabet(new_symbol_mapping)
-
-    new_map = {
-        from_state: {
-            old_to_new_trans_keys[trans_key]: to_state
-            for trans_key, to_state in trans_map.items()
-        }
-        for from_state, trans_map in fsm.map.items()
-    }
-
-    old_to_new_states = {}
-    old_to_new_states[fsm.initial] = 0
-
-    i = 0
-    seen = {fsm.initial}
-    old_state_queue = [fsm.initial]
-    while old_state_queue:
-        old_state = old_state_queue.pop(-1)
-        transitions = new_map[old_state]
-        sorted_transitions = sorted(transitions.items(), key=lambda v: v[0])
-        for _, old_state in sorted_transitions:
-            if old_state not in seen:
-                old_state_queue.append(old_state)
-                seen.add(old_state)
-            if old_state not in old_to_new_states:
-                i += 1
-                old_to_new_states[old_state] = i
-
-    new_map = dict(
-        sorted(
-            (
-                (
-                    old_to_new_states[from_state],
-                    dict(
-                        sorted(
-                            (
-                                (trans_key, old_to_new_states[to_state])
-                                for trans_key, to_state in trans_map.items()
-                            ),
-                            key=lambda v: v[0],
-                        )
-                    ),
-                )
-                for from_state, trans_map in new_map.items()
-            ),
-            key=lambda v: v[0],
-        )
-    )
-
-    new_initial = 0
-    new_finals = frozenset(
-        sorted(old_to_new_states[old_state] for old_state in fsm.finals)
-    )
-    new_states = frozenset(sorted(new_map.keys()))
-
-    new_fsm = FSM(new_alphabet, new_states, new_initial, new_finals, new_map)
-
-    return new_fsm, old_to_new_states
 
 
 class PartialParserConf(ParserConf):
@@ -604,6 +523,9 @@ class PartialScanner(Scanner):
 
         self.fsm, self.fsms_to_trans_finals = fsm_union(fsms)
 
+        # Eagerly construct the `FSMInfo` object
+        _ = self.fsm.fsm_info
+
     def get_terminals_info(
         self, fsm_state_seq
     ) -> Tuple[Tuple[PartialTerminalInfo, ...], Tuple[PartialTerminalInfo, ...]]:
@@ -635,22 +557,22 @@ class PartialScanner(Scanner):
 
         text_part = text[start_pos:]
 
-        res = find_partial_matches(
-            self.fsm,
+        state_seq = walk_fsm(
+            self.fsm.fsm_info,
             text_part,
-            start_state=start_state,
+            start_state,
             full_match=self.match_whole,
         )
 
-        if len(res) == 0:
+        if not state_seq:
             return None
 
-        ((_, state_seq),) = res
-
         if last_fsm_state_seq:
-            state_seq = last_fsm_state_seq[:-1] + state_seq
+            res = last_fsm_state_seq + tuple(state_seq)
+        else:
+            res = (start_state,) + tuple(state_seq)
 
-        return state_seq
+        return res
 
 
 class PartialContextualLexer(ContextualLexer):
@@ -693,6 +615,8 @@ class PartialContextualLexer(ContextualLexer):
 class PartialBasicLexer(BasicLexer):
     def __init__(self, conf: "LexerConf"):
         super().__init__(conf)
+        # Eagerly construct the scanner
+        self._build_scanner()
 
     def _build_scanner(self):
         # This seems incredibly convoluted: `lark` creates callback-triggered
@@ -910,96 +834,6 @@ def get_contextual_lexer(x: Union[PartialLexerThread, PartialParsingFrontend]):
         return x.lexer.lexer
 
 
-def find_partial_matches(
-    fsm: FSM, input_string: str, start_state: Optional[int] = None, full_match=True
-) -> Set[Tuple[int, Tuple[int, ...]]]:
-    """Find the states in the finite state machine `fsm` that accept `input_string`.
-
-    This will consider all possible states in the finite state machine (FSM)
-    that accept the beginning of `input_string` as starting points, unless a
-    specific `start_state` is provided.
-
-    Parameters
-    ----------
-    fsm
-        The finite state machine.
-    input_string
-        The string for which we generate partial matches.
-    start_state
-        A single fixed starting state to consider.  For example, if this value
-        is set to `fsm.initial`, it attempt to read `input_string` from the
-        beginning of the FSM/regular expression.
-    full_match
-        Matches must cover the entire string.
-
-    Returns
-    -------
-    A set of tuples corresponding to each valid starting state in the FSM.  The
-    first element of each tuple contains an integer indicating the position in
-    `input_string` at which the FSM stopped.  The second element is the tuple
-    of states visited during execution of the FSM plus the next, unvisited
-    transition state.
-
-    """
-    if len(input_string) == 0:
-        return set()
-
-    trans_key = fsm.alphabet[input_string[0]]
-
-    # TODO: We could probably reuse parts of the computed paths when computing
-    # results for multiple starting points.
-    def _partial_match(
-        trans: Dict[int, int]
-    ) -> Tuple[Optional[int], Optional[Tuple[int, ...]]]:
-        fsm_map = ChainMap({fsm.initial: trans}, fsm.map)
-        state = fsm.initial
-        accepted_states: Tuple[int, ...] = ()
-        last_final_idx = -1
-
-        for i, symbol in enumerate(input_string):
-            trans_key = fsm.alphabet[symbol]
-
-            trans_map = fsm_map.get(state)
-
-            if trans_map is None or trans_key not in trans_map:
-                if full_match:
-                    if state in fsm.finals:
-                        i -= 1
-                        break
-                else:
-                    if last_final_idx > -1:
-                        i = last_final_idx
-                        accepted_states = accepted_states[: last_final_idx + 1]
-                        break
-
-                return None, None
-
-            state = trans_map[trans_key]
-
-            if state in fsm.finals:
-                last_final_idx = i
-
-            accepted_states += (state,)
-
-        terminated = state in fsm.finals
-        if not terminated and state == fsm.initial:
-            return None, None
-
-        return i, accepted_states
-
-    res = set()
-    transition_maps = (
-        fsm.map if start_state is None else {start_state: fsm.map[start_state]}
-    )
-    for state, trans in transition_maps.items():
-        if trans_key in trans:
-            last_match_idx, path = _partial_match(trans)
-            if last_match_idx is not None and path is not None:
-                res.add((last_match_idx, (state,) + path))
-
-    return res
-
-
 def terminals_to_fsms(lp: PartialLark) -> Dict[str, FSM]:
     """Construct a ``dict`` mapping terminal symbol names to their finite state machines."""
 
@@ -1015,221 +849,3 @@ def terminals_to_fsms(lp: PartialLark) -> Dict[str, FSM]:
         symbol_names_and_fsms[terminal.name] = fsm
 
     return symbol_names_and_fsms
-
-
-def map_partial_states_to_vocab(
-    vocabulary: Iterable[str],
-    terminals_to_fsms_map: Dict[str, FSM],
-    partial_match_filter: Callable[
-        [str, Optional[int], Tuple[int, ...]], bool
-    ] = lambda *args: True,
-    final_state_string: Optional[str] = None,
-) -> Tuple[Dict[PartialParseState, Set[int]], Dict[str, Dict[int, Set[int]]]]:
-    """Construct a map from partial parse states to subsets of `vocabulary`.
-
-    The subsets of `vocabulary` consist of elements that are accepted by--or
-    transition to--the corresponding partial parse states.
-
-    Parameters
-    ----------
-    vocabulary
-        The vocabulary composed of strings.
-    terminals_to_fsms_map
-        Terminal symbol names mapped to FSMs, as provided by `terminals_to_fsms`.
-    partial_match_filter
-        A callable that determines which partial matches to keep.  The first
-        argument is the string being match, the rest are the unpacked partial
-        match return values of `find_partial_matches`.
-    final_state_string
-        A string from `vocabulary` that is to be added to all the final states
-        in the FSM.
-    """
-
-    final_state_string_idx = None
-
-    # Partial parse states to the subsets of the vocabulary that accept them
-    pstate_to_vocab: Dict[Tuple[str, int], Set[int]] = {}
-    possible_paths = {}
-    for symbol_name, fsm in terminals_to_fsms_map.items():
-        terminal_possible_paths: Dict[int, Set[int]] = {}
-        for i, vocab_string in enumerate(vocabulary):
-            if vocab_string == final_state_string:
-                final_state_string_idx = i
-
-            for end_idx, state_seq in find_partial_matches(fsm, vocab_string):
-                if partial_match_filter(vocab_string, end_idx, state_seq):
-                    terminal_possible_paths.setdefault(state_seq[0], set()).add(
-                        state_seq[-1]
-                    )
-                    pstate_to_vocab.setdefault((symbol_name, state_seq[0]), set()).add(
-                        i
-                    )
-
-        possible_paths[symbol_name] = terminal_possible_paths
-
-    if final_state_string_idx is not None:
-        # Allow transitions to EOS from all terminals FSM states
-        for symbol_name, fsm in terminals_to_fsms_map.items():
-            for state in fsm.finals:
-                pstate_to_vocab.setdefault((symbol_name, state), set()).add(
-                    final_state_string_idx
-                )
-
-    return pstate_to_vocab, possible_paths
-
-
-def fsm_union(
-    fsms: Sequence[FSM],
-) -> Tuple[FSM, Dict[int, Tuple[Set[Tuple[int, int]], Set[int], Dict[int, Set[int]]]]]:
-    """Construct an FSM representing the union of the FSMs in `fsms`.
-
-    This is an updated version of `interegular.fsm.FSM.union` made to return an
-    extra map of component FSMs to the sets of state transitions that
-    correspond to them in the new FSM.
-
-    """
-
-    alphabet, new_to_old = Alphabet.union(*[fsm.alphabet for fsm in fsms])
-
-    indexed_fsms = tuple(enumerate(fsms))
-
-    initial = {i: fsm.initial for (i, fsm) in indexed_fsms}
-
-    # Dedicated function accepting a "superset" and returning the next
-    # "superset" obtained by following this transition in the new FSM
-    def follow(current_state, new_transition: int):
-        next = {}
-        for i, f in indexed_fsms:
-            old_transition = new_to_old[i][new_transition]
-            if (
-                i in current_state
-                and current_state[i] in f.map
-                and old_transition in f.map[current_state[i]]
-            ):
-                next[i] = f.map[current_state[i]][old_transition]
-        if not next:
-            raise OblivionError
-        return next
-
-    states = [initial]
-    finals: Set[int] = set()
-    map: Dict[int, Dict[int, int]] = {}
-
-    # Map component FSMs to their new state-to-state transitions, finals, and a
-    # map translating component FSM states to aggregate FSM states
-    fsms_to_trans_finals: Dict[
-        int, Tuple[Set[Tuple[int, int]], Set[int], Dict[int, Set[int]]]
-    ] = {}
-
-    i = 0
-    while i < len(states):
-        state = states[i]
-
-        # Add to the finals of the aggregate FSM whenever we hit a final in a
-        # component FSM
-        if any(state.get(j, -1) in fsm.finals for (j, fsm) in indexed_fsms):
-            finals.add(i)
-
-        # Compute the map for this state
-        map[i] = {}
-        for transition in alphabet.by_transition:
-            try:
-                next = follow(state, transition)
-            except OblivionError:
-                # Reached an oblivion state; don't list it
-                continue
-            else:
-                try:
-                    # TODO: Seems like this could--and should--be avoided
-                    j = states.index(next)
-                except ValueError:
-                    j = len(states)
-                    states.append(next)
-
-                map[i][transition] = j
-
-                for fsm_id, fsm_state in next.items():
-                    (
-                        fsm_transitions,
-                        fsm_finals,
-                        fsm_old_to_new,
-                    ) = fsms_to_trans_finals.setdefault(fsm_id, (set(), set(), {}))
-                    old_from = state[fsm_id]
-                    old_to = fsm_state
-                    fsm_old_to_new.setdefault(old_from, set()).add(i)
-                    fsm_old_to_new.setdefault(old_to, set()).add(j)
-                    fsm_transitions.add((i, j))
-                    if fsm_state in fsms[fsm_id].finals:
-                        fsm_finals.add(j)
-
-        i += 1
-
-    fsm = FSM(
-        alphabet=alphabet,
-        states=range(len(states)),
-        initial=0,
-        finals=finals,
-        map=map,
-        __no_validation__=True,
-    )
-
-    fsm, old_to_new_states = make_deterministic_fsm(fsm)
-    _fsms_to_trans_finals = {
-        fsm_id: (
-            {(old_to_new_states[s1], old_to_new_states[s2]) for s1, s2 in transitions},
-            {old_to_new_states[s] for s in finals},
-            {
-                old_state: {old_to_new_states[new_state] for new_state in new_states}
-                for old_state, new_states in old_to_new.items()
-            },
-        )
-        for fsm_id, (transitions, finals, old_to_new) in sorted(
-            fsms_to_trans_finals.items(), key=lambda x: x[0]
-        )
-    }
-
-    return (
-        fsm,
-        _fsms_to_trans_finals,
-    )
-
-
-def get_sub_fsms_from_seq(
-    state_seq: Sequence[int],
-    fsms_to_trans_finals: Dict[
-        int, Tuple[Set[Tuple[int, int]], Set[int], Dict[int, Set[int]]]
-    ],
-) -> Generator[Tuple[int, bool, bool], None, None]:
-    """Get the indices of the sub-FSMs in `fsm` that could have matched the state sequence `state_seq`.
-
-    Parameters
-    ----------
-    state_seq
-        A state sequence.
-    fsms_to_trans_finals
-        A map from FSM indices to tuples containing sets of their state transitions
-        and sets of the final/accept states.
-
-    Returns
-    -------
-    A generator returning tuples containing each sub-FSM index (in the order
-    they were union-ed to construct `fsm`) and booleans indicating whether or
-    not there is another valid transition from the last state in the sequence
-    for the associated sub-FSM (i.e. if the FSM can continue
-    accepting/matching) and whether or not the sequence ends in a final state
-    of the sub-FSM.
-    """
-    state_seq_transitions = set(zip(state_seq[:-1], state_seq[1:]))
-    last_fsm_state = state_seq[-1]
-    yield from (
-        (
-            # The sub-FMS index
-            fsm_idx,
-            # Is there another possible transition in this sub-FSM?
-            any(last_fsm_state == from_s for (from_s, to_s) in transitions),
-            # Is this sub-FSM in a final state?
-            state_seq[-1] in finals,
-        )
-        for fsm_idx, (transitions, finals, _) in fsms_to_trans_finals.items()
-        if state_seq_transitions.issubset(transitions)
-    )

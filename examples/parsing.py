@@ -26,23 +26,6 @@ model = AutoModelForCausalLM.from_pretrained(
     checkpoint, trust_remote_code=True, revision=revision
 ).to(device)
 
-# import urllib.request
-#
-# sql_grammar_url = "https://github.com/zbrookle/sql_to_ibis/raw/0e9226da42065940ce21439d490f9fcacadc7f92/sql_to_ibis/grammar/sql.lark"
-# sql_grammar = "".join(
-#     [line.decode("utf-8") for line in urllib.request.urlopen(sql_grammar_url)]
-# )
-# with open("sql_grammar.lark", "w") as f:
-#     f.write(sql_grammar)
-#
-# TODO: `_STRING_ESC_INNER` from `%import common.ESCAPED_STRING` introduces a
-# (potentially superfluous) look-back; we need to replace it or implement
-# look-backs.
-# parser = PartialLark.open(
-#     "sql_grammar.lark",
-#     parser="lalr",
-# )
-
 parser = PartialLark.open_from_package(
     "tests",
     "partial_python.lark",

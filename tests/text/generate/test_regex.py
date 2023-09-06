@@ -1,9 +1,12 @@
 import math
 
+import interegular
 import pytest
 import torch
 
 import outlines.text.generate as generate
+from outlines.text.fsm import create_fsm_index_tokenizer, make_deterministic_fsm
+from outlines.text.generate.regex import Regex
 
 
 class Tokenizer:
@@ -14,6 +17,12 @@ class Tokenizer:
     vocabulary = {"<EOS>": 0, "-": 1, "1": 2, "0.": 3, "431": 4, "a": 5, "A": 6}
     tokens = list(vocabulary.keys())
     special_tokens = {"<EOS>"}
+
+    def encode(self, tokens):
+        if not isinstance(tokens, (tuple, list)):
+            tokens = [tokens]
+
+        return [self.vocabulary[token] for token in tokens]
 
     def decode(self, token_ids):
         decoded = []
@@ -26,8 +35,18 @@ class Tokenizer:
         return token
 
 
+class TokenizerWithEmpty(Tokenizer):
+    vocabulary = {"<EOS>": 0, "-": 1, "1": 2, "0.": 3, "431": 4, "a": 5, "A": 6, "": 7}
+    tokens = list(vocabulary.keys())
+
+
 class Model:
     tokenizer = Tokenizer()
+    device = "cpu"
+
+
+class ModelWithEmpty:
+    tokenizer = TokenizerWithEmpty()
     device = "cpu"
 
 
@@ -152,4 +171,66 @@ def test_float_proposal(input_ids, proposal):
     assert torch.equal(
         result,
         torch.tensor(proposal),
+    )
+
+
+@pytest.mark.parametrize(
+    "input_ids, proposal, with_empty",
+    [
+        ([[]], [[-math.inf, 1.0, 1.0, 1.0, 1.0, -math.inf, -math.inf, 1]], True),
+        (
+            [[]],
+            [[-math.inf, 1.0, 1.0, 1.0, 1.0, -math.inf, -math.inf, -math.inf]],
+            False,
+        ),
+        ([[3]], [[1.0, -math.inf, 1.0, -math.inf, 1.0, -math.inf, -math.inf, 1]], True),
+        (
+            [[3]],
+            [[1.0, -math.inf, 1.0, -math.inf, 1.0, -math.inf, -math.inf, -math.inf]],
+            False,
+        ),
+    ],
+)
+def test_empty_strings(input_ids, proposal, with_empty):
+    model = ModelWithEmpty()
+    generator = generate.float(model, allow_empty_tokens=with_empty)
+
+    logits = torch.ones(len(model.tokenizer.vocabulary))
+    result = generator.create_proposal(torch.tensor(input_ids), logits)
+    assert torch.equal(
+        result,
+        torch.tensor(proposal),
+    )
+
+
+def test_Regex_precomputed():
+    model = Model()
+    choices = ["1", "431a", "431A-"]
+    regex_str = r"(" + r"|".join(choices) + r")"
+
+    regex_pattern = interegular.parse_pattern(regex_str)
+    regex_fsm, _ = make_deterministic_fsm(regex_pattern.to_fsm().reduce())
+
+    (
+        states_to_token_maps,
+        empty_token_ids,
+    ) = create_fsm_index_tokenizer(regex_fsm, model.tokenizer)
+
+    generator = Regex(
+        model,
+        regex_str,
+        max_tokens=100,
+        initial_state=regex_fsm.initial,
+        final_states=regex_fsm.finals,
+        states_to_token_maps=states_to_token_maps,
+        empty_token_ids=empty_token_ids,
+    )
+
+    logits = torch.ones(len(model.tokenizer.vocabulary))
+    result = generator.create_proposal(torch.tensor([[]]), logits)
+    assert torch.equal(
+        result,
+        torch.tensor(
+            [[-math.inf, -math.inf, 1.0, -math.inf, 1.0, -math.inf, -math.inf]]
+        ),
     )
