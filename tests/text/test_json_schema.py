@@ -12,6 +12,7 @@ from outlines.text.json_schema import (
     NULL,
     NUMBER,
     STRING,
+    STRING_INNER,
     build_schedule_from_schema,
     match_step_to_regex,
 )
@@ -258,13 +259,13 @@ def test_match_number(pattern, does_match):
         ),
         (
             {"title": "Foo", "type": "string", "maxLength": 3},
-            '".{,3}"',
-            [('"ab"', True), ('"abcd"', False)],
+            f'"{STRING_INNER}{{,3}}"',
+            [('"ab"', True), ('"a""', False), ('"abcd"', False)],
         ),
         (
             {"title": "Foo", "type": "string", "minLength": 3},
-            '".{3,}"',
-            [('"ab"', False), ('"abcd"', True)],
+            f'"{STRING_INNER}{{3,}}"',
+            [('"ab"', False), ('"abcd"', True), ('"abc""', False)],
         ),
         (
             {"title": "Foo", "type": "boolean"},
@@ -290,6 +291,7 @@ def test_match_number(pattern, does_match):
             f"({STRING}|{NUMBER})",
             [
                 ('"string"', True),
+                ('"st"ring"', False),
                 ("1000", True),
                 ("true", False),
             ],

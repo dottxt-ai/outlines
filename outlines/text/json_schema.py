@@ -3,7 +3,8 @@ import json
 import re
 from typing import Dict
 
-STRING = r'".*"'
+STRING_INNER = r'(?:[^"\\]|\\.)'
+STRING = f'"{STRING_INNER}*"'
 INTEGER = r"(0|[1-9][0-9]*)"
 NUMBER = rf"(-)?({INTEGER})(\.[0-9]+)?([eE][+-][0-9]+)?"
 BOOLEAN = r"(true|false)"
@@ -225,9 +226,9 @@ def match_step_to_regex(step):
             return regex_str
 
         case {"type": "string", "maxLength": max_length}:
-            return f'".{{,{max_length}}}"'
+            return f'"{STRING_INNER}{{,{max_length}}}"'
         case {"type": "string", "minLength": min_length}:
-            return f'".{{{min_length},}}"'
+            return f'"{STRING_INNER}{{{min_length},}}"'
 
         case {"type": field_type}:
             return type_to_regex[field_type]
