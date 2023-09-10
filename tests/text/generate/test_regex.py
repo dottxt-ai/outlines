@@ -13,6 +13,7 @@ class Tokenizer:
     pad_token_id = -1
     vocabulary = {"<EOS>": 0, "-": 1, "1": 2, "0.": 3, "431": 4, "a": 5, "A": 6}
     tokens = list(vocabulary.keys())
+    special_tokens = {"<EOS>"}
 
     def decode(self, token_ids):
         decoded = []

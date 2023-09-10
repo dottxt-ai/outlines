@@ -108,6 +108,8 @@ class TransformersTokenizer(Tokenizer):
             self.pad_token_id = self.tokenizer.pad_token_id
             self.pad_token = self.tokenizer.pad_token
 
+        self.special_tokens = set(self.tokenizer.special_tokens_map.values())
+
         self.vocabulary = self.tokenizer.get_vocab()
         self.is_llama = isinstance(self.tokenizer, get_llama_tokenizer_types())
 
