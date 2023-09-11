@@ -146,6 +146,10 @@ class Regex(Continuation):
 
         return logits + mask
 
+    def postprocess_completions(self, completions: List[str]) -> List[str]:
+        self.pstates.clear()
+        return super().postprocess_completions(completions)
+
 
 def regex(model, regex_string: str, max_tokens: Optional[int] = None):
     """Generate text sequences that match the input regex.
