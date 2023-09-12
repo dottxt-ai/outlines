@@ -39,7 +39,7 @@ Outlines can call models from Hugging Face's `transformers` and `diffusers` libr
 
 .. note::
 
-   Outlines call the PyTorch version of models by default. The generation process also runs with defaults, please `open an issue <https://github.com/normal-computing/outlines/issues>`_ if you have more specific needs.
+   Outlines call the PyTorch version of models by default. The generation process also runs with defaults, please `open an issue <https://github.com/outlines-dev/outlines/issues>`_ if you have more specific needs.
 
 
 Bring Your Own Model
@@ -47,7 +47,7 @@ Bring Your Own Model
 
 Outlines models are currently simple functions that return a text or an image given a prompt, you can thus easily use any model. We will soon provide a more comprehensive integration that handles controlled generation for any model.
 
-If you think the model you are using could be useful to others, `open an issue <https://github.com/normal-computing/outlines/issues>`_ 😊
+If you think the model you are using could be useful to others, `open an issue <https://github.com/outlines-dev/outlines/issues>`_ 😊
 
 
 Coming soon

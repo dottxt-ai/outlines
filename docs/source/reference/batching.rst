@@ -13,7 +13,7 @@ Outlines is sampling-first, and is built to generate several samples from the sa
        samples=10
     )
 
-This will enable probabilistic applications down the line, stay tuned for more updates. In the meantime you can take a look at the `self-consistency example <https://github.com/normal-computing/outlines/blob/main/examples/self_consistency.py>`_.
+This will enable probabilistic applications down the line, stay tuned for more updates. In the meantime you can take a look at the `self-consistency example <https://github.com/outlines-dev/outlines/blob/main/examples/self_consistency.py>`_.
 
 
 Batching

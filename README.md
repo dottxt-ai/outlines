@@ -49,9 +49,9 @@ Outlines 〰 has new releases and features coming every week! Make sure to ⭐ s
 
 ## Stay tuned for
 
-- Context-Free Grammar guided generation ([#178](https://github.com/normal-computing/outlines/pull/178));
-- Prompt-token alignment so you don't have to think about tokenization details ([#201](https://github.com/normal-computing/outlines/pull/201))
-- An infilling DSL ([#182](https://github.com/normal-computing/outlines/issues/182))
+- Context-Free Grammar guided generation ([#178](https://github.com/outlines-dev/outlines/pull/178));
+- Prompt-token alignment so you don't have to think about tokenization details ([#201](https://github.com/outlines-dev/outlines/pull/201))
+- An infilling DSL ([#182](https://github.com/outlines-dev/outlines/issues/182))
 
 You can follow [@NormalComputing](https://twitter.com/NormalComputing), [@remilouf](https://twitter.com/remilouf) or [@BrandonTWillard](https://twitter.com/BrandonTWillard) for regular updates!
 
@@ -255,7 +255,7 @@ print(parsed)
 # name='piggyback' age=23 armor=<Armor.chainmail: 'chainmail'> weapon=<Weapon.sword: 'sword'> strength=0
 ```
 
-The method works with union types, optional types, arrays, nested schemas, etc. Some field constraints are [not supported yet](https://github.com/normal-computing/outlines/issues/215), but everything else should work.
+The method works with union types, optional types, arrays, nested schemas, etc. Some field constraints are [not supported yet](https://github.com/outlines-dev/outlines/issues/215), but everything else should work.
 
 ## Prompting
 
@@ -386,7 +386,7 @@ removing boilerplate prompting code.
 
 We currently only accept bug fixes and documentation contributions. If you have a
 feature request, please start a new
-[discussion](https://github.com/normal-computing/outlines/discussions). The
+[discussion](https://github.com/outlines-dev/outlines/discussions). The
 issue tracker is only intended for actionable items.
 
 ### How to contribute?
@@ -399,13 +399,13 @@ Do not hesitate to open a draft PR before your contribution is ready, especially
 
 ## Examples
 
-- [Pick the odd one out](https://github.com/normal-computing/outlines/blob/main/examples/pick_odd_one_out.py)
-- [Meta prompting](https://github.com/normal-computing/outlines/blob/main/examples/meta_prompting.py)
-- [ReAct](https://github.com/normal-computing/outlines/blob/main/examples/react.py)
-- [Generate code to solve math problems](https://github.com/normal-computing/outlines/blob/main/examples/math_generate_code.py)
-- [BabyAGI](https://github.com/normal-computing/outlines/blob/main/examples/babyagi.py)
-- [Uncertainty](https://github.com/normal-computing/outlines/blob/main/examples/sampling.ipynb)
-- [Simulation-based inference](https://github.com/normal-computing/outlines/blob/main/examples/simulation_based_inference.ipynb)
+- [Pick the odd one out](https://github.com/outlines-dev/outlines/blob/main/examples/pick_odd_one_out.py)
+- [Meta prompting](https://github.com/outlines-dev/outlines/blob/main/examples/meta_prompting.py)
+- [ReAct](https://github.com/outlines-dev/outlines/blob/main/examples/react.py)
+- [Generate code to solve math problems](https://github.com/outlines-dev/outlines/blob/main/examples/math_generate_code.py)
+- [BabyAGI](https://github.com/outlines-dev/outlines/blob/main/examples/babyagi.py)
+- [Uncertainty](https://github.com/outlines-dev/outlines/blob/main/examples/sampling.ipynb)
+- [Simulation-based inference](https://github.com/outlines-dev/outlines/blob/main/examples/simulation_based_inference.ipynb)
 
 
 ## Cite Outlines

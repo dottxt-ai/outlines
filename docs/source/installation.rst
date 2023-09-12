@@ -38,7 +38,7 @@ To use the integrations with Hugging Face's `transformers <https://huggingface.c
 
    Hugging Face models are run locally. Outlines uses the `PyTorch <https://pytorch.org/>`_ versions of the models. Please refer to the `PyTorch documentation <https://pytorch.org/get-started/locally/>`_ for questions related to **GPU support**.
 
-The integration is fairly basic for now, and if you have specific performance needs please `open an issue <https://github.com/normal-computing/outlines/issues>`_
+The integration is fairly basic for now, and if you have specific performance needs please `open an issue <https://github.com/outlines-dev/outlines/issues>`_
 
 Other integrations
 ------------------
