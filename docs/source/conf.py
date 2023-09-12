@@ -7,7 +7,7 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = "Outlines"
-copyright = "2023, Normal Computing"
+copyright = "2023, Normal Computing, Outlines Developers"
 author = "Remi Louf"
 release = "0.1"
 
@@ -34,7 +34,7 @@ html_options = {
     "icon_links": [
         {
             "name": "GitHub",
-            "url": "https://github.com/normal-computing/outlines",  # required
+            "url": "https://github.com/outlines-dev/outlines",  # required
             "icon": "fa-brands fa-square-github",
             "type": "fontawesome",
         },
