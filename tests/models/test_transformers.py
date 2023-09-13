@@ -38,6 +38,16 @@ def test_tokenizer():
     isinstance(text[1], str)
 
 
+def test_llama_tokenizer():
+    tokenizer = TransformersTokenizer("hf-internal-testing/llama-tokenizer")
+
+    # Broken
+    assert tokenizer.tokenizer.convert_tokens_to_string(["▁baz"]) == "baz"
+
+    # Not broken
+    assert tokenizer.convert_token_to_string("▁baz") == " baz"
+
+
 def test_model():
     with pytest.raises(ValueError, match="When passing device_map as a string"):
         transformers(TEST_MODEL, device="non_existent")

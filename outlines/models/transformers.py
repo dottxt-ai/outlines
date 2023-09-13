@@ -2,6 +2,23 @@ import math
 from typing import TYPE_CHECKING, List, Optional, Tuple, Union
 
 import torch
+from transformers.file_utils import SPIECE_UNDERLINE
+
+try:
+    from transformers.models.llama.tokenization_llama import LlamaTokenizer
+except ImportError:
+
+    class LlamaTokenizer:  # type: ignore
+        pass
+
+
+try:
+    from transformers.models.llama.tokenization_llama_fast import LlamaTokenizerFast
+except ImportError:
+
+    class LlamaTokenizerFast:  # type: ignore
+        pass
+
 
 from outlines.models.tokenizer import Tokenizer
 
@@ -66,6 +83,9 @@ class TransformersTokenizer(Tokenizer):
             self.pad_token = self.tokenizer.pad_token
 
         self.vocabulary = self.tokenizer.get_vocab()
+        self.is_sentencepiece = isinstance(
+            self.tokenizer, (LlamaTokenizerFast, LlamaTokenizer)
+        )
 
     def encode(
         self, prompt: Union[str, List[str]], **kwargs
@@ -81,6 +101,12 @@ class TransformersTokenizer(Tokenizer):
 
     def convert_token_to_string(self, token: str) -> str:
         string = self.tokenizer.convert_tokens_to_string([token])
+
+        if self.is_sentencepiece:
+            # A hack to handle missing spaces from SentencePiece tokenizers
+            if token.startswith(SPIECE_UNDERLINE):
+                return " " + string
+
         return string
 
 
