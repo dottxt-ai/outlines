@@ -31,11 +31,9 @@ dependencies = [
    "pillow",
    "perscache",
    "pydantic>=2.0",
-   "regex",
    "scipy",
    "tenacity",
    "torch",
-   "accelerate",
 ]
 dynamic = ["version"]
 
@@ -43,14 +41,13 @@ dynamic = ["version"]
 test = [
     "diffusers",
     "pre-commit",
-    "pydantic>=2.0",
     "pytest",
     "pytest-cov",
     "transformers",
     "coverage[toml]>=5.1",
     "diff-cover",
-    "lark",
-    "interegular",
+    "accelerate",
+    "beartype<0.16.0",
 ]
 
 [project.urls]
