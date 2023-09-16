@@ -43,9 +43,13 @@ def test_llama_tokenizer():
 
     # Broken
     assert tokenizer.tokenizer.convert_tokens_to_string(["▁baz"]) == "baz"
+    assert tokenizer.tokenizer.convert_tokens_to_string(["<0x20>"]) == ""
+    assert tokenizer.tokenizer.convert_tokens_to_string(["▁▁▁"]) == "  "
 
     # Not broken
     assert tokenizer.convert_token_to_string("▁baz") == " baz"
+    assert tokenizer.convert_token_to_string("<0x20>") == " "
+    assert tokenizer.convert_token_to_string("▁▁▁") == "   "
 
 
 def test_model():

@@ -4,28 +4,54 @@ from typing import TYPE_CHECKING, List, Optional, Tuple, Union
 import torch
 from transformers.file_utils import SPIECE_UNDERLINE
 
-try:
-    from transformers.models.llama.tokenization_llama import LlamaTokenizer
-except ImportError:
-
-    class LlamaTokenizer:  # type: ignore
-        pass
-
-
-try:
-    from transformers.models.llama.tokenization_llama_fast import LlamaTokenizerFast
-except ImportError:
-
-    class LlamaTokenizerFast:  # type: ignore
-        pass
-
-
 from outlines.models.tokenizer import Tokenizer
 
 if TYPE_CHECKING:
     from transformers import PreTrainedModel, PreTrainedTokenizer
 
 __all__ = ["transformers"]
+
+
+def get_llama_tokenizer_types():
+    """Get all the Llama tokenizer types/classes that need work-arounds.
+
+    When they can't be imported, a dummy class is created.
+
+    """
+    try:
+        from transformers.models.llama import LlamaTokenizer
+    except ImportError:
+
+        class LlamaTokenizer:  # type: ignore
+            pass
+
+    try:
+        from transformers.models.llama import LlamaTokenizerFast
+    except ImportError:
+
+        class LlamaTokenizerFast:  # type: ignore
+            pass
+
+    try:
+        from transformers.models.code_llama import CodeLlamaTokenizer
+    except ImportError:
+
+        class CodeLlamaTokenizer:  # type: ignore
+            pass
+
+    try:
+        from transformers.models.code_llama import CodeLlamaTokenizerFast
+    except ImportError:
+
+        class CodeLlamaTokenizerFast:  # type: ignore
+            pass
+
+    return (
+        LlamaTokenizer,
+        LlamaTokenizerFast,
+        CodeLlamaTokenizer,
+        CodeLlamaTokenizerFast,
+    )
 
 
 class Transformers:
@@ -83,9 +109,7 @@ class TransformersTokenizer(Tokenizer):
             self.pad_token = self.tokenizer.pad_token
 
         self.vocabulary = self.tokenizer.get_vocab()
-        self.is_sentencepiece = isinstance(
-            self.tokenizer, (LlamaTokenizerFast, LlamaTokenizer)
-        )
+        self.is_llama = isinstance(self.tokenizer, get_llama_tokenizer_types())
 
     def encode(
         self, prompt: Union[str, List[str]], **kwargs
@@ -102,9 +126,9 @@ class TransformersTokenizer(Tokenizer):
     def convert_token_to_string(self, token: str) -> str:
         string = self.tokenizer.convert_tokens_to_string([token])
 
-        if self.is_sentencepiece:
-            # A hack to handle missing spaces from SentencePiece tokenizers
-            if token.startswith(SPIECE_UNDERLINE):
+        if self.is_llama:
+            # A hack to handle missing spaces to HF's Llama tokenizers
+            if token.startswith(SPIECE_UNDERLINE) or token == "<0x20>":
                 return " " + string
 
         return string
