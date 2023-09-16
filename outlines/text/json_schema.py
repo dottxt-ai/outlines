@@ -3,7 +3,7 @@ import json
 import re
 from typing import Dict
 
-STRING_INNER = r'(?:[^"\\]|\\.)'
+STRING_INNER = r'(?:[^"\\\x00-\x1f\x7f-\x9f]|\\.)'
 STRING = f'"{STRING_INNER}*"'
 INTEGER = r"(0|[1-9][0-9]*)"
 NUMBER = rf"(-)?({INTEGER})(\.[0-9]+)?([eE][+-][0-9]+)?"
@@ -142,7 +142,7 @@ def expand_json_schema(raw_schema: Dict, definitions: Dict):
         return raw_schema
 
 
-def build_schedule_from_instance(instance: Dict, indent: int = 0):
+def build_schedule_from_instance(instance: Dict):
     """Build a generation schedule from a instance.
 
     This recursively follows the references to other instances.
@@ -163,27 +163,26 @@ def build_schedule_from_instance(instance: Dict, indent: int = 0):
     """
     schedule = []
     if "properties" in instance:
-        schedule.append("{\n")
-        schedule += build_schedule_from_instance(instance["properties"], indent + 2)
-        if indent > 0:
-            schedule.append(" " * indent)
-        schedule.append("}")
+        schedule.append(r"\{")
+        schedule += build_schedule_from_instance(instance["properties"])
+        schedule.append(r"\}")
     else:
         for i, (name, annotation) in enumerate(instance.items()):
-            schedule.append(" " * indent)
-            schedule.append(f'"{name}": ')
+            whitespace = r"[\n ]*"
+            schedule.append(f'{whitespace}"{name}"{whitespace}:{whitespace}')
+
             if "anyOf" in annotation:
                 schedule.append(annotation)
             elif annotation["type"] == "object":
-                schedule += build_schedule_from_instance(annotation, indent)
+                schedule += build_schedule_from_instance(annotation)
             else:
                 schedule.append(annotation)
 
             # We cannot add commas after the last key-value pair in JSON
             if i == len(instance) - 1:
-                schedule.append("\n")
+                schedule.append(whitespace)
             else:
-                schedule.append(",\n")
+                schedule.append(f"{whitespace},")
 
     return schedule
 
@@ -205,7 +204,7 @@ def match_step_to_regex(step):
     """
     match step:
         case str() as step:
-            return re.escape(step)
+            return step
 
         case {"enum": choices, "type": "string"}:
             choices = [f'"{re.escape(choice)}"' for choice in choices]
