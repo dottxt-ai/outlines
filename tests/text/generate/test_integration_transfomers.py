@@ -136,7 +136,7 @@ def test_transformers_json_basic():
     sequence = generate.json(model, Spam, max_tokens=1000)(prompt, rng=rng)
     parsed = json.loads(sequence)
     assert isinstance(parsed["foo"], int)
-    assert isinstance(parsed["bar"], float)
+    assert isinstance(parsed["bar"], int)
     assert isinstance(parsed["spam"], str)
     assert isinstance(parsed["fuzz"], bool)
     assert len(parsed["spam"]) == 10

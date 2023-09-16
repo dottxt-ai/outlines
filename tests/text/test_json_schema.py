@@ -30,19 +30,19 @@ def test_pydantic_basic():
     schema = json.dumps(User.model_json_schema())
     schedule = build_schedule_from_schema(schema)
     assert schedule == [
-        '{\n  "user_id": ',
+        '\\{[\\n ]*"user_id"[\\n ]*:[\\n ]*',
         {"title": "User Id", "type": "integer"},
-        ',\n  "name": ',
+        '[\\n ]*,[\\n ]*"name"[\\n ]*:[\\n ]*',
         {"title": "Name", "type": "string"},
-        ',\n  "maxlength_name": ',
+        '[\\n ]*,[\\n ]*"maxlength_name"[\\n ]*:[\\n ]*',
         {"title": "Maxlength Name", "type": "string", "maxLength": 10},
-        ',\n  "minlength_name": ',
+        '[\\n ]*,[\\n ]*"minlength_name"[\\n ]*:[\\n ]*',
         {"title": "Minlength Name", "type": "string", "minLength": 10},
-        ',\n  "value": ',
+        '[\\n ]*,[\\n ]*"value"[\\n ]*:[\\n ]*',
         {"title": "Value", "type": "number"},
-        ',\n  "is_true": ',
+        '[\\n ]*,[\\n ]*"is_true"[\\n ]*:[\\n ]*',
         {"title": "Is True", "type": "boolean"},
-        "\n}",
+        "[\\n ]*\\}",
     ]
 
 
@@ -53,9 +53,9 @@ def test_pydantic_optional():
     schema = json.dumps(Foo.model_json_schema())
     schedule = build_schedule_from_schema(schema)
     assert schedule == [
-        '{\n  "bar": ',
+        '\\{[\\n ]*"bar"[\\n ]*:[\\n ]*',
         {"anyOf": [{"type": "string"}, {"type": "null"}], "title": "Bar"},
-        "\n}",
+        "[\\n ]*\\}",
     ]
 
 
@@ -67,11 +67,11 @@ def test_pydantic_array():
     schema = json.dumps(User.model_json_schema())
     schedule = build_schedule_from_schema(schema)
     assert schedule == [
-        '{\n  "user_id": ',
+        '\\{[\\n ]*"user_id"[\\n ]*:[\\n ]*',
         {"title": "User Id", "type": "integer"},
-        ',\n  "value": ',
+        '[\\n ]*,[\\n ]*"value"[\\n ]*:[\\n ]*',
         {"title": "Value", "type": "array", "items": {"type": "number"}},
-        "\n}",
+        "[\\n ]*\\}",
     ]
 
 
@@ -88,15 +88,15 @@ def test_pydantic_enum():
     schema = json.dumps(User.model_json_schema())
     schedule = build_schedule_from_schema(schema)
     assert schedule == [
-        '{\n  "user_id": ',
+        '\\{[\\n ]*"user_id"[\\n ]*:[\\n ]*',
         {"title": "User Id", "type": "integer"},
-        ',\n  "name": ',
+        '[\\n ]*,[\\n ]*"name"[\\n ]*:[\\n ]*',
         {
             "title": "Name",
             "enum": ["John", "Marc", "Michel"],
             "type": "string",
         },
-        "\n}",
+        "[\\n ]*\\}",
     ]
 
 
@@ -122,15 +122,15 @@ def test_pydantic_nested():
     schema = json.dumps(Spam.model_json_schema())
     schedule = build_schedule_from_schema(schema)
     assert schedule == [
-        '{\n  "foo": {\n    "count": ',
+        '\\{[\\n ]*"foo"[\\n ]*:[\\n ]*\\{[\\n ]*"count"[\\n ]*:[\\n ]*',
         {"title": "Count", "type": "integer"},
-        ',\n    "size": {\n      "buzz": ',
+        '[\\n ]*,[\\n ]*"size"[\\n ]*:[\\n ]*\\{[\\n ]*"buzz"[\\n ]*:[\\n ]*',
         {"title": "Buzz", "type": "string"},
-        '\n    }\n  },\n  "bars": {\n    "apple": ',
+        '[\\n ]*\\}[\\n ]*\\}[\\n ]*,[\\n ]*"bars"[\\n ]*:[\\n ]*\\{[\\n ]*"apple"[\\n ]*:[\\n ]*',
         {"title": "Apple", "type": "string"},
-        ',\n    "banana": ',
+        '[\\n ]*,[\\n ]*"banana"[\\n ]*:[\\n ]*',
         {"title": "Banana", "type": "string"},
-        "\n  }\n}",
+        "[\\n ]*\\}[\\n ]*\\}",
     ]
 
 
@@ -145,7 +145,7 @@ def test_pydantic_list_object():
     schema = json.dumps(Spam.model_json_schema())
     schedule = build_schedule_from_schema(schema)
     assert schedule == [
-        '{\n  "foo": ',
+        '\\{[\\n ]*"foo"[\\n ]*:[\\n ]*',
         {
             "items": {
                 "title": "Foo",
@@ -155,7 +155,7 @@ def test_pydantic_list_object():
             "title": "Foo",
             "type": "array",
         },
-        "\n}",
+        "[\\n ]*\\}",
     ]
 
 
@@ -169,11 +169,11 @@ def test_pydantic_union():
     schema = json.dumps(Spam.model_json_schema())
     schedule = build_schedule_from_schema(schema)
     assert schedule == [
-        '{\n  "foo": ',
+        '\\{[\\n ]*"foo"[\\n ]*:[\\n ]*',
         {"title": "Foo", "type": "integer"},
-        ',\n  "bar": ',
+        '[\\n ]*,[\\n ]*"bar"[\\n ]*:[\\n ]*',
         {"title": "Bar", "anyOf": [{"type": "number"}, {"type": "string"}]},
-        "\n}",
+        "[\\n ]*\\}",
     ]
 
 
@@ -181,11 +181,11 @@ def test_json_schema():
     schema = '{"title": "User", "type": "object", "properties": {"user_id": {"title": "User Id", "type": "integer"}, "name": {"title": "Name", "type": "string"}}, "required": ["user_id", "name"]}'
     schedule = build_schedule_from_schema(schema)
     assert schedule == [
-        '{\n  "user_id": ',
+        '\\{[\\n ]*"user_id"[\\n ]*:[\\n ]*',
         {"title": "User Id", "type": "integer"},
-        ',\n  "name": ',
+        '[\\n ]*,[\\n ]*"name"[\\n ]*:[\\n ]*',
         {"title": "Name", "type": "string"},
-        "\n}",
+        "[\\n ]*\\}",
     ]
 
 
@@ -317,7 +317,7 @@ def test_match_number(pattern, does_match):
                 "type": "object",
                 "properties": {"count": {"title": "Count", "type": "integer"}},
             },
-            '\\{\\\n\\ \\ "count":\\ ' + INTEGER + "\\\n\\}",
+            '\\{[\\n ]*"count"[\\n ]*:[\\n ]*(0|[1-9][0-9]*)[\\n ]*\\}',
             [('{\n  "count": 100\n}', True)],
         ),
         (
@@ -346,9 +346,7 @@ def test_match_number(pattern, does_match):
                     }
                 },
             },
-            '\\{\\\n\\ \\ "fuzz":\\ \\{\\\n\\ \\ \\ \\ "spam":\\ '
-            + INTEGER
-            + "\\\n\\ \\ \\}\\\n\\}",
+            f'\\{{[\\n ]*"fuzz"[\\n ]*:[\\n ]*\\{{[\\n ]*"spam"[\\n ]*:[\\n ]*{INTEGER}[\\n ]*\\}}[\\n ]*\\}}',
             [('{\n  "fuzz": {\n    "spam": 100\n  }\n}', True)],
         ),
     ],
