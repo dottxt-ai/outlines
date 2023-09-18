@@ -25,7 +25,7 @@ class QuestionAnswer:
 
 
 class DatingProfile(BaseModel):
-    bio: str
+    bio: str  # It is possible put length constraints on these strings using constr- however, this appears to dramatically increase the generation time
     job: str
     interests: conlist(str, min_length=1, max_length=5)
     qna1: QuestionAnswer
