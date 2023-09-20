@@ -1,19 +1,19 @@
 from dataclasses import dataclass
 from enum import Enum
-from pydantic import BaseModel, conlist
 
 import torch
 import transformers
+from pydantic import BaseModel, conlist
 
 import outlines.models as models
 import outlines.text as text
 
 
 class QuestionChoice(str, Enum):
-    A = "The key to my heart is",
-    B = "The first item on my bucket list is",
-    C = "Perks of dating me",
-    D = "Message me if you also love",
+    A = "The key to my heart is"
+    B = "The first item on my bucket list is"
+    C = "Perks of dating me"
+    D = "Message me if you also love"
     E = "People would describe me as"
     F = "I can beat you in a game of"
 
@@ -27,7 +27,8 @@ class QuestionAnswer:
 class DatingProfile(BaseModel):
     bio: str  # It is possible put length constraints on these strings using constr- however, this appears to dramatically increase the generation time
     job: str
-    interests: conlist(str, min_length=1, max_length=5)
+    # Ignore mypy checks here because it still doesn't support conlist or constr: https://github.com/pydantic/pydantic/issues/975
+    interests: conlist(str, min_length=1, max_length=5)  # type: ignore
     qna1: QuestionAnswer
     qna2: QuestionAnswer
 
@@ -44,12 +45,15 @@ def dating_profile_prompt(description: str, examples: list[Example]):
     You are a world-renowned matchmaker who understands the modern dating market. Your job is to generate dating app profiles for male clients interested in women based on a provided description. The profiles should be authentic, show off their strengths, and maximize their likelihood of getting matches on dating apps.
     Here are some examples of past clients that you have successfully created profiles for:
     {% for example in examples %}
-    Description: {{ example.description }}
-    Profile: {{ example.profile }}
+    Description:
+    {{ example.description }}
+    Profile:
+    {{ example.profile }}
     {% endfor %}
     Here is the new client who you need to create a profile for:
     Description: {{ description }}
-    Profile: """
+    Profile:
+    """
 
 
 samples: list[Example] = [
@@ -60,12 +64,13 @@ samples: list[Example] = [
             job="Famous Soccer Player -> Famous Author",
             interests=["Soccer", "Travel", "Friends", "Books", "Fluffy Animals"],
             qna1=QuestionAnswer(
-                    question=QuestionChoice.B,
-                    answer="swim in all seven oceans!"),
+                question=QuestionChoice.B, answer="swim in all seven oceans!"
+            ),
             qna2=QuestionAnswer(
-                    question=QuestionChoice.E,
-                    answer="fun-loving, adventurous, and a little bit crazy"),
-        )
+                question=QuestionChoice.E,
+                answer="fun-loving, adventurous, and a little bit crazy",
+            ),
+        ),
     ),
     Example(
         description="I run my company and build houses for a living. I'm a big fan of the outdoors and love to go hiking, camping, and fishing. I don't like video games, but do like to watch movies. My love language is home-cooked food, and I'm looking for someone who isn't afraid to get their hands dirty.",
@@ -73,13 +78,12 @@ samples: list[Example] = [
             bio="If you're looking for a Montana man who loves to get outdoors and hunt, and who's in-tune with his masculinity then I'm your guy!",
             job="House Construction Manager / Entrepreneur",
             interests=["Hunting", "Hiking", "The outdoors", "Home-cooked food"],
-            qna1=QuestionAnswer(
-                    question=QuestionChoice.A,
-                    answer="food made at home"),
+            qna1=QuestionAnswer(question=QuestionChoice.A, answer="food made at home"),
             qna2=QuestionAnswer(
-                    question=QuestionChoice.C,
-                    answer="having a man in your life who can fix anything"),
-        )
+                question=QuestionChoice.C,
+                answer="having a man in your life who can fix anything",
+            ),
+        ),
     ),
     Example(
         description="I run my own Youtube channel with 10M subscribers. I love working with kids, and my audience skews pretty young too. In my free time, I play Fortnite and Roblox. I'm looking for someone who is also a gamer and likes to have fun. I'm learning Japanese in my free time as well as how to cook.",
@@ -87,31 +91,29 @@ samples: list[Example] = [
             bio="Easy on the eyes (find me on Youtube!) and great with kids. What more do you need?",
             job="Youtuber 10M+ subscribers",
             interests=["Kids", "Gaming", "Japanese"],
-            qna1=QuestionAnswer(
-                    question=QuestionChoice.D,
-                    answer="anime and gaming!"),
-            qna2=QuestionAnswer(
-                    question=QuestionChoice.F,
-                    answer="Fortnite, gg ez"),
-        )
-    )
+            qna1=QuestionAnswer(question=QuestionChoice.D, answer="anime and gaming!"),
+            qna2=QuestionAnswer(question=QuestionChoice.F, answer="Fortnite, gg ez"),
+        ),
+    ),
 ]
 
 
 # Below requires ~13GB of GPU memory
 # https://huggingface.co/mosaicml/mpt-7b-8k-instruct
 # Motivation: Reasonably large model that fits on a single GPU and has been fine-tuned for a larger context window
-config = transformers.AutoConfig.from_pretrained('mosaicml/mpt-7b-8k-instruct', trust_remote_code=True)
-config.init_device = 'meta'
+config = transformers.AutoConfig.from_pretrained(
+    "mosaicml/mpt-7b-8k-instruct", trust_remote_code=True
+)
+config.init_device = "meta"
 model = models.transformers(
-    model_name='mosaicml/mpt-7b-8k-instruct',
+    model_name="mosaicml/mpt-7b-8k-instruct",
     device="cuda",
     model_kwargs={
         "config": config,
         "trust_remote_code": True,
         "torch_dtype": torch.bfloat16,
         "device_map": {"": 0},
-    }
+    },
 )
 
 new_description = "I'm a laid-back lawyer who spends a lot of his free-time gaming. I work in a corporate office, but ended up here after the start-up I cofounded got acquired, so still play ping pong with my cool coworkers every day. I have a bar at home where I make cocktails, which is great for entertaining friends. I secretly like to wear suits and get a new one tailored every few months. I also like weddings because I get to wear those suits, and it's a good excuse for a date. I watch the latest series because I'm paying, with my hard-earned money, for every streaming service."
