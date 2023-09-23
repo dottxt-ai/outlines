@@ -61,6 +61,9 @@ content-type = "text/markdown"
 [tool.setuptools]
 packages = ["outlines"]
 
+[tool.setuptools.package-data]
+"outlines" = ["py.typed"]
+
 [tool.setuptools_scm]
 write_to = "outlines/_version.py"
 
