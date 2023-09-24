@@ -202,39 +202,50 @@ def match_step_to_regex(step):
     schedule's step.
 
     """
-    match step:
-        case str() as step:
-            return step
+    if isinstance(step, str):
+        return step
 
-        case {"enum": choices, "type": "string"}:
-            choices = [f'"{re.escape(choice)}"' for choice in choices]
-            return f"({'|'.join(choices)})"
-        case {"enum": choices}:
-            choices = [re.escape(str(choice)) for choice in choices]
+    if isinstance(step, dict):
+        keys = set(step.keys())
+
+        if all(key in keys for key in ("enum", "type")) and step["type"] == "string":
+            choices = [f'"{re.escape(choice)}"' for choice in step["enum"]]
             return f"({'|'.join(choices)})"
 
-        case {"type": "array", "items": items}:
-            item_regexes = match_step_to_regex(items)
+        elif "enum" in keys:
+            choices = [re.escape(str(choice)) for choice in step["enum"]]
+            return f"({'|'.join(choices)})"
+
+        elif all(key in keys for key in ("type", "items")) and step["type"] == "array":
+            item_regexes = match_step_to_regex(step["items"])
             return rf"\[({item_regexes})(,({item_regexes}))*\]"
 
-        case {"type": "object"} as object:
-            steps = build_schedule_from_schema(json.dumps(object))
+        elif "type" in keys and step["type"] == "object":
+            steps = build_schedule_from_schema(json.dumps(step))
             regex_str = ""
             for step in steps:
                 regex_str += match_step_to_regex(step)
             return regex_str
 
-        case {"type": "string", "maxLength": max_length}:
+        elif (
+            all(key in keys for key in ("type", "maxLength"))
+            and step["type"] == "string"
+        ):
+            max_length = step["maxLength"]
             return f'"{STRING_INNER}{{,{max_length}}}"'
-        case {"type": "string", "minLength": min_length}:
+
+        elif (
+            all(key in keys for key in ("type", "minLength"))
+            and step["type"] == "string"
+        ):
+            min_length = step["minLength"]
             return f'"{STRING_INNER}{{{min_length},}}"'
 
-        case {"type": field_type}:
-            return type_to_regex[field_type]
+        elif "type" in keys:
+            return type_to_regex[step["type"]]
 
-        case {"anyOf": choices}:
-            regexes = [match_step_to_regex(choice) for choice in choices]
+        elif "anyOf" in keys:
+            regexes = [match_step_to_regex(choice) for choice in step["anyOf"]]
             return rf"({'|'.join(regexes)})"
 
-        case _:
-            raise NotImplementedError
+    raise NotImplementedError

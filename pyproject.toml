@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "outlines"
 authors= [{name = "Outlines Developers"}]
 description = "Probabilistic Generative Model Programming"
-requires-python = ">=3.10"
+requires-python = ">=3.8"
 keywords=[
     "machine learning",
     "deep learning",

@@ -1,7 +1,7 @@
 from collections import ChainMap
 from copy import copy, deepcopy
 from dataclasses import dataclass
-from functools import cache
+from functools import lru_cache
 from typing import (
     Any,
     Callable,
@@ -576,7 +576,7 @@ class PartialParser(_Parser):
 
 class PartialScanner(Scanner):
     @classmethod
-    @cache
+    @lru_cache
     def construct_terminal_fsm(cls, terminal):
         # TODO: This should really be done at the lexer/parser level so that
         # the lifetime of these objects is tied to the parser itself.
