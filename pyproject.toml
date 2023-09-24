@@ -8,11 +8,10 @@ authors= [{name = "Outlines Developers"}]
 description = "Probabilistic Generative Model Programming"
 requires-python = ">=3.10"
 keywords=[
-    "normal computing",
     "machine learning",
     "deep learning",
     "language models",
-    "diffusion models",
+    "guided generation",
 ]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
@@ -61,6 +60,9 @@ content-type = "text/markdown"
 
 [tool.setuptools]
 packages = ["outlines"]
+
+[tool.setuptools.package-data]
+"outlines" = ["py.typed"]
 
 [tool.setuptools_scm]
 write_to = "outlines/_version.py"
