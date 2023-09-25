@@ -65,7 +65,7 @@ A toy implementation of an agent (similar to BabyAGI or AutoGPT) with Outlines:
        """
 
 
-   def agent(objective, goals, tools)
+   def agent(objective, goals, tools):
       complete = models.text_completion.hf("sshleifer/tiny-gpt2")
       prompt = agent_prompt(objective, goals, tools , command_response)
       answer = complete(prompt)
