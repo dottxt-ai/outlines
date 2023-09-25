@@ -4,7 +4,7 @@ import json
 import re
 import textwrap
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, List, Optional, cast
+from typing import Any, Callable, Dict, List, Optional, Type, cast
 
 from jinja2 import Environment, StrictUndefined
 from pydantic import BaseModel
@@ -284,7 +284,7 @@ def get_schema_dict(model: Dict):
 
 
 @get_schema.register(type(BaseModel))
-def get_schema_pydantic(model: type[BaseModel]):
+def get_schema_pydantic(model: Type[BaseModel]):
     """Return the schema of a Pydantic model."""
     if not type(model) == type(BaseModel):
         raise TypeError("The `schema` filter only applies to Pydantic models.")
