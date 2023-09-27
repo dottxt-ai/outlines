@@ -47,6 +47,7 @@ test = [
     "diff-cover",
     "accelerate",
     "beartype<0.16.0",
+    "datasets",
 ]
 
 [project.urls]
@@ -98,6 +99,8 @@ module = [
     "transformers.*",
     "lark.*",
     "interegular.*",
+    "numba.*",
+    "datasets.*",
 ]
 ignore_missing_imports = true
 

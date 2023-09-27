@@ -2,6 +2,7 @@ import math
 from typing import TYPE_CHECKING, List, Optional, Tuple, Union
 
 import torch
+from datasets.fingerprint import Hasher
 from transformers.file_utils import SPIECE_UNDERLINE
 
 from outlines.models.tokenizer import Tokenizer
@@ -97,6 +98,8 @@ class TransformersTokenizer(Tokenizer):
         from transformers import AutoTokenizer
 
         kwargs.setdefault("padding_side", "left")
+        self.model_name = model_name
+        self.kwargs = frozenset(kwargs.items())
         self.tokenizer = AutoTokenizer.from_pretrained(model_name, **kwargs)
         self.eos_token_id = self.tokenizer.eos_token_id
         self.eos_token = self.tokenizer.eos_token
@@ -134,6 +137,14 @@ class TransformersTokenizer(Tokenizer):
                 return " " + string
 
         return string
+
+    def __eq__(self, other):
+        if isinstance(other, type(self)):
+            return other.model_name == self.model_name and other.kwargs == self.kwargs
+        return NotImplemented
+
+    def __hash__(self):
+        return hash(Hasher.hash(self.tokenizer))
 
 
 def transformers(

@@ -78,3 +78,10 @@ def test_model():
     assert logits.shape[0] == 2
     assert logits.shape[1] == 2
     assert torch.equal(logits[0][0], logits[1][1])
+
+
+def test_tokenizer_eq_hash():
+    tokenizer = TransformersTokenizer("gpt2")
+    tokenizer2 = TransformersTokenizer("gpt2")
+    assert tokenizer == tokenizer2
+    assert hash(tokenizer) == hash(tokenizer2)
