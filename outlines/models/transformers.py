@@ -159,9 +159,9 @@ def transformers(
     ----------
     model_name
         The name of the model as listed on Hugging Face's model page.
-    device_map
+    device
         The device(s) on which the model should be loaded. This overrides
-        the value passed for `device_map` in `model_kwargs`.
+        the `device_map` entry in `model_kwargs` when provided.
     model_kwargs
         A dictionary that contains the keyword arguments to pass to the
         `from_pretrained` method when loading the model.
@@ -181,7 +181,9 @@ def transformers(
             "The `transformers` library needs to be installed in order to use `transformers` models."
         )
 
-    model_kwargs["device_map"] = device
+    if device is not None:
+        model_kwargs["device_map"] = device
+
     model = AutoModelForCausalLM.from_pretrained(model_name, **model_kwargs)
     tokenizer = TransformersTokenizer(model_name, **tokenizer_kwargs)
 

@@ -60,6 +60,14 @@ def test_model():
     assert isinstance(model.tokenizer, TransformersTokenizer)
     assert model.device.type == "cpu"
 
+    model = transformers(TEST_MODEL, model_kwargs={"device_map": "cpu"})
+    assert isinstance(model.tokenizer, TransformersTokenizer)
+    assert model.device.type == "cpu"
+
+    model = transformers(TEST_MODEL, device="cpu", model_kwargs={"device_map": "cuda"})
+    assert isinstance(model.tokenizer, TransformersTokenizer)
+    assert model.device.type == "cpu"
+
     input_ids = torch.tensor([[0, 1, 2]])
     logits = model(input_ids, torch.ones_like(input_ids))
     assert logits.type() == "torch.FloatTensor"
