@@ -108,9 +108,7 @@ class Regex(Continuation):
         assert generated_token_ids.ndim == 2
 
         if len(self.last_fsm_states) == 0:
-            self.last_fsm_states = [
-                self.initial_state for _ in range(generated_token_ids.shape[0])
-            ]
+            self.last_fsm_states = [self.initial_state for _ in range(logits.shape[0])]
 
         masks = []
 

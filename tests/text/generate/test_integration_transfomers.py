@@ -58,8 +58,16 @@ def test_transformers_various_regexes():
     model = models.transformers(model_name, device="cpu")
     prompt = "Write an email address"
     regex_str = r"([a-z]{10})@([a-z]{5})\.([a-z]{3})"
-    sequence = generate.regex(model, regex_str)(prompt, rng=rng)
+    generator = generate.regex(model, regex_str)
+
+    # One prompt
+    sequence = generator(prompt, rng=rng)
     assert re.fullmatch(regex_str, sequence) is not None
+
+    # Two prompts
+    sequence = generator([prompt, prompt], rng=rng)
+    assert re.fullmatch(regex_str, sequence[0]) is not None
+    assert re.fullmatch(regex_str, sequence[1]) is not None
 
 
 def test_transformers_integration_integer():
