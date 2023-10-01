@@ -8,7 +8,7 @@ Outlines is sampling-first, and is built to generate several samples from the sa
    import outlines.models as models
 
    sample = models.text_generation.openai("text-davinci-003")
-   answers = complete(
+   answers = sample(
        "When I was 6 my sister was half my age. Now I’m 70 how old is my sister?",
        samples=10
     )

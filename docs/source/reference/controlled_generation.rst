@@ -34,7 +34,7 @@ In some cases we know the output is to be chosen between different options. We c
    import outlines.models as models
 
    complete = models.text_completion.openai("text-davinci-002")
-   answer = model(
+   answer = complete(
        "Pick the odd word out: skirt, dress, pen, jacket",
        is_in=["skirt", "dress", "pen", "jacket"]
    )
@@ -52,7 +52,7 @@ We can ask completions to be restricted to `int`s or `float`s using the `type` k
    import outlines.models as models
 
    complete = models.text_completion.openai("text-davinci-002")
-   answer = model(
+   answer = complete(
        "When I was 6 my sister was half my age. Now I’m 70 how old is my sister?",
        type="int"
    )
