@@ -46,22 +46,22 @@ class Continuation(Sequence):
 
         """
 
-        sequences = self.model.tokenizer.decode(token_ids)
-        contains_stop_sequence = []
-        for sequence in sequences:
-            found = False
-            for stop_str in self.stop_sequences:
-                if stop_str in sequence:
-                    found = True
-
-            contains_stop_sequence.append(found)
-
-        contains_stop_sequence = torch.tensor(
-            contains_stop_sequence, dtype=torch.bool, device=self.model.device
-        )
         contains_eos = token_ids[:, -1] == self.model.tokenizer.eos_token_id
 
-        return torch.logical_or(contains_eos, contains_stop_sequence)
+        if self.stop_sequences:
+            sequences = self.model.tokenizer.decode(token_ids)
+            contains_stop_sequence = []
+            for sequence in sequences:
+                contains_stop_sequence.append(
+                    any(stop_str in sequence for stop_str in self.stop_sequences)
+                )
+            contains_stop_sequence = torch.tensor(
+                contains_stop_sequence, dtype=torch.bool, device=self.model.device
+            )
+
+            return torch.logical_or(contains_eos, contains_stop_sequence)
+        else:
+            return contains_eos
 
     def postprocess_completions(self, completions: List[str]) -> List[str]:
         """Remove the EOS token from the completion.
