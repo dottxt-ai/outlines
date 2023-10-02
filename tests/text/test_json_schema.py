@@ -189,6 +189,114 @@ def test_json_schema():
     ]
 
 
+def test_json_schema_with_property_ref():
+    schema = """{
+        "title": "User",
+        "type": "object",
+        "properties": {
+            "user_id": {"title": "User Id", "type": "integer"},
+            "name": {"title": "Name", "type": "string"},
+            "a": {"$ref": "#/properties/name"},
+            "b": {"$ref": "#/properties/name"},
+            "c": {"$ref": "#/properties/name"}
+        },
+        "required": ["user_id", "name"]}
+    """
+    schedule = build_schedule_from_schema(schema)
+    assert schedule == [
+        '\\{[\\n ]*"user_id"[\\n ]*:[\\n ]*',
+        {"title": "User Id", "type": "integer"},
+        '[\\n ]*,[\\n ]*"name"[\\n ]*:[\\n ]*',
+        {"title": "Name", "type": "string"},
+        '[\\n ]*,[\\n ]*"a"[\\n ]*:[\\n ]*',
+        {"title": "Name", "type": "string"},
+        '[\\n ]*,[\\n ]*"b"[\\n ]*:[\\n ]*',
+        {"title": "Name", "type": "string"},
+        '[\\n ]*,[\\n ]*"c"[\\n ]*:[\\n ]*',
+        {"title": "Name", "type": "string"},
+        "[\\n ]*\\}",
+    ]
+
+
+def test_json_schema_with_def_ref():
+    schema = """{
+        "title": "User",
+        "type": "object",
+        "$defs": {
+            "name": {"title": "Name2", "type": "string"}
+        },
+        "properties": {
+            "user_id": {"title": "User Id", "type": "integer"},
+            "name": {"title": "Name", "type": "string"},
+            "name2": {"$ref": "#/$defs/name"}
+        },
+        "required": ["user_id", "name"]}
+    """
+    schedule = build_schedule_from_schema(schema)
+    assert schedule == [
+        '\\{[\\n ]*"user_id"[\\n ]*:[\\n ]*',
+        {"title": "User Id", "type": "integer"},
+        '[\\n ]*,[\\n ]*"name"[\\n ]*:[\\n ]*',
+        {"title": "Name", "type": "string"},
+        '[\\n ]*,[\\n ]*"name2"[\\n ]*:[\\n ]*',
+        {"title": "Name2", "type": "string"},
+        "[\\n ]*\\}",
+    ]
+
+
+def test_json_schema_with_bundled_ref():
+    schema = """{
+        "$id": "https://example.com/schemas/customer",
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "title": "Customer",
+        "type": "object",
+        "properties": {
+            "first_name": { "type": "string" },
+            "last_name": { "type": "string" },
+            "shipping_address": { "$ref": "/schemas/address" },
+            "billing_address": { "$ref": "/schemas/address" }
+        },
+        "required": ["first_name", "last_name", "shipping_address", "billing_address"],
+        "$defs": {
+            "address": {
+                "title": "Address",
+                "$id": "/schemas/address",
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "properties": {
+                    "street_address": { "type": "string" },
+                    "city": { "type": "string" },
+                    "state": { "$ref": "#/definitions/state" }
+                },
+                "required": ["street_address", "city", "state"],
+                "definitions": {
+                    "state": { "type": "object", "title": "State", "properties": { "name": { "type": "string" } }, "required": ["name"] }
+                }
+            }
+        }
+    }"""
+    schedule = build_schedule_from_schema(schema)
+    assert schedule == [
+        '\\{[\\n ]*"first_name"[\\n ]*:[\\n ]*',
+        {"type": "string"},
+        '[\\n ]*,[\\n ]*"last_name"[\\n ]*:[\\n ]*',
+        {"type": "string"},
+        '[\\n ]*,[\\n ]*"shipping_address"[\\n ]*:[\\n ]*\\{[\\n ]*"street_address"[\\n ]*:[\\n ]*',
+        {"type": "string"},
+        '[\\n ]*,[\\n ]*"city"[\\n ]*:[\\n ]*',
+        {"type": "string"},
+        '[\\n ]*,[\\n ]*"state"[\\n ]*:[\\n ]*\\{[\\n ]*"name"[\\n ]*:[\\n ]*',
+        {"type": "string"},
+        '[\\n ]*\\}[\\n ]*\\}[\\n ]*,[\\n ]*"billing_address"[\\n ]*:[\\n ]*\\{[\\n ]*"street_address"[\\n ]*:[\\n ]*',
+        {"type": "string"},
+        '[\\n ]*,[\\n ]*"city"[\\n ]*:[\\n ]*',
+        {"type": "string"},
+        '[\\n ]*,[\\n ]*"state"[\\n ]*:[\\n ]*\\{[\\n ]*"name"[\\n ]*:[\\n ]*',
+        {"type": "string"},
+        "[\\n ]*\\}[\\n ]*\\}[\\n ]*\\}",
+    ]
+
+
 class MockTokenizer:
     pad_token_id = 0
     eos_token_id = 0
