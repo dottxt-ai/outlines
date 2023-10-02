@@ -176,7 +176,7 @@ def expand_json_schema(
                 expanded_properties[name] = value
 
         return {
-            "title": raw_schema["title"],
+            **({"title": raw_schema["title"]} if "title" in raw_schema else {}),
             "type": raw_schema["type"],
             "properties": expanded_properties,
         }

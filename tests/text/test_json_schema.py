@@ -189,6 +189,18 @@ def test_json_schema():
     ]
 
 
+def test_json_schema_no_titles():
+    schema = '{"type": "object", "properties": {"user_id": {"type": "integer"}, "name": {"type": "string"}}, "required": ["user_id", "name"]}'
+    schedule = build_schedule_from_schema(schema)
+    assert schedule == [
+        '\\{[\\n ]*"user_id"[\\n ]*:[\\n ]*',
+        {"type": "integer"},
+        '[\\n ]*,[\\n ]*"name"[\\n ]*:[\\n ]*',
+        {"type": "string"},
+        "[\\n ]*\\}",
+    ]
+
+
 def test_json_schema_with_property_ref():
     schema = """{
         "title": "User",
