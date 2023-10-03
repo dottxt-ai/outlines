@@ -86,12 +86,9 @@ def test_model():
     assert logits.ndim == 2
     assert logits.shape[0] == 3
 
-    input_ids = torch.tensor([[[0, 1, 2], [3, 4, 5]], [[6, 7, 8], [0, 1, 2]]])
-    logits = model(input_ids, torch.ones_like(input_ids))
-    assert logits.ndim == 3
-    assert logits.shape[0] == 2
-    assert logits.shape[1] == 2
-    assert torch.equal(logits[0][0], logits[1][1])
+    with pytest.raises(AssertionError):
+        input_ids = torch.tensor([[[0, 1, 2], [3, 4, 5]], [[6, 7, 8], [0, 1, 2]]])
+        logits = model(input_ids, torch.ones_like(input_ids))
 
 
 def test_tokenizer_eq_hash():
