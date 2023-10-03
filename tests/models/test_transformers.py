@@ -37,6 +37,12 @@ def test_tokenizer():
     isinstance(text[0], str)
     isinstance(text[1], str)
 
+    tokenizer = TransformersTokenizer(
+        TEST_MODEL, additional_special_tokens=["<t1>", "<t2>"]
+    )
+    assert "<t1>" in tokenizer.special_tokens
+    assert "<t2>" in tokenizer.special_tokens
+
 
 def test_llama_tokenizer():
     tokenizer = TransformersTokenizer("hf-internal-testing/llama-tokenizer")

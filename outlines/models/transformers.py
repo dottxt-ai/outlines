@@ -99,7 +99,8 @@ class TransformersTokenizer(Tokenizer):
 
         kwargs.setdefault("padding_side", "left")
         self.model_name = model_name
-        self.kwargs = frozenset(kwargs.items())
+        # TODO: Do something to make this hashable?
+        self.kwargs = kwargs
         self.tokenizer = AutoTokenizer.from_pretrained(model_name, **kwargs)
         self.eos_token_id = self.tokenizer.eos_token_id
         self.eos_token = self.tokenizer.eos_token
@@ -111,7 +112,7 @@ class TransformersTokenizer(Tokenizer):
             self.pad_token_id = self.tokenizer.pad_token_id
             self.pad_token = self.tokenizer.pad_token
 
-        self.special_tokens = set(self.tokenizer.special_tokens_map.values())
+        self.special_tokens = set(self.tokenizer.all_special_tokens)
 
         self.vocabulary = self.tokenizer.get_vocab()
         self.is_llama = isinstance(self.tokenizer, get_llama_tokenizer_types())
