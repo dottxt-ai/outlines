@@ -1,13 +1,16 @@
 import math
-from typing import List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, List, Optional, Tuple, Union
 
 import torch
+
+if TYPE_CHECKING:
+    from outlines.models.transformers import KVCacheType, Transformers
 
 
 class Sequence:
     """Represents a sequence generation method."""
 
-    def __init__(self, model, max_tokens: Optional[int] = None):
+    def __init__(self, model: "Transformers", max_tokens: Optional[int] = None):
         """Create a `Sequence` instance.
 
         Parameters
@@ -48,7 +51,8 @@ class Sequence:
         token_ids: torch.LongTensor,
         attention_mask: torch.LongTensor,
         samples: int = 1,
-    ) -> Tuple[torch.LongTensor, torch.FloatTensor]:
+        past_key_values: Optional["KVCacheType"] = None,
+    ) -> Tuple[torch.LongTensor, torch.FloatTensor, Optional["KVCacheType"]]:
         """Generate one or several tokens that complete the input sequence.
 
         The sampling step consists in using a model to generate next-token
@@ -77,7 +81,9 @@ class Sequence:
         probabilities.
 
         """
-        probs = self.model(token_ids, attention_mask)
+        probs, past_key_values = self.model.forward(
+            token_ids, attention_mask, past_key_values
+        )
         probs = self.create_proposal(token_ids[:, num_prompt_tokens:], probs)
         probs = torch.nn.functional.softmax(probs, dim=-1)
 
@@ -86,7 +92,7 @@ class Sequence:
         next_token_ids = vectorized_random_choice(rng, probs, samples).unsqueeze(-1)
         probs = torch.broadcast_to(probs, (samples,) + probs.shape)
 
-        return next_token_ids, probs
+        return next_token_ids, probs, past_key_values
 
     def expand_attention_mask(
         self, attention_mask: torch.LongTensor
@@ -161,6 +167,7 @@ class Sequence:
         attention_mask = attention_mask.reshape((batch_size, num_prompt_tokens))
 
         is_finished = torch.zeros(batch_size, dtype=torch.bool, device=self.device)
+        unfinished_past_key_values = None
 
         while True:
             num_generated_tokens = token_ids.shape[-1] - num_prompt_tokens
@@ -172,11 +179,12 @@ class Sequence:
             # Draw samples only for the sequences that aren't finished
             unfinished_token_ids = token_ids[is_not_finished]
             unfinished_attention_mask = attention_mask[is_not_finished]
-            unfinished_next_token_ids, _ = self.step(
+            unfinished_next_token_ids, _, past_key_values = self.step(
                 rng,
                 num_prompt_tokens,
                 unfinished_token_ids,
                 unfinished_attention_mask,
+                past_key_values=unfinished_past_key_values,
             )
             unfinished_next_token_ids = unfinished_next_token_ids.squeeze(0)
 
@@ -191,9 +199,16 @@ class Sequence:
 
             attention_mask = self.expand_attention_mask(attention_mask)
 
-            is_finished[is_not_finished] = self.is_finished(
+            local_is_finished = self.is_finished(
                 token_ids[is_not_finished][:, num_prompt_tokens:]
             ).flatten()
+
+            is_finished[is_not_finished] = local_is_finished
+
+            if past_key_values:
+                unfinished_past_key_values = tuple(
+                    tuple(vv[~local_is_finished] for vv in v) for v in past_key_values
+                )
 
         result = self.model.tokenizer.decode(token_ids[:, num_prompt_tokens:])
         result = self.postprocess_completions(result)

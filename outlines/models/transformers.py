@@ -1,4 +1,3 @@
-import math
 from typing import TYPE_CHECKING, List, Optional, Tuple, Union
 
 import torch
@@ -11,6 +10,9 @@ if TYPE_CHECKING:
     from transformers import PreTrainedModel, PreTrainedTokenizer
 
 __all__ = ["transformers"]
+
+
+KVCacheType = Tuple[Tuple[torch.DoubleTensor, torch.DoubleTensor], ...]
 
 
 def get_llama_tokenizer_types():
@@ -67,15 +69,33 @@ class Transformers:
         self.model = model
         self.tokenizer = tokenizer
 
-    def __call__(
-        self, input_ids: torch.LongTensor, attention_mask: torch.LongTensor
-    ) -> torch.FloatTensor:
-        # `transformers` model accept `input_ids` of size at most equal to 2. We
-        # thus reshape the input array, call the model and reshape the output
-        # logits.
-        batch_shape = input_ids.shape[:-1]
-        num_tokens = input_ids.shape[-1]
-        input_ids = input_ids.reshape(math.prod(batch_shape), num_tokens)
+    def forward(
+        self,
+        input_ids: torch.LongTensor,
+        attention_mask: torch.LongTensor,
+        past_key_values: Optional[Tuple] = None,
+    ) -> Tuple[torch.FloatTensor, Optional[KVCacheType]]:
+        """Compute a forward pass through the transformer model.
+
+        Parameters
+        ----------
+        input_ids
+            The input token ids.  Must be one or two dimensional.
+        attention_mask
+            The attention mask.  Must be one or two dimensional.
+        past_key_values
+            A tuple of tuples containing the cached key and value tensors for each
+            attention head.
+
+        Returns
+        -------
+        The computed logits and the new cached key and value tensors.
+
+        """
+        assert 0 < input_ids.ndim < 3
+
+        if past_key_values:
+            input_ids = input_ids[..., -1].unsqueeze(-1)
 
         output = self.model(
             input_ids,
@@ -83,12 +103,19 @@ class Transformers:
             return_dict=True,
             output_attentions=False,
             output_hidden_states=False,
+            past_key_values=past_key_values,
         )
-        next_token_logits = output.logits[:, -1, :]
+        next_token_logits = output.logits[..., -1, :]
 
-        next_token_logits = next_token_logits.reshape(batch_shape + (-1,))
+        return next_token_logits, output.past_key_values
 
-        return next_token_logits
+    def __call__(
+        self,
+        input_ids: torch.LongTensor,
+        attention_mask: torch.LongTensor,
+        past_key_values: Optional[Tuple] = None,
+    ) -> torch.FloatTensor:
+        return self.forward(input_ids, attention_mask, past_key_values)[0]
 
 
 class TransformersTokenizer(Tokenizer):
