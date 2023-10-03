@@ -235,7 +235,7 @@ def test_transformers_logits_vocab_size():
 
     # Artificially increase the weights/logits size relative
     # to the vocabulary
-    model.model.resize_token_embeddings(pad_to_multiple_of=2)
+    model.model.resize_token_embeddings(pad_to_multiple_of=3)
 
     assert len(model.tokenizer.vocabulary) == 1024
     assert model.model.base_model.wte.weight.shape[0] == 1026
