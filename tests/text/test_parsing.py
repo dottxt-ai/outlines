@@ -117,6 +117,9 @@ def test_partial_parsing():
     with pytest.raises(UnexpectedToken):
         lp.parse("def \n")
 
+    with pytest.raises(UnexpectedToken):
+        lp.parse("def hot no")
+
     lp = PartialLark.open_from_package(
         "tests",
         "partial_python.lark",
