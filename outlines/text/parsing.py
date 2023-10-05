@@ -8,12 +8,7 @@ from interegular.fsm import FSM
 from interegular.patterns import Unsupported
 from lark import Lark, Token
 from lark.common import LexerConf, ParserConf
-from lark.exceptions import (
-    LexError,
-    UnexpectedCharacters,
-    UnexpectedInput,
-    UnexpectedToken,
-)
+from lark.exceptions import LexError, UnexpectedInput
 from lark.indenter import Indenter
 from lark.lexer import (
     BasicLexer,
@@ -21,6 +16,8 @@ from lark.lexer import (
     LexerState,
     LexerThread,
     Scanner,
+    UnexpectedCharacters,
+    UnexpectedToken,
     _create_unless,
 )
 from lark.parser_frontends import (
@@ -363,17 +360,36 @@ class PartialParserState(ParserState):
 
     def feed_token(self, token, is_end=False):
         if token.type == "partial":
+            # If none of the potential terminals can transition, we need to know now
             current_state = self.state_stack[-1]
-            current_transitions = self.parse_conf.states[current_state]
             current_lexer = get_contextual_lexer(self.lexer).lexers[current_state]
 
-            if not any(
-                terminal_info.terminal_name in current_transitions
-                or terminal_info.terminal_name in current_lexer.ignore_types
-                for terminal_info in token.value.terminals_and_info
-            ):
-                # If none of the terminals can transition, we should
-                # know sooner than later
+            # We have to feed the token and determine whether or not at least
+            # one terminal is consistent with the stack; otherwise, we'll miss
+            # invalid REDUCE cases.
+            # TODO: We should track separate parses conditional on possible
+            # token/symbol types, then we can coherently reuse the following
+            # results instead of recomputing it later.
+            can_transition = False
+            for terminal_info in token.value.terminals_and_info:
+                if terminal_info.terminal_name not in current_lexer.ignore_types:
+                    test_token = Token.new_borrow_pos(
+                        terminal_info.terminal_name, "", token
+                    )
+
+                    stack = copy(self.state_stack)
+                    try:
+                        self.feed_token_no_stack(test_token, is_end=is_end)
+                        can_transition = True
+                        break
+                    except UnexpectedToken:
+                        continue
+                    finally:
+                        self.state_stack = stack
+                else:
+                    can_transition = True
+
+            if not can_transition:
                 expected = {
                     s
                     for s in self.parse_conf.states[current_state].keys()
@@ -382,9 +398,8 @@ class PartialParserState(ParserState):
                 raise UnexpectedToken(
                     token, expected, state=self, interactive_parser=None
                 )
-            return
 
-        if self.use_value_stack:
+        elif self.use_value_stack:
             super().feed_token(token, is_end=is_end)
         else:
             self.feed_token_no_stack(token, is_end=is_end)
