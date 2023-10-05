@@ -60,7 +60,7 @@ class ParserLogitsProcessor(LogitsProcessor):
         lex_state = self.parser_state.lexer.state
         lex_state.text = self.token_seq
 
-        parser.parse_from_state(self.parser_state, is_end=False)
+        self.parser.parse_from_state(self.parser_state, is_end=False)
 
         print(f'parsed:"{self.token_seq}"')
 
@@ -80,7 +80,7 @@ class ParserLogitsProcessor(LogitsProcessor):
             ls.text = self.token_seq + tokenizer.convert_tokens_to_string([test_token])
 
             try:
-                parser.parse_from_state(ps, is_end=False)
+                self.parser.parse_from_state(ps, is_end=False)
                 mask[0][token_id] = 0
             except (EOFError, UnexpectedToken, UnexpectedCharacters, DedentError):
                 pass
