@@ -1,75 +1,38 @@
-from typing import Tuple, List, Optional, Union
-import inspect
+from typing import List, Optional, Tuple, Union
+
 import torch
 
-from outlines.text.generate.continuation import Continuation
 from outlines.text.generate.sequence import Sequence, vectorized_random_choice
 
 
 def parallel_multi_step(
-    continuation: Continuation,
+    model,
     token_ids: torch.Tensor,
+    attention_mask: torch.Tensor,
     num_prompt_tokens: int,
-    batch_size: int = None,
-    rng: Optional[torch.Generator] = None,
-) -> Tuple[torch.LongTensor, torch.LongTensor]:
-    
-    if token_ids.ndim != 1:
-        raise NotImplementedError("Vectorised parallel_multi_step not implemented")
-    
-    dim_vocab = len(continuation.model.tokenizer.vocabulary)
+) -> torch.LongTensor:
+    """Provides generation probabilities for an input sequence of tokens.
+    Uses only one forward pass through the model.
+    Output is a tensor of shape
+    (batch_size, num_tokens - num_prompt_tokens + 1, vocab_size)
+    representing generation probabilities for each non-prompt token
+    and one additional next token.
+    """
+    # Perhaps we should raise an error here when the model does not provide all logits
+    # e.g. gpt models
+    logits = model.model(
+        token_ids,
+        attention_mask,
+    ).logits
 
-    num_tokens = token_ids.shape[-1]
-    num_generated_tokens = num_tokens - num_prompt_tokens
+    # Will need to add something like the below for regex support
+    # Problem is for regex continuation.create_proposal does in place modifications of
+    # continuation.last_fsm_states and so we will need to be careful
+    # logits = [continuation.create_proposal(token_ids[:, num_prompt_tokens:(num_prompt_tokens + i)], logits[..., i, :]) for i in range(len(logits.shape[-2]))]
 
-    if batch_size is None:
-        batch_size = num_generated_tokens + 1
-
-    if rng is None:
-        rng = torch.Generator(device=continuation.device)
-        rng.seed()
-
-    in_tokens = torch.zeros(
-        (num_generated_tokens + 1, num_tokens),
-        dtype=torch.int64,
-        device=continuation.device,
-    )
-    attention_masks = torch.zeros_like(
-        in_tokens, dtype=torch.int64, device=continuation.device
-    )
-    for i in range(num_generated_tokens + 1):
-        pseudo_prompt = token_ids[: (num_prompt_tokens + i)]
-        in_tokens[i, (-len(pseudo_prompt)) :] = pseudo_prompt
-        attention_masks[i, (-len(pseudo_prompt)) :] = 1
-
-    sampled_token_ids = torch.zeros(
-        num_generated_tokens + 1, dtype=torch.int64, device=continuation.device
-    )
-
-    eval_probs = torch.zeros(
-        (num_generated_tokens + 1, dim_vocab),
-        dtype=torch.float32,
-        device=continuation.device,
-    )
-
-    # Run in batches
-    for j in range(-((num_generated_tokens + 1) // -batch_size)):
-        start = j * batch_size
-        end = min((j + 1) * batch_size, num_generated_tokens + 1)
-
-        batch_sampled_token_id_seqs, batch_eval_probs = continuation.step(
-            rng,
-            num_prompt_tokens,
-            in_tokens[start:end],
-            attention_masks[start:end],
-        )
-
-        sampled_toks_temp = batch_sampled_token_id_seqs[..., -1]
-        sampled_token_ids[start:end] = sampled_toks_temp
-
-        eval_probs[start:end] = batch_eval_probs
-
-    return sampled_token_ids, eval_probs
+    probs = torch.nn.functional.softmax(logits, dim=-1)
+    sampled_and_next_token_probs = probs[..., (num_prompt_tokens - 1) :, :]
+    return sampled_and_next_token_probs
 
 
 def serial_multi_step(
@@ -80,11 +43,21 @@ def serial_multi_step(
     token_ids: torch.LongTensor,
     attention_mask: torch.LongTensor,
     is_finished: torch.BoolTensor,
-):
+) -> Tuple[torch.LongTensor, torch.LongTensor, torch.BoolTensor, torch.LongTensor]:
+    """Generates multiple tokens in serial.
+    Also returns the full generation probabilities for each step.
+    """
     dim_vocab = len(continuation.model.tokenizer.vocabulary)
     batch_shape = token_ids.shape[:-1]
-    
-    gen_probs = torch.ones(batch_shape + (steps, dim_vocab,), device=continuation.device)
+
+    gen_probs = torch.ones(
+        batch_shape
+        + (
+            steps,
+            dim_vocab,
+        ),
+        device=continuation.device,
+    )
 
     for i in range(steps):
         num_generated_tokens = token_ids.shape[-1] - num_prompt_tokens
@@ -101,7 +74,7 @@ def serial_multi_step(
             is_finished, token_ids, updated_token_ids
         )
 
-        gen_probs[...,  i, :] = probs
+        gen_probs[..., i, :] = probs
 
         attention_mask = continuation.expand_attention_mask(attention_mask)
         is_finished[~is_finished] = continuation.is_finished(
@@ -110,170 +83,183 @@ def serial_multi_step(
     return token_ids, attention_mask, is_finished, gen_probs
 
 
-def speculative_decode(
-    continuation: Sequence, eval_model, speculation_length: int, **kwargs
-) -> Sequence:
-    assert (
-        continuation.model.tokenizer.tokenizer.__class__
-        == eval_model.tokenizer.tokenizer.__class__
-    ), "Model tokenizers are different"
+class SpeculativeContinuation:
+    """Generates a sequence using speculative decoding."""
 
-    # Extract arguments required to create a new instance of continuation
-    # So that we can create a new instance of continuation just using eval_model instead
-    # This is hacky and I don't like it, perhaps we can find a better way?
-    # The goal is to support speculative decoding for any continuation (e.g. regex)
-    draft_init_args = inspect.signature(continuation.__init__).parameters
-    draft_kwargs = {
-        arg: getattr(continuation, arg) for arg in draft_init_args if arg != "stop"
-    }
-    draft_kwargs["stop"] = continuation.stop_sequences
+    def __init__(self, draft_continuation, eval_model, speculation_length):
+        self.draft_continuation = draft_continuation
+        self.eval_model = eval_model
+        self.speculation_length = speculation_length
+        self.device = draft_continuation.device
 
-    eval_kwargs = draft_kwargs | kwargs
-    eval_kwargs["max_tokens"] = 1
-    eval_kwargs["model"] = eval_model
+    @torch.inference_mode()
+    def __call__(
+        self,
+        prompt: Union[str, List[str]],
+        samples: int = 1,
+        rng: Optional[torch.Generator] = None,
+    ) -> Union[str, List[str]]:
+        """Generate a new sequence given a prompt.
+        Using speculative decoding https://arxiv.org/abs/2211.17192
+        Uses self.draft_continuation to generate a draft sequence and then
+        self.eval_model for rejection sampling. The resulting sequence will be
+        sampled according to the sampling distribution of self.eval_model.
 
-    class SpeculativeContinuation(type(continuation)):
-        def __init__(self):
-            super().__init__(**draft_kwargs)
-            self.eval_model_continuation = type(continuation)(**eval_kwargs)
-            self.speculation_length = speculation_length
+        Parameters
+        ----------
+        prompt
+            The input prompt.
+        samples
+            The number of samples to generate for each prompt.
 
-        @torch.inference_mode()
-        def __call__(
-            self,
-            prompt: Union[str, List[str]],
-            samples: int = 1,
-            rng: Optional[torch.Generator] = None,
-        ) -> Union[str, List[str]]:
-            """Generate a new sequence given a prompt.
-            Using speculative decoding https://arxiv.org/abs/2211.17192
+        Returns
+        -------
+        The full sequence that contains the prompts and the generated string.
 
-            Parameters
-            ----------
+        """
+        if samples > 1:
+            raise NotImplementedError(
+                "Sampling not implemented for speculative decoding"
+            )
+
+        token_ids, attention_mask = self.draft_continuation.model.tokenizer.encode(
             prompt
-                The input prompt.
-            samples
-                The number of samples to generate for each prompt.
+        )
 
-            Returns
-            -------
-            The full sequence that contains the prompts and the generated string.
+        if len(token_ids) > 1:
+            raise NotImplementedError(
+                "Batching not implemented for speculative decoding"
+            )
 
-            """
-            if samples > 1:
-                raise NotImplementedError(
-                    "Sampling not implemented for speculative decoding"
+        token_ids = token_ids.to(self.device)
+        attention_mask = attention_mask.to(self.device)
+
+        if rng is None:
+            rng = torch.Generator(device=self.device)
+            rng.seed()
+
+        num_prompt_tokens = token_ids.shape[-1]
+
+        batch_shape = token_ids.shape[:-1]
+        is_finished = torch.zeros(batch_shape, dtype=torch.bool, device=self.device)
+
+        while True:
+            num_generated_tokens = token_ids.shape[-1] - num_prompt_tokens
+            if (
+                torch.all(is_finished)
+                or num_generated_tokens == self.draft_continuation.max_tokens
+            ):
+                break
+
+            steps = torch.min(
+                torch.tensor(
+                    [
+                        self.speculation_length,
+                        self.draft_continuation.max_tokens - num_generated_tokens,
+                    ]
                 )
+            )
 
-            token_ids, attention_mask = self.model.tokenizer.encode(prompt)
-            
-            if len(token_ids) > 1:
-                raise NotImplementedError(
-                    "Batching not implemented for speculative decoding"
+            (
+                token_ids,
+                attention_mask,
+                is_finished_temp,
+                gen_probs,
+            ) = serial_multi_step(
+                self.draft_continuation,
+                steps,
+                rng,
+                num_prompt_tokens,
+                token_ids,
+                attention_mask,
+                is_finished,
+            )
+
+            # Not vectorised from here on
+            eval_probs = parallel_multi_step(
+                self.eval_model,
+                token_ids,
+                attention_mask,
+                token_ids.shape[-1] - steps,
+            )
+
+            token_gen_probs = gen_probs[
+                ..., torch.arange(steps), token_ids[..., -steps:]
+            ][0]
+
+            token_eval_probs = eval_probs[
+                ..., torch.arange(steps), token_ids[..., -steps:]
+            ][0]
+
+            accept_probs = token_eval_probs / token_gen_probs
+            accept_samps = torch.rand(
+                accept_probs.shape, generator=rng, device=self.device
+            )
+            reject_bools = accept_samps > accept_probs
+
+            # Not vectorised
+            keep_ind = torch.where(reject_bools[0])[0]
+
+            if len(keep_ind) > 0:
+                num_reject = steps - keep_ind
+                token_ids = token_ids[:, :-num_reject]
+                attention_mask = attention_mask[:, :-num_reject]
+                pdash = eval_probs[..., keep_ind, :] - gen_probs[..., keep_ind, :]
+                pdash = torch.where(pdash < 0, torch.zeros_like(pdash), pdash)
+                pdash = pdash / torch.sum(pdash, dim=-1, keepdim=True)
+
+                sampled_tok = vectorized_random_choice(rng, pdash)
+
+                token_ids = torch.concatenate([token_ids, sampled_tok], axis=-1)
+
+            elif (
+                is_finished_temp.all()
+                or num_generated_tokens + steps == self.draft_continuation.max_tokens
+            ):
+                break
+
+            else:
+                eval_next_token_probs = eval_probs[..., -1, :]
+                sampled_next_token = vectorized_random_choice(
+                    rng, eval_next_token_probs
                 )
-                        
+                token_ids = torch.concatenate([token_ids, sampled_next_token], axis=-1)
 
-            token_ids = token_ids.to(self.device)
-            attention_mask = attention_mask.to(self.device)
+            attention_mask = self.draft_continuation.expand_attention_mask(
+                attention_mask
+            )
+            is_finished[~is_finished] = self.draft_continuation.is_finished(
+                token_ids[:, num_prompt_tokens:]
+            ).flatten()
 
-            if rng is None:
-                rng = torch.Generator(device=self.device)
-                rng.seed()
+        result = self.draft_continuation.model.tokenizer.decode(
+            token_ids[..., num_prompt_tokens:]
+        )
+        result = self.draft_continuation.postprocess_completions(result)
 
-            num_prompt_tokens = token_ids.shape[-1]
+        if len(result) == 1:
+            return result[0]
 
-            batch_shape = token_ids.shape[:-1]
-            is_finished = torch.zeros(batch_shape, dtype=torch.bool, device=self.device)
+        return result
 
-            while True:
-                num_generated_tokens = token_ids.shape[-1] - num_prompt_tokens
-                if torch.all(is_finished) or num_generated_tokens == self.max_tokens:
-                    break
 
-                steps = torch.min(
-                    torch.tensor(
-                        [
-                            self.speculation_length,
-                            self.max_tokens - num_generated_tokens,
-                        ]
-                    )
-                )
-                
-                
-                (
-                    token_ids,
-                    attention_mask,
-                    is_finished_temp,
-                    gen_probs,
-                ) = serial_multi_step(
-                    self,
-                    steps,
-                    rng,
-                    num_prompt_tokens,
-                    token_ids,
-                    attention_mask,
-                    is_finished
-                )
+def speculative_decode(
+    draft_continuation: Sequence, eval_model, speculation_length: int
+) -> SpeculativeContinuation:
+    """Generates a sequence using speculative decoding.
+    For more details see https://arxiv.org/abs/2211.17192.
 
-                # Not vectorised from here on
-                eval_token_ids, eval_probs = parallel_multi_step(
-                    self.eval_model_continuation,
-                    token_ids[0],
-                    token_ids.shape[-1] - steps,
-                    rng=rng,
-                )
-                eval_token_ids = eval_token_ids[None]
-                eval_probs = eval_probs[None]
-                
+    Parameters
+    ----------
+    draft_continuation
+        The outlines Sequence object from which to generate draft tokens
+        (i.e. with the faster, draft model to be executed in serial).
+    eval_model
+        The slower, better model to be executed in parallel.
+        The final output will be distributed according to eval_model.
+    speculation_length
+        Determines how many tokens to generate in serial before applying
+        rejection sampling with eval_model.
 
-                token_gen_probs = gen_probs[
-                    ..., torch.arange(steps), token_ids[..., -steps:]
-                ][0]
-                token_eval_probs = gen_probs[
-                    ..., torch.arange(steps), token_ids[..., -steps:]
-                ][0]
-
-                accept_probs = token_eval_probs / token_gen_probs
-                accept_samps = torch.rand(
-                    accept_probs.shape, generator=rng, device=self.device
-                )
-                reject_bools = accept_samps > accept_probs
-                
-                # Not vectorised
-                keep_ind = torch.where(reject_bools[0])[0]
-
-                if len(keep_ind) > 0:
-                    num_reject = steps - keep_ind
-                    token_ids = token_ids[:, :-num_reject]
-                    attention_mask = attention_mask[:, :-num_reject]
-                    pdash = eval_probs[..., keep_ind, :] - gen_probs[..., keep_ind, :]
-                    pdash = torch.where(pdash < 0, torch.zeros_like(pdash), pdash)
-                    pdash = pdash / torch.sum(pdash, dim=-1, keepdim=True)
-
-                    sampled_tok = vectorized_random_choice(rng, pdash)
-
-                    token_ids = torch.concatenate([token_ids, sampled_tok], axis=-1)
-
-                elif is_finished_temp.all():
-                    break
-
-                else:
-                    token_ids = torch.concatenate(
-                        [token_ids, eval_token_ids[:, -1:]], axis=-1
-                    )
-
-                attention_mask = self.expand_attention_mask(attention_mask)
-                is_finished[~is_finished] = self.is_finished(
-                    token_ids[:, num_prompt_tokens:]
-                ).flatten()
-
-            result = self.model.tokenizer.decode(token_ids[..., num_prompt_tokens:])
-            result = self.postprocess_completions(result)
-
-            if len(result) == 1:
-                return result[0]
-
-            return result
-
-    return SpeculativeContinuation()
-
+    """
+    return SpeculativeContinuation(draft_continuation, eval_model, speculation_length)
