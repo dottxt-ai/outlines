@@ -159,6 +159,71 @@ def test_pydantic_list_object():
     ]
 
 
+def test_pydantic_recursive_list_object():
+    class ItemModel(BaseModel):
+        name: str
+
+    class ArrayModel1(BaseModel):
+        item_model_lists: List[List[ItemModel]]
+
+    class ArrayModel2(BaseModel):
+        nums: List[List[int]]
+
+    class ArrayModel3(BaseModel):
+        array_model_lists: List[List[ArrayModel1]]
+
+    schema = json.dumps(ArrayModel1.model_json_schema())
+    schedule = build_schedule_from_schema(schema)
+    array_model_1_schema = {
+        "items": {
+            "items": {
+                "title": "ItemModel",
+                "type": "object",
+                "properties": {"name": {"title": "Name", "type": "string"}},
+            },
+            "type": "array",
+        },
+        "title": "Item Model Lists",
+        "type": "array",
+    }
+    assert schedule == [
+        '\\{[\\n ]*"item_model_lists"[\\n ]*:[\\n ]*',
+        array_model_1_schema,
+        "[\\n ]*\\}",
+    ]
+
+    schema = json.dumps(ArrayModel2.model_json_schema())
+    schedule = build_schedule_from_schema(schema)
+    assert schedule == [
+        '\\{[\\n ]*"nums"[\\n ]*:[\\n ]*',
+        {
+            "items": {"items": {"type": "integer"}, "type": "array"},
+            "title": "Nums",
+            "type": "array",
+        },
+        "[\\n ]*\\}",
+    ]
+
+    schema = json.dumps(ArrayModel3.model_json_schema())
+    schedule = build_schedule_from_schema(schema)
+    assert schedule == [
+        '\\{[\\n ]*"array_model_lists"[\\n ]*:[\\n ]*',
+        {
+            "items": {
+                "items": {
+                    "title": "ArrayModel1",
+                    "type": "object",
+                    "properties": {"item_model_lists": array_model_1_schema},
+                },
+                "type": "array",
+            },
+            "title": "Array Model Lists",
+            "type": "array",
+        },
+        "[\\n ]*\\}",
+    ]
+
+
 def test_pydantic_union():
     """Schemas with Union types."""
 
