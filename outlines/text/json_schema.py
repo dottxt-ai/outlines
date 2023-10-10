@@ -125,6 +125,18 @@ def build_schedule_from_schema(schema: str):
     return reduced_schedule
 
 
+def expand_item_json_schema(expanded_property: Dict, resolver: Callable[[str], Dict]):
+    """Recursively expand "$ref"s in "item"s."""
+    if "items" not in expanded_property.keys():
+        return
+    elif "$ref" in expanded_property["items"]:
+        expanded_property["items"] = expand_json_schema(
+            resolver(expanded_property["items"]["$ref"]), resolver
+        )
+    else:
+        expand_item_json_schema(expanded_property["items"], resolver)
+
+
 def expand_json_schema(
     raw_schema: Dict,
     resolver: Callable[[str], Dict],
@@ -166,12 +178,14 @@ def expand_json_schema(
                 )
             elif "type" in value and value["type"] == "array":  # if item is a list
                 expanded_properties[name] = value
-                if "$ref" in value["items"]:
-                    expanded_properties[name]["items"] = expand_json_schema(
-                        resolver(value["items"]["$ref"]), resolver
-                    )
+
+                if "$ref" in value["items"] or (
+                    "type" in value["items"] and value["items"]["type"] == "array"
+                ):
+                    expand_item_json_schema(expanded_properties[name], resolver)
                 else:
                     expanded_properties[name]["items"] = value["items"]
+
             else:
                 expanded_properties[name] = value
 
