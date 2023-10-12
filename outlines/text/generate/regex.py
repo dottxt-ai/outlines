@@ -1,6 +1,6 @@
 import math
 from json import dumps
-from typing import Dict, List, Optional, Set, Tuple, Union
+from typing import TYPE_CHECKING, Dict, List, Optional, Set, Tuple, Union
 
 import interegular
 import torch
@@ -10,17 +10,28 @@ from outlines.text.fsm import create_fsm_index_tokenizer, make_deterministic_fsm
 from outlines.text.generate.continuation import Continuation
 from outlines.text.json_schema import build_regex_from_schema
 
+if TYPE_CHECKING:
+    from outlines.text.generate.sample import Sampler
+
 
 class Regex(Continuation):
     """Represents a regex-based generation model.
 
     `Regex` instances are constrained generation models that only generate
-    sequences that match an input regex. We assume that the sequence can be
-    terminated (but not necessarily) when the finite state machine corresponding
-    to the regex is in an accepting state.
+    sequences matching a given regex.
 
     >>> import outlines.text as text
-    >>> sequence = text.generate.regex(model, "(0|[1-9][0-9]+)")("Return an integer between 0 and 10")
+    >>> generator = text.generate.regex(model, "(0|[1-9][0-9]+)")
+
+    Sequences can then be generated from a prompt as follows:
+
+    >>> sequence_1 = generator("Return an integer between 0 and 10")
+    >>> sequence_2 = generator("Rate the movie "Hackers" on a scale from 0 to 10")
+
+    .. note:
+        Reuse instances of these guided generators (e.g. `generator` from the
+        above example) whenever possible, because constructing them has more
+        overhead than generating token sequences from them.
 
     """
 
@@ -29,6 +40,7 @@ class Regex(Continuation):
         model,
         regex_string: str,
         max_tokens: Optional[int] = None,
+        sampler: Optional["Sampler"] = None,
         allow_empty_tokens: bool = True,
         initial_state: Optional[int] = None,
         final_states: Optional[Set[int]] = None,
@@ -39,10 +51,17 @@ class Regex(Continuation):
 
         Parameters
         ----------
+        model
+            The instance of the model used to generate next-token probabilities.
         regex_string
             The regex with which the token sampling process is guided/constrained.
         max_tokens
             The maximum number of tokens to be sampled.
+        sampler
+            The function used to draw samples.  Defaults to
+            `outlines.text.generate.sample.multinomial`.  See
+            `outlines.text.generate.sample.Sampler` for the expected form of
+            such functions.
         allow_empty_tokens
             Allow sampling of tokens corresponding to empty strings.
         states_to_token_maps
@@ -52,7 +71,7 @@ class Regex(Continuation):
             Pre-computed set of token ids for tokens that are empty strings.
 
         """
-        super().__init__(model, max_tokens)
+        super().__init__(model, max_tokens, sampler)
 
         if (
             states_to_token_maps is None
@@ -201,9 +220,16 @@ def regex(
     model,
     regex_string: str,
     max_tokens: Optional[int] = None,
+    *,
+    sampler: Optional["Sampler"] = None,
     allow_empty_tokens: bool = True,
 ):
     """Generate text sequences that match the input regex.
+
+    .. note:
+        Reuse instances of these guided generators whenever possible,
+        because constructing them has more overhead than generating
+        token sequences from them.  See the docstring for `Regex`.
 
     Parameters
     ----------
@@ -213,46 +239,83 @@ def regex(
         The regular expression that generated expressions must match.
     max_tokens
         The maximum number of tokens to generate.
+    sampler
+        The function used to draw samples.  Defaults to
+        `outlines.text.generate.sample.multinomial`.  See
+        `outlines.text.generate.sample.Sampler` for the expected form of
+        such functions.
     allow_empty_tokens
         Allow sampling of tokens corresponding to empty strings.
 
     """
-    return Regex(model, regex_string, max_tokens, allow_empty_tokens)
+    return Regex(model, regex_string, max_tokens, sampler, allow_empty_tokens)
 
 
-def integer(model, max_tokens: Optional[int] = None, allow_empty_tokens: bool = True):
+def integer(
+    model,
+    max_tokens: Optional[int] = None,
+    *,
+    sampler: Optional["Sampler"] = None,
+    allow_empty_tokens: bool = True,
+):
     """Generate integers.
 
     The regex used to constrain the generation optionally matches plus or minus
     signs and forbids leading zeros (even if the `int` function in Python allows
     them).
 
+    .. note:
+        Reuse instances of these guided generators whenever possible,
+        because constructing them has more overhead than generating
+        token sequences from them.  See the docstring for `Regex`.
+
     Parameters
     ----------
     model
         The language model to use to compute the next-token logits.
     max_tokens
         The maximum number of tokens to generate.
+    sampler
+        The function used to draw samples.  Defaults to
+        `outlines.text.generate.sample.multinomial`.  See
+        `outlines.text.generate.sample.Sampler` for the expected form of
+        such functions.
     allow_empty_tokens
         Allow sampling of tokens corresponding to empty strings.
 
     """
-    return Regex(model, r"[-+]?\d+", max_tokens, allow_empty_tokens)
+    return Regex(model, r"[-+]?\d+", max_tokens, sampler, allow_empty_tokens)
 
 
-def float(model, max_tokens: Optional[int] = None, allow_empty_tokens: bool = True):
+def float(
+    model,
+    max_tokens: Optional[int] = None,
+    *,
+    sampler: Optional["Sampler"] = None,
+    allow_empty_tokens: bool = True,
+):
     """Generate floating-point numbers.
 
     The regex used to constrain the generation optionally matches plus or minus
     signs, and forbids leading zeros (even if the `float` function in Python
     allows them).
 
+    .. note:
+        Reuse instances of these guided generators whenever possible,
+        because constructing them has more overhead than generating
+        token sequences from them.  See the docstring for `Regex`.
+
     Parameters
     ----------
     model
         The language model to use to compute the next-token logits.
     max_tokens
         The maximum number of tokens to generate.
+    sampler
+        The function used to draw samples.  Defaults to
+        `outlines.text.generate.sample.multinomial`.  See
+        `outlines.text.generate.sample.Sampler` for the expected form of
+        such functions.
     allow_empty_tokens
         Allow sampling of tokens corresponding to empty strings.
 
@@ -261,6 +324,7 @@ def float(model, max_tokens: Optional[int] = None, allow_empty_tokens: bool = Tr
         model,
         r"([+-]?((0|[1-9]+)([.][0-9]*)?)|([.][0-9]+))",
         max_tokens,
+        sampler,
         allow_empty_tokens,
     )
 
@@ -269,20 +333,49 @@ def choice(
     model,
     choices: List[str],
     max_tokens: Optional[int] = None,
+    *,
+    sampler: Optional["Sampler"] = None,
     allow_empty_tokens: bool = True,
 ):
-    """Choose between different sequences."""
+    """Choose between different sequences.
+
+    .. note:
+        Reuse instances of these guided generators whenever possible,
+        because constructing them has more overhead than generating
+        token sequences from them.  See the docstring for `Regex`.
+
+    Parameters
+    ----------
+    model
+        The language model to use to compute the next-token logits.
+    max_tokens
+        The maximum number of tokens to generate.
+    sampler
+        The function used to draw samples.  Defaults to
+        `outlines.text.generate.sample.multinomial`.  See
+        `outlines.text.generate.sample.Sampler` for the expected form of
+        such functions.
+    allow_empty_tokens
+        Allow sampling of tokens corresponding to empty strings.
+    """
     regex_str = r"(" + r"|".join(choices) + r")"
-    return Regex(model, regex_str, max_tokens, allow_empty_tokens)
+    return Regex(model, regex_str, max_tokens, sampler, allow_empty_tokens)
 
 
 def json(
     model,
     schema: Union[str, BaseModel],
     max_tokens: Optional[int] = None,
+    *,
+    sampler: Optional["Sampler"] = None,
     allow_empty_tokens: bool = True,
 ):
     """Generate a text sequence that follows a JSON schema or Pydantic model.
+
+    .. note:
+        Reuse instances of these guided generators whenever possible,
+        because constructing them has more overhead than generating
+        token sequences from them.  See the docstring for `Regex`.
 
     Parameters
     ---------
@@ -292,6 +385,11 @@ def json(
         The JSON schema or Pydantic model that guides the generation.
     max_tokens
         The maximum number of tokens to generate.
+    sampler
+        The function used to draw samples.  Defaults to
+        `outlines.text.generate.sample.multinomial`.  See
+        `outlines.text.generate.sample.Sampler` for the expected form of
+        such functions.
     allow_empty_tokens
         Allow sampling of tokens corresponding to empty strings.
 
@@ -301,4 +399,4 @@ def json(
 
     regex_str = build_regex_from_schema(schema)
 
-    return Regex(model, regex_str, max_tokens, allow_empty_tokens)
+    return Regex(model, regex_str, max_tokens, sampler, allow_empty_tokens)
