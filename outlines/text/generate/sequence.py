@@ -43,6 +43,8 @@ class Sequence:
             from outlines.text.generate.sample import multinomial
 
             self.sampler = multinomial
+        else:
+            self.sampler = sampler
 
     def create_proposal(
         self, generated_token_ids: torch.LongTensor, logits: torch.DoubleTensor

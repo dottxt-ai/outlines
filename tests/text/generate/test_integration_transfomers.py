@@ -268,3 +268,33 @@ def test_transformers_reduced_vocabulary_caching():
     vocab2 = reduced_vocabulary(tokenizer2)
 
     assert vocab2 is vocab
+
+
+def test_custom_sampler():
+    model_name = "hf-internal-testing/tiny-random-GPTJForCausalLM"
+
+    model = models.transformers(model_name)
+
+    seen = False
+    target_token_ids = model.tokenizer.encode(["c"])[0]
+
+    def biased_sampler(
+        logits: torch.DoubleTensor, samples: int, *_
+    ) -> torch.DoubleTensor:
+        nonlocal seen
+
+        if not seen:
+            seen = True
+            return target_token_ids
+        else:
+            return torch.tensor([[model.tokenizer.eos_token_id]])
+
+    generator = generate.choice(model, ["a", "b", "c"], sampler=biased_sampler)
+    sequence = generator(
+        """What is 1+1?
+    a. 3
+    b. 4
+    c. 2"""
+    )
+
+    assert sequence == "c"
