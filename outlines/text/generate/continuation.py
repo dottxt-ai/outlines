@@ -1,8 +1,11 @@
-from typing import List, Optional, Union
+from typing import TYPE_CHECKING, List, Optional, Union
 
 import torch
 
 from outlines.text.generate.sequence import Sequence
+
+if TYPE_CHECKING:
+    from outlines.text.generate.sample import Sampler
 
 
 class Continuation(Sequence):
@@ -18,9 +21,13 @@ class Continuation(Sequence):
     """
 
     def __init__(
-        self, model, max_tokens: Optional[int] = None, stop: Union[str, List[str]] = []
+        self,
+        model,
+        max_tokens: Optional[int] = None,
+        sampler: Optional["Sampler"] = None,
+        stop: Union[str, List[str]] = [],
     ):
-        super().__init__(model, max_tokens)
+        super().__init__(model, max_tokens, sampler)
         self.eos_token_id = torch.tensor(
             [self.model.tokenizer.eos_token_id], device=self.device
         )
@@ -89,7 +96,11 @@ class Continuation(Sequence):
 
 
 def continuation(
-    model, max_tokens: Optional[int] = None, *, stop: Union[str, List[str]] = []
+    model,
+    max_tokens: Optional[int] = None,
+    *,
+    sampler: Optional["Sampler"] = None,
+    stop: Union[str, List[str]] = [],
 ):
     """Generate text sequences.
 
@@ -99,9 +110,14 @@ def continuation(
         The language model to use to compute the next-token logits.
     max_tokens
         The maximum number of tokens to generate.
+    sampler
+        The function used to draw samples.  Defaults to
+        `outlines.text.generate.sample.multinomial`.  See
+        `outlines.text.generate.sample.Sampler` for the expected form of
+        such functions.
     stop
         A string or list of strings which, when generated, stops
         the generation for this sequence.
 
     """
-    return Continuation(model, max_tokens, stop)
+    return Continuation(model, max_tokens, sampler, stop)

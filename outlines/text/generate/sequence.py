@@ -5,12 +5,18 @@ import torch
 
 if TYPE_CHECKING:
     from outlines.models.transformers import KVCacheType, Transformers
+    from outlines.text.generate.sample import Sampler
 
 
 class Sequence:
     """Represents a sequence generation method."""
 
-    def __init__(self, model: "Transformers", max_tokens: Optional[int] = None):
+    def __init__(
+        self,
+        model: "Transformers",
+        max_tokens: Optional[int] = None,
+        sampler: Optional["Sampler"] = None,
+    ):
         """Create a `Sequence` instance.
 
         Parameters
@@ -20,6 +26,11 @@ class Sequence:
         max_tokens
             The maximum number of tokens that will be generated if no termination
             condition is met.
+        sampler
+            The function used to draw samples.  Defaults to
+            `outlines.text.generate.sample.multinomial`.  See
+            `outlines.text.generate.sample.Sampler` for the expected form of
+            such functions.
 
         """
         self.model = model
@@ -28,6 +39,10 @@ class Sequence:
         self.pad_token_id = torch.tensor(
             model.tokenizer.pad_token_id, device=model.device
         )
+        if sampler is None:
+            from outlines.text.generate.sample import multinomial
+
+            self.sampler = multinomial
 
     def create_proposal(
         self, generated_token_ids: torch.LongTensor, logits: torch.DoubleTensor
@@ -62,7 +77,7 @@ class Sequence:
         Parameters
         ----------
         rng
-            NumPy random number Generator instance.
+            Random number Generator instance.
         num_prompt_tokens
             The number of tokens in the prompt.
         token_ids
@@ -85,11 +100,11 @@ class Sequence:
             token_ids, attention_mask, past_key_values
         )
         probs = self.create_proposal(token_ids[:, num_prompt_tokens:], probs)
-        probs = torch.nn.functional.softmax(probs, dim=-1)
 
         assert probs.shape[:-1] == token_ids.shape[:-1]
 
-        next_token_ids = vectorized_random_choice(rng, probs, samples).unsqueeze(-1)
+        next_token_ids = self.sampler(probs, samples, rng).unsqueeze(-1)
+
         probs = torch.broadcast_to(probs, (samples,) + probs.shape)
 
         return next_token_ids, probs, past_key_values
@@ -195,6 +210,8 @@ class Sequence:
             )
             next_token_ids[is_not_finished] = unfinished_next_token_ids
 
+            # TODO: Terminate if the sampled sequence is larger than the
+            # context size of the model?
             token_ids = torch.concatenate([token_ids, next_token_ids], axis=-1)
 
             attention_mask = self.expand_attention_mask(attention_mask)
@@ -217,42 +234,3 @@ class Sequence:
             return result[0]
 
         return result
-
-
-def vectorized_random_choice(
-    rng: torch.Generator,
-    p: torch.FloatTensor,
-    samples: int = 1,
-):
-    """Vectorized implementation of `np.random.choice`.
-
-    `np.random.choice` does not support arrays of probability. This implements
-    the equivalent of this function where the `p` argument can be a matrix.
-
-    Note
-    ----
-    `torch.searchsorted` may be more efficient, but it is not implemented for
-    every backend, for instance MPS.
-
-    Parameters
-    ----------
-    rng
-        Torch random number Generator instance
-    p
-        An array of probability of shape `(num_probability_vectors, num_items)`
-        that must sum to 1.
-    samples
-        The number of samples to take for each probability vector.
-
-    Returns
-    -------
-    An array of shape `(num_samples, batch_size)`
-
-    """
-    cumsum = torch.unsqueeze(p.cumsum(axis=-1), 0)
-    rand = torch.rand(
-        (samples,) + p.shape[:-1] + (1,), generator=rng, device=rng.device
-    )
-    idx = (cumsum < rand).sum(axis=-1)
-
-    return idx

@@ -6,7 +6,7 @@ import pytest
 import torch
 
 from outlines.models.tokenizer import Tokenizer
-from outlines.text.generate.sequence import Sequence, vectorized_random_choice
+from outlines.text.generate.sequence import Sequence
 
 
 class MockModel:
@@ -65,38 +65,6 @@ class MockTokenizer(Tokenizer):
 
     def __hash__(self):
         return id(self)
-
-
-def test_vectorized_random_choice():
-    rng = torch.Generator()
-    rng.manual_seed(0)
-
-    probs = torch.tensor([[1, 0, 0, 0]])
-    sample = vectorized_random_choice(rng, probs)
-    assert sample.shape == (1, 1)
-    assert torch.equal(sample, torch.zeros((1, 1)))
-
-    probs = torch.tensor([[1, 0, 0, 0]])
-    sample = vectorized_random_choice(rng, probs, samples=3)
-    assert sample.shape == (3, 1)
-    assert torch.equal(sample, torch.zeros((3, 1)))
-
-    probs = torch.tile(torch.tensor([[1, 0, 0, 0]]), (2, 1))
-    sample = vectorized_random_choice(rng, probs)
-    assert sample.shape == (1, 2)
-    assert torch.equal(sample, torch.zeros((1, 2)))
-
-    probs = torch.tensor([[1, 0, 0, 0], [0, 1, 0, 0]])
-    sample = vectorized_random_choice(rng, probs, samples=3)
-    assert sample.shape == (3, 2)
-    assert torch.equal(sample, torch.tensor([[0, 1], [0, 1], [0, 1]]))
-
-    probs = torch.tensor([[[1, 0, 0, 0], [0, 1, 0, 0]], [[0, 0, 1, 0], [0, 0, 0, 1]]])
-    sample = vectorized_random_choice(rng, probs, samples=3)
-    assert sample.shape == (3, 2, 2)
-    assert torch.equal(
-        sample, torch.tensor([[[0, 1], [2, 3]], [[0, 1], [2, 3]], [[0, 1], [2, 3]]])
-    )
 
 
 def test_sequence_error():
