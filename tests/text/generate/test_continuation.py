@@ -53,7 +53,7 @@ def test_continuation_stop_is_finished():
 
     model = continuation(model, stop=["\n"])
 
-    token_ids = torch.tensor([[2, 3]])
+    token_ids = torch.tensor([[2, 3], [2, 3]])
     result = model.is_finished(token_ids)
     assert torch.equal(result, torch.tensor([True, False]))
 
