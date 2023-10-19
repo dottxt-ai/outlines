@@ -246,25 +246,18 @@ def _walk_fsm(
     start_state: int,
     full_match: bool = True,
 ) -> List[int]:
-    state = fsm_initial
+    state = start_state
     accepted_states: List[int] = numba.typed.List.empty_list(numba.int64)
     last_final_idx: int = numba.uint64(0)
 
     for i, symbol in enumerate(input_string):
         trans_key = alphabet_symbol_mapping.get(symbol, alphabet_anything_value)
 
-        if state == fsm_initial:
-            new_state = fsm_transitions.get((start_state, trans_key))
-        else:
-            new_state = fsm_transitions.get((state, trans_key))
+        new_state = fsm_transitions.get((state, trans_key))
 
         if new_state is None:
-            if full_match:
-                if state in fsm_finals:
-                    break
-            elif last_final_idx > 0:
-                accepted_states = accepted_states[:last_final_idx]
-                break
+            if not full_match and last_final_idx > 0:
+                return accepted_states[:last_final_idx]
 
             return numba.typed.List.empty_list(numba.int64)
 
@@ -275,29 +268,44 @@ def _walk_fsm(
 
         accepted_states.append(_nonoptional(state))
 
-    terminated = state in fsm_finals
-    if not terminated and state == fsm_initial:
-        return numba.typed.List.empty_list(numba.int64)
-
     return accepted_states
 
 
 def walk_fsm(
-    fsm_info,
+    fsm: BetterFSM,
     input_string: str,
     start_state: int,
     full_match: bool = True,
 ) -> List[int]:
-    return _walk_fsm(
-        fsm_info.transitions,
-        fsm_info.alphabet_symbol_mapping,
-        fsm_info.alphabet_anything_value,
-        fsm_info.initial,
-        fsm_info.finals,
-        input_string,
-        start_state,
-        full_match=full_match,
-    )
+    fsm_finals = fsm.finals
+
+    state = start_state
+    accepted_states: List[int] = []
+    last_final_idx: int = 0
+
+    alphabet_symbol_mapping = fsm.alphabet._symbol_mapping
+    alphabet_anything_value = fsm.alphabet.anything_value
+    fsm_transitions = fsm.flat_transition_map
+
+    for i, symbol in enumerate(input_string):
+        trans_key = alphabet_symbol_mapping.get(symbol, alphabet_anything_value)
+
+        new_state = fsm_transitions.get((state, trans_key))
+
+        if new_state is None:
+            if not full_match and last_final_idx > 0:
+                return accepted_states[:last_final_idx]
+
+            return []
+
+        state = new_state
+
+        if state in fsm_finals:
+            last_final_idx = i + 1
+
+        accepted_states.append(state)
+
+    return accepted_states
 
 
 # TODO FIXME: Can't cache this due to https://github.com/numba/numba/issues/9177
