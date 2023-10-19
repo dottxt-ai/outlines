@@ -573,7 +573,7 @@ class PartialScanner(Scanner):
         text_part = text[start_pos:]
 
         state_seq = walk_fsm(
-            self.fsm.fsm_info,
+            self.fsm,
             text_part,
             start_state,
             full_match=self.match_whole,

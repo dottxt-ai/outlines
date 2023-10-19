@@ -4,6 +4,7 @@ import pytest
 
 from outlines.models.transformers import TransformersTokenizer
 from outlines.text.fsm import (
+    _walk_fsm,
     create_fsm_index,
     create_fsm_index_end_to_end,
     create_fsm_index_tokenizer,
@@ -15,19 +16,60 @@ from outlines.text.fsm import (
 )
 
 
-def test_walk_fsm():
+def walk_fsm_numba(
+    fsm,
+    input_string: str,
+    start_state: int,
+    full_match: bool = True,
+):
+    return _walk_fsm(
+        fsm.fsm_info.transitions,
+        fsm.fsm_info.alphabet_symbol_mapping,
+        fsm.fsm_info.alphabet_anything_value,
+        fsm.fsm_info.initial,
+        fsm.fsm_info.finals,
+        input_string,
+        start_state,
+        full_match=full_match,
+    )
+
+
+@pytest.mark.parametrize(
+    "function",
+    [
+        walk_fsm,
+        walk_fsm_numba,
+    ],
+)
+def test_walk_fsm(function):
     regex_pattern = interegular.parse_pattern("0|[1-9][2-9]*")
     regex_fsm, _ = make_deterministic_fsm(regex_pattern.to_fsm().reduce())
 
+    res = tuple(function(regex_fsm, "0", regex_fsm.initial, full_match=True))
+    assert res == (1,)
+
+    res = tuple(function(regex_fsm, "00", regex_fsm.initial, full_match=False))
+    assert res == (1,)
+
+    res = tuple(function(regex_fsm, "!", regex_fsm.initial, full_match=True))
+    assert res == tuple()
+
+    res = tuple(function(regex_fsm, "00", regex_fsm.initial, full_match=True))
+    assert res == tuple()
+
     # This should fail, because state `1` reads nothing
-    res = tuple(walk_fsm(regex_fsm.fsm_info, "0", numba.int64(1), full_match=True))
+    res = tuple(function(regex_fsm, "0", 1, full_match=True))
     assert res == tuple()
 
     pattern = interegular.parse_pattern(r"(?:[^\W\d]\w*|[\t \x0c]+)")
     fsm, _ = make_deterministic_fsm(pattern.to_fsm().reduce())
 
-    res = tuple(walk_fsm(fsm.fsm_info, "x ", fsm.fsm_info.initial, full_match=False))
+    res = tuple(function(fsm, "x ", fsm.initial, full_match=False))
     assert res == (2,)
+
+    start_state = list(fsm.finals)[0]
+    res = tuple(function(fsm, "!", start_state, full_match=False))
+    assert res == tuple()
 
 
 def test_partial_match():
@@ -62,11 +104,11 @@ def test_partial_match():
     assert res == {(0, (1, 2))}
     res = to_python(find_partial_matches(def_fsm, "f"))
     assert res == {(0, (2, 3))}
-    res = to_python(find_partial_matches(def_fsm, "ef foo"))
+    res = to_python(find_partial_matches(def_fsm, "ef foo", full_match=False))
     assert res == {(1, (1, 2, 3))}
 
     # This string has a `DEF` token in it, but should ultimately not lex one
-    res = to_python(find_partial_matches(def_fsm, "defb"))
+    res = to_python(find_partial_matches(def_fsm, "defb", full_match=False))
     assert res == {(2, (0, 1, 2, 3))}
 
     # `NAME` can have multiple start states for this input
@@ -198,14 +240,14 @@ def test_get_sub_fsms_from_seq():
     assert fsm.accepts("+=")
     assert fsm.accepts("+")
 
-    state_seq = walk_fsm(fsm.fsm_info, "def", fsm.fsm_info.initial)
+    state_seq = walk_fsm(fsm, "def", fsm.initial)
     state_seq.insert(0, fsm.fsm_info.initial)
 
     res = list(get_sub_fsms_from_seq(state_seq, fsms_to_trans_finals))
     assert res == [(0, False, True), (2, True, True)]
 
     # Make sure the old-to-new state map is correct
-    def_state_seq = walk_fsm(def_fsm.fsm_info, "def", fsm.fsm_info.initial)
+    def_state_seq = walk_fsm(def_fsm, "def", fsm.initial)
     def_state_seq.insert(0, fsm.fsm_info.initial)
 
     def_old_to_new_states = fsms_to_trans_finals[0][2]
@@ -214,14 +256,14 @@ def test_get_sub_fsms_from_seq():
         for old_state, new_state in zip(def_state_seq, state_seq)
     )
 
-    state_seq = walk_fsm(fsm.fsm_info, "ef", fsm.fsm_info.initial)
-    state_seq.insert(0, fsm.fsm_info.initial)
+    state_seq = walk_fsm(fsm, "ef", fsm.initial)
+    state_seq.insert(0, fsm.initial)
 
     res = list(get_sub_fsms_from_seq(state_seq, fsms_to_trans_finals))
     assert res == [(2, True, True)]
 
-    name_state_seq = walk_fsm(name_fsm.fsm_info, "ef", fsm.fsm_info.initial)
-    name_state_seq.insert(0, fsm.fsm_info.initial)
+    name_state_seq = walk_fsm(name_fsm, "ef", fsm.initial)
+    name_state_seq.insert(0, fsm.initial)
 
     name_old_to_new_states = fsms_to_trans_finals[2][2]
     assert all(
@@ -229,14 +271,14 @@ def test_get_sub_fsms_from_seq():
         for old_state, new_state in zip(name_state_seq, state_seq)
     )
 
-    state_seq = walk_fsm(fsm.fsm_info, "match", fsm.fsm_info.initial)
-    state_seq.insert(0, fsm.fsm_info.initial)
+    state_seq = walk_fsm(fsm, "match", fsm.initial)
+    state_seq.insert(0, fsm.initial)
 
     res = list(get_sub_fsms_from_seq(state_seq, fsms_to_trans_finals))
     assert res == [(1, False, True), (2, True, True)]
 
-    match_state_seq = walk_fsm(match_fsm.fsm_info, "match", fsm.fsm_info.initial)
-    match_state_seq.insert(0, fsm.fsm_info.initial)
+    match_state_seq = walk_fsm(match_fsm, "match", fsm.initial)
+    match_state_seq.insert(0, fsm.initial)
 
     match_old_to_new_states = fsms_to_trans_finals[1][2]
     assert all(
@@ -244,26 +286,26 @@ def test_get_sub_fsms_from_seq():
         for old_state, new_state in zip(match_state_seq, state_seq)
     )
 
-    state_seq = walk_fsm(fsm.fsm_info, "defa", fsm.fsm_info.initial)
-    state_seq.insert(0, fsm.fsm_info.initial)
+    state_seq = walk_fsm(fsm, "defa", fsm.initial)
+    state_seq.insert(0, fsm.initial)
 
     res = list(get_sub_fsms_from_seq(state_seq, fsms_to_trans_finals))
     assert res == [(2, True, True)]
 
-    state_seq = walk_fsm(fsm.fsm_info, "de", fsm.fsm_info.initial)
-    state_seq.insert(0, fsm.fsm_info.initial)
+    state_seq = walk_fsm(fsm, "de", fsm.initial)
+    state_seq.insert(0, fsm.initial)
 
     res = list(get_sub_fsms_from_seq(state_seq, fsms_to_trans_finals))
     assert res == [(0, True, False), (2, True, True)]
 
-    state_seq = walk_fsm(fsm.fsm_info, "+", fsm.fsm_info.initial, False)
-    state_seq.insert(0, fsm.fsm_info.initial)
+    state_seq = walk_fsm(fsm, "+", fsm.initial, False)
+    state_seq.insert(0, fsm.initial)
 
     res = list(get_sub_fsms_from_seq(state_seq, fsms_to_trans_finals))
     assert res == [(3, True, False), (4, False, True)]
 
-    state_seq = walk_fsm(fsm.fsm_info, "+=", fsm.fsm_info.initial)
-    state_seq.insert(0, fsm.fsm_info.initial)
+    state_seq = walk_fsm(fsm, "+=", fsm.initial)
+    state_seq.insert(0, fsm.initial)
 
     res = list(get_sub_fsms_from_seq(state_seq, fsms_to_trans_finals))
     assert res == [(3, False, True)]
