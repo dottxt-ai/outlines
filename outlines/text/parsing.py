@@ -538,9 +538,6 @@ class PartialScanner(Scanner):
 
         self.fsm, self.fsms_to_trans_finals = fsm_union(fsms)
 
-        # Eagerly construct the `FSMInfo` object
-        _ = self.fsm.fsm_info
-
     def get_terminals_info(
         self, fsm_state_seq
     ) -> Tuple[Tuple[PartialTerminalInfo, ...], Tuple[PartialTerminalInfo, ...]]:
