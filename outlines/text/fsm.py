@@ -268,6 +268,9 @@ def _walk_fsm(
 
         accepted_states.append(_nonoptional(state))
 
+    if full_match and last_final_idx - 1 != i:
+        return numba.typed.List.empty_list(numba.int64)
+
     return accepted_states
 
 
@@ -304,6 +307,9 @@ def walk_fsm(
             last_final_idx = i + 1
 
         accepted_states.append(state)
+
+    if full_match and last_final_idx - 1 != i:
+        return []
 
     return accepted_states
 
@@ -376,7 +382,7 @@ def process_token_string(
     res = set()
     vocab_string_len = len(token)
 
-    for end_idx, state_seq in find_partial_matches(fsm_info, token):
+    for end_idx, state_seq in find_partial_matches(fsm_info, token, full_match=False):
         if end_idx is not None and end_idx < vocab_string_len - 1:
             continue
 
@@ -603,6 +609,7 @@ def state_scan_tokens(
             fsm_finals,
             token,
             start_state,
+            False,
         )
 
         if state_seq is not None and len(state_seq) < len(token):

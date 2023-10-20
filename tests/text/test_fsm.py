@@ -61,6 +61,18 @@ def test_walk_fsm(function):
     res = tuple(function(regex_fsm, "0", 1, full_match=True))
     assert res == tuple()
 
+    regex_pattern = interegular.parse_pattern("0|[1-9][2-9]+")
+    regex_fsm, _ = make_deterministic_fsm(regex_pattern.to_fsm().reduce())
+
+    res = tuple(function(regex_fsm, "1", regex_fsm.initial, full_match=True))
+    assert res == tuple()
+
+    res = tuple(function(regex_fsm, "1", regex_fsm.initial, full_match=False))
+    assert res == (2,)
+
+    res = tuple(function(regex_fsm, "12", regex_fsm.initial, full_match=True))
+    assert res == (2, 3)
+
     pattern = interegular.parse_pattern(r"(?:[^\W\d]\w*|[\t \x0c]+)")
     fsm, _ = make_deterministic_fsm(pattern.to_fsm().reduce())
 
@@ -90,19 +102,19 @@ def test_partial_match():
 
     res = to_python(find_partial_matches(def_fsm, "def"))
     assert res == {(2, (0, 1, 2, 3))}
-    res = to_python(find_partial_matches(def_fsm, "de"))
+    res = to_python(find_partial_matches(def_fsm, "de", full_match=False))
     assert res == {(1, (0, 1, 2))}
-    res = to_python(find_partial_matches(def_fsm, "d"))
+    res = to_python(find_partial_matches(def_fsm, "d", full_match=False))
     assert res == {(0, (0, 1))}
     res = to_python(find_partial_matches(def_fsm, ""))
     assert res == set()
     res = to_python(find_partial_matches(def_fsm, "df"))
     assert res == set()
-    res = to_python(find_partial_matches(def_fsm, "ef"))
+    res = to_python(find_partial_matches(def_fsm, "ef", full_match=False))
     assert res == {(1, (1, 2, 3))}
-    res = to_python(find_partial_matches(def_fsm, "e"))
+    res = to_python(find_partial_matches(def_fsm, "e", full_match=False))
     assert res == {(0, (1, 2))}
-    res = to_python(find_partial_matches(def_fsm, "f"))
+    res = to_python(find_partial_matches(def_fsm, "f", full_match=False))
     assert res == {(0, (2, 3))}
     res = to_python(find_partial_matches(def_fsm, "ef foo", full_match=False))
     assert res == {(1, (1, 2, 3))}
@@ -112,7 +124,7 @@ def test_partial_match():
     assert res == {(2, (0, 1, 2, 3))}
 
     # `NAME` can have multiple start states for this input
-    res = to_python(find_partial_matches(name_fsm, "d"))
+    res = to_python(find_partial_matches(name_fsm, "d", full_match=False))
     assert res == {(0, (0, 1)), (0, (1, 1))}
     # Not this case
     res = to_python(find_partial_matches(name_fsm, "1d"))
@@ -133,7 +145,7 @@ def test_partial_match():
 
     float_fsm = float_fsm.fsm_info
 
-    res = to_python(find_partial_matches(float_fsm, "."))
+    res = to_python(find_partial_matches(float_fsm, ".", full_match=False))
     assert res == {(0, (3, 5)), (0, (4, 5)), (0, (0, 2))}
 
     joins_fsm, _ = make_deterministic_fsm(
