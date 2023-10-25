@@ -9,17 +9,12 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout the branch
-        uses: actions/checkout@v2.3.1
-        with:
-          persist-credentials: false
-
-      - name: Set up Python 3.10
-        uses: actions/setup-python@v1
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v4
         with:
           python-version: "3.10"
 
-      - name: Build the documentation with Sphinx
+      - name: Build the documentation
         run: |
           pip install -r requirements-doc.txt
-          sphinx-build -b html docs/source docs/build/html
+          mkdocs build

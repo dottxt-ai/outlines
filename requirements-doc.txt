@@ -1,3 +1,4 @@
-sphinx
-sphinx-book-theme
-sphinx-design
+mkdocs
+mkdocs-material
+mkdocs-material[imaging]
+mkdocstrings[python]
