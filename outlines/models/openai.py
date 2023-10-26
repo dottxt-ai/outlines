@@ -21,7 +21,6 @@ from outlines.caching import cache
 
 __all__ = [
     "OpenAICompletion",
-    "OpenAIEmbeddings",
     "OpenAIImageGeneration",
 ]
 
@@ -164,33 +163,6 @@ def OpenAICompletion(
             decoded_samples.append("".join(decoded))
 
         return np.array(decoded_samples)
-
-    return generate
-
-
-def OpenAIEmbeddings(model_name: str):
-    """Create a function that will call OpenAI's embeddings endpoint.
-
-    You should have the `openai` package installed. Available models are listed
-    in the `OpenAI documentation <https://platform.openai.com/docs/models/overview>`_.
-
-    Parameters
-    ----------
-    model_name: str
-        The model name as listed in the OpenAI documentation.
-
-    Returns
-    -------
-    A function that will call OpenAI's embedding API with the given parameters when
-    passed a prompt.
-
-    """
-
-    @functools.partial(outlines.vectorize, signature="()->(s)")
-    async def generate(query: str) -> np.ndarray:
-        api_response = await call_embeddings_api(model_name, query)
-        response = api_response["data"][0]["embedding"]
-        return np.array(response)
 
     return generate
 
@@ -383,23 +355,6 @@ async def call_chat_completion_api(
         stop=list(stop_sequences) if len(stop_sequences) > 0 else None,
         logit_bias=logit_bias,
         n=int(num_samples),
-    )
-
-    return response
-
-
-@retry(**retry_config)
-@error_handler
-@cache
-async def call_embeddings_api(
-    model: str,
-    input: str,
-):
-    import openai
-
-    response = await openai.Embedding.acreate(
-        model=model,
-        input=input,
     )
 
     return response
