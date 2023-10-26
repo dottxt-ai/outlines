@@ -6,7 +6,6 @@ codebase.
 
 """
 from . import image_generation, text_completion
-from .hf_diffusers import HuggingFaceDiffuser
 from .hf_transformers import HuggingFaceCompletion
 from .openai import OpenAICompletion, OpenAIImageGeneration
 from .transformers import transformers
