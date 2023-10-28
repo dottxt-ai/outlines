@@ -317,10 +317,13 @@ def find_ref_keys(d):
                     if key in [
                         "items"
                     ]:  # TODO add other default value for schema description
-                        key_ = path.split(".")[-2]
-                        if key_ == "anyOf[0]":  # TODO a bit sioux #TeamMonkey
-                            key_ = path.split(".")[-3]
-                        ref_keys[key_] = value.get("$ref")
+                        try:
+                            key_ = path.split(".")[-2]
+                            if key_ == "anyOf[0]":  # TODO a bit sioux #TeamMonkey
+                                key_ = path.split(".")[-3]
+                            ref_keys[key_] = value.get("$ref")
+                        except Exception as e:  # TODO ok rly need a refacto
+                            ref_keys[path] = value.get("$ref")
                     else:
                         ref_keys[key] = value.get("$ref")
                 elif isinstance(value, (dict, list)):
