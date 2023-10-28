@@ -302,7 +302,38 @@ def get_schema_pydantic(model: Type[BaseModel]):
     return json.dumps(schema, indent=2)
 
 
-def parse_pydantic_schema(raw_schema, definitions):
+def find_ref_keys(d):
+    """
+    Recursively searches a nested dictionary `d` for JSON Schema `$ref` keys and their corresponding paths.
+    TODO : might be overkill -> total overkill
+    """
+    ref_keys = {}
+
+    def recursive_search(obj, path=""):
+        if isinstance(obj, dict):
+            for key, value in obj.items():
+                new_path = path + "." + key if path else key
+                if isinstance(value, dict) and "$ref" in value:
+                    if key in [
+                        "items"
+                    ]:  # TODO add other default value for schema description
+                        ref_keys[new_path.split(".")[-2]] = value.get("$ref")
+                    else:
+                        ref_keys[key] = value.get("$ref")
+                elif isinstance(value, (dict, list)):
+                    recursive_search(value, new_path)
+
+        elif isinstance(obj, list):
+            for index, item in enumerate(obj):
+                new_path = path + f"[{index}]"
+                recursive_search(item, new_path)
+
+    recursive_search(d)
+
+    return ref_keys
+
+
+def parse_pydantic_schema(raw_schema, definitions, attribute=None):
     """Parse the output of `Basemodel.[schema|model_json_schema]()`.
 
     This recursively follows the references to other schemas in case
@@ -311,15 +342,63 @@ def parse_pydantic_schema(raw_schema, definitions):
 
     """
     simple_schema = {}
-    for name, value in raw_schema["properties"].items():
-        if "description" in value:
-            simple_schema[name] = value["description"]
-        elif "$ref" in value:
-            refs = value["$ref"].split("/")
-            simple_schema[name] = parse_pydantic_schema(
-                definitions[refs[2]], definitions
-            )
-        else:
-            simple_schema[name] = f"<{name}>"
+    ref_keys = {
+        k: v.split("/")[-1]
+        for k, v in find_ref_keys(raw_schema.get("properties")).items()
+    }
+    if raw_schema.get("properties"):
+        for name, value in raw_schema["properties"].items():
+            rendered_str = f"<{name}"  # TODO add default values instead of key ?
 
+            is_list = False
+            if "type" in value:
+                type_ = value.get("type")
+                rendered_str += f"|type={type_}"
+
+                if type_ in [
+                    "array"
+                ]:  # TODO check if there is other iterable json schema types
+                    is_list = True
+
+            description = {}  # TODO add constraints keys
+            if "description" in value:
+                description = value.get("description")
+                rendered_str += f"|description={description}"
+
+            if name in list(ref_keys.keys()):
+                if is_list:
+                    simple_schema[name] = [
+                        parse_pydantic_schema(
+                            definitions[ref_keys.get(name)], definitions, attribute=name
+                        ),
+                    ]
+                else:
+                    simple_schema[name] = parse_pydantic_schema(
+                        definitions[ref_keys.get(name)], definitions, attribute=name
+                    )
+            else:
+                if type_ == "array":  # TODO better way to handle ?
+                    item_type = value["items"].get("type")
+                    if item_type:
+                        rendered_str = rendered_str.replace(
+                            "|type=array", f"|type={item_type}"
+                        )
+                    else:
+                        rendered_str = rendered_str.replace("|type=array", "")
+
+                    simple_schema[name] = [f"{rendered_str}>"]
+                else:
+                    simple_schema[name] = f"{rendered_str}>"
+
+    elif raw_schema.get("enum"):
+        rendered_str = f"<{raw_schema.get('enum')}"
+
+        type_ = raw_schema.get("type")
+        rendered_str += f"|type={type_}"
+        description = {}  # TODO add constraints keys
+        if "description" in raw_schema:
+            description = raw_schema.get("description")
+            rendered_str += f"|description={description}"
+
+        return rendered_str + ">"
     return simple_schema

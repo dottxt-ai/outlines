@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import List
 
 import pytest
@@ -219,7 +220,10 @@ def test_prompt_pydantic_response():
         "{{model | schema }}"
 
     prompt = source_ppt(SimpleResponse)
-    assert prompt == '{\n  "one": "a description",\n  "two": "<two>"\n}'
+    assert (
+        prompt
+        == '{\n  "one": "<one|type=string|description=a description>",\n  "two": "<two|type=string>"\n}'
+    )
 
     class NestedResponse(BaseModel):
         answer: str
@@ -228,7 +232,7 @@ def test_prompt_pydantic_response():
     prompt = source_ppt(NestedResponse)
     assert (
         prompt
-        == '{\n  "answer": "<answer>",\n  "thought": {\n    "one": "a description",\n    "two": "<two>"\n  }\n}'
+        == '{\n  "answer": "<answer|type=string>",\n  "thought": {\n    "one": "<one|type=string|description=a description>",\n    "two": "<two|type=string>"\n  }\n}'
     )
 
     class ConvolutedResponse(BaseModel):
@@ -238,7 +242,44 @@ def test_prompt_pydantic_response():
     prompt = source_ppt(ConvolutedResponse)
     assert (
         prompt
-        == '{\n  "part_one": {\n    "answer": "<answer>",\n    "thought": {\n      "one": "a description",\n      "two": "<two>"\n    }\n  },\n  "part_two": {\n    "one": "a description",\n    "two": "<two>"\n  }\n}'
+        == '{\n  "part_one": {\n    "answer": "<answer|type=string>",\n    "thought": {\n      "one": "<one|type=string|description=a description>",\n      "two": "<two|type=string>"\n    }\n  },\n  "part_two": {\n    "one": "<one|type=string|description=a description>",\n    "two": "<two|type=string>"\n  }\n}'
+    )
+
+    class EnumType(str, Enum):
+        a = "a"
+        b = "b"
+
+    class EnumResponse(BaseModel):
+        part_one: NestedResponse
+        part_two: EnumType
+
+    prompt = source_ppt(EnumResponse)
+    assert (
+        prompt
+        == '{\n  "part_one": {\n    "answer": "<answer|type=string>",\n    "thought": {\n      "one": "<one|type=string|description=a description>",\n      "two": "<two|type=string>"\n    }\n  },\n  "part_two": "<[\'a\', \'b\']|type=string>"\n}'
+    )
+
+    class ListsResponse(BaseModel):
+        part_one: List[NestedResponse]
+        part_two: List[EnumType]
+        list_str: List[float] = Field(description="a list with number type")
+        list_: list = Field(description="a list without type")
+
+    prompt = source_ppt(ListsResponse)
+
+    assert (
+        prompt
+        == '{\n  "part_one": [\n    {\n      "answer": "<answer|type=string>",\n      "thought": {\n        "one": "<one|type=string|description=a description>",\n        "two": "<two|type=string>"\n      }\n    }\n  ],\n  "part_two": [\n    "<[\'a\', \'b\']|type=string>"\n  ],\n  "list_str": [\n    "<list_str|type=number|description=a list with number type>"\n  ],\n  "list_": [\n    "<list_|description=a list without type>"\n  ]\n}'
+    )
+
+    class NestedListsResponse(BaseModel):
+        nested_list: List[ListsResponse]
+
+    prompt = source_ppt(NestedListsResponse)
+
+    assert (
+        prompt
+        == '{\n  "nested_list": [\n    {\n      "part_one": [\n        {\n          "answer": "<answer|type=string>",\n          "thought": {\n            "one": "<one|type=string|description=a description>",\n            "two": "<two|type=string>"\n          }\n        }\n      ],\n      "part_two": [\n        "<[\'a\', \'b\']|type=string>"\n      ],\n      "list_str": [\n        "<list_str|type=number|description=a list with number type>"\n      ],\n      "list_": [\n        "<list_|description=a list without type>"\n      ]\n    }\n  ]\n}'
     )
 
 
