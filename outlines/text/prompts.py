@@ -305,7 +305,7 @@ def get_schema_pydantic(model: Type[BaseModel]):
 def find_ref_keys(d):
     """
     Recursively searches a nested dictionary `d` for JSON Schema `$ref` keys and their corresponding paths.
-    TODO : might be overkill -> total overkill
+    TODO : refacto needed | low prio
     """
     ref_keys = {}
 
@@ -317,7 +317,10 @@ def find_ref_keys(d):
                     if key in [
                         "items"
                     ]:  # TODO add other default value for schema description
-                        ref_keys[new_path.split(".")[-2]] = value.get("$ref")
+                        key_ = path.split(".")[-2]
+                        if key_ == "anyOf[0]":  # TODO a bit sioux #TeamMonkey
+                            key_ = path.split(".")[-3]
+                        ref_keys[key_] = value.get("$ref")
                     else:
                         ref_keys[key] = value.get("$ref")
                 elif isinstance(value, (dict, list)):
@@ -325,6 +328,11 @@ def find_ref_keys(d):
 
         elif isinstance(obj, list):
             for index, item in enumerate(obj):
+                if "$ref" in item:
+                    key_ = path.split(".")[-2]
+                    if key_ == "anyOf[0]":  # TODO a bit sioux #TeamMonkey
+                        key_ = path.split(".")[-3]
+                    ref_keys[key_] = item.get("$ref")
                 new_path = path + f"[{index}]"
                 recursive_search(item, new_path)
 
@@ -350,10 +358,18 @@ def parse_pydantic_schema(raw_schema, definitions, attribute=None):
         for name, value in raw_schema["properties"].items():
             rendered_str = f"<{name}"  # TODO add default values instead of key ?
 
+            if "anyOf" in value:
+                value = value["anyOf"][0]  # TODO Only first value, handle more TBD
+
+            type_ = None
             is_list = False
             if "type" in value:
-                type_ = value.get("type")
-                rendered_str += f"|type={type_}"
+                if "format" in value:
+                    type_ = value.get("format")
+                    rendered_str += f"|format={type_}"
+                else:
+                    type_ = value.get("type")
+                    rendered_str += f"|type={type_}"
 
                 if type_ in [
                     "array"
