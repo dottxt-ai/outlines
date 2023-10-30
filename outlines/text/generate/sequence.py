@@ -226,7 +226,8 @@ class Sequence:
 
             if past_key_values:
                 unfinished_past_key_values = tuple(
-                    tuple(vv[~local_is_finished] for vv in v) for v in past_key_values
+                    tuple(vv[~local_is_finished.to(vv.device)] for vv in v)
+                    for v in past_key_values
                 )
 
         result = self.model.tokenizer.decode(token_ids[:, num_prompt_tokens:])
