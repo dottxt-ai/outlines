@@ -360,8 +360,9 @@ def parse_pydantic_schema(raw_schema, definitions, attribute=None):
     if raw_schema.get("properties"):
         for name, value in raw_schema["properties"].items():
             rendered_str = f"<{name}"  # TODO add default values instead of key ?
-
+            description = None
             if "anyOf" in value:
+                description = value.get("description")
                 value = value["anyOf"][0]  # TODO Only first value, handle more TBD
 
             type_ = None
@@ -379,9 +380,10 @@ def parse_pydantic_schema(raw_schema, definitions, attribute=None):
                 ]:  # TODO check if there is other iterable json schema types
                     is_list = True
 
-            description = {}  # TODO add constraints keys
             if "description" in value:
                 description = value.get("description")
+
+            if description:
                 rendered_str += f"|description={description}"
 
             if name in list(ref_keys.keys()):

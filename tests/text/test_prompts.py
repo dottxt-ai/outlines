@@ -1,5 +1,6 @@
+from datetime import date
 from enum import Enum
-from typing import List
+from typing import List, Optional
 
 import pytest
 from pydantic import BaseModel, Field
@@ -281,6 +282,29 @@ def test_prompt_pydantic_response():
         prompt
         == '{\n  "nested_list": [\n    {\n      "part_one": [\n        {\n          "answer": "<answer|type=string>",\n          "thought": {\n            "one": "<one|type=string|description=a description>",\n            "two": "<two|type=string>"\n          }\n        }\n      ],\n      "part_two": [\n        "<[\'a\', \'b\']|type=string>"\n      ],\n      "list_str": [\n        "<list_str|type=number|description=a list with number type>"\n      ],\n      "list_": [\n        "<list_|description=a list without type>"\n      ]\n    }\n  ]\n}'
     )
+
+    class OptionalResponse(BaseModel):
+        optional: Optional[str] = Field(..., description="A dummy description")
+
+    class NestedOptionalResponse(BaseModel):
+        optional: Optional[OptionalResponse]
+
+    class DescriptionNestedOptionalResponse(BaseModel):
+        optional: Optional[NestedOptionalResponse]
+
+    prompt = source_ppt(DescriptionNestedOptionalResponse)
+
+    assert (
+        prompt
+        == '{\n  "optional": {\n    "optional": {\n      "optional": "<optional|type=string|description=A dummy description>"\n    }\n  }\n}'
+    )
+
+    class FormatResponse(BaseModel):
+        date_: date
+
+    prompt = source_ppt(FormatResponse)
+
+    assert prompt == '{\n  "date_": "<date_|format=date>"\n}'
 
 
 def test_prompt_dict_response():
