@@ -6,6 +6,5 @@ codebase.
 
 """
 from . import text_completion
-from .hf_transformers import HuggingFaceCompletion
 from .openai import OpenAICompletion
 from .transformers import transformers
