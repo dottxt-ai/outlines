@@ -3,7 +3,7 @@ site_name: Outlines
 site_author: The Outlines developers
 site_description: >-
   Generate text that machines understand using Large Language Models and
-  symbolic methods.
+  symbolic methods
 
 
 # Repository
@@ -78,8 +78,8 @@ plugins:
 
 nav:
   - Home: index.md
-  - Introduction:
-      - introduction.md
+  - Get Started:
+      - get_started.md
   - Cookbook:
     - cookbook/index.md
   - Reference:

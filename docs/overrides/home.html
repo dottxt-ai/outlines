@@ -1,0 +1,202 @@
+{% extends "main.html" %}
+{% block tabs %}
+{{ super() }}
+<style>
+
+    .md-main {
+        flex-grow: 0
+    }
+
+    .md-main__inner {
+        display: flex;
+        height: 100%;
+        position: relative;
+    }
+
+    .tx-container {
+        padding-top: .0rem;
+        background: var(--md-default-bg-color);
+        margin: 0;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        -ms-transform: translate(-50%, -50%);
+        transform: translate(-50%, -50%);
+    }
+
+    .tx-hero {
+        margin: 32px 2.8rem;
+        color: var(--md-primary-bg-color);
+        justify-content: center;
+    }
+
+    .tx-hero h1 {
+        margin-bottom: 1rem;
+        color: currentColor;
+        font-weight: 700
+    }
+
+    .tx-hero__content {
+        padding-bottom: 1rem;
+        margin: 0 auto;
+    }
+
+    .tx-hero__image{
+        width:17rem;
+        height:17rem;
+        order:1;
+        padding-right: 2.5rem;
+        margin: 70px 0 0 0;
+    }
+
+    .tx-hero .md-button {
+        margin-top: .5rem;
+        margin-right: .5rem;
+        color: var(--md-primary-bg-color)
+    }
+
+    .tx-hero .md-button--primary {
+        background-color: var(--md-primary-bg-color);
+        color: hsla(280deg, 37%, 48%, 1);
+        border-color: var(--md-primary-bg-color)
+    }
+
+    .tx-hero .md-button:focus,
+    .tx-hero .md-button:hover {
+        background-color: var(--md-accent-fg-color);
+        color: var(--md-default-bg-color);
+        border-color: var(--md-accent-fg-color)
+    }
+
+    .top-hr {
+        margin-top: 42px;
+    }
+
+    @media screen and (max-width:30em) {
+        .tx-hero h1 {
+            font-size: 1.4rem
+        }
+    }
+
+    @media screen and (min-width:60em) {
+        .md-sidebar--secondary {
+            display: none
+        }
+
+        .tx-hero {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tx-hero__content {
+            max-width: 22rem;
+            margin-top: 3.5rem;
+            margin-bottom: 3.5rem;
+            margin-left: 1.0rem;
+            margin-right: 4.0rem;
+            align-items: center;
+        }
+    }
+
+    @media screen and (min-width:76.25em) {
+        .md-sidebar--primary {
+            display: none
+        }
+
+        .top-hr {
+            width: 100%;
+            display: flex;
+            max-width: 61rem;
+            margin-right: auto;
+            margin-left: auto;
+            padding: 0 .2rem;
+        }
+
+        .bottom-hr {
+            margin-top: 10px;
+            width: 100%;
+            display: flex;
+            max-width: 61rem;
+            margin-right: auto;
+            margin-left: auto;
+            padding: 0 .2rem;
+        }
+
+    }
+
+    .hr {
+        border-bottom: 1px solid #eee;
+        width: 100%;
+        margin: 20px 0;
+    }
+
+    .text-center {
+        text-align: center;
+        padding-right: 15px;
+        padding-left: 15px;
+        margin-right: auto;
+        margin-left: auto;
+        margin-top: 15px;
+        font-family: 'Lato', sans-serif;
+        font-size: 23px;
+        font-weight: 300;
+        padding-bottom: 10px;
+    }
+
+    .logos {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-flow: row wrap;
+        margin: 0 auto;
+    }
+
+    .logos img {
+        flex: 1 1 auto;
+        padding: 25px;
+        max-height: 130px;
+        vertical-align: middle;
+    }
+
+    .hr-logos {
+        margin-top: 0;
+        margin-bottom: 30px;
+    }
+
+    .md-footer-meta__inner {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        margin-top: 1.0rem;
+    }
+
+    .md-footer-social {
+        padding-top: 20px;
+    }
+</style>
+
+<!-- Main site Entry button descriptions -->
+<section class="tx-container">
+    <div class="md-grid md-typeset">
+      <div class="tx-hero">
+        <div class="tx-hero__image">
+          <img src="assets/images/logo.png" draggable="false">
+        </div>
+        <div class="tx-hero__content">
+          <h1>Outlines</h1>
+          <p>Use Large Language Models and Symbolic methods to generate text machines understand.</p>
+          <a href="{{ page.next_page.url | url }}" title="{{ page.next_page.title | striptags }}" class="md-button md-button--primary">
+            Get started
+          </a>
+          <a href="{{ config.repo_url }}" title="{{ lang.t('source.link.title') }}" class="md-button">
+            Go to GitHub
+          </a>
+        </div>
+      </div>
+    </div>
+</section>
+
+{% endblock %}
+{% block content %}{% endblock %}
+{% block footer %}{% endblock %}
