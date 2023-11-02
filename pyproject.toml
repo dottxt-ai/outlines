@@ -40,7 +40,6 @@ dynamic = ["version"]
 
 [project.optional-dependencies]
 test = [
-    "diffusers",
     "pre-commit",
     "pytest",
     "pytest-cov",
@@ -76,7 +75,6 @@ filterwarnings = [
     "error",
     "ignore::numba.core.errors.NumbaPendingDeprecationWarning",
     "ignore::FutureWarning:transformers.*",
-    "ignore::FutureWarning:diffusers.*",
     "ignore::UserWarning:torch.cuda.*"
 ]
 
@@ -85,7 +83,6 @@ exclude=["examples"]
 
 [[tool.mypy.overrides]]
 module = [
-    "diffusers",
     "jinja2",
     "joblib.*",
     "openai",
