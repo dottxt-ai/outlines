@@ -1,0 +1,34 @@
+name: ✨ Improvement
+description: Propose an improvement to Outlines.
+title: "<Description of the proposed change>"
+labels: "enhancement"
+
+body:
+  - type: markdown
+    attributes:
+      value: >-
+        Before suggesting an improvement, please make sure this hasn't already been suggested by searching through the past issues and the PR tracker.
+
+        ## Current behavior
+
+  - type: textarea
+    attributes:
+      label: "What behavior of the library made you think about the improvement?"
+      placeholder: |
+        Sample code with the current behavior
+
+  - type: markdown
+    attributes:
+      value: >-
+        ## Desired behavior
+
+  - type: textarea
+    attributes:
+      label: "How would you like it to behave?"
+      placeholder: |
+        Sample code with the desired behavior
+
+  - type: markdown
+    attributes:
+      value: >-
+        **Be aware that your proposal may be challenged.** Outlines has strong design principles that we are committed to stick to. If there is an alternative way to achieve what you would like, we will let you know.
