@@ -15,6 +15,8 @@ jobs:
           python-version: "3.10"
 
       - name: Build the documentation
+        env:
+          GOOGLE_ANALYTICS_KEY: ${{ secrets.GOOGLE_ANALYTICS_KEY }}
         run: |
           pip install -r requirements-doc.txt
           mkdocs build
