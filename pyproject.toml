@@ -35,6 +35,7 @@ dependencies = [
    "torch",
    "numba",
    "joblib",
+   "referencing",
 ]
 dynamic = ["version"]
 
@@ -92,6 +93,7 @@ module = [
     "PIL.Image",
     "pydantic",
     "pytest",
+    "referencing.*",
     "scipy.*",
     "tenacity.*",
     "tiktoken.*",
