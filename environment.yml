@@ -16,6 +16,7 @@ dependencies:
   - scipy
   - pytest
   - pre-commit
+  - referencing
   - transformers
   - pip
   - pip:
