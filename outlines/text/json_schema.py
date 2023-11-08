@@ -48,8 +48,7 @@ def build_regex_from_schema(schema: str):
     resolver = registry.resolver()
 
     content = schema.contents
-    regex = to_regex(resolver, content)
-    return regex
+    return to_regex(resolver, content)
 
 
 def to_regex(resolver: Resolver, instance: dict):
@@ -164,14 +163,35 @@ def to_regex(resolver: Resolver, instance: dict):
             return type_to_regex["integer"]
 
         elif type == "array":
-            items_regex = to_regex(resolver, instance["items"])
-            return rf"\[({items_regex})(,({items_regex}))*\]"
+            if "items" in instance:
+                items_regex = to_regex(resolver, instance["items"])
+                return rf"\[({items_regex})(,({items_regex}))*\]"
+            else:
+                # Here we need to make the choice to exclude generating list of objects
+                # if the specification of the object is not give, even though a JSON
+                # object that contains an object here would be valid under the specification.
+                types = [
+                    {"type": "boolean"},
+                    {"type": "null"},
+                    {"type": "number"},
+                    {"type": "integer"},
+                    {"type": "string"},
+                ]
+                regexes = [to_regex(resolver, t) for t in types]
+                return rf"\[({'|'.join(regexes)})(,({'|'.join(regexes)}))*\]"
 
         elif type == "boolean":
             return type_to_regex["boolean"]
 
         elif type == "null":
             return type_to_regex["null"]
+
+        elif isinstance(type, list):
+            # Here we need to make the choice to exclude generating an object
+            # if the specification of the object is not give, even though a JSON
+            # object that contains an object here would be valid under the specification.
+            regexes = [to_regex(resolver, {"type": t}) for t in type if t != "object"]
+            return rf"({'|'.join(regexes)})"
 
     raise NotImplementedError(
         f"""Could not translate the instance {instance} to a
