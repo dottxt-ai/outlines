@@ -170,15 +170,32 @@ def test_match_number(pattern, does_match):
             rf"\[({NUMBER})(,({NUMBER}))*\]",
             [("[1e+9,1.3]", True)],
         ),
+        # oneOf
+        (
+            {
+                "title": "Foo",
+                "oneOf": [{"type": "string"}, {"type": "number"}],
+            },
+            rf"({STRING}|{NUMBER})",
+            [("12.3", True), ('"a"', True), ('1.3"a"', False)],
+        ),
         # anyOf
         (
             {
                 "title": "Foo",
-                "type": "array",
-                "items": {"anyOf": [{"type": "boolean"}, {"type": "null"}]},
+                "anyOf": [{"type": "string"}, {"type": "integer"}],
             },
-            r"\[(((true|false)|null))(,(((true|false)|null)))*\]",
-            [("[true,null,false]", True)],
+            rf'(("(?:[^"\\\x00-\x1f\x7f-\x9f]|\\.)*")|((0|[1-9][0-9]*))|("(?:[^"\\\x00-\x1f\x7f-\x9f]|\\.)*"(0|[1-9][0-9]*))|((0|[1-9][0-9]*)"(?:[^"\\\x00-\x1f\x7f-\x9f]|\\.)*"))',
+            [("12", True), ('"a"', True), ('1"a"', True)],
+        ),
+        # allOf
+        (
+            {
+                "title": "Foo",
+                "allOf": [{"type": "string"}, {"type": "integer"}],
+            },
+            rf"({STRING}{INTEGER})",
+            [('"a"1', True), ('"a"', False), ('"1"', False)],
         ),
         # Nested schema
         (

@@ -1,3 +1,4 @@
+import itertools as it
 import json
 import re
 
@@ -50,6 +51,25 @@ def build_regex_from_schema(schema: str):
 
 
 def to_regex(resolver: Resolver, instance: dict):
+    """Translate a JSON Schema instance into a regex that validates the schema.
+
+    Note
+    ----
+    Many features of JSON schema are missing:
+    - Support the fact that fields in an object are optional by default
+    - Handle `required` keyword
+    - Handle `additionalProperties` keyword
+    - Handle types defined as a list
+    - Handle constraints on numbers
+    - Handle special patterns: `date`, `uri`, etc.
+
+    Parameters
+    ----------
+    resolver
+        An object that resolves references to other instances within a schema
+    instance
+        The instance to translate
+    """
     whitespace = r"[\n ]*"
 
     if "properties" in instance:
@@ -67,16 +87,33 @@ def to_regex(resolver: Resolver, instance: dict):
 
         return regex
 
-    elif "oneOf" in instance:
-        print(instance)
-
+    # To validate against allOf, the given data must be valid against all of the
+    # given subschemas.
     elif "allOf" in instance:
-        print(instance)
+        subregexes = [to_regex(resolver, t) for t in instance["allOf"]]
+        subregexes_str = [f"{subregex}" for subregex in subregexes]
+        return rf"({''.join(subregexes_str)})"
 
+    # To validate against `anyOf`, the given data must be valid against
+    # any (one or more) of the given subschemas.
     elif "anyOf" in instance:
         subregexes = [to_regex(resolver, t) for t in instance["anyOf"]]
+        combinations = [
+            "(" + "".join(c) + ")"
+            for r in range(1, len(subregexes) + 1)
+            for c in it.permutations(subregexes, r)
+        ]
+
+        return rf"({'|'.join(combinations)})"
+
+    # To validate against oneOf, the given data must be valid against exactly
+    # one of the given subschemas.
+    elif "oneOf" in instance:
+        subregexes = [to_regex(resolver, t) for t in instance["oneOf"]]
         return rf"({'|'.join(subregexes)})"
 
+    # The enum keyword is used to restrict a value to a fixed set of values. It
+    # must be an array with at least one element, where each element is unique.
     elif "enum" in instance:
         if instance["type"] == "string":
             choices = [f'"{re.escape(choice)}"' for choice in instance["enum"]]
@@ -90,9 +127,13 @@ def to_regex(resolver: Resolver, instance: dict):
         instance = resolver.lookup(path).contents
         return to_regex(resolver, instance)
 
+    # The type keyword may either be a string or an array:
+    # - If it's a string, it is the name of one of the basic types.
+    # - If it is an array, it must be an array of strings, where each string is
+    # the name of one of the basic types, and each element is unique. In this
+    # case, the JSON snippet is valid if it matches any of the given types.
     elif "type" in instance:
         type = instance["type"]
-
         if type == "string":
             if "maxLength" in instance or "minLength" in instance:
                 max_length = instance.get("maxLength", "")
@@ -129,12 +170,6 @@ def to_regex(resolver: Resolver, instance: dict):
 
         elif type == "null":
             return type_to_regex["null"]
-
-        # elif isinstance(type, list):
-        #     if "object" in type:
-        #         expanded = to_regex(resolver, instance)
-        #         return ""
-        #     return ""
 
     raise NotImplementedError(
         f"""Could not translate the instance {instance} to a
