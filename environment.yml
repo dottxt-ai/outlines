@@ -17,6 +17,7 @@ dependencies:
   - pytest
   - pre-commit
   - referencing
+  - jsonschema
   - transformers
   - pip
   - pip:
