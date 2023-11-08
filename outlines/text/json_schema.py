@@ -2,6 +2,7 @@ import itertools as it
 import json
 import re
 
+from jsonschema.protocols import Validator
 from referencing import Registry, Resource
 from referencing._core import Resolver
 from referencing.jsonschema import DRAFT202012
@@ -37,6 +38,7 @@ def build_regex_from_schema(schema: str):
     follows the schema.
 
     """
+    Validator.check_schema(schema)
     schema = json.loads(schema)
 
     # Build reference resolver

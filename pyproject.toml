@@ -36,6 +36,7 @@ dependencies = [
    "numba",
    "joblib",
    "referencing",
+   "jsonschema",
 ]
 dynamic = ["version"]
 
@@ -86,6 +87,7 @@ exclude=["examples"]
 module = [
     "jinja2",
     "joblib.*",
+    "jsonschema.*",
     "openai",
     "numpy.*",
     "perscache.*",
