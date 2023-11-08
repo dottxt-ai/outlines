@@ -28,9 +28,6 @@ def perform_task_ppt(objective: str, task: str):
     """
 
 
-perform_task = text.function(model, perform_task_ppt)
-
-
 #####################
 # Create a new task #
 #####################
@@ -67,9 +64,6 @@ def create_tasks_fmt(result: str) -> List[str]:
     return task_list
 
 
-create_tasks = text.function(model, create_tasks_ppt, create_tasks_fmt)
-
-
 ########################
 # Prioritize new tasks #
 ########################
@@ -104,9 +98,6 @@ def prioritize_tasks_fmt(result: str):
     return task_list
 
 
-prioritize_tasks = text.function(model, prioritize_tasks_ppt, prioritize_tasks_fmt)
-
-
 objective = "Becoming rich while doing nothing."
 first_task = {
     "task_id": 1,
@@ -134,18 +125,23 @@ def one_cycle(objective: str, task_list, next_task_id: int):
     """
 
     task = task_list.popleft()
-    result = perform_task(objective, task)
-    new_tasks = create_tasks(
+
+    prompt = perform_task_ppt(objective, task)
+    result = model(prompt)
+
+    prompt = create_tasks_ppt(
         objective, first_task["task_name"], result, [first_task["task_name"]]
     )
+    new_tasks = model(prompt)
 
     for task in new_tasks:
         next_task_id += 1
         task_list.append({"task_id": next_task_id, "task_name": task})
 
-    prioritized_tasks = prioritize_tasks(
+    prompt = prioritize_tasks_ppt(
         objective, [task["task_name"] for task in task_list], next_task_id
     )
+    prioritized_tasks = model(prompt)
 
     return task, result, prioritized_tasks, next_task_id
 
