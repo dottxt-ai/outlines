@@ -34,11 +34,7 @@ def execute_code(code):
     return result
 
 
-answer_with_code = text.function(
-    models.text_completion.openai("text-davinci-003"),
-    answer_with_code_prompt,
-    execute_code,
-)
-
-result = answer_with_code(question, examples)
+prompt = answer_with_code_prompt(question, examples)
+answer = models.text_completion.openai("text-davinci-003")(prompt)
+result = execute_code(answer)
 print(f"It takes Carla {result:.0f} minutes to download the file.")
