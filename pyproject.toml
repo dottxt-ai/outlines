@@ -87,6 +87,8 @@ exclude=["examples"]
 
 [[tool.mypy.overrides]]
 module = [
+    "awq.*",
+    "auto_gptq.*",
     "jinja2",
     "joblib.*",
     "jsonschema.*",
