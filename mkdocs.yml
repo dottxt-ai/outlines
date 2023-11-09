@@ -86,6 +86,8 @@ nav:
       - get_started.md
   - Cookbook:
     - cookbook/index.md
+  - Examples:
+      - examples/index.md
   - Reference:
     - reference/index.md
     - Prompting: reference/prompting.md
