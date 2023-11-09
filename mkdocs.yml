@@ -74,6 +74,7 @@ extra_css:
 plugins:
   - mkdocstrings
   - search
+  - section-index
   - social:
       cards_layout: default/invert
       cards_layout_options:
@@ -86,7 +87,7 @@ nav:
   - Cookbook:
     - cookbook/index.md
   - Reference:
-    - Introduction: reference/index.md
+    - reference/index.md
     - Prompting: reference/prompting.md
     - Generate text: reference/text_generation.md
     - Guided generation:
