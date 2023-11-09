@@ -6,7 +6,7 @@ import torch
 from outlines.models import OpenAI
 
 if TYPE_CHECKING:
-    from outlines.models.transformers import KVCacheType, Transformers
+    from outlines.models.transformers import KVCacheType, Transformer
     from outlines.text.generate.sample import Sampler
 
 
@@ -15,7 +15,7 @@ class Sequence:
 
     def __init__(
         self,
-        model: "Transformers",
+        model: "Transformer",
         max_tokens: Optional[int] = None,
         sampler: Optional["Sampler"] = None,
     ):
@@ -41,6 +41,7 @@ class Sequence:
         self.model = model
         self.device = model.device
         self.max_tokens = max_tokens
+
         self.pad_token_id = torch.tensor(
             model.tokenizer.pad_token_id, device=model.device
         )

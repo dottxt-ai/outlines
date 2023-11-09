@@ -6,4 +6,4 @@ codebase.
 
 """
 from .openai import OpenAI, openai
-from .transformers import Transformers, transformers
+from .transformers import Transformer, transformers
