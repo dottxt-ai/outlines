@@ -55,7 +55,7 @@ def get_llama_tokenizer_types():
     )
 
 
-class Transformers:
+class Transformer:
     """Represents a `transformers` model."""
 
     def __init__(
@@ -116,7 +116,7 @@ class Transformers:
         return self.forward(input_ids, attention_mask, past_key_values)[0]
 
 
-class TransformersTokenizer(Tokenizer):
+class TransformerTokenizer(Tokenizer):
     """Represents a tokenizer for models in the `transformers` library."""
 
     def __init__(self, model_name: str, **kwargs):
@@ -215,6 +215,6 @@ def transformers(
         model_kwargs["device_map"] = device
 
     model = AutoModelForCausalLM.from_pretrained(model_name, **model_kwargs)
-    tokenizer = TransformersTokenizer(model_name, **tokenizer_kwargs)
+    tokenizer = TransformerTokenizer(model_name, **tokenizer_kwargs)
 
-    return Transformers(model, tokenizer)
+    return Transformer(model, tokenizer)
