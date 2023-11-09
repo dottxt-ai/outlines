@@ -2,7 +2,6 @@ import pytest
 import torch
 from transformers.models.gpt2 import GPT2TokenizerFast
 
-from outlines.models.autogptq import autogptq
 from outlines.models.transformers import TransformerTokenizer, transformers
 
 TEST_MODEL = "hf-internal-testing/tiny-random-GPTJForCausalLM"
