@@ -173,10 +173,10 @@ Here are a couple of results:
 
 ```
 {
-    "bio": """I'm an ambitious lawyer with a casual and fashionable style. I love 
-    games and sports, but my true passion is preparing refreshing cocktails at 
-    home and dressing to the nines at weddings. I'm currently looking for a woman 
-    to show a good time to and get a kiss on the opulent suit I just had made. 
+    "bio": """I'm an ambitious lawyer with a casual and fashionable style. I love
+    games and sports, but my true passion is preparing refreshing cocktails at
+    home and dressing to the nines at weddings. I'm currently looking for a woman
+    to show a good time to and get a kiss on the opulent suit I just had made.
     Send resume to this inbox.""",
     "job": "Lawyer",
     "interests":
@@ -202,10 +202,10 @@ Here are a couple of results:
 
 ```
 {
-    "bio": """I’m a sexy lawyer with time on my hands. I love to game and 
-    play ping pong, but the real reason you should swipe to the right 
-    is because I look great in a suit. Who doesn’t love a man in a 
-    suit? Just saying. Send me a message if you think it’s time to take 
+    "bio": """I’m a sexy lawyer with time on my hands. I love to game and
+    play ping pong, but the real reason you should swipe to the right
+    is because I look great in a suit. Who doesn’t love a man in a
+    suit? Just saying. Send me a message if you think it’s time to take
     your dating life to the next level.""",
     "job": "Lawyer",
     "interests":

@@ -72,11 +72,15 @@ extra_css:
   - stylesheets/extra.css
 
 plugins:
-  - mkdocstrings
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          options:
+            show_submodules: true
   - search
   - section-index
   - social:
-      cards_layout: default/invert
       cards_layout_options:
         color: #173a58
 
@@ -98,3 +102,13 @@ nav:
         - reference/types.md
         - reference/regex.md
         - reference/json.md
+  - API:
+      - api/index.md
+      - api/models.md
+      - api/prompts.md
+      - api/json_schema.md
+      - api/fsm.md
+      - api/parsing.md
+      - api/regex.md
+      - api/sample.md
+      - api/continuation.md
