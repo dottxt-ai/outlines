@@ -88,6 +88,7 @@ nav:
     - cookbook/index.md
   - Examples:
       - examples/index.md
+      - Dating Profile: examples/dating_profiles.md
   - Reference:
     - reference/index.md
     - Prompting: reference/prompting.md
