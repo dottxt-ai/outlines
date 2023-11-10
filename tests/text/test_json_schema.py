@@ -170,6 +170,30 @@ def test_match_number(pattern, does_match):
             rf"\[({NUMBER})(,({NUMBER}))*\]",
             [("[1e+9,1.3]", True)],
         ),
+        # array with a set length of 1
+        (
+            {
+                "title": "Foo",
+                "type": "array",
+                "items": {"type": "integer"},
+                "minItems": 1,
+                "maxItems": 1,
+            },
+            rf"\[({INTEGER})(,({INTEGER})){{0}}\]",
+            [("[1]", True), ("[1,2]", False), ('["a"]', False), ("[]", False)],
+        ),
+        # array with a set length greather than 1
+        (
+            {
+                "title": "Foo",
+                "type": "array",
+                "items": {"type": "integer"},
+                "minItems": 3,
+                "maxItems": 3,
+            },
+            rf"\[({INTEGER})(,({INTEGER})){{2}}\]",
+            [("[1]", False), ("[]", False), ("[1,2,3]", True), ("[1,2,3,4]", False)],
+        ),
         # oneOf
         (
             {

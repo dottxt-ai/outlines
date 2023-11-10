@@ -142,16 +142,16 @@ def to_regex(resolver: Resolver, instance: dict):
         instance_type = instance["type"]
         if instance_type == "string":
             if "maxLength" in instance or "minLength" in instance:
-                max_length = instance.get("maxLength", "")
-                min_length = instance.get("minLength", "")
+                max_items = instance.get("maxLength", "")
+                min_items = instance.get("minLength", "")
                 try:
-                    if int(max_length) < int(min_length):
+                    if int(max_items) < int(min_items):
                         raise ValueError(
                             "maxLength must be greater than or equal to minLength"
                         )
                 except ValueError:
                     pass
-                return f'"{STRING_INNER}{{{min_length},{max_length}}}"'
+                return f'"{STRING_INNER}{{{min_items},{max_items}}}"'
             elif "pattern" in instance:
                 pattern = instance["pattern"]
                 if pattern[0] == "^" and pattern[-1] == "$":
@@ -168,12 +168,19 @@ def to_regex(resolver: Resolver, instance: dict):
             return type_to_regex["integer"]
 
         elif instance_type == "array":
+            min_items = instance.get("minItems", "0")
+            max_items = instance.get("maxItems", "")
+            if min_items == max_items:
+                num_repeats = "{" + str(int(min_items) - 1) + "}"
+            else:
+                num_repeats = "*"
+
             if "items" in instance:
                 items_regex = to_regex(resolver, instance["items"])
-                return rf"\[({items_regex})(,({items_regex}))*\]"
+                return rf"\[({items_regex})(,({items_regex})){num_repeats}\]"
             else:
                 # Here we need to make the choice to exclude generating list of objects
-                # if the specification of the object is not give, even though a JSON
+                # if the specification of the object is not given, even though a JSON
                 # object that contains an object here would be valid under the specification.
                 types = [
                     {"type": "boolean"},
@@ -183,7 +190,9 @@ def to_regex(resolver: Resolver, instance: dict):
                     {"type": "string"},
                 ]
                 regexes = [to_regex(resolver, t) for t in types]
-                return rf"\[({'|'.join(regexes)})(,({'|'.join(regexes)}))*\]"
+                return (
+                    rf"\[({'|'.join(regexes)})(,({'|'.join(regexes)})){num_repeats}\]"
+                )
 
         elif instance_type == "boolean":
             return type_to_regex["boolean"]
