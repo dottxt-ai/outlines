@@ -1,0 +1,114 @@
+# Site information
+site_name: Outlines
+site_author: The Outlines developers
+site_description: >-
+  Generate text that machines understand using Large Language Models and
+  symbolic methods
+
+
+# Repository
+repo_name: outlines-dev/outlines
+repo_url: https://github.com/outlines-dev/outlines
+
+# Copyright
+copyright: Copyright &copy; 2023- The Outlines Developers
+
+# Configuration
+theme:
+  name: material
+  custom_dir: docs/overrides
+  palette:
+    - scheme: slate
+      primary: black
+  logo: assets/images/logo.png
+  favicon: assets/images/logo.png
+  icon:
+    repo: fontawesome/brands/github
+  features:
+    - content.code.copy
+    - navigation.sticky
+    - navigation.tabs
+    - header.autohide
+    - announce.dismiss
+  font:
+    text: Roboto
+    code: Source Code Pro
+
+# Additional configuration
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/outlines-dev
+    - icon: fontawesome/brands/twitter
+      link: https://twitter.com/remilouf
+  generator: false
+  analytics:
+    provider: google
+    property: !ENV GOOGLE_ANALYTICS_KEY
+
+# Extensions
+markdown_extensions:
+  - admonition
+  - def_list
+  - attr_list
+  - md_in_html
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+      noclasses: True
+      pygments_style: nord
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.inlinehilite
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
+
+extra_css:
+  - stylesheets/extra.css
+
+plugins:
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          options:
+            show_submodules: true
+  - search
+  - section-index
+  - social:
+      cards_layout_options:
+        color: #173a58
+
+nav:
+  - Home: index.md
+  - Get Started:
+      - get_started.md
+  - Cookbook:
+    - cookbook/index.md
+  - Examples:
+      - examples/index.md
+      - Dating Profile: examples/dating_profiles.md
+  - Reference:
+    - reference/index.md
+    - Prompting: reference/prompting.md
+    - Generate text: reference/text_generation.md
+    - Guided generation:
+        - reference/choices.md
+        - reference/types.md
+        - reference/regex.md
+        - reference/json.md
+  - API:
+      - api/index.md
+      - api/models.md
+      - api/prompts.md
+      - api/json_schema.md
+      - api/fsm.md
+      - api/parsing.md
+      - api/regex.md
+      - api/sample.md
+      - api/continuation.md

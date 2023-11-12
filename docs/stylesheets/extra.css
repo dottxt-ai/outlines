@@ -1,0 +1,12 @@
+:root > * {
+  --md-code-bg-color: #2E3440;
+  --md-default-bg-color: black;
+}
+
+.language-python.highlight > * {
+    border-radius: 1rem;
+}
+
+code > * {
+    border-radius: 1rem;
+}

@@ -1,10 +1,14 @@
 <div align="center">
 
-<img src="./docs/source/_static/logo.png" alt="Outlines Logo" width=300></img>
-
 # Outlines 〰️
 
-Fast and reliable neural text generation.
+<img src="./docs/assets/images/logo.png" alt="Outlines Logo" width=300></img>
+
+[![Pypi][pypi-badge]][pypi]
+[![Contributors][contributors-badge]][contributors]
+[![Twitter][twitter-badge]][twitter]
+
+*Generate text that machines understand.*
 
 [Install](#installation) •
 [Guided generation](#guided-generation) •
@@ -13,6 +17,7 @@ Fast and reliable neural text generation.
 [Stay tuned](#stay-tuned-for)
 
 </div>
+
 
 **Outlines** 〰 is a library for neural text generation. You can think of it as a
 more flexible replacement for the `generate` method in the
@@ -45,16 +50,7 @@ via the next-token logits. It can be used with API-based models as well.
 - [x] 💾 Caching of generations
 - [x] 🤗 Integration with Hugging Face's `transformers` models
 
-Outlines 〰 has new releases and features coming every week! Make sure to ⭐ star and 👀 watch this repository to stay up to date.
-
-## Stay tuned for
-
-- Context-Free Grammar guided generation ([#178](https://github.com/outlines-dev/outlines/pull/178));
-- Prompt-token alignment so you don't have to think about tokenization details ([#201](https://github.com/outlines-dev/outlines/pull/201))
-- An infilling DSL ([#182](https://github.com/outlines-dev/outlines/issues/182))
-
-You can follow [@NormalComputing](https://twitter.com/NormalComputing), [@remilouf](https://twitter.com/remilouf) or [@BrandonTWillard](https://twitter.com/BrandonTWillard) for regular updates!
-
+Outlines 〰 has new releases and features coming every week. Make sure to ⭐ star and 👀 watch this repository, follow [@dottxtai][twitter] to stay up to date!
 
 ## Installation
 
@@ -425,3 +421,10 @@ Do not hesitate to open a draft PR before your contribution is ready, especially
 ## License
 
 Outlines is open-source and licensed under the [Apache License 2.0](LICENSE).
+
+[contributors]: https://github.com/outlines-dev/outlines/graphs/contributors
+[contributors-badge]: https://img.shields.io/github/contributors/outlines-dev/outlines?style=flat-square&logo=github&logoColor=white&color=ECEFF4
+[twitter]: https://twitter.com/dottxtai
+[twitter-badge]: https://img.shields.io/twitter/follow/dottxtai?style=social
+[pypi]: https://pypi.org/project/outlines/
+[pypi-badge]: https://img.shields.io/pypi/v/outlines?color=ECEFF4&logo=python&logoColor=white&style=flat-square
