@@ -237,6 +237,22 @@ def test_transformers_json_union():
     )
 
 
+def test_transformers_json_function():
+    model_name = "hf-internal-testing/tiny-random-GPTJForCausalLM"
+    model = models.transformers(model_name)
+    prompt = "Output arguments for the function"
+
+    def function(foo: int, bar: List[int]):
+        return foo + sum(bar)
+
+    rng = torch.Generator()
+    rng.manual_seed(4)
+
+    sequence = generate.json(model, function, max_tokens=100)(prompt, rng=rng)
+    assert isinstance(sequence, dict)
+    assert isinstance(function(**sequence), int)
+
+
 def test_transformers_logits_vocab_size():
     model_name = "hf-internal-testing/tiny-random-GPTJForCausalLM"
     model = models.transformers(model_name, device="cpu")

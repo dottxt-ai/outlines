@@ -1,6 +1,6 @@
+import json as pyjson
 import math
-from json import dumps
-from typing import TYPE_CHECKING, Dict, List, Optional, Set, Tuple, Union
+from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Set, Tuple, Union
 
 import interegular
 import torch
@@ -8,7 +8,7 @@ from pydantic import BaseModel
 
 from outlines.text.fsm import create_fsm_index_tokenizer, make_deterministic_fsm
 from outlines.text.generate.continuation import Continuation
-from outlines.text.json_schema import build_regex_from_schema
+from outlines.text.json_schema import build_regex_from_object
 
 if TYPE_CHECKING:
     from outlines.text.generate.sample import Sampler
@@ -386,7 +386,7 @@ def choice(
 
 def json(
     model,
-    schema: Union[str, BaseModel],
+    schema_object: Union[str, BaseModel, Callable],
     max_tokens: Optional[int] = None,
     *,
     sampler: Optional["Sampler"] = None,
@@ -397,14 +397,15 @@ def json(
     .. note:
         Reuse instances of these guided generators whenever possible,
         because constructing them has more overhead than generating
-        token sequences from them.  See the docstring for `Regex`.
+        token sequences from them. See the docstring for `Regex`.
 
     Parameters
     ---------
     model
         The language model to use to compute the next-token logits.
     schema
-        The JSON schema or Pydantic model that guides the generation.
+        The JSON schema, Pydantic model or function (signature) that guides the
+        generation.
     max_tokens
         The maximum number of tokens to generate.
     sampler
@@ -416,10 +417,17 @@ def json(
         Allow sampling of tokens corresponding to empty strings.
 
     """
-    if isinstance(schema, type(BaseModel)):
-        schema = dumps(schema.model_json_schema())
+    if isinstance(schema_object, type(BaseModel)):
+        schema = pyjson.dumps(schema_object.model_json_schema())
+        format_fn = lambda x: schema_object.model_validate(pyjson.loads(x))
+    elif callable(schema_object):
+        schema = pyjson.dumps(get_schema_from_signature(schema_object))
+        # TODO: Convert string fields to their respective types
+        format_fn = lambda x: pyjson.loads(x)
+    else:
+        format_fn = lambda x: x
 
-    regex_str = build_regex_from_schema(schema)
+    regex_str = build_regex_from_object(schema)
 
     return Regex(
         model,

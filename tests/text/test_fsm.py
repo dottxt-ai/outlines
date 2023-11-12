@@ -429,7 +429,7 @@ def test_json_index_performance():
     from pydantic import BaseModel, constr
 
     import outlines.models as models
-    from outlines.text.generate.regex import Regex, build_regex_from_schema
+    from outlines.text.generate.regex import Regex, build_regex_from_object
 
     class Weapon(str, Enum):
         sword = "sword"
@@ -457,7 +457,7 @@ def test_json_index_performance():
     json_schema = json.dumps(Character.model_json_schema())
 
     def build_regex():
-        regex_str = build_regex_from_schema(json_schema)
+        regex_str = build_regex_from_object(json_schema)
         Regex(model, regex_str, 100)
 
     profiler = LineProfiler(create_fsm_index_end_to_end)
