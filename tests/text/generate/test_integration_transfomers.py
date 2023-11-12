@@ -1,3 +1,4 @@
+import datetime
 import re
 from enum import Enum
 from typing import List, Union
@@ -76,7 +77,7 @@ def test_transformers_integration_integer():
     model_name = "hf-internal-testing/tiny-random-GPTJForCausalLM"
     model = models.transformers(model_name)
     prompt = "Write a short sentence"
-    sequence = generate.integer(model, max_tokens=10)(prompt, rng=rng)
+    sequence = generate.format(model, int, max_tokens=10)(prompt, rng=rng)
 
     assert sequence[0] != 0
     int(sequence)
@@ -89,7 +90,7 @@ def test_transformers_integration_integer_array():
     model_name = "hf-internal-testing/tiny-random-GPTJForCausalLM"
     model = models.transformers(model_name)
     prompts = ["Give me a number", "And another one"]
-    sequence = generate.integer(model, max_tokens=10)(prompts, rng=rng)
+    sequence = generate.format(model, int, max_tokens=10)(prompts, rng=rng)
     assert isinstance(sequence, list)
     assert len(sequence) == 2
     int(sequence[0])
@@ -103,10 +104,62 @@ def test_transformers_integration_float():
     model_name = "hf-internal-testing/tiny-random-GPTJForCausalLM"
     model = models.transformers(model_name)
     prompt = "Write a short sentence"
-    sequence = generate.float(model, max_tokens=10)(prompt, rng=rng)
+    sequence = generate.format(model, float, max_tokens=10)(prompt, rng=rng)
 
     assert sequence[0] != 0
     float(sequence)
+
+
+def test_transformers_integration_bool():
+    rng = torch.Generator()
+    rng.manual_seed(0)
+
+    model_name = "hf-internal-testing/tiny-random-GPTJForCausalLM"
+    model = models.transformers(model_name)
+    prompt = "Is this True or False?"
+    sequence = generate.format(model, bool, max_tokens=10)(prompt, rng=rng)
+
+    assert sequence[0] != 0
+    bool(sequence)
+
+
+def test_transformers_integration_date():
+    rng = torch.Generator()
+    rng.manual_seed(0)
+
+    model_name = "hf-internal-testing/tiny-random-GPTJForCausalLM"
+    model = models.transformers(model_name)
+    prompt = "What day is it today?"
+    sequence = generate.format(model, datetime.date, max_tokens=10)(prompt, rng=rng)
+
+    assert sequence[0] != 0
+    datetime.datetime.strptime(sequence, "%Y-%m-%d")
+
+
+def test_transformers_integration_time():
+    rng = torch.Generator()
+    rng.manual_seed(0)
+
+    model_name = "hf-internal-testing/tiny-random-GPTJForCausalLM"
+    model = models.transformers(model_name)
+    prompt = "What time is it?"
+    sequence = generate.format(model, datetime.time, max_tokens=10)(prompt, rng=rng)
+
+    assert sequence[0] != 0
+    datetime.datetime.strptime(sequence, "%H:%M:%S")
+
+
+def test_transformers_integration_datetime():
+    rng = torch.Generator()
+    rng.manual_seed(0)
+
+    model_name = "hf-internal-testing/tiny-random-GPTJForCausalLM"
+    model = models.transformers(model_name)
+    prompt = "What time is it?"
+    sequence = generate.format(model, datetime.datetime, max_tokens=20)(prompt, rng=rng)
+
+    assert sequence[0] != 0
+    datetime.datetime.strptime(sequence, "%Y-%m-%d %H:%M:%S")
 
 
 def test_transformers_integration_choice():

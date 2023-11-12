@@ -1,2 +1,2 @@
 from .continuation import continuation
-from .regex import choice, float, integer, json, regex
+from .regex import choice, format, json, regex
