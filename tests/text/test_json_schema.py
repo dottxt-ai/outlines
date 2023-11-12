@@ -1,5 +1,6 @@
 import json
 import re
+from typing import List
 
 import pytest
 from pydantic import BaseModel, constr
@@ -11,9 +12,30 @@ from outlines.text.json_schema import (
     NUMBER,
     STRING,
     STRING_INNER,
-    build_regex_from_schema,
+    build_regex_from_object,
+    get_schema_from_signature,
     to_regex,
 )
+
+
+def test_function_basic():
+    def test_function(foo: str, bar: List[int]):
+        ...
+
+    result = get_schema_from_signature(test_function)
+    assert result["type"] == "object"
+    assert list(result["properties"].keys()) == ["foo", "bar"]
+    assert result["properties"]["foo"]["type"] == "string"
+    assert result["properties"]["bar"]["type"] == "array"
+    assert result["properties"]["bar"]["items"]["type"] == "integer"
+
+
+def test_function_no_type():
+    def test_function(foo, bar: List[int]):
+        ...
+
+    with pytest.raises(ValueError):
+        get_schema_from_signature(test_function)
 
 
 def test_from_pydantic():
@@ -26,7 +48,7 @@ def test_from_pydantic():
         is_true: bool
 
     schema = json.dumps(User.model_json_schema())
-    schedule = build_regex_from_schema(schema)
+    schedule = build_regex_from_object(schema)
     assert isinstance(schedule, str)
 
 
@@ -316,7 +338,7 @@ def test_match_number(pattern, does_match):
 )
 def test_match(schema, regex, examples):
     schema = json.dumps(schema)
-    test_regex = build_regex_from_schema(schema)
+    test_regex = build_regex_from_object(schema)
     assert test_regex == regex
 
     for string, does_match in examples:

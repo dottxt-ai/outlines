@@ -1,8 +1,11 @@
+import inspect
 import itertools as it
 import json
 import re
+from typing import Callable, Union
 
 from jsonschema.protocols import Validator
+from pydantic import BaseModel, create_model
 from referencing import Registry, Resource
 from referencing._core import Resolver
 from referencing.jsonschema import DRAFT202012
@@ -23,23 +26,43 @@ type_to_regex = {
 }
 
 
-def build_regex_from_schema(schema: str):
+def build_regex_from_object(object: Union[str, Callable, BaseModel]):
     """Turn a JSON schema into a regex that matches any JSON object that follows
     this schema.
+
+    JSON Schema is a declarative language that allows to annotate JSON documents
+    with types and descriptions. These schemas can be generated from any Python
+    datastructure that has type annotation: namedtuples, dataclasses, Pydantic
+    models. And by ensuring that the generation respects the schema we ensure
+    that the output can be parsed into these objects.
+    This function parses the provided schema and builds a generation schedule which
+    mixes deterministic generation (fixed strings), and sampling with constraints.
 
     Parameters
     ----------
     schema
-        A string that contains the JSON schema.
+        A string that represents a JSON Schema.
 
     Returns
     -------
-    A string that contains a regular expression that matches any JSON object that
-    follows the schema.
+    A generation schedule. A list of strings that represent the JSON
+    schema's structure and regular expression that define the structure of
+    the fields.
+
+    References
+    ----------
+    .. [0] JSON Schema. https://json-schema.org/
 
     """
+
+    if isinstance(object, type(BaseModel)):
+        schema = object.model_json_schema()
+    elif callable(object):
+        schema = get_schema_from_signature(object)
+    else:
+        schema = json.loads(object)
+
     Validator.check_schema(schema)
-    schema = json.loads(schema)
 
     # Build reference resolver
     schema = Resource(contents=schema, specification=DRAFT202012)
@@ -214,3 +237,23 @@ def to_regex(resolver: Resolver, instance: dict):
     regular expression. Make sure it is valid to the JSON Schema specification. If
     it is, please open an issue on the Outlines repository"""
     )
+
+
+def get_schema_from_signature(fn: Callable) -> str:
+    """Turn a function signature into a JSON schema.
+
+    Every JSON object valid to the output JSON Schema can be passed
+    to `fn` using the ** unpacking syntax.
+
+    """
+    signature = inspect.signature(fn)
+    arguments = {}
+    for name, arg in signature.parameters.items():
+        if arg.annotation == inspect._empty:
+            raise ValueError("Each argument must have a type annotation")
+        else:
+            arguments[name] = (arg.annotation, ...)
+
+    model = create_model("Arguments", **arguments)
+
+    return model.model_json_schema()
