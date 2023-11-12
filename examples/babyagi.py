@@ -134,6 +134,8 @@ def one_cycle(objective: str, task_list, next_task_id: int):
     )
     new_tasks = model(prompt)
 
+    new_tasks = create_tasks_fmt(new_tasks)
+
     for task in new_tasks:
         next_task_id += 1
         task_list.append({"task_id": next_task_id, "task_name": task})
@@ -142,6 +144,8 @@ def one_cycle(objective: str, task_list, next_task_id: int):
         objective, [task["task_name"] for task in task_list], next_task_id
     )
     prioritized_tasks = model(prompt)
+
+    prioritized_tasks = prioritize_tasks_fmt(prioritized_tasks)
 
     return task, result, prioritized_tasks, next_task_id
 

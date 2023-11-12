@@ -22,7 +22,7 @@ def split_into_steps(question, model_name: str):
         Let's solve this problem by splitting it into steps.
         """
 
-    complete = models.text_completion.openai(model_name)
+    complete = models.text_completion.openai(model_name, max_tokens=500)
 
     prompt = solve(question)
     answer = complete(prompt)
@@ -43,12 +43,12 @@ def fill_in_the_blanks(question, model_name: str):
     def solve(memory):
         """{{memory}}. Let's begin."""
 
-    complete = models.text_completion.openai(model_name)
+    complete = models.text_completion.openai(model_name, max_tokens=500)
 
     prompt = determine_goal(question)
     answer = complete(prompt, stop_at=["."])
     prompt = solve(prompt + answer)
-    answer = complete(prompt, stop_at=["."])
+    answer = complete(prompt)
     completed = prompt + answer
 
     return completed
@@ -76,14 +76,14 @@ def ask_an_expert(question, model_name: str):
     @text.prompt
     def get_answer(question, expert, memory):
         """
-        {{memory}}
+        {{memory}}".
         I am ready to ask my question.
         "{{expert}}" I say,
         {{question}}
         """
 
     complete_expert = models.text_completion.openai(model_name)
-    complete_answer = models.text_completion.openai(model_name)
+    complete_answer = models.text_completion.openai(model_name, max_tokens=500)
 
     prompt = find_expert(question)
     expert = complete_expert(prompt, stop_at=['"'])
@@ -111,7 +111,7 @@ def ask_an_expert_simple(question, model_name: str):
         """
 
     model_expert = models.text_completion.openai(model_name)
-    model_answer = models.text_completion.openai(model_name)
+    model_answer = models.text_completion.openai(model_name, max_tokens=500)
 
     prompt = find_expert(question)
     expert = model_expert(prompt, stop_at=["\n", "."])
@@ -157,7 +157,9 @@ E) CANDIDATE : AMBITION
     meaning_q = "What is the meaning of life?"
 
     run_example(split_into_steps, math_q, args.model)
-    run_example(split_into_steps, sat_q, args.model)
+    run_example(
+        split_into_steps, sat_q, args.model
+    )  # gpt>3.5 usually gets this one right
     run_example(fill_in_the_blanks, sat_q, args.model)
     run_example(ask_an_expert, alignment_q, args.model)
     run_example(ask_an_expert_simple, meaning_q, args.model)
