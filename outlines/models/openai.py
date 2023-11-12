@@ -1,7 +1,6 @@
 """Integration with OpenAI's API."""
 import functools
 import os
-import warnings
 from typing import Callable, Dict, List, Optional, Union
 
 import numpy as np
@@ -64,31 +63,20 @@ def OpenAICompletion(
         *,
         samples=1,
         stop_at: Union[List[Optional[str]], str] = [],
-        is_in=None,
-        type=None,
+        is_in: Optional[List[str]] = None,
     ):
-        import tiktoken
-
-        if isinstance(stop_at, str):
-            stop_at = [stop_at]
-
-        mask = {}
-        if type is not None:
-            encoder = tiktoken.encoding_for_model(model_name)
-            mask = create_type_mask(type, encoder)
-
         if is_in is not None and stop_at:
             raise TypeError("You cannot set `is_in` and `stop_at` at the same time.")
-        elif is_in is not None and len(mask) > 0:
-            raise TypeError("You cannot set `is_in` and `mask` at the same time.")
         elif is_in is not None:
             return generate_choice(prompt, is_in, samples)
         else:
-            return generate_base(prompt, stop_at, samples, mask)
+            if isinstance(stop_at, str):
+                stop_at = [stop_at]
+            return generate_base(prompt, stop_at, samples)
 
-    @functools.partial(outlines.vectorize, signature="(),(m),(),()->(s)")
+    @functools.partial(outlines.vectorize, signature="(),(m),()->(s)")
     async def generate_base(
-        prompt: str, stop_at: List[Optional[str]], samples: int, mask: Dict[int, int]
+        prompt: str, stop_at: List[Optional[str]], samples: int
     ) -> str:
         responses = await call_api(
             model_name,
@@ -96,7 +84,7 @@ def OpenAICompletion(
             max_tokens,
             temperature,
             stop_at,
-            mask,
+            {},
             samples,
         )
 
@@ -160,62 +148,6 @@ def OpenAICompletion(
         return np.array(decoded_samples)
 
     return generate
-
-
-def create_int_mask(encoder):
-    """Create an exclusive mask for digit tokens."""
-    warnings.warn(
-        "The OpenAI API only allows for limited type control; results may not be accurate",
-        UserWarning,
-    )
-
-    int_token_ids = []
-
-    tokens = encoder._mergeable_ranks
-    for token, token_id in tokens.items():
-        if all([c.isdigit() for c in encoder.decode([token_id])]):
-            int_token_ids.append(token_id)
-
-    # TODO: This is a hack because OpenAI's API does not
-    # allow more than 300 entries for `logit_bias`
-    special_tokens = encoder._special_tokens
-    mask = {special_tokens["<|endoftext|>"]: 100}
-    mask.update({int_token_ids[i]: 100 for i in range(300 - len(special_tokens))})
-
-    return mask
-
-
-def create_float_mask(encoder):
-    """Create an exclusive mask for digit tokens."""
-    warnings.warn(
-        "The OpenAI API only allows for limited type control; results may not be accurate",
-        UserWarning,
-    )
-
-    int_token_ids = []
-
-    tokens = encoder._mergeable_ranks
-    for token, token_id in tokens.items():
-        if all([c.isdigit() or c == "." for c in encoder.decode([token_id])]):
-            int_token_ids.append(token_id)
-
-    # TODO: This is a hack because OpenAI's API does not
-    # allow more than 300 entries for `logit_bias`
-    special_tokens = encoder._special_tokens
-    mask = {special_tokens["<|endoftext|>"]: 100}
-    mask.update({int_token_ids[i]: 100 for i in range(300 - len(special_tokens))})
-
-    return mask
-
-
-type_to_mask = {
-    "float": create_float_mask,
-    "int": create_int_mask,
-}
-
-
-def create_type_mask(type: str, encoder):
-    return type_to_mask[type](encoder)
 
 
 def error_handler(api_call_fn: Callable) -> Callable:
