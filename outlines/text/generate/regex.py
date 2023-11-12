@@ -9,6 +9,7 @@ from pydantic import BaseModel
 from outlines.text.fsm import create_fsm_index_tokenizer, make_deterministic_fsm
 from outlines.text.generate.continuation import Continuation
 from outlines.text.json_schema import build_regex_from_object, get_schema_from_signature
+from outlines.text.types import python_types_to_regex
 
 if TYPE_CHECKING:
     from outlines.text.generate.sample import Sampler
@@ -266,8 +267,9 @@ def regex(
     )
 
 
-def integer(
+def format(
     model,
+    python_type,
     max_tokens: Optional[int] = None,
     *,
     sampler: Optional["Sampler"] = None,
@@ -288,6 +290,8 @@ def integer(
     ----------
     model
         The language model to use to compute the next-token logits.
+    python_type
+        The format in which the output is expected, defined as a Python type.
     max_tokens
         The maximum number of tokens to generate.
     sampler
@@ -299,51 +303,10 @@ def integer(
         Allow sampling of tokens corresponding to empty strings.
 
     """
+    regex_str = python_types_to_regex(python_type)
     return Regex(
         model,
-        r"[-+]?\d+",
-        max_tokens,
-        sampler=sampler,
-        allow_empty_tokens=allow_empty_tokens,
-    )
-
-
-def float(
-    model,
-    max_tokens: Optional[int] = None,
-    *,
-    sampler: Optional["Sampler"] = None,
-    allow_empty_tokens: bool = True,
-):
-    """Generate floating-point numbers.
-
-    The regex used to constrain the generation optionally matches plus or minus
-    signs, and forbids leading zeros (even if the `float` function in Python
-    allows them).
-
-    .. note:
-        Reuse instances of these guided generators whenever possible,
-        because constructing them has more overhead than generating
-        token sequences from them.  See the docstring for `Regex`.
-
-    Parameters
-    ----------
-    model
-        The language model to use to compute the next-token logits.
-    max_tokens
-        The maximum number of tokens to generate.
-    sampler
-        The function used to draw samples.  Defaults to
-        `outlines.text.generate.sample.multinomial`.  See
-        `outlines.text.generate.sample.Sampler` for the expected form of
-        such functions.
-    allow_empty_tokens
-        Allow sampling of tokens corresponding to empty strings.
-
-    """
-    return Regex(
-        model,
-        r"([+-]?((0|[1-9]+)([.][0-9]*)?)|([.][0-9]+))",
+        regex_str,
         max_tokens,
         sampler=sampler,
         allow_empty_tokens=allow_empty_tokens,

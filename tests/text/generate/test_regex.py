@@ -116,7 +116,7 @@ def test_regex_no_valid_transition():
 )
 def test_integer_proposal(input_ids, proposal):
     model = Model()
-    generator = generate.integer(model)
+    generator = generate.format(model, int)
 
     logits = torch.ones(len(model.tokenizer.vocabulary))
     result = generator.create_proposal(torch.tensor(input_ids), logits)
@@ -156,44 +156,19 @@ def test_choice_proposal():
 
 
 @pytest.mark.parametrize(
-    "input_ids, proposal",
-    [
-        ([[]], [[-math.inf, 1.0, 1.0, 1.0, 1.0, -math.inf, -math.inf]]),
-        ([[3]], [[1.0, -math.inf, 1.0, -math.inf, 1.0, -math.inf, -math.inf]]),
-    ],
-)
-def test_float_proposal(input_ids, proposal):
-    model = Model()
-    generator = generate.float(model)
-
-    logits = torch.ones(len(model.tokenizer.vocabulary))
-    result = generator.create_proposal(torch.tensor(input_ids), logits)
-    assert torch.equal(
-        result,
-        torch.tensor(proposal),
-    )
-
-
-@pytest.mark.parametrize(
     "input_ids, proposal, with_empty",
     [
-        ([[]], [[-math.inf, 1.0, 1.0, 1.0, 1.0, -math.inf, -math.inf, 1]], True),
-        (
-            [[]],
-            [[-math.inf, 1.0, 1.0, 1.0, 1.0, -math.inf, -math.inf, -math.inf]],
-            False,
-        ),
-        ([[3]], [[1.0, -math.inf, 1.0, -math.inf, 1.0, -math.inf, -math.inf, 1]], True),
+        ([[]], [[-math.inf, 1.0, 1.0, 1.0, 1.0, -math.inf, -math.inf]], False),
         (
             [[3]],
-            [[1.0, -math.inf, 1.0, -math.inf, 1.0, -math.inf, -math.inf, -math.inf]],
-            False,
+            [[-math.inf, -math.inf, 1.0, -math.inf, 1.0, -math.inf, -math.inf]],
+            True,
         ),
     ],
 )
-def test_empty_strings(input_ids, proposal, with_empty):
-    model = ModelWithEmpty()
-    generator = generate.float(model, allow_empty_tokens=with_empty)
+def test_float_proposal(input_ids, proposal, with_empty):
+    model = Model()
+    generator = generate.format(model, float, allow_empty_tokens=with_empty)
 
     logits = torch.ones(len(model.tokenizer.vocabulary))
     result = generator.create_proposal(torch.tensor(input_ids), logits)
