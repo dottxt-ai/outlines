@@ -157,7 +157,9 @@ E) CANDIDATE : AMBITION
     meaning_q = "What is the meaning of life?"
 
     run_example(split_into_steps, math_q, args.model)
-    run_example(split_into_steps, sat_q, args.model)  # gpt>3.5 usually gets this one right
+    run_example(
+        split_into_steps, sat_q, args.model
+    )  # gpt>3.5 usually gets this one right
     run_example(fill_in_the_blanks, sat_q, args.model)
     run_example(ask_an_expert, alignment_q, args.model)
     run_example(ask_an_expert_simple, meaning_q, args.model)
