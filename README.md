@@ -345,13 +345,15 @@ description passed to the prompt we define a custom Jinja filter that can
 extract the expected response's schema:
 
 ``` python
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 import outlines.text as text
 
 
 class Joke(BaseModel):
-    joke: str
-    explanation: str
+    joke: str = Field(description="The joke")
+    explanation: str = Field(
+        description="The explanation of why the joke is funny"
+    )
 
 
 @text.prompt
@@ -364,6 +366,7 @@ def joke_ppt(response_model):
 
 
 joke_ppt(Joke)
+
 # Tell a joke and explain why the joke is funny.
 #
 # RESPONSE FORMAT:
