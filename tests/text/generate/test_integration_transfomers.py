@@ -1,4 +1,3 @@
-import json
 import re
 from enum import Enum
 from typing import List, Union
@@ -75,7 +74,7 @@ def test_transformers_integration_integer():
     rng.manual_seed(0)
 
     model_name = "hf-internal-testing/tiny-random-GPTJForCausalLM"
-    model = models.transformers(model_name, device="cpu")
+    model = models.transformers(model_name)
     prompt = "Write a short sentence"
     sequence = generate.integer(model, max_tokens=10)(prompt, rng=rng)
 
@@ -88,7 +87,7 @@ def test_transformers_integration_integer_array():
     rng.manual_seed(0)
 
     model_name = "hf-internal-testing/tiny-random-GPTJForCausalLM"
-    model = models.transformers(model_name, device="cpu")
+    model = models.transformers(model_name)
     prompts = ["Give me a number", "And another one"]
     sequence = generate.integer(model, max_tokens=10)(prompts, rng=rng)
     assert isinstance(sequence, list)
@@ -102,7 +101,7 @@ def test_transformers_integration_float():
     rng.manual_seed(0)
 
     model_name = "hf-internal-testing/tiny-random-GPTJForCausalLM"
-    model = models.transformers(model_name, device="cpu")
+    model = models.transformers(model_name)
     prompt = "Write a short sentence"
     sequence = generate.float(model, max_tokens=10)(prompt, rng=rng)
 
@@ -143,13 +142,13 @@ def test_transformers_json_basic():
     rng = torch.Generator()
     rng.manual_seed(0)  # make sure that `bar` is not an int
 
-    sequence = generate.json(model, Spam, max_tokens=1000)(prompt, rng=rng)
-    parsed = json.loads(sequence)
-    assert isinstance(parsed["foo"], int)
-    assert isinstance(parsed["bar"], int)
-    assert isinstance(parsed["spam"], str)
-    assert isinstance(parsed["fuzz"], bool)
-    assert len(parsed["spam"]) == 10
+    result = generate.json(model, Spam, max_tokens=1000)(prompt, rng=rng)
+    assert isinstance(result, BaseModel)
+    assert isinstance(result.foo, int)
+    assert isinstance(result.bar, float)
+    assert isinstance(result.spam, str)
+    assert isinstance(result.fuzz, bool)
+    assert len(result.spam) == 10
 
 
 def test_transformers_json_str_enum():
@@ -169,10 +168,10 @@ def test_transformers_json_str_enum():
         user_id: int
         name: Name
 
-    sequence = generate.json(model, User)(prompt, rng=rng)
-    parsed = json.loads(sequence)
-    assert isinstance(parsed["user_id"], int)
-    assert parsed["name"] in ["John", "Marc", "Michel"]
+    result = generate.json(model, User)(prompt, rng=rng)
+    assert isinstance(result, BaseModel)
+    assert isinstance(result.user_id, int)
+    assert result.name in ["John", "Marc", "Michel"]
 
 
 def test_transformers_json_int_enum():
@@ -190,10 +189,10 @@ def test_transformers_json_int_enum():
     class User(BaseModel):
         user_id: Id
 
-    sequence = generate.json(model, User)(prompt, rng=rng)
-    parsed = json.loads(sequence)
-    assert isinstance(parsed["user_id"], int)
-    assert parsed["user_id"] in [1, 2]
+    result = generate.json(model, User)(prompt, rng=rng)
+    assert isinstance(result, BaseModel)
+    assert isinstance(result.user_id, int)
+    assert result.user_id in [1, 2]
 
 
 def test_transformers_json_array():
@@ -208,11 +207,11 @@ def test_transformers_json_array():
     rng = torch.Generator()
     rng.manual_seed(0)
 
-    sequence = generate.json(model, User)(prompt, rng=rng)
-    parsed = json.loads(sequence)
-    assert isinstance(parsed["user_id"], int)
-    assert isinstance(parsed["value"], list)
-    for value in parsed["value"]:
+    result = generate.json(model, User)(prompt, rng=rng)
+    assert isinstance(result, BaseModel)
+    assert isinstance(result.user_id, int)
+    assert isinstance(result.value, list)
+    for value in result.value:
         assert isinstance(value, float) or isinstance(value, int)
 
 
@@ -229,11 +228,11 @@ def test_transformers_json_union():
     rng.manual_seed(4)
 
     sequence = generate.json(model, Spam, max_tokens=100)(prompt, rng=rng)
-    parsed = json.loads(sequence)
+    assert isinstance(sequence, BaseModel)
     assert (
-        isinstance(parsed["bar"], int)
-        or isinstance(parsed["bar"], float)
-        or isinstance(parsed["bar"], str)
+        isinstance(sequence.bar, int)
+        or isinstance(sequence.bar, float)
+        or isinstance(sequence.bar, str)
     )
 
 

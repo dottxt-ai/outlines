@@ -8,7 +8,7 @@ from pydantic import BaseModel
 
 from outlines.text.fsm import create_fsm_index_tokenizer, make_deterministic_fsm
 from outlines.text.generate.continuation import Continuation
-from outlines.text.json_schema import build_regex_from_object
+from outlines.text.json_schema import build_regex_from_object, get_schema_from_signature
 
 if TYPE_CHECKING:
     from outlines.text.generate.sample import Sampler
@@ -48,6 +48,7 @@ class Regex(Continuation):
         final_states: Optional[Set[int]] = None,
         states_to_token_maps: Optional[Dict[int, Dict[int, int]]] = None,
         empty_token_ids: Optional[Set[int]] = None,
+        format_fn: Callable[[str], Union[BaseModel, dict, str]] = lambda x: x,
     ):
         """
 
@@ -73,6 +74,8 @@ class Regex(Continuation):
             corresponding FSM end states.
         empty_token_ids
             Pre-computed set of token ids for tokens that are empty strings.
+        format_fn
+            The function to apply to the generated JSON.
 
         """
         super().__init__(model, max_tokens, sampler, stop)
@@ -113,6 +116,7 @@ class Regex(Continuation):
         self.mask_cache: Dict[Tuple[int, int], torch.LongTensor] = {}
         self.regex_string = regex_string
         self.allow_empty_tokens = allow_empty_tokens
+        self.format_fn = format_fn
 
     def create_proposal(
         self, generated_token_ids: torch.LongTensor, logits: torch.DoubleTensor
@@ -215,9 +219,10 @@ class Regex(Continuation):
 
         return mask
 
-    def postprocess_completions(self, completions: List[str]) -> List[str]:
+    def postprocess_completions(self, completions: List[str]):
         self.last_fsm_states.clear()
-        return super().postprocess_completions(completions)
+        results: List[str] = super().postprocess_completions(completions)
+        return [self.format_fn(result) for result in results]
 
 
 def regex(
@@ -391,7 +396,7 @@ def json(
     *,
     sampler: Optional["Sampler"] = None,
     allow_empty_tokens: bool = True,
-):
+) -> Union[dict, BaseModel]:
     """Generate a text sequence that follows a JSON schema or Pydantic model.
 
     .. note:
@@ -435,4 +440,5 @@ def json(
         max_tokens,
         sampler=sampler,
         allow_empty_tokens=allow_empty_tokens,
+        format_fn=format_fn,
     )
