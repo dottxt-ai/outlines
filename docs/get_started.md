@@ -4,7 +4,7 @@ title: Get Started
 
 <!-- Logo -->
 <figure markdown>
-  ![Image title](assets/images/logo.png){ width="300" }
+  ![Outlines logo](assets/images/logo.png){ width="300" }
 </figure>
 
 <!-- Badges -->
@@ -90,3 +90,13 @@ pip install outlines
       "strength": 4171
     }
     `````
+
+## Acknowledgements
+
+<figure markdown>
+  <a href="https://www.normalcomputing.ai">
+  ![Normal Computing logo](assets/images/normal_computing.jpg){ width="150" }
+  </a>
+</figure>
+
+Outlines was originally developed at [@NormalComputing](https://twitter.com/NormalComputing) by [@remilouf](https://twitter.com/remilouf) and [@BrandonTWillard](https://twitter.com/BrandonTWillard).
