@@ -49,6 +49,7 @@ via the next-token logits. It can be used with API-based models as well.
 - [x] 🐍 Interleave completions with loops, conditionals, and custom Python functions
 - [x] 💾 Caching of generations
 - [x] 🤗 Integration with Hugging Face's `transformers` models
+- [x] 🔒 Integration with OpenAI's API
 
 Outlines 〰 has new releases and features coming every week. Make sure to ⭐ star and 👀 watch this repository, follow [@dottxtai][twitter] to stay up to date!
 
