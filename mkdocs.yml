@@ -96,7 +96,9 @@ nav:
   - Reference:
     - reference/index.md
     - Prompting: reference/prompting.md
-    - Generate text: reference/text_generation.md
+    - Generate text:
+        - OpenAI: reference/openai_text_generation.md
+
     - Guided generation:
         - reference/choices.md
         - reference/types.md
