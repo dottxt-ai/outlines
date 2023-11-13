@@ -3,6 +3,8 @@ from typing import TYPE_CHECKING, List, Optional, Tuple, Union
 
 import torch
 
+from outlines.models import OpenAIAPI
+
 if TYPE_CHECKING:
     from outlines.models.transformers import KVCacheType, Transformers
     from outlines.text.generate.sample import Sampler
@@ -33,6 +35,9 @@ class Sequence:
             such functions.
 
         """
+        if isinstance(model, OpenAIAPI):
+            raise TypeError("Cannot use guided generation with the OpenAI API.")
+
         self.model = model
         self.device = model.device
         self.max_tokens = max_tokens
