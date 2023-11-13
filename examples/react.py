@@ -45,22 +45,22 @@ def search_wikipedia(query: str):
 
 
 prompt = build_reAct_prompt("Where is Apple Computers headquarted? ")
-complete = models.text_completion.openai(
-    "gpt-3.5-turbo", max_tokens=128, temperature=1.0
-)
+complete = models.openai("gpt-3.5-turbo", temperature=1.0)
 
 for i in range(1, 10):
-    mode = complete(prompt, is_in=["Tho", "Act"])
+    mode = complete(prompt, is_in=["Tho", "Act"], max_tokens=128)
     prompt = add_mode(i, mode, "", prompt)
 
     if mode == "Tho":
-        thought = complete(prompt, stop_at="\n")
+        thought = complete(prompt, stop_at="\n", max_tokens=128)
         prompt += f"{thought}"
     elif mode == "Act":
-        action = complete(prompt, is_in=["Search", "Finish"])
+        action = complete(prompt, is_in=["Search", "Finish"], max_tokens=128)
         prompt += f"{action} '"
 
-        subject = complete(prompt, stop_at=["'"])  # Apple Computers headquartered
+        subject = complete(
+            prompt, stop_at=["'"], max_tokens=128
+        )  # Apple Computers headquartered
         subject = " ".join(subject.split()[:2])
         prompt += f"{subject}'"
 
