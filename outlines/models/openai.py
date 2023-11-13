@@ -18,7 +18,14 @@ __all__ = ["OpenAIAPI", "openai"]
 
 
 class OpenAIAPI:
-    def __init__(self, model_name: str, temperature: float = 1.0):
+    def __init__(
+        self,
+        model_name: str,
+        api_key: Optional[str] = os.getenv("OPENAI_API_KEY"),
+        temperature: float = 1.0,
+    ):
+        self.api_key = api_key
+
         if "text-" in model_name:
             call_api = call_completion_api
             format_prompt = lambda x: x
@@ -32,9 +39,13 @@ class OpenAIAPI:
                 f"The model {model_name} requested is not available. Only the completion and chat completion models are available for OpenAI."
             )
 
-        @functools.partial(outlines.vectorize, signature="(),(),(m),()->(s)")
+        @functools.partial(outlines.vectorize, signature="(),(),(m),(),()->(s)")
         async def generate_base(
-            prompt: str, max_tokens: int, stop_at: List[Optional[str]], samples: int
+            prompt: str,
+            max_tokens: int,
+            stop_at: List[Optional[str]],
+            samples: int,
+            api_key: str,
         ) -> str:
             responses = await call_api(
                 model_name,
@@ -44,6 +55,7 @@ class OpenAIAPI:
                 stop_at,
                 {},
                 samples,
+                api_key,
             )
 
             if samples == 1:
@@ -55,20 +67,20 @@ class OpenAIAPI:
 
             return results
 
-        @functools.partial(outlines.vectorize, signature="(),(),(m),()->(s)")
+        @functools.partial(outlines.vectorize, signature="(),(),(m),(),()->(s)")
         async def generate_choice(
-            prompt: str, max_tokens: int, is_in: List[str], samples: int
+            prompt: str, max_tokens: int, is_in: List[str], samples: int, api_key: str
         ) -> Union[List[str], str]:
             """Generate a sequence that must be one of many options.
+            `
+                        .. warning::
 
-            .. warning::
+                            This function will call the API once for every token generated.
 
-                This function will call the API once for every token generated.
-
-            We tokenize every choice, iterate over the token lists, create a mask
-            with the current tokens and generate one token. We progressively
-            eliminate the choices that don't start with the currently decoded
-            sequence.
+                        We tokenize every choice, iterate over the token lists, create a mask
+                        with the current tokens and generate one token. We progressively
+                        eliminate the choices that don't start with the currently decoded
+                        sequence.
 
             """
             try:
@@ -105,6 +117,7 @@ class OpenAIAPI:
                         [],
                         mask,
                         samples,
+                        api_key,
                     )
                     decoded.append(extract_choice(response["choices"][0]))
                     prompt = prompt + "".join(decoded)
@@ -128,13 +141,15 @@ class OpenAIAPI:
         if is_in is not None and stop_at:
             raise TypeError("You cannot set `is_in` and `stop_at` at the same time.")
         elif is_in is not None:
-            return self.generate_choice(prompt, max_tokens, is_in, samples)
+            return self.generate_choice(
+                prompt, max_tokens, is_in, samples, self.api_key
+            )
         else:
             if isinstance(stop_at, str):
                 stop_at = [stop_at]
-            return self.generate_base(prompt, max_tokens, stop_at, samples)
-
-        pass
+            return self.generate_base(
+                prompt, max_tokens, stop_at, samples, self.api_key
+            )
 
 
 openai = OpenAIAPI
@@ -145,14 +160,6 @@ def error_handler(api_call_fn: Callable) -> Callable:
 
     def call(*args, **kwargs):
         import openai
-
-        try:
-            os.environ["OPENAI_API_KEY"]
-        except KeyError:
-            raise KeyError(
-                "Could not find the `OPENAI_API_KEY` environment variable, which is necessary to call "
-                "OpenAI's APIs. Please make sure it is set before re-running your model."
-            )
 
         try:
             return api_call_fn(*args, **kwargs)
@@ -193,6 +200,7 @@ async def call_completion_api(
     stop_sequences: List[str],
     logit_bias: Dict[str, int],
     num_samples: int,
+    api_key: str,
 ):
     try:
         import openai
@@ -209,6 +217,7 @@ async def call_completion_api(
         stop=list(stop_sequences) if len(stop_sequences) > 0 else None,
         logit_bias=logit_bias,
         n=int(num_samples),
+        api_key=api_key,
     )
     return response
 
@@ -224,6 +233,7 @@ async def call_chat_completion_api(
     stop_sequences: List[str],
     logit_bias: Dict[str, int],
     num_samples: int,
+    api_key: str,
 ):
     try:
         import openai
@@ -240,6 +250,7 @@ async def call_chat_completion_api(
         stop=list(stop_sequences) if len(stop_sequences) > 0 else None,
         logit_bias=logit_bias,
         n=int(num_samples),
+        api_key=api_key,
     )
 
     return response
