@@ -5,8 +5,15 @@ import numpy as np
 import pytest
 import torch
 
+from outlines import models
 from outlines.models.tokenizer import Tokenizer
 from outlines.text.generate.sequence import Sequence
+
+
+def test_openai_error():
+    model = models.openai("text-davinci-003")
+    with pytest.raises(TypeError):
+        Sequence(model)
 
 
 class MockModel:
