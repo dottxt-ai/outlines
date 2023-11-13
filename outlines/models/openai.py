@@ -72,15 +72,15 @@ class OpenAIAPI:
             prompt: str, max_tokens: int, is_in: List[str], samples: int, api_key: str
         ) -> Union[List[str], str]:
             """Generate a sequence that must be one of many options.
-            `
-                        .. warning::
 
-                            This function will call the API once for every token generated.
+            .. warning::
 
-                        We tokenize every choice, iterate over the token lists, create a mask
-                        with the current tokens and generate one token. We progressively
-                        eliminate the choices that don't start with the currently decoded
-                        sequence.
+                This function will call the API once for every token generated.
+
+            We tokenize every choice, iterate over the token lists, create a mask
+            with the current tokens and generate one token. We progressively
+            eliminate the choices that don't start with the currently decoded
+            sequence.
 
             """
             try:
