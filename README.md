@@ -262,7 +262,7 @@ Outlines can infer the structure of the output from the signature of a function.
 from outlines import models
 from outlines import text
 
-def concat(a: int, b: int):
+def add(a: int, b: int):
     return a + b
 
 model = models.transformers("mistralai/Mistral-7B")
