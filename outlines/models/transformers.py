@@ -1,8 +1,6 @@
 from typing import TYPE_CHECKING, List, Optional, Tuple, Union
 
 import torch
-from datasets.fingerprint import Hasher
-from transformers.file_utils import SPIECE_UNDERLINE
 
 from outlines.models.tokenizer import Tokenizer
 
@@ -157,6 +155,8 @@ class TransformersTokenizer(Tokenizer):
         return text
 
     def convert_token_to_string(self, token: str) -> str:
+        from transformers.file_utils import SPIECE_UNDERLINE
+
         string = self.tokenizer.convert_tokens_to_string([token])
 
         if self.is_llama:
@@ -172,6 +172,8 @@ class TransformersTokenizer(Tokenizer):
         return NotImplemented
 
     def __hash__(self):
+        from datasets.fingerprint import Hasher
+
         return hash(Hasher.hash(self.tokenizer))
 
 
