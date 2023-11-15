@@ -1,11 +1,33 @@
-from typing import Callable, NamedTuple, NewType
+from dataclasses import dataclass
+from typing import NewType, Protocol, Union
 
 import torch
 
-State = NewType("State", int)
+FSMState = NewType("FSMState", int)
 
 
-class Index(NamedTuple):
-    next_instruction: Callable[[State], torch.Tensor]
-    next_state: Callable[[State, torch.Tensor], State]
-    is_final: Callable[[State], bool]
+@dataclass(frozen=True)
+class GenerateInstruction:
+    logits_mask: str
+    temperature: float
+    top_k: int
+    top_p: int
+
+
+@dataclass(frozen=True)
+class FillInstruction:
+    token_ids: int
+
+
+FSMInstruction = Union[GenerateInstruction, FillInstruction]
+
+
+class FSM(Protocol):
+    def next_instruction(self, state: FSMState) -> FSMInstruction:
+        ...
+
+    def next_state(self, state: FSMState, token_id: torch.Tensor) -> FSMState:
+        ...
+
+    def is_final_state(self, state: FSMState) -> bool:
+        ...
