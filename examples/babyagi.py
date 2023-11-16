@@ -7,8 +7,8 @@ The original repo can be found at https://github.com/yoheinakajima/babyagi
 from collections import deque
 from typing import Deque, List
 
+import outlines
 import outlines.models as models
-import outlines.text as text
 
 model = models.openai("gpt-3.5-turbo")
 
@@ -18,7 +18,7 @@ model = models.openai("gpt-3.5-turbo")
 #################
 
 
-@text.prompt
+@outlines.prompt
 def perform_task_ppt(objective: str, task: str):
     """You are an AI who performs one task based on the following objective: {{objective}}.
 
@@ -33,7 +33,7 @@ def perform_task_ppt(objective: str, task: str):
 #####################
 
 
-@text.prompt
+@outlines.prompt
 def create_tasks_ppt(
     objective: str, previous_task: str, result: str, task_list: List[str]
 ):
@@ -69,7 +69,7 @@ def create_tasks_fmt(result: str) -> List[str]:
 ########################
 
 
-@text.prompt
+@outlines.prompt
 def prioritize_tasks_ppt(objective: str, task_names: List[str], next_task_id: int):
     """You are a task prioritization AI tasked with cleaning the formatting of \
     and reprioritizing the following tasks: {{task_names}}.

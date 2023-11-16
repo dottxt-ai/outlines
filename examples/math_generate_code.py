@@ -1,6 +1,6 @@
 """Example from https://dust.tt/spolu/a/d12ac33169"""
+import outlines
 import outlines.models as models
-import outlines.text as text
 
 examples = [
     {"question": "What is 37593 * 67?", "code": "37593 * 67"},
@@ -17,7 +17,7 @@ examples = [
 question = "Carla is downloading a 200 GB file. She can download 2 GB/minute, but 40% of the way through the download, the download fails. Then Carla has to restart the download from the beginning. How load did it take her to download the file in minutes?"
 
 
-@text.prompt
+@outlines.prompt
 def answer_with_code_prompt(question, examples):
     """
     {% for example in examples %}

@@ -1,1 +1,1 @@
-::: outlines.text.prompts
+::: outlines.prompts

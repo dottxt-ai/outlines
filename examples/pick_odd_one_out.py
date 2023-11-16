@@ -9,11 +9,11 @@ References
        arXiv preprint arXiv:2212.06094.
 
 """
+import outlines
 import outlines.models as models
-import outlines.text as text
 
 
-@text.prompt
+@outlines.prompt
 def build_ooo_prompt(options):
     """
     Pick the odd word out: skirt, dress, pen, jacket.

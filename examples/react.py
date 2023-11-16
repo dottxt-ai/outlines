@@ -12,11 +12,11 @@ References
 """
 import requests  # type: ignore
 
+import outlines
 import outlines.models as models
-import outlines.text as text
 
 
-@text.prompt
+@outlines.prompt
 def build_reAct_prompt(question):
     """What is the elevation range for the area that the eastern sector of the Colorado orogeny extends into?
     Tho 1: I need to search Colorado orogeny, find the area that the eastern sector of the Colorado ...
@@ -30,7 +30,7 @@ def build_reAct_prompt(question):
     """
 
 
-@text.prompt
+@outlines.prompt
 def add_mode(i, mode, result, prompt):
     """{{ prompt }}
     {{ mode }} {{ i }}: {{ result }}
