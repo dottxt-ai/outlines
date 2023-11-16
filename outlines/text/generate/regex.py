@@ -12,7 +12,7 @@ from outlines.text.json_schema import build_regex_from_object, get_schema_from_s
 from outlines.text.types import python_types_to_regex
 
 if TYPE_CHECKING:
-    from outlines.text.generate.sample import Sampler
+    from outlines.text.generate.samplers import Sampler
 
 
 class Regex(Continuation):
