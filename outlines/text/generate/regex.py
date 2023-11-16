@@ -8,7 +8,7 @@ from pydantic import BaseModel
 
 from outlines.text.fsm import create_fsm_index_tokenizer, make_deterministic_fsm
 from outlines.text.generate.continuation import Continuation
-from outlines.text.json_schema import build_regex_from_object, get_schema_from_signature
+from outlines.text.json_schema import build_regex_from_object, get_model_from_signature
 from outlines.text.types import python_types_to_regex
 
 if TYPE_CHECKING:
@@ -389,7 +389,9 @@ def json(
         schema = pyjson.dumps(schema_object.model_json_schema())
         format_fn = lambda x: schema_object.model_validate(pyjson.loads(x))
     elif callable(schema_object):
-        schema = pyjson.dumps(get_schema_from_signature(schema_object))
+        schema = pyjson.dumps(
+            get_model_from_signature(schema_object).model_json_schema()
+        )
         # TODO: Convert string fields to their respective types
         format_fn = lambda x: pyjson.loads(x)
     else:

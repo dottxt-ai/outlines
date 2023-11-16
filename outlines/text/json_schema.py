@@ -58,7 +58,8 @@ def build_regex_from_object(object: Union[str, Callable, BaseModel]):
     if isinstance(object, type(BaseModel)):
         schema = object.model_json_schema()
     elif callable(object):
-        schema = get_schema_from_signature(object)
+        model = get_model_from_signature(object)
+        schema = model.model_json_schema()
     else:
         schema = json.loads(object)
 
@@ -239,7 +240,7 @@ def to_regex(resolver: Resolver, instance: dict):
     )
 
 
-def get_schema_from_signature(fn: Callable) -> str:
+def get_model_from_signature(fn: Callable):
     """Turn a function signature into a JSON schema.
 
     Every JSON object valid to the output JSON Schema can be passed
@@ -256,4 +257,4 @@ def get_schema_from_signature(fn: Callable) -> str:
 
     model = create_model("Arguments", **arguments)
 
-    return model.model_json_schema()
+    return model

@@ -13,7 +13,7 @@ from outlines.text.json_schema import (
     STRING,
     STRING_INNER,
     build_regex_from_object,
-    get_schema_from_signature,
+    get_model_from_signature,
     to_regex,
 )
 
@@ -22,7 +22,8 @@ def test_function_basic():
     def test_function(foo: str, bar: List[int]):
         ...
 
-    result = get_schema_from_signature(test_function)
+    result = get_model_from_signature(test_function)
+    result = result.model_json_schema()
     assert result["type"] == "object"
     assert list(result["properties"].keys()) == ["foo", "bar"]
     assert result["properties"]["foo"]["type"] == "string"
@@ -35,7 +36,7 @@ def test_function_no_type():
         ...
 
     with pytest.raises(ValueError):
-        get_schema_from_signature(test_function)
+        get_model_from_signature(test_function)
 
 
 def test_from_pydantic():
