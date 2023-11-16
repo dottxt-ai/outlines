@@ -30,20 +30,20 @@ class OpenAIAPI:
             )
 
         try:
-            self.client = openai.AsyncOpenAI(api_key=api_key, max_retries=max_retries)
+            client = openai.AsyncOpenAI(api_key=api_key, max_retries=max_retries)
         except openai.OpenAIError as e:
             raise e
 
         @error_handler
         @cache
         async def cached_call_completion_api(*args, **kwargs):
-            response = await call_completion_api(self.client, *args, **kwargs)
+            response = await call_completion_api(client, *args, **kwargs)
             return response
 
         @error_handler
         @cache
         async def cached_call_chat_completion_api(*args, **kwargs):
-            response = await call_chat_completion_api(self.client, *args, **kwargs)
+            response = await call_chat_completion_api(client, *args, **kwargs)
             return response
 
         if "text-" in model_name:
@@ -59,13 +59,12 @@ class OpenAIAPI:
                 f"The model {model_name} requested is not available. Only the completion and chat completion models are available for OpenAI."
             )
 
-        @functools.partial(outlines.vectorize, signature="(),(),(m),(),()->(s)")
+        @functools.partial(outlines.vectorize, signature="(),(),(m),()->(s)")
         async def generate_base(
             prompt: str,
             max_tokens: int,
             stop_at: List[Optional[str]],
             samples: int,
-            client: openai.AsyncOpenAI,
         ) -> str:
             responses = await call_api(
                 model_name,
@@ -86,13 +85,11 @@ class OpenAIAPI:
 
             return results
 
-        @functools.partial(outlines.vectorize, signature="(),(),(m),(),()->(s)")
+        @functools.partial(outlines.vectorize, signature="(),(m),()->(s)")
         async def generate_choice(
             prompt: str,
-            max_tokens: int,
             is_in: List[str],
             samples: int,
-            client: openai.AsyncOpenAI,
         ) -> Union[List[str], str]:
             """Generate a sequence that must be one of many options.
 
@@ -139,9 +136,10 @@ class OpenAIAPI:
                         temperature,
                         [],
                         mask,
-                        samples,
+                        1,
                     )
                     decoded.append(extract_choice(response["choices"][0]))
+
                     prompt = prompt + "".join(decoded)
 
                 decoded_samples.append("".join(decoded))
@@ -163,11 +161,11 @@ class OpenAIAPI:
         if is_in is not None and stop_at:
             raise TypeError("You cannot set `is_in` and `stop_at` at the same time.")
         elif is_in is not None:
-            return self.generate_choice(prompt, max_tokens, is_in, samples, self.client)
+            return self.generate_choice(prompt, is_in, samples)
         else:
             if isinstance(stop_at, str):
                 stop_at = [stop_at]
-            return self.generate_base(prompt, max_tokens, stop_at, samples, self.client)
+            return self.generate_base(prompt, max_tokens, stop_at, samples)
 
 
 openai = OpenAIAPI
