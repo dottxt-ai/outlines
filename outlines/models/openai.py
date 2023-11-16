@@ -6,6 +6,7 @@ from itertools import zip_longest
 from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Set, Tuple, Union
 
 import numpy as np
+from pydantic import BaseModel
 
 import outlines
 from outlines.caching import cache
@@ -14,6 +15,18 @@ __all__ = ["OpenAIAPI", "openai"]
 
 if TYPE_CHECKING:
     from openai import AsyncOpenAI
+
+
+JSON_ERROR_MSG = """
+ _______________________________
+< Damn OpenAI, missed it again! >
+ -------------------------------
+        \\   ^__^
+         \\  (oo)\\_______
+            (__)\\       )\\/\
+                ||----w |
+                ||     ||
+"""
 
 
 class OpenAIAPI:
@@ -232,10 +245,19 @@ class OpenAIAPI:
         prompt: str,
         max_tokens: int = 500,
         *,
+        response_schema=None,
         samples=1,
         stop_at: Union[List[Optional[str]], str] = [],
         is_in: Optional[List[str]] = None,
     ):
+        if response_schema is not None:
+            if isinstance(response_schema, type(BaseModel)):
+                _ = response_schema.model_json_schema()
+            else:
+                raise TypeError(
+                    "The `schema_object` passed to the JSON generating function must either be a string that represents a valid JSON Schema, a Pydantic model or a function with a type-annotated signature."
+                )
+
         if is_in is not None and stop_at:
             raise TypeError("You cannot set `is_in` and `stop_at` at the same time.")
         elif is_in is not None:
@@ -262,7 +284,9 @@ def error_handler(api_call_fn: Callable) -> Callable:
             openai.InternalServerError,
             openai.RateLimitError,
         ) as e:
-            raise OSError(f"Could not connect to the OpenAI API: {e}")
+            raise OSError(
+                f"Could not connect to the OpenAI API: {e}. Responses from OpenAI are cached, and your generation will resume from where it started at the next call."
+            )
         except (
             openai.AuthenticationError,
             openai.BadRequestError,
