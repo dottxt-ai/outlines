@@ -4,9 +4,9 @@ import interegular
 import pytest
 import torch
 
-import outlines.text.generate as generate
-from outlines.text.fsm import create_fsm_index_tokenizer, make_deterministic_fsm
-from outlines.text.generate.regex import Regex
+import outlines.generate as generate
+from outlines.generate.regex import Regex
+from outlines.index.fsm import create_fsm_index_tokenizer, make_deterministic_fsm
 
 
 class Tokenizer:

@@ -14,7 +14,7 @@ from transformers import (
     set_seed,
 )
 
-from outlines.text.parsing import PartialLark, PartialPythonIndenter
+from outlines.index.parsing import PartialLark, PartialPythonIndenter
 
 revision = None
 checkpoint = "Salesforce/codegen-350M-mono"

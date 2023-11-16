@@ -7,10 +7,10 @@ import pytest
 import torch
 from pydantic import BaseModel, constr
 
+import outlines.generate as generate
 import outlines.models as models
-import outlines.text.generate as generate
+from outlines.index.fsm import reduced_vocabulary
 from outlines.models.transformers import TransformerTokenizer
-from outlines.text.fsm import reduced_vocabulary
 
 
 def test_transformers_integration_continuation():

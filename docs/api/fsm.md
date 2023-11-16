@@ -1,1 +1,1 @@
-::: outlines.text.fsm
+::: outlines.index.fsm

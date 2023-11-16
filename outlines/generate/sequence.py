@@ -6,8 +6,8 @@ import torch
 from outlines.models import OpenAI
 
 if TYPE_CHECKING:
-from outlines.models.transformers import KVCacheType, Transformer
-from outlines.text.generate.sample import Sampler
+    from outlines.generate.samplers import Sampler
+    from outlines.models.transformers import KVCacheType, Transformer
 
 
 class Sequence:
@@ -46,7 +46,7 @@ class Sequence:
             model.tokenizer.pad_token_id, device=model.device
         )
         if sampler is None:
-            from outlines.text.generate.samplers import multinomial
+            from outlines.generate.samplers import multinomial
 
             self.sampler = multinomial
         else:

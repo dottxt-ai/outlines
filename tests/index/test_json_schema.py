@@ -5,7 +5,7 @@ from typing import List
 import pytest
 from pydantic import BaseModel, constr
 
-from outlines.text.json_schema import (
+from outlines.index.json_schema import (
     BOOLEAN,
     INTEGER,
     NULL,

@@ -1,6 +1,6 @@
 import torch
 
-from outlines.text.generate.continuation import Continuation, continuation
+from outlines.generate.continuation import Continuation, continuation
 
 
 class Tokenizer:

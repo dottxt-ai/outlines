@@ -2,11 +2,7 @@ import math
 
 import torch
 
-from outlines.text.generate.samplers import (
-    greedy,
-    multinomial,
-    vectorized_random_choice,
-)
+from outlines.generate.samplers import greedy, multinomial, vectorized_random_choice
 
 
 def test_greedy():

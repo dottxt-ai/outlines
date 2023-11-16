@@ -1,1 +1,1 @@
-::: outlines.text.generate.samplers
+::: outlines.generate.samplers

@@ -2,10 +2,10 @@ from typing import TYPE_CHECKING, List, Optional, Union
 
 import torch
 
-from outlines.text.generate.sequence import Sequence
+from outlines.generate.sequence import Sequence
 
 if TYPE_CHECKING:
-    from outlines.text.generate.samplers import Sampler
+    from outlines.generate.samplers import Sampler
 
 
 class Continuation(Sequence):

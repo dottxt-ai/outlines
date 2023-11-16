@@ -6,8 +6,7 @@ import transformers
 from pydantic import BaseModel, conlist
 
 import outlines
-import outlines.models as models
-import outlines.text as text
+from outlines import models
 
 
 class QuestionChoice(str, Enum):
@@ -122,7 +121,7 @@ model = models.transformers(
 new_description = "I'm a laid-back lawyer who spends a lot of his free-time gaming. I work in a corporate office, but ended up here after the start-up I cofounded got acquired, so still play ping pong with my cool coworkers every day. I have a bar at home where I make cocktails, which is great for entertaining friends. I secretly like to wear suits and get a new one tailored every few months. I also like weddings because I get to wear those suits, and it's a good excuse for a date. I watch the latest series because I'm paying, with my hard-earned money, for every streaming service."
 
 prompt = dating_profile_prompt(description=new_description, examples=samples)
-profile = text.generate.json(model, DatingProfile)(prompt)  # type: ignore
+profile = outlines.generate.json(model, DatingProfile)(prompt)  # type: ignore
 print(profile)
 
 # Sample generated profiles
