@@ -5,7 +5,7 @@ import torch
 from outlines.text.generate.sequence import Sequence
 
 if TYPE_CHECKING:
-    from outlines.text.generate.sample import Sampler
+    from outlines.text.generate.samplers import Sampler
 
 
 class Continuation(Sequence):

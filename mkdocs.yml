@@ -127,5 +127,5 @@ nav:
       - api/fsm.md
       - api/parsing.md
       - api/regex.md
-      - api/sample.md
+      - api/samplers.md
       - api/continuation.md

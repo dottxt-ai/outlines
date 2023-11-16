@@ -1,1 +1,0 @@
-::: outlines.text.generate.sample
