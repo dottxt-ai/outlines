@@ -11,12 +11,12 @@ References
 """
 import argparse
 
+import outlines
 import outlines.models as models
-import outlines.text as text
 
 
 def split_into_steps(question, model_name: str):
-    @text.prompt
+    @outlines.prompt
     def solve(question):
         """{{question}}
         Rephrase : : as a true or false statement, identify an Object, relationship and subject
@@ -37,14 +37,14 @@ def split_into_steps(question, model_name: str):
 
 
 def fill_in_the_blanks(question, model_name: str):
-    @text.prompt
+    @outlines.prompt
     def determine_goal(question):
         """{{question}}
 
         In order to solve this problem, we will analyze each of the options and determine
         """
 
-    @text.prompt
+    @outlines.prompt
     def solve(memory):
         """{{memory}}. Let's begin."""
 
@@ -60,7 +60,7 @@ def fill_in_the_blanks(question, model_name: str):
 
 
 def ask_an_expert(question, model_name: str):
-    @text.prompt
+    @outlines.prompt
     def find_expert(question):
         """
         {{question}}
@@ -78,7 +78,7 @@ def ask_an_expert(question, model_name: str):
         on the screen: "
         """
 
-    @text.prompt
+    @outlines.prompt
     def get_answer(question, expert, memory):
         """
         {{memory}}".
@@ -99,14 +99,14 @@ def ask_an_expert(question, model_name: str):
 
 
 def ask_an_expert_simple(question, model_name: str):
-    @text.prompt
+    @outlines.prompt
     def find_expert(question):
         """
         Q: {{question}}
         A: A good person to answer this question would be
         """
 
-    @text.prompt
+    @outlines.prompt
     def get_answer(expert, memory):
         """
         {{memory}}.

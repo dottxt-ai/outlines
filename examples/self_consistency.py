@@ -2,8 +2,8 @@ import re
 
 import numpy as np
 
+import outlines
 import outlines.models as models
-import outlines.text as text
 
 examples = [
     {
@@ -43,7 +43,7 @@ examples = [
 question = "When I was 6 my sister was half my age. Now I’m 70 how old is my sister?"
 
 
-@text.prompt
+@outlines.prompt
 def few_shots(question, examples):
     """
     {% for example in examples %}

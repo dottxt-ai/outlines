@@ -3,42 +3,43 @@ from typing import List
 import pytest
 from pydantic import BaseModel, Field
 
-import outlines.text as text
+import outlines
+from outlines.prompts import render
 
 
 def test_render():
     tpl = """
     A test string"""
-    assert text.render(tpl) == "A test string"
+    assert render(tpl) == "A test string"
 
     tpl = """
     A test string
     """
-    assert text.render(tpl) == "A test string"
+    assert render(tpl) == "A test string"
 
     tpl = """
         A test
         Another test
     """
-    assert text.render(tpl) == "A test\nAnother test"
+    assert render(tpl) == "A test\nAnother test"
 
     tpl = """A test
         Another test
     """
-    assert text.render(tpl) == "A test\nAnother test"
+    assert render(tpl) == "A test\nAnother test"
 
     tpl = """
         A test line
             An indented line
     """
-    assert text.render(tpl) == "A test line\n    An indented line"
+    assert render(tpl) == "A test line\n    An indented line"
 
     tpl = """
         A test line
             An indented line
 
     """
-    assert text.render(tpl) == "A test line\n    An indented line\n"
+    assert render(tpl) == "A test line\n    An indented line\n"
 
 
 def test_render_escaped_linebreak():
@@ -47,7 +48,7 @@ def test_render_escaped_linebreak():
         that we break \
         in several lines
     """
-    assert text.render(tpl) == "A long test that we break in several lines"
+    assert render(tpl) == "A long test that we break in several lines"
 
     tpl = """
         Break in \
@@ -58,7 +59,7 @@ def test_render_escaped_linebreak():
         Goes back to normal
     """
     assert (
-        text.render(tpl)
+        render(tpl)
         == "Break in several lines But respect the indentation\n    on line breaks.\nAnd after everything Goes back to normal"
     )
 
@@ -70,7 +71,7 @@ def test_render_jinja():
 
     # Notice the newline after the end of the loop
     examples = ["one", "two"]
-    prompt = text.render(
+    prompt = render(
         """
         {% for e in examples %}
         Example: {{e}}
@@ -81,7 +82,7 @@ def test_render_jinja():
 
     # We can remove the newline by cloing with -%}
     examples = ["one", "two"]
-    prompt = text.render(
+    prompt = render(
         """
         {% for e in examples %}
         Example: {{e}}
@@ -100,12 +101,12 @@ def test_render_jinja():
 
         final
         """
-    assert text.render(tpl, is_true=True) == "true\nfinal"
-    assert text.render(tpl, is_true=False) == "final"
+    assert render(tpl, is_true=True) == "true\nfinal"
+    assert render(tpl, is_true=False) == "final"
 
 
 def test_prompt_basic():
-    @text.prompt
+    @outlines.prompt
     def test_tpl(variable):
         """{{variable}} test"""
 
@@ -121,7 +122,7 @@ def test_prompt_basic():
     p = test_tpl(variable="test")
     assert p == "test test"
 
-    @text.prompt
+    @outlines.prompt
     def test_single_quote_tpl(variable):
         "${variable} test"
 
@@ -130,7 +131,7 @@ def test_prompt_basic():
 
 
 def test_prompt_kwargs():
-    @text.prompt
+    @outlines.prompt
     def test_kwarg_tpl(var, other_var="other"):
         """{{var}} and {{other_var}}"""
 
@@ -150,13 +151,13 @@ def test_prompt_kwargs():
 def test_no_prompt():
     with pytest.raises(TypeError, match="template"):
 
-        @text.prompt
+        @outlines.prompt
         def test_empty(variable):
             pass
 
     with pytest.raises(TypeError, match="template"):
 
-        @text.prompt
+        @outlines.prompt
         def test_only_code(variable):
             return variable
 
@@ -172,7 +173,7 @@ def test_prompt_function():
         """
         pass
 
-    @text.prompt
+    @outlines.prompt
     def name_description_ppt(fn):
         """
         {{fn|name}}: {{fn|description}}
@@ -187,7 +188,7 @@ def test_prompt_function():
     def with_signature(one: int, two: List[str], three: float = 1.0):
         pass
 
-    @text.prompt
+    @outlines.prompt
     def name_signature_ppt(fn):
         """
         {{fn|name}}: {{fn|signature}}
@@ -199,7 +200,7 @@ def test_prompt_function():
     def test_function_call(one, two=2):
         return one + two
 
-    @text.prompt
+    @outlines.prompt
     def source_ppt(fn):
         """
         {{fn|source}}
@@ -214,7 +215,7 @@ def test_prompt_pydantic_response():
         one: str = Field(description="a description")
         two: str
 
-    @text.prompt
+    @outlines.prompt
     def source_ppt(model):
         "{{model | schema }}"
 
@@ -245,7 +246,7 @@ def test_prompt_pydantic_response():
 def test_prompt_dict_response():
     response = {"one": "a description", "two": ""}
 
-    @text.prompt
+    @outlines.prompt
     def source_ppt(model):
         "{{model | schema }}"
 

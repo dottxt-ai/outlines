@@ -5,6 +5,7 @@ import torch
 import transformers
 from pydantic import BaseModel, conlist
 
+import outlines
 import outlines.models as models
 import outlines.text as text
 
@@ -41,7 +42,7 @@ class Example:
     profile: DatingProfile
 
 
-@text.prompt
+@outlines.prompt
 def dating_profile_prompt(description: str, examples: list[Example]):
     """
     You are a world-renowned matchmaker who understands the modern dating market. Your job is to generate dating app profiles for male clients interested in women based on a provided description. The profiles should be authentic, show off their strengths, and maximize their likelihood of getting matches on dating apps.
