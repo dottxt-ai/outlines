@@ -1,1 +1,1 @@
-::: outlines.text.json_schema
+::: outlines.index.json_schema

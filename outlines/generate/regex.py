@@ -6,13 +6,16 @@ import interegular
 import torch
 from pydantic import BaseModel
 
-from outlines.text.fsm import create_fsm_index_tokenizer, make_deterministic_fsm
-from outlines.text.generate.continuation import Continuation
-from outlines.text.json_schema import build_regex_from_object, get_schema_from_signature
-from outlines.text.types import python_types_to_regex
+from outlines.generate.continuation import Continuation
+from outlines.index.fsm import create_fsm_index_tokenizer, make_deterministic_fsm
+from outlines.index.json_schema import (
+    build_regex_from_object,
+    get_schema_from_signature,
+)
+from outlines.index.types import python_types_to_regex
 
 if TYPE_CHECKING:
-    from outlines.text.generate.samplers import Sampler
+    from outlines.generate.samplers import Sampler
 
 
 class Regex(Continuation):

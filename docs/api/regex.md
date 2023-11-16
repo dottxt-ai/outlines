@@ -1,1 +1,1 @@
-::: outlines.text.generate.regex
+::: outlines.generate.regex

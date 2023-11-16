@@ -1,1 +1,1 @@
-::: outlines.text.generate.continuation
+::: outlines.generate.continuation

@@ -4,14 +4,14 @@ import pytest
 from lark.indenter import DedentError
 from lark.lexer import UnexpectedCharacters, UnexpectedToken
 
-from outlines.text.parsing import PartialLark, PartialPythonIndenter
+from outlines.index.parsing import PartialLark, PartialPythonIndenter
 
 
 def test_partial_parsing():
     lp = PartialLark.open_from_package(
         "tests",
         "partial_python.lark",
-        ["text"],
+        ["index"],
         parser="lalr",
         postlex=PartialPythonIndenter(),
         start="file_input",
@@ -123,7 +123,7 @@ def test_partial_parsing():
     lp = PartialLark.open_from_package(
         "tests",
         "partial_python.lark",
-        ["text"],
+        ["index"],
         parser="lalr",
         postlex=PartialPythonIndenter(),
         start="file_input",
@@ -160,7 +160,7 @@ def test_sequential_parse_example():
     lp = PartialLark.open_from_package(
         "tests",
         "partial_python.lark",
-        ["text"],
+        ["index"],
         parser="lalr",
         postlex=PartialPythonIndenter(),
         start="file_input",
