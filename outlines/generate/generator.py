@@ -6,6 +6,7 @@ import torch
 
 if TYPE_CHECKING:
     from outlines.generate.samplers import Sampler
+    from outlines.index.index import Index
 
 
 @dataclass
@@ -15,7 +16,7 @@ class GenerationState:
     kv_cache: Optional[torch.Tensor] = None
 
 
-def process(generator: Generator, index, state: GenerationState):
+def process(generator: Generator, index: "Index", state: GenerationState):
     """This generator drives the text generation process by
     walking through the FSM."""
     next(generator)
