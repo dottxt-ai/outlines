@@ -7,6 +7,7 @@ import numpy as np
 
 import outlines
 from outlines.caching import cache
+from outlines.models.base import BaseModel
 
 __all__ = ["OpenAIAPI", "openai"]
 
@@ -14,14 +15,16 @@ if TYPE_CHECKING:
     from openai import AsyncOpenAI
 
 
-class OpenAIAPI:
+class OpenAIAPI(BaseModel):
     def __init__(
         self,
         model_name: str,
         api_key: Optional[str] = os.getenv("OPENAI_API_KEY"),
         temperature: float = 1.0,
         max_retries: int = 6,
+        **kwargs,
     ):
+        super().__init__(**kwargs)
         try:
             import openai
         except ImportError:

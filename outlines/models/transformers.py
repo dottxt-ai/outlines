@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING, List, Optional, Tuple, Union
 import torch
 
 from outlines.models.tokenizer import Tokenizer
+from outlines.models.base import BaseModel
 
 if TYPE_CHECKING:
     from transformers import PreTrainedModel, PreTrainedTokenizer
@@ -55,14 +56,16 @@ def get_llama_tokenizer_types():
     )
 
 
-class Transformers:
+class Transformers(BaseModel):
     """Represents a `transformers` model."""
 
     def __init__(
         self,
         model: "PreTrainedModel",
         tokenizer: "PreTrainedTokenizer",
+        **kwargs,
     ):
+        super().__init__(**kwargs)
         self.device = model.device
         self.model = model
         self.tokenizer = tokenizer
@@ -182,6 +185,7 @@ def transformers(
     device: Optional[str] = None,
     model_kwargs: dict = {},
     tokenizer_kwargs: dict = {},
+    **kwargs,
 ):
     """Instantiate a model from the `transformers` library and its tokenizer.
 
@@ -217,4 +221,4 @@ def transformers(
     model = AutoModelForCausalLM.from_pretrained(model_name, **model_kwargs)
     tokenizer = TransformersTokenizer(model_name, **tokenizer_kwargs)
 
-    return Transformers(model, tokenizer)
+    return Transformers(model, tokenizer, **kwargs)

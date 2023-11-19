@@ -2,7 +2,6 @@ import math
 from typing import TYPE_CHECKING, List, Optional, Tuple, Union
 
 import torch
-
 from outlines.models import OpenAIAPI
 
 if TYPE_CHECKING:
@@ -140,8 +139,36 @@ class Sequence:
         )
         return attention_mask
 
-    @torch.inference_mode()
     def __call__(
+        self,
+        prompt: Union[str, List[str]],
+        samples: int = 1,
+        rng: Optional[torch.Generator] = None,
+    ) -> Union[str, List[str]]:
+        """Generate a new sequence given a prompt.
+
+        Parameters
+        ----------
+        prompt
+            The input prompt.
+        samples
+            The number of samples to generate for each prompt.
+
+        Returns
+        -------
+        The full sequence that contains the prompts and the generated string.
+
+        """
+
+        if self.model.llama_index_engine:
+            result = self.model.run_with_llama_index(prompt, self.run)
+        else:
+            result = self.run(prompt, samples, rng)
+
+        return result
+
+    @torch.inference_mode()
+    def run(
         self,
         prompt: Union[str, List[str]],
         samples: int = 1,
