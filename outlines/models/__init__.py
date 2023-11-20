@@ -5,5 +5,5 @@ completion, diffusers, etc.) and use routing functions everywhere else in the
 codebase.
 
 """
-from .openai import OpenAIAPI, openai
+from .openai import OpenAI, openai
 from .transformers import Transformers, transformers

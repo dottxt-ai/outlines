@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, List, Optional, Tuple, Union
 
 import torch
 
-from outlines.models import OpenAIAPI
+from outlines.models import OpenAI
 
 if TYPE_CHECKING:
     from outlines.models.transformers import KVCacheType, Transformers
@@ -35,7 +35,7 @@ class Sequence:
             such functions.
 
         """
-        if isinstance(model, OpenAIAPI):
+        if isinstance(model, OpenAI):
             raise TypeError("Cannot use guided generation with the OpenAI API.")
 
         self.model = model

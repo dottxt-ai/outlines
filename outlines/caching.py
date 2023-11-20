@@ -10,8 +10,11 @@ cache_dir = os.environ.get("OUTLINES_CACHE_DIR", f"{home_dir}/.cache/outlines")
 memory = Cache(serializer=JSONSerializer(), storage=LocalFileStorage(cache_dir))
 
 
-def cache(fn: Callable):
-    return memory.cache()(fn)
+def cache(ignore: Optional[str] = None):
+    def cache_fn(fn: Callable):
+        return memory.cache(ignore=ignore)(fn)
+
+    return cache_fn
 
 
 def get_cache():

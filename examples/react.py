@@ -45,17 +45,19 @@ def search_wikipedia(query: str):
 
 
 prompt = build_reAct_prompt("Where is Apple Computers headquarted? ")
-complete = models.openai("gpt-3.5-turbo", temperature=1.0)
+complete = models.openai("gpt-3.5-turbo")
 
 for i in range(1, 10):
-    mode = complete(prompt, is_in=["Tho", "Act"], max_tokens=128)
+    mode = complete.generate_choice(prompt, choices=["Tho", "Act"], max_tokens=128)
     prompt = add_mode(i, mode, "", prompt)
 
     if mode == "Tho":
         thought = complete(prompt, stop_at="\n", max_tokens=128)
         prompt += f"{thought}"
     elif mode == "Act":
-        action = complete(prompt, is_in=["Search", "Finish"], max_tokens=128)
+        action = complete.generate_choice(
+            prompt, choices=["Search", "Finish"], max_tokens=128
+        )
         prompt += f"{action} '"
 
         subject = complete(

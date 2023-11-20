@@ -5,13 +5,13 @@ import numpy as np
 import pytest
 import torch
 
-from outlines.models import OpenAIAPI
+from outlines.models import OpenAI
 from outlines.models.tokenizer import Tokenizer
 from outlines.text.generate.sequence import Sequence
 
 
 def test_openai_error():
-    class Mock(OpenAIAPI):
+    class Mock(OpenAI):
         def __init__(self):
             pass
 
