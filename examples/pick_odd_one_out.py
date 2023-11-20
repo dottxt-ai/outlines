@@ -29,7 +29,7 @@ def build_ooo_prompt(options):
     """
 
 
-model = models.openai("text-davinci-003")
+model = models.openai("gpt-3.5-turbo")
 
 options = ["sea", "mountains", "plains", "sock"]
 prompt = build_ooo_prompt(options)

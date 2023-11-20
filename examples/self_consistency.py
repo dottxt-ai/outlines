@@ -55,7 +55,7 @@ def few_shots(question, examples):
     """
 
 
-model = models.openai("text-davinci-003")
+model = models.openai("gpt-3.5-turbo")
 prompt = few_shots(question, examples)
 answers = model(prompt, samples=100)
 
