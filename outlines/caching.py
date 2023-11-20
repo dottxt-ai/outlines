@@ -1,5 +1,5 @@
 import os
-from typing import Callable
+from typing import Callable, Optional
 
 from perscache import Cache, NoCache
 from perscache.serializers import JSONSerializer
