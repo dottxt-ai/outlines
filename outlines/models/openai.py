@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Set, Tuple, Un
 import numpy as np
 
 import outlines
+from outlines.caching import cache
 
 __all__ = ["OpenAI", "openai"]
 
@@ -287,6 +288,7 @@ class OpenAI:
         return str(self.config)
 
 
+@cache(ignore="client")
 @functools.partial(outlines.vectorize, signature="(),(),()->(s)")
 async def generate_chat(
     prompt: str, client: "AsyncOpenAI", config: OpenAIConfig
