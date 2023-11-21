@@ -160,40 +160,6 @@ class OpenAI:
         if "gpt-" in self.config.model:
             return generate_chat(prompt, self.client, config)
 
-    """
-    def generate_choice_greedy(transposed, max_tokens_left):
-        mask = {token: 100 for token in transposed.popleft()}
-        config = replace(config, logit_bias=mask, max_tokens=max_tokens_left)
-        response = generate_chat(prompt, config)
-        prefix, _ = find_common_prefix(response, choices_left)
-        return prefix
-
-
-    def generate_choice_optimistic(transposed, max_tokens_left):
-        mask = build_optimistic_mask(transposed)
-        config = replace(config, logit_bias=mask, max_tokens=max_tokens_left)
-        response = generate_chat(prompt, config)
-        return response
-
-    while len(choices_left) > 0:
-        if greedy == True:
-            prefix = generate_choice_greedy()
-            choices_left = find_choices_left(prefix, choices_left)
-            if len(choices_left) == 1:
-                return choices_left[0]
-            else:
-                decoded.append(prefix)
-            greedy = False
-        else:
-            remainder = generate_choice_optimistic()
-            if remainder in choices_left: # Not exactly true
-                return remainder
-            else:
-                prefix, _ = find_common_prefix(remainder, choices_left)
-                decoded.append(prefix)
-                greedy = True
-    """
-
     def generate_choice(
         self, prompt: str, choices: List[str], max_tokens: Optional[int] = None
     ) -> str:
