@@ -36,7 +36,7 @@ pip install outlines
 
 ??? info "Using OpenAI and Transformers"
 
-    Outlines :wavy_dash: does not install the `openai` or `transformers` libraries by default. You will have to install these libraries manually.
+    Outlines :wavy_dash: does not install the `openai` or `transformers` libraries by default. You will have to install these libraries manually. To use `transformers` models you will also need to install the `datasets` library.
 
 ## :eyes: Sneak Peek
 
