@@ -40,6 +40,10 @@ functions and calls to other libraries.
 **Outlines** 〰 is *compatible with all models*. It only interfaces with models
 via the next-token logits. It can be used with API-based models as well.
 
+<div align="center">
+<a href="https://dottxt-ai.notion.site/We-re-hiring-engineers-to-make-text-generation-fast-and-reliable-0f54d5214cf74301bbd6f3107b9acc76">⚠️ We're hiring someone to work full-time on Outlines ⚠️</a>
+</div>
+
 ## Features
 
 - [x] 🖍️Simple and powerful prompting primitives based on the [Jinja templating engine](https://jinja.palletsprojects.com/)
