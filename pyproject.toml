@@ -98,7 +98,7 @@ module = [
     "perscache.*",
     "PIL",
     "PIL.Image",
-    "pydantic",
+    "pydantic.*",
     "pytest",
     "referencing.*",
     "scipy.*",

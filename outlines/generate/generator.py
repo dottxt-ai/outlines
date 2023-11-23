@@ -1,6 +1,6 @@
 import dataclasses
 import math
-from typing import TYPE_CHECKING, Callable, List, Optional, Union
+from typing import TYPE_CHECKING, Callable, Iterator, List, Optional, Tuple, Union
 
 import torch
 
@@ -14,8 +14,8 @@ if TYPE_CHECKING:
 @dataclasses.dataclass(frozen=True)
 class GenerationState:
     token_ids: torch.Tensor
-    attention_masks: torch.Tensor
-    kv_cache: Optional[torch.Tensor] = None
+    kv_cache: torch.Tensor
+    logits: torch.Tensor
 
 
 class SequenceGenerator:
@@ -29,7 +29,6 @@ class SequenceGenerator:
         self,
         prompt: Union[str, List[str]],
         kv_cache: Optional[torch.Tensor] = None,
-        rng: Optional[torch.Generator] = None,
     ):
         """Initialize the generation state.
 
@@ -52,45 +51,62 @@ class SequenceGenerator:
         token_ids = token_ids.to(self.device)
         attention_masks = attention_masks.to(self.device)
 
-        return GenerationState(token_ids, attention_masks, kv_cache)
+        return token_ids, attention_masks, kv_cache
 
     def __call__(
         self,
         prompt,
         kv_cache: Optional[torch.tensor] = None,
         rng: Optional[torch.Generator] = None,
-    ):
-        sequence_generator = self.stream(prompt, rng)
-        *_, last = sequence_generator
-        return last
+    ) -> Union[str, List[str]]:
+        sequence_generator = self.stream(prompt, kv_cache, rng)
+        tokens = [token for token in sequence_generator]
+        sequences = ["".join(sequence) for sequence in list(zip(*tokens))]
+        return sequences if len(sequences) > 1 else sequences[0]
 
     def stream(
         self,
         prompt: str,
         kv_cache: Optional[torch.tensor] = None,
         rng: Optional[torch.Generator] = None,
-    ):
+    ) -> Iterator[Union[List[str], str]]:
         if rng is None:
             rng = torch.Generator(device=self.device)
             rng.seed()
 
-        init_state = self.init_generation_state(prompt, kv_cache, rng)
+        init_state = self.init_generation_state(prompt, kv_cache)
 
-        num_sequences = init_state.token_ids.shape[0]
+        token_ids = init_state[1]
+        num_sequences = token_ids.shape[0]
+
         init_fsm_states = [FSMState(0) for _ in range(num_sequences)]
 
-        return sequence_generator(
+        states = sequence_generator(
             self.generate_token, self.fsm, init_state, init_fsm_states, rng
         )
+
+        def token_generator() -> Iterator[Union[List[str], str]]:
+            while True:
+                try:
+                    sequence = next(states)
+                except StopIteration:
+                    return
+
+                next_token_ids = sequence.token_ids[:, -1]
+                next_tokens = self.tokenizer.decode(next_token_ids)
+
+                yield next_tokens
+
+        return token_generator()
 
 
 def sequence_generator(
     token_generator: Callable,
     fsm: "FSM",
-    init_state: GenerationState,
+    init_state: Tuple,
     fsm_states: List[FSMState],
     rng: torch.Generator,
-):
+) -> Iterator[GenerationState]:
     """Generates sequences of tokens.
 
     Parameters
@@ -107,32 +123,35 @@ def sequence_generator(
 
     Yields
     ------
-    A new generation state.
+    A new sequence.
 
     """
-    state = init_state
+    token_ids, attention_masks, kv_cache = init_state
     while True:
-        logits_masks = get_next_instructions(fsm, fsm_states)
+        logits_masks = get_next_instruction(fsm, fsm_states)
 
-        next_token_ids, kv_cache = token_generator(
-            **dataclasses.asdict(state),
+        next_token_ids, kv_cache, logits = token_generator(
+            token_ids,
+            attention_masks,
+            kv_cache,
             rng=rng,
             logits_masks=logits_masks,
         )
 
-        token_ids = update_token_ids(state.token_ids, next_token_ids)
-        attention_masks = expand_attention_masks(state.attention_masks)
-        state = GenerationState(token_ids, attention_masks, kv_cache)
+        token_ids = update_token_ids(token_ids, next_token_ids)
+        attention_masks = expand_attention_masks(attention_masks)
 
         fsm_states = get_next_fsm_states(fsm, fsm_states, next_token_ids)
         is_finished = is_generation_finished(fsm, fsm_states)
+
         if is_finished:
-            yield state
+            yield GenerationState(token_ids, kv_cache, logits)
             return
 
-        yield state
+        yield GenerationState(token_ids, kv_cache, logits)
 
 
+@torch.inference_mode
 def token_generator(model, sampler: "Sampler") -> Callable:
     """Generate one token at a time.
 
@@ -151,7 +170,9 @@ def token_generator(model, sampler: "Sampler") -> Callable:
 
     Returns
     -------
-    A tensor with the sampled tokens.
+    A tuple that contains a tensor with the sampled tokens, a tensor with
+    the K-V cache for the sequence and the tensor that contains the next-token
+    logits that were returned by the model.
 
     """
 
@@ -172,7 +193,7 @@ def token_generator(model, sampler: "Sampler") -> Callable:
         biased_logits = bias_logits(logits, logits_masks)
         next_token_ids = sampler(biased_logits, 1, rng)
 
-        return next_token_ids, new_kv_cache
+        return next_token_ids, new_kv_cache, biased_logits
 
     return generate
 
@@ -195,12 +216,12 @@ def get_next_fsm_states(
 
     """
     return [
-        fsm.next_state(fsm_state, token_id)
+        fsm.next_state(fsm_state, int(token_id[0]))
         for fsm_state, token_id in zip(fsm_states, next_token_ids)
     ]
 
 
-def get_next_instructions(fsm: "FSM", fsm_states: List[FSMState]) -> torch.Tensor:
+def get_next_instruction(fsm: "FSM", fsm_states: List[FSMState]) -> torch.Tensor:
     """Get the new instructions for each sequence from the finite-state machine.
 
     Parameters
@@ -288,7 +309,29 @@ def expand_attention_masks(attention_masks: torch.Tensor) -> torch.Tensor:
     )
 
 
+<<<<<<< HEAD
 @torch.inference_mode()
+=======
+def update_logprobs(logprobs, next_token_ids, next_token_logits):
+    """Update the sequences' total logprob.
+
+    Parameters
+    ----------
+    logprobs
+        The current log-probabilities for each sequence.
+    next_token_ids
+        The token ids that were just sampled
+    next_token_logits
+        The logits returned by the model.
+
+    """
+    next_token_logprobs = torch.nn.LogSoftmax(dim=-1)(next_token_logits)
+    new_logprobs = next_token_logprobs[
+        range(next_token_ids.shape[0]), next_token_ids.flatten()
+    ]
+    return logprobs + new_logprobs
+
+@torch.inference_mode
 def bias_logits(
     logits: torch.Tensor,
     ids_to_mask: List,

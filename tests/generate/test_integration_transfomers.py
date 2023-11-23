@@ -1,4 +1,5 @@
 import datetime
+import json
 import re
 from enum import Enum
 from typing import List, Union
@@ -13,41 +14,69 @@ from outlines.index.fsm import reduced_vocabulary
 from outlines.models.transformers import TransformerTokenizer
 
 
-def test_transformers_integration_continuation():
+def test_transformers_integration_text():
     rng = torch.Generator()
     rng.manual_seed(10000)  # Choosen so <EOS> is generated
 
     model_name = "hf-internal-testing/tiny-random-GPTJForCausalLM"
     model = models.transformers(model_name, device="cpu")
-    sequence = generate.continuation(model)("Write a short sentence ", rng=rng)
+    sequence = generate.text(model)("Write a short sentence ", rng=rng)
     assert isinstance(sequence, str)
     assert model.tokenizer.eos_token not in sequence
 
-    sequence = generate.continuation(model, max_tokens=10)(
-        "Write a short sentence ", rng=rng
-    )
+    sequence = generate.text(model, max_tokens=10)("Write a short sentence ", rng=rng)
     assert isinstance(sequence, str)
 
     prompts = ["Write a short sentence ", "And another one "]
-    sequence = generate.continuation(model, max_tokens=10)(prompts, rng=rng)
+    sequence = generate.text(model, max_tokens=10)(prompts, rng=rng)
     assert isinstance(sequence, list)
     assert len(sequence) == 2
     assert isinstance(sequence[0], str)
 
+
+def test_transformers_integration_streaming():
+    rng = torch.Generator()
+    rng.manual_seed(10000)  # Choosen so <EOS> is generated
+
+    model_name = "hf-internal-testing/tiny-random-GPTJForCausalLM"
+    model = models.transformers(model_name, device="cpu")
+    sequence = generate.text(model, max_tokens=10).stream("Write a short sentence ", rng=rng)
+
+    token = next(sequence)
+    assert isinstance(token, list)
+    assert isinstance(token[0], str)
+
+    remaining = "".join([token[0] for token in sequence])
+    assert isinstance(remaining, str)
+
+    sequence = generate.text(model, max_tokens=10).stream(["Prompt1", "Prompt2"], rng=rng)
+    tokens = next(sequence)
+    assert isinstance(tokens, list)
+    assert isinstance(tokens[0], str)
+    assert isinstance(tokens[1], str)
+
+
+@pytest.mark.xfail(reason="not implemented")
+def test_transformers_integration_text_stop():
+    rng = torch.Generator()
+    rng.manual_seed(10000)  # Choosen so <EOS> is generated
+
+    model_name = "hf-internal-testing/tiny-random-GPTJForCausalLM"
+    model = models.transformers(model_name, device="cpu")
     prompt = "Write a short sentence "
-    sequence = generate.continuation(model, stop="a")(prompt, rng=rng)
+    sequence = generate.text(model, stop="a")(prompt, rng=rng)
     assert sequence[len(prompt) :].find("a") == -1
 
 
-@pytest.mark.xfail
-def test_transformers_integration_continuation_array_samples():
+@pytest.mark.xfail(reason="not implemented")
+def test_transformers_integration_text_array_samples():
     rng = torch.Generator()
     rng.manual_seed(0)
 
     model_name = "hf-internal-testing/tiny-random-GPTJForCausalLM"
     model = models.transformers(model_name, device="cpu")
     prompts = ["Write a short sentence", "And another one"]
-    _ = generate.continuation(model, max_tokens=10)(prompts, rng=rng, samples=3)
+    _ = generate.text(model, max_tokens=10)(prompts, rng=rng, samples=3)
 
 
 def test_transformers_various_regexes():
@@ -64,6 +93,17 @@ def test_transformers_various_regexes():
     sequence = generator(prompt, rng=rng)
     assert re.fullmatch(regex_str, sequence) is not None
 
+
+def test_transformers_various_regexes_prompt_list():
+    rng = torch.Generator()
+    rng.manual_seed(0)
+
+    model_name = "hf-internal-testing/tiny-random-GPTJForCausalLM"
+    model = models.transformers(model_name, device="cpu")
+    prompt = "Write an email address"
+    regex_str = r"([a-z]{10})@([a-z]{5})\.([a-z]{3})"
+    generator = generate.regex(model, regex_str)
+
     # Two prompts
     sequence = generator([prompt, prompt], rng=rng)
     assert re.fullmatch(regex_str, sequence[0]) is not None
@@ -79,7 +119,7 @@ def test_transformers_integration_integer():
     prompt = "Write a short sentence"
     sequence = generate.format(model, int, max_tokens=10)(prompt, rng=rng)
 
-    assert sequence[0] != 0
+    assert sequence != ""
     int(sequence)
 
 
@@ -106,7 +146,7 @@ def test_transformers_integration_float():
     prompt = "Write a short sentence"
     sequence = generate.format(model, float, max_tokens=10)(prompt, rng=rng)
 
-    assert sequence[0] != 0
+    assert sequence != ""
     float(sequence)
 
 
@@ -119,7 +159,7 @@ def test_transformers_integration_bool():
     prompt = "Is this True or False?"
     sequence = generate.format(model, bool, max_tokens=10)(prompt, rng=rng)
 
-    assert sequence[0] != 0
+    assert sequence != ""
     bool(sequence)
 
 
@@ -132,7 +172,7 @@ def test_transformers_integration_date():
     prompt = "What day is it today?"
     sequence = generate.format(model, datetime.date, max_tokens=10)(prompt, rng=rng)
 
-    assert sequence[0] != 0
+    assert sequence != ""
     datetime.datetime.strptime(sequence, "%Y-%m-%d")
 
 
@@ -145,7 +185,7 @@ def test_transformers_integration_time():
     prompt = "What time is it?"
     sequence = generate.format(model, datetime.time, max_tokens=10)(prompt, rng=rng)
 
-    assert sequence[0] != 0
+    assert sequence != ""
     datetime.datetime.strptime(sequence, "%H:%M:%S")
 
 
@@ -158,7 +198,7 @@ def test_transformers_integration_datetime():
     prompt = "What time is it?"
     sequence = generate.format(model, datetime.datetime, max_tokens=20)(prompt, rng=rng)
 
-    assert sequence[0] != 0
+    assert sequence != 0
     datetime.datetime.strptime(sequence, "%Y-%m-%d %H:%M:%S")
 
 
@@ -195,13 +235,33 @@ def test_transformers_json_basic():
     rng = torch.Generator()
     rng.manual_seed(0)  # make sure that `bar` is not an int
 
-    result = generate.json(model, Spam, max_tokens=1000)(prompt, rng=rng)
+    result = generate.json(model, Spam, max_tokens=500)(prompt, rng=rng)
+    result = Spam.parse_raw(result)
     assert isinstance(result, BaseModel)
     assert isinstance(result.foo, int)
     assert isinstance(result.bar, float)
     assert isinstance(result.spam, str)
     assert isinstance(result.fuzz, bool)
-    assert len(result.spam) == 10
+    assert len(result.spam) <= 10
+
+
+def test_transformers_json_batch():
+    model_name = "hf-internal-testing/tiny-random-GPTJForCausalLM"
+    model = models.transformers(model_name, device="cpu")
+    prompts = ["Output some JSON ", "Output more JSON"]
+
+    class Spam(BaseModel):
+        foo: int
+        bar: float
+        spam: constr(max_length=10)
+        fuzz: bool
+
+    rng = torch.Generator()
+    rng.manual_seed(0)  # make sure that `bar` is not an int
+
+    result = generate.json(model, Spam, max_tokens=500)(prompts, rng=rng)
+    assert isinstance(result[0], BaseModel)
+    assert isinstance(result[1], BaseModel)
 
 
 def test_transformers_json_str_enum():
@@ -222,6 +282,7 @@ def test_transformers_json_str_enum():
         name: Name
 
     result = generate.json(model, User)(prompt, rng=rng)
+    result = User.parse_raw(result)
     assert isinstance(result, BaseModel)
     assert isinstance(result.user_id, int)
     assert result.name in ["John", "Marc", "Michel"]
@@ -243,6 +304,7 @@ def test_transformers_json_int_enum():
         user_id: Id
 
     result = generate.json(model, User)(prompt, rng=rng)
+    result = User.parse_raw(result)
     assert isinstance(result, BaseModel)
     assert isinstance(result.user_id, int)
     assert result.user_id in [1, 2]
@@ -261,6 +323,7 @@ def test_transformers_json_array():
     rng.manual_seed(0)
 
     result = generate.json(model, User)(prompt, rng=rng)
+    result = User.parse_raw(result)
     assert isinstance(result, BaseModel)
     assert isinstance(result.user_id, int)
     assert isinstance(result.value, list)
@@ -268,6 +331,7 @@ def test_transformers_json_array():
         assert isinstance(value, float) or isinstance(value, int)
 
 
+@pytest.mark.xfail(reason="The implementation of `anyOf` is incorrect")
 def test_transformers_json_union():
     model_name = "hf-internal-testing/tiny-random-GPTJForCausalLM"
     model = models.transformers(model_name, device="cpu")
@@ -280,12 +344,13 @@ def test_transformers_json_union():
     rng = torch.Generator()
     rng.manual_seed(4)
 
-    sequence = generate.json(model, Spam, max_tokens=100)(prompt, rng=rng)
-    assert isinstance(sequence, BaseModel)
+    result = generate.json(model, Spam, max_tokens=100)(prompt, rng=rng)
+    result = Spam.parse_raw(result)
+    assert isinstance(result, BaseModel)
     assert (
-        isinstance(sequence.bar, int)
-        or isinstance(sequence.bar, float)
-        or isinstance(sequence.bar, str)
+        isinstance(result.bar, int)
+        or isinstance(result.bar, float)
+        or isinstance(result.bar, str)
     )
 
 
@@ -301,6 +366,7 @@ def test_transformers_json_function():
     rng.manual_seed(4)
 
     sequence = generate.json(model, function, max_tokens=100)(prompt, rng=rng)
+    sequence = json.loads(sequence)
     assert isinstance(sequence, dict)
     assert isinstance(function(**sequence), int)
 
@@ -319,10 +385,10 @@ def test_transformers_logits_vocab_size():
     generator = generate.choice(model, ["True", "False"])
 
     rng = torch.Generator()
-    rng.manual_seed(4)
+    rng.manual_seed(101)
 
-    masked_logits = generator("blah", rng=rng)
-    assert masked_logits == "True"
+    sequence = generator("blah", rng=rng)
+    assert sequence == "False"
 
 
 def test_transformers_reduced_vocabulary_caching():

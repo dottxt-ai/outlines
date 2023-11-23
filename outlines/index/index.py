@@ -1,7 +1,6 @@
 from typing import TYPE_CHECKING, List, NewType, Optional, Protocol
 
 import interegular
-import torch
 
 from outlines.index.fsm import create_fsm_index_tokenizer, make_deterministic_fsm
 
@@ -12,17 +11,17 @@ FSMState = NewType("FSMState", int)
 
 
 class FSM(Protocol):
-    def next_instruction(self, state: FSMState) -> torch.Tensor:
+    def next_instruction(self, state: FSMState) -> List[int]:
         ...
 
-    def next_state(self, state: FSMState, token_id: torch.Tensor) -> FSMState:
+    def next_state(self, state: FSMState, token_id: int) -> FSMState:
         ...
 
     def is_final_state(self, state: FSMState) -> bool:
         ...
 
 
-class StopAtTokenFSM:
+class StopAtTokenFSM(FSM):
     def __init__(self, stop_token_id: int, max_tokens: Optional[int] = None):
         self.stop_token_id = stop_token_id
         self.max_tokens = max_tokens
@@ -31,7 +30,7 @@ class StopAtTokenFSM:
     def next_instruction(self, _: FSMState) -> List[int]:
         return []
 
-    def next_state(self, state: FSMState, token_id: torch.Tensor) -> FSMState:
+    def next_state(self, state: FSMState, token_id: int) -> FSMState:
         self.num_tokens_generated += 1
 
         if token_id == self.stop_token_id:
@@ -52,7 +51,7 @@ class StopAtTokenFSM:
             return False
 
 
-class RegexFSM:
+class RegexFSM(FSM):
     def __init__(
         self,
         regex_string: str,
@@ -99,14 +98,14 @@ class RegexFSM:
 
         return list(forbidden_tokens)
 
-    def next_state(self, state: FSMState, token_id: torch.Tensor) -> FSMState:
+    def next_state(self, state: FSMState, token_id: int) -> FSMState:
         self.num_tokens_generated += 1
 
         if token_id == self.end_token:
             return FSMState(-1)
 
         last_token_to_end_state = self.states_to_token_maps[state]
-        next_state = last_token_to_end_state.get(int(token_id))
+        next_state = last_token_to_end_state.get(token_id)
         if next_state is None:
             next_state = -1
 

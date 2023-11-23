@@ -75,16 +75,24 @@ def test_model():
     assert model.device.type == "cpu"
 
     input_ids = torch.tensor([[0, 1, 2]])
-    logits = model(input_ids, torch.ones_like(input_ids))
+    logits, kv_cache = model(input_ids, torch.ones_like(input_ids))
     assert logits.type() == "torch.FloatTensor"
     assert logits.ndim == 2
     assert logits.shape[0] == 1
+    assert len(kv_cache) == model.model.config.n_layer
+    assert len(kv_cache[0]) == 2
+    assert kv_cache[0][0].shape[1] == model.model.config.n_head
+    assert kv_cache[0][0].shape[2] == 3  # number of tokens
 
     input_ids = torch.tensor([[0, 1, 2], [3, 4, 5], [6, 7, 8]])
-    logits = model(input_ids, torch.ones_like(input_ids))
+    logits, kv_cache = model(input_ids, torch.ones_like(input_ids))
     assert logits.type() == "torch.FloatTensor"
     assert logits.ndim == 2
     assert logits.shape[0] == 3
+    assert len(kv_cache) == model.model.config.n_layer
+    assert len(kv_cache[0]) == 2
+    assert kv_cache[0][0].shape[1] == model.model.config.n_head
+    assert kv_cache[0][0].shape[2] == 3  # number of tokens
 
     with pytest.raises(AssertionError):
         input_ids = torch.tensor([[[0, 1, 2], [3, 4, 5]], [[6, 7, 8], [0, 1, 2]]])
