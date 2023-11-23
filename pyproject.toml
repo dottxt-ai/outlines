@@ -92,7 +92,7 @@ module = [
     "jinja2",
     "joblib.*",
     "jsonschema.*",
-    "openai",
+    "openai.*",
     "nest_asyncio",
     "numpy.*",
     "perscache.*",
