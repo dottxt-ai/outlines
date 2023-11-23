@@ -320,8 +320,7 @@ def test_json_index_performance():
     from line_profiler import LineProfiler  # type: ignore [import]
     from pydantic import BaseModel, constr
 
-    import outlines.models as models
-    from outlines.generate.regex import Regex, build_regex_from_object
+    import outlines
 
     class Weapon(str, Enum):
         sword = "sword"
@@ -345,16 +344,16 @@ def test_json_index_performance():
         # TODO: Add support for conint
         strength: int  # conint(int, ge=0, le=100)
 
-    model = models.transformers("gpt2", device="cuda")
+    model = outlines.models.transformers("gpt2", device="cuda")
     json_schema = json.dumps(Character.model_json_schema())
 
     def build_regex():
-        regex_str = build_regex_from_object(json_schema)
-        Regex(model, regex_str, 100)
+        regex_str = outlines.index.json_schema.build_regex_from_object(json_schema)
+        outlines.generate.regex(model, regex_str)
 
     profiler = LineProfiler(create_fsm_index_end_to_end)
     profiler.add_function(create_fsm_index_tokenizer)
-    profiler.add_function(Regex.__init__)
+    profiler.add_function(outlines.index.index.RegexFSM.__init__)
 
     profiler.runctx(
         "build_regex()",

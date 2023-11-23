@@ -67,6 +67,7 @@ class Transformer:
         self.model = model
         self.tokenizer = tokenizer
 
+    @torch.inference_mode
     def forward(
         self,
         input_ids: torch.LongTensor,
@@ -103,9 +104,8 @@ class Transformer:
             output_hidden_states=False,
             past_key_values=past_key_values,
         )
-        next_token_logits = output.logits[..., -1, :]
 
-        return next_token_logits, output.past_key_values
+        return output.logits, output.past_key_values
 
     def __call__(
         self,
@@ -113,7 +113,10 @@ class Transformer:
         attention_mask: torch.LongTensor,
         past_key_values: Optional[Tuple] = None,
     ) -> torch.FloatTensor:
-        return self.forward(input_ids, attention_mask, past_key_values)[0]
+        logits, kv_cache = self.forward(input_ids, attention_mask, past_key_values)
+        next_token_logits = logits[..., -1, :]
+
+        return next_token_logits, kv_cache
 
 
 class TransformerTokenizer(Tokenizer):
@@ -151,7 +154,7 @@ class TransformerTokenizer(Tokenizer):
         return output["input_ids"], output["attention_mask"]
 
     def decode(self, token_ids: torch.LongTensor) -> List[str]:
-        text = self.tokenizer.batch_decode(token_ids)
+        text = self.tokenizer.batch_decode(token_ids, skip_special_tokens=True)
         return text
 
     def convert_token_to_string(self, token: str) -> str:

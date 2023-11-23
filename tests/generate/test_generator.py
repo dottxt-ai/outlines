@@ -5,12 +5,11 @@ import pytest
 import torch
 
 from outlines.generate.generator import (
-    GenerationState,
     SequenceGenerator,
     bias_logits,
     expand_attention_masks,
     get_next_fsm_states,
-    get_next_instructions,
+    get_next_instruction,
     is_generation_finished,
     sequence_generator,
     token_generator,
@@ -34,6 +33,9 @@ def test_sequence_generator_class():
         def encode(self, _):
             return torch.tensor([[0, 1, 2, 3]]), torch.tensor([[1, 1, 1, 1]])
 
+        def decode(self, _):
+            return "x"
+
     class MockModel:
         def __init__(self):
             self.tokenizer = MockTokenizer()
@@ -52,25 +54,23 @@ def test_sequence_generator_class():
     assert callable(generator.generate_token)
 
     result = generator.init_generation_state("test")
-    assert torch.equal(result.token_ids, torch.tensor([[0, 1, 2, 3]]))
-    assert torch.equal(result.attention_masks, torch.tensor([[1, 1, 1, 1]]))
-    assert result.kv_cache is None
+    token_ids, attention_masks, kv_cache = result
+    assert torch.equal(token_ids, torch.tensor([[0, 1, 2, 3]]))
+    assert torch.equal(attention_masks, torch.tensor([[1, 1, 1, 1]]))
+    assert kv_cache is None
 
     sequence = generator.stream("test")
     assert isinstance(sequence, Generator)
 
-    state = next(sequence)
-    assert torch.equal(state.token_ids, torch.tensor([[0, 1, 2, 3, 3]]))
-    assert torch.equal(state.attention_masks, torch.tensor([[1, 1, 1, 1, 1]]))
+    next(sequence)
 
     with pytest.raises(StopIteration):
-        state = next(sequence)
+        next(sequence)
 
     # Call
     generator = SequenceGenerator(MockFSM(), MockModel(), sampler, "cpu")
     result = generator("test")
-    assert torch.equal(state.token_ids, torch.tensor([[0, 1, 2, 3, 3]]))
-    assert torch.equal(state.attention_masks, torch.tensor([[1, 1, 1, 1, 1]]))
+    assert result == "x"
 
 
 def test_sequence_generator_1d_single_iteration():
@@ -88,6 +88,9 @@ def test_sequence_generator_1d_single_iteration():
         def encode(self, _):
             return torch.tensor([[0, 1, 2, 3]]), torch.tensor([[1, 1, 1, 1]])
 
+        def decode(self, x):
+            return x
+
     class MockModel:
         def __init__(self):
             self.tokenizer = MockTokenizer()
@@ -98,9 +101,7 @@ def test_sequence_generator_1d_single_iteration():
     def sampler(biased_logits, *_):
         return torch.argmax(biased_logits, keepdims=True)
 
-    init_state = GenerationState(
-        torch.tensor([[0, 1, 2, 3]]), torch.tensor([[1, 1, 1, 1]]), None
-    )
+    init_state = (torch.tensor([[0, 1, 2, 3]]), torch.tensor([[1, 1, 1, 1]]), None)
     init_fsm_states = [0]
     generate = token_generator(MockModel(), sampler)
     sequence = sequence_generator(
@@ -109,7 +110,7 @@ def test_sequence_generator_1d_single_iteration():
     result = next(sequence)
 
     assert torch.equal(result.token_ids, torch.tensor([[0, 1, 2, 3, 3]]))
-    assert torch.equal(result.attention_masks, torch.tensor([[1, 1, 1, 1, 1]]))
+    assert torch.equal(result.logits, torch.tensor([[0, 1, 2, 3]]))
 
     with pytest.raises(StopIteration):
         next(sequence)
@@ -133,6 +134,9 @@ def test_sequence_generator_1d_several_iterations():
         def encode(self, _):
             return torch.tensor([[0, 1, 2, 3]]), torch.tensor([[1, 1, 1, 1]])
 
+        def decode(self, x):
+            return x
+
     class MockModel:
         def __init__(self):
             self.tokenizer = MockTokenizer()
@@ -143,9 +147,7 @@ def test_sequence_generator_1d_several_iterations():
     def sampler(biased_logits, *_):
         return torch.argmax(biased_logits, keepdims=True)
 
-    init_state = GenerationState(
-        torch.tensor([[0, 1, 2, 3]]), torch.tensor([[1, 1, 1, 1]]), None
-    )
+    init_state = (torch.tensor([[0, 1, 2, 3]]), torch.tensor([[1, 1, 1, 1]]), None)
     init_fsm_states = [0]
     generate = token_generator(MockModel(), sampler)
     sequence = sequence_generator(
@@ -154,11 +156,11 @@ def test_sequence_generator_1d_several_iterations():
 
     result = next(sequence)
     assert torch.equal(result.token_ids, torch.tensor([[0, 1, 2, 3, 3]]))
-    assert torch.equal(result.attention_masks, torch.tensor([[1, 1, 1, 1, 1]]))
+    assert torch.equal(result.logits, torch.tensor([[0, 1, 2, 3]]))
 
     result = next(sequence)
     assert torch.equal(result.token_ids, torch.tensor([[0, 1, 2, 3, 3, 3]]))
-    assert torch.equal(result.attention_masks, torch.tensor([[1, 1, 1, 1, 1, 1]]))
+    assert torch.equal(result.logits, torch.tensor([[0, 1, 2, 3]]))
 
     with pytest.raises(StopIteration):
         next(sequence)
@@ -181,6 +183,9 @@ def test_sequence_generator_2d_single_iteration():
                 [[1, 1, 1, 1], [1, 1, 1, 1]]
             )
 
+        def decode(self, x):
+            return x
+
     class MockModel:
         def __init__(self):
             self.tokenizer = MockTokenizer()
@@ -191,7 +196,7 @@ def test_sequence_generator_2d_single_iteration():
     def sampler(biased_logits, *_):
         return torch.argmax(biased_logits, keepdims=True, dim=-1)
 
-    init_state = GenerationState(
+    init_state = (
         torch.tensor([[0, 1, 2, 3], [4, 5, 6, 7]]),
         torch.tensor([[1, 1, 1, 1], [1, 1, 1, 1]]),
         None,
@@ -207,7 +212,7 @@ def test_sequence_generator_2d_single_iteration():
         result.token_ids, torch.tensor([[0, 1, 2, 3, 3], [4, 5, 6, 7, 2]])
     )
     assert torch.equal(
-        result.attention_masks, torch.tensor([[1, 1, 1, 1, 1], [1, 1, 1, 1, 1]])
+        result.logits, torch.tensor([[0, 1, 2, 3], [4, 5, 7, 6]], dtype=torch.float)
     )
 
     with pytest.raises(StopIteration):
@@ -234,6 +239,9 @@ def test_sequence_generator_2d_several_iterations():
                 [[1, 1, 1, 1], [1, 1, 1, 1]]
             )
 
+        def decode(self, x):
+            return x
+
     class MockModel:
         def __init__(self):
             self.tokenizer = MockTokenizer()
@@ -244,7 +252,7 @@ def test_sequence_generator_2d_several_iterations():
     def sampler(biased_logits, *_):
         return torch.argmax(biased_logits, keepdims=True, dim=-1)
 
-    init_state = GenerationState(
+    init_state = (
         torch.tensor([[0, 1, 2, 3], [4, 5, 6, 7]]),
         torch.tensor([[1, 1, 1, 1], [1, 1, 1, 1]]),
         None,
@@ -260,7 +268,7 @@ def test_sequence_generator_2d_several_iterations():
         result.token_ids, torch.tensor([[0, 1, 2, 3, 3], [4, 5, 6, 7, 2]])
     )
     assert torch.equal(
-        result.attention_masks, torch.tensor([[1, 1, 1, 1, 1], [1, 1, 1, 1, 1]])
+        result.logits, torch.tensor([[0, 1, 2, 3], [4, 5, 7, 6]], dtype=torch.float)
     )
 
     result = next(sequence)
@@ -268,7 +276,7 @@ def test_sequence_generator_2d_several_iterations():
         result.token_ids, torch.tensor([[0, 1, 2, 3, 3, 3], [4, 5, 6, 7, 2, 2]])
     )
     assert torch.equal(
-        result.attention_masks, torch.tensor([[1, 1, 1, 1, 1, 1], [1, 1, 1, 1, 1, 1]])
+        result.logits, torch.tensor([[0, 1, 2, 3], [4, 5, 7, 6]], dtype=torch.float)
     )
 
     with pytest.raises(StopIteration):
@@ -288,44 +296,64 @@ def test_generator_error():
 
 
 @pytest.mark.parametrize(
-    "logits_biases,expected_result",
+    "logits_biases,expected_result,expected_biased_logits",
     [
-        ([[]], [[3]]),
-        ([[3]], [[2]]),
-        ([[2, 3]], [[1]]),
+        ([[]], [[3]], [[0, 1, 2, 3]]),
+        ([[3]], [[2]], [[0, 1, 2, -math.inf]]),
+        ([[2, 3]], [[1]], [[0, 1, -math.inf, -math.inf]]),
     ],
 )
-def test_generator_1d(logits_biases, expected_result):
-    def model(*_):
-        return torch.tensor([[0, 1, 2, 3]], dtype=torch.float), None
+def test_generator_1d(logits_biases, expected_result, expected_biased_logits):
+    class MockTokenizer:
+        def decode(self, _):
+            return "x"
+
+    class MockModel:
+        tokenizer = MockTokenizer()
+
+        def __call__(self, *_):
+            return torch.tensor([[0, 1, 2, 3]], dtype=torch.float), None
 
     def sampler(biased_logits, *_):
         return torch.argmax(biased_logits, keepdims=True)
 
-    generator = token_generator(model, sampler)
-    result, _ = generator(None, None, None, logits_biases, None)
+    generator = token_generator(MockModel(), sampler)
+    result, _, biased_logits = generator(None, None, None, logits_biases, None)
     assert torch.equal(result, torch.tensor(expected_result))
+    assert torch.equal(biased_logits, torch.tensor(expected_biased_logits))
 
 
 @pytest.mark.parametrize(
-    "logits_biases,expected_result",
+    "logits_biases,expected_result,expected_biased_logits",
     [
-        ([[]], [[3], [3]]),
-        ([[3], [3]], [[2], [2]]),
-        ([[3], []], [[2], [3]]),
-        ([[2, 3], [3]], [[1], [2]]),
+        ([[]], [[3], [3]], [[0, 1, 2, 3], [4, 5, 6, 7]]),
+        ([[3], [3]], [[2], [2]], [[0, 1, 2, -math.inf], [4, 5, 6, -math.inf]]),
+        ([[3], []], [[2], [3]], [[0, 1, 2, -math.inf], [4, 5, 6, 7]]),
+        (
+            [[2, 3], [3]],
+            [[1], [2]],
+            [[0, 1, -math.inf, -math.inf], [4, 5, 6, -math.inf]],
+        ),
     ],
 )
-def test_generator_2d(logits_biases, expected_result):
-    def model(*_):
-        return torch.tensor([[0, 1, 2, 3], [4, 5, 6, 7]], dtype=torch.float), None
+def test_generator_2d(logits_biases, expected_result, expected_biased_logits):
+    class MockTokenizer:
+        def decode(self, _):
+            return "x"
+
+    class MockModel:
+        tokenizer = MockTokenizer()
+
+        def __call__(self, *_):
+            return torch.tensor([[0, 1, 2, 3], [4, 5, 6, 7]], dtype=torch.float), None
 
     def sampler(biased_logits, *_):
         return torch.argmax(biased_logits, dim=1, keepdims=True)
 
-    generator = token_generator(model, sampler)
-    result, _ = generator(None, None, None, logits_biases, None)
+    generator = token_generator(MockModel(), sampler)
+    result, _, biased_logits = generator(None, None, None, logits_biases, None)
     assert torch.equal(result, torch.tensor(expected_result))
+    assert torch.equal(biased_logits, torch.tensor(expected_biased_logits))
 
 
 def test_get_next_fsm_states():
@@ -345,10 +373,10 @@ def test_get_next_instructions():
         def next_instruction(self, _):
             return [1, 2, 3, 4]
 
-    result = get_next_instructions(MockFSM(), [0])
+    result = get_next_instruction(MockFSM(), [0])
     assert result == [[1, 2, 3, 4]]
 
-    result = get_next_instructions(MockFSM(), [0, 1])
+    result = get_next_instruction(MockFSM(), [0, 1])
     assert result == [[1, 2, 3, 4], [1, 2, 3, 4]]
 
 
