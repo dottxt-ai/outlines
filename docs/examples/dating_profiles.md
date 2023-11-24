@@ -1,4 +1,4 @@
-# Generate a dating profile from a description
+# Generate a synthetic dating profile from a description
 
 In this example we will see how we can use Outlines to generate synthetic data for a dating application. This example was originally contributed by [Vibhor Kumar](https://github.com/veezbo).
 
