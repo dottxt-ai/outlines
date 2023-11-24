@@ -106,7 +106,8 @@ nav:
     - cookbook/index.md
   - Examples:
       - examples/index.md
-      - Dating Profile: examples/dating_profiles.md
+      - Synthetic dating Profile: examples/dating_profiles.md
+      - Chain of density prompting: examples/chain_of_density.md
   - Reference:
     - reference/index.md
     - Prompting: reference/prompting.md
