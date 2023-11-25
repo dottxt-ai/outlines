@@ -3,4 +3,3 @@ __pycache__
 *_version.py
 docs/build
 .coverage
-1st-place-single-model-inference.ipynb
