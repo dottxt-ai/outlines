@@ -19,12 +19,17 @@ def split_into_steps(question, model_name: str):
     @text.prompt
     def solve(question):
         """{{question}}
-        Let's solve this problem by splitting it into steps.
+        Rephrase : : as a true or false statement, identify an Object, relationship and subject
         """
 
     model = models.openai(model_name)
 
     prompt = solve(question)
+    answer = model(prompt, 500)
+    prompt += (
+        answer
+        + "\n what is the only option that displays the same type of relationship as : :?"
+    )
     answer = model(prompt, 500)
     completed = prompt + answer
 
@@ -131,17 +136,13 @@ if __name__ == "__main__":
     parser.add_argument(
         "--model",
         type=str,
-        default="gpt-3.5-turbo",
+        default="gpt-3.5-turbo-1106",
         help="The Large Language Model to use to run the examples.",
     )
     args = parser.parse_args()
 
     math_q = "f(x) = x*x. What is f(f(3))?"
     sat_q = """
-
-Directions: In the following question, a related pair of words or phrases \
-is followed by five pairs of words or phrases. Choose the pair that best \
-expresses a relationship similar to that in the original pair. \
 
 BRAGGART :: MODESTY
 A) FLEDGLING : EXPERIENCE
@@ -156,7 +157,7 @@ E) CANDIDATE : AMBITION
 
     run_example(split_into_steps, math_q, args.model)
     run_example(
-        split_into_steps, sat_q, args.model
+        split_into_steps, sat_q.lower(), args.model
     )  # gpt>3.5 usually gets this one right
     run_example(fill_in_the_blanks, sat_q, args.model)
     run_example(ask_an_expert, alignment_q, args.model)
