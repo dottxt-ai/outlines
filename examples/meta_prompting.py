@@ -19,15 +19,18 @@ def split_into_steps(question, model_name: str):
     @text.prompt
     def solve(question):
         """{{question}}
-       Rephrase : : as a true or false statement, identify an Object, relationship and subject
-     """
+        Rephrase : : as a true or false statement, identify an Object, relationship and subject
+        """
 
     model = models.openai(model_name)
 
     prompt = solve(question)
     answer = model(prompt, 500)
-    prompt += answer + "\n what is the only option that displays the same type of relationship as : :?"
-    answer = model(prompt,500)
+    prompt += (
+        answer
+        + "\n what is the only option that displays the same type of relationship as : :?"
+    )
+    answer = model(prompt, 500)
     completed = prompt + answer
 
     return completed
@@ -140,7 +143,7 @@ if __name__ == "__main__":
 
     math_q = "f(x) = x*x. What is f(f(3))?"
     sat_q = """
-    
+
 BRAGGART :: MODESTY
 A) FLEDGLING : EXPERIENCE
 B) EMBEZZLER : GREED
