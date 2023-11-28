@@ -13,7 +13,7 @@ def gptq(
         from auto_gptq import AutoGPTQForCausalLM
     except ImportError:
         raise ImportError(
-            "The `auto_gptq` library needs to be installed in order to use `AutoGPTQ` models."
+            "The `auto-gptq` library needs to be installed in order to use `AutoGPTQ` models."
         )
 
     if device is not None:
