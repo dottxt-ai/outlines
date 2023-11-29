@@ -393,7 +393,8 @@ def json(
         # TODO: Convert string fields to their respective types
         format_fn = lambda x: pyjson.loads(x)
     else:
-        format_fn = lambda x: x
+        schema = schema_object
+        format_fn = lambda x: pyjson.loads(x)
 
     regex_str = build_regex_from_object(schema)
 
