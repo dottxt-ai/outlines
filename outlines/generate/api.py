@@ -62,9 +62,18 @@ def json(
 ):
     if isinstance(schema_object, type(BaseModel)):
         schema = pyjson.dumps(schema_object.model_json_schema())
+        regex_str = build_regex_from_object(schema)
+        generator = regex(model, regex_str, max_tokens, sampler)
+        generator.format_sequence = lambda x: schema_object.parse_raw(x)
     elif callable(schema_object):
         schema = pyjson.dumps(get_schema_from_signature(schema_object))
+        regex_str = build_regex_from_object(schema)
+        generator = regex(model, regex_str, max_tokens, sampler)
+        generator.format_sequence = lambda x: pyjson.loads(x)
+    elif isinstance(schema_object, str):
+        schema = schema_object
+        regex_str = build_regex_from_object(schema)
+        generator = regex(model, regex_str, max_tokens, sampler)
+        generator.format_sequence = lambda x: pyjson.loads(x)
 
-    regex_str = build_regex_from_object(schema)
-
-    return regex(model, regex_str, max_tokens, sampler)
+    return generator
