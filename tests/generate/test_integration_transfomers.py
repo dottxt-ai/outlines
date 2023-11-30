@@ -14,6 +14,35 @@ from outlines.index.fsm import reduced_vocabulary
 from outlines.models.transformers import TransformerTokenizer
 
 
+def test_deprecation():
+    import outlines
+
+    model_name = "hf-internal-testing/tiny-random-GPTJForCausalLM"
+    model = models.transformers(model_name, device="cpu")
+
+    with pytest.warns(DeprecationWarning):
+        outlines.text.generate.continuation(model, max_tokens=10)
+
+        with pytest.raises(NotImplementedError):
+            outlines.text.generate.continuation(model, max_tokens=10, stop="string")
+
+    with pytest.warns(DeprecationWarning):
+        outlines.text.generate.choice(model, ["A", "B"], max_tokens=10)
+
+    with pytest.warns(DeprecationWarning):
+        outlines.text.generate.regex(model, "[0-9]", max_tokens=10)
+
+    with pytest.warns(DeprecationWarning):
+        outlines.text.generate.format(model, int, max_tokens=10)
+
+    with pytest.warns(DeprecationWarning):
+
+        def function(a: int):
+            pass
+
+        outlines.text.generate.json(model, function, max_tokens=10)
+
+
 def test_transformers_integration_text():
     rng = torch.Generator()
     rng.manual_seed(10000)  # Choosen so <EOS> is generated
