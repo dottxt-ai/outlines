@@ -1,4 +1,6 @@
 """Outlines is a Generative Model Programming Framework."""
+import outlines.generate
+import outlines.text.generate
 from outlines.base import vectorize
 from outlines.caching import clear_cache, disable_cache, get_cache
 from outlines.prompts import prompt
