@@ -53,6 +53,9 @@ class SequenceGenerator:
 
         return token_ids, attention_masks, kv_cache
 
+    def format_sequence(self, sequence):
+        return sequence
+
     def __call__(
         self,
         prompt,
@@ -61,7 +64,9 @@ class SequenceGenerator:
     ) -> Union[str, List[str]]:
         sequence_generator = self.stream(prompt, kv_cache, rng)
         tokens = [token for token in sequence_generator]
-        sequences = ["".join(sequence) for sequence in list(zip(*tokens))]
+        sequences = [
+            self.format_sequence("".join(sequence)) for sequence in list(zip(*tokens))
+        ]
         return sequences if len(sequences) > 1 else sequences[0]
 
     def stream(

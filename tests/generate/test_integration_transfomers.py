@@ -1,5 +1,4 @@
 import datetime
-import json
 import re
 from enum import Enum
 from typing import List, Union
@@ -265,7 +264,6 @@ def test_transformers_json_basic():
     rng.manual_seed(0)  # make sure that `bar` is not an int
 
     result = generate.json(model, Spam, max_tokens=500)(prompt, rng=rng)
-    result = Spam.parse_raw(result)
     assert isinstance(result, BaseModel)
     assert isinstance(result.foo, int)
     assert isinstance(result.bar, float)
@@ -311,7 +309,6 @@ def test_transformers_json_str_enum():
         name: Name
 
     result = generate.json(model, User)(prompt, rng=rng)
-    result = User.parse_raw(result)
     assert isinstance(result, BaseModel)
     assert isinstance(result.user_id, int)
     assert result.name in ["John", "Marc", "Michel"]
@@ -333,7 +330,6 @@ def test_transformers_json_int_enum():
         user_id: Id
 
     result = generate.json(model, User)(prompt, rng=rng)
-    result = User.parse_raw(result)
     assert isinstance(result, BaseModel)
     assert isinstance(result.user_id, int)
     assert result.user_id in [1, 2]
@@ -352,7 +348,6 @@ def test_transformers_json_array():
     rng.manual_seed(0)
 
     result = generate.json(model, User)(prompt, rng=rng)
-    result = User.parse_raw(result)
     assert isinstance(result, BaseModel)
     assert isinstance(result.user_id, int)
     assert isinstance(result.value, list)
@@ -374,7 +369,6 @@ def test_transformers_json_union():
     rng.manual_seed(4)
 
     result = generate.json(model, Spam, max_tokens=100)(prompt, rng=rng)
-    result = Spam.parse_raw(result)
     assert isinstance(result, BaseModel)
     assert (
         isinstance(result.bar, int)
@@ -395,7 +389,6 @@ def test_transformers_json_function():
     rng.manual_seed(4)
 
     sequence = generate.json(model, function, max_tokens=100)(prompt, rng=rng)
-    sequence = json.loads(sequence)
     assert isinstance(sequence, dict)
     assert isinstance(function(**sequence), int)
 
