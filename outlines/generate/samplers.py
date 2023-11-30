@@ -67,45 +67,5 @@ def multinomial(
 
     """
     probs = torch.nn.functional.softmax(logits, dim=-1)
-    # next_token_ids = torch.multinomial(probs, num_samples=samples, generator=rng)
-    next_token_ids = vectorized_random_choice(rng, probs, samples)
+    next_token_ids = torch.multinomial(probs, num_samples=samples, generator=rng)
     return next_token_ids
-
-
-def vectorized_random_choice(
-    rng: torch.Generator,
-    p: torch.FloatTensor,
-    samples: int = 1,
-):
-    """Vectorized implementation of `np.random.choice`.
-
-    `np.random.choice` does not support arrays of probability. This implements
-    the equivalent of this function where the `p` argument can be a matrix.
-
-    Note
-    ----
-    `torch.searchsorted` may be more efficient, but it is not implemented for
-    every backend, for instance MPS.
-
-    Parameters
-    ----------
-    rng
-        Torch random number Generator instance
-    p
-        An array of probability of shape ``(num_probability_vectors, num_items)``
-        that must sum to 1.
-    samples
-        The number of samples to take for each probability vector.
-
-    Returns
-    -------
-    An array of shape ``(num_samples, batch_size)``
-
-    """
-    cumsum = torch.unsqueeze(p.cumsum(axis=-1), 0)
-    rand = torch.rand(
-        (samples,) + p.shape[:-1] + (1,), generator=rng, device=rng.device
-    )
-    idx = (cumsum < rand).sum(axis=-1)
-
-    return idx
