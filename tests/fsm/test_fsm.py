@@ -4,11 +4,16 @@ from outlines.fsm.fsm import RegexFSM, StopAtTokenFSM
 
 
 def test_stop_at_token():
-    fsm = StopAtTokenFSM(1)
+    class MockTokenizer:
+        vocabulary = {"a": 1, "eos": 2}
+        special_tokens = {"eos"}
+
+    fsm = StopAtTokenFSM(MockTokenizer(), 2)
 
     assert fsm.next_instruction(0) == []
-    assert fsm.next_state(0, 10) == 0
-    assert fsm.next_state(0, 1) == 1
+    assert fsm.next_instruction(1) == [1]
+    assert fsm.next_state(0, 2) == 1
+    assert fsm.next_state(0, 1) == 0
     assert fsm.is_final_state(0) is False
     assert fsm.is_final_state(1) is True
 
