@@ -4,11 +4,11 @@ from typing import TYPE_CHECKING, Callable, Iterator, List, Optional, Tuple, Uni
 
 import torch
 
-from outlines.index.index import FSMState
+from outlines.fsm.fsm import FSMState
 
 if TYPE_CHECKING:
+    from outlines.fsm.fsm import FSM
     from outlines.generate.samplers import Sampler
-    from outlines.index.index import FSM
 
 
 @dataclasses.dataclass(frozen=True)
@@ -335,6 +335,7 @@ def update_logprobs(logprobs, next_token_ids, next_token_logits):
         range(next_token_ids.shape[0]), next_token_ids.flatten()
     ]
     return logprobs + new_logprobs
+
 
 @torch.inference_mode
 def bias_logits(

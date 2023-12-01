@@ -2,7 +2,7 @@ import interegular
 import numba
 import pytest
 
-from outlines.index.fsm import (
+from outlines.fsm.regex import (
     _walk_fsm,
     create_fsm_index_end_to_end,
     create_fsm_index_tokenizer,

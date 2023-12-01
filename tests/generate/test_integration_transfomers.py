@@ -9,7 +9,7 @@ from pydantic import BaseModel, constr
 
 import outlines.generate as generate
 import outlines.models as models
-from outlines.index.fsm import reduced_vocabulary
+from outlines.fsm.regex import reduced_vocabulary
 from outlines.models.transformers import TransformerTokenizer
 
 
@@ -68,7 +68,9 @@ def test_transformers_integration_streaming():
 
     model_name = "hf-internal-testing/tiny-random-GPTJForCausalLM"
     model = models.transformers(model_name, device="cpu")
-    sequence = generate.text(model, max_tokens=10).stream("Write a short sentence ", rng=rng)
+    sequence = generate.text(model, max_tokens=10).stream(
+        "Write a short sentence ", rng=rng
+    )
 
     token = next(sequence)
     assert isinstance(token, list)
@@ -77,7 +79,9 @@ def test_transformers_integration_streaming():
     remaining = "".join([token[0] for token in sequence])
     assert isinstance(remaining, str)
 
-    sequence = generate.text(model, max_tokens=10).stream(["Prompt1", "Prompt2"], rng=rng)
+    sequence = generate.text(model, max_tokens=10).stream(
+        ["Prompt1", "Prompt2"], rng=rng
+    )
     tokens = next(sequence)
     assert isinstance(tokens, list)
     assert isinstance(tokens[0], str)

@@ -3,14 +3,11 @@ from typing import Callable, List, Optional, Union
 
 from pydantic import BaseModel
 
+from outlines.fsm.fsm import RegexFSM, StopAtTokenFSM
+from outlines.fsm.json_schema import build_regex_from_object, get_schema_from_signature
+from outlines.fsm.types import python_types_to_regex
 from outlines.generate.generator import SequenceGenerator
 from outlines.generate.samplers import Sampler, multinomial
-from outlines.index.index import RegexFSM, StopAtTokenFSM
-from outlines.index.json_schema import (
-    build_regex_from_object,
-    get_schema_from_signature,
-)
-from outlines.index.types import python_types_to_regex
 
 
 def text(model, max_tokens: Optional[int] = None, *, sampler: Sampler = multinomial):
