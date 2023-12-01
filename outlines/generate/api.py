@@ -12,7 +12,7 @@ from outlines.generate.samplers import Sampler, multinomial
 
 def text(model, max_tokens: Optional[int] = None, *, sampler: Sampler = multinomial):
     eos_token = model.tokenizer.eos_token_id
-    fsm = StopAtTokenFSM(eos_token, max_tokens)
+    fsm = StopAtTokenFSM(model.tokenizer, eos_token, max_tokens)
 
     device = model.device
     generator = SequenceGenerator(fsm, model, sampler, device)
