@@ -125,7 +125,8 @@ nav:
       - api/prompts.md
       - api/json_schema.md
       - api/fsm.md
+      - api/regex.md
       - api/parsing.md
       - api/regex.md
       - api/samplers.md
-      - api/continuation.md
+      - api/text.md
