@@ -1,6 +1,6 @@
 import pytest
 
-from outlines.index.index import RegexFSM, StopAtTokenFSM
+from outlines.fsm.fsm import RegexFSM, StopAtTokenFSM
 
 
 def test_stop_at_token():

@@ -4,6 +4,7 @@ from typing import Generator
 import pytest
 import torch
 
+from outlines.fsm.fsm import FSMState
 from outlines.generate.generator import (
     SequenceGenerator,
     bias_logits,
@@ -15,7 +16,6 @@ from outlines.generate.generator import (
     token_generator,
     update_token_ids,
 )
-from outlines.index.index import FSMState
 
 
 def test_sequence_generator_class():

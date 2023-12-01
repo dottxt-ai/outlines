@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING, List, NewType, Optional, Protocol
 
 import interegular
 
-from outlines.index.fsm import create_fsm_index_tokenizer, make_deterministic_fsm
+from outlines.fsm.regex import create_fsm_index_tokenizer, make_deterministic_fsm
 
 if TYPE_CHECKING:
     from outlines.models.tokenizer import Tokenizer
@@ -27,8 +27,30 @@ class StopAtTokenFSM(FSM):
         self.max_tokens = max_tokens
         self.num_tokens_generated = 0
 
-    def next_instruction(self, _: FSMState) -> List[int]:
-        return []
+    def next_instruction(self, state: FSMState) -> List[int]:
+        """Generate a list of forbidden tokens for the next step.
+
+        When in the initial state we allow every token to be generated.
+        In the final state the only allowed token is `stop_token_id`.
+
+        Parameters
+        ----------
+        state
+            The current state of the FSM
+
+        Returns
+        -------
+        A list that contains the tokens to mask.
+
+        """
+        if state == 0:
+            return []
+        else:
+            return [
+                token_id
+                for token_id in self.vocabulary
+                if token_id != self.stop_token_id
+            ]
 
     def next_state(self, state: FSMState, token_id: int) -> FSMState:
         self.num_tokens_generated += 1
@@ -52,6 +74,7 @@ class StopAtTokenFSM(FSM):
 
 
 class RegexFSM(FSM):
+    """FSM to generate text that is in the language of a regular expression."""
     def __init__(
         self,
         regex_string: str,
