@@ -1,1 +1,1 @@
-::: outlines.index.json_schema
+::: outlines.fsm.json_schema
