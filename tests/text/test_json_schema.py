@@ -220,10 +220,19 @@ def test_match_number(pattern, does_match):
         (
             {
                 "title": "Foo",
-                "oneOf": [{"type": "string"}, {"type": "number"}],
+                "oneOf": [{"type": "string"}, {"type": "number"}, {"type": "boolean"}],
             },
-            rf"({STRING}|{NUMBER})",
-            [("12.3", True), ('"a"', True), ('1.3"a"', False)],
+            rf"(({STRING})(?!.*({NUMBER}|{BOOLEAN}))|({NUMBER})(?!.*({STRING}|{BOOLEAN}))|({BOOLEAN})(?!.*({STRING}|{NUMBER})))",
+            [
+                ("12.3", True),
+                ("true", True),
+                ('"a"', True),
+                ("null", False),
+                ("", False),
+                ("12true", False),
+                ('1.3"a"', False),
+                ('12.3true"a"', False),
+            ],
         ),
         # anyOf
         (
