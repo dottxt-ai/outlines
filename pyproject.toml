@@ -30,7 +30,7 @@ dependencies = [
    "numpy",
    "pillow",
    "perscache",
-   "pydantic>=2.0",
+   "pydantic",
    "scipy",
    "tenacity",
    "torch",
