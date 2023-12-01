@@ -137,7 +137,16 @@ def to_regex(resolver: Resolver, instance: dict):
     # one of the given subschemas.
     elif "oneOf" in instance:
         subregexes = [to_regex(resolver, t) for t in instance["oneOf"]]
-        return rf"({'|'.join(subregexes)})"
+
+        xor_patterns = []
+        # json schema validation ensured there is no overlapping schemas in oneOf
+        for subregex in subregexes:
+            other_subregexes = filter(lambda r: r != subregex, subregexes)
+            other_subregexes_str = "|".join([f"{s}" for s in other_subregexes])
+            negative_lookahead = f"(?!.*({other_subregexes_str}))"
+            xor_patterns.append(f"({subregex}){negative_lookahead}")
+
+        return rf"({'|'.join(xor_patterns)})"
 
     # The enum keyword is used to restrict a value to a fixed set of values. It
     # must be an array with at least one element, where each element is unique.
