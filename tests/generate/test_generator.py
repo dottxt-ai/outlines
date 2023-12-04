@@ -11,6 +11,7 @@ from outlines.generate.generator import (
     expand_attention_masks,
     get_logits_masks,
     get_next_fsm_states,
+    init_generator_state,
     is_generation_finished,
     sequence_generator,
     token_generator,
@@ -53,12 +54,6 @@ def test_sequence_generator_class():
     assert isinstance(generator.fsm, MockFSM)
     assert callable(generator.generate_token)
 
-    result = generator.init_generation_state("test")
-    token_ids, attention_masks, kv_cache = result
-    assert torch.equal(token_ids, torch.tensor([[0, 1, 2, 3]]))
-    assert torch.equal(attention_masks, torch.tensor([[1, 1, 1, 1]]))
-    assert kv_cache is None
-
     sequence = generator.stream("test")
     assert isinstance(sequence, Generator)
 
@@ -71,6 +66,41 @@ def test_sequence_generator_class():
     generator = SequenceGenerator(MockFSM(), MockModel(), sampler, "cpu")
     result = generator("test")
     assert result == "x"
+
+
+def test_init_sequence_generator():
+    class MockFSM:
+        def next_state(self, state, next_token_ids):
+            return 0
+
+        def forbidden_token_ids(self, _):
+            return []
+
+        def is_final_state(self, _):
+            return True
+
+    class MockTokenizer:
+        def encode(self, _):
+            return torch.tensor([[0, 1, 2, 3]]), torch.tensor([[1, 1, 1, 1]])
+
+        def decode(self, _):
+            return "x"
+
+    class MockModel:
+        def __init__(self):
+            self.tokenizer = MockTokenizer()
+
+        def __call__(*_):
+            return torch.tensor([[0, 1, 2, 3]], dtype=torch.float), None
+
+    def sampler(biased_logits, *_):
+        return torch.argmax(biased_logits, keepdims=True)
+
+    result = init_generator_state(MockTokenizer(), "cpu", "")
+    token_ids, attention_masks, kv_cache = result
+    assert torch.equal(token_ids, torch.tensor([[0, 1, 2, 3]]))
+    assert torch.equal(attention_masks, torch.tensor([[1, 1, 1, 1]]))
+    assert kv_cache is None
 
 
 def test_sequence_generator_1d_single_iteration():
