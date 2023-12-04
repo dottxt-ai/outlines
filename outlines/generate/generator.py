@@ -156,7 +156,6 @@ def sequence_generator(
         yield GenerationState(token_ids, kv_cache, logits)
 
 
-@torch.inference_mode
 def token_generator(model, sampler: "Sampler") -> Callable:
     """Generate one token at a time.
 
@@ -181,6 +180,7 @@ def token_generator(model, sampler: "Sampler") -> Callable:
 
     """
 
+    @torch.inference_mode()
     def generate(
         token_ids,
         attention_masks,
@@ -268,6 +268,7 @@ def is_generation_finished(fsm: "FSM", fsm_states: List[FSMState]) -> bool:
     return all([fsm.is_final_state(state) for state in fsm_states])
 
 
+@torch.inference_mode()
 def update_token_ids(
     token_ids: torch.Tensor, next_token_ids: torch.Tensor
 ) -> torch.Tensor:
@@ -290,6 +291,7 @@ def update_token_ids(
     return torch.concatenate([token_ids, next_token_ids], dim=-1)
 
 
+@torch.inference_mode()
 def expand_attention_masks(attention_masks: torch.Tensor) -> torch.Tensor:
     """Expand the attention masks.
 
@@ -314,30 +316,7 @@ def expand_attention_masks(attention_masks: torch.Tensor) -> torch.Tensor:
     )
 
 
-<<<<<<< HEAD
 @torch.inference_mode()
-=======
-def update_logprobs(logprobs, next_token_ids, next_token_logits):
-    """Update the sequences' total logprob.
-
-    Parameters
-    ----------
-    logprobs
-        The current log-probabilities for each sequence.
-    next_token_ids
-        The token ids that were just sampled
-    next_token_logits
-        The logits returned by the model.
-
-    """
-    next_token_logprobs = torch.nn.LogSoftmax(dim=-1)(next_token_logits)
-    new_logprobs = next_token_logprobs[
-        range(next_token_ids.shape[0]), next_token_ids.flatten()
-    ]
-    return logprobs + new_logprobs
-
-
-@torch.inference_mode
 def bias_logits(
     logits: torch.Tensor,
     ids_to_mask: List,
