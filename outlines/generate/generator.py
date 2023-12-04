@@ -17,6 +17,7 @@ class GenerationState:
     token_ids: torch.Tensor
     kv_cache: torch.Tensor
     logits: torch.Tensor
+    fsm_states: List[FSMState]
 
 
 def init_generator_state(
@@ -94,10 +95,10 @@ def sequence_generator(
         is_finished = is_generation_finished(fsm, fsm_states)
 
         if is_finished:
-            yield GenerationState(token_ids, kv_cache, logits)
+            yield GenerationState(token_ids, kv_cache, logits, fsm_states)
             return
 
-        yield GenerationState(token_ids, kv_cache, logits)
+        yield GenerationState(token_ids, kv_cache, logits, fsm_states)
 
 
 def token_generator(model, sampler: "Sampler") -> Callable:
