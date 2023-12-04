@@ -57,7 +57,7 @@ class OpenAIConfig:
 
     """
 
-    model: str
+    model: str = ""
     frequency_penalty: float = 0
     logit_bias: Dict[int, int] = field(default_factory=dict)
     max_tokens: Optional[int] = None
