@@ -11,7 +11,7 @@ FSMState = NewType("FSMState", int)
 
 
 class FSM(Protocol):
-    def next_instruction(self, state: FSMState) -> List[int]:
+    def forbidden_token_ids(self, state: FSMState) -> List[int]:
         ...
 
     def next_state(self, state: FSMState, token_id: int) -> FSMState:
@@ -40,8 +40,9 @@ class StopAtTokenFSM(FSM):
         self.max_tokens = max_tokens
         self.num_tokens_generated = 0
         self.vocabulary = tokenizer.vocabulary.values()
+        self.final_states = {1}
 
-    def next_instruction(self, state: FSMState) -> List[int]:
+    def forbidden_token_ids(self, state: FSMState) -> List[int]:
         """Generate a list of forbidden tokens for the next step.
 
         When in the initial state we allow every token to be generated.
@@ -98,11 +99,7 @@ class StopAtTokenFSM(FSM):
 
     def is_final_state(self, state: FSMState) -> bool:
         """Determine whether the current state of the FSM is a final state."""
-
-        if state == 1:
-            return True
-        else:
-            return False
+        return state in self.final_states
 
 
 class RegexFSM(FSM):
@@ -121,6 +118,9 @@ class RegexFSM(FSM):
             self.empty_token_ids,
         ) = create_fsm_index_tokenizer(regex_fsm, tokenizer)
 
+        # We make sure that it is possible to generate strings in the language
+        # of the regular expression with the tokens present in the model's
+        # vocabulary.
         if not any(
             regex_fsm.finals.intersection(v.values())
             for v in self.states_to_token_maps.values()
@@ -135,9 +135,9 @@ class RegexFSM(FSM):
         self.max_tokens = max_tokens
         self.num_tokens_generated = 0
         self.vocabulary = tokenizer.vocabulary.values()
-        self.end_token = tokenizer.eos_token_id
+        self.end_token_id = tokenizer.eos_token_id
 
-    def next_instruction(self, state: FSMState) -> List[int]:
+    def forbidden_token_ids(self, state: FSMState) -> List[int]:
         """Generate a list of forbidden tokens for the next step.
 
         The initialization of the FSM builds an index which maps FSM states to a
@@ -163,7 +163,7 @@ class RegexFSM(FSM):
         next_tokens_to_end_states = self.states_to_token_maps.get(state)
 
         if next_tokens_to_end_states is None:
-            authorized_tokens = [self.end_token]
+            authorized_tokens = [self.end_token_id]
         else:
             authorized_tokens = list(next_tokens_to_end_states.keys())
 
@@ -197,7 +197,7 @@ class RegexFSM(FSM):
             if self.num_tokens_generated == self.max_tokens:
                 return FSMState(-1)
 
-        if token_id == self.end_token:
+        if token_id == self.end_token_id:
             return FSMState(-1)
 
         last_token_to_end_state = self.states_to_token_maps[state]
@@ -209,8 +209,4 @@ class RegexFSM(FSM):
 
     def is_final_state(self, state: FSMState) -> bool:
         """Determine whether the current state of the FSM is a final state."""
-
-        if state in self.final_states:
-            return True
-
-        return False
+        return state in self.final_states

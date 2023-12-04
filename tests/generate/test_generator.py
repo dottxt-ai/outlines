@@ -9,8 +9,8 @@ from outlines.generate.generator import (
     SequenceGenerator,
     bias_logits,
     expand_attention_masks,
+    get_logits_masks,
     get_next_fsm_states,
-    get_next_instruction,
     is_generation_finished,
     sequence_generator,
     token_generator,
@@ -23,7 +23,7 @@ def test_sequence_generator_class():
         def next_state(self, state, next_token_ids):
             return 0
 
-        def next_instruction(self, _):
+        def forbidden_token_ids(self, _):
             return []
 
         def is_final_state(self, _):
@@ -78,7 +78,7 @@ def test_sequence_generator_1d_single_iteration():
         def next_state(self, state, next_token_ids):
             return 0
 
-        def next_instruction(self, _):
+        def forbidden_token_ids(self, _):
             return []
 
         def is_final_state(self, _):
@@ -121,7 +121,7 @@ def test_sequence_generator_1d_several_iterations():
         def next_state(self, state, next_token_ids):
             return FSMState(state + 1)
 
-        def next_instruction(self, _):
+        def forbidden_token_ids(self, _):
             return []
 
         def is_final_state(self, state):
@@ -171,7 +171,7 @@ def test_sequence_generator_2d_single_iteration():
         def next_state(self, state, next_token_ids):
             return 0
 
-        def next_instruction(self, _):
+        def forbidden_token_ids(self, _):
             return []
 
         def is_final_state(self, _):
@@ -224,7 +224,7 @@ def test_sequence_generator_2d_several_iterations():
         def next_state(self, state, next_token_ids):
             return FSMState(state + 1)
 
-        def next_instruction(self, _):
+        def forbidden_token_ids(self, _):
             return []
 
         def is_final_state(self, state):
@@ -368,15 +368,15 @@ def test_get_next_fsm_states():
     assert result == [0, 0]
 
 
-def test_get_next_instructions():
+def test_get_forbidden_token_idss():
     class MockFSM:
-        def next_instruction(self, _):
+        def forbidden_token_ids(self, _):
             return [1, 2, 3, 4]
 
-    result = get_next_instruction(MockFSM(), [0])
+    result = get_logits_masks(MockFSM(), [0])
     assert result == [[1, 2, 3, 4]]
 
-    result = get_next_instruction(MockFSM(), [0, 1])
+    result = get_logits_masks(MockFSM(), [0, 1])
     assert result == [[1, 2, 3, 4], [1, 2, 3, 4]]
 
 

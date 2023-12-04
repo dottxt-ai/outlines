@@ -133,7 +133,7 @@ def sequence_generator(
     """
     token_ids, attention_masks, kv_cache = init_state
     while True:
-        logits_masks = get_next_instruction(fsm, fsm_states)
+        logits_masks = get_logits_masks(fsm, fsm_states)
 
         next_token_ids, kv_cache, logits = token_generator(
             token_ids,
@@ -226,7 +226,7 @@ def get_next_fsm_states(
     ]
 
 
-def get_next_instruction(fsm: "FSM", fsm_states: List[FSMState]) -> torch.Tensor:
+def get_logits_masks(fsm: "FSM", fsm_states: List[FSMState]) -> torch.Tensor:
     """Get the new instructions for each sequence from the finite-state machine.
 
     Parameters
@@ -241,7 +241,7 @@ def get_next_instruction(fsm: "FSM", fsm_states: List[FSMState]) -> torch.Tensor
     A nested list that contains the ids of the logits to bias.
 
     """
-    return [fsm.next_instruction(state) for state in fsm_states]
+    return [fsm.forbidden_token_ids(state) for state in fsm_states]
 
 
 def is_generation_finished(fsm: "FSM", fsm_states: List[FSMState]) -> bool:
