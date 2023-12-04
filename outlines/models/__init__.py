@@ -7,5 +7,6 @@ codebase.
 """
 from .awq import awq
 from .gptq import gptq
+from .mamba import Mamba, mamba
 from .openai import OpenAI, openai
 from .transformers import Transformer, transformers

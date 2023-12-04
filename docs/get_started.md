@@ -21,7 +21,8 @@ pip install outlines
     - `openai` for OpenAI models;
     - `transformers` for Hugging Face models;
     - `autoawq` for AWQ models;
-    - `auto-gptq` for GPTQ models.
+    - `auto-gptq` for GPTQ models;
+    - `mamba_ssm` for Mamba models.
 
 
 ## 2. Hello, World

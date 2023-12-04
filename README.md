@@ -56,10 +56,11 @@ via the next-token logits. It can be used with API-based models as well.
 
 ## Available models
 
-- Transformers
-- AutoGPTQ
-- AutoAWQ
-- OpenAI API
+- [Transformers](https://github.com/huggingface/transformers)
+- [AutoGPTQ](https://github.com/PanQiWei/AutoGPTQ)
+- [AutoAWQ](https://github.com/casper-hansen/AutoAWQ)
+- [OpenAI API](https://github.com/openai/openai-python)
+- [Mamba](https://github.com/state-spaces/mamba)
 
 Outlines 〰 has new releases and features coming every week. Make sure to ⭐ star and 👀 watch this repository, follow [@dottxtai][twitter] to stay up to date!
 

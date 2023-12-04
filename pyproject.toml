@@ -93,6 +93,7 @@ module = [
     "joblib.*",
     "jsonschema.*",
     "openai.*",
+    "mamba_ssm.*",
     "nest_asyncio",
     "numpy.*",
     "perscache.*",
