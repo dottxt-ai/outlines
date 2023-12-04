@@ -9,6 +9,7 @@ from outlines.fsm.fsm import FSMState
 if TYPE_CHECKING:
     from outlines.fsm.fsm import FSM
     from outlines.generate.samplers import Sampler
+    from outlines.models.tokenizer import Tokenizer
 
 
 @dataclasses.dataclass(frozen=True)
@@ -24,34 +25,6 @@ class SequenceGenerator:
         self.fsm = fsm
         self.tokenizer = model.tokenizer
         self.device = device
-
-    def init_generation_state(
-        self,
-        prompt: Union[str, List[str]],
-        kv_cache: Optional[torch.Tensor] = None,
-    ):
-        """Initialize the generation state.
-
-        This method is responsible for encoding the prompt, moving token ids
-        to the device and initializing the random number generator.
-
-        Parameters
-        ----------
-        prompt
-            The prompt on which the generation is conditioned.
-        rng
-            The state of the random number generator.
-
-        Returns
-        -------
-        A `GenerationState` object.
-
-        """
-        token_ids, attention_masks = self.tokenizer.encode(prompt)
-        token_ids = token_ids.to(self.device)
-        attention_masks = attention_masks.to(self.device)
-
-        return token_ids, attention_masks, kv_cache
 
     def format_sequence(self, sequence):
         return sequence
@@ -79,7 +52,7 @@ class SequenceGenerator:
             rng = torch.Generator(device=self.device)
             rng.seed()
 
-        init_state = self.init_generation_state(prompt, kv_cache)
+        init_state = init_generator_state(self.tokenizer, self.device, prompt, kv_cache)
 
         token_ids = init_state[1]
         num_sequences = token_ids.shape[0]
@@ -103,6 +76,36 @@ class SequenceGenerator:
                 yield next_tokens
 
         return token_generator()
+
+
+def init_generator_state(
+    tokenizer: "Tokenizer",
+    device: str,
+    prompt: Union[str, List[str]],
+    kv_cache: Optional[torch.Tensor] = None,
+) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    """Initialize the generation state.
+
+    This method is responsible for encoding the prompt, moving token ids
+    to the device and initializing the random number generator.
+
+    Parameters
+    ----------
+    prompt
+        The prompt on which the generation is conditioned.
+    rng
+        The state of the random number generator.
+
+    Returns
+    -------
+    A `GenerationState` object.
+
+    """
+    token_ids, attention_masks = tokenizer.encode(prompt)
+    token_ids = token_ids.to(device)
+    attention_masks = attention_masks.to(device)
+
+    return token_ids, attention_masks, kv_cache
 
 
 def sequence_generator(
