@@ -5,8 +5,8 @@ import pytest
 import torch
 
 from outlines.fsm.fsm import FSMState
+from outlines.generate.api import SequenceGenerator
 from outlines.generate.generator import (
-    SequenceGenerator,
     bias_logits,
     expand_attention_masks,
     get_logits_masks,
