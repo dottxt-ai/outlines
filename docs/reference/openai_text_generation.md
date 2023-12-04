@@ -1,54 +1,88 @@
 # Generate text with the OpenAI API
 
-Outlines is focused on 🔓 models, but includes an OpenAI integration nevertheless. You can instantiate a model very simply by calling the [outlines.models.openai][] function, with either a chat or non chat model:
+Outlines supports models available via the OpenAI Chat API, e.g. ChatGPT and GPT-4. The following models can be used with Outlines:
 
 ```python
 from outlines import models
 
-model = models.openai("text-davinci-003")
-model = models.openai("gpt4")
+model = models.openai("gpt-3.5-turbo")
+model = models.openai("gpt-4")
 
 print(type(model))
-# OpenAIAPI
+# OpenAI
 ```
 
-!!! note
+It is possible to pass a system message to the model when initializing it:
 
-    It is currently not possible to pass a system message to the model. If that is something you need, please [open an Issue](https://github.com/outlines-dev/outlines/issues) or, better, [submit a Pull Request](https://github.com/outlines-dev/outlines/pulls).
+```python
+from outlines import models
 
-The OpenAI integration supports the following features:
+model = models.openai("gpt-4", system_prompt="You are a useful assistant")
+```
 
-- The ability to stop the generation when a specified sequence is found [🔗](#stop-when-a-sequence-is-found)
-- The ability to choose between different choices [🔗](#multiple-choices)
-- Vectorization, i.e. the ability to pass an array of prompts and execute all requests concurrently [🔗](#vectorized-calls)
+This message will be used for every subsequent use of the model:
 
-## Stop when a sequence is found
+## Usage
+
+### Call the model
+
+OpenAI models can be directly called with a prompt:
+
+```python
+from outlines import models
+
+model = models.openai("gpt-3.5-turbo")
+result = model("Say something", temperature=0, samples=2)
+```
+
+!!! warning
+
+    This syntax will soon be deprecated and one will be able to generate text with OpenAI models with the same syntax used to generate text with Open Source models.
+
+### Stop when a sequence is found
 
 The OpenAI API tends to be chatty and it can be useful to stop the generation once a given sequence has been found, instead of paying for the extra tokens and needing to post-process the output. For instance if you only to generate a single sentence:
 
 ```python
 from outlines import models
 
-model = models.openai("text-davinci-003")
+model = models.openai("gpt-4")
 response = model("Write a sentence", stop_at=['.'])
 ```
 
-## Multiple choices
+### Choose between multiple choices
 
-It can be difficult to deal with a classification problem with the OpenAI API. However well you prompt the model, chances are you are going to have to post-process the output anyway. Sometimes the model will even make up choices. Outlines allows you to *guarantee* that the output of the model will be within a set of choices you specify:
+It can be difficult to deal with a classification problem with the OpenAI API. However well you prompt the model, chances are you are going to have to post-process the output anyway. Sometimes the model will even make up choices. Outlines allows you to *guarantee* that the output of the model will be within a set of choices:
 
 ```python
 from outlines import models
 
-prompt = """
-Review: The OpenAI API is very limited. It does not allow me to do guided generation properly.
-Question: What is the overall sentiment of this review?
-Answer:
-"""
-
-model = models.openai("text-davinci-003")
-response = model(prompt, is_in=['Positive', 'Negative'])
+model = models.openai("gpt-3.5-turbo")
+result = model.generate_choice("Red or blue?", ["red", "blue"])
 ```
+
+!!! warning
+
+    This syntax will soon be deprecated and one will be able to generate text with OpenAI models with the same syntax used to generate text with Open Source models.
+
+## Monitoring API use
+
+It is important to be able to track your API usage when working with OpenAI's API. The number of prompt tokens and completion tokens is directly accessible via the model instance:
+
+```python
+import outlines.models
+
+model = models.openai("gpt-4")
+
+print(model.prompt_tokens)
+# 0
+
+print(model.completion_tokens)
+# 0
+```
+
+These numbers are updated every time you call the model.
+
 
 ## Vectorized calls
 
@@ -165,3 +199,21 @@ You may find this useful, e.g., to implement [Tree of Thoughts](https://arxiv.or
 !!! note
 
     Outlines provides an `@outlines.vectorize` decorator that you can use on any `async` python function. This can be useful for instance when you call a remote API within your workflow.
+
+
+## Advanced usage
+
+It is possible to specify the values for `seed`, `presence_penalty`, `frequence_penalty`, `top_p` by passing an instance of `OpenAIConfig` when initializing the model:
+
+```python
+from outlines.models.openai import OpenAIConfig
+from outlines import models
+
+config = OpenAIConfig(
+    presence_penalty=1.,
+    frequence_penalty=1.,
+    top_p=.95,
+    seed=0,
+)
+model = models.openai("gpt-4", config=config)
+```
