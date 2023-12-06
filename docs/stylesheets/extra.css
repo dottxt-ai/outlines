@@ -1,6 +1,7 @@
 :root > * {
   --md-code-bg-color: #2E3440;
   --md-default-bg-color: black;
+  --md-text-font-family: "Inter";
 }
 
 .language-python.highlight > * {
