@@ -10,8 +10,8 @@ def test_stop_at_token():
 
     fsm = StopAtTokenFSM(MockTokenizer(), 2)
 
-    assert fsm.forbidden_token_ids(0) == []
-    assert fsm.forbidden_token_ids(1) == [1]
+    assert fsm.allowed_token_ids(0) == [1, 2]
+    assert fsm.allowed_token_ids(1) == [2]
     assert fsm.next_state(0, 2) == 1
     assert fsm.next_state(0, 1) == 0
     assert fsm.is_final_state(0) is False
@@ -46,7 +46,7 @@ def test_regex():
     fsm = RegexFSM(regex_str, tokenizer)
 
     assert fsm.states_to_token_maps == {0: {1: 1}}
-    assert fsm.forbidden_token_ids(state=0) == [2, 3]
+    assert fsm.allowed_token_ids(state=0) == [1]
     assert fsm.next_state(state=0, token_id=1) == 1
     assert fsm.next_state(state=0, token_id=tokenizer.eos_token_id) == -1
 

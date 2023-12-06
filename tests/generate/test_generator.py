@@ -9,7 +9,7 @@ from outlines.generate.api import SequenceGenerator
 from outlines.generate.generator import (
     bias_logits,
     expand_attention_masks,
-    get_logits_masks,
+    get_allowed_tokens,
     get_next_fsm_states,
     init_generator_state,
     is_generation_finished,
@@ -24,7 +24,7 @@ def test_sequence_generator_class():
         def next_state(self, state, next_token_ids):
             return 0
 
-        def forbidden_token_ids(self, _):
+        def allowed_token_ids(self, _):
             return []
 
         def is_final_state(self, _):
@@ -35,7 +35,7 @@ def test_sequence_generator_class():
             return torch.tensor([[0, 1, 2, 3]]), torch.tensor([[1, 1, 1, 1]])
 
         def decode(self, _):
-            return "x"
+            return ["testx"]
 
     class MockModel:
         def __init__(self):
@@ -73,7 +73,7 @@ def test_init_sequence_generator():
         def next_state(self, state, next_token_ids):
             return 0
 
-        def forbidden_token_ids(self, _):
+        def allowed_token_ids(self, _):
             return []
 
         def is_final_state(self, _):
@@ -108,8 +108,8 @@ def test_sequence_generator_1d_single_iteration():
         def next_state(self, state, next_token_ids):
             return 0
 
-        def forbidden_token_ids(self, _):
-            return []
+        def allowed_token_ids(self, _):
+            return [0, 1, 2, 3]
 
         def is_final_state(self, _):
             return True
@@ -151,8 +151,8 @@ def test_sequence_generator_1d_several_iterations():
         def next_state(self, state, next_token_ids):
             return FSMState(state + 1)
 
-        def forbidden_token_ids(self, _):
-            return []
+        def allowed_token_ids(self, _):
+            return [0, 1, 2, 3]
 
         def is_final_state(self, state):
             if state < 2:
@@ -201,8 +201,8 @@ def test_sequence_generator_2d_single_iteration():
         def next_state(self, state, next_token_ids):
             return 0
 
-        def forbidden_token_ids(self, _):
-            return []
+        def allowed_token_ids(self, _):
+            return [0, 1, 2, 3]
 
         def is_final_state(self, _):
             return True
@@ -254,8 +254,8 @@ def test_sequence_generator_2d_several_iterations():
         def next_state(self, state, next_token_ids):
             return FSMState(state + 1)
 
-        def forbidden_token_ids(self, _):
-            return []
+        def allowed_token_ids(self, _):
+            return [0, 1, 2, 3]
 
         def is_final_state(self, state):
             if state < 2:
@@ -328,9 +328,9 @@ def test_generator_error():
 @pytest.mark.parametrize(
     "logits_biases,expected_result,expected_biased_logits",
     [
-        ([[]], [[3]], [[0, 1, 2, 3]]),
-        ([[3]], [[2]], [[0, 1, 2, -math.inf]]),
-        ([[2, 3]], [[1]], [[0, 1, -math.inf, -math.inf]]),
+        ([[0, 1, 2, 3]], [[3]], [[0, 1, 2, 3]]),
+        ([[0, 1, 2]], [[2]], [[0, 1, 2, -math.inf]]),
+        ([[0, 1]], [[1]], [[0, 1, -math.inf, -math.inf]]),
     ],
 )
 def test_generator_1d(logits_biases, expected_result, expected_biased_logits):
@@ -348,7 +348,7 @@ def test_generator_1d(logits_biases, expected_result, expected_biased_logits):
         return torch.argmax(biased_logits, keepdims=True)
 
     generator = token_generator(MockModel(), sampler)
-    result, _, biased_logits = generator(None, None, None, logits_biases, None)
+    result, _, _, biased_logits = generator(None, None, None, logits_biases, None)
     assert torch.equal(result, torch.tensor(expected_result))
     assert torch.equal(biased_logits, torch.tensor(expected_biased_logits))
 
@@ -356,11 +356,15 @@ def test_generator_1d(logits_biases, expected_result, expected_biased_logits):
 @pytest.mark.parametrize(
     "logits_biases,expected_result,expected_biased_logits",
     [
-        ([[]], [[3], [3]], [[0, 1, 2, 3], [4, 5, 6, 7]]),
-        ([[3], [3]], [[2], [2]], [[0, 1, 2, -math.inf], [4, 5, 6, -math.inf]]),
-        ([[3], []], [[2], [3]], [[0, 1, 2, -math.inf], [4, 5, 6, 7]]),
+        ([[0, 1, 2, 3], [0, 1, 2, 3]], [[3], [3]], [[0, 1, 2, 3], [4, 5, 6, 7]]),
         (
-            [[2, 3], [3]],
+            [[0, 1, 2], [0, 1, 2]],
+            [[2], [2]],
+            [[0, 1, 2, -math.inf], [4, 5, 6, -math.inf]],
+        ),
+        ([[0, 1, 2], [0, 1, 2, 3]], [[2], [3]], [[0, 1, 2, -math.inf], [4, 5, 6, 7]]),
+        (
+            [[0, 1], [0, 1, 2]],
             [[1], [2]],
             [[0, 1, -math.inf, -math.inf], [4, 5, 6, -math.inf]],
         ),
@@ -381,7 +385,7 @@ def test_generator_2d(logits_biases, expected_result, expected_biased_logits):
         return torch.argmax(biased_logits, dim=1, keepdims=True)
 
     generator = token_generator(MockModel(), sampler)
-    result, _, biased_logits = generator(None, None, None, logits_biases, None)
+    result, _, _, biased_logits = generator(None, None, None, logits_biases, None)
     assert torch.equal(result, torch.tensor(expected_result))
     assert torch.equal(biased_logits, torch.tensor(expected_biased_logits))
 
@@ -398,15 +402,15 @@ def test_get_next_fsm_states():
     assert result == [0, 0]
 
 
-def test_get_forbidden_token_idss():
+def test_get_allowed_token_idss():
     class MockFSM:
-        def forbidden_token_ids(self, _):
+        def allowed_token_ids(self, _):
             return [1, 2, 3, 4]
 
-    result = get_logits_masks(MockFSM(), [0])
+    result = get_allowed_tokens(MockFSM(), [0])
     assert result == [[1, 2, 3, 4]]
 
-    result = get_logits_masks(MockFSM(), [0, 1])
+    result = get_allowed_tokens(MockFSM(), [0, 1])
     assert result == [[1, 2, 3, 4], [1, 2, 3, 4]]
 
 
@@ -468,27 +472,27 @@ def test_expand_attention_masks(attention_masks, expected_result):
     [
         (
             torch.tensor([[1, 2, 3, 4]], dtype=torch.float),
-            [[]],
+            [[0, 1, 2, 3]],
             torch.tensor([[1, 2, 3, 4]], dtype=torch.float),
         ),
         (
             torch.tensor([[1, 2, 3, 4]], dtype=torch.float),
-            [[1]],
+            [[0, 2, 3]],
             torch.tensor([[1, -math.inf, 3, 4]], dtype=torch.float),
         ),
         (
             torch.tensor([[1, 2, 3, 4]], dtype=torch.float),
-            [[1, 3]],
+            [[0, 2]],
             torch.tensor([[1, -math.inf, 3, -math.inf]], dtype=torch.float),
         ),
         (
             torch.tensor([[1, 2, 3], [4, 5, 6]], dtype=torch.float),
-            [[0], [2]],
+            [[1, 2], [0, 1]],
             torch.tensor([[-math.inf, 2, 3], [4, 5, -math.inf]], dtype=torch.float),
         ),
         (
             torch.tensor([[1, 2, 3], [4, 5, 6]], dtype=torch.float),
-            [[1], [0, 2]],
+            [[0, 2], [1]],
             torch.tensor(
                 [[1, -math.inf, 3], [-math.inf, 5, -math.inf]], dtype=torch.float
             ),
