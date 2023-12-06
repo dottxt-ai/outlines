@@ -26,7 +26,7 @@ theme:
     repo: fontawesome/brands/github
   features:
     - content.code.copy
-    - navigation.sticky
+    - navigation.expand
     - navigation.tabs
     - header.autohide
     - announce.dismiss
