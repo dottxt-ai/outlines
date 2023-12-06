@@ -11,3 +11,35 @@
 code > * {
     border-radius: 1rem;
 }
+
+.index-pre-code {
+  margin: 50px;
+  width: 60%;
+  left: 50%;
+}
+
+.index-pre-code pre>code {
+  text-align: left;
+}
+
+h1.title {
+  color: #FFFFFF;
+  margin: 0px 0px 5px;
+}
+
+h2.subtitle {
+  margin: 5px 0px 25px;
+}
+
+.md-typeset {
+  line-height: 21px;
+  font-weight: 400;
+}
+
+.md-typeset h1 {
+  font-weight: bold;
+}
+
+.md-typeset h2 {
+  font-weight: bold;
+}

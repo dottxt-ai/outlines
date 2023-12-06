@@ -89,7 +89,7 @@ pip install outlines
       "weapon": "mace",
       "strength": 4171
     }
-    `````
+    ```
 
 ## Acknowledgements
 
