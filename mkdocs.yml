@@ -1,5 +1,5 @@
 # Site information
-site_name: Outlines
+site_name: Outlines 〰️
 site_author: The Outlines developers
 site_description: >-
   Generate text that machines understand using Large Language Models and
@@ -31,7 +31,7 @@ theme:
     - header.autohide
     - announce.dismiss
   font:
-    text: Roboto
+    text: Inter
     code: Source Code Pro
 
 # Additional configuration
