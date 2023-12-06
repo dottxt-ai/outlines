@@ -4,17 +4,9 @@
   --md-text-font-family: "Inter";
 }
 
-.language-python.highlight > * {
-    border-radius: 1rem;
-}
-
-code > * {
-    border-radius: 1rem;
-}
-
 .index-pre-code {
   margin: 50px;
-  width: 60%;
+  width: 700px;
   left: 50%;
 }
 
@@ -32,7 +24,7 @@ h2.subtitle {
 }
 
 .md-typeset {
-  line-height: 21px;
+  line-height: 24px;
   font-weight: 400;
 }
 
