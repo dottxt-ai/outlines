@@ -78,14 +78,14 @@ def sequence_generator(
     """
     token_ids, attention_masks, kv_cache = init_state
     while True:
-        logits_masks = get_logits_masks(fsm, fsm_states)
+        allowed_tokens = get_allowed_tokens(fsm, fsm_states)
 
-        next_token_ids, kv_cache, logits = token_generator(
+        next_token_ids, kv_cache, logits, _ = token_generator(
             token_ids,
             attention_masks,
             kv_cache,
             rng=rng,
-            logits_masks=logits_masks,
+            allowed_tokens=allowed_tokens,
         )
 
         token_ids = update_token_ids(token_ids, next_token_ids)
@@ -127,10 +127,10 @@ def token_generator(model, sampler: "Sampler") -> Callable:
 
     @torch.inference_mode()
     def generate(
-        token_ids,
-        attention_masks,
-        kv_cache,
-        logits_masks,
+        token_ids: torch.Tensor,
+        attention_masks: torch.Tensor,
+        kv_cache: torch.Tensor,
+        allowed_tokens: List[List[int]],
         rng: torch.Generator,
     ) -> Union[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
         try:
@@ -140,10 +140,10 @@ def token_generator(model, sampler: "Sampler") -> Callable:
                 "The input length exceeds the context length of the model."
             )
 
-        biased_logits = bias_logits(logits, logits_masks)
+        biased_logits = bias_logits(logits, allowed_tokens)
         next_token_ids = sampler(biased_logits, 1, rng)
 
-        return next_token_ids, new_kv_cache, biased_logits
+        return next_token_ids, new_kv_cache, logits, biased_logits
 
     return generate
 
@@ -171,7 +171,7 @@ def get_next_fsm_states(
     ]
 
 
-def get_logits_masks(fsm: "FSM", fsm_states: List[FSMState]) -> torch.Tensor:
+def get_allowed_tokens(fsm: "FSM", fsm_states: List[FSMState]) -> torch.Tensor:
     """Get the new instructions for each sequence from the finite-state machine.
 
     Parameters
@@ -183,10 +183,10 @@ def get_logits_masks(fsm: "FSM", fsm_states: List[FSMState]) -> torch.Tensor:
 
     Returns
     -------
-    A nested list that contains the ids of the logits to bias.
+    A nested list that contains the ids of the logits to keep.
 
     """
-    return [fsm.forbidden_token_ids(state) for state in fsm_states]
+    return [fsm.allowed_token_ids(state) for state in fsm_states]
 
 
 def is_generation_finished(fsm: "FSM", fsm_states: List[FSMState]) -> bool:
@@ -284,6 +284,9 @@ def bias_logits(
     A view of the original logits tensor where some values are masked.
 
     """
+    biased_logits = torch.empty(logits.shape)
     for i, ids in enumerate(ids_to_mask):
-        logits[i, ids] = -math.inf
-    return logits
+        mask = torch.full((logits.shape[-1],), -math.inf, device=logits.device)
+        mask[ids] = 0
+        biased_logits[i] = logits[i] + mask
+    return biased_logits

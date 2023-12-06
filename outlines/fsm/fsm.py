@@ -11,7 +11,7 @@ FSMState = NewType("FSMState", int)
 
 
 class FSM(Protocol):
-    def forbidden_token_ids(self, state: FSMState) -> List[int]:
+    def allowed_token_ids(self, state: FSMState) -> List[int]:
         ...
 
     def next_state(self, state: FSMState, token_id: int) -> FSMState:
@@ -42,8 +42,8 @@ class StopAtTokenFSM(FSM):
         self.vocabulary = tokenizer.vocabulary.values()
         self.final_states = {1}
 
-    def forbidden_token_ids(self, state: FSMState) -> List[int]:
-        """Generate a list of forbidden tokens for the next step.
+    def allowed_token_ids(self, state: FSMState) -> List[int]:
+        """Generate a list of allowed tokens for the next step.
 
         When in the initial state we allow every token to be generated.
         In the final state the only allowed token is `stop_token_id`.
@@ -59,13 +59,9 @@ class StopAtTokenFSM(FSM):
 
         """
         if state == 0:
-            return []
+            return list(self.vocabulary)
         else:
-            return [
-                token_id
-                for token_id in self.vocabulary
-                if token_id != self.stop_token_id
-            ]
+            return [self.stop_token_id]
 
     def next_state(self, state: FSMState, token_id: int) -> FSMState:
         """Update the state of the FSM.
@@ -137,8 +133,8 @@ class RegexFSM(FSM):
         self.vocabulary = tokenizer.vocabulary.values()
         self.end_token_id = tokenizer.eos_token_id
 
-    def forbidden_token_ids(self, state: FSMState) -> List[int]:
-        """Generate a list of forbidden tokens for the next step.
+    def allowed_token_ids(self, state: FSMState) -> List[int]:
+        """Generate a list of allowed tokens for the next step.
 
         The initialization of the FSM builds an index which maps FSM states to a
         map from authorized tokens to the state in which the FSM needs to move
@@ -163,15 +159,9 @@ class RegexFSM(FSM):
         next_tokens_to_end_states = self.states_to_token_maps.get(state)
 
         if next_tokens_to_end_states is None:
-            authorized_tokens = [self.end_token_id]
+            return [self.end_token_id]
         else:
-            authorized_tokens = list(next_tokens_to_end_states.keys())
-
-        forbidden_tokens = [
-            token for token in self.vocabulary if token not in authorized_tokens
-        ]
-
-        return list(forbidden_tokens)
+            return list(next_tokens_to_end_states.keys())
 
     def next_state(self, state: FSMState, token_id: int) -> FSMState:
         """Update the state of the FSM.
