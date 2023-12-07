@@ -8,7 +8,7 @@
 [![Contributors][contributors-badge]][contributors]
 [![Twitter][twitter-badge]][twitter]
 
-*Generate text that machines understand.*
+*Robust (guided) text generation.*
 
 [Install](#installation) •
 [Guided generation](#guided-generation) •
