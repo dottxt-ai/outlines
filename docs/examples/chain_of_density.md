@@ -29,9 +29,9 @@ The prompt also asks the model to return a list of JSON objects that contain the
 We can now implement the prompt provided in the paper:
 
 ```python
-from outlines import text
+import outlines
 
-@text.prompt
+@outlines.prompt
 def chain_of_density(article):
     """Article: {{ article }}
 
@@ -86,12 +86,10 @@ class Summaries(BaseModel):
 We now generate the prompt by passing the article we want to summarize to the template. We load a quantized version of Mistral-7B using the AutoAWQ library, and then use JSON-guided generation to generate the summaries:
 
 ```python
-from outlines import models
-
-model = models.awq("TheBloke/Mistral-7B-OpenOrca-AWQ")
+model = outlines.models.awq("TheBloke/Mistral-7B-OpenOrca-AWQ")
 
 prompt = chain_of_density(article)
-result = text.generate.json(model, Summaries)(prompt)
+result = outlines.generate.json(model, Summaries)(prompt)
 ```
 
 We can now check the results:
