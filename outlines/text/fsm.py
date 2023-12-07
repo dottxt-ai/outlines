@@ -1,12 +1,10 @@
 from collections import namedtuple
 from functools import lru_cache
-from itertools import chain
-from typing import TYPE_CHECKING, Dict, Generator, List, Optional, Sequence, Set, Tuple
+from typing import TYPE_CHECKING, Dict, Generator, List, Sequence, Set, Tuple
 
 import numba
 import numpy as np
 from interegular.fsm import FSM, Alphabet, OblivionError, anything_else
-from joblib import Parallel, delayed
 from numba.typed.typedobjectutils import _nonoptional
 
 if TYPE_CHECKING:
@@ -148,17 +146,6 @@ FSMInfo = namedtuple(
         "alphabet_symbol_mapping",
     ],
 )
-
-spec = [
-    numba.int64,
-    numba.types.Set(numba.int64),
-    numba.types.DictType(numba.types.UniTuple(numba.int64, 2), numba.int64),
-    numba.types.DictType(numba.int64, numba.types.ListType(numba.int64)),
-    numba.optional(numba.int64),
-    numba.types.DictType(numba.types.string, numba.int64),
-]
-
-FSMInfoNumbaType = numba.types.NamedTuple(spec, FSMInfo)
 
 
 def make_deterministic_fsm(fsm: FSM) -> Tuple[BetterFSM, Dict[int, int]]:
@@ -312,123 +299,6 @@ def walk_fsm(
         return []
 
     return accepted_states
-
-
-# TODO FIXME: Can't cache this due to https://github.com/numba/numba/issues/9177
-@numba.njit(nogil=True)
-def find_partial_matches(
-    fsm_info: FSMInfo,
-    input_string: str,
-    full_match: bool = True,
-) -> Generator[Tuple[int, List[int]], None, None]:
-    """Find the states in the finite state machine `fsm_info` that accept `input_string`.
-
-    This will consider all possible states in the finite state machine (FSM)
-    that accept the beginning of `input_string` as starting points, unless a
-    specific `start_state` is provided.
-
-    Parameters
-    ----------
-    fsm_info
-        The finite state machine.
-    input_string
-        The string for which we generate partial matches.
-    full_match
-        Matches must cover the entire string.
-
-    Returns
-    -------
-    A set of tuples corresponding to each valid starting state in the FSM.  The
-    first element of each tuple contains an integer indicating the position in
-    `input_string` at which the FSM stopped.  The second element is the tuple
-    of states visited during execution of the FSM plus the next, unvisited
-    transition state.
-
-    """
-
-    if len(input_string) == 0:
-        return
-
-    trans_key = fsm_info.alphabet_symbol_mapping.get(
-        input_string[0], fsm_info.alphabet_anything_value
-    )
-
-    for state in fsm_info.trans_key_to_states.get(
-        trans_key, numba.typed.List.empty_list(numba.int64)  # type: ignore
-    ):
-        path = _walk_fsm(
-            fsm_info.transitions,
-            fsm_info.alphabet_symbol_mapping,
-            fsm_info.alphabet_anything_value,
-            fsm_info.initial,
-            fsm_info.finals,
-            input_string,
-            state,
-            full_match=full_match,
-        )
-        if path:
-            path.insert(0, state)
-            res = (len(path) - 2, path)
-            yield res
-
-
-@numba.njit(nogil=True, cache=True)
-def process_token_string(
-    fsm_info: FSMInfo,
-    token: str,
-    token_idx: int,
-    final_state_string: Optional[str] = None,
-) -> Set[Tuple[int, int]]:
-    res = set()
-    vocab_string_len = len(token)
-
-    for end_idx, state_seq in find_partial_matches(fsm_info, token, full_match=False):
-        if end_idx is not None and end_idx < vocab_string_len - 1:
-            continue
-
-        res.add((state_seq[0], token_idx))
-
-    if token == final_state_string:
-        # Allow transitions to EOS from all terminals FSM states
-        for state in fsm_info.finals:
-            res.add((state, token_idx))
-
-    return res
-
-
-def create_fsm_index(
-    fsm_info: FSMInfo,
-    vocabulary: Dict[str, int],
-    final_state_string: Optional[str] = None,
-    n_jobs=-1,
-) -> Dict[int, Set[int]]:
-    """Construct a map from FSM states to subsets of `vocabulary`.
-
-    The subsets of `vocabulary` consist of elements that are accepted by--or
-    transition to--the corresponding partial parse states.
-
-    Parameters
-    ----------
-    fsm
-        The finite-state machine.
-    vocabulary
-        The vocabulary composed of token strings mapped to token IDs.
-    final_state_string
-        A string from `vocabulary` that is to be added to all the final states
-        in the FSM (e.g. ``"<EOS>"``).
-    """
-
-    results = Parallel(backend="threading", n_jobs=n_jobs, return_as="generator")(
-        delayed(process_token_string)(fsm_info, token, token_idx, final_state_string)
-        for token, token_idx in vocabulary.items()
-    )
-
-    states_to_token_subsets: Dict[int, Set[int]] = {}
-
-    for fsm_state, token_idx in chain.from_iterable(results):
-        states_to_token_subsets.setdefault(fsm_state, set()).add(token_idx)
-
-    return states_to_token_subsets
 
 
 def fsm_union(
