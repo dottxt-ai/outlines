@@ -33,7 +33,7 @@ dependencies = [
    "pydantic>=2.0",
    "scipy",
    "tenacity",
-   "torch",
+   "torch>=2.1",
    "numba",
    "joblib",
    "referencing",
