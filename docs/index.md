@@ -40,7 +40,7 @@ class Character(BaseModel):
     strength: int
 
 
-model = models.transformers("mistralai/Mistral-7B-v0.1", device="cuda")
+model = models.transformers("mistralai/Mistral-7B-v0.1")
 generator = generate.json(model, Character, max_tokens=100)
 sequence = generator("Give me a character description")
 ```
