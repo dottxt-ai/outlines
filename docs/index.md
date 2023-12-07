@@ -45,7 +45,4 @@ generator = generate.json(model, Character, max_tokens=100)
 sequence = generator("Give me a character description")
 ```
 </div>
-
-<a class="github-button" href="https://github.com/outlines-dev/outlines" data-icon="octicon-star" data-size="large" data-show-count="true" aria-label="Star outlines-dev/outlines on GitHub">Star</a>
-<script async defer src="https://buttons.github.io/buttons.js"></script>
 </center>

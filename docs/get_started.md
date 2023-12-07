@@ -1,97 +1,62 @@
 ---
 title: Get Started
+icon: material/human-greeting
 ---
 
-<!-- Logo -->
-<figure markdown>
-  ![Outlines logo](assets/images/logo.png){ width="300" }
-</figure>
+# Getting started
 
-<!-- Badges -->
-<div align="center">
+## 1. Installation
 
-<p><i>Generate text that machines understand.</i></p>
-
-<a href="https://pypi.org/project/outlines/"><img src="https://img.shields.io/pypi/v/outlines?color=ECEFF4&logo=python&logoColor=white&style=flat-square"></img></a>
-<a href="https://github.com/outlines-dev/outlines/graphs/contributors"><img src="https://img.shields.io/github/contributors/outlines-dev/outlines?style=flat-square&logo=github&logoColor=white&color=ECEFF4"></img></a>
-<a href="https://x.com/dottxtai"><img src="https://img.shields.io/twitter/follow/dottxtai?style=social"></img></a>
-</div>
-
-<!-- Remove the title -->
-#
-
-## :sparkles: Features
-
-- :material-keyboard: Prompting utilities
-- :material-regex: Regex-guided generation
-- :material-code-json: JSON-guided generation
-- :material-dice-multiple-outline: Multiple sequence sampling methods
-- :material-open-source-initiative: Integration with several open source libraries
-
-## :floppy_disk: Install
+Outlines is available on PyPi:
 
 ```bash
 pip install outlines
 ```
 
-??? info "Using OpenAI and Transformers"
 
-    Outlines :wavy_dash: does not install the `openai` or `transformers` libraries by default. You will have to install these libraries manually. To use `transformers` models you will also need to install the `datasets` library.
+!!! info "Model integrations"
 
-## :eyes: Sneak Peek
+    The following model integrations are available. To use them you must install the required dependencies:
+
+    - `openai` for OpenAI models;
+    - `transformers` for Hugging Face models;
+    - `autoawq` for AWQ models;
+    - `auto-gptq` for GPTQ models.
+
+
+## 2. Hello, World
+
+A very simple Outlines program looks like:
 
 === "Code"
 
     ```python
-    from enum import Enum
-    from pydantic import BaseModel, constr
+    import outlines
 
-    import outlines.models as models
-    import outlines.text.generate as generate
+    model = outlines.models.transformers("gpt2")
+    generator = outlines.generate.format(model, int)
 
-
-    class Weapon(str, Enum):
-        sword = "sword"
-        axe = "axe"
-        mace = "mace"
-        spear = "spear"
-        bow = "bow"
-        crossbow = "crossbow"
-
-
-    class Armor(str, Enum):
-        leather = "leather"
-        chainmail = "chainmail"
-        plate = "plate"
-
-
-    class Character(BaseModel):
-        name: constr(max_length=20)
-        age: int
-        armor: Armor
-        weapon: Weapon
-        strength: int
-
-
-    model = models.transformers("gpt2")
-    generator = generate.json(model, Character)
-    sequence = generator("Create a character description for a role playing game in JSON")
-
-    print(sequence)
+    generate("2+2=")
     ```
+
 === "Output"
 
-    ```json
-    {
-      "name": "Anonymous Tokens",
-      "age": 7,
-      "armor": "plate",
-      "weapon": "mace",
-      "strength": 4171
-    }
+    ```bash
+    4
     ```
 
-## Acknowledgements
+The program goes through the following steps:
+
+1. Initialize the model using the `transformers` library. Weights are loaded in memory;
+2. Initialize the generator. `outlines.generate.format` constraints the output of the model
+   to be a valid Python data type.
+3. Call the generator with a prompt.
+
+## 3. Going further
+
+If you need more inspiration you can take a look at the [Examples](examples/index.md). If you have any question, or requests for documentation please reach out to us on [GitHub](https://github.com/outlines-dev/outlines/discussions), [Twitter](https://twitter.com/remilouf) or [Discord](https://discord.gg/UppQmhEpe8).
+
+## 4. Acknowledgements
 
 <figure markdown>
   <a href="https://www.normalcomputing.ai">
