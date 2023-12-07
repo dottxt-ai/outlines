@@ -10,8 +10,7 @@ import torch
 import transformers
 from pydantic import BaseModel, conlist, constr
 
-import outlines.models as models
-import outlines.text as text
+import outlines
 ```
 
 ## Defining the profile with Pydantic
@@ -59,7 +58,7 @@ We will use Outlines' prompt templating abilities to generate the prompt for us.
 
 ```python
 
-@text.prompt
+@outlines.prompt
 def dating_profile_prompt(description: str, examples: list[Example]):
     """
     You are a world-renowned matchmaker who understands the modern dating
@@ -136,7 +135,7 @@ config = transformers.AutoConfig.from_pretrained(
     "mosaicml/mpt-7b-8k-instruct", trust_remote_code=True
 )
 config.init_device = "meta"
-model = models.transformers(
+model = outlines.models.transformers(
     model_name="mosaicml/mpt-7b-8k-instruct",
     device="cuda",
     model_kwargs={
@@ -163,7 +162,7 @@ it's  a good excuse for a date. I watch the latest series because I'm paying,
 with my hard-earned money, for every streaming service."""
 
 prompt = dating_profile_prompt(new_description, samples)
-profile = text.generate.json(model, DatingProfile)(prompt)
+profile = outlines.generate.json(model, DatingProfile)(prompt)
 parsed_profile = DatingProfile.model_validate_json(profile)
 ```
 

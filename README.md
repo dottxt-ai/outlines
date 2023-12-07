@@ -83,34 +83,21 @@ is to ensure that there is a well-defined interface between their output and
 user-defined code. **Outlines** provides ways to control the generation of
 language models to make their output more predictable.
 
-### Early stopping
-
-You can stop the generation after a given sequence has been found:
-
-``` python
-import outlines.text.generate as generate
-import outlines.models as models
-
-model = models.transformers("gpt2")
-answer = generate.continuation(model, stop=["."])("Tell me a one-sentence joke.")
-```
-
 ### Multiple choices
 
 You can reduce the completion to a choice between multiple possibilities:
 
 ``` python
-import outlines.text.generate as generate
-import outlines.models as models
+import outlines
 
-model = models.transformers("gpt2")
+model = outlines.models.transformers("gpt2")
 
 prompt = """You are a sentiment-labelling assistant.
 Is the following review positive or negative?
 
 Review: This restaurant is just awesome!
 """
-answer = generate.choice(model, ["Positive", "Negative"])(prompt)
+answer = outlines.generate.choice(model, ["Positive", "Negative"])(prompt)
 ```
 
 ### Type constraint
@@ -119,16 +106,15 @@ You can instruct the model to only return integers or floats:
 
 
 ``` python
-import outlines.text.generate as generate
-import outlines.models as models
+import outlines
 
-model = models.transformers("gpt2")
+model = outlines.models.transformers("gpt2")
 
 prompt = "1+1="
-answer = generate.integer(model)(prompt)
+answer = outlines.generate.format(model, int)(prompt)
 
 prompt = "sqrt(2)="
-answer = generate.float(model)(prompt)
+answer = outlines.generate.format(model, float)(prompt)
 ```
 
 ### Efficient regex-guided generation
@@ -138,15 +124,13 @@ Outlines also comes with fast regex-guided generation. In fact, the `choice`,
 hood:
 
 ``` python
-import outlines.models as models
-import outlines.text.generate as generate
+import outlines
 
-
-model = models.transformers("gpt2-medium")
+model = outlines.models.transformers("gpt2-medium")
 
 prompt = "Is 1+1=2? "
-unguided = generate.continuation(model, max_tokens=30)(prompt)
-guided = generate.regex(model, r"\s*([Yy]es|[Nn]o|[Nn]ever|[Aa]lways)", max_tokens=30)(
+unguided = outlines.generate.continuation(model, max_tokens=30)(prompt)
+guided = outlines.generate.regex(model, r"\s*([Yy]es|[Nn]o|[Nn]ever|[Aa]lways)", max_tokens=30)(
     prompt
 )
 
@@ -162,15 +146,13 @@ print(guided)
 ```
 
 ``` python
-import outlines.models as models
-import outlines.text.generate as generate
+import outlines
 
-
-model = models.transformers("gpt2-medium")
+model = outlines.models.transformers("gpt2-medium")
 
 prompt = "What is the IP address of the Google DNS servers? "
 unguided = generate.continuation(model, max_tokens=30)(prompt)
-guided = generate.regex(
+guided = outlines.generate.regex(
     model,
     r"((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)",
     max_tokens=30,
@@ -199,9 +181,7 @@ Outlines 〰 allows to guide the generation process so the output is *guaranteed
 from enum import Enum
 from pydantic import BaseModel, constr
 
-import outlines.models as models
-import outlines.text.generate as generate
-
+import outlines
 import torch
 
 
@@ -228,10 +208,10 @@ class Character(BaseModel):
     strength: int
 
 
-model = models.transformers("gpt2", device="cuda")
+model = outlines.models.transformers("gpt2", device="cuda")
 
 # Construct guided sequence generator
-generator = generate.json(model, Character, max_tokens=100)
+generator = outlines.generate.json(model, Character, max_tokens=100)
 
 # Draw a sample
 rng = torch.Generator(device="cuda")
@@ -269,14 +249,14 @@ The method works with union types, optional types, arrays, nested schemas, etc. 
 Outlines can infer the structure of the output from the signature of a function. The result is a dictionary, and can be passed directly to the function using the usual dictionary expansion syntax `**`:
 
 ```python
-from outlines import models
-from outlines import text
+import outlines
+
 
 def add(a: int, b: int):
     return a + b
 
-model = models.transformers("mistralai/Mistral-7B")
-generator = text.generate.json(model, add)
+model = outlines.models.transformers("mistralai/Mistral-7B")
+generator = outlines.generate.json(model, add)
 result = generator("Return two integers named a and b respectively. a is odd and b even.")
 
 print(add(**result))
@@ -300,9 +280,7 @@ Template functions require no superfluous abstraction, they use the Jinja2
 templating engine to help build complex prompts in a concise manner:
 
 ``` python
-import outlines.text as text
-import outlines.models as models
-
+import outlines
 
 examples = [
     ("The food was digusting", "Negative"),
@@ -311,7 +289,7 @@ examples = [
     ("The waiter was rude", "Negative")
 ]
 
-@text.prompt
+@outlines.prompt
 def labelling(to_label, examples):
     """You are a sentiment-labelling assistant.
 
@@ -321,9 +299,9 @@ def labelling(to_label, examples):
     {{ to_label }} //
     """
 
-model = models.transformers("gpt2")
+model = outlines.models.transformers("gpt2")
 prompt = labelling("Just awesome", examples)
-answer = text.generate.continuation(model, max_tokens=100)(prompt)
+answer = outlines.generate.continuation(model, max_tokens=100)(prompt)
 ```
 
 ### Tools
@@ -337,7 +315,7 @@ extract the function's name, description, signature and source:
 
 ``` python
 from typing import Callable, List
-import outlines.text as text
+import outlines
 
 
 def google_search(query: str):
@@ -350,7 +328,7 @@ def wikipedia_search(query: str):
     pass
 
 
-@text.prompt
+@outlines.prompt
 def my_commands(tools: List[Callable]):
     """AVAILABLE COMMANDS:
 
@@ -374,7 +352,7 @@ extract the expected response's schema:
 
 ``` python
 from pydantic import BaseModel, Field
-import outlines.text as text
+import outlines
 
 
 class Joke(BaseModel):
@@ -384,7 +362,7 @@ class Joke(BaseModel):
     )
 
 
-@text.prompt
+@outlines.prompt
 def joke_ppt(response_model):
     """Tell a joke and explain why the joke is funny.
 
