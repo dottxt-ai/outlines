@@ -5,10 +5,8 @@ import pytest
 from outlines.models.transformers import TransformerTokenizer
 from outlines.text.fsm import (
     _walk_fsm,
-    create_fsm_index,
     create_fsm_index_end_to_end,
     create_fsm_index_tokenizer,
-    find_partial_matches,
     fsm_union,
     get_sub_fsms_from_seq,
     make_deterministic_fsm,
@@ -82,112 +80,6 @@ def test_walk_fsm(function):
     start_state = list(fsm.finals)[0]
     res = tuple(function(fsm, "!", start_state, full_match=False))
     assert res == tuple()
-
-
-def test_partial_match():
-    name_pattern = interegular.parse_pattern(r"[^\W\d]\w*")
-    name_fsm, _ = make_deterministic_fsm(name_pattern.to_fsm().reduce())
-    assert name_fsm.initial == 0
-
-    name_fsm = name_fsm.fsm_info
-
-    def_pattern = interegular.parse_pattern("def")
-    def_fsm, _ = make_deterministic_fsm(def_pattern.to_fsm().reduce())
-    assert def_fsm.initial == 0
-
-    def_fsm = def_fsm.fsm_info
-
-    def to_python(res):
-        return {(x, tuple(y)) for x, y in res}
-
-    res = to_python(find_partial_matches(def_fsm, "def"))
-    assert res == {(2, (0, 1, 2, 3))}
-    res = to_python(find_partial_matches(def_fsm, "de", full_match=False))
-    assert res == {(1, (0, 1, 2))}
-    res = to_python(find_partial_matches(def_fsm, "d", full_match=False))
-    assert res == {(0, (0, 1))}
-    res = to_python(find_partial_matches(def_fsm, ""))
-    assert res == set()
-    res = to_python(find_partial_matches(def_fsm, "df"))
-    assert res == set()
-    res = to_python(find_partial_matches(def_fsm, "ef", full_match=False))
-    assert res == {(1, (1, 2, 3))}
-    res = to_python(find_partial_matches(def_fsm, "e", full_match=False))
-    assert res == {(0, (1, 2))}
-    res = to_python(find_partial_matches(def_fsm, "f", full_match=False))
-    assert res == {(0, (2, 3))}
-    res = to_python(find_partial_matches(def_fsm, "ef foo", full_match=False))
-    assert res == {(1, (1, 2, 3))}
-
-    # This string has a `DEF` token in it, but should ultimately not lex one
-    res = to_python(find_partial_matches(def_fsm, "defb", full_match=False))
-    assert res == {(2, (0, 1, 2, 3))}
-
-    # `NAME` can have multiple start states for this input
-    res = to_python(find_partial_matches(name_fsm, "d", full_match=False))
-    assert res == {(0, (0, 1)), (0, (1, 1))}
-    # Not this case
-    res = to_python(find_partial_matches(name_fsm, "1d"))
-    assert res == {(1, (1, 1, 1))}
-
-    res = to_python(find_partial_matches(name_fsm, "blah"))
-    assert res == {
-        (3, (0, 1, 1, 1, 1)),
-        (3, (1, 1, 1, 1, 1)),
-    }
-
-    float_pattern = interegular.parse_pattern(
-        r"([+-]?((0|[1-9]+)([.][0-9]*)?)|([.][0-9]+))"
-    )
-    float_fsm, _ = make_deterministic_fsm(float_pattern.to_fsm().reduce())
-    assert 5 in float_fsm.finals
-    assert 2 not in float_fsm.finals
-
-    float_fsm = float_fsm.fsm_info
-
-    res = to_python(find_partial_matches(float_fsm, ".", full_match=False))
-    assert res == {(0, (3, 5)), (0, (4, 5)), (0, (0, 2))}
-
-    joins_fsm, _ = make_deterministic_fsm(
-        interegular.parse_pattern(r"(JOIN LEFT|JOIN)").to_fsm().reduce()
-    )
-
-    joins_fsm = joins_fsm.fsm_info
-
-    res = to_python(find_partial_matches(joins_fsm, "JOIN BLAH", full_match=False))
-    assert res == {(3, (0, 1, 2, 3, 4))}
-
-    res = to_python(find_partial_matches(joins_fsm, "JOIN L", full_match=False))
-    assert res == {(5, (0, 1, 2, 3, 4, 5, 6))}
-
-    res = to_python(find_partial_matches(joins_fsm, "JOI", full_match=False))
-    assert res == {(2, (0, 1, 2, 3))}
-
-    regex_pattern = interegular.parse_pattern("0|[1-9][2-9]*")
-    regex_fsm, _ = make_deterministic_fsm(regex_pattern.to_fsm().reduce())
-
-    # State `1` has no transitions
-    assert not regex_fsm.map[1]
-
-    res = to_python(find_partial_matches(regex_fsm.fsm_info, "0", numba.int64(1)))
-    assert res == {(0, (0, 1))}
-
-
-def test_create_fsm_index():
-    regex_str = "0|[1-9][0-9]*"
-
-    regex_pattern = interegular.parse_pattern(regex_str)
-    regex_fsm, _ = make_deterministic_fsm(regex_pattern.to_fsm().reduce())
-
-    vocabulary = {"blah": 0, "1a": 1, "2": 2, "0": 3, "<EOS>": 4}
-
-    res = create_fsm_index(regex_fsm.fsm_info, vocabulary)
-
-    assert res == {0: {2, 3}, 2: {2, 3}}
-
-    res = create_fsm_index(regex_fsm.fsm_info, vocabulary, "<EOS>")
-
-    assert res == {0: {2, 3}, 1: {4}, 2: {2, 3, 4}}
 
 
 def test_get_sub_fsms_from_seq():
@@ -329,18 +221,18 @@ def test_get_sub_fsms_from_seq():
     ]
     fsm, fsms_to_trans_finals = fsm_union(join_fsms)
 
-    ((_, state_seq),) = find_partial_matches(fsm.fsm_info, "OI", full_match=False)
-
+    # Matching "OI"
+    state_seq = [1, 2, 3]
     res = list(get_sub_fsms_from_seq(state_seq, fsms_to_trans_finals))
     assert res == [(0, True, False), (1, True, False)]
 
-    ((_, state_seq),) = find_partial_matches(fsm.fsm_info, "N", full_match=False)
-
+    # Matching "N"
+    state_seq = [3, 4]
     res = list(get_sub_fsms_from_seq(state_seq, fsms_to_trans_finals))
     assert res == [(0, False, True), (1, True, False)]
 
-    ((_, state_seq),) = find_partial_matches(fsm.fsm_info, " ", full_match=False)
-
+    # Matching " "
+    state_seq = [4, 5]
     res = list(get_sub_fsms_from_seq(state_seq, fsms_to_trans_finals))
     assert res == [(1, True, False)]
 
