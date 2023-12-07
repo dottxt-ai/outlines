@@ -457,8 +457,8 @@ Outlines is open-source and licensed under the [Apache License 2.0](LICENSE).
 [contributors]: https://github.com/outlines-dev/outlines/graphs/contributors
 [contributors-badge]: https://img.shields.io/github/contributors/outlines-dev/outlines?style=flat-square&logo=github&logoColor=white&color=ECEFF4
 [twitter]: https://twitter.com/dottxtai
-[discord]: https://discord.gg/1182316225284554793
-[discord-badge]: https://img.shields.io/discord/1072170173785723041?color=81A1C1&logo=discord&logoColor=white&style=flat-square
+[discord]: https://discord.gg/BSSVv3Pf
+[discord-badge]: https://img.shields.io/discord/1182316225284554793?color=81A1C1&logo=discord&logoColor=white&style=flat-square
 [twitter-badge]: https://img.shields.io/twitter/follow/dottxtai?style=social
 [pypi]: https://pypi.org/project/outlines/
 [pypi-badge]: https://img.shields.io/pypi/v/outlines?color=ECEFF4&logo=python&logoColor=white&style=flat-square
