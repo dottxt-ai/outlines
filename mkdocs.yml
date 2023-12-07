@@ -100,10 +100,10 @@ plugins:
 
 nav:
   - Home: index.md
-  - Get Started:
-      - get_started.md
-  - Cookbook:
-    - cookbook/index.md
+  - Getting Started:
+      - Getting Started: get_started.md
+      - Feedback: feedback.md
+      - Licence: licence.md
   - Examples:
       - examples/index.md
       - Synthetic dating Profile: examples/dating_profiles.md
