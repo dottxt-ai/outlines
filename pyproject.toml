@@ -38,6 +38,7 @@ dependencies = [
    "joblib",
    "referencing",
    "jsonschema",
+   "requests",
 ]
 dynamic = ["version"]
 
@@ -52,6 +53,7 @@ test = [
     "accelerate",
     "beartype<0.16.0",
     "datasets",
+    "responses",
 ]
 
 [project.urls]
@@ -111,6 +113,8 @@ module = [
     "interegular.*",
     "datasets.*",
     "numba.*",
+    "requests.*",
+    "responses.*",
 ]
 ignore_missing_imports = true
 
