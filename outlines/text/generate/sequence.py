@@ -1,8 +1,10 @@
 import math
+from perscache.serializers import PickleSerializer
 from typing import TYPE_CHECKING, List, Optional, Tuple, Union
 
 import torch
 
+from outlines.caching import memory as cache
 from outlines.models import OpenAI
 
 if TYPE_CHECKING:
@@ -163,83 +165,90 @@ class Sequence:
 
         """
 
-        token_ids, attention_mask = self.model.tokenizer.encode(prompt)
-
-        token_ids = token_ids.squeeze(0)
-        attention_mask = attention_mask.squeeze(0)
-
-        token_ids = token_ids.to(self.device)
-        attention_mask = attention_mask.to(self.device)
-
         if rng is None:
             rng = torch.Generator(device=self.device)
             rng.seed()
 
-        orig_batch_shape = token_ids.shape[:-1]
-        num_prompt_tokens = token_ids.shape[-1]
+        @cache(serializer = PickleSerializer())
+        def _cached_call(prompt: str, samples: int = 1, rng_state: [] = None) -> Union[str, List[str]]:
+            nonlocal rng
+            token_ids, attention_mask = self.model.tokenizer.encode(prompt)
 
-        token_ids = torch.broadcast_to(token_ids, (samples,) + token_ids.shape)
-        attention_mask = torch.broadcast_to(
-            attention_mask, (samples,) + attention_mask.shape
-        )
+            token_ids = token_ids.squeeze(0)
+            attention_mask = attention_mask.squeeze(0)
 
-        # We flatten the original batch and sample dimensions so that the
-        # resulting shape we work in is simply `(num_of_sequences, tokens)`
-        batch_size = samples * math.prod(orig_batch_shape)
-        token_ids = token_ids.reshape((batch_size, num_prompt_tokens))
-        attention_mask = attention_mask.reshape((batch_size, num_prompt_tokens))
+            token_ids = token_ids.to(self.device)
+            attention_mask = attention_mask.to(self.device)
 
-        is_finished = torch.zeros(batch_size, dtype=torch.bool, device=self.device)
-        unfinished_past_key_values = None
+            orig_batch_shape = token_ids.shape[:-1]
+            num_prompt_tokens = token_ids.shape[-1]
 
-        while True:
-            num_generated_tokens = token_ids.shape[-1] - num_prompt_tokens
-            if torch.all(is_finished) or num_generated_tokens == self.max_tokens:
-                break
-
-            is_not_finished = ~is_finished
-
-            # Draw samples only for the sequences that aren't finished
-            unfinished_token_ids = token_ids[is_not_finished]
-            unfinished_attention_mask = attention_mask[is_not_finished]
-            unfinished_next_token_ids, _, past_key_values = self.step(
-                rng,
-                num_prompt_tokens,
-                unfinished_token_ids,
-                unfinished_attention_mask,
-                past_key_values=unfinished_past_key_values,
+            token_ids = torch.broadcast_to(token_ids, (samples,) + token_ids.shape)
+            attention_mask = torch.broadcast_to(
+                attention_mask, (samples,) + attention_mask.shape
             )
-            unfinished_next_token_ids = unfinished_next_token_ids.squeeze(0)
 
-            # Create an array for the next tokens of every sequence, including
-            # the finished ones (but pad them)
-            next_token_ids = torch.full(
-                (batch_size, 1), self.pad_token_id, device=self.device
-            )
-            next_token_ids[is_not_finished] = unfinished_next_token_ids
+            # We flatten the original batch and sample dimensions so that the
+            # resulting shape we work in is simply `(num_of_sequences, tokens)`
+            batch_size = samples * math.prod(orig_batch_shape)
+            token_ids = token_ids.reshape((batch_size, num_prompt_tokens))
+            attention_mask = attention_mask.reshape((batch_size, num_prompt_tokens))
 
-            # TODO: Terminate if the sampled sequence is larger than the
-            # context size of the model?
-            token_ids = torch.concatenate([token_ids, next_token_ids], axis=-1)
+            is_finished = torch.zeros(batch_size, dtype=torch.bool, device=self.device)
+            unfinished_past_key_values = None
 
-            attention_mask = self.expand_attention_mask(attention_mask)
+            while True:
+                num_generated_tokens = token_ids.shape[-1] - num_prompt_tokens
+                if torch.all(is_finished) or num_generated_tokens == self.max_tokens:
+                    break
 
-            local_is_finished = self.is_finished(
-                token_ids[is_not_finished][:, num_prompt_tokens:]
-            ).flatten()
+                is_not_finished = ~is_finished
 
-            is_finished[is_not_finished] = local_is_finished
-
-            if past_key_values:
-                unfinished_past_key_values = tuple(
-                    tuple(vv[~local_is_finished.to(vv.device)] for vv in v)
-                    for v in past_key_values
+                # Draw samples only for the sequences that aren't finished
+                unfinished_token_ids = token_ids[is_not_finished]
+                unfinished_attention_mask = attention_mask[is_not_finished]
+                unfinished_next_token_ids, _, past_key_values = self.step(
+                    rng,
+                    num_prompt_tokens,
+                    unfinished_token_ids,
+                    unfinished_attention_mask,
+                    past_key_values=unfinished_past_key_values,
                 )
+                unfinished_next_token_ids = unfinished_next_token_ids.squeeze(0)
 
-        result = self.model.tokenizer.decode(token_ids[:, num_prompt_tokens:])
-        result = self.postprocess_completions(result)
+                # Create an array for the next tokens of every sequence, including
+                # the finished ones (but pad them)
+                next_token_ids = torch.full(
+                    (batch_size, 1), self.pad_token_id, device=self.device
+                )
+                next_token_ids[is_not_finished] = unfinished_next_token_ids
 
-        if len(result) == 1:
-            return result[0]
+                # TODO: Terminate if the sampled sequence is larger than the
+                # context size of the model?
+                token_ids = torch.concatenate([token_ids, next_token_ids], axis=-1)
 
-        return result
+                attention_mask = self.expand_attention_mask(attention_mask)
+
+                local_is_finished = self.is_finished(
+                    token_ids[is_not_finished][:, num_prompt_tokens:]
+                ).flatten()
+
+                is_finished[is_not_finished] = local_is_finished
+
+                if past_key_values:
+                    unfinished_past_key_values = tuple(
+                        tuple(vv[~local_is_finished.to(vv.device)] for vv in v)
+                        for v in past_key_values
+                    )
+
+            result = self.model.tokenizer.decode(token_ids[:, num_prompt_tokens:])
+            result = self.postprocess_completions(result)
+
+            if len(result) == 1:
+                return result[0]
+
+            return result
+
+        # We convert the tensor to bytes so that it can be hashed
+        rng_state = rng.get_state().numpy().tobytes()
+        return _cached_call(prompt, samples, rng_state)
