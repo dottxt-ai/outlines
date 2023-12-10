@@ -237,10 +237,6 @@ print(sequence)
 #   "weapon": "sword",
 #   "strength": 0
 # }
-
-parsed = Character.model_validate_json(sequence)
-print(parsed)
-# name='piggyback' age=23 armor=<Armor.chainmail: 'chainmail'> weapon=<Weapon.sword: 'sword'> strength=0
 ```
 
 The method works with union types, optional types, arrays, nested schemas, etc. Some field constraints are [not supported yet](https://github.com/outlines-dev/outlines/issues/215), but everything else should work.
