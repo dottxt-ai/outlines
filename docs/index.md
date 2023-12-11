@@ -16,7 +16,7 @@ hide:
     <h1 class="title">Generate text with LLMs</h1>
     <h2 class="subtitle">Robust prompting & (guided) text generation</h2>
     [:fontawesome-solid-bolt: Get started](get_started.md){ .md-button .md-button--primary }
-    [:fontawesome-solid-code-pull-request: Contribute](https://github.com/outlines-dev/outlines){ .md-button }
+    [:fontawesome-brands-discord: Join the Community](https://discord.gg/ZxBxyWmW5n){ .md-button }
 
 <div class="index-pre-code">
 ```python
