@@ -104,6 +104,8 @@ nav:
       - Getting Started: get_started.md
       - Feedback: feedback.md
       - Licence: licence.md
+  - Prompting:
+      - prompting/index.md
   - Examples:
       - examples/index.md
       - Synthetic dating Profile: examples/dating_profiles.md
@@ -111,10 +113,8 @@ nav:
       - Playing chess: examples/models_playing_chess.md
   - Reference:
     - reference/index.md
-    - Prompting: reference/prompting.md
     - Generate text:
         - OpenAI: reference/openai_text_generation.md
-
     - Guided generation:
         - reference/choices.md
         - reference/types.md
