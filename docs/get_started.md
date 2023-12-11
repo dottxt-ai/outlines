@@ -5,6 +5,42 @@ icon: material/human-greeting
 
 # Getting started
 
+<div class="grid cards" markdown>
+-    :material-chat-processing-outline:{ .lg .middle } __Powerful Prompt Templating__
+
+     --- 
+ 
+     Better manage your prompts' complexity with prompt templating
+     
+    [:octicons-arrow-right-24: Learn more](prompting/index.md)
+
+  
+-   :material-regex:{ .lg .middle } __Make LLMs follows a Regex__
+
+    --- 
+
+    Generate text that parses correctly 100% of the time
+
+    [:octicons-arrow-right-24: Guide LLMs](reference/regex.md)
+
+-   :material-code-json:{ .lg .middle } __Make LLMs generate valid JSON__
+
+    --- 
+ 
+    No more invalid JSON outputs, 100% guaranteed
+
+    [:octicons-arrow-right-24: Generate JSON](reference/json.md)
+
+-   :material-keyboard-outline:{ .lg .middle } __Rich text generation primitives__
+
+    --- 
+
+    Multiple choice, dynamic stopping with OpenAI and Open Source models
+
+    [:octicons-arrow-right-24: Generate text](reference/index.md)
+ 
+</div>
+
 ## 1. Installation
 
 Outlines is available on PyPi:
