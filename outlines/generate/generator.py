@@ -166,8 +166,10 @@ def get_next_fsm_states(
 
     """
     return [
-        fsm.next_state(fsm_state, int(token_id[0]))
-        for fsm_state, token_id in zip(fsm_states, next_token_ids)
+        fsm.next_state(fsm_state, int(token_id[0]), idx)
+        for idx, fsm_state, token_id in zip(
+            range(len(fsm_states)), fsm_states, next_token_ids
+        )
     ]
 
 
@@ -186,7 +188,7 @@ def get_allowed_tokens(fsm: "FSM", fsm_states: List[FSMState]) -> torch.Tensor:
     A nested list that contains the ids of the logits to keep.
 
     """
-    return [fsm.allowed_token_ids(state) for state in fsm_states]
+    return [fsm.allowed_token_ids(state, idx) for idx, state in enumerate(fsm_states)]
 
 
 def is_generation_finished(fsm: "FSM", fsm_states: List[FSMState]) -> bool:
@@ -210,7 +212,7 @@ def is_generation_finished(fsm: "FSM", fsm_states: List[FSMState]) -> bool:
     Whether all sequences are finished sampling.
 
     """
-    return all([fsm.is_final_state(state) for state in fsm_states])
+    return all([fsm.is_final_state(state, idx) for idx, state in enumerate(fsm_states)])
 
 
 @torch.inference_mode()

@@ -1,1 +1,1 @@
-from .api import choice, format, json, regex, text
+from .api import cfg, choice, format, json, regex, text

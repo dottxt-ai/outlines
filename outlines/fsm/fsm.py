@@ -2,6 +2,7 @@ from typing import TYPE_CHECKING, List, NewType, Optional, Protocol
 
 import interegular
 
+from outlines.fsm.parsing import PartialLark
 from outlines.fsm.regex import create_fsm_index_tokenizer, make_deterministic_fsm
 
 if TYPE_CHECKING:
@@ -11,13 +12,16 @@ FSMState = NewType("FSMState", int)
 
 
 class FSM(Protocol):
-    def allowed_token_ids(self, state: FSMState) -> List[int]:
+    def allowed_token_ids(self, state: FSMState, idx: int = 0) -> List[int]:
         ...
 
-    def next_state(self, state: FSMState, token_id: int) -> FSMState:
+    def next_state(self, state: FSMState, token_id: int, idx: int = 0) -> FSMState:
         ...
 
-    def is_final_state(self, state: FSMState) -> bool:
+    def is_final_state(self, state: FSMState, idx: int = 0) -> bool:
+        ...
+
+    def reset(self) -> None:
         ...
 
 
@@ -42,7 +46,7 @@ class StopAtTokenFSM(FSM):
         self.vocabulary = tokenizer.vocabulary.values()
         self.final_states = {1}
 
-    def allowed_token_ids(self, state: FSMState) -> List[int]:
+    def allowed_token_ids(self, state: FSMState, idx: int = 0) -> List[int]:
         """Generate a list of allowed tokens for the next step.
 
         When in the initial state we allow every token to be generated.
@@ -63,7 +67,7 @@ class StopAtTokenFSM(FSM):
         else:
             return [self.stop_token_id]
 
-    def next_state(self, state: FSMState, token_id: int) -> FSMState:
+    def next_state(self, state: FSMState, token_id: int, idx: int = 0) -> FSMState:
         """Update the state of the FSM.
 
         The FSM stays in the initial state `0` unless the specified stop token
@@ -82,7 +86,8 @@ class StopAtTokenFSM(FSM):
         The new state of the FSM.
 
         """
-        self.num_tokens_generated += 1
+        if idx == 0:
+            self.num_tokens_generated += 1
 
         if self.max_tokens is not None:
             if self.num_tokens_generated >= self.max_tokens:
@@ -93,9 +98,12 @@ class StopAtTokenFSM(FSM):
 
         return FSMState(0)
 
-    def is_final_state(self, state: FSMState) -> bool:
+    def is_final_state(self, state: FSMState, idx: int = 0) -> bool:
         """Determine whether the current state of the FSM is a final state."""
         return state in self.final_states
+
+    def reset(self) -> None:
+        self.num_tokens_generated = 0
 
 
 class RegexFSM(FSM):
@@ -133,7 +141,7 @@ class RegexFSM(FSM):
         self.vocabulary = tokenizer.vocabulary.values()
         self.end_token_id = tokenizer.eos_token_id
 
-    def allowed_token_ids(self, state: FSMState) -> List[int]:
+    def allowed_token_ids(self, state: FSMState, idx: int = 0) -> List[int]:
         """Generate a list of allowed tokens for the next step.
 
         The initialization of the FSM builds an index which maps FSM states to a
@@ -163,7 +171,7 @@ class RegexFSM(FSM):
         else:
             return list(next_tokens_to_end_states.keys())
 
-    def next_state(self, state: FSMState, token_id: int) -> FSMState:
+    def next_state(self, state: FSMState, token_id: int, idx: int = 0) -> FSMState:
         """Update the state of the FSM.
 
         We use the index to determine to which state the FSM should transition
@@ -181,7 +189,8 @@ class RegexFSM(FSM):
         The new state of the FSM.
 
         """
-        self.num_tokens_generated += 1
+        if idx == 0:
+            self.num_tokens_generated += 1
 
         if self.max_tokens is not None:
             if self.num_tokens_generated == self.max_tokens:
@@ -197,6 +206,35 @@ class RegexFSM(FSM):
 
         return FSMState(next_state)
 
-    def is_final_state(self, state: FSMState) -> bool:
+    def is_final_state(self, state: FSMState, idx: int = 0) -> bool:
         """Determine whether the current state of the FSM is a final state."""
         return state in self.final_states
+
+    def reset(self) -> None:
+        self.num_tokens_generated = 0
+
+
+class CFGFSM(FSM):
+    def __init__(
+        self,
+        cfg_string: str,
+        tokenizer: "Tokenizer",
+        max_tokens: Optional[int] = None,
+    ):
+        self.parser = PartialLark(cfg_string, parser="lalr")
+        self.terminal_regexps = dict()
+        for terminal in self.parser.terminals:
+            if terminal.pattern is not None:
+                self.terminal_regexps[terminal.name] = terminal.pattern.to_regexp()
+
+    def allowed_token_ids(self, state: FSMState, idx: int = 0) -> List[int]:
+        raise NotImplementedError()
+
+    def next_state(self, state: FSMState, token_id: int, idx: int = 0) -> FSMState:
+        raise NotImplementedError()
+
+    def is_final_state(self, state: FSMState, idx: int = 0) -> bool:
+        raise NotImplementedError()
+
+    def reset(self) -> None:
+        self.num_tokens_generated = 0
