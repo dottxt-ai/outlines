@@ -1,5 +1,5 @@
+import outlines.generate as generate
 import outlines.models as models
-import outlines.text.generate as generate
 
 # examples from https://lark-parser.readthedocs.io/en/latest/examples/index.html
 

@@ -4,7 +4,7 @@ from typing import Callable, Iterator, List, Optional, Union
 import torch
 from pydantic import BaseModel
 
-from outlines.fsm.fsm import FSMState, RegexFSM, StopAtTokenFSM
+from outlines.fsm.fsm import CFGFSM, FSMState, RegexFSM, StopAtTokenFSM
 from outlines.fsm.json_schema import build_regex_from_object, get_schema_from_signature
 from outlines.fsm.types import python_types_to_regex
 from outlines.generate.generator import (
@@ -56,6 +56,8 @@ class SequenceGenerator:
         A string or list of strings that contain the generated text.
 
         """
+
+        self.fsm.reset()
 
         if isinstance(prompts, str):
             prompts = [prompts]
@@ -125,6 +127,9 @@ class SequenceGenerator:
         A string or list of strings that contain the generated text.
 
         """
+
+        self.fsm.reset()
+
         if rng is None:
             rng = torch.Generator(device=self.device)
             rng.seed()
@@ -184,6 +189,20 @@ def regex(
     sampler: Sampler = multinomial,
 ):
     fsm = RegexFSM(regex_str, model.tokenizer, max_tokens)
+
+    device = model.device
+    generator = SequenceGenerator(fsm, model, sampler, device)
+
+    return generator
+
+
+def cfg(
+    model,
+    cfg_str: str,
+    max_tokens: Optional[int] = None,
+    sampler: Sampler = multinomial,
+):
+    fsm = CFGFSM(cfg_str, model.tokenizer, max_tokens)
 
     device = model.device
     generator = SequenceGenerator(fsm, model, sampler, device)
