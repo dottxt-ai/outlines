@@ -22,7 +22,6 @@ nlamb_grammar = """
     %import common.WS
     %ignore WS
 """
-# ^ this is a finite grammar so will always terminate with a valid parse
 
 calc_grammar = """
     ?start: sum
@@ -47,12 +46,10 @@ calc_grammar = """
 
     %ignore WS_INLINE
 """
-# ^ with the random model this tends to just generate long variable names
-# with a better model it does generate more interesting valid expressions
 
 model = models.transformers("hf-internal-testing/tiny-random-gpt2")
 batch_size = 10
-max_tokens = 30  # i've set max tokens due to random model
+max_tokens = 30
 for grammar in [nlamb_grammar, calc_grammar]:
     generator = generate.cfg(model, grammar, max_tokens=max_tokens)
     sequences = generator([" "] * batch_size)
