@@ -283,6 +283,13 @@ class CFGFSM(FSM):
             self.allow_eos.append(False)
             self.done.append(False)
 
+        if len(self.regex_fsms) > idx:
+            current = self.regex_fsms[idx].allowed_token_ids(state)
+            if set(current) != {self.tokenizer.eos_token_id}:
+                if False:  # TODO: CURRENTLY UNSPECIFIED DECISION POINT
+                    current = [x for x in current if x != self.tokenizer.eos_token_id]
+                    return current
+
         self._update_parser(idx)
 
         if self.done[idx]:
@@ -291,7 +298,7 @@ class CFGFSM(FSM):
         if self.reset_state[idx]:
             state = FSMState(0)
 
-        proposed = self.regex_fsms[idx].allowed_token_ids(state, idx)
+        proposed = self.regex_fsms[idx].allowed_token_ids(state)
         if self.allow_eos[idx]:
             self.allow_eos[idx] = False
             return proposed
