@@ -1,3 +1,5 @@
+from lark.exceptions import UnexpectedCharacters, UnexpectedToken
+
 import outlines.generate as generate
 import outlines.models as models
 
@@ -56,8 +58,13 @@ for grammar in [nlamb_grammar, calc_grammar]:
     sequences = generator([" "] * batch_size)
     for seq in sequences:
         try:
-            parse = generator.parser.parse(seq)
+            parse = generator.fsm.parser.parse(seq)
             assert parse is not None
             print("SUCCESS", seq)
+        except (UnexpectedCharacters, UnexpectedToken):
+            if generator.fsm.num_tokens_generated == max_tokens:
+                print("MAXTOKEN", seq)
+            else:
+                print("FAILURE", seq)
         except Exception:
-            print("CUT OFF AT MAX TOKENS", seq)
+            print("FAILURE", seq)
