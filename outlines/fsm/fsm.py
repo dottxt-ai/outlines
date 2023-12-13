@@ -2,7 +2,6 @@ from typing import TYPE_CHECKING, List, NewType, Optional, Protocol
 
 import interegular
 from lark import Lark
-from lark.exceptions import UnexpectedCharacters
 
 # from outlines.fsm.parsing import PartialLark
 from outlines.fsm.regex import create_fsm_index_tokenizer, make_deterministic_fsm
@@ -259,27 +258,20 @@ class CFGFSM(FSM):
         self.allow_eos: List[bool] = []
         self.done: List[bool] = []
 
-    def _update_parser(self, idx: int = 0) -> None:
-        """Run the CFG incremental parser to check the current state of generations
-        and update the current regex FSM if necessary.
+    def _set_next_regex_fsm(self, idx: int = 0) -> None:
+        """Use the CFG incremental parser to set the next regex FSM.
 
-        If the current regex FSM has not yet completed,
-            we do nothing and return.
-        If the current regex FSM has completed,
-            we check what the CFG incremental parser proposes next.
+        Check what the CFG incremental parser proposes next.
         If the only proposal is the EOS token,
             we set the state to done and return.
         If there are other proposals,
-            we create a new regex FSM for the next regex and return.
+            we set a new regex FSM and return.
 
         """
         interactive = self.parser.parse_interactive(self.generations[idx])
-        try:
-            interactive.exhaust_lexer()
-        except UnexpectedCharacters:
-            return
-
+        interactive.exhaust_lexer()
         options = {self.terminal_regexps[x] for x in interactive.accepts()}
+
         if self.terminal_regexps["$END"] in options:
             options.remove(self.terminal_regexps["$END"])
             if len(options) == 0:
@@ -335,13 +327,15 @@ class CFGFSM(FSM):
             self.done.append(False)
 
         if len(self.regex_fsms) > idx:
-            current = self.regex_fsms[idx].allowed_token_ids(state)
-            if set(current) != {self.tokenizer.eos_token_id}:
-                if False:  # TODO: CURRENTLY UNSPECIFIED DECISION POINT
-                    current = [x for x in current if x != self.tokenizer.eos_token_id]
-                    return current
+            proposal = self.regex_fsms[idx].allowed_token_ids(state)
+            if self.tokenizer.eos_token_id not in proposal:
+                return proposal
+            if set(proposal) != {self.tokenizer.eos_token_id}:
+                if False:  # TODO: THIS NEEDS TO BE SAMPLED
+                    proposal = [x for x in proposal if x != self.tokenizer.eos_token_id]
+                    return proposal
 
-        self._update_parser(idx)
+        self._set_next_regex_fsm(idx)
 
         if self.done[idx]:
             return [self.tokenizer.eos_token_id]
@@ -349,14 +343,13 @@ class CFGFSM(FSM):
         if self.reset_state[idx]:
             state = FSMState(0)
 
-        proposed = self.regex_fsms[idx].allowed_token_ids(state)
+        proposal = self.regex_fsms[idx].allowed_token_ids(state)
         if self.allow_eos[idx]:
             self.allow_eos[idx] = False
-            return proposed
         else:
-            allowed = [x for x in proposed if x != self.tokenizer.eos_token_id]
-            assert len(allowed) > 0
-            return allowed
+            proposal = [x for x in proposal if x != self.tokenizer.eos_token_id]
+            assert len(proposal) > 0
+        return proposal
 
     def next_state(self, state: FSMState, token_id: int, idx: int = 0) -> FSMState:
         """Update the state of the FSM.
