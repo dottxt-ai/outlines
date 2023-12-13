@@ -1,8 +1,10 @@
 from typing import TYPE_CHECKING, List, NewType, Optional, Protocol
 
 import interegular
+from lark import Lark
+from lark.exceptions import UnexpectedCharacters
 
-from outlines.fsm.parsing import PartialLark
+# from outlines.fsm.parsing import PartialLark
 from outlines.fsm.regex import create_fsm_index_tokenizer, make_deterministic_fsm
 
 if TYPE_CHECKING:
@@ -221,20 +223,95 @@ class CFGFSM(FSM):
         tokenizer: "Tokenizer",
         max_tokens: Optional[int] = None,
     ):
-        self.parser = PartialLark(cfg_string, parser="lalr")
+        # self.parser = PartialLark(cfg_string, parser="lalr")
+        self.parser = Lark(
+            cfg_string,
+            parser="lalr",
+            lexer="contextual",
+            propagate_positions=False,
+            maybe_placeholders=False,
+            regex=True,
+        )
         self.terminal_regexps = dict()
         for terminal in self.parser.terminals:
             if terminal.pattern is not None:
                 self.terminal_regexps[terminal.name] = terminal.pattern.to_regexp()
+        self.terminal_regexps["$END"] = tokenizer.eos_token
+
+        self.tokenizer = tokenizer
+        self.max_tokens = max_tokens
+        self.num_tokens_generated = 0
+        self.generations: List[str] = []
+        self.regex_fsms: List[RegexFSM] = []
+        self.reset_state: List[bool] = []
+        self.done: List[bool] = []
+
+    def _update_parser(self, idx: int = 0) -> None:
+        interactive = self.parser.parse_interactive(self.generations[idx])
+        try:
+            interactive.exhaust_lexer()
+        except UnexpectedCharacters:
+            return
+
+        options = {self.terminal_regexps[x] for x in interactive.accepts()}
+        if self.terminal_regexps["$END"] in options:
+            options.remove(self.terminal_regexps["$END"])
+            if len(options) == 0:
+                self.done[idx] = True
+                return
+
+        regex_string = r"(" + r"|".join([r"(" + x + r")" for x in options]) + r")"
+        args = (
+            regex_string,
+            self.tokenizer,
+            self.max_tokens - self.num_tokens_generated if self.max_tokens else None,
+        )
+        if len(self.regex_fsms) <= idx:
+            self.regex_fsms.append(RegexFSM(*args))
+        else:
+            self.regex_fsms[idx] = RegexFSM(*args)
+        self.reset_state[idx] = True
 
     def allowed_token_ids(self, state: FSMState, idx: int = 0) -> List[int]:
-        raise NotImplementedError()
+        if len(self.generations) <= idx:
+            self.generations.append("")
+            self.reset_state.append(False)
+            self.done.append(False)
+
+        self._update_parser(idx)
+
+        if self.done[idx]:
+            return [self.tokenizer.eos_token_id]
+
+        if self.reset_state[idx]:
+            state = FSMState(0)
+
+        proposed = self.regex_fsms[idx].allowed_token_ids(state, idx)
+        allowed = [x for x in proposed if x != self.tokenizer.eos_token_id]
+        assert len(allowed) > 0
+        return allowed
 
     def next_state(self, state: FSMState, token_id: int, idx: int = 0) -> FSMState:
-        raise NotImplementedError()
+        if idx == 0:
+            self.num_tokens_generated += 1
+        if self.max_tokens is not None:
+            if self.num_tokens_generated >= self.max_tokens:
+                self.done[idx] = True
+                return FSMState(-1)
+        if self.reset_state[idx]:
+            self.reset_state[idx] = False
+            state = FSMState(0)
+
+        self.generations[idx] += self.tokenizer.decode([token_id])[0]
+
+        return self.regex_fsms[idx].next_state(state, token_id, idx)
 
     def is_final_state(self, state: FSMState, idx: int = 0) -> bool:
-        raise NotImplementedError()
+        return self.done[idx]
 
     def reset(self) -> None:
         self.num_tokens_generated = 0
+        self.generations = []
+        self.regex_fsms = []
+        self.reset_state = []
+        self.done = []
