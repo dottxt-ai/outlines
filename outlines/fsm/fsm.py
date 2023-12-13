@@ -57,7 +57,9 @@ class StopAtTokenFSM(FSM):
         Parameters
         ----------
         state
-            The current state of the FSM
+            The current state of the FSM.
+        idx
+            The index of the current input in the batch.
 
         Returns
         -------
@@ -82,6 +84,8 @@ class StopAtTokenFSM(FSM):
             The current state of the FSM.
         token_id
             The id of the token that was just generated.
+        idx
+            The index of the current input in the batch.
 
         Returns
         -------
@@ -105,6 +109,7 @@ class StopAtTokenFSM(FSM):
         return state in self.final_states
 
     def reset(self) -> None:
+        """Reset the FSM to its initial state. Here this only resets the token counter."""
         self.num_tokens_generated = 0
 
 
@@ -159,7 +164,9 @@ class RegexFSM(FSM):
         Parameters
         ----------
         state
-            The current state of the FSM
+            The current state of the FSM.
+        idx
+            The index of the current input in the batch.
 
         Returns
         -------
@@ -185,6 +192,8 @@ class RegexFSM(FSM):
             The current state of the FSM.
         token_id
             The id of the token that was just generated.
+        idx
+            The index of the current input in the batch.
 
         Returns
         -------
@@ -213,10 +222,13 @@ class RegexFSM(FSM):
         return state in self.final_states
 
     def reset(self) -> None:
+        """Reset the FSM to its initial state. Here this only resets the token counter."""
         self.num_tokens_generated = 0
 
 
 class CFGFSM(FSM):
+    """FSM to generate text that is in the language of a context-free grammar."""
+
     def __init__(
         self,
         cfg_string: str,
@@ -248,6 +260,19 @@ class CFGFSM(FSM):
         self.done: List[bool] = []
 
     def _update_parser(self, idx: int = 0) -> None:
+        """Run the CFG incremental parser to check the current state of generations
+        and update the current regex FSM if necessary.
+
+        If the current regex FSM has not yet completed,
+            we do nothing and return.
+        If the current regex FSM has completed,
+            we check what the CFG incremental parser proposes next.
+        If the only proposal is the EOS token,
+            we set the state to done and return.
+        If there are other proposals,
+            we create a new regex FSM for the next regex and return.
+
+        """
         interactive = self.parser.parse_interactive(self.generations[idx])
         try:
             interactive.exhaust_lexer()
@@ -277,6 +302,32 @@ class CFGFSM(FSM):
         self.reset_state[idx] = True
 
     def allowed_token_ids(self, state: FSMState, idx: int = 0) -> List[int]:
+        """Generate a list of allowed tokens for the next step.
+
+        Upon initialization, the CFG incremental parser is used to determine the first regex.
+
+        This regex is used for proposals until either:
+        - the regex is exhausted, and its only remaining option is the EOS token,
+            in which case we always transition to the next regex
+        - the regex can be exhausted, but the EOS token is not the only remaining option,
+            in which case we transition to the next regex with probability P (TODO)
+            or remove the possibility of generating the EOS token and continue with the current regex
+
+        The CFG incremental parser is allowed to propose the EOS token from any final state,
+        and once it is generated, the FSM will continue to always generate the EOS token.
+
+        Parameters
+        ----------
+        state
+            The current state of the FSM.
+        idx
+            The index of the current input in the batch.
+
+        Returns
+        -------
+        A list that contains the tokens to mask.
+
+        """
         if len(self.generations) <= idx:
             self.generations.append("")
             self.reset_state.append(False)
@@ -308,6 +359,25 @@ class CFGFSM(FSM):
             return allowed
 
     def next_state(self, state: FSMState, token_id: int, idx: int = 0) -> FSMState:
+        """Update the state of the FSM.
+
+        Transitions the underlying regex FSM to its next state.
+        If at max tokens or EOS token, transition permanently to the final state.
+        Update stored partial generations for subsequent incremental parsing.
+
+        Parameters
+        ----------
+        state
+            The current state of the FSM.
+        token_id
+            The id of the token that was just generated.
+        idx
+            The index of the current input in the batch.
+
+        Returns
+        -------
+        The new state of the FSM.
+        """
         if idx == 0:
             self.num_tokens_generated += 1
         if self.max_tokens is not None:
@@ -326,9 +396,11 @@ class CFGFSM(FSM):
         return self.regex_fsms[idx].next_state(state, token_id, idx)
 
     def is_final_state(self, state: FSMState, idx: int = 0) -> bool:
+        """Return whether the current state of the FSM is a final state."""
         return self.done[idx]
 
     def reset(self) -> None:
+        """Reset the FSM to its initial state, so it can be called on a fresh batch on inputs."""
         self.num_tokens_generated = 0
         self.generations = []
         self.regex_fsms = []
