@@ -173,11 +173,11 @@ class OpenAI:
                 )
             )
         if "gpt-" in self.config.model:
-            response, usage = generate_chat(
+            response, prompt_tokens, completion_tokens = generate_chat(
                 prompt, self.system_prompt, self.client, config
             )
-            self.prompt_tokens += usage["prompt_tokens"]
-            self.completion_tokens += usage["completion_tokens"]
+            self.prompt_tokens += prompt_tokens
+            self.completion_tokens += completion_tokens
 
             return response
 
@@ -232,11 +232,11 @@ class OpenAI:
 
             config = replace(config, logit_bias=mask, max_tokens=max_tokens_left)
 
-            response, usage = generate_chat(
+            response, prompt_tokens, completion_tokens = generate_chat(
                 prompt, self.system_prompt, self.client, config
             )
-            self.completion_tokens += usage["completion_tokens"]
-            self.prompt_tokens += usage["prompt_tokens"]
+            self.prompt_tokens += prompt_tokens
+            self.completion_tokens += completion_tokens
 
             encoded_response = tokenizer.encode(response)
 
@@ -281,14 +281,13 @@ class OpenAI:
         return str(self.config)
 
 
-@cache(ignore="client")
-@functools.partial(vectorize, signature="(),(),()->(s)")
+@functools.partial(vectorize, signature="(),(),(),()->(s),(),()")
 async def generate_chat(
     prompt: str,
     system_prompt: Union[str, None],
     client: "AsyncOpenAI",
     config: OpenAIConfig,
-) -> Tuple[np.ndarray, Dict]:
+) -> Tuple[np.ndarray, int, int]:
     """Call OpenAI's Chat Completion API.
 
     Parameters
@@ -309,19 +308,28 @@ async def generate_chat(
     A tuple that contains the model's response(s) and usage statistics.
 
     """
+
+    @cache()
+    async def call_api(prompt, system_prompt, config):
+        responses = await client.chat.completions.create(
+            messages=system_message + user_message,
+            **asdict(config),  # type: ignore
+        )
+        return responses.model_dump()
+
     system_message = (
         [{"role": "system", "content": system_prompt}] if system_prompt else []
     )
     user_message = [{"role": "user", "content": prompt}]
 
-    responses = await client.chat.completions.create(
-        messages=system_message + user_message,
-        **asdict(config),  # type: ignore
+    responses = await call_api(prompt, system_prompt, config)
+
+    results = np.array(
+        [responses["choices"][i]["message"]["content"] for i in range(config.n)]
     )
+    usage = responses["usage"]
 
-    results = np.array([responses.choices[i].message.content for i in range(config.n)])
-
-    return results, responses.usage.model_dump()
+    return results, usage["prompt_tokens"], usage["completion_tokens"]
 
 
 openai = OpenAI
