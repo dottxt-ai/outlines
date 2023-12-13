@@ -244,6 +244,7 @@ class CFGFSM(FSM):
         self.generations: List[str] = []
         self.regex_fsms: List[RegexFSM] = []
         self.reset_state: List[bool] = []
+        self.allow_eos: List[bool] = []
         self.done: List[bool] = []
 
     def _update_parser(self, idx: int = 0) -> None:
@@ -259,6 +260,9 @@ class CFGFSM(FSM):
             if len(options) == 0:
                 self.done[idx] = True
                 return
+            self.allow_eos[idx] = True
+            options.add("")
+            assert len(options) > 1
 
         regex_string = r"(" + r"|".join([r"(" + x + r")" for x in options]) + r")"
         args = (
@@ -276,6 +280,7 @@ class CFGFSM(FSM):
         if len(self.generations) <= idx:
             self.generations.append("")
             self.reset_state.append(False)
+            self.allow_eos.append(False)
             self.done.append(False)
 
         self._update_parser(idx)
@@ -287,9 +292,13 @@ class CFGFSM(FSM):
             state = FSMState(0)
 
         proposed = self.regex_fsms[idx].allowed_token_ids(state, idx)
-        allowed = [x for x in proposed if x != self.tokenizer.eos_token_id]
-        assert len(allowed) > 0
-        return allowed
+        if self.allow_eos[idx]:
+            self.allow_eos[idx] = False
+            return proposed
+        else:
+            allowed = [x for x in proposed if x != self.tokenizer.eos_token_id]
+            assert len(allowed) > 0
+            return allowed
 
     def next_state(self, state: FSMState, token_id: int, idx: int = 0) -> FSMState:
         if idx == 0:
@@ -298,6 +307,9 @@ class CFGFSM(FSM):
             if self.num_tokens_generated >= self.max_tokens:
                 self.done[idx] = True
                 return FSMState(-1)
+        if token_id == self.tokenizer.eos_token_id:
+            self.done[idx] = True
+            return FSMState(-1)
         if self.reset_state[idx]:
             self.reset_state[idx] = False
             state = FSMState(0)
