@@ -126,9 +126,15 @@ class OpenAI:
         else:
             self.config = OpenAIConfig(model=model_name)
 
-        self.client = openai.AsyncOpenAI(
-            api_key=api_key, max_retries=max_retries, timeout=timeout
+        # This is necesssary because of an issue with the OpenAI API.
+        # Status updates: https://github.com/openai/openai-python/issues/769
+        self.create_client = functools.partial(
+            openai.AsyncOpenAI,
+            api_key=api_key,
+            max_retries=max_retries,
+            timeout=timeout,
         )
+
         self.system_prompt = system_prompt
 
         # We count the total number of prompt and generated tokens as returned
@@ -173,8 +179,9 @@ class OpenAI:
                 )
             )
         if "gpt-" in self.config.model:
+            client = self.create_client()
             response, prompt_tokens, completion_tokens = generate_chat(
-                prompt, self.system_prompt, self.client, config
+                prompt, self.system_prompt, client, config
             )
             self.prompt_tokens += prompt_tokens
             self.completion_tokens += completion_tokens
@@ -232,8 +239,9 @@ class OpenAI:
 
             config = replace(config, logit_bias=mask, max_tokens=max_tokens_left)
 
+            client = self.create_client()
             response, prompt_tokens, completion_tokens = generate_chat(
-                prompt, self.system_prompt, self.client, config
+                prompt, self.system_prompt, client, config
             )
             self.prompt_tokens += prompt_tokens
             self.completion_tokens += completion_tokens
@@ -315,6 +323,8 @@ async def generate_chat(
             messages=system_message + user_message,
             **asdict(config),  # type: ignore
         )
+        await client.close()
+
         return responses.model_dump()
 
     system_message = (
