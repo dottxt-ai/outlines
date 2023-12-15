@@ -93,7 +93,7 @@ You can reduce the completion to a choice between multiple possibilities:
 ``` python
 import outlines
 
-model = outlines.models.transformers("mistralai/Mistral-7B")
+model = outlines.models.transformers("mistralai/Mistral-7B-v0.1")
 
 prompt = """You are a sentiment-labelling assistant.
 Is the following review positive or negative?
@@ -111,7 +111,7 @@ You can instruct the model to only return integers or floats:
 ``` python
 import outlines
 
-model = outlines.models.transformers("mistralai/Mistral-7B")
+model = outlines.models.transformers("mistralai/Mistral-7B-v0.1")
 
 prompt = "1+1="
 answer = outlines.generate.format(model, int)(prompt)
@@ -129,7 +129,7 @@ hood:
 ``` python
 import outlines
 
-model = outlines.models.transformers("mistralai/Mistral-7B")
+model = outlines.models.transformers("mistralai/Mistral-7B-v0.1")
 
 prompt = "Is 1+1=2? "
 unguided = outlines.generate.continuation(model, max_tokens=30)(prompt)
@@ -151,7 +151,7 @@ print(guided)
 ``` python
 import outlines
 
-model = outlines.models.transformers("mistralai/Mistral-7B")
+model = outlines.models.transformers("mistralai/Mistral-7B-v0.1")
 
 prompt = "What is the IP address of the Google DNS servers? "
 unguided = generate.continuation(model, max_tokens=30)(prompt)
@@ -211,7 +211,7 @@ class Character(BaseModel):
     strength: int
 
 
-model = outlines.models.transformers("mistralai/Mistral-7B", device="cuda")
+model = outlines.models.transformers("mistralai/Mistral-7B-v0.1", device="cuda")
 
 # Construct guided sequence generator
 generator = outlines.generate.json(model, Character, max_tokens=100)
@@ -254,7 +254,7 @@ import outlines
 def add(a: int, b: int):
     return a + b
 
-model = outlines.models.transformers("mistralai/Mistral-7B")
+model = outlines.models.transformers("mistralai/Mistral-7B-v0.1")
 generator = outlines.generate.json(model, add)
 result = generator("Return two integers named a and b respectively. a is odd and b even.")
 
@@ -298,7 +298,7 @@ def labelling(to_label, examples):
     {{ to_label }} //
     """
 
-model = outlines.models.transformers("mistralai/Mistral-7B")
+model = outlines.models.transformers("mistralai/Mistral-7B-v0.1")
 prompt = labelling("Just awesome", examples)
 answer = outlines.generate.continuation(model, max_tokens=100)(prompt)
 ```
