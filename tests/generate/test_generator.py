@@ -22,27 +22,28 @@ from outlines.generate.generator import (
 def test_sequence_generator_class():
     class MockFSM:
         def next_state(self, state, next_token_ids):
-            return 0
+            return 4
 
         def allowed_token_ids(self, _):
-            return []
+            return [4]
 
         def is_final_state(self, _):
             return True
 
     class MockTokenizer:
         def encode(self, _):
-            return torch.tensor([[0, 1, 2, 3]]), torch.tensor([[1, 1, 1, 1]])
+            # Input: "test"
+            return torch.tensor([[0, 1, 2, 3]]), torch.tensor([[1, 1, 1, 1, 1]])
 
-        def decode(self, _):
-            return ["testx"]
+        def decode(self, tokens):
+            return ["testx"[i] for i in tokens]
 
     class MockModel:
         def __init__(self):
             self.tokenizer = MockTokenizer()
 
         def __call__(*_):
-            return torch.tensor([[0, 1, 2, 3]], dtype=torch.float), None
+            return torch.tensor([[0, 1, 2, 3, 4]], dtype=torch.float), None
 
     def sampler(biased_logits, *_):
         return torch.argmax(biased_logits, keepdims=True)
