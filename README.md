@@ -45,6 +45,20 @@ via the next-token logits. It can be used with API-based models as well.
 <a href="https://dottxt-ai.notion.site/We-re-hiring-engineers-to-make-text-generation-fast-and-reliable-0f54d5214cf74301bbd6f3107b9acc76">⚠️ We're hiring someone to work full-time on Outlines ⚠️</a>
 </div>
 
+## Installation
+
+**Outlines** is available on PyPi:
+
+``` bash
+pip install outlines
+```
+
+The dependencies needed to use models are not installed by default. You will need to run:
+
+- `pip install openai` to be able to use OpenAI [models](https://platform.openai.com/docs/api-reference).
+- `pip install transformers datasets` to be able to use Hugging Face `transformers` [models](https://huggingface.co/models?pipeline_tag=text-generation).
+
+
 ## Features
 
 - [x] 🖍️Simple and powerful prompting primitives based on the [Jinja templating engine](https://jinja.palletsprojects.com/)
@@ -64,18 +78,6 @@ via the next-token logits. It can be used with API-based models as well.
 
 Outlines 〰 has new releases and features coming every week. Make sure to ⭐ star and 👀 watch this repository, follow [@dottxtai][twitter] to stay up to date!
 
-## Installation
-
-**Outlines** is available on PyPi:
-
-``` bash
-pip install outlines
-```
-
-The dependencies needed to use models are not installed by default. You will need to run:
-
-- `pip install openai` to be able to use OpenAI [models](https://platform.openai.com/docs/api-reference).
-- `pip install transformers datasets` to be able to use Hugging Face `transformers` [models](https://huggingface.co/models?pipeline_tag=text-generation).
 
 ## Guided generation
 
@@ -91,7 +93,7 @@ You can reduce the completion to a choice between multiple possibilities:
 ``` python
 import outlines
 
-model = outlines.models.transformers("gpt2")
+model = outlines.models.transformers("mistralai/Mistral-7B")
 
 prompt = """You are a sentiment-labelling assistant.
 Is the following review positive or negative?
@@ -109,7 +111,7 @@ You can instruct the model to only return integers or floats:
 ``` python
 import outlines
 
-model = outlines.models.transformers("gpt2")
+model = outlines.models.transformers("mistralai/Mistral-7B")
 
 prompt = "1+1="
 answer = outlines.generate.format(model, int)(prompt)
@@ -127,7 +129,7 @@ hood:
 ``` python
 import outlines
 
-model = outlines.models.transformers("gpt2-medium")
+model = outlines.models.transformers("mistralai/Mistral-7B")
 
 prompt = "Is 1+1=2? "
 unguided = outlines.generate.continuation(model, max_tokens=30)(prompt)
@@ -149,7 +151,7 @@ print(guided)
 ``` python
 import outlines
 
-model = outlines.models.transformers("gpt2-medium")
+model = outlines.models.transformers("mistralai/Mistral-7B")
 
 prompt = "What is the IP address of the Google DNS servers? "
 unguided = generate.continuation(model, max_tokens=30)(prompt)
@@ -209,7 +211,7 @@ class Character(BaseModel):
     strength: int
 
 
-model = outlines.models.transformers("gpt2", device="cuda")
+model = outlines.models.transformers("mistralai/Mistral-7B", device="cuda")
 
 # Construct guided sequence generator
 generator = outlines.generate.json(model, Character, max_tokens=100)
@@ -296,7 +298,7 @@ def labelling(to_label, examples):
     {{ to_label }} //
     """
 
-model = outlines.models.transformers("gpt2")
+model = outlines.models.transformers("mistralai/Mistral-7B")
 prompt = labelling("Just awesome", examples)
 answer = outlines.generate.continuation(model, max_tokens=100)(prompt)
 ```
