@@ -60,8 +60,6 @@ class SequenceGenerator:
         if isinstance(prompts, str):
             prompts = [prompts]
 
-        prompt_lengths = [len(prompt) for prompt in prompts]
-
         if rng is None:
             rng = torch.Generator(device=self.device)
             rng.seed()
@@ -82,10 +80,17 @@ class SequenceGenerator:
             except StopIteration:
                 break
 
-        sequences = self.tokenizer.decode(last_state.token_ids)
-        generated = [
-            sequence[length:] for sequence, length in zip(sequences, prompt_lengths)
+        # Get the number of tokens in the prompts
+        prompt_token_ids = init_state[0]
+        prompt_lengths = [len(prompt_token_ids[i]) for i in range(len(prompts))]
+
+        # Remove the prompts from the generated sequences
+        token_ids = [
+            cur_token_ids[length:]
+            for cur_token_ids, length in zip(last_state.token_ids, prompt_lengths)
         ]
+
+        generated = self.tokenizer.decode(token_ids)
         formatted = [self.format_sequence(sequence) for sequence in generated]
 
         return formatted if len(formatted) > 1 else formatted[0]
