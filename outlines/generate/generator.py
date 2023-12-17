@@ -1,9 +1,8 @@
 import dataclasses
 import math
 from typing import TYPE_CHECKING, Callable, Iterator, List, Optional, Tuple, Union
-
+from outlines.caching import diskcache, diskcache_memory, hash_it
 import torch
-
 from outlines.fsm.fsm import FSMState
 
 if TYPE_CHECKING:
@@ -100,7 +99,6 @@ def sequence_generator(
 
         yield GenerationState(token_ids, kv_cache, logits, fsm_states)
 
-
 def token_generator(model, sampler: "Sampler") -> Callable:
     """Generate one token at a time.
 
@@ -125,6 +123,12 @@ def token_generator(model, sampler: "Sampler") -> Callable:
 
     """
 
+    def cache_key_arguments(token_ids, attention_masks, kv_cache, allowed_tokens, rng):
+        return (token_ids, attention_masks, kv_cache,
+                 rng.initial_seed(),
+                   model.model.config, sampler.__name__), {}
+    
+    @diskcache(cache_key_args_func = cache_key_arguments)
     @torch.inference_mode()
     def generate(
         token_ids: torch.Tensor,
