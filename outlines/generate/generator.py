@@ -1,7 +1,7 @@
 import dataclasses
 import math
 from typing import TYPE_CHECKING, Callable, Iterator, List, Optional, Tuple, Union
-from outlines.caching import diskcache, diskcache_memory, hash_it
+from outlines.caching import diskcache
 import torch
 from outlines.fsm.fsm import FSMState
 
