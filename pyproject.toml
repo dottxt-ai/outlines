@@ -29,6 +29,7 @@ dependencies = [
    "nest_asyncio",
    "numpy",
    "perscache",
+   "diskcache",
    "pydantic>=2.0",
    "scipy",
    "torch>=2.1",
