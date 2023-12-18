@@ -20,7 +20,7 @@ def cache(ignore: Optional[str] = None):
     return cache_fn
 
 
-def hash_it(*data) -> str:
+def hash_data(*data) -> str:
     """Pickles and hashes all the data passed to it as args."""
     result = hashlib.md5()  # nosec B303
     for datum in data:
@@ -33,7 +33,7 @@ def diskcache(cache_key_args_func):
     def decorator(func):
         def wrapper(*args, **kwargs):
             key_args, key_kwargs = cache_key_args_func(*args, **kwargs)
-            cache_key = hash_it(*key_args, **key_kwargs)
+            cache_key = hash_data(*key_args, **key_kwargs)
             if cache_key in diskcache_memory:
                 return diskcache_memory[cache_key]
             result = func(*args, **kwargs)
