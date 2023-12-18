@@ -11,7 +11,7 @@ from diskcache import Cache as DiskCache
 home_dir = os.path.expanduser("~")
 cache_dir = os.environ.get("OUTLINES_CACHE_DIR", f"{home_dir}/.cache/outlines")
 memory = Cache(serializer=JSONSerializer(), storage=LocalFileStorage(cache_dir))
-diskcache_memory = DiskCache(cache_dir, eviction_policy = 'none', cull_limit=1000)
+diskcache_memory = DiskCache(cache_dir, eviction_policy = 'none', cull_limit=0)
 
 def cache(ignore: Optional[str] = None):
     def cache_fn(fn: Callable):
@@ -84,3 +84,4 @@ def clear_cache():
     """Erase the cache completely."""
     global memory
     memory.storage.clear()
+    diskcache_memory.clear()
