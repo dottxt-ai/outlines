@@ -19,6 +19,41 @@
 
 </div>
 
+- [x] 🖍️Simple and powerful prompting primitives based on the [Jinja templating engine](https://jinja.palletsprojects.com/)
+- [x] 🚄 Guided generation, including multiple choice, type constraints and dynamic stopping
+- [x] ⚡ Fast [regex-guided generation](#efficient-regex-guided-generation)
+- [x] 🔥 Fast [JSON generation](#efficient-json-generation-following-a-pydantic-model) following a JSON schema or a Pydantic model
+- [x] 🐍 Interleave completions with loops, conditionals, and custom Python functions
+- [x] 💾 Caching of generations
+
+## Available models
+
+- [Transformers](https://github.com/huggingface/transformers)
+- [AutoGPTQ](https://github.com/PanQiWei/AutoGPTQ)
+- [AutoAWQ](https://github.com/casper-hansen/AutoAWQ)
+- [OpenAI API](https://github.com/openai/openai-python)
+- [Mamba](https://github.com/state-spaces/mamba)
+
+Outlines 〰 has new releases and features coming every week. Make sure to ⭐ star and 👀 watch this repository, follow [@dottxtai][twitter] to stay up to date!
+
+<div align="center">
+<a href="https://dottxt-ai.notion.site/We-re-hiring-engineers-to-make-text-generation-fast-and-reliable-0f54d5214cf74301bbd6f3107b9acc76">⚠️ We're hiring someone to work full-time on Outlines ⚠️</a>
+</div>
+
+## Installation
+
+**Outlines** is available on PyPi:
+
+``` bash
+pip install outlines
+```
+
+The dependencies needed to use models are not installed by default. You will need to run:
+
+- `pip install openai` to be able to use OpenAI [models](https://platform.openai.com/docs/api-reference).
+- `pip install transformers datasets` to be able to use Hugging Face `transformers` [models](https://huggingface.co/models?pipeline_tag=text-generation).
+
+## Philosophy
 
 **Outlines** 〰 is a library for neural text generation. You can think of it as a
 more flexible replacement for the `generate` method in the
@@ -40,43 +75,6 @@ functions and calls to other libraries.
 
 **Outlines** 〰 is *compatible with all models*. It only interfaces with models
 via the next-token logits. It can be used with API-based models as well.
-
-<div align="center">
-<a href="https://dottxt-ai.notion.site/We-re-hiring-engineers-to-make-text-generation-fast-and-reliable-0f54d5214cf74301bbd6f3107b9acc76">⚠️ We're hiring someone to work full-time on Outlines ⚠️</a>
-</div>
-
-## Installation
-
-**Outlines** is available on PyPi:
-
-``` bash
-pip install outlines
-```
-
-The dependencies needed to use models are not installed by default. You will need to run:
-
-- `pip install openai` to be able to use OpenAI [models](https://platform.openai.com/docs/api-reference).
-- `pip install transformers datasets` to be able to use Hugging Face `transformers` [models](https://huggingface.co/models?pipeline_tag=text-generation).
-
-
-## Features
-
-- [x] 🖍️Simple and powerful prompting primitives based on the [Jinja templating engine](https://jinja.palletsprojects.com/)
-- [x] 🚄 Guided generation, including multiple choice, type constraints and dynamic stopping
-- [x] ⚡ Fast [regex-guided generation](#efficient-regex-guided-generation)
-- [x] 🔥 Fast [JSON generation](#efficient-json-generation-following-a-pydantic-model) following a JSON schema or a Pydantic model
-- [x] 🐍 Interleave completions with loops, conditionals, and custom Python functions
-- [x] 💾 Caching of generations
-
-## Available models
-
-- [Transformers](https://github.com/huggingface/transformers)
-- [AutoGPTQ](https://github.com/PanQiWei/AutoGPTQ)
-- [AutoAWQ](https://github.com/casper-hansen/AutoAWQ)
-- [OpenAI API](https://github.com/openai/openai-python)
-- [Mamba](https://github.com/state-spaces/mamba)
-
-Outlines 〰 has new releases and features coming every week. Make sure to ⭐ star and 👀 watch this repository, follow [@dottxtai][twitter] to stay up to date!
 
 
 ## Guided generation
