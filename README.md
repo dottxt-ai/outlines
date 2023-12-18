@@ -243,6 +243,56 @@ print(sequence)
 
 The method works with union types, optional types, arrays, nested schemas, etc. Some field constraints are [not supported yet](https://github.com/outlines-dev/outlines/issues/215), but everything else should work.
 
+### Efficient JSON generation following a JSON Schema
+
+Sometimes you just want to be able to pass a JSON Schema instead of a Pydantic model. We've got you covered:
+
+``` python
+import outlines
+import torch
+
+schema = '''{
+    "title": "Character",
+    "type": "object",
+    "properties": {
+        "name": {
+            "title": "Name",
+            "maxLength": 10,
+            "type": "string"
+        },
+        "age": {
+            "title": "Age",
+            "type": "integer"
+        },
+        "armor": {"$ref": "#/definitions/Armor"},
+        "weapon": {"$ref": "#/definitions/Weapon"},
+        "strength": {
+            "title": "Strength",
+            "type": "integer"
+        }
+    },
+    "required": ["name", "age", "armor", "weapon", "strength"],
+    "definitions": {
+        "Armor": {
+            "title": "Armor",
+            "description": "An enumeration.",
+            "enum": ["leather", "chainmail", "plate"],
+            "type": "string"
+        },
+        "Weapon": {
+            "title": "Weapon",
+            "description": "An enumeration.",
+            "enum": ["sword", "axe", "mace", "spear", "bow", "crossbow"],
+            "type": "string"
+        }
+    }
+}'''
+
+model = outlines.models.transformers("mistralai/Mistral-7B-v0.1", device="cuda")
+generator = outlines.generate.json(model, schema)
+sequence = generator("Give me a character description")
+```
+
 ### Open functions
 
 Outlines can infer the structure of the output from the signature of a function. The result is a dictionary, and can be passed directly to the function using the usual dictionary expansion syntax `**`:
