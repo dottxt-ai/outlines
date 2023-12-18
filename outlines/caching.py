@@ -12,6 +12,7 @@ home_dir = os.path.expanduser("~")
 cache_dir = os.environ.get("OUTLINES_CACHE_DIR", f"{home_dir}/.cache/outlines")
 memory = Cache(serializer=JSONSerializer(), storage=LocalFileStorage(cache_dir))
 diskcache_memory = DiskCache(cache_dir, eviction_policy = 'none', cull_limit=0)
+_discache_enabled = True
 
 def cache(ignore: Optional[str] = None):
     def cache_fn(fn: Callable):
@@ -32,6 +33,8 @@ def hash_data(*data) -> str:
 def diskcache(cache_key_args_func):
     def decorator(func):
         def wrapper(*args, **kwargs):
+            if not _discache_enabled:
+                return func(*args, **kwargs)
             key_args, key_kwargs = cache_key_args_func(*args, **kwargs)
             cache_key = hash_data(*key_args, **key_kwargs)
             if cache_key in diskcache_memory:
@@ -76,12 +79,13 @@ def disable_cache():
     >>> cache.disable()
 
     """
-    global memory
+    global memory, _discache_enabled
     memory = NoCache()
+    _discache_enabled = False
 
 
 def clear_cache():
     """Erase the cache completely."""
-    global memory
+    global memory, diskcache_memory
     memory.storage.clear()
     diskcache_memory.clear()
