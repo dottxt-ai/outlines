@@ -19,6 +19,8 @@
 
 </div>
 
+## Features
+
 - [x] 🖍️Simple and powerful prompting primitives based on the [Jinja templating engine](https://jinja.palletsprojects.com/)
 - [x] 🚄 Guided generation, including multiple choice, type constraints and dynamic stopping
 - [x] ⚡ Fast [regex-guided generation](#efficient-regex-guided-generation)
