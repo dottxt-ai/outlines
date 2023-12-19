@@ -30,9 +30,6 @@ def test_sequence_generator_class():
         def is_final_state(self, _):
             return True
 
-        def reset(self):
-            pass
-
         def copy(self):
             return self
 
@@ -86,9 +83,6 @@ def test_init_sequence_generator():
         def is_final_state(self, _):
             return True
 
-        def reset(self):
-            pass
-
     class MockTokenizer:
         def encode(self, _):
             return torch.tensor([[0, 1, 2, 3]]), torch.tensor([[1, 1, 1, 1]])
@@ -123,9 +117,6 @@ def test_sequence_generator_1d_single_iteration():
 
         def is_final_state(self, _):
             return True
-
-        def reset(self):
-            pass
 
     class MockTokenizer:
         def encode(self, _):
@@ -173,9 +164,6 @@ def test_sequence_generator_1d_several_iterations():
             else:
                 return True
 
-        def reset(self):
-            pass
-
     class MockTokenizer:
         def encode(self, _):
             return torch.tensor([[0, 1, 2, 3]]), torch.tensor([[1, 1, 1, 1]])
@@ -222,9 +210,6 @@ def test_sequence_generator_2d_single_iteration():
 
         def is_final_state(self, _):
             return True
-
-        def reset(self):
-            pass
 
     class MockTokenizer:
         def encode(self, _):
@@ -282,9 +267,6 @@ def test_sequence_generator_2d_several_iterations():
                 return False
             else:
                 return True
-
-        def reset(self):
-            pass
 
     class MockTokenizer:
         def encode(self, _):
