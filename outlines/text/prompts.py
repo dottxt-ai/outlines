@@ -344,7 +344,7 @@ def find_ref_keys(d):
     return ref_keys
 
 
-def parse_pydantic_schema(raw_schema, definitions, attribute=None):
+def parse_pydantic_schema(raw_schema, definitions, attribute=None, parent_desc=None):
     """Parse the output of `Basemodel.[schema|model_json_schema]()`.
 
     This recursively follows the references to other schemas in case
@@ -360,10 +360,15 @@ def parse_pydantic_schema(raw_schema, definitions, attribute=None):
     if raw_schema.get("properties"):
         for name, value in raw_schema["properties"].items():
             rendered_str = f"<{name}"  # TODO add default values instead of key ?
-            description = None
+
+            description = {}  # TODO add constraints keys
+            is_of = False
             if "anyOf" in value:
+                is_of = True
                 description = value.get("description")
-                value = value["anyOf"][0]  # TODO Only first value, handle more TBD
+
+                value = value.get("anyOf")  # TODO Only first value, handle more TBD
+                value = value[0]
 
             type_ = None
             is_list = False
@@ -382,20 +387,25 @@ def parse_pydantic_schema(raw_schema, definitions, attribute=None):
 
             if "description" in value:
                 description = value.get("description")
-
-            if description:
                 rendered_str += f"|description={description}"
+
+            elif is_of:
+                if description:
+                    rendered_str += f"|description={description}"
+
+            elif parent_desc:
+                rendered_str += f"|description={parent_desc}"
 
             if name in list(ref_keys.keys()):
                 if is_list:
                     simple_schema[name] = [
                         parse_pydantic_schema(
-                            definitions[ref_keys.get(name)], definitions, attribute=name
+                            definitions[ref_keys.get(name)], definitions, attribute=name, parent_desc=description
                         ),
                     ]
                 else:
                     simple_schema[name] = parse_pydantic_schema(
-                        definitions[ref_keys.get(name)], definitions, attribute=name
+                        definitions[ref_keys.get(name)], definitions, attribute=name, parent_desc=description
                     )
             else:
                 if type_ == "array":  # TODO better way to handle ?
@@ -409,7 +419,10 @@ def parse_pydantic_schema(raw_schema, definitions, attribute=None):
 
                     simple_schema[name] = [f"{rendered_str}>"]
                 else:
-                    simple_schema[name] = f"{rendered_str}>"
+                    if value.get("const"):
+                        simple_schema[name] = f"{value.get('const')}"
+                    else:
+                        simple_schema[name] = f"{rendered_str}>"
 
     elif raw_schema.get("enum"):
         rendered_str = f"<{raw_schema.get('enum')}"
@@ -420,6 +433,11 @@ def parse_pydantic_schema(raw_schema, definitions, attribute=None):
         if "description" in raw_schema:
             description = raw_schema.get("description")
             rendered_str += f"|description={description}"
+        elif parent_desc:
+            rendered_str += f"|description={parent_desc}"
 
         return rendered_str + ">"
+
+    elif raw_schema.get("const"):
+        return raw_schema.get("const")
     return simple_schema
