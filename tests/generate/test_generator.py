@@ -21,10 +21,10 @@ from outlines.generate.generator import (
 
 def test_sequence_generator_class():
     class MockFSM:
-        def next_state(self, state, next_token_ids):
+        def next_state(self, state, next_token_ids, _):
             return 4
 
-        def allowed_token_ids(self, _):
+        def allowed_token_ids(self, *_):
             return [4]
 
         def is_final_state(self, _, idx=0):

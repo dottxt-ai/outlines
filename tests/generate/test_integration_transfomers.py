@@ -276,6 +276,30 @@ def test_transformers_json_basic():
     assert len(result.spam) <= 10
 
 
+def test_transformers_json_schema():
+    model_name = "hf-internal-testing/tiny-random-GPTJForCausalLM"
+    model = models.transformers(model_name, device="cpu")
+    prompt = "Output some JSON "
+
+    schema = """{
+      "title": "spam",
+      "type": "object",
+      "properties": {
+           "foo" : {"type": "integer"},
+           "bar": {"type": "string", "maxLength": 4}
+        }
+      }
+    """
+
+    rng = torch.Generator()
+    rng.manual_seed(0)  # make sure that `bar` is not an int
+
+    result = generate.json(model, schema, max_tokens=500)(prompt, rng=rng)
+    assert isinstance(result, dict)
+    assert isinstance(result["foo"], int)
+    assert isinstance(result["bar"], str)
+
+
 def test_transformers_json_batch():
     model_name = "hf-internal-testing/tiny-random-GPTJForCausalLM"
     model = models.transformers(model_name, device="cpu")
