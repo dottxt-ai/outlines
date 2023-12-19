@@ -132,7 +132,7 @@ import outlines
 model = outlines.models.transformers("mistralai/Mistral-7B-v0.1")
 
 prompt = "Is 1+1=2? "
-unguided = outlines.generate.continuation(model, max_tokens=30)(prompt)
+unguided = outlines.generate.text(model, max_tokens=30)(prompt)
 guided = outlines.generate.regex(model, r"\s*([Yy]es|[Nn]o|[Nn]ever|[Aa]lways)", max_tokens=30)(
     prompt
 )
@@ -154,7 +154,7 @@ import outlines
 model = outlines.models.transformers("mistralai/Mistral-7B-v0.1")
 
 prompt = "What is the IP address of the Google DNS servers? "
-unguided = generate.continuation(model, max_tokens=30)(prompt)
+unguided = outlines.generate.text(model, max_tokens=30)(prompt)
 guided = outlines.generate.regex(
     model,
     r"((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)",
@@ -350,7 +350,7 @@ def labelling(to_label, examples):
 
 model = outlines.models.transformers("mistralai/Mistral-7B-v0.1")
 prompt = labelling("Just awesome", examples)
-answer = outlines.generate.continuation(model, max_tokens=100)(prompt)
+answer = outlines.generate.text(model, max_tokens=100)(prompt)
 ```
 
 ### Tools
