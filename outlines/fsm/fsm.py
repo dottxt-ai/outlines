@@ -215,7 +215,6 @@ class CFGFSM(FSM):
         self.terminal_regexps["$END"] = tokenizer.eos_token
 
         self.tokenizer = tokenizer
-        self.num_tokens_generated = 0
         self.generation = ""
         self.reset_state = False
         self.allow_eos = False

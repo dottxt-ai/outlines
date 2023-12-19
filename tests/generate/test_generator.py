@@ -33,6 +33,9 @@ def test_sequence_generator_class():
         def copy(self):
             return self
 
+        def copy(self):
+            return self
+
     class MockTokenizer:
         def encode(self, _):
             # Input: "test"

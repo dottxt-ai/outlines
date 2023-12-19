@@ -201,6 +201,7 @@ class SequenceGenerator:
         stop_sequences = stop_at or self.stop_sequences
         max_tokens = max_tokens or self.max_tokens
         num_sequences = len(prompts)
+        fsms = [self.fsm.copy() for _ in prompts]
 
         if rng is None:
             rng = torch.Generator(device=self.device)
