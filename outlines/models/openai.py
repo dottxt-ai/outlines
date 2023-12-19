@@ -1,14 +1,10 @@
 """Integration with OpenAI's API."""
-import base64
 import functools
 import os
 import warnings
-from io import BytesIO
 from typing import Callable, Dict, List, Optional, Union
 
 import numpy as np
-from PIL import Image
-from PIL.Image import Image as PILImage
 from tenacity import (
     retry,
     retry_if_exception_type,
@@ -21,8 +17,6 @@ from outlines.caching import cache
 
 __all__ = [
     "OpenAICompletion",
-    "OpenAIEmbeddings",
-    "OpenAIImageGeneration",
 ]
 
 
@@ -164,75 +158,6 @@ def OpenAICompletion(
             decoded_samples.append("".join(decoded))
 
         return np.array(decoded_samples)
-
-    return generate
-
-
-def OpenAIEmbeddings(model_name: str):
-    """Create a function that will call OpenAI's embeddings endpoint.
-
-    You should have the `openai` package installed. Available models are listed
-    in the `OpenAI documentation <https://platform.openai.com/docs/models/overview>`_.
-
-    Parameters
-    ----------
-    model_name: str
-        The model name as listed in the OpenAI documentation.
-
-    Returns
-    -------
-    A function that will call OpenAI's embedding API with the given parameters when
-    passed a prompt.
-
-    """
-
-    @functools.partial(outlines.vectorize, signature="()->(s)")
-    async def generate(query: str) -> np.ndarray:
-        api_response = await call_embeddings_api(model_name, query)
-        response = api_response["data"][0]["embedding"]
-        return np.array(response)
-
-    return generate
-
-
-def OpenAIImageGeneration(model_name: str = "", size: str = "512x512"):
-    """Create a function that will call OpenAI's image generation endpoint.
-
-    You should have the `openai` package installed. Available models are listed
-    in the `OpenAI documentation <https://platform.openai.com/docs/models/overview>`_.
-
-    Parameters
-    ----------
-    model_name: str
-        The model name as listed in the OpenAI documentation.
-    size: str
-        The size of the image to generate. One of `256x256`, `512x512` or
-        `1024x1024`.
-
-    Returns
-    -------
-    A function that will call OpenAI's image API with the given parameters when
-    passed a prompt.
-
-    """
-
-    def generate(prompt: str, samples: int = 1):
-        return generate_base(prompt, samples)
-
-    @functools.partial(outlines.vectorize, signature="(),()->(s)")
-    async def generate_base(prompt: str, samples: int) -> PILImage:
-        api_response = await call_image_generation_api(prompt, size, samples)
-
-        images = []
-        for i in range(samples):
-            response = api_response["data"][i]["b64_json"]
-            images.append(Image.open(BytesIO(base64.b64decode(response))))
-
-        array = np.empty((samples,), dtype="object")
-        for idx, image in enumerate(images):
-            array[idx] = image
-
-        return np.atleast_2d(array)
 
     return generate
 
@@ -383,36 +308,6 @@ async def call_chat_completion_api(
         stop=list(stop_sequences) if len(stop_sequences) > 0 else None,
         logit_bias=logit_bias,
         n=int(num_samples),
-    )
-
-    return response
-
-
-@retry(**retry_config)
-@error_handler
-@cache
-async def call_embeddings_api(
-    model: str,
-    input: str,
-):
-    import openai
-
-    response = await openai.Embedding.acreate(
-        model=model,
-        input=input,
-    )
-
-    return response
-
-
-@retry(**retry_config)
-@error_handler
-@cache
-async def call_image_generation_api(prompt: str, size: str, samples: int):
-    import openai
-
-    response = await openai.Image.acreate(
-        prompt=prompt, size=size, n=int(samples), response_format="b64_json"
     )
 
     return response
