@@ -32,7 +32,7 @@
 
 - [Transformers](https://github.com/huggingface/transformers)
 - [AutoGPTQ](https://github.com/PanQiWei/AutoGPTQ)
-- [AutoAWQ](https://github.com/casper-hansen/AutoAWQ)
+- [AutoAWQ](https://github.com/casper-hansen/AutoAWQ) (requires `pip install autoawq`)
 - [OpenAI API](https://github.com/openai/openai-python)
 - [Mamba](https://github.com/state-spaces/mamba)
 
