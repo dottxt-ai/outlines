@@ -248,5 +248,11 @@ def json(
         regex_str = build_regex_from_object(schema)
         generator = regex(model, regex_str, max_tokens, sampler)
         generator.format_sequence = lambda x: pyjson.loads(x)
+    else:
+        raise ValueError(
+            f"Cannot parse schema {schema_object}. The schema must be either "
+            + "a Pydantic object, a function or a string that contains the JSON "
+            + "Schema specification"
+        )
 
     return generator
