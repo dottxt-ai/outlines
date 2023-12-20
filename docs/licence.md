@@ -1,5 +1,9 @@
 ---
 title: Licence
+<<<<<<< HEAD
+=======
+icon: material/scale-balance
+>>>>>>> d03615a (Simplify the README and update docuemntation)
 ---
 
 # Licence and citations

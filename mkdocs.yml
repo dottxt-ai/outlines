@@ -127,7 +127,6 @@ nav:
         - Outlines functions: reference/functions.md
     - Models:
         - OpenAI: reference/openai_text_generation.md
-
   - API Reference:
       - api/index.md
       - api/models.md
