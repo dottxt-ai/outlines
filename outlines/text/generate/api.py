@@ -9,6 +9,7 @@ def json(
     model,
     schema_object: Union[str, object, Callable],
     max_tokens: Optional[int] = None,
+    stop: Optional[Union[str, List[str]]] = None,
     *,
     sampler: Sampler = multinomial,
 ):
@@ -17,13 +18,16 @@ def json(
         "The old import path will be removed in Outlines v0.1.0.",
         DeprecationWarning,
     )
-    return outlines.generate.json(model, schema_object, max_tokens, sampler=sampler)
+    return outlines.generate.json(
+        model, schema_object, max_tokens, stop, sampler=sampler
+    )
 
 
 def regex(
     model,
     regex_str: str,
     max_tokens: Optional[int] = None,
+    stop: Optional[Union[str, List[str]]] = None,
     *,
     sampler: Sampler = multinomial,
 ):
@@ -32,7 +36,7 @@ def regex(
         "The old import path will be removed in Outlines v0.1.0.",
         DeprecationWarning,
     )
-    return outlines.generate.regex(model, regex_str, max_tokens, sampler=sampler)
+    return outlines.generate.regex(model, regex_str, max_tokens, stop, sampler=sampler)
 
 
 def format(
@@ -46,7 +50,9 @@ def format(
         "The old import path will be removed in Outlines v0.1.0.",
         DeprecationWarning,
     )
-    return outlines.generate.format(model, python_type, max_tokens, sampler=sampler)
+    return outlines.generate.format(
+        model, python_type, max_tokens, stop, sampler=sampler
+    )
 
 
 def continuation(
@@ -69,6 +75,7 @@ def choice(
     model,
     choices: List[str],
     max_tokens: Optional[int] = None,
+    stop: Optional[Union[str, List[str]]] = None,
     *,
     sampler: Sampler = multinomial,
 ):
