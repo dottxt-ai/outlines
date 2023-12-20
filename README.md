@@ -11,73 +11,30 @@
 
 *Robust (guided) text generation.*
 
-[Install](#installation) •
-[Guided generation](#guided-generation) •
-[Prompting primitives](#prompting) •
-[Examples](#examples) •
-[Stay tuned](#stay-tuned-for)
-
 </div>
 
-## Features
-
-- [x] 🖍️Simple and powerful prompting primitives based on the [Jinja templating engine](https://jinja.palletsprojects.com/)
-- [x] 🚄 Guided generation, including multiple choice, type constraints and dynamic stopping
-- [x] ⚡ Fast [regex-guided generation](#efficient-regex-guided-generation)
-- [x] 🔥 Fast [JSON generation](#efficient-json-generation-following-a-pydantic-model) following a JSON schema or a Pydantic model
-- [x] 📝 [Grammar-guided generation](#using-context-free-grammars-to-guide-generation)
-- [x] 🐍 Interleave completions with loops, conditionals, and custom Python functions
-- [x] 💾 Caching of generations
-
-## Available models
-
-- [Transformers](https://github.com/huggingface/transformers)
-- [AutoGPTQ](https://github.com/PanQiWei/AutoGPTQ)
-- [AutoAWQ](https://github.com/casper-hansen/AutoAWQ) (requires `pip install autoawq`)
-- [OpenAI API](https://github.com/openai/openai-python)
-- [Mamba](https://github.com/state-spaces/mamba)
-
-Outlines 〰 has new releases and features coming every week. Make sure to ⭐ star and 👀 watch this repository, follow [@dottxtai][twitter] to stay up to date!
-
-<div align="center">
-<a href="https://dottxt-ai.notion.site/We-re-hiring-engineers-to-make-text-generation-fast-and-reliable-0f54d5214cf74301bbd6f3107b9acc76">⚠️ We're hiring someone to work full-time on Outlines ⚠️</a>
-</div>
-
-## Installation
-
-**Outlines** is available on PyPi:
+Made with ❤👷️ by the team at [.txt](https://dottxt.co). 
+We'd love to have your [feedback][discord]!
 
 ``` bash
 pip install outlines
 ```
 
-The dependencies needed to use models are not installed by default. You will need to run:
+First time here? Go to our [setup guide](https://outlines-dev.github.io/outlines/get_started/#1-installation)
 
-- `pip install openai` to be able to use OpenAI [models](https://platform.openai.com/docs/api-reference).
-- `pip install transformers datasets` to be able to use Hugging Face `transformers` [models](https://huggingface.co/models?pipeline_tag=text-generation).
 
-## Philosophy
+Outlines 〰 has new releases and features coming every week. Make sure to ⭐ star and 👀 watch this repository, follow [@dottxtai][twitter] to stay up to date!
 
-**Outlines** 〰 is a library for neural text generation. You can think of it as a
-more flexible replacement for the `generate` method in the
-[transformers](https://github.com/huggingface/transformers) library.
+## Features
 
-**Outlines** 〰 helps developers *guide text generation* to build robust
-interfaces with external systems. Provides generation methods that
-guarantee that the output will match a regular expressions, or follow
-a JSON schema.
-
-**Outlines** 〰 provides *robust prompting primitives* that separate the prompting
-from the execution logic and lead to simple implementations of few-shot
-generations, ReAct, meta-prompting, agents, etc.
-
-**Outlines** 〰 is designed as a *library* that is meant to be compatible the
-broader ecosystem, not to replace it. We use as few abstractions as possible,
-and generation can be interleaved with control flow, conditionals, custom Python
-functions and calls to other libraries.
-
-**Outlines** 〰 is *compatible with all models*. It only interfaces with models
-via the next-token logits. It can be used with API-based models as well.
+- [x] 🤖 [Multiple model integrations](https://outlines-dev.github.io/outlines/get_started/#1-installation): OpenAI, transformers, AutoGPTQ, AutoAWQ
+- [x] 🖍️ Simple and powerful prompting primitives based on the [Jinja templating engine](https://jinja.palletsprojects.com/)
+- [x] 🚄 [Multiple choices](#multiple-choices), [type constraints](#type-constraint) and dynamic stopping
+- [x] ⚡ Fast [regex-guided generation](#efficient-regex-guided-generation)
+- [x] 🔥 Fast [JSON generation](#efficient-json-generation-following-a-pydantic-model) following a JSON schema or a Pydantic model
+- [x] 📝 [Grammar-guided generation](#using-context-free-grammars-to-guide-generation)
+- [x] 🐍 Interleave completions with loops, conditionals, and custom Python functions
+- [x] 💾 Caching of generations
 
 
 ## Guided generation
@@ -479,22 +436,10 @@ With these prompting primitives **Outlines** makes building agents like
 Agent](https://huggingface.co/docs/transformers/transformers_agents) easier by
 removing boilerplate prompting code.
 
-## Contributing
+## Reach out
 
-### What contributions?
+🔨 **Want to contribute?** Consult our contribution guide.
 
-We currently only accept bug fixes and documentation contributions. If you have a
-feature request, please start a new
-[discussion](https://github.com/outlines-dev/outlines/discussions). The
-issue tracker is only intended for actionable items.
-
-### How to contribute?
-
-Run `pip install -e .[test]` or `conda env create -f environment.yml`. To build the documentation you will also need to run `pip install -r requirements-doc.txt`.
-
-Before pushing your code to repository please run `pre-commit run --all-files` and `pytest` to make sure that the code is formatted correctly and that the tests pass.
-
-Do not hesitate to open a draft PR before your contribution is ready, especially if you have questions and/or need feedback.
 
 ## Examples
 
@@ -507,20 +452,6 @@ Do not hesitate to open a draft PR before your contribution is ready, especially
 - [Simulation-based inference](https://github.com/outlines-dev/outlines/blob/main/examples/simulation_based_inference.ipynb)
 
 
-## Cite Outlines
-
-```
-@article{willard2023efficient,
-  title={Efficient Guided Generation for LLMs},
-  author={Willard, Brandon T and Louf, R{\'e}mi},
-  journal={arXiv preprint arXiv:2307.09702},
-  year={2023}
-}
-```
-
-## License
-
-Outlines is open-source and licensed under the [Apache License 2.0](LICENSE).
 
 [contributors]: https://github.com/outlines-dev/outlines/graphs/contributors
 [contributors-badge]: https://img.shields.io/github/contributors/outlines-dev/outlines?style=flat-square&logo=github&logoColor=white&color=ECEFF4
