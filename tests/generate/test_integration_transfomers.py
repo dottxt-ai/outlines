@@ -22,9 +22,6 @@ def test_deprecation():
     with pytest.warns(DeprecationWarning):
         outlines.text.generate.continuation(model, max_tokens=10)
 
-        with pytest.raises(NotImplementedError):
-            outlines.text.generate.continuation(model, max_tokens=10, stop="string")
-
     with pytest.warns(DeprecationWarning):
         outlines.text.generate.choice(model, ["A", "B"], max_tokens=10)
 
