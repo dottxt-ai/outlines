@@ -53,6 +53,7 @@ test = [
     "datasets",
     "responses",
 ]
+serve = ["vllm"]
 
 [project.urls]
 homepage = "https://github.com/outlines-dev/outlines"
@@ -102,7 +103,7 @@ module = [
     "referencing.*",
     "scipy.*",
     "tiktoken.*",
-    "torch",
+    "torch.*",
     "transformers.*",
     "lark.*",
     "interegular.*",
@@ -110,6 +111,9 @@ module = [
     "numba.*",
     "requests.*",
     "responses.*",
+    "vllm.*",
+    "uvicorn.*",
+    "fastapi.*",
 ]
 ignore_missing_imports = true
 
