@@ -4,7 +4,7 @@ import json
 import re
 import textwrap
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, List, Optional, Type, cast
+from typing import Any, Callable, Dict, List, Optional, Type, cast, Iterable
 
 from jinja2 import Environment, StrictUndefined
 from pydantic import BaseModel
@@ -309,6 +309,9 @@ def find_ref_keys(d):
     """
     ref_keys = {}
 
+    def is_not_iterable(value):
+        return not isinstance(value, Iterable)
+
     def recursive_search(obj, path=""):
         if isinstance(obj, dict):
             for key, value in obj.items():
@@ -331,6 +334,8 @@ def find_ref_keys(d):
 
         elif isinstance(obj, list):
             for index, item in enumerate(obj):
+                if is_not_iterable(item):
+                    continue
                 if "$ref" in item:
                     key_ = path.split(".")[-2]
                     if key_ == "anyOf[0]":  # TODO a bit sioux #TeamMonkey
@@ -342,6 +347,11 @@ def find_ref_keys(d):
     recursive_search(d)
 
     return ref_keys
+
+
+NUMBER_CONDITIONS = set(["exclusiveMaximum", "exclusiveMinimum", "maximum", "minimum", "multipleOf"])
+STRING_CONDITIONS = set(["maxLength", "minLength", "strip_whitespace", "to_lower", "to_upper"])
+CONDITIONS = NUMBER_CONDITIONS | STRING_CONDITIONS
 
 
 def parse_pydantic_schema(raw_schema, definitions, attribute=None, parent_desc=None):
@@ -370,6 +380,8 @@ def parse_pydantic_schema(raw_schema, definitions, attribute=None, parent_desc=N
                 value = value.get("anyOf")  # TODO Only first value, handle more TBD
                 value = value[0]
 
+            condition_str = "|".join({f"{k}={v}" for k, v in value.items() if k in CONDITIONS})
+
             type_ = None
             is_list = False
             if "type" in value:
@@ -396,16 +408,25 @@ def parse_pydantic_schema(raw_schema, definitions, attribute=None, parent_desc=N
             elif parent_desc:
                 rendered_str += f"|description={parent_desc}"
 
+            if condition_str:
+                rendered_str += f"|{condition_str}"
+
             if name in list(ref_keys.keys()):
                 if is_list:
                     simple_schema[name] = [
                         parse_pydantic_schema(
-                            definitions[ref_keys.get(name)], definitions, attribute=name, parent_desc=description
+                            definitions[ref_keys.get(name)],
+                            definitions,
+                            attribute=name,
+                            parent_desc=description,
                         ),
                     ]
                 else:
                     simple_schema[name] = parse_pydantic_schema(
-                        definitions[ref_keys.get(name)], definitions, attribute=name, parent_desc=description
+                        definitions[ref_keys.get(name)],
+                        definitions,
+                        attribute=name,
+                        parent_desc=description,
                     )
             else:
                 if type_ == "array":  # TODO better way to handle ?
