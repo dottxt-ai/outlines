@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, List, NewType, Optional, Protocol
+from typing import TYPE_CHECKING, List, NewType, Protocol
 
 import interegular
 from lark import Lark
@@ -39,10 +39,8 @@ class StopAtTokenFSM(FSM):
         self,
         tokenizer: "Tokenizer",
         stop_token_id: int,
-        max_tokens: Optional[int] = None,
     ):
         self.stop_token_id = stop_token_id
-        self.max_tokens = max_tokens
         self.num_tokens_generated = 0
         self.vocabulary = tokenizer.vocabulary.values()
         self.final_states = {1}
@@ -94,10 +92,6 @@ class StopAtTokenFSM(FSM):
         if idx == 0:
             self.num_tokens_generated += 1
 
-        if self.max_tokens is not None:
-            if self.num_tokens_generated >= self.max_tokens:
-                return FSMState(1)
-
         if token_id == self.stop_token_id:
             return FSMState(1)
 
@@ -119,7 +113,6 @@ class RegexFSM(FSM):
         self,
         regex_string: str,
         tokenizer: "Tokenizer",
-        max_tokens: Optional[int] = None,
     ):
         regex_pattern = interegular.parse_pattern(regex_string)
         regex_fsm, _ = make_deterministic_fsm(regex_pattern.to_fsm().reduce())
@@ -142,7 +135,6 @@ class RegexFSM(FSM):
         self.final_states = regex_fsm.finals | {
             -1
         }  # Include the EOS token in final states
-        self.max_tokens = max_tokens
         self.num_tokens_generated = 0
         self.vocabulary = tokenizer.vocabulary.values()
         self.end_token_id = tokenizer.eos_token_id
@@ -199,12 +191,7 @@ class RegexFSM(FSM):
         The new state of the FSM.
 
         """
-        if idx == 0:
-            self.num_tokens_generated += 1
-
-        if self.max_tokens is not None:
-            if self.num_tokens_generated == self.max_tokens:
-                return FSMState(-1)
+        self.num_tokens_generated += 1
 
         if token_id == self.end_token_id:
             return FSMState(-1)
@@ -232,7 +219,6 @@ class CFGFSM(FSM):
         self,
         cfg_string: str,
         tokenizer: "Tokenizer",
-        max_tokens: Optional[int] = None,
     ):
         # self.parser = PartialLark(cfg_string, parser="lalr")
         self.parser = Lark(
@@ -250,7 +236,6 @@ class CFGFSM(FSM):
         self.terminal_regexps["$END"] = tokenizer.eos_token
 
         self.tokenizer = tokenizer
-        self.max_tokens = max_tokens
         self.num_tokens_generated = 0
         self.generations: List[str] = []
         self.regex_fsms: List[RegexFSM] = []
@@ -285,7 +270,6 @@ class CFGFSM(FSM):
         args = (
             regex_string,
             self.tokenizer,
-            self.max_tokens - self.num_tokens_generated if self.max_tokens else None,
         )
         if len(self.regex_fsms) <= idx:
             self.regex_fsms.append(RegexFSM(*args))
@@ -373,10 +357,6 @@ class CFGFSM(FSM):
         """
         if idx == 0:
             self.num_tokens_generated += 1
-        if self.max_tokens is not None:
-            if self.num_tokens_generated >= self.max_tokens:
-                self.done[idx] = True
-                return FSMState(-1)
         if token_id == self.tokenizer.eos_token_id:
             self.done[idx] = True
             return FSMState(-1)
