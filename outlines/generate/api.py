@@ -17,11 +17,12 @@ from outlines.generate.samplers import Sampler, multinomial
 
 
 class SequenceGenerator:
-    def __init__(self, fsm, model, sampler, device, stop=None):
+    def __init__(self, fsm, model, sampler, device, stop=None, max_tokens=None):
         self.generate_token = token_generator(model, sampler)
         self.fsm = fsm
         self.tokenizer = model.tokenizer
         self.device = device
+        self.max_tokens = max_tokens
         if isinstance(stop, str):
             stop = [stop]
         self.stop_sequences = stop
@@ -121,11 +122,13 @@ class SequenceGenerator:
         while True:
             try:
                 last_state = next(states)
-                if self.stop_sequences:
+                if self.max_tokens or self.stop_sequences:
                     token_ids = self.get_generated_token_ids(
                         init_state, prompts, last_state
                     )
-                    if self.is_stop_sequence_reached(token_ids):
+                    if self.max_tokens and len(token_ids[0]) >= self.max_tokens:
+                        break
+                    if self.stop_sequences and self.is_stop_sequence_reached(token_ids):
                         break
             except StopIteration:
                 break
@@ -228,10 +231,10 @@ def text(
     sampler: Sampler = multinomial,
 ):
     eos_token = model.tokenizer.eos_token_id
-    fsm = StopAtTokenFSM(model.tokenizer, eos_token, max_tokens)
+    fsm = StopAtTokenFSM(model.tokenizer, eos_token)
 
     device = model.device
-    generator = SequenceGenerator(fsm, model, sampler, device, stop)
+    generator = SequenceGenerator(fsm, model, sampler, device, stop, max_tokens)
 
     return generator
 
@@ -243,10 +246,10 @@ def regex(
     stop: Optional[Union[str, List[str]]] = None,
     sampler: Sampler = multinomial,
 ):
-    fsm = RegexFSM(regex_str, model.tokenizer, max_tokens)
+    fsm = RegexFSM(regex_str, model.tokenizer)
 
     device = model.device
-    generator = SequenceGenerator(fsm, model, sampler, device, stop)
+    generator = SequenceGenerator(fsm, model, sampler, device, stop, max_tokens)
 
     return generator
 
@@ -258,10 +261,10 @@ def cfg(
     stop: Optional[Union[str, List[str]]] = None,
     sampler: Sampler = multinomial,
 ):
-    fsm = CFGFSM(cfg_str, model.tokenizer, max_tokens)
+    fsm = CFGFSM(cfg_str, model.tokenizer)
 
     device = model.device
-    generator = SequenceGenerator(fsm, model, sampler, device, stop)
+    generator = SequenceGenerator(fsm, model, sampler, device, stop, max_tokens)
 
     return generator
 
