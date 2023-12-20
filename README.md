@@ -328,7 +328,7 @@ sequence = generator("Write a formula that returns 5 using only additions and su
 
 # It looks like Mistral is not very good at arithmetics :)
 
-print(result)
+print(sequence)
 # 1+3-2-4+5-7+8-6+9-6+4-2+3+5-1+1
 ```
 
