@@ -25,6 +25,7 @@
 - [x] 🚄 Guided generation, including multiple choice, type constraints and dynamic stopping
 - [x] ⚡ Fast [regex-guided generation](#efficient-regex-guided-generation)
 - [x] 🔥 Fast [JSON generation](#efficient-json-generation-following-a-pydantic-model) following a JSON schema or a Pydantic model
+- [x] 📝 [Grammar-guided generation](#using-context-free-grammars-to-guide-generation)
 - [x] 🐍 Interleave completions with loops, conditionals, and custom Python functions
 - [x] 💾 Caching of generations
 
@@ -292,6 +293,46 @@ model = outlines.models.transformers("mistralai/Mistral-7B-v0.1", device="cuda")
 generator = outlines.generate.json(model, schema)
 sequence = generator("Give me a character description")
 ```
+
+### Using context-free grammars to guide generation
+
+Formal grammars rule the world, and Outlines makes them rule LLMs too. You can pass any context-free grammar in the EBNF format and Outlines will generate an output that is valid to this grammar:
+
+``` python
+import outlines
+
+arithmetic_grammar = """
+    ?start: sum
+
+    ?sum: product
+        | sum "+" product   -> add
+        | sum "-" product   -> sub
+
+    ?product: atom
+        | product "*" atom  -> mul
+        | product "/" atom  -> div
+
+    ?atom: NUMBER           -> number
+         | "-" atom         -> neg
+         | "(" sum ")"
+
+    %import common.NUMBER
+    %import common.WS_INLINE
+
+    %ignore WS_INLINE
+"""
+
+model = outlines.models.transformers("mistralai/Mistral-7B-v0.1", device="cuda")
+generator = outlines.generate.cfg(model, arithmetic_grammar)
+sequence = generator("Write a formula that returns 5 using only additions and subtractions.")
+
+# It looks like Mistral is not very good at arithmetics :)
+
+print(result)
+# 1+3-2-4+5-7+8-6+9-6+4-2+3+5-1+1
+```
+
+This was a very simple grammar, and you can use `outlines.generate.cfg` to generate syntactically valid Python, SQL, and much more than this. Any kind of structured text, really. All you have to do is search for "X EBNF grammar" on the web, and take a look at the [Outlines Grammars repository](https://github.com/outlines-dev/grammars).
 
 ### Open functions
 
