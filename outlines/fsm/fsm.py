@@ -225,11 +225,10 @@ class CFGFSM(FSM):
     def _set_next_regex_fsm(self) -> None:
         """Use the CFG incremental parser to set the next regex FSM.
 
-        Check what the CFG incremental parser proposes next.
-        If the only proposal is the EOS token,
-            we set the state to done and return.
-        If there are other proposals,
-            we set a new regex FSM and return.
+        Check what the CFG incremental parser proposes next:
+        - If the only proposal is the EOS token we set the state to done and
+          return.
+        - If there are other proposals, we set a new regex FSM and return.
 
         """
         interactive = self.parser.parse_interactive(self.generation)
@@ -252,14 +251,17 @@ class CFGFSM(FSM):
     def allowed_token_ids(self, state: FSMState) -> List[int]:
         """Generate a list of allowed tokens for the next step.
 
-        Upon initialization, the CFG incremental parser is used to determine the first regex.
+        Upon initialization, the CFG incremental parser is used to determine the
+        first regex.
 
         This regex is used for proposals until either:
-        - the regex is exhausted, and its only remaining option is the EOS token,
-            in which case we always transition to the next regex
-        - the regex can be exhausted, but the EOS token is not the only remaining option,
-            in which case we transition to the next regex with probability P (TODO)
-            or remove the possibility of generating the EOS token and continue with the current regex
+
+        - The regex is exhausted, and its only remaining option is the EOS
+          token, in which case we always transition to the next regex
+        - The regex can be exhausted, but the EOS token is not the only
+          remaining option, in which case we transition to the next regex with
+          probability P (TODO) or remove the possibility of generating the EOS
+          token and continue with the current regex
 
         The CFG incremental parser is allowed to propose the EOS token from any final state,
         and once it is generated, the FSM will continue to always generate the EOS token.
