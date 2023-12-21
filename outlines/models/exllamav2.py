@@ -45,7 +45,7 @@ class ExLlamaV2Model:
                 reset = False
                 self.cache.current_seq_len = longest_prefix
                 if seq_tensor.shape[0] - longest_prefix > 1:
-                    self.ex_model.forward(
+                    self.model.forward(
                         seq_tensor[longest_prefix:-1].view(1, -1),
                         self.cache,
                         preprocess_only=True,
