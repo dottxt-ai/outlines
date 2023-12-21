@@ -5,6 +5,7 @@ completion, diffusers, etc.) and use routing functions everywhere else in the
 codebase.
 
 """
+from .mlx import MLX, mlx
 from .awq import awq
 from .gptq import gptq
 from .mamba import Mamba, mamba

@@ -4,7 +4,11 @@ import interegular
 from lark import Lark
 
 # from outlines.fsm.parsing import PartialLark
-from outlines.fsm.regex import create_fsm_index_tokenizer, make_deterministic_fsm
+import torch
+if torch.backends.mps.is_available:
+    from outlines.fsm.regex_pure_numpy import create_fsm_index_tokenizer, make_deterministic_fsm
+else: 
+    from outlines.fsm.regex import create_fsm_index_tokenizer, make_deterministic_fsm
 
 if TYPE_CHECKING:
     from outlines.models.tokenizer import Tokenizer
