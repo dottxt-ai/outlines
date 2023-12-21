@@ -61,13 +61,13 @@ class SequenceGenerator:
         return token_ids
 
     def is_stop_sequence_reached(
-        self, token_ids: List[torch.Tensor], stop_sequences: List[str]
+        self, generated_sequences: List[str], stop_sequences: List[str]
     ) -> bool:
         """True if at least one of the stop sequences is found in each generated sequence"""
         return all(
             [
                 any([seq in generated for seq in stop_sequences])
-                for generated in self.tokenizer.decode(token_ids)
+                for generated in generated_sequences
             ]
         )
 
@@ -163,7 +163,7 @@ class SequenceGenerator:
                     if max_tokens and len(token_ids[0]) >= max_tokens:
                         break
                     if stop_sequences and self.is_stop_sequence_reached(
-                        token_ids, stop_sequences
+                        self.tokenizer.decode(token_ids), stop_sequences
                     ):
                         break
             except StopIteration:
@@ -189,6 +189,8 @@ class SequenceGenerator:
     def stream(
         self,
         prompts: Union[str, List[str]],
+        max_tokens: Optional[int] = None,
+        stop_at: Optional[Union[str, List[str]]] = None,
         rng: Optional[torch.Generator] = None,
         kv_cache: Optional[torch.tensor] = None,
     ) -> Iterator[Union[List[str], str]]:
@@ -203,6 +205,11 @@ class SequenceGenerator:
         prompts
             A string or list of strings that are passed to the model before
             generating the first token.
+        max_tokens
+            An integer representing maximum number of tokens that will be generated
+            (per prompt)
+        stop_at
+            A string or list of strings at which the text generated will stop
         kv_cache
             A tensor containing the past key-value cache. It can be for instance
             used when we are interleaving prompting and model calls. Defaults to
@@ -218,6 +225,12 @@ class SequenceGenerator:
         """
 
         self.fsm.reset()
+
+        max_tokens = max_tokens or self.max_tokens
+
+        if isinstance(stop_at, str):
+            stop_at = [stop_at]
+        stop_sequences = stop_at or self.stop_sequences
 
         if rng is None:
             rng = torch.Generator(device=self.device)
@@ -239,23 +252,29 @@ class SequenceGenerator:
         def token_generator() -> Iterator[Union[List[str], str]]:
             previously_generated_sequences = ["" for _ in range(num_sequences)]
             num_generated = 0
+            is_stop_at_reached = [False for _ in range(num_sequences)]
             while True:
+                if (max_tokens and num_generated >= max_tokens) or all(is_stop_at_reached):
+                    return
                 try:
                     sequence = next(states)
                     num_generated += 1
                 except StopIteration:
                     return
-
                 generated_token_ids = sequence.token_ids[:, -num_generated:]
                 generated_sequences = self.tokenizer.decode(generated_token_ids)
                 next_tokens = [
-                    token[len(sequence) :]
-                    for token, sequence in zip(
-                        generated_sequences, previously_generated_sequences
+                    token[len(sequence) :] if not stop else ""
+                    for token, sequence, stop in zip(
+                        generated_sequences, previously_generated_sequences, is_stop_at_reached
                     )
                 ]
                 previously_generated_sequences = generated_sequences
-
+                if stop_sequences:
+                    is_stop_at_reached = [
+                        stop or self.is_stop_sequence_reached([generated_sequence], stop_sequences)
+                        for generated_sequence, stop in zip(generated_sequences, is_stop_at_reached)
+                    ]
                 yield next_tokens
 
         return token_generator()
