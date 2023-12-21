@@ -13,7 +13,7 @@
 
 </div>
 
-Made with ❤👷️ by the team at [.txt](https://dottxt.co). 
+Made with ❤👷️ by the team at [.txt](https://dottxt.co).
 We'd love to have your [feedback][discord]!
 
 ``` bash
