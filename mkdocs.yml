@@ -28,6 +28,7 @@ theme:
     - content.code.copy
     - navigation.expand
     - navigation.tabs
+    - navigation.sections
     - header.autohide
     - announce.dismiss
   font:
@@ -101,11 +102,11 @@ plugins:
 nav:
   - Home: index.md
   - Getting Started:
-      - Getting Started: get_started.md
-      - Philosphy: philosophy.md
-  - Prompting:
-      - prompting/index.md
-  - Examples:
+      - Welcome to Outlines: welcome.md
+      - Installation: installation.md
+      - Quickstart: quickstart.md
+      - Licence: licence.md
+  - Cookbook:
       - examples/index.md
       - Synthetic dating Profile: examples/dating_profiles.md
       - Chain of density prompting: examples/chain_of_density.md
@@ -115,21 +116,21 @@ nav:
     - Generate text:
         - OpenAI: reference/openai_text_generation.md
     - Guided generation:
-        - reference/choices.md
-        - reference/types.md
-        - reference/regex.md
-        - reference/json.md
+        - Choices: reference/choices.md
+        - Types: reference/types.md
+        - Regex: reference/regex.md
+        - JSON: reference/json.md
+    - Prompts:
+        - Prompt templating: reference/prompting.md
   - API Reference:
       - api/index.md
       - api/models.md
       - api/prompts.md
       - api/json_schema.md
       - api/fsm.md
-      - api/regex.md
       - api/parsing.md
       - api/regex.md
       - api/samplers.md
-      - api/text.md
   - Community:
       - community/index.md
       - Feedback 🫶: community/feedback.md

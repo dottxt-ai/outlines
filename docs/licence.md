@@ -1,6 +1,5 @@
 ---
 title: Licence
-icon: material/scale-balance
 ---
 
 # Licence and citations
