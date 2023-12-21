@@ -93,7 +93,16 @@ class SequenceGenerator:
         ]
 
         generated = self.tokenizer.decode(token_ids)
-        formatted = [self.format_sequence(sequence) for sequence in generated]
+
+        try:
+            formatted = [self.format_sequence(sequence) for sequence in generated]
+        except pyjson.decoder.JSONDecodeError:
+            raise TypeError(
+                "Could not format the output of the model into a dictionary or a Pydantic model."
+                + " The model has likely exceeded its context length. Please try again using `constr` (for Pydantic)"
+                + " and `maxLength` (for JSON Schema) to limit the length of the string fields. If this exception"
+                + " is raised nevertheless please open an issue: https://github.com/outlines-dev/outlines/issues"
+            )
 
         return formatted if len(formatted) > 1 else formatted[0]
 
