@@ -18,9 +18,9 @@ hide:
     [:fontawesome-solid-bolt: Get started](welcome.md){ .md-button .md-button--primary }
     [:fontawesome-brands-discord: Join the Community](https://discord.gg/ZxBxyWmW5n){ .md-button }
 
- pip install outlines
+<div class="index-pre-code">
+```bash
+pip install outlines
+```
+</div>
 </center>
-
-<figure markdown>
-  ![Example](assets/images/frontpage_example.png){ width="900" }
-</figure>
