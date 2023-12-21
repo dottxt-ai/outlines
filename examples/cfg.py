@@ -51,8 +51,8 @@ model = models.transformers("hf-internal-testing/tiny-random-gpt2")
 batch_size = 10
 max_tokens = 30
 for grammar in [nlamb_grammar, calc_grammar]:
-    generator = generate.cfg(model, grammar, max_tokens=max_tokens)
-    sequences = generator([" "] * batch_size)
+    generator = generate.cfg(model, grammar)
+    sequences = generator([" "] * batch_size, max_tokens=max_tokens)
     for seq in sequences:
         try:
             parse = generator.fsm.parser.parse(seq)

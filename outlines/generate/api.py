@@ -254,7 +254,9 @@ class SequenceGenerator:
             num_generated = 0
             is_stop_at_reached = [False for _ in range(num_sequences)]
             while True:
-                if (max_tokens and num_generated >= max_tokens) or all(is_stop_at_reached):
+                if (max_tokens and num_generated >= max_tokens) or all(
+                    is_stop_at_reached
+                ):
                     return
                 try:
                     sequence = next(states)
@@ -266,14 +268,21 @@ class SequenceGenerator:
                 next_tokens = [
                     token[len(sequence) :] if not stop else ""
                     for token, sequence, stop in zip(
-                        generated_sequences, previously_generated_sequences, is_stop_at_reached
+                        generated_sequences,
+                        previously_generated_sequences,
+                        is_stop_at_reached,
                     )
                 ]
                 previously_generated_sequences = generated_sequences
                 if stop_sequences:
                     is_stop_at_reached = [
-                        stop or self.is_stop_sequence_reached([generated_sequence], stop_sequences)
-                        for generated_sequence, stop in zip(generated_sequences, is_stop_at_reached)
+                        stop
+                        or self.is_stop_sequence_reached(
+                            [generated_sequence], stop_sequences
+                        )
+                        for generated_sequence, stop in zip(
+                            generated_sequences, is_stop_at_reached
+                        )
                     ]
                 yield next_tokens
 
