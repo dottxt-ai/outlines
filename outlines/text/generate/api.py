@@ -9,7 +9,6 @@ def json(
     model,
     schema_object: Union[str, object, Callable],
     max_tokens: Optional[int] = None,
-    stop: Optional[Union[str, List[str]]] = None,
     *,
     sampler: Sampler = multinomial,
 ):
@@ -18,16 +17,13 @@ def json(
         "The old import path will be removed in Outlines v0.1.0.",
         DeprecationWarning,
     )
-    return outlines.generate.json(
-        model, schema_object, max_tokens, stop, sampler=sampler
-    )
+    return outlines.generate.json(model, schema_object, max_tokens, sampler=sampler)
 
 
 def regex(
     model,
     regex_str: str,
     max_tokens: Optional[int] = None,
-    stop: Optional[Union[str, List[str]]] = None,
     *,
     sampler: Sampler = multinomial,
 ):
@@ -36,14 +32,13 @@ def regex(
         "The old import path will be removed in Outlines v0.1.0.",
         DeprecationWarning,
     )
-    return outlines.generate.regex(model, regex_str, max_tokens, stop, sampler=sampler)
+    return outlines.generate.regex(model, regex_str, max_tokens, sampler=sampler)
 
 
 def format(
     model,
     python_type,
     max_tokens: Optional[int] = None,
-    stop: Optional[Union[str, List[str]]] = None,
     sampler: Sampler = multinomial,
 ):
     warnings.warn(
@@ -51,15 +46,13 @@ def format(
         "The old import path will be removed in Outlines v0.1.0.",
         DeprecationWarning,
     )
-    return outlines.generate.format(
-        model, python_type, max_tokens, stop, sampler=sampler
-    )
+    return outlines.generate.format(model, python_type, max_tokens, sampler=sampler)
 
 
 def continuation(
     model,
     max_tokens: Optional[int] = None,
-    stop: Optional[Union[str, List[str]]] = None,
+    stop_at: Optional[Union[str, List[str]]] = None,
     *,
     sampler: Sampler = multinomial,
 ):
@@ -69,14 +62,13 @@ def continuation(
         DeprecationWarning,
     )
 
-    return outlines.generate.text(model, max_tokens, stop, sampler=sampler)
+    return outlines.generate.text(model, max_tokens, stop_at, sampler=sampler)
 
 
 def choice(
     model,
     choices: List[str],
     max_tokens: Optional[int] = None,
-    stop: Optional[Union[str, List[str]]] = None,
     *,
     sampler: Sampler = multinomial,
 ):
@@ -85,4 +77,4 @@ def choice(
         "The old import path will be removed in Outlines v0.1.0.",
         DeprecationWarning,
     )
-    return outlines.generate.choice(model, choices, max_tokens, stop, sampler=sampler)
+    return outlines.generate.choice(model, choices, max_tokens, sampler=sampler)
