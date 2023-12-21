@@ -191,7 +191,8 @@ class RegexFSM(FSM):
         The new state of the FSM.
 
         """
-        self.num_tokens_generated += 1
+        if idx == 0:
+            self.num_tokens_generated += 1
 
         if token_id == self.end_token_id:
             return FSMState(-1)

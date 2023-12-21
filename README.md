@@ -82,8 +82,8 @@ answer = outlines.generate.format(model, float)(prompt)
 
 ### Efficient regex-guided generation
 
-Outlines also comes with fast regex-guided generation. In fact, the `choice`,
-`integer` and `float` functions above all use regex-guided generation under the
+Outlines also comes with fast regex-guided generation. In fact, the `choice` and
+`format` functions above all use regex-guided generation under the
 hood:
 
 ``` python
@@ -92,12 +92,11 @@ import outlines
 model = outlines.models.transformers("mistralai/Mistral-7B-v0.1")
 
 prompt = "What is the IP address of the Google DNS servers? "
-unguided = outlines.generate.text(model, max_tokens=30)(prompt)
+unguided = outlines.generate.text(model)(prompt, max_tokens=30)
 guided = outlines.generate.regex(
     model,
     r"((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)",
-    max_tokens=30,
-)(prompt)
+)(prompt, max_tokens=30)
 
 print(unguided)
 # What is the IP address of the Google DNS servers?
@@ -325,7 +324,7 @@ def labelling(to_label, examples):
 
 model = outlines.models.transformers("mistralai/Mistral-7B-v0.1")
 prompt = labelling("Just awesome", examples)
-answer = outlines.generate.text(model, max_tokens=100)(prompt)
+answer = outlines.generate.text(model)(prompt, max_tokens=100)
 ```
 
 ## Join us
