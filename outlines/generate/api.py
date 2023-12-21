@@ -1,4 +1,5 @@
 import json as pyjson
+import warnings
 from typing import Callable, Iterator, List, Optional, Tuple, Union
 
 import torch
@@ -17,15 +18,30 @@ from outlines.generate.samplers import Sampler, multinomial
 
 
 class SequenceGenerator:
-    def __init__(self, fsm, model, sampler, device, stop=None, max_tokens=None):
+    def __init__(self, fsm, model, sampler, device, stop_at=None, max_tokens=None):
         self.generate_token = token_generator(model, sampler)
         self.fsm = fsm
         self.tokenizer = model.tokenizer
         self.device = device
         self.max_tokens = max_tokens
-        if isinstance(stop, str):
-            stop = [stop]
-        self.stop_sequences = stop
+        if isinstance(stop_at, str):
+            stop_at = [stop_at]
+        self.stop_sequences = stop_at
+
+        if stop_at is not None:
+            warnings.warn(
+                "The use of the `stop_at` keyword when initiating a SequenceGenerator is deprecated, "
+                "please use it when calling the genetator instead. "
+                "The parameter will be removed in Outlines v0.1.0.",
+                DeprecationWarning,
+            )
+        if max_tokens is not None:
+            warnings.warn(
+                "The use of the `max_tokens` keyword when initiating a SequenceGenerator is deprecated, "
+                "please use it when calling the genetator instead. "
+                "The parameter will be removed in Outlines v0.1.0.",
+                DeprecationWarning,
+            )
 
     def get_generated_token_ids(
         self,
@@ -44,33 +60,40 @@ class SequenceGenerator:
         ]
         return token_ids
 
-    def is_stop_sequence_reached(self, token_ids: List[torch.Tensor]) -> bool:
+    def is_stop_sequence_reached(
+        self, token_ids: List[torch.Tensor], stop_sequences: List[str]
+    ) -> bool:
         """True if at least one of the stop sequences is found in each generated sequence"""
         return all(
             [
-                any([seq in generated for seq in self.stop_sequences])
+                any([seq in generated for seq in stop_sequences])
                 for generated in self.tokenizer.decode(token_ids)
             ]
         )
 
-    def format_sequence(self, sequence: str) -> str:
+    def format_sequence(self, sequence: str, stop_sequences: List[str]) -> str:
         """Format the text sequence generated before returning it to the user"""
-        if self.stop_sequences:
-            match_indexes = [sequence.find(seq) for seq in self.stop_sequences]
+        if stop_sequences:
+            match_indexes = [sequence.find(seq) for seq in stop_sequences]
             if any([index != -1 for index in match_indexes]):
                 # select the stop_sequence that is found first in the sequence
                 min_match_index_value = min([i for i in match_indexes if i != -1])
                 min_match_index_pos = match_indexes.index(min_match_index_value)
-                return sequence[
+                sequence = sequence[
                     : match_indexes[min_match_index_pos]
-                    + len(self.stop_sequences[min_match_index_pos])
+                    + len(stop_sequences[min_match_index_pos])
                 ]
-            return sequence
+        return self.structure_sequence(sequence)
+
+    def structure_sequence(self, sequence: str) -> str:
+        """Modify the structure/type of the sequence, is overriden in some generate functions"""
         return sequence
 
     def __call__(
         self,
         prompts: Union[str, List[str]],
+        max_tokens: Optional[int] = None,
+        stop_at: Optional[Union[str, List[str]]] = None,
         rng: Optional[torch.Generator] = None,
         kv_cache: Optional[torch.tensor] = None,
     ) -> Union[str, List[str]]:
@@ -86,6 +109,11 @@ class SequenceGenerator:
         prompts
             A string or list of strings that are passed to the model before
             generating the first token.
+        max_tokens
+            An integer representing maximum number of tokens that will be generated
+            (per prompt)
+        stop_at
+            A string or list of strings at which the text generated will stop
         kv_cache
             A tensor containing the past key-value cache. It can be for instance
             used when we are interleaving prompting and model calls. Defaults to
@@ -105,6 +133,12 @@ class SequenceGenerator:
         if isinstance(prompts, str):
             prompts = [prompts]
 
+        if isinstance(stop_at, str):
+            stop_at = [stop_at]
+        stop_sequences = stop_at or self.stop_sequences
+
+        max_tokens = max_tokens or self.max_tokens
+
         if rng is None:
             rng = torch.Generator(device=self.device)
             rng.seed()
@@ -122,13 +156,15 @@ class SequenceGenerator:
         while True:
             try:
                 last_state = next(states)
-                if self.max_tokens or self.stop_sequences:
+                if max_tokens or stop_sequences:
                     token_ids = self.get_generated_token_ids(
                         init_state, prompts, last_state
                     )
-                    if self.max_tokens and len(token_ids[0]) >= self.max_tokens:
+                    if max_tokens and len(token_ids[0]) >= max_tokens:
                         break
-                    if self.stop_sequences and self.is_stop_sequence_reached(token_ids):
+                    if stop_sequences and self.is_stop_sequence_reached(
+                        token_ids, stop_sequences
+                    ):
                         break
             except StopIteration:
                 break
@@ -137,7 +173,9 @@ class SequenceGenerator:
         generated = self.tokenizer.decode(token_ids)
 
         try:
-            formatted = [self.format_sequence(sequence) for sequence in generated]
+            formatted = [
+                self.format_sequence(sequence, stop_sequences) for sequence in generated
+            ]
         except pyjson.decoder.JSONDecodeError:
             raise TypeError(
                 "Could not format the output of the model into a dictionary or a Pydantic model."
@@ -226,7 +264,7 @@ class SequenceGenerator:
 def text(
     model,
     max_tokens: Optional[int] = None,
-    stop: Optional[Union[str, List[str]]] = None,
+    stop_at: Optional[Union[str, List[str]]] = None,
     *,
     sampler: Sampler = multinomial,
 ):
@@ -234,7 +272,9 @@ def text(
     fsm = StopAtTokenFSM(model.tokenizer, eos_token)
 
     device = model.device
-    generator = SequenceGenerator(fsm, model, sampler, device, stop, max_tokens)
+    generator = SequenceGenerator(
+        fsm, model, sampler, device, stop_at=stop_at, max_tokens=max_tokens
+    )
 
     return generator
 
@@ -243,13 +283,12 @@ def regex(
     model,
     regex_str: str,
     max_tokens: Optional[int] = None,
-    stop: Optional[Union[str, List[str]]] = None,
     sampler: Sampler = multinomial,
 ):
     fsm = RegexFSM(regex_str, model.tokenizer)
 
     device = model.device
-    generator = SequenceGenerator(fsm, model, sampler, device, stop, max_tokens)
+    generator = SequenceGenerator(fsm, model, sampler, device, max_tokens=max_tokens)
 
     return generator
 
@@ -258,13 +297,15 @@ def cfg(
     model,
     cfg_str: str,
     max_tokens: Optional[int] = None,
-    stop: Optional[Union[str, List[str]]] = None,
+    stop_at: Optional[Union[str, List[str]]] = None,
     sampler: Sampler = multinomial,
 ):
     fsm = CFGFSM(cfg_str, model.tokenizer)
 
     device = model.device
-    generator = SequenceGenerator(fsm, model, sampler, device, stop, max_tokens)
+    generator = SequenceGenerator(
+        fsm, model, sampler, device, stop_at=stop_at, max_tokens=max_tokens
+    )
 
     return generator
 
@@ -273,46 +314,43 @@ def format(
     model,
     python_type,
     max_tokens: Optional[int] = None,
-    stop: Optional[Union[str, List[str]]] = None,
     sampler: Sampler = multinomial,
 ):
     regex_str = python_types_to_regex(python_type)
-    return regex(model, regex_str, max_tokens, stop, sampler)
+    return regex(model, regex_str, max_tokens, sampler)
 
 
 def choice(
     model,
     choices: List[str],
     max_tokens: Optional[int] = None,
-    stop: Optional[Union[str, List[str]]] = None,
     sampler: Sampler = multinomial,
 ):
     regex_str = r"(" + r"|".join(choices) + r")"
-    return regex(model, regex_str, max_tokens, stop, sampler)
+    return regex(model, regex_str, max_tokens, sampler)
 
 
 def json(
     model,
     schema_object: Union[str, object, Callable],
     max_tokens: Optional[int] = None,
-    stop: Optional[Union[str, List[str]]] = None,
     sampler: Sampler = multinomial,
 ):
     if isinstance(schema_object, type(BaseModel)):
         schema = pyjson.dumps(schema_object.model_json_schema())
         regex_str = build_regex_from_object(schema)
-        generator = regex(model, regex_str, max_tokens, stop, sampler)
-        generator.format_sequence = lambda x: schema_object.parse_raw(x)
+        generator = regex(model, regex_str, max_tokens, sampler)
+        generator.structure_sequence = lambda x: schema_object.parse_raw(x)
     elif callable(schema_object):
         schema = pyjson.dumps(get_schema_from_signature(schema_object))
         regex_str = build_regex_from_object(schema)
-        generator = regex(model, regex_str, max_tokens, stop, sampler)
-        generator.format_sequence = lambda x: pyjson.loads(x)
+        generator = regex(model, regex_str, max_tokens, sampler)
+        generator.structure_sequence = lambda x: pyjson.loads(x)
     elif isinstance(schema_object, str):
         schema = schema_object
         regex_str = build_regex_from_object(schema)
-        generator = regex(model, regex_str, max_tokens, stop, sampler)
-        generator.format_sequence = lambda x: pyjson.loads(x)
+        generator = regex(model, regex_str, max_tokens, sampler)
+        generator.structure_sequence = lambda x: pyjson.loads(x)
     else:
         raise ValueError(
             f"Cannot parse schema {schema_object}. The schema must be either "
