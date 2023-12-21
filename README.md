@@ -20,14 +20,11 @@ We'd love to have your [feedback][discord]!
 pip install outlines
 ```
 
-First time here? Go to our [setup guide](https://outlines-dev.github.io/outlines/get_started/#1-installation)
-
-
-Outlines 〰 has new releases and features coming every week. Make sure to ⭐ star and 👀 watch this repository, follow [@dottxtai][twitter] to stay up to date!
+First time here? Go to our [setup guide](https://outlines-dev.github.io/outlines/welcome)
 
 ## Features
 
-- [x] 🤖 [Multiple model integrations](https://outlines-dev.github.io/outlines/get_started/#1-installation): OpenAI, transformers, AutoGPTQ, AutoAWQ
+- [x] 🤖 [Multiple model integrations](https://outlines-dev.github.io/outlines/installation): OpenAI, transformers, AutoGPTQ, AutoAWQ
 - [x] 🖍️ Simple and powerful prompting primitives based on the [Jinja templating engine](https://jinja.palletsprojects.com/)
 - [x] 🚄 [Multiple choices](#multiple-choices), [type constraints](#type-constraint) and dynamic stopping
 - [x] ⚡ Fast [regex-guided generation](#efficient-regex-guided-generation)
@@ -35,6 +32,10 @@ Outlines 〰 has new releases and features coming every week. Make sure to ⭐ s
 - [x] 📝 [Grammar-guided generation](#using-context-free-grammars-to-guide-generation)
 - [x] 🐍 Interleave completions with loops, conditionals, and custom Python functions
 - [x] 💾 Caching of generations
+- [x] 🗂️ Batched inference
+
+
+Outlines 〰 has new releases and features coming every week. Make sure to ⭐ star and 👀 watch this repository, follow [@dottxtai][twitter] to stay up to date!
 
 
 ## Guided generation
@@ -83,28 +84,6 @@ answer = outlines.generate.format(model, float)(prompt)
 Outlines also comes with fast regex-guided generation. In fact, the `choice`,
 `integer` and `float` functions above all use regex-guided generation under the
 hood:
-
-``` python
-import outlines
-
-model = outlines.models.transformers("mistralai/Mistral-7B-v0.1")
-
-prompt = "Is 1+1=2? "
-unguided = outlines.generate.text(model, max_tokens=30)(prompt)
-guided = outlines.generate.regex(model, r"\s*([Yy]es|[Nn]o|[Nn]ever|[Aa]lways)", max_tokens=30)(
-    prompt
-)
-
-print(unguided)
-# Is 1+1=2?
-#
-# This is probably the most perplexing question.
-# As I said in one of my articles describing how
-# I call 2 and 1, there isn't
-
-print(guided)
-# Is 1+1=2? Always
-```
 
 ``` python
 import outlines
@@ -314,11 +293,8 @@ A great advantage of passing functions directly to specify the structure is that
 
 ## Prompting
 
-Writing prompts by concatenating strings in pure Python quickly becomes
-cumbersome: the prompt building logic gets entangled with the rest of the
-program, and the structure of the rendered prompt is obfuscated.**Outlines**
-makes it easier to write and manage prompts by encapsulating templates inside
-"template functions".
+Buiding prompts can get messy. **Outlines** makes it easier to write and manage
+prompts by encapsulating templates inside "template functions".
 
 These functions make it possible to neatly separate the prompt logic from the
 general program logic; they can be imported from other modules and libraries.
@@ -351,105 +327,11 @@ prompt = labelling("Just awesome", examples)
 answer = outlines.generate.text(model, max_tokens=100)(prompt)
 ```
 
-### Tools
+## Join us
 
-We can teach language models to call external functions to get additional
-informations or perform tasks, by encoding the functions' description in the
-prompt. To avoid duplicating information between the function definition and the
-description passed to the prompt, we define custom Jinja filters that can
-extract the function's name, description, signature and source:
-
-
-``` python
-from typing import Callable, List
-import outlines
-
-
-def google_search(query: str):
-    """Google Search"""
-    pass
-
-
-def wikipedia_search(query: str):
-    """Wikipedia Search"""
-    pass
-
-
-@outlines.prompt
-def my_commands(tools: List[Callable]):
-    """AVAILABLE COMMANDS:
-
-    {% for tool in tools %}
-    TOOL
-    {{ tool | name }}, {{ tool | description }}, args: {{ tool | signature }}
-    {{ tool | source }}
-    {% endfor %}
-    """
-
-
-prompt = my_commands([google_search, wikipedia_search])
-```
-
-### Response models
-
-We can instruct models to return their output in a pre-defined format, often
-JSON. To avoid duplicating information between the function definition and the
-description passed to the prompt we define a custom Jinja filter that can
-extract the expected response's schema:
-
-``` python
-from pydantic import BaseModel, Field
-import outlines
-
-
-class Joke(BaseModel):
-    joke: str = Field(description="The joke")
-    explanation: str = Field(
-        description="The explanation of why the joke is funny"
-    )
-
-
-@outlines.prompt
-def joke_ppt(response_model):
-    """Tell a joke and explain why the joke is funny.
-
-    RESPONSE FORMAT:
-    {{ response_model | schema }}
-    """
-
-
-joke_ppt(Joke)
-
-# Tell a joke and explain why the joke is funny.
-#
-# RESPONSE FORMAT:
-# {
-#    "joke": "The joke"
-#    "explanation": "The explanation of why the joke is funny"
-#  }
-```
-
-With these prompting primitives **Outlines** makes building agents like
-[AutoGPT](https://github.com/Significant-Gravitas/Auto-GPT),
-[BabyAGI](https://github.com/yoheinakajima/babyagi),
-[ViperGPT](https://viper.cs.columbia.edu/) or [Transformers
-Agent](https://huggingface.co/docs/transformers/transformers_agents) easier by
-removing boilerplate prompting code.
-
-## Reach out
-
-💡 **Have an idea?** Come chat with us on [Discord][discord]
-🔨 **Want to contribute?** Consult our [contribution guide](https://outlines-dev.github.io/outlines/community/contribute/).
-
-## Examples
-
-- [Pick the odd one out](https://github.com/outlines-dev/outlines/blob/main/examples/pick_odd_one_out.py)
-- [Meta prompting](https://github.com/outlines-dev/outlines/blob/main/examples/meta_prompting.py)
-- [ReAct](https://github.com/outlines-dev/outlines/blob/main/examples/react.py)
-- [Generate code to solve math problems](https://github.com/outlines-dev/outlines/blob/main/examples/math_generate_code.py)
-- [BabyAGI](https://github.com/outlines-dev/outlines/blob/main/examples/babyagi.py)
-- [Uncertainty](https://github.com/outlines-dev/outlines/blob/main/examples/sampling.ipynb)
-- [Simulation-based inference](https://github.com/outlines-dev/outlines/blob/main/examples/simulation_based_inference.ipynb)
+- 💡 **Have an idea?** Come chat with us on [Discord][discord]
+- 🔨 **Want to contribute?** Consult our [contribution guide](https://outlines-dev.github.io/outlines/community/contribute/).
+- 🐞 **Found a bug?** Open an [issue](https://github.com/outlines-dev/outlines/issues)
 
 
 
