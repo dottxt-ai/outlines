@@ -24,7 +24,6 @@ class SequenceGenerator:
         self.tokenizer = model.tokenizer
         self.device = device
         self.max_tokens = max_tokens
-
         if isinstance(stop_at, str):
             stop_at = [stop_at]
         self.stop_sequences = stop_at
@@ -195,6 +194,11 @@ class SequenceGenerator:
 
         num_sequences = len(prompts)
         fsms = [self.fsm.copy() for _ in prompts]
+        if isinstance(stop_at, str):
+            stop_at = [stop_at]
+        stop_sequences = stop_at or self.stop_sequences
+
+        max_tokens = max_tokens or self.max_tokens
 
         if rng is None:
             rng = torch.Generator(device=self.device)
@@ -373,7 +377,6 @@ def regex(
     model,
     regex_str: str,
     max_tokens: Optional[int] = None,
-    stop: Optional[Union[str, List[str]]] = None,
     sampler: Sampler = multinomial,
 ):
     fsm = RegexFSM(regex_str, model.tokenizer)
@@ -408,42 +411,40 @@ def format(
     sampler: Sampler = multinomial,
 ):
     regex_str = python_types_to_regex(python_type)
-    return regex(model, regex_str, max_tokens, stop, sampler)
+    return regex(model, regex_str, max_tokens, sampler)
 
 
 def choice(
     model,
     choices: List[str],
     max_tokens: Optional[int] = None,
-    stop: Optional[Union[str, List[str]]] = None,
     sampler: Sampler = multinomial,
 ):
     regex_str = r"(" + r"|".join(choices) + r")"
-    return regex(model, regex_str, max_tokens, stop, sampler)
+    return regex(model, regex_str, max_tokens, sampler)
 
 
 def json(
     model,
     schema_object: Union[str, object, Callable],
     max_tokens: Optional[int] = None,
-    stop: Optional[Union[str, List[str]]] = None,
     sampler: Sampler = multinomial,
 ):
     if isinstance(schema_object, type(BaseModel)):
         schema = pyjson.dumps(schema_object.model_json_schema())
         regex_str = build_regex_from_object(schema)
-        generator = regex(model, regex_str, max_tokens, stop, sampler)
-        generator.format_sequence = lambda x: schema_object.parse_raw(x)
+        generator = regex(model, regex_str, max_tokens, sampler)
+        generator.structure_sequence = lambda x: schema_object.parse_raw(x)
     elif callable(schema_object):
         schema = pyjson.dumps(get_schema_from_signature(schema_object))
         regex_str = build_regex_from_object(schema)
-        generator = regex(model, regex_str, max_tokens, stop, sampler)
-        generator.format_sequence = lambda x: pyjson.loads(x)
+        generator = regex(model, regex_str, max_tokens, sampler)
+        generator.structure_sequence = lambda x: pyjson.loads(x)
     elif isinstance(schema_object, str):
         schema = schema_object
         regex_str = build_regex_from_object(schema)
-        generator = regex(model, regex_str, max_tokens, stop, sampler)
-        generator.format_sequence = lambda x: pyjson.loads(x)
+        generator = regex(model, regex_str, max_tokens, sampler)
+        generator.structure_sequence = lambda x: pyjson.loads(x)
     else:
         raise ValueError(
             f"Cannot parse schema {schema_object}. The schema must be either "
