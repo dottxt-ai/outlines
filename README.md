@@ -438,8 +438,8 @@ removing boilerplate prompting code.
 
 ## Reach out
 
-🔨 **Want to contribute?** Consult our contribution guide.
-
+💡 **Have an idea?** Come chat with us on [Discord][discord]
+🔨 **Want to contribute?** Consult our [contribution guide](https://outlines-dev.github.io/outlines/community/contribute/).
 
 ## Examples
 
