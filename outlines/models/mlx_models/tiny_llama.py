@@ -6,6 +6,7 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Optional, Tuple
+import os
 
 import mlx.core as mx
 import mlx.nn as nn
@@ -276,13 +277,101 @@ def toc(msg, start):
     return f"[INFO] {msg}: {end - start:.3f} s"
 
 
-def load_model(model_name:str):
-    model_path_dict = {"TinyLlama/TinyLlama-1.1B-Chat-v0.6":"/Users/sachaichbiah/Documents/CARGOHUB/mlx-examples/llama/mlx_model"}
-    model_path = model_path_dict[model_name]
+# Copyright © 2023 Apple Inc.
 
-    model_path = Path(model_path)
-    weights = mx.load(str(model_path / "weights.npz"))
-    with open(model_path / "config.json", "r") as f:
+import argparse
+import collections
+import copy
+import glob
+import json
+import shutil
+from pathlib import Path
+
+import mlx.core as mx
+import mlx.nn as nn
+import numpy as np
+import torch
+
+def start_conversion(model_name:str):
+    try:
+        import transformers
+    except ImportError as e:
+        print("The transformers package must be installed for this model conversion:")
+        print("pip install transformers")
+        exit(0)
+
+    print("Model not found. Converting to mlx format...")
+
+    model = transformers.AutoModelForCausalLM.from_pretrained(
+        model_name
+    ).state_dict()
+    config = transformers.AutoConfig.from_pretrained(model_name)
+
+    # things to change
+    # 1. there's no "model." in the weight names
+    model = {k.replace("model.", ""): v for k, v in model.items()}
+
+    # 2. mlp is called feed_forward
+    model = {k.replace("mlp", "feed_forward"): v for k, v in model.items()}
+
+    # 3. up_proj, down_proj, gate_proj
+    model = {k.replace("down_proj", "w2"): v for k, v in model.items()}
+    model = {k.replace("up_proj", "w3"): v for k, v in model.items()}
+    model = {k.replace("gate_proj", "w1"): v for k, v in model.items()}
+
+    # 4. layernorms
+    model = {
+        k.replace("input_layernorm", "attention_norm"): v for k, v in model.items()
+    }
+    model = {
+        k.replace("post_attention_layernorm", "ffn_norm"): v for k, v in model.items()
+    }
+
+    # 5. lm head
+    model = {k.replace("lm_head", "output"): v for k, v in model.items()}
+
+    # 6. token emb
+    model = {k.replace("embed_tokens", "tok_embeddings"): v for k, v in model.items()}
+
+    # 7. attention
+    model = {k.replace("self_attn", "attention"): v for k, v in model.items()}
+    model = {k.replace("q_proj", "wq"): v for k, v in model.items()}
+    model = {k.replace("k_proj", "wk"): v for k, v in model.items()}
+    model = {k.replace("v_proj", "wv"): v for k, v in model.items()}
+    model = {k.replace("o_proj", "wo"): v for k, v in model.items()}
+
+    params = {}
+    params["dim"] = config.hidden_size
+    params["hidden_dim"] = config.intermediate_size
+    params["n_heads"] = config.num_attention_heads
+    if hasattr(config, "num_key_value_heads"):
+        params["n_kv_heads"] = config.num_key_value_heads
+    params["n_layers"] = config.num_hidden_layers
+    params["vocab_size"] = config.vocab_size
+    params["norm_eps"] = config.rms_norm_eps
+    params["rope_traditional"] = False
+    weights = {k: v.to(torch.float16).numpy() for k, v in model.items()}
+
+    del model
+    return weights, params
+
+
+
+
+def load_model(model_name:str):
+
+    mlx_path = Path("/tmp/mlx_models/"+model_name)
+    mlx_path.mkdir(parents=True, exist_ok=True)
+
+    #Check if it already exists
+    if not (os.path.exists(str(mlx_path / "weights.npz")) and os.path.exists(str(mlx_path / "config.json"))):
+        weights, params = start_conversion(model_name)
+        np.savez(str(mlx_path / "weights.npz"), **weights)
+        with open(mlx_path / "config.json", "w") as fid:
+            json.dump(params, fid, indent=4)
+
+    weights = mx.load(str(mlx_path / "weights.npz"))
+    with open(mlx_path / "config.json", "r") as f:
         config = json.loads(f.read())
         config.pop("model_type", None)
         n_heads = config["n_heads"]

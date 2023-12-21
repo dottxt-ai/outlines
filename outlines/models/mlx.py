@@ -208,16 +208,16 @@ def mlx(
     """
     
     if model_name == "microsoft/phi-2":
-        from outlines.models.Phi2 import load_model
+        from outlines.models.mlx_models.Phi2 import load_model
         model = load_model(model_name)
         tokenizer_kwargs['trust_remote_code']=True
         tokenizer = TransformerTokenizer(model_name, **tokenizer_kwargs)
-    elif model_name =="mistral/7B":
-        return NotImplementedError("Mistral is not implemented yet")
     elif model_name =="TinyLlama/TinyLlama-1.1B-Chat-v0.6":
-        from outlines.models.llama import load_model
+        from outlines.models.mlx_models.tiny_llama import load_model
         model = load_model(model_name)
         tokenizer = TransformerTokenizer(model_name, **tokenizer_kwargs)
+    elif model_name =="mistral/7B":
+        return NotImplementedError("Mistral is not implemented yet")
     else: 
         return NotImplementedError("Unknown model")
 

@@ -8,6 +8,10 @@ import mlx.core as mx
 import mlx.nn as nn
 import math
 from pathlib import Path
+import os
+from transformers import AutoModelForCausalLM
+import numpy as np 
+import json
 
 @dataclass
 class ModelArgs:
@@ -138,13 +142,46 @@ class Phi2(nn.Module):
         y, cache = self.transformer(x, mask, cache)
         
         return self.lm_head(y), cache
+    
 
-def load_model(model_name: str):
+def replace_key(key: str) -> str:
+    if "wte.weight" in key:
+        key = "wte.weight"
+
+    if ".mlp" in key:
+        key = key.replace(".mlp", "")
+    return key
+
+def start_conversion(model_name:str):
+
+    print("Model not found. Converting to mlx format...")
+
+    model = AutoModelForCausalLM.from_pretrained(
+        model_name, torch_dtype="auto", trust_remote_code=True
+    )
+    state_dict = model.state_dict()
+    weights = {replace_key(k): v.numpy() for k, v in state_dict.items()}
+    params = {}
+
+    return(weights,params)
+
+    
+def load_model(model_name:str):
+
+    mlx_path = Path("/tmp/mlx_models/"+model_name)
+    mlx_path.mkdir(parents=True, exist_ok=True)
+
+    #Check if it already exists
+    if not (os.path.exists(str(mlx_path / "weights.npz")) and os.path.exists(str(mlx_path / "config.json"))):
+        weights, params = start_conversion(model_name)
+        np.savez(str(mlx_path / "weights.npz"), **weights)
+        with open(mlx_path / "config.json", "w") as fid:
+            params["model_type"] = "phi2"
+            json.dump(params, fid, indent=4)
+
 
     model = Phi2(ModelArgs())
-    model_path = "/Users/sachaichbiah/Documents/CARGOHUB/mlx-examples/phi2/"
-    model_path = Path(model_path)
-    weights = mx.load(str(model_path / "weights.npz"))
+    weights = mx.load(str(mlx_path / "weights.npz"))
     model.update(tree_unflatten(list(weights.items())))
 
     return model
