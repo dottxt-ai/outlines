@@ -1,6 +1,5 @@
 :root > * {
-  --md-code-bg-color: #2E3440;
-  --md-default-bg-color: black;
+  --md-default-bg-color: #FFFFFF;
   --md-text-font-family: "Inter";
 }
 
@@ -12,6 +11,12 @@
 
 .index-pre-code pre>code {
   text-align: left;
+}
+
+.md-typeset pre>code {
+  border-radius: 1rem;
+  box-shadow: 10px 5px 5px #EEEEEE;
+
 }
 
 h1.title {
@@ -30,8 +35,10 @@ h2.subtitle {
 
 .md-typeset h1 {
   font-weight: bold;
+  color: #000000;
 }
 
 .md-typeset h2 {
   font-weight: bold;
+  color: #000000;
 }

@@ -18,8 +18,8 @@ theme:
   name: material
   custom_dir: docs/overrides
   palette:
-    - scheme: slate
-      primary: black
+    - scheme: default
+      primary: white
   logo: assets/images/logo.png
   favicon: assets/images/logo.png
   icon:
@@ -71,7 +71,7 @@ markdown_extensions:
       line_spans: __span
       pygments_lang_class: true
       noclasses: True
-      pygments_style: nord-darker
+      pygments_style: bw
   - pymdownx.superfences
   - pymdownx.tabbed:
       alternate_style: true
