@@ -1,6 +1,5 @@
 ---
-title: Contibute
-icon: material/handshake
+title: Contribute
 ---
 
 ## What contributions?

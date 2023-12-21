@@ -103,8 +103,6 @@ nav:
   - Getting Started:
       - Getting Started: get_started.md
       - Philosphy: philosophy.md
-      - Feedback: feedback.md
-      - Licence: licence.md
   - Prompting:
       - prompting/index.md
   - Examples:
@@ -133,5 +131,7 @@ nav:
       - api/samplers.md
       - api/text.md
   - Community:
+      - community/index.md
+      - Feedback 🫶: community/feedback.md
       - Chat with us ☕: https://discord.com/invite/R9DSu34mGd
-      - How to contribute: contribute.md
+      - How to contribute 🏗️: community/contribute.md
