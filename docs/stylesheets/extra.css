@@ -42,3 +42,11 @@ h2.subtitle {
   font-weight: bold;
   color: #000000;
 }
+
+span.md-ellipsis {
+  color: black;
+}
+
+.md-nav__link--active {
+  background-color: #ECEFF4;
+}
