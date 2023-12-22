@@ -113,15 +113,20 @@ nav:
       - Playing chess: examples/models_playing_chess.md
   - Docs:
     - reference/index.md
-    - Generate text:
-        - OpenAI: reference/openai_text_generation.md
-    - Guided generation:
-        - Choices: reference/choices.md
-        - Types: reference/types.md
-        - Regex: reference/regex.md
+    - Text generation:
+        - Free text: reference/text.md
+        - Classification: reference/choices.md
         - JSON: reference/json.md
-    - Prompts:
+        - Grammar: reference/cfg.md
+        - Regex: reference/regex.md
+        - Types: reference/types.md
+    - Utilities:
+        - Serve with vLLM: reference/vllm.md
         - Prompt templating: reference/prompting.md
+        - Outlines functions: reference/functions.md
+    - Models:
+        - OpenAI: reference/openai_text_generation.md
+
   - API Reference:
       - api/index.md
       - api/models.md
