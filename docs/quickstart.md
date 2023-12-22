@@ -31,15 +31,11 @@ Once the model is initialized you can build a text generator. This generator can
     generator = outlines.generate.text(model, max_tokens=100)
 
     result = generator("What's 2+2?")
-<<<<<<< HEAD
 
     print(result)
     # That's right, it's 4! But remember, a delicious and nutrient dense 4,
     # according to YEARS BUILT ON SOLID SCIENCE. This column presents additional
     # findings from the fifteen-year study that produced the 2+2=4 conclusion.
-=======
-    print(result)
->>>>>>> 3504dc6 (Update Getting started)
     ```
 
 === "Stream"
@@ -51,7 +47,6 @@ Once the model is initialized you can build a text generator. This generator can
     generator = outlines.generate.text(model, max_tokens=100)
 
     stream = generator.stream("What's 2+2?")
-<<<<<<< HEAD
     for i in range(5):
         token = next(stream)
         print(token)
@@ -60,10 +55,6 @@ Once the model is initialized you can build a text generator. This generator can
     # [' even']
     # [' a']
     # [' question']
-=======
-    for token in stream:
-        print(token)
->>>>>>> 3504dc6 (Update Getting started)
     ```
 
 ### Multi-label classification
@@ -84,10 +75,14 @@ print(color)
 ### JSON-guided generation
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 Outlines can guide models so that they output valid JSON **100%** of the time. You can either specify the structure using [Pydantic][pydantic]{:target="_blank"} or a string that contains a [JSON Schema][jsonschema]{:target="_blank"}:
 =======
 Outlines can guide models so that they output valid JSON **100%** of the time. You can either specify the structure using [Pydantic](https://docs.pydantic.dev/latest/) or a string that contains a [JSON Schema](https://json-schema.org/):
 >>>>>>> 3504dc6 (Update Getting started)
+=======
+Outlines can guide models so that they output valid JSON **100%** of the time. You can either specify the structure using [Pydantic][pydantic]{:target="_blank"} or a string that contains a [JSON Schema][jsonschema]{:target="_blank"}:
+>>>>>>> 2c0a24a (Improve getting started section)
 
 === "Pydantic"
 
@@ -181,10 +176,14 @@ Outlines can guide models so that they output valid JSON **100%** of the time. Y
 ### Grammar-guided generation
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 Outlines also allows to generate text that is valid to any [context-free grammar][cfg]{:target="_blank"} (CFG) in the [EBNF format][ebnf]{:target="_blank"}. Grammars can be intimidating, but they are a very powerful tool! Indeed, they determine the syntax of every programming language, valid chess moves, molecule structure, can help with procedural graphics generation, etc.
 =======
 Outlines also allows to generate text that is valid to any [context-free grammar](https://en.wikipedia.org/wiki/Context-free_grammar) (CFG) in the [EBNF format](https://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_form). Grammars can be intimidating, but they are a very powerful tool! Indeed, they determine the syntax of every programming language, valid chess moves, molecule structure, can help with procedural graphics generation, etc.
 >>>>>>> 3504dc6 (Update Getting started)
+=======
+Outlines also allows to generate text that is valid to any [context-free grammar][cfg]{:target="_blank"} (CFG) in the [EBNF format][ebnf]{:target="_blank"}. Grammars can be intimidating, but they are a very powerful tool! Indeed, they determine the syntax of every programming language, valid chess moves, molecule structure, can help with procedural graphics generation, etc.
+>>>>>>> 2c0a24a (Improve getting started section)
 
 Here we show a simple example of a grammar that defines arithmetic operations:
 
@@ -274,7 +273,11 @@ First start the server:
 python -m outlines.serve.serve
 ```
 
+<<<<<<< HEAD
 This will by default start a server at `http://127.0.0.1:8000` (check what the console says, though)  with the OPT-125M model. If you want to specify another model:
+=======
+This will by default start a server at `http://127.0.0.1:8000`  with the OPT-125M model. If you want to specify another model:
+>>>>>>> 2c0a24a (Improve getting started section)
 
 ```python
 python -m outlines.serve.serve --model="mistralai/Mistral-7B-v0.1"
@@ -283,7 +286,11 @@ python -m outlines.serve.serve --model="mistralai/Mistral-7B-v0.1"
 You can then query the model in shell by passing a prompt and a [JSON Schema][jsonschema]{:target="_blank"} specification for the structure of the output:
 
 ```bash
+<<<<<<< HEAD
 curl http://0.0.0.1:8000 \
+=======
+curl http://127.0.0.1:8000 \
+>>>>>>> 2c0a24a (Improve getting started section)
     -d '{
         "prompt": "What is the capital of France?",
         "schema": {"type": "string"}
@@ -292,10 +299,13 @@ curl http://0.0.0.1:8000 \
 
 Or use the [requests][requests]{:target="_blank"} library from another python program. You can read the [vLLM documentation][vllm]{:target="_blank"} for more details.
 
+<<<<<<< HEAD
 =======
 ```
 
 >>>>>>> 3504dc6 (Update Getting started)
+=======
+>>>>>>> 2c0a24a (Improve getting started section)
 ## Utilities
 
 ### Prompt templates
@@ -404,7 +414,11 @@ Once you are done experimenting with a prompt and an output structure, it is use
 ## Going further
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 If you need more inspiration you can take a look at the [cookbook](cookbook/index.md). If you have any question, or requests for documentation please reach out to us on [GitHub](https://github.com/outlines-dev/outlines/discussions), [Twitter](https://twitter.com/remilouf) or [Discord](https://discord.gg/UppQmhEpe8).
+=======
+If you need more inspiration you can take a look at the [cookbook](examples/index.md). If you have any question, or requests for documentation please reach out to us on [GitHub](https://github.com/outlines-dev/outlines/discussions), [Twitter](https://twitter.com/remilouf) or [Discord](https://discord.gg/UppQmhEpe8).
+>>>>>>> 2c0a24a (Improve getting started section)
 
 
 [pydantic]: https://docs.pydantic.dev/latest
@@ -414,6 +428,9 @@ If you need more inspiration you can take a look at the [cookbook](cookbook/inde
 [ebnf]: https://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_form
 [requests]: https://requests.readthedocs.io/en/latest/
 [vllm]: https://docs.vllm.ai/en/latest/index.html
+<<<<<<< HEAD
 =======
 If you need more inspiration you can take a look at the [Examples](examples/index.md). If you have any question, or requests for documentation please reach out to us on [GitHub](https://github.com/outlines-dev/outlines/discussions), [Twitter](https://twitter.com/remilouf) or [Discord](https://discord.gg/UppQmhEpe8).
 >>>>>>> 3504dc6 (Update Getting started)
+=======
+>>>>>>> 2c0a24a (Improve getting started section)
