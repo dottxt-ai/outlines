@@ -26,10 +26,14 @@ We support Openai, but the true power of Outlines〰 is unleashed with Open Sour
     Deploy a LLM service using Outlines' JSON guided generation and vLLM
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     [:octicons-arrow-right-24: Deploy outlines](reference/vllm.md)
 =======
     [:octicons-arrow-right-24: Deploy outlines](reference/index.md)
 >>>>>>> 2c0a24a (Improve getting started section)
+=======
+    [:octicons-arrow-right-24: Deploy outlines](reference/vllm.md)
+>>>>>>> 2265cc5 (Document the vLLM integration)
 
 
 -   :material-regex:{ .lg .middle } __Make LLMs follows a Regex__

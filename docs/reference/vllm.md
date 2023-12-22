@@ -6,6 +6,7 @@ Outlines can be deployed as an LLM service using the vLLM inference engine and a
 pip install outlines[serve]
 ```
 
+<<<<<<< HEAD
 Note: only vLLM v0.2.6 with ray 2.9.0 is supported at the moment.
 
 You can then start the server with:
@@ -31,12 +32,31 @@ For example, to generate a string that matches the schema `{"type": "string"}` (
 
 ```bash
 curl http://127.0.0.1:8000/generate \
+=======
+You can then start the server with:
+
+```python
+python -m outlines.serve.serve
+```
+
+This will by default start a server at `http://127.0.0.1:8000` (check what the console says, though)  with the OPT-125M model. If you want to specify another model:
+
+```python
+python -m outlines.serve.serve --model="mistralai/Mistral-7B-v0.1"
+```
+
+You can then query the model in shell by passing a prompt and a [JSON Schema][jsonschema]{:target="_blank"} specification for the structure of the output:
+
+```bash
+curl http://0.0.0.1:8000 \
+>>>>>>> 2265cc5 (Document the vLLM integration)
     -d '{
         "prompt": "What is the capital of France?",
         "schema": {"type": "string"}
         }'
 ```
 
+<<<<<<< HEAD
 To generate a string that matches the regex `(-)?(0|[1-9][0-9]*)(\.[0-9]+)?([eE][+-][0-9]+)?` (a number):
 
 ```bash
@@ -50,6 +70,9 @@ curl http://127.0.0.1:8000/generate \
 Instead of `curl`, you can also use the [requests][requests]{:target="_blank"} library from another python program.
 
 Please consult the [vLLM documentation][vllm]{:target="_blank"} for details on additional request parameters.
+=======
+Or use the [requests][requests]{:target="_blank"} library from another python program. You can read the [vLLM documentation][vllm]{:target="_blank"} for more details.
+>>>>>>> 2265cc5 (Document the vLLM integration)
 
 You can also [read the code](https://github.com/outlines-dev/outlines/blob/main/outlines/serve/serve.py) in case you need to customize the solution to your needs.
 
