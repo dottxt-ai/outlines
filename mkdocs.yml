@@ -108,8 +108,9 @@ nav:
       - Licence: licence.md
   - Cookbook:
       - cookbook/index.md
+      - Classification: cookbook/classification.md
       - Named Entity Extraction: cookbook/extraction.md
-      - Synthetic dating Profile: cookbook/dating_profiles.md
+      - Generate synthetic data: cookbook/dating_profiles.md
       - Summarize a document: cookbook/chain_of_density.md
       - Playing chess: cookbook/models_playing_chess.md
   - Docs:
