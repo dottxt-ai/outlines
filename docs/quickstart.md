@@ -31,7 +31,11 @@ Once the model is initialized you can build a text generator. This generator can
     generator = outlines.generate.text(model, max_tokens=100)
 
     result = generator("What's 2+2?")
+
     print(result)
+    # That's right, it's 4! But remember, a delicious and nutrient dense 4,
+    # according to YEARS BUILT ON SOLID SCIENCE. This column presents additional
+    # findings from the fifteen-year study that produced the 2+2=4 conclusion.
     ```
 
 === "Stream"
@@ -43,8 +47,14 @@ Once the model is initialized you can build a text generator. This generator can
     generator = outlines.generate.text(model, max_tokens=100)
 
     stream = generator.stream("What's 2+2?")
-    for token in stream:
+    for i in range(5):
+        token = next(stream)
         print(token)
+    # ['Is']
+    # [' this']
+    # [' even']
+    # [' a']
+    # [' question']
     ```
 
 ### Multi-label classification
@@ -70,7 +80,7 @@ Outlines can guide models so that they output valid JSON **100%** of the time. Y
 
     ```python
     from enum import Enum
-    from pydantic import BaseModel, constr
+    from pydantic import BaseModel, constr, conint
 
     import outlines
 
@@ -82,14 +92,19 @@ Outlines can guide models so that they output valid JSON **100%** of the time. Y
 
     class Character(BaseModel):
         name: constr(max_length=10)
-        age: int
+        age: conint(gt=18, lt=99)
         armor: Armor
-        strength: int
+        strength: conint(gt=1, lt=100)
 
     model = outlines.models.transformers("mistralai/Mistral-7B-v0.1")
     generator = outlines.generate.json(model, Character)
 
-    character = generator("Generate a new character for my awesome game.")
+    character = generator(
+        "Generate a new character for my awesome game: "
+        + "name, age (between 1 and 99), armor and strength. "
+        )
+    print(character)
+    # name='Orla' age=21 armor=<Armor.plate: 'plate'> strength=8
     ```
 
 === "JSON Schema"
@@ -117,9 +132,13 @@ Outlines can guide models so that they output valid JSON **100%** of the time. Y
     }"""
 
     model = outlines.models.transformers("mistralai/Mistral-7B-v0.1")
-    generator = outlines.generate.json(model, Character)
-
-    character = generator("Generate a new character for my awesome game.")
+    generator = outlines.generate.json(model, schema)
+    character = generator(
+        "Generate a new character for my awesome game: "
+        + "name, age (between 1 and 99), armor and strength. "
+        )
+    print(character)
+    # {'name': 'Yuki', 'age': 24, 'armor': 'plate', 'strength': 3}
     ```
 
 !!! Note
@@ -134,7 +153,6 @@ Here we show a simple example of a grammar that defines arithmetic operations:
 
 ```python
 from outlines import models, generate
-
 
 arithmetic_grammar = """
     ?start: sum
@@ -161,7 +179,8 @@ model = models.transformers("mistralai/Mistral-7B-v0.1")
 generator = generate.cfg(model, arithmetic_grammar, max_tokens=100)
 
 result = generator("Write a series of operations on integers that return the number 5")
-
+print(result)
+# 4*5*3*2*1/6*4*3*2*1/2*1*1*1/4*1*1*1/2*1*1*1/2*1*1/2*1*1*5*1/2*2*1*1/2*1*1*6*1*1/2*1*1*1*1*2*1*1*1*1
 ```
 
 ### Regex-guided generation
@@ -177,6 +196,8 @@ regex_str = r"((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)"
 generator = generate.regex(model, regex_str)
 
 result = generator("What is the IP address of Google's DNS sever?")
+print(result)
+# 0.0.0.0
 ```
 
 ### Generate a given Python type
@@ -190,6 +211,8 @@ model = models.transformers("mistralai/Mistral-7B-v0.1")
 generator = generate.format(model, int)
 
 result = generator("What is 2+2?")
+print(result)
+# 4
 ```
 
 ## Deploy using vLLM and FastAPI
@@ -211,7 +234,7 @@ python -m outlines.serve.serve --model="mistralai/Mistral-7B-v0.1"
 You can then query the model in shell by passing a prompt and a [JSON Schema][jsonschema]{:target="_blank"} specification for the structure of the output:
 
 ```bash
-curl http://127.0.0.1:8000 \
+curl http://0.0.0.1:8000 \
     -d '{
         "prompt": "What is the capital of France?",
         "schema": {"type": "string"}
@@ -257,6 +280,22 @@ question = "4+4 = ?"
 
 prompt = few_shots(instructions, examples, question)
 print(prompt)
+# Please answer the following question following the examples
+
+# Examples
+# --------
+
+# Q: 2+2=?
+# A: 4
+
+# Q: 3+3=?
+# A: 6
+
+# Question
+# --------
+
+# Q: 4+4 = ?
+# A:
 ```
 
 ### Outlines functions
