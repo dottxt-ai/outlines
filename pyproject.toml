@@ -90,6 +90,7 @@ exclude=["examples"]
 module = [
     "awq.*",
     "auto_gptq.*",
+    "exllamav2.*",
     "jinja2",
     "joblib.*",
     "jsonschema.*",

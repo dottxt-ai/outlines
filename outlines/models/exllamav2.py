@@ -2,6 +2,7 @@ from typing import TYPE_CHECKING, Optional
 
 import torch
 from transformers import PreTrainedTokenizer
+
 from .transformers import TransformerTokenizer
 
 if TYPE_CHECKING:
@@ -80,11 +81,7 @@ def exl2(
     tokenizer_kwargs: dict = {},
 ):
     try:
-        from exllamav2 import (
-            ExLlamaV2,
-            ExLlamaV2Config,
-            ExLlamaV2Cache,
-        )
+        from exllamav2 import ExLlamaV2, ExLlamaV2Cache, ExLlamaV2Config
     except ImportError:
         raise ImportError(
             "The `exllamav2` library needs to be installed in order to use `exllamav2` models."
