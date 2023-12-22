@@ -4,7 +4,7 @@ title: Quickstart
 
 # Quickstart
 
-After [installing Outlines](installation.md), the fastest way to get to up to speed with the library is to get acquainted with its few core elements. We advise you to take a quick look at this page to see everything Outlines has to offer before diving into the [documentation](reference/index.md).
+After [installing Outlines](installation.md), the fastest way to get to up to speed with the library is to get acquainted with its few core elements. We advise you to take a quick look at this page to see everything Outlines has to offer before diving in the [documentation](reference/index.md).
 
 ## Core elements
 
@@ -64,7 +64,7 @@ print(color)
 
 ### JSON-guided generation
 
-Outlines can guide models so that they output valid JSON **100%** of the time. You can either specify the structure using [Pydantic](https://docs.pydantic.dev/latest/) or a string that contains a [JSON Schema](https://json-schema.org/):
+Outlines can guide models so that they output valid JSON **100%** of the time. You can either specify the structure using [Pydantic][pydantic]{:target="_blank"} or a string that contains a [JSON Schema][jsonschema]{:target="_blank"}:
 
 === "Pydantic"
 
@@ -128,7 +128,7 @@ Outlines can guide models so that they output valid JSON **100%** of the time. Y
 
 ### Grammar-guided generation
 
-Outlines also allows to generate text that is valid to any [context-free grammar](https://en.wikipedia.org/wiki/Context-free_grammar) (CFG) in the [EBNF format](https://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_form). Grammars can be intimidating, but they are a very powerful tool! Indeed, they determine the syntax of every programming language, valid chess moves, molecule structure, can help with procedural graphics generation, etc.
+Outlines also allows to generate text that is valid to any [context-free grammar][cfg]{:target="_blank"} (CFG) in the [EBNF format][ebnf]{:target="_blank"}. Grammars can be intimidating, but they are a very powerful tool! Indeed, they determine the syntax of every programming language, valid chess moves, molecule structure, can help with procedural graphics generation, etc.
 
 Here we show a simple example of a grammar that defines arithmetic operations:
 
@@ -191,6 +191,34 @@ generator = generate.format(model, int)
 
 result = generator("What is 2+2?")
 ```
+
+## Deploy using vLLM and FastAPI
+
+Outlines can be deployed as a LLM service using [vLLM][vllm]{:target="_blank"} and [FastAPI][fastapi]{:target="_blank"}. The server supports asynchronous processing of incoming requests, and benefits from the performance of vLLM.
+
+First start the server:
+
+```python
+python -m outlines.serve.serve
+```
+
+This will by default start a server at `http://127.0.0.1:8000`  with the OPT-125M model. If you want to specify another model:
+
+```python
+python -m outlines.serve.serve --model="mistralai/Mistral-7B-v0.1"
+```
+
+You can then query the model in shell by passing a prompt and a [JSON Schema][jsonschema]{:target="_blank"} specification for the structure of the output:
+
+```bash
+curl http://127.0.0.1:8000 \
+    -d '{
+        "prompt": "What is the capital of France?",
+        "schema": {"type": "string"}
+        }'
+```
+
+Or use the [requests][requests]{:target="_blank"} library from another python program. You can read the [vLLM documentation][vllm]{:target="_blank"} for more details.
 
 ## Utilities
 
@@ -280,4 +308,13 @@ Once you are done experimenting with a prompt and an output structure, it is use
 
 ## Going further
 
-If you need more inspiration you can take a look at the [Examples](examples/index.md). If you have any question, or requests for documentation please reach out to us on [GitHub](https://github.com/outlines-dev/outlines/discussions), [Twitter](https://twitter.com/remilouf) or [Discord](https://discord.gg/UppQmhEpe8).
+If you need more inspiration you can take a look at the [cookbook](examples/index.md). If you have any question, or requests for documentation please reach out to us on [GitHub](https://github.com/outlines-dev/outlines/discussions), [Twitter](https://twitter.com/remilouf) or [Discord](https://discord.gg/UppQmhEpe8).
+
+
+[pydantic]: https://docs.pydantic.dev/latest
+[jsonschema]: https://json-schema.org/
+[fastapi]: https://fastapi.tiangolo.com/
+[cfg]: https://en.wikipedia.org/wiki/Context-free_grammar
+[ebnf]: https://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_form
+[requests]: https://requests.readthedocs.io/en/latest/
+[vllm]: https://docs.vllm.ai/en/latest/index.html
