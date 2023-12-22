@@ -206,15 +206,25 @@ def mlx(
     A `MLXModel` model instance.
 
     """
+
+    complete_model_kwargs = {
+        'quantize': False,
+        'q_group_size': 64,
+        'q_bits': 4,
+        'force_conversion':False
+    }
+
+    # Update default values with any provided arguments
+    complete_model_kwargs.update(model_kwargs)
     
     if model_name == "microsoft/phi-2":
         from outlines.models.mlx_models.Phi2 import load_model
-        model = load_model(model_name)
+        model = load_model(model_name,**complete_model_kwargs)
         tokenizer_kwargs['trust_remote_code']=True
         tokenizer = TransformerTokenizer(model_name, **tokenizer_kwargs)
     elif model_name =="TinyLlama/TinyLlama-1.1B-Chat-v0.6":
         from outlines.models.mlx_models.tiny_llama import load_model
-        model = load_model(model_name)
+        model = load_model(model_name,**complete_model_kwargs)
         tokenizer = TransformerTokenizer(model_name, **tokenizer_kwargs)
     elif model_name =="mistral/7B":
         return NotImplementedError("Mistral is not implemented yet")

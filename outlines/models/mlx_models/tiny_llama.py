@@ -7,12 +7,19 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Optional, Tuple
 import os
+import copy
+import numpy as np
 
 import mlx.core as mx
 import mlx.nn as nn
-from mlx.utils import tree_unflatten
+from mlx.utils import tree_unflatten,tree_map, tree_flatten
 from sentencepiece import SentencePieceProcessor
 from transformers import AutoTokenizer
+import torch
+
+# Copyright © 2023 Apple Inc.
+
+
 
 @dataclass
 class ModelArgs:
@@ -277,21 +284,6 @@ def toc(msg, start):
     return f"[INFO] {msg}: {end - start:.3f} s"
 
 
-# Copyright © 2023 Apple Inc.
-
-import argparse
-import collections
-import copy
-import glob
-import json
-import shutil
-from pathlib import Path
-
-import mlx.core as mx
-import mlx.nn as nn
-import numpy as np
-import torch
-
 def start_conversion(model_name:str):
     try:
         import transformers
@@ -355,40 +347,78 @@ def start_conversion(model_name:str):
     del model
     return weights, params
 
+def sanitize_config(config, weights):
+    config.pop("model_type", None)
+    n_heads = config["n_heads"]
+    if "n_kv_heads" not in config:
+        config["n_kv_heads"] = n_heads
+    if "head_dim" not in config:
+        config["head_dim"] = config["dim"] // n_heads
+    if "hidden_dim" not in config:
+        config["hidden_dim"] = weights["layers.0.feed_forward.w1.weight"].shape[0]
+    if config.get("vocab_size", -1) < 0:
+        config["vocab_size"] = weights["output.weight"].shape[-1]
+    if "rope_theta" not in config:
+        config["rope_theta"] = 10000
+    unused = ["multiple_of", "ffn_dim_multiplier"]
+    for k in unused:
+        config.pop(k, None)
+    return config
+
+class AttrDict:
+    def __init__(self, d):
+        for key, value in d.items():
+            setattr(self, key, value)
+
+
+def quantize(weights, config, args):
+    quantized_config = copy.deepcopy(config)
+
+    # Load the model:
+    config = sanitize_config(config, weights)
+    model = Llama(ModelArgs(**config))
+    weights = tree_map(mx.array, weights)
+    model.update(tree_unflatten(list(weights.items())))
+
+    # Quantize the model:
+    nn.QuantizedLinear.quantize_module(model, args.q_group_size, args.q_bits)
+
+    # Update the config:
+    quantized_config["quantization"] = {
+        "group_size": args.q_group_size,
+        "bits": args.q_bits,
+    }
+    quantized_weights = dict(tree_flatten(model.parameters()))
+
+    return quantized_weights, quantized_config
 
 
 
-def load_model(model_name:str):
+def load_model(model_name:str,**model_kwargs):
+
+    args = AttrDict(model_kwargs)
 
     mlx_path = Path("/tmp/mlx_models/"+model_name)
     mlx_path.mkdir(parents=True, exist_ok=True)
 
     #Check if it already exists
-    if not (os.path.exists(str(mlx_path / "weights.npz")) and os.path.exists(str(mlx_path / "config.json"))):
-        weights, params = start_conversion(model_name)
+    if ((not (os.path.exists(str(mlx_path / "weights.npz")) and os.path.exists(str(mlx_path / "config.json")))) or args.force_conversion):
+        weights,params = start_conversion(model_name)
+        if args.quantize:
+            print("[INFO] Quantizing")
+            weights, params = quantize(weights, params, args)
+
         np.savez(str(mlx_path / "weights.npz"), **weights)
         with open(mlx_path / "config.json", "w") as fid:
             json.dump(params, fid, indent=4)
 
+    #Load the weigths and config file and create the model
     weights = mx.load(str(mlx_path / "weights.npz"))
     with open(mlx_path / "config.json", "r") as f:
-        config = json.loads(f.read())
-        config.pop("model_type", None)
-        n_heads = config["n_heads"]
-        if "n_kv_heads" not in config:
-            config["n_kv_heads"] = n_heads
-        if "head_dim" not in config:
-            config["head_dim"] = config["dim"] // n_heads
-        if "hidden_dim" not in config:
-            config["hidden_dim"] = weights["layers.0.feed_forward.w1.weight"].shape[0]
-        if config.get("vocab_size", -1) < 0:
-            config["vocab_size"] = weights["output.weight"].shape[-1]
-        if "rope_theta" not in config:
-            config["rope_theta"] = 10000
-        unused = ["multiple_of", "ffn_dim_multiplier"]
-        for k in unused:
-            if k in config:
-                config.pop(k)
+        config = sanitize_config(json.loads(f.read()), weights)
+        quantization = config.pop("quantization", None)
     model = Llama(ModelArgs(**config))
+    if quantization is not None:
+        nn.QuantizedLinear.quantize_module(model, **quantization)
     model.update(tree_unflatten(list(weights.items())))
     return model

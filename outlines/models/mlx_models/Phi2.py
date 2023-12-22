@@ -1,7 +1,7 @@
 import argparse
 from typing import Optional
 from dataclasses import dataclass
-from mlx.utils import tree_unflatten
+from mlx.utils import tree_flatten, tree_map, tree_unflatten
 from transformers import AutoTokenizer
 
 import mlx.core as mx
@@ -165,23 +165,62 @@ def start_conversion(model_name:str):
 
     return(weights,params)
 
-    
-def load_model(model_name:str):
+import copy
+def quantize(weights, config, args):
+    quantized_config = copy.deepcopy(config)
+
+    # Load the model:
+    model = Phi2(ModelArgs())
+    weights = tree_map(mx.array, weights)
+    model.update(tree_unflatten(list(weights.items())))
+
+    # Quantize the model:
+    nn.QuantizedLinear.quantize_module(model, args.q_group_size, args.q_bits)
+
+    # Update the config:
+    quantized_config["quantization"] = {
+        "group_size": args.q_group_size,
+        "bits": args.q_bits,
+    }
+    quantized_weights = dict(tree_flatten(model.parameters()))
+
+    return quantized_weights, quantized_config
+
+class AttrDict:
+    def __init__(self, d):
+        for key, value in d.items():
+            setattr(self, key, value)
+
+def load_model(model_name:str,**model_kwargs):
+
+    args = AttrDict(model_kwargs)
 
     mlx_path = Path("/tmp/mlx_models/"+model_name)
     mlx_path.mkdir(parents=True, exist_ok=True)
 
     #Check if it already exists
-    if not (os.path.exists(str(mlx_path / "weights.npz")) and os.path.exists(str(mlx_path / "config.json"))):
-        weights, params = start_conversion(model_name)
+    if ((not (os.path.exists(str(mlx_path / "weights.npz")) and os.path.exists(str(mlx_path / "config.json")))) or args.force_conversion):
+        weights,params = start_conversion(model_name)
+        if args.quantize:
+            print("[INFO] Quantizing")
+            weights, params = quantize(weights, params, args)
+
         np.savez(str(mlx_path / "weights.npz"), **weights)
+        
         with open(mlx_path / "config.json", "w") as fid:
             params["model_type"] = "phi2"
             json.dump(params, fid, indent=4)
 
-
+    #Load the weigths and config file and create the model
     model = Phi2(ModelArgs())
+    with open(mlx_path / "config.json", "r") as f:
+        config = json.loads(f.read())
+        config.pop("model_type", None)
+        quantization = config.pop("quantization", None)
     weights = mx.load(str(mlx_path / "weights.npz"))
-    model.update(tree_unflatten(list(weights.items())))
+    weights = tree_unflatten(list(weights.items()))
+    if quantization is not None:
+        nn.QuantizedLinear.quantize_module(model, **quantization)
+    model.update(weights)
 
     return model
