@@ -26,3 +26,7 @@ pip install outlines
 ```
 </div>
 </center>
+
+<figure markdown>
+  ![Example](assets/images/frontpage_example.png){ width="900" }
+</figure>
