@@ -107,10 +107,11 @@ nav:
       - Quickstart: quickstart.md
       - Licence: licence.md
   - Cookbook:
-      - examples/index.md
-      - Synthetic dating Profile: examples/dating_profiles.md
-      - Chain of density prompting: examples/chain_of_density.md
-      - Playing chess: examples/models_playing_chess.md
+      - cookbook/index.md
+      - Named Entity Extraction: cookbook/extraction.md
+      - Synthetic dating Profile: cookbook/dating_profiles.md
+      - Summarize a document: cookbook/chain_of_density.md
+      - Playing chess: cookbook/models_playing_chess.md
   - Docs:
     - reference/index.md
     - Text generation:

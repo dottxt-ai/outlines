@@ -308,7 +308,7 @@ Once you are done experimenting with a prompt and an output structure, it is use
 
 ## Going further
 
-If you need more inspiration you can take a look at the [cookbook](examples/index.md). If you have any question, or requests for documentation please reach out to us on [GitHub](https://github.com/outlines-dev/outlines/discussions), [Twitter](https://twitter.com/remilouf) or [Discord](https://discord.gg/UppQmhEpe8).
+If you need more inspiration you can take a look at the [cookbook](cookbook/index.md). If you have any question, or requests for documentation please reach out to us on [GitHub](https://github.com/outlines-dev/outlines/discussions), [Twitter](https://twitter.com/remilouf) or [Discord](https://discord.gg/UppQmhEpe8).
 
 
 [pydantic]: https://docs.pydantic.dev/latest
