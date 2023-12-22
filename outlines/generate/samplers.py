@@ -33,7 +33,7 @@ def greedy(logits: torch.DoubleTensor, samples: int, *_) -> torch.DoubleTensor:
 
     """
     if samples == 1:
-        next_token_ids = torch.argmax(logits, dim=-1, keepdim=True).T
+        next_token_ids = torch.argmax(logits, dim=-1, keepdim=True)
     else:
         next_token_ids = torch.topk(
             logits, samples, dim=-1, largest=True, sorted=True
