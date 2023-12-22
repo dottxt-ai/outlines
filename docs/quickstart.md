@@ -74,25 +74,13 @@ print(color)
 
 ### JSON-guided generation
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 Outlines can guide models so that they output valid JSON **100%** of the time. You can either specify the structure using [Pydantic][pydantic]{:target="_blank"} or a string that contains a [JSON Schema][jsonschema]{:target="_blank"}:
-=======
-Outlines can guide models so that they output valid JSON **100%** of the time. You can either specify the structure using [Pydantic](https://docs.pydantic.dev/latest/) or a string that contains a [JSON Schema](https://json-schema.org/):
->>>>>>> 3504dc6 (Update Getting started)
-=======
-Outlines can guide models so that they output valid JSON **100%** of the time. You can either specify the structure using [Pydantic][pydantic]{:target="_blank"} or a string that contains a [JSON Schema][jsonschema]{:target="_blank"}:
->>>>>>> 2c0a24a (Improve getting started section)
 
 === "Pydantic"
 
     ```python
     from enum import Enum
-<<<<<<< HEAD
     from pydantic import BaseModel, constr, conint
-=======
-    from pydantic import BaseModel, constr
->>>>>>> 3504dc6 (Update Getting started)
 
     import outlines
 
@@ -104,29 +92,19 @@ Outlines can guide models so that they output valid JSON **100%** of the time. Y
 
     class Character(BaseModel):
         name: constr(max_length=10)
-<<<<<<< HEAD
         age: conint(gt=18, lt=99)
         armor: Armor
         strength: conint(gt=1, lt=100)
-=======
-        age: int
-        armor: Armor
-        strength: int
->>>>>>> 3504dc6 (Update Getting started)
 
     model = outlines.models.transformers("mistralai/Mistral-7B-v0.1")
     generator = outlines.generate.json(model, Character)
 
-<<<<<<< HEAD
     character = generator(
         "Generate a new character for my awesome game: "
         + "name, age (between 1 and 99), armor and strength. "
         )
     print(character)
     # name='Orla' age=21 armor=<Armor.plate: 'plate'> strength=8
-=======
-    character = generator("Generate a new character for my awesome game.")
->>>>>>> 3504dc6 (Update Getting started)
     ```
 
 === "JSON Schema"
@@ -154,7 +132,6 @@ Outlines can guide models so that they output valid JSON **100%** of the time. Y
     }"""
 
     model = outlines.models.transformers("mistralai/Mistral-7B-v0.1")
-<<<<<<< HEAD
     generator = outlines.generate.json(model, schema)
     character = generator(
         "Generate a new character for my awesome game: "
@@ -162,11 +139,6 @@ Outlines can guide models so that they output valid JSON **100%** of the time. Y
         )
     print(character)
     # {'name': 'Yuki', 'age': 24, 'armor': 'plate', 'strength': 3}
-=======
-    generator = outlines.generate.json(model, Character)
-
-    character = generator("Generate a new character for my awesome game.")
->>>>>>> 3504dc6 (Update Getting started)
     ```
 
 !!! Note
@@ -175,25 +147,13 @@ Outlines can guide models so that they output valid JSON **100%** of the time. Y
 
 ### Grammar-guided generation
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 Outlines also allows to generate text that is valid to any [context-free grammar][cfg]{:target="_blank"} (CFG) in the [EBNF format][ebnf]{:target="_blank"}. Grammars can be intimidating, but they are a very powerful tool! Indeed, they determine the syntax of every programming language, valid chess moves, molecule structure, can help with procedural graphics generation, etc.
-=======
-Outlines also allows to generate text that is valid to any [context-free grammar](https://en.wikipedia.org/wiki/Context-free_grammar) (CFG) in the [EBNF format](https://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_form). Grammars can be intimidating, but they are a very powerful tool! Indeed, they determine the syntax of every programming language, valid chess moves, molecule structure, can help with procedural graphics generation, etc.
->>>>>>> 3504dc6 (Update Getting started)
-=======
-Outlines also allows to generate text that is valid to any [context-free grammar][cfg]{:target="_blank"} (CFG) in the [EBNF format][ebnf]{:target="_blank"}. Grammars can be intimidating, but they are a very powerful tool! Indeed, they determine the syntax of every programming language, valid chess moves, molecule structure, can help with procedural graphics generation, etc.
->>>>>>> 2c0a24a (Improve getting started section)
 
 Here we show a simple example of a grammar that defines arithmetic operations:
 
 ```python
 from outlines import models, generate
 
-<<<<<<< HEAD
-=======
-
->>>>>>> 3504dc6 (Update Getting started)
 arithmetic_grammar = """
     ?start: sum
 
@@ -219,12 +179,8 @@ model = models.transformers("mistralai/Mistral-7B-v0.1")
 generator = generate.cfg(model, arithmetic_grammar, max_tokens=100)
 
 result = generator("Write a series of operations on integers that return the number 5")
-<<<<<<< HEAD
 print(result)
 # 4*5*3*2*1/6*4*3*2*1/2*1*1*1/4*1*1*1/2*1*1*1/2*1*1/2*1*1*5*1/2*2*1*1/2*1*1*6*1*1/2*1*1*1*1*2*1*1*1*1
-=======
-
->>>>>>> 3504dc6 (Update Getting started)
 ```
 
 ### Regex-guided generation
@@ -240,11 +196,8 @@ regex_str = r"((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)"
 generator = generate.regex(model, regex_str)
 
 result = generator("What is the IP address of Google's DNS sever?")
-<<<<<<< HEAD
 print(result)
 # 0.0.0.0
-=======
->>>>>>> 3504dc6 (Update Getting started)
 ```
 
 ### Generate a given Python type
@@ -258,7 +211,6 @@ model = models.transformers("mistralai/Mistral-7B-v0.1")
 generator = generate.format(model, int)
 
 result = generator("What is 2+2?")
-<<<<<<< HEAD
 print(result)
 # 4
 ```
@@ -273,11 +225,7 @@ First start the server:
 python -m outlines.serve.serve
 ```
 
-<<<<<<< HEAD
 This will by default start a server at `http://127.0.0.1:8000` (check what the console says, though)  with the OPT-125M model. If you want to specify another model:
-=======
-This will by default start a server at `http://127.0.0.1:8000`  with the OPT-125M model. If you want to specify another model:
->>>>>>> 2c0a24a (Improve getting started section)
 
 ```python
 python -m outlines.serve.serve --model="mistralai/Mistral-7B-v0.1"
@@ -286,11 +234,7 @@ python -m outlines.serve.serve --model="mistralai/Mistral-7B-v0.1"
 You can then query the model in shell by passing a prompt and a [JSON Schema][jsonschema]{:target="_blank"} specification for the structure of the output:
 
 ```bash
-<<<<<<< HEAD
 curl http://0.0.0.1:8000 \
-=======
-curl http://127.0.0.1:8000 \
->>>>>>> 2c0a24a (Improve getting started section)
     -d '{
         "prompt": "What is the capital of France?",
         "schema": {"type": "string"}
@@ -299,13 +243,6 @@ curl http://127.0.0.1:8000 \
 
 Or use the [requests][requests]{:target="_blank"} library from another python program. You can read the [vLLM documentation][vllm]{:target="_blank"} for more details.
 
-<<<<<<< HEAD
-=======
-```
-
->>>>>>> 3504dc6 (Update Getting started)
-=======
->>>>>>> 2c0a24a (Improve getting started section)
 ## Utilities
 
 ### Prompt templates
@@ -343,7 +280,6 @@ question = "4+4 = ?"
 
 prompt = few_shots(instructions, examples, question)
 print(prompt)
-<<<<<<< HEAD
 # Please answer the following question following the examples
 
 # Examples
@@ -360,8 +296,6 @@ print(prompt)
 
 # Q: 4+4 = ?
 # A:
-=======
->>>>>>> 3504dc6 (Update Getting started)
 ```
 
 ### Outlines functions
@@ -413,12 +347,7 @@ Once you are done experimenting with a prompt and an output structure, it is use
 
 ## Going further
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 If you need more inspiration you can take a look at the [cookbook](cookbook/index.md). If you have any question, or requests for documentation please reach out to us on [GitHub](https://github.com/outlines-dev/outlines/discussions), [Twitter](https://twitter.com/remilouf) or [Discord](https://discord.gg/UppQmhEpe8).
-=======
-If you need more inspiration you can take a look at the [cookbook](examples/index.md). If you have any question, or requests for documentation please reach out to us on [GitHub](https://github.com/outlines-dev/outlines/discussions), [Twitter](https://twitter.com/remilouf) or [Discord](https://discord.gg/UppQmhEpe8).
->>>>>>> 2c0a24a (Improve getting started section)
 
 
 [pydantic]: https://docs.pydantic.dev/latest
@@ -428,9 +357,3 @@ If you need more inspiration you can take a look at the [cookbook](examples/inde
 [ebnf]: https://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_form
 [requests]: https://requests.readthedocs.io/en/latest/
 [vllm]: https://docs.vllm.ai/en/latest/index.html
-<<<<<<< HEAD
-=======
-If you need more inspiration you can take a look at the [Examples](examples/index.md). If you have any question, or requests for documentation please reach out to us on [GitHub](https://github.com/outlines-dev/outlines/discussions), [Twitter](https://twitter.com/remilouf) or [Discord](https://discord.gg/UppQmhEpe8).
->>>>>>> 3504dc6 (Update Getting started)
-=======
->>>>>>> 2c0a24a (Improve getting started section)
