@@ -225,7 +225,7 @@ First start the server:
 python -m outlines.serve.serve
 ```
 
-This will by default start a server at `http://127.0.0.1:8000`  with the OPT-125M model. If you want to specify another model:
+This will by default start a server at `http://127.0.0.1:8000` (check what the console says, though)  with the OPT-125M model. If you want to specify another model:
 
 ```python
 python -m outlines.serve.serve --model="mistralai/Mistral-7B-v0.1"
