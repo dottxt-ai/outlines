@@ -32,7 +32,8 @@ First time here? Go to our [setup guide](https://outlines-dev.github.io/outlines
 - [x] 📝 [Grammar-guided generation](#using-context-free-grammars-to-guide-generation)
 - [x] 🐍 Interleave completions with loops, conditionals, and custom Python functions
 - [x] 💾 Caching of generations
-- [x] 🗂️ Batched inference
+- [x] 🗂️ Batch inference
+- [x] 🚀 [Serve with vLLM](https://outlines-dev.github.io/outlines/reference/vllm)
 
 
 Outlines 〰 has new releases and features coming every week. Make sure to ⭐ star and 👀 watch this repository, follow [@dottxtai][twitter] to stay up to date!
