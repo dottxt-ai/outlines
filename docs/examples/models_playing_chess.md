@@ -77,4 +77,4 @@ while not board.is_game_over():
 It turns out Mistal-7B (quantized) is not very good at playing chess: the game systematically ends because of the threefold repetition rule.
 
 
-*This example was originally authored by [@903124S](@903124S) in [this gist](https://gist.github.com/903124/cfbefa24da95e2316e0d5e8ef8ed360d).*
+*This example was originally authored by [@903124S](https://x.com/903124S) in [this gist](https://gist.github.com/903124/cfbefa24da95e2316e0d5e8ef8ed360d).*
