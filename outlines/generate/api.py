@@ -24,6 +24,7 @@ class SequenceGenerator:
         self.tokenizer = model.tokenizer
         self.device = device
         self.max_tokens = max_tokens
+
         if isinstance(stop_at, str):
             stop_at = [stop_at]
         self.stop_sequences = stop_at
@@ -196,9 +197,10 @@ class SequenceGenerator:
         fsms = [self.fsm.copy() for _ in prompts]
         if isinstance(stop_at, str):
             stop_at = [stop_at]
-        stop_sequences = stop_at or self.stop_sequences
 
+        stop_sequences = stop_at or self.stop_sequences
         max_tokens = max_tokens or self.max_tokens
+        num_sequences = len(prompts)
 
         if rng is None:
             rng = torch.Generator(device=self.device)
@@ -440,17 +442,17 @@ def json(
         schema = pyjson.dumps(schema_object.model_json_schema())
         regex_str = build_regex_from_object(schema)
         generator = regex(model, regex_str, max_tokens, sampler)
-        generator.structure_sequence = lambda x: schema_object.parse_raw(x)
+        generator.format_sequence = lambda x: schema_object.parse_raw(x)
     elif callable(schema_object):
         schema = pyjson.dumps(get_schema_from_signature(schema_object))
         regex_str = build_regex_from_object(schema)
         generator = regex(model, regex_str, max_tokens, sampler)
-        generator.structure_sequence = lambda x: pyjson.loads(x)
+        generator.format_sequence = lambda x: pyjson.loads(x)
     elif isinstance(schema_object, str):
         schema = schema_object
         regex_str = build_regex_from_object(schema)
         generator = regex(model, regex_str, max_tokens, sampler)
-        generator.structure_sequence = lambda x: pyjson.loads(x)
+        generator.format_sequence = lambda x: pyjson.loads(x)
     else:
         raise ValueError(
             f"Cannot parse schema {schema_object}. The schema must be either "
