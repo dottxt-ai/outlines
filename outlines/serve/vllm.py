@@ -39,9 +39,15 @@ def _patched_apply_logits_processors(
     return logits
 
 
+<<<<<<< HEAD
 class RegexLogitsProcessor:
     def __init__(self, regex_string, llm):
         """Compile the FSM that drives the regex-guided generation.
+=======
+class JSONLogitsProcessor:
+    def __init__(self, schema, llm):
+        """Compile the FSM that drives the JSON-guided generation.
+>>>>>>> bbea82c (Update vllm patch to v0.2.6)
 
         Parameters
         ----------
