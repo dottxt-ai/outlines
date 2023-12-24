@@ -16,7 +16,13 @@ import json
 from typing import AsyncGenerator
 
 import uvicorn
-import vllm
+import vllm.model_executor.layers.sampler as sampler
+
+from .vllm import JSONLogitsProcessor, _patched_apply_logits_processors
+
+# Patch the _apply_logits_processors so it is compatible with `JSONLogitsProcessor`
+sampler._apply_logits_processors = _patched_apply_logits_processors
+
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, Response, StreamingResponse
 from vllm.engine.arg_utils import AsyncEngineArgs
@@ -24,15 +30,10 @@ from vllm.engine.async_llm_engine import AsyncLLMEngine
 from vllm.sampling_params import SamplingParams
 from vllm.utils import random_uuid
 
-from .vllm import JSONLogitsProcessor, PatchedSampler
-
 TIMEOUT_KEEP_ALIVE = 5  # seconds.
 TIMEOUT_TO_PREVENT_DEADLOCK = 1  # seconds.
 app = FastAPI()
 engine = None
-
-# Patch the sampler so it is compatible with `JSONLogitsProcessor`
-vllm.model_executor.layers.sampler.Sampler = PatchedSampler
 
 
 @app.get("/health")

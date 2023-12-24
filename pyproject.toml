@@ -53,7 +53,7 @@ test = [
     "datasets",
     "responses",
 ]
-serve = ["vllm==0.2.5"]
+serve = ["vllm==0.2.6"]
 
 [project.urls]
 homepage = "https://github.com/outlines-dev/outlines"
