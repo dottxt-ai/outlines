@@ -24,7 +24,7 @@ def get_cache():
     be long and expensive for large models.
 
     The cache directory defaults to `HOMEDIR/.cache/outlines`, but this choice
-    can be overriden by the user by setting the value of the `OUTLINES_CACHE_DIR`
+    can be overridden by the user by setting the value of the `OUTLINES_CACHE_DIR`
     environment variable.
 
     """
