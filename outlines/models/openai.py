@@ -147,6 +147,7 @@ class OpenAI:
         # model instance.
         self.prompt_tokens = 0
         self.completion_tokens = 0
+    
 
     def __call__(
         self,
@@ -175,23 +176,32 @@ class OpenAI:
         """
         config = replace(self.config, max_tokens=max_tokens, n=samples, stop=stop_at)  # type: ignore
 
-        if "text-" in self.config.model:
-            raise NotImplementedError(
-                textwrap.dedent(
-                    "Most models that support the legacy completion endpoints will be "
-                    "deprecated on January 2024. Use Chat models instead.\n"
-                    "The list of chat models is available at https://platform.openai.com/docs/guides/text-generation."
-                )
-            )
-        if "gpt-" in self.config.model:
-            client = self.create_client()
-            response, prompt_tokens, completion_tokens = generate_chat(
-                prompt, self.system_prompt, client, config
-            )
-            self.prompt_tokens += prompt_tokens
-            self.completion_tokens += completion_tokens
+        def call_func_cache_key_args(prompt: Union[str, List[str]],
+                                     config: OpenAIConfig):
+            return (prompt, config)
+        
+        @cache(key = call_func_cache_key_args)
+        def cached_call(prompt: Union[str, List[str]], config: OpenAIConfig):
 
-            return response
+            if "text-" in self.config.model:
+                raise NotImplementedError(
+                    textwrap.dedent(
+                        "Most models that support the legacy completion endpoints will be "
+                        "deprecated on January 2024. Use Chat models instead.\n"
+                        "The list of chat models is available at https://platform.openai.com/docs/guides/text-generation."
+                    )
+                )
+            if "gpt-" in self.config.model:
+                client = self.create_client()
+                response, prompt_tokens, completion_tokens = generate_chat(
+                    prompt, self.system_prompt, client, config
+                )
+                self.prompt_tokens += prompt_tokens
+                self.completion_tokens += completion_tokens
+
+                return response
+            
+        return cached_call(prompt=prompt, config=config)
 
     def generate_choice(
         self, prompt: str, choices: List[str], max_tokens: Optional[int] = None
@@ -322,7 +332,7 @@ async def generate_chat(
 
     """
 
-    @cache()
+    #@cache()
     async def call_api(prompt, system_prompt, config):
         responses = await client.chat.completions.create(
             messages=system_message + user_message,

@@ -1,7 +1,7 @@
 import dataclasses
 import math
 from typing import TYPE_CHECKING, Callable, Iterator, List, Optional, Tuple, Union
-from outlines.caching import diskcache
+from outlines.caching import cache
 import torch
 from outlines.fsm.fsm import FSMState
 
@@ -127,9 +127,9 @@ def token_generator(model, sampler: "Sampler") -> Callable:
         allowed_tokens_set = frozenset(frozenset(allowed_token) for allowed_token in allowed_tokens)
         return (token_ids, attention_masks, kv_cache,
                  allowed_tokens_set, rng.initial_seed(),
-                   model.model.config, sampler.__name__), {}
+                   model.model.config, sampler.__name__)
     
-    @diskcache(cache_key_args_func = generate_func_cache_key_args)
+    @cache(key = generate_func_cache_key_args)
     @torch.inference_mode()
     def generate(
         token_ids: torch.Tensor,

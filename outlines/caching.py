@@ -1,24 +1,15 @@
-import os
-from typing import Callable, Optional
 import hashlib
+import os
+from typing import Callable
+
 import cloudpickle
 import torch
-from perscache import Cache, NoCache
-from perscache.serializers import JSONSerializer
-from perscache.storage import LocalFileStorage
-from diskcache import Cache as DiskCache
+from diskcache import Cache
 
 home_dir = os.path.expanduser("~")
 cache_dir = os.environ.get("OUTLINES_CACHE_DIR", f"{home_dir}/.cache/outlines")
-memory = Cache(serializer=JSONSerializer(), storage=LocalFileStorage(cache_dir))
-diskcache_memory = DiskCache(cache_dir, eviction_policy = 'none', cull_limit=0)
-_discache_enabled = True
-
-def cache(ignore: Optional[str] = None):
-    def cache_fn(fn: Callable):
-        return memory.cache(ignore=ignore)(fn)
-
-    return cache_fn
+memory = Cache(cache_dir, eviction_policy="none", cull_limit=0)
+_caching_enabled = True
 
 
 def hash_data(*data) -> str:
@@ -30,20 +21,36 @@ def hash_data(*data) -> str:
         result.update(cloudpickle.dumps(datum))
     return result.hexdigest()
 
-def diskcache(cache_key_args_func):
-    def decorator(func):
+
+def cache(key_function: Callable):
+    """Caching decorator for memoizing function calls based on a provided key.
+
+    Parameters
+    ----------
+    key
+      A callable function used to generate a unique key for each function call.
+
+    Returns
+    -------
+      A decorator function that can be applied to other functions.
+    """
+
+    def decorator(cached_function: Callable):
         def wrapper(*args, **kwargs):
-            if not _discache_enabled:
-                return func(*args, **kwargs)
-            key_args, key_kwargs = cache_key_args_func(*args, **kwargs)
-            cache_key = hash_data(*key_args, **key_kwargs)
-            if cache_key in diskcache_memory:
-                return diskcache_memory[cache_key]
-            result = func(*args, **kwargs)
-            diskcache_memory[cache_key] = result
+            if not _caching_enabled:
+                return cached_function(*args, **kwargs)
+            key_args = key_function(*args, **kwargs)
+            cache_key = hash_data(*key_args)
+            if cache_key in memory:
+                return memory[cache_key]
+            result = cached_function(*args, **kwargs)
+            memory[cache_key] = result
             return result
+
         return wrapper
+
     return decorator
+
 
 def get_cache():
     """Get the context object that contains previously-computed return values.
@@ -79,13 +86,11 @@ def disable_cache():
     >>> cache.disable()
 
     """
-    global memory, _discache_enabled
-    memory = NoCache()
-    _discache_enabled = False
+    global _caching_enabled
+    _caching_enabled = False
 
 
 def clear_cache():
     """Erase the cache completely."""
-    global memory, diskcache_memory
-    memory.storage.clear()
-    diskcache_memory.clear()
+    global memory
+    memory.clear()
