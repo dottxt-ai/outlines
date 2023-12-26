@@ -8,6 +8,7 @@ codebase.
 from .awq import awq
 from .exllamav2 import exl2
 from .gptq import gptq
+from .llamacpp import LlamaCpp, llamacpp
 from .mamba import Mamba, mamba
 from .openai import OpenAI, openai
 from .transformers import Transformer, transformers

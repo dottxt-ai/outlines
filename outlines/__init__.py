@@ -11,6 +11,7 @@ __all__ = [
     "clear_cache",
     "disable_cache",
     "get_cache",
+    "Function",
     "prompt",
     "vectorize",
 ]

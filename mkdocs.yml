@@ -126,7 +126,8 @@ nav:
         - Prompt templating: reference/prompting.md
         - Outlines functions: reference/functions.md
     - Models:
-        - OpenAI: reference/openai_text_generation.md
+        - OpenAI: reference/models/openai.md
+        - Llama.cpp: reference/models/llamacpp.md
 
   - API Reference:
       - api/index.md
