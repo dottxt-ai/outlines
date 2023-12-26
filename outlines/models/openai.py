@@ -147,7 +147,6 @@ class OpenAI:
         # model instance.
         self.prompt_tokens = 0
         self.completion_tokens = 0
-    
 
     def __call__(
         self,
@@ -176,13 +175,13 @@ class OpenAI:
         """
         config = replace(self.config, max_tokens=max_tokens, n=samples, stop=stop_at)  # type: ignore
 
-        def call_func_cache_key_args(prompt: Union[str, List[str]],
-                                     config: OpenAIConfig):
+        def call_func_cache_key_args(
+            prompt: Union[str, List[str]], config: OpenAIConfig
+        ):
             return (prompt, config)
-        
-        @cache(key = call_func_cache_key_args)
-        def cached_call(prompt: Union[str, List[str]], config: OpenAIConfig):
 
+        @cache(key_function=call_func_cache_key_args)
+        def cached_call(prompt: Union[str, List[str]], config: OpenAIConfig):
             if "text-" in self.config.model:
                 raise NotImplementedError(
                     textwrap.dedent(
@@ -200,7 +199,7 @@ class OpenAI:
                 self.completion_tokens += completion_tokens
 
                 return response
-            
+
         return cached_call(prompt=prompt, config=config)
 
     def generate_choice(
@@ -332,7 +331,6 @@ async def generate_chat(
 
     """
 
-    #@cache()
     async def call_api(prompt, system_prompt, config):
         responses = await client.chat.completions.create(
             messages=system_message + user_message,

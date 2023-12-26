@@ -1,8 +1,10 @@
 import dataclasses
 import math
 from typing import TYPE_CHECKING, Callable, Iterator, List, Optional, Tuple, Union
-from outlines.caching import cache
+
 import torch
+
+from outlines.caching import cache
 from outlines.fsm.fsm import FSMState
 
 if TYPE_CHECKING:
@@ -99,6 +101,7 @@ def sequence_generator(
 
         yield GenerationState(token_ids, kv_cache, logits, fsm_states)
 
+
 def token_generator(model, sampler: "Sampler") -> Callable:
     """Generate one token at a time.
 
@@ -123,13 +126,32 @@ def token_generator(model, sampler: "Sampler") -> Callable:
 
     """
 
-    def generate_func_cache_key_args(token_ids, attention_masks, kv_cache, allowed_tokens, rng):
-        allowed_tokens_set = frozenset(frozenset(allowed_token) for allowed_token in allowed_tokens)
-        return (token_ids, attention_masks, kv_cache,
-                 allowed_tokens_set, rng.initial_seed(),
-                   model.model.config, sampler.__name__)
-    
-    @cache(key = generate_func_cache_key_args)
+    def cache_key_args_for_generate(
+        token_ids: torch.Tensor,
+        attention_masks: torch.Tensor,
+        kv_cache: torch.Tensor,
+        allowed_tokens: List[List[int]],
+        rng: torch.Generator,
+    ):
+        """The function generates a tuple of arguments used as a key for caching the 'generate' function.
+
+        The cache key is based on the input token IDs, attention masks, KV cache, allowed token sequences,
+        random number generator seed, model configuration, and the name of the sampler function.
+        """
+        allowed_tokens_set = frozenset(
+            frozenset(allowed_token) for allowed_token in allowed_tokens
+        )
+        return (
+            token_ids,
+            attention_masks,
+            kv_cache,
+            allowed_tokens_set,
+            rng.initial_seed(),
+            model.model.config,
+            sampler.__name__,  # type: ignore
+        )
+
+    @cache(key_function=cache_key_args_for_generate)
     @torch.inference_mode()
     def generate(
         token_ids: torch.Tensor,

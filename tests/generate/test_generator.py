@@ -3,8 +3,8 @@ from typing import Generator
 
 import pytest
 import torch
-from outlines.caching import clear_cache, disable_cache
 
+from outlines.caching import clear_cache
 from outlines.fsm.fsm import FSMState
 from outlines.generate.api import SequenceGenerator
 from outlines.generate.generator import (
@@ -311,7 +311,7 @@ def test_sequence_generator_2d_several_iterations():
 
         def decode(self, x):
             return x
-        
+
     class MockTransformerModel:
         config = None
 
@@ -381,7 +381,7 @@ def test_generator_1d(logits_biases, expected_result, expected_biased_logits):
     class MockTokenizer:
         def decode(self, _):
             return "x"
-    
+
     class MockTransformerModel:
         config = None
 
@@ -394,11 +394,14 @@ def test_generator_1d(logits_biases, expected_result, expected_biased_logits):
 
     def sampler(biased_logits, *_):
         return torch.argmax(biased_logits, keepdims=True)
-    
+
     generator = token_generator(MockModel(), sampler)
-    result, _, _, biased_logits = generator(None, None, None, logits_biases, torch.Generator())
+    result, _, _, biased_logits = generator(
+        None, None, None, logits_biases, torch.Generator()
+    )
     assert torch.equal(result, torch.tensor(expected_result))
     assert torch.equal(biased_logits, torch.tensor(expected_biased_logits))
+
 
 @pytest.mark.parametrize(
     "logits_biases,expected_result,expected_biased_logits",
@@ -411,7 +414,7 @@ def test_generator_1d_cache(logits_biases, expected_result, expected_biased_logi
     class MockTokenizer:
         def decode(self, _):
             return "x"
-    
+
     class MockTransformerModel:
         config = None
 
@@ -426,15 +429,18 @@ def test_generator_1d_cache(logits_biases, expected_result, expected_biased_logi
 
     def sampler(biased_logits, *_):
         return torch.argmax(biased_logits, keepdims=True)
-    
+
     clear_cache()
     mock_model = MockModel()
     generator = token_generator(mock_model, sampler)
     for _ in range(2):
-        result, _, _, biased_logits = generator(None, None, None, logits_biases, torch.Generator())
+        result, _, _, biased_logits = generator(
+            None, None, None, logits_biases, torch.Generator()
+        )
         assert mock_model.is_called == 1
         assert torch.equal(result, torch.tensor(expected_result))
         assert torch.equal(biased_logits, torch.tensor(expected_biased_logits))
+
 
 @pytest.mark.parametrize(
     "logits_biases,expected_result,expected_biased_logits",
@@ -472,7 +478,9 @@ def test_generator_2d(logits_biases, expected_result, expected_biased_logits):
         return torch.argmax(biased_logits, dim=1, keepdims=True)
 
     generator = token_generator(MockModel(), sampler)
-    result, _, _, biased_logits = generator(None, None, None, logits_biases, torch.Generator())
+    result, _, _, biased_logits = generator(
+        None, None, None, logits_biases, torch.Generator()
+    )
     assert torch.equal(result, torch.tensor(expected_result))
     assert torch.equal(biased_logits, torch.tensor(expected_biased_logits))
 
