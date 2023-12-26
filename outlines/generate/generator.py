@@ -138,14 +138,11 @@ def token_generator(model, sampler: "Sampler") -> Callable:
         The cache key is based on the input token IDs, attention masks, KV cache, allowed token sequences,
         random number generator seed, model configuration, and the name of the sampler function.
         """
-        allowed_tokens_set = frozenset(
-            frozenset(allowed_token) for allowed_token in allowed_tokens
-        )
         return (
             token_ids,
             attention_masks,
             kv_cache,
-            allowed_tokens_set,
+            allowed_tokens,
             rng.initial_seed(),
             model.model.config,
             sampler.__name__,  # type: ignore
