@@ -52,6 +52,8 @@ test = [
     "beartype<0.16.0",
     "datasets",
     "responses",
+    "llama-cpp-python",
+    "huggingface_hub"
 ]
 serve = [
     "vllm==0.2.6",
@@ -111,6 +113,8 @@ module = [
     "tiktoken.*",
     "torch.*",
     "transformers.*",
+    "llama_cpp",
+    "huggingface_hub",
     "lark.*",
     "interegular.*",
     "datasets.*",
