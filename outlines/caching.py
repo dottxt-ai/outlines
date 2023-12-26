@@ -13,7 +13,10 @@ _caching_enabled = True
 
 
 def hash_data(*data) -> str:
-    """Pickles and hashes all the data passed to it as args."""
+    """Pickles and hashes all the data passed to it as args.
+
+    Pickling and then hashing significantly reduces the size of the key especially when dealing with large tensors.
+    """
     result = hashlib.md5()  # nosec B303
     for datum in data:
         if isinstance(datum, torch.Tensor):
