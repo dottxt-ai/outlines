@@ -358,6 +358,9 @@ def test_sequence_generator_2d_several_iterations():
 
 
 def test_generator_error():
+    class MockTransformerModel:
+        config = None
+
     def model(*_):
         raise IndexError
 
@@ -365,8 +368,9 @@ def test_generator_error():
         return None
 
     generator = token_generator(model, sampler)
+    model.model = MockTransformerModel()
     with pytest.raises(IndexError, match="The input length"):
-        generator(None, None, None, None, torch.Generator())
+        generator(None, None, None, [], torch.Generator())
 
 
 @pytest.mark.parametrize(
