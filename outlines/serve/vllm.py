@@ -39,25 +39,21 @@ def _patched_apply_logits_processors(
     return logits
 
 
-class JSONLogitsProcessor:
-    def __init__(self, schema, llm):
-        """Compile the FSM that drives the JSON-guided generation.
+class RegexLogitsProcessor:
+    def __init__(self, regex_string, llm):
+        """Compile the FSM that drives the regex-guided generation.
 
         Parameters
         ----------
-        pydantic_model
-            A Pydantic `BaseModel` that encodes the structure we want
-            the model to generate.
+        regex_string
+            A string that represents a regular expression
         llm
             An instance of `vllm.LLM`
 
         """
-        if isinstance(schema, dict):
-            schema = json.dumps(schema)
-        regex_str = build_regex_from_object(schema)
         tokenizer = self.adapt_tokenizer(llm.tokenizer)
 
-        fsm = RegexFSM(regex_str, tokenizer)
+        fsm = RegexFSM(regex_string, tokenizer)
         self.fsm = fsm
 
     def __call__(
@@ -106,3 +102,21 @@ class JSONLogitsProcessor:
         tokenizer.convert_token_to_string = convert_token_to_string
 
         return tokenizer
+
+
+class JSONLogitsProcessor(RegexLogitsProcessor):
+    def __init__(self, schema, llm):
+        """Compile the FSM that drives the JSON-guided generation.
+
+        Parameters
+        ----------
+        schema
+            A JSON schema that encodes the structure we want the model to generate
+        llm
+            An instance of `vllm.LLM`
+
+        """
+        if isinstance(schema, dict):
+            schema = json.dumps(schema)
+        regex_string = build_regex_from_object(schema)
+        super().__init__(regex_string, llm)
