@@ -17,15 +17,6 @@ from typing import AsyncGenerator
 
 import uvicorn
 import vllm.model_executor.layers.sampler as sampler
-<<<<<<< HEAD
-=======
-
-from .vllm import JSONLogitsProcessor, _patched_apply_logits_processors
-
-# Patch the _apply_logits_processors so it is compatible with `JSONLogitsProcessor`
-sampler._apply_logits_processors = _patched_apply_logits_processors
-
->>>>>>> bbea82c (Update vllm patch to v0.2.6)
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, Response, StreamingResponse
 from vllm.engine.arg_utils import AsyncEngineArgs
@@ -33,7 +24,6 @@ from vllm.engine.async_llm_engine import AsyncLLMEngine
 from vllm.sampling_params import SamplingParams
 from vllm.utils import random_uuid
 
-<<<<<<< HEAD
 from .vllm import (
     JSONLogitsProcessor,
     RegexLogitsProcessor,
@@ -44,8 +34,6 @@ from .vllm import (
 sampler._apply_logits_processors = _patched_apply_logits_processors
 
 
-=======
->>>>>>> bbea82c (Update vllm patch to v0.2.6)
 TIMEOUT_KEEP_ALIVE = 5  # seconds.
 TIMEOUT_TO_PREVENT_DEADLOCK = 1  # seconds.
 app = FastAPI()
