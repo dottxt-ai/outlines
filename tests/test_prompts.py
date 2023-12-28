@@ -224,7 +224,7 @@ def test_prompt_pydantic_response():
     prompt = source_ppt(SimpleResponse)
     assert (
         prompt
-        == '{\n  "one": <one|type=string|description=\'a description\'>,\n  "two": <two|type=string>\n}'
+        == '{\n  "one": "<one|type=string|description=\'a description\'>",\n  "two": "<two|type=string>"\n}'
     )
 
     class NestedResponse(BaseModel):
@@ -234,7 +234,7 @@ def test_prompt_pydantic_response():
     prompt = source_ppt(NestedResponse)
     assert (
         prompt
-        == '{\n  "answer": <answer|type=string>,\n  "thought": {\n    "one": <one|type=string|description=\'a description\'>,\n    "two": <two|type=string>\n  }\n}'
+        == '{\n  "answer": "<answer|type=string>",\n  "thought": {\n    "one": "<one|type=string|description=\'a description\'>",\n    "two": "<two|type=string>"\n  }\n}'
     )
 
     class ConvolutedResponse(BaseModel):
@@ -244,7 +244,7 @@ def test_prompt_pydantic_response():
     prompt = source_ppt(ConvolutedResponse)
     assert (
         prompt
-        == '{\n  "part_one": {\n    "answer": <answer|type=string>,\n    "thought": {\n      "one": <one|type=string|description=\'a description\'>,\n      "two": <two|type=string>\n    }\n  },\n  "part_two": {\n    "one": <one|type=string|description=\'a description\'>,\n    "two": <two|type=string>\n  }\n}'
+        == '{\n  "part_one": {\n    "answer": "<answer|type=string>",\n    "thought": {\n      "one": "<one|type=string|description=\'a description\'>",\n      "two": "<two|type=string>"\n    }\n  },\n  "part_two": {\n    "one": "<one|type=string|description=\'a description\'>",\n    "two": "<two|type=string>"\n  }\n}'
     )
 
     class EnumType(str, Enum):
@@ -258,7 +258,7 @@ def test_prompt_pydantic_response():
     prompt = source_ppt(EnumResponse)
     assert (
         prompt
-        == '{\n  "part_one": {\n    "answer": <answer|type=string>,\n    "thought": {\n      "one": <one|type=string|description=\'a description\'>,\n      "two": <two|type=string>\n    }\n  },\n  "part_two": <[\'a\', \'b\']|type=string>\n}'
+        == '{\n  "part_one": {\n    "answer": "<answer|type=string>",\n    "thought": {\n      "one": "<one|type=string|description=\'a description\'>",\n      "two": "<two|type=string>"\n    }\n  },\n  "part_two": "<[\'a\', \'b\']|type=string>"\n}'
     )
 
     class ListsResponse(BaseModel):
@@ -271,7 +271,7 @@ def test_prompt_pydantic_response():
 
     assert (
         prompt
-        == '{\n  "part_one": [\n    {\n      "answer": <answer|type=string>,\n      "thought": {\n        "one": <one|type=string|description=\'a description\'>,\n        "two": <two|type=string>\n      }\n    }\n  ],\n  "part_two": [\n    <[\'a\', \'b\']|type=string>\n  ],\n  "list_str": [\n    <list_str|type=number|description=\'a list with number type\'>\n  ],\n  "list_": [\n    <list_|description=\'a list without type\'>\n  ]\n}'
+        == '{\n  "part_one": [\n    {\n      "answer": "<answer|type=string>",\n      "thought": {\n        "one": "<one|type=string|description=\'a description\'>",\n        "two": "<two|type=string>"\n      }\n    }\n  ],\n  "part_two": [\n    "<[\'a\', \'b\']|type=string>"\n  ],\n  "list_str": [\n    "<list_str|type=number|description=\'a list with number type\'>"\n  ],\n  "list_": [\n    "<list_|description=\'a list without type\'>"\n  ]\n}'
     )
 
     class NestedListsResponse(BaseModel):
@@ -281,7 +281,7 @@ def test_prompt_pydantic_response():
 
     assert (
         prompt
-        == '{\n  "nested_list": [\n    {\n      "part_one": [\n        {\n          "answer": <answer|type=string>,\n          "thought": {\n            "one": <one|type=string|description=\'a description\'>,\n            "two": <two|type=string>\n          }\n        }\n      ],\n      "part_two": [\n        <[\'a\', \'b\']|type=string>\n      ],\n      "list_str": [\n        <list_str|type=number|description=\'a list with number type\'>\n      ],\n      "list_": [\n        <list_|description=\'a list without type\'>\n      ]\n    }\n  ]\n}'
+        == '{\n  "nested_list": [\n    {\n      "part_one": [\n        {\n          "answer": "<answer|type=string>",\n          "thought": {\n            "one": "<one|type=string|description=\'a description\'>",\n            "two": "<two|type=string>"\n          }\n        }\n      ],\n      "part_two": [\n        "<[\'a\', \'b\']|type=string>"\n      ],\n      "list_str": [\n        "<list_str|type=number|description=\'a list with number type\'>"\n      ],\n      "list_": [\n        "<list_|description=\'a list without type\'>"\n      ]\n    }\n  ]\n}'
     )
 
     class OptionalResponse(BaseModel):
@@ -297,7 +297,7 @@ def test_prompt_pydantic_response():
 
     assert (
         prompt
-        == '{\n  "optional": {\n    "optional": {\n      "optional": <optional|type=string|description=\'A dummy description\'>\n    }\n  }\n}'
+        == '{\n  "optional": {\n    "optional": {\n      "optional": "<optional|type=string|description=\'A dummy description\'>"\n    }\n  }\n}'
     )
 
     class FormatResponse(BaseModel):
@@ -305,7 +305,7 @@ def test_prompt_pydantic_response():
 
     prompt = source_ppt(FormatResponse)
 
-    assert prompt == '{\n  "date_": <date_|format=date>\n}'
+    assert prompt == '{\n  "date_": "<date_|format=date>"\n}'
 
 
 def test_prompt_dict_response():
