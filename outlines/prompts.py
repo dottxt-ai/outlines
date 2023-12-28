@@ -4,7 +4,7 @@ import json
 import re
 import textwrap
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, List, Optional, Type, cast, Iterable
+from typing import Any, Callable, Dict, Iterable, List, Optional, Type, cast
 
 from jinja2 import Environment, StrictUndefined
 from pydantic import BaseModel
@@ -300,11 +300,6 @@ def get_schema_pydantic(model: Type[BaseModel]):
     schema = parse_pydantic_schema(raw_schema, definitions)
 
     json_dumped = json.dumps(schema, indent=2)
-    # TODO add regex instead
-    json_dumped = json_dumped.replace('": "<', "\": <")
-    json_dumped = json_dumped.replace('>"\n', ">\n")
-    json_dumped = json_dumped.replace('>",\n', ">,\n")
-    json_dumped = json_dumped.replace('    "<', "    <")
 
     return json_dumped
 
@@ -327,12 +322,13 @@ def find_ref_keys(d):
                     if key in [
                         "items"
                     ]:  # TODO add other default value for schema description
-                        try:
+                        split_path = path.split(".")
+                        if len(split_path) >= 2:
                             key_ = path.split(".")[-2]
-                            if key_ == "anyOf[0]":  # TODO a bit sioux #TeamMonkey
-                                key_ = path.split(".")[-3]
+                            if key_ == "anyOf[0]" and len(split_path) > 2:
+                                key_ = split_path[-3]
                             ref_keys[key_] = value.get("$ref")
-                        except Exception as e:  # TODO ok rly need a refacto
+                        else:
                             ref_keys[path] = value.get("$ref")
                     else:
                         ref_keys[key] = value.get("$ref")
@@ -356,8 +352,21 @@ def find_ref_keys(d):
     return ref_keys
 
 
-NUMBER_CONDITIONS = set(["exclusiveMaximum", "exclusiveMinimum", "maximum", "minimum", "multipleOf"])
-STRING_CONDITIONS = set(["pattern", "maxLength", "minLength", "strip_whitespace", "to_lower", "to_upper"])
+NUMBER_CONDITIONS = {
+    "exclusiveMaximum",
+    "exclusiveMinimum",
+    "maximum",
+    "minimum",
+    "multipleOf",
+}
+STRING_CONDITIONS = {
+    "pattern",
+    "maxLength",
+    "minLength",
+    "strip_whitespace",
+    "to_lower",
+    "to_upper",
+}
 CONDITIONS = NUMBER_CONDITIONS | STRING_CONDITIONS
 
 
@@ -382,12 +391,18 @@ def parse_pydantic_schema(raw_schema, definitions, attribute=None, parent_desc=N
             is_of = False
             if "anyOf" in value:
                 is_of = True
-                description = value.get('description')
+                description = value.get("description")
 
                 value = value.get("anyOf")  # TODO Only first value, handle more TBD
                 value = value[0]
 
-            condition_str = "|".join({f"{k}='{v}'" if isinstance(v, str) else f"{k}={v}" for k, v in value.items() if k in CONDITIONS})
+            condition_str = "|".join(
+                {
+                    f"{k}='{v}'" if isinstance(v, str) else f"{k}={v}"
+                    for k, v in value.items()
+                    if k in CONDITIONS
+                }
+            )
 
             type_ = None
             is_list = False
