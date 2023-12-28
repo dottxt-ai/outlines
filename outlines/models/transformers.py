@@ -1,8 +1,6 @@
 from typing import TYPE_CHECKING, List, Optional, Tuple, Union
 
 import torch
-from datasets.fingerprint import Hasher
-from transformers.file_utils import SPIECE_UNDERLINE
 
 from outlines.models.tokenizer import Tokenizer
 
@@ -57,7 +55,7 @@ def get_llama_tokenizer_types():
     )
 
 
-class Transformers:
+class Transformer:
     """Represents a `transformers` model."""
 
     def __init__(
@@ -69,6 +67,7 @@ class Transformers:
         self.model = model
         self.tokenizer = tokenizer
 
+    @torch.inference_mode
     def forward(
         self,
         input_ids: torch.LongTensor,
@@ -105,9 +104,8 @@ class Transformers:
             output_hidden_states=False,
             past_key_values=past_key_values,
         )
-        next_token_logits = output.logits[..., -1, :]
 
-        return next_token_logits, output.past_key_values
+        return output.logits, output.past_key_values
 
     def __call__(
         self,
@@ -115,10 +113,13 @@ class Transformers:
         attention_mask: torch.LongTensor,
         past_key_values: Optional[Tuple] = None,
     ) -> torch.FloatTensor:
-        return self.forward(input_ids, attention_mask, past_key_values)[0]
+        logits, kv_cache = self.forward(input_ids, attention_mask, past_key_values)
+        next_token_logits = logits[..., -1, :]
+
+        return next_token_logits, kv_cache
 
 
-class TransformersTokenizer(Tokenizer):
+class TransformerTokenizer(Tokenizer):
     """Represents a tokenizer for models in the `transformers` library."""
 
     def __init__(self, model_name: str, **kwargs):
@@ -153,10 +154,12 @@ class TransformersTokenizer(Tokenizer):
         return output["input_ids"], output["attention_mask"]
 
     def decode(self, token_ids: torch.LongTensor) -> List[str]:
-        text = self.tokenizer.batch_decode(token_ids)
+        text = self.tokenizer.batch_decode(token_ids, skip_special_tokens=True)
         return text
 
     def convert_token_to_string(self, token: str) -> str:
+        from transformers.file_utils import SPIECE_UNDERLINE
+
         string = self.tokenizer.convert_tokens_to_string([token])
 
         if self.is_llama:
@@ -172,6 +175,8 @@ class TransformersTokenizer(Tokenizer):
         return NotImplemented
 
     def __hash__(self):
+        from datasets.fingerprint import Hasher
+
         return hash(Hasher.hash(self.tokenizer))
 
 
@@ -213,6 +218,6 @@ def transformers(
         model_kwargs["device_map"] = device
 
     model = AutoModelForCausalLM.from_pretrained(model_name, **model_kwargs)
-    tokenizer = TransformersTokenizer(model_name, **tokenizer_kwargs)
+    tokenizer = TransformerTokenizer(model_name, **tokenizer_kwargs)
 
-    return Transformers(model, tokenizer)
+    return Transformer(model, tokenizer)

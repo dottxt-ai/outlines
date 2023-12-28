@@ -26,15 +26,17 @@ dependencies = [
    "interegular",
    "jinja2",
    "lark",
+   "nest_asyncio",
    "numpy",
-   "pillow",
    "perscache",
    "pydantic>=2.0",
    "scipy",
-   "tenacity",
-   "torch",
+   "torch>=2.1",
    "numba",
    "joblib",
+   "referencing",
+   "jsonschema",
+   "requests",
 ]
 dynamic = ["version"]
 
@@ -49,7 +51,9 @@ test = [
     "accelerate",
     "beartype<0.16.0",
     "datasets",
+    "responses",
 ]
+serve = ["vllm==0.2.5"]
 
 [project.urls]
 homepage = "https://github.com/outlines-dev/outlines"
@@ -74,6 +78,7 @@ testpaths = ["tests"]
 filterwarnings = [
     "error",
     "ignore::numba.core.errors.NumbaPendingDeprecationWarning",
+    "ignore::pydantic.warnings.PydanticDeprecatedSince20",
     "ignore::FutureWarning:transformers.*",
     "ignore::UserWarning:torch.cuda.*"
 ]
@@ -83,24 +88,33 @@ exclude=["examples"]
 
 [[tool.mypy.overrides]]
 module = [
+    "awq.*",
+    "auto_gptq.*",
+    "exllamav2.*",
     "jinja2",
     "joblib.*",
-    "openai",
+    "jsonschema.*",
+    "openai.*",
+    "mamba_ssm.*",
+    "nest_asyncio",
     "numpy.*",
     "perscache.*",
-    "PIL",
-    "PIL.Image",
-    "pydantic",
+    "pydantic.*",
     "pytest",
+    "referencing.*",
     "scipy.*",
-    "tenacity.*",
     "tiktoken.*",
-    "torch",
+    "torch.*",
     "transformers.*",
     "lark.*",
     "interegular.*",
     "datasets.*",
     "numba.*",
+    "requests.*",
+    "responses.*",
+    "vllm.*",
+    "uvicorn.*",
+    "fastapi.*",
 ]
 ignore_missing_imports = true
 

@@ -11,51 +11,56 @@ References
 """
 import argparse
 
+import outlines
 import outlines.models as models
-import outlines.text as text
 
 
 def split_into_steps(question, model_name: str):
-    @text.prompt
+    @outlines.prompt
     def solve(question):
         """{{question}}
-        Let's solve this problem by splitting it into steps.
+        Rephrase : : as a true or false statement, identify an Object, relationship and subject
         """
 
-    complete = models.text_completion.openai(model_name)
+    model = models.openai(model_name)
 
     prompt = solve(question)
-    answer = complete(prompt)
+    answer = model(prompt, 500)
+    prompt += (
+        answer
+        + "\n what is the only option that displays the same type of relationship as : :?"
+    )
+    answer = model(prompt, 500)
     completed = prompt + answer
 
     return completed
 
 
 def fill_in_the_blanks(question, model_name: str):
-    @text.prompt
+    @outlines.prompt
     def determine_goal(question):
         """{{question}}
 
         In order to solve this problem, we will analyze each of the options and determine
         """
 
-    @text.prompt
+    @outlines.prompt
     def solve(memory):
         """{{memory}}. Let's begin."""
 
-    complete = models.text_completion.openai(model_name)
+    model = models.openai(model_name)
 
     prompt = determine_goal(question)
-    answer = complete(prompt, stop_at=["."])
+    answer = model(prompt, stop_at=["."])
     prompt = solve(prompt + answer)
-    answer = complete(prompt, stop_at=["."])
+    answer = model(prompt, max_tokens=500)
     completed = prompt + answer
 
     return completed
 
 
 def ask_an_expert(question, model_name: str):
-    @text.prompt
+    @outlines.prompt
     def find_expert(question):
         """
         {{question}}
@@ -73,36 +78,35 @@ def ask_an_expert(question, model_name: str):
         on the screen: "
         """
 
-    @text.prompt
+    @outlines.prompt
     def get_answer(question, expert, memory):
         """
-        {{memory}}
+        {{memory}}".
         I am ready to ask my question.
         "{{expert}}" I say,
         {{question}}
         """
 
-    complete_expert = models.text_completion.openai(model_name)
-    complete_answer = models.text_completion.openai(model_name)
+    model = models.openai(model_name)
 
     prompt = find_expert(question)
-    expert = complete_expert(prompt, stop_at=['"'])
+    expert = model(prompt, stop_at=['"'])
     prompt = get_answer(question, expert, prompt + expert)
-    answer = complete_answer(prompt)
+    answer = model(prompt, max_tokens=500)
     completed = prompt + answer
 
     return completed
 
 
 def ask_an_expert_simple(question, model_name: str):
-    @text.prompt
+    @outlines.prompt
     def find_expert(question):
         """
         Q: {{question}}
         A: A good person to answer this question would be
         """
 
-    @text.prompt
+    @outlines.prompt
     def get_answer(expert, memory):
         """
         {{memory}}.
@@ -110,13 +114,12 @@ def ask_an_expert_simple(question, model_name: str):
         For instance, {{expert}} would answer
         """
 
-    model_expert = models.text_completion.openai(model_name)
-    model_answer = models.text_completion.openai(model_name)
+    model = models.openai(model_name)
 
     prompt = find_expert(question)
-    expert = model_expert(prompt, stop_at=["\n", "."])
+    expert = model(prompt, stop_at=["\n", "."])
     prompt = get_answer(expert, prompt + expert)
-    answer = model_answer(prompt)
+    answer = model(prompt, max_tokens=500)
     completed = prompt + answer
 
     return completed
@@ -133,17 +136,13 @@ if __name__ == "__main__":
     parser.add_argument(
         "--model",
         type=str,
-        default="gpt-3.5-turbo",
+        default="gpt-3.5-turbo-1106",
         help="The Large Language Model to use to run the examples.",
     )
     args = parser.parse_args()
 
     math_q = "f(x) = x*x. What is f(f(3))?"
     sat_q = """
-
-Directions: In the following question, a related pair of words or phrases \
-is followed by five pairs of words or phrases. Choose the pair that best \
-expresses a relationship similar to that in the original pair. \
 
 BRAGGART :: MODESTY
 A) FLEDGLING : EXPERIENCE
@@ -157,7 +156,9 @@ E) CANDIDATE : AMBITION
     meaning_q = "What is the meaning of life?"
 
     run_example(split_into_steps, math_q, args.model)
-    run_example(split_into_steps, sat_q, args.model)
+    run_example(
+        split_into_steps, sat_q.lower(), args.model
+    )  # gpt>3.5 usually gets this one right
     run_example(fill_in_the_blanks, sat_q, args.model)
     run_example(ask_an_expert, alignment_q, args.model)
     run_example(ask_an_expert_simple, meaning_q, args.model)

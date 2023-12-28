@@ -7,10 +7,10 @@ The original repo can be found at https://github.com/yoheinakajima/babyagi
 from collections import deque
 from typing import Deque, List
 
+import outlines
 import outlines.models as models
-import outlines.text as text
 
-model = models.text_completion.openai("gpt-3.5-turbo")
+model = models.openai("gpt-3.5-turbo")
 
 
 #################
@@ -18,7 +18,7 @@ model = models.text_completion.openai("gpt-3.5-turbo")
 #################
 
 
-@text.prompt
+@outlines.prompt
 def perform_task_ppt(objective: str, task: str):
     """You are an AI who performs one task based on the following objective: {{objective}}.
 
@@ -28,15 +28,12 @@ def perform_task_ppt(objective: str, task: str):
     """
 
 
-perform_task = text.function(model, perform_task_ppt)
-
-
 #####################
 # Create a new task #
 #####################
 
 
-@text.prompt
+@outlines.prompt
 def create_tasks_ppt(
     objective: str, previous_task: str, result: str, task_list: List[str]
 ):
@@ -67,15 +64,12 @@ def create_tasks_fmt(result: str) -> List[str]:
     return task_list
 
 
-create_tasks = text.function(model, create_tasks_ppt, create_tasks_fmt)
-
-
 ########################
 # Prioritize new tasks #
 ########################
 
 
-@text.prompt
+@outlines.prompt
 def prioritize_tasks_ppt(objective: str, task_names: List[str], next_task_id: int):
     """You are a task prioritization AI tasked with cleaning the formatting of \
     and reprioritizing the following tasks: {{task_names}}.
@@ -102,9 +96,6 @@ def prioritize_tasks_fmt(result: str):
             task_list.append({"task_id": task_id, "task_name": task_name})
 
     return task_list
-
-
-prioritize_tasks = text.function(model, prioritize_tasks_ppt, prioritize_tasks_fmt)
 
 
 objective = "Becoming rich while doing nothing."
@@ -134,18 +125,27 @@ def one_cycle(objective: str, task_list, next_task_id: int):
     """
 
     task = task_list.popleft()
-    result = perform_task(objective, task)
-    new_tasks = create_tasks(
+
+    prompt = perform_task_ppt(objective, task)
+    result = model(prompt)
+
+    prompt = create_tasks_ppt(
         objective, first_task["task_name"], result, [first_task["task_name"]]
     )
+    new_tasks = model(prompt)
+
+    new_tasks = create_tasks_fmt(new_tasks)
 
     for task in new_tasks:
         next_task_id += 1
         task_list.append({"task_id": next_task_id, "task_name": task})
 
-    prioritized_tasks = prioritize_tasks(
+    prompt = prioritize_tasks_ppt(
         objective, [task["task_name"] for task in task_list], next_task_id
     )
+    prioritized_tasks = model(prompt)
+
+    prioritized_tasks = prioritize_tasks_fmt(prioritized_tasks)
 
     return task, result, prioritized_tasks, next_task_id
 

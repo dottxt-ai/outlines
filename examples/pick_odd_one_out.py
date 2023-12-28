@@ -9,11 +9,11 @@ References
        arXiv preprint arXiv:2212.06094.
 
 """
+import outlines
 import outlines.models as models
-import outlines.text as text
 
 
-@text.prompt
+@outlines.prompt
 def build_ooo_prompt(options):
     """
     Pick the odd word out: skirt, dress, pen, jacket.
@@ -29,13 +29,12 @@ def build_ooo_prompt(options):
     """
 
 
-reasoning_model = models.text_completion.openai("text-davinci-003")
-result_model = models.text_completion.openai("text-davinci-003")
+model = models.openai("gpt-3.5-turbo")
 
 options = ["sea", "mountains", "plains", "sock"]
 prompt = build_ooo_prompt(options)
-reasoning = reasoning_model(prompt, stop_at=["Pick the odd word", "So the odd one"])
+reasoning = model(prompt, stop_at=["Pick the odd word", "So the odd one"])
 prompt += reasoning
-result = result_model(prompt)
+result = model(prompt)
 prompt += result
 print(prompt)

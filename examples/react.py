@@ -12,11 +12,11 @@ References
 """
 import requests  # type: ignore
 
+import outlines
 import outlines.models as models
-import outlines.text as text
 
 
-@text.prompt
+@outlines.prompt
 def build_reAct_prompt(question):
     """What is the elevation range for the area that the eastern sector of the Colorado orogeny extends into?
     Tho 1: I need to search Colorado orogeny, find the area that the eastern sector of the Colorado ...
@@ -30,7 +30,7 @@ def build_reAct_prompt(question):
     """
 
 
-@text.prompt
+@outlines.prompt
 def add_mode(i, mode, result, prompt):
     """{{ prompt }}
     {{ mode }} {{ i }}: {{ result }}
@@ -45,22 +45,24 @@ def search_wikipedia(query: str):
 
 
 prompt = build_reAct_prompt("Where is Apple Computers headquarted? ")
-complete = models.text_completion.openai(
-    "gpt-3.5-turbo", max_tokens=128, temperature=1.0
-)
+complete = models.openai("gpt-3.5-turbo")
 
 for i in range(1, 10):
-    mode = complete(prompt, is_in=["Tho", "Act"])
+    mode = complete.generate_choice(prompt, choices=["Tho", "Act"], max_tokens=128)
     prompt = add_mode(i, mode, "", prompt)
 
     if mode == "Tho":
-        thought = complete(prompt, stop_at="\n")
+        thought = complete(prompt, stop_at="\n", max_tokens=128)
         prompt += f"{thought}"
     elif mode == "Act":
-        action = complete(prompt, is_in=["Search", "Finish"])
+        action = complete.generate_choice(
+            prompt, choices=["Search", "Finish"], max_tokens=128
+        )
         prompt += f"{action} '"
 
-        subject = complete(prompt, stop_at=["'"])  # Apple Computers headquartered
+        subject = complete(
+            prompt, stop_at=["'"], max_tokens=128
+        )  # Apple Computers headquartered
         subject = " ".join(subject.split()[:2])
         prompt += f"{subject}'"
 

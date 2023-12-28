@@ -29,3 +29,4 @@ repos:
   hooks:
     - id: mypy
       args: [--allow-redefinition]
+      exclude: ^examples/

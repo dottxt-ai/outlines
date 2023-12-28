@@ -1,0 +1,144 @@
+# Site information
+site_name: Outlines 〰️
+site_author: The Outlines developers
+site_description: >-
+  Guided text generation with LLMs
+
+
+# Repository
+repo_name: outlines-dev/outlines
+repo_url: https://github.com/outlines-dev/outlines
+
+# Copyright
+copyright: Copyright &copy; 2023- The Outlines Developers
+
+# Configuration
+theme:
+  name: material
+  custom_dir: docs/overrides
+  palette:
+    - scheme: default
+      primary: white
+  logo: assets/images/logo.png
+  favicon: assets/images/logo.png
+  icon:
+    repo: fontawesome/brands/github
+  features:
+    - content.code.copy
+    - navigation.expand
+    - navigation.tabs
+    - navigation.sections
+    - header.autohide
+    - announce.dismiss
+  font:
+    text: Inter
+    code: Source Code Pro
+
+# Additional configuration
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/outlines-dev
+    - icon: fontawesome/brands/twitter
+      link: https://twitter.com/remilouf
+  generator: false
+  analytics:
+    provider: google
+    property: !ENV GOOGLE_ANALYTICS_KEY
+    feedback:
+      title: Was this page helpful?
+      ratings:
+        - icon: material/thumb-up-outline
+          name: This page was helpful
+          data: 1
+          note: >-
+            Thanks for your feedback!
+        - icon: material/thumb-down-outline
+          name: This page could be improved
+          data: 0
+          note: >-
+            Thanks for your feedback! Help us improve this page by
+            using our <a href="..." target="_blank" rel="noopener">feedback form</a>.
+
+# Extensions
+markdown_extensions:
+  - admonition
+  - def_list
+  - attr_list
+  - md_in_html
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+      noclasses: True
+      pygments_style: bw
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.inlinehilite
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
+
+extra_css:
+  - stylesheets/extra.css
+
+plugins:
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          options:
+            show_submodules: true
+  - search
+  - section-index
+  - social:
+      cards_layout_options:
+        color: #173a58
+
+nav:
+  - Home: index.md
+  - Getting Started:
+      - Welcome to Outlines: welcome.md
+      - Installation: installation.md
+      - Quickstart: quickstart.md
+      - Licence: licence.md
+  - Cookbook:
+      - cookbook/index.md
+      - Classification: cookbook/classification.md
+      - Named Entity Extraction: cookbook/extraction.md
+      - Generate synthetic data: cookbook/dating_profiles.md
+      - Summarize a document: cookbook/chain_of_density.md
+      - Playing chess: cookbook/models_playing_chess.md
+  - Docs:
+    - reference/index.md
+    - Text generation:
+        - Free text: reference/text.md
+        - Classification: reference/choices.md
+        - JSON: reference/json.md
+        - Grammar: reference/cfg.md
+        - Regex: reference/regex.md
+        - Types: reference/types.md
+    - Utilities:
+        - Serve with vLLM: reference/vllm.md
+        - Prompt templating: reference/prompting.md
+        - Outlines functions: reference/functions.md
+    - Models:
+        - OpenAI: reference/openai_text_generation.md
+
+  - API Reference:
+      - api/index.md
+      - api/models.md
+      - api/prompts.md
+      - api/json_schema.md
+      - api/fsm.md
+      - api/parsing.md
+      - api/regex.md
+      - api/samplers.md
+  - Community:
+      - community/index.md
+      - Feedback 🫶: community/feedback.md
+      - Chat with us ☕: https://discord.com/invite/R9DSu34mGd
+      - How to contribute 🏗️: community/contribute.md

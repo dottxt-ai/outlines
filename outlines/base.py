@@ -3,6 +3,7 @@ import functools
 import inspect
 from typing import Callable, Optional
 
+import nest_asyncio
 import numpy as np
 from numpy.lib.function_base import (
     _calculate_shapes,
@@ -10,6 +11,9 @@ from numpy.lib.function_base import (
     _parse_input_dimensions,
     _update_dim_sizes,
 )
+
+# Allow nested loops, useful to run in notebooks
+nest_asyncio.apply()
 
 
 class vectorize:

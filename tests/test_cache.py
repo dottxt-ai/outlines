@@ -37,7 +37,7 @@ def test_cache(refresh_environment):
         memory = outlines.get_cache()
         assert memory.storage.location == Path(tempdir)
 
-        yield outlines.caching.cache
+        yield outlines.caching.cache()
 
         memory.storage.clear()
 

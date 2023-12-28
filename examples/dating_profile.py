@@ -5,8 +5,8 @@ import torch
 import transformers
 from pydantic import BaseModel, conlist
 
-import outlines.models as models
-import outlines.text as text
+import outlines
+from outlines import models
 
 
 class QuestionChoice(str, Enum):
@@ -41,7 +41,7 @@ class Example:
     profile: DatingProfile
 
 
-@text.prompt
+@outlines.prompt
 def dating_profile_prompt(description: str, examples: list[Example]):
     """
     You are a world-renowned matchmaker who understands the modern dating market. Your job is to generate dating app profiles for male clients interested in women based on a provided description. The profiles should be authentic, show off their strengths, and maximize their likelihood of getting matches on dating apps.
@@ -121,11 +121,8 @@ model = models.transformers(
 new_description = "I'm a laid-back lawyer who spends a lot of his free-time gaming. I work in a corporate office, but ended up here after the start-up I cofounded got acquired, so still play ping pong with my cool coworkers every day. I have a bar at home where I make cocktails, which is great for entertaining friends. I secretly like to wear suits and get a new one tailored every few months. I also like weddings because I get to wear those suits, and it's a good excuse for a date. I watch the latest series because I'm paying, with my hard-earned money, for every streaming service."
 
 prompt = dating_profile_prompt(description=new_description, examples=samples)
-profile = text.generate.json(model, DatingProfile)(prompt)
+profile = outlines.generate.json(model, DatingProfile)(prompt)  # type: ignore
 print(profile)
-
-parsed_profile = DatingProfile.model_validate_json(profile)
-print(parsed_profile)
 
 # Sample generated profiles
 """

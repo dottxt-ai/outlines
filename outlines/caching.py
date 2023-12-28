@@ -1,5 +1,5 @@
 import os
-from typing import Callable
+from typing import Callable, Optional
 
 from perscache import Cache, NoCache
 from perscache.serializers import JSONSerializer
@@ -10,8 +10,11 @@ cache_dir = os.environ.get("OUTLINES_CACHE_DIR", f"{home_dir}/.cache/outlines")
 memory = Cache(serializer=JSONSerializer(), storage=LocalFileStorage(cache_dir))
 
 
-def cache(fn: Callable):
-    return memory.cache()(fn)
+def cache(ignore: Optional[str] = None):
+    def cache_fn(fn: Callable):
+        return memory.cache(ignore=ignore)(fn)
+
+    return cache_fn
 
 
 def get_cache():
@@ -21,7 +24,7 @@ def get_cache():
     be long and expensive for large models.
 
     The cache directory defaults to `HOMEDIR/.cache/outlines`, but this choice
-    can be overriden by the user by setting the value of the `OUTLINES_CACHE_DIR`
+    can be overridden by the user by setting the value of the `OUTLINES_CACHE_DIR`
     environment variable.
 
     """

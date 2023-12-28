@@ -11,11 +11,12 @@ dependencies:
   - python==3.10.0
   - jinja2
   - numpy
-  - pillow
   - pydantic
   - scipy
   - pytest
   - pre-commit
+  - referencing
+  - jsonschema
   - transformers
   - pip
   - pip:

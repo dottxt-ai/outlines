@@ -2,13 +2,13 @@ import pytest
 import torch
 from transformers.models.gpt2 import GPT2TokenizerFast
 
-from outlines.models.transformers import TransformersTokenizer, transformers
+from outlines.models.transformers import TransformerTokenizer, transformers
 
 TEST_MODEL = "hf-internal-testing/tiny-random-GPTJForCausalLM"
 
 
 def test_tokenizer():
-    tokenizer = TransformersTokenizer(TEST_MODEL)
+    tokenizer = TransformerTokenizer(TEST_MODEL)
     assert tokenizer.eos_token_id == 0
     assert tokenizer.pad_token_id == 0
     assert isinstance(tokenizer.tokenizer, GPT2TokenizerFast)
@@ -37,7 +37,7 @@ def test_tokenizer():
     isinstance(text[0], str)
     isinstance(text[1], str)
 
-    tokenizer = TransformersTokenizer(
+    tokenizer = TransformerTokenizer(
         TEST_MODEL, additional_special_tokens=["<t1>", "<t2>"]
     )
     assert "<t1>" in tokenizer.special_tokens
@@ -45,7 +45,7 @@ def test_tokenizer():
 
 
 def test_llama_tokenizer():
-    tokenizer = TransformersTokenizer("hf-internal-testing/llama-tokenizer")
+    tokenizer = TransformerTokenizer("hf-internal-testing/llama-tokenizer")
 
     # Broken
     assert tokenizer.tokenizer.convert_tokens_to_string(["▁baz"]) == "baz"
@@ -63,28 +63,36 @@ def test_model():
         transformers(TEST_MODEL, device="non_existent")
 
     model = transformers(TEST_MODEL, device="cpu")
-    assert isinstance(model.tokenizer, TransformersTokenizer)
+    assert isinstance(model.tokenizer, TransformerTokenizer)
     assert model.device.type == "cpu"
 
     model = transformers(TEST_MODEL, model_kwargs={"device_map": "cpu"})
-    assert isinstance(model.tokenizer, TransformersTokenizer)
+    assert isinstance(model.tokenizer, TransformerTokenizer)
     assert model.device.type == "cpu"
 
     model = transformers(TEST_MODEL, device="cpu", model_kwargs={"device_map": "cuda"})
-    assert isinstance(model.tokenizer, TransformersTokenizer)
+    assert isinstance(model.tokenizer, TransformerTokenizer)
     assert model.device.type == "cpu"
 
     input_ids = torch.tensor([[0, 1, 2]])
-    logits = model(input_ids, torch.ones_like(input_ids))
+    logits, kv_cache = model(input_ids, torch.ones_like(input_ids))
     assert logits.type() == "torch.FloatTensor"
     assert logits.ndim == 2
     assert logits.shape[0] == 1
+    assert len(kv_cache) == model.model.config.n_layer
+    assert len(kv_cache[0]) == 2
+    assert kv_cache[0][0].shape[1] == model.model.config.n_head
+    assert kv_cache[0][0].shape[2] == 3  # number of tokens
 
     input_ids = torch.tensor([[0, 1, 2], [3, 4, 5], [6, 7, 8]])
-    logits = model(input_ids, torch.ones_like(input_ids))
+    logits, kv_cache = model(input_ids, torch.ones_like(input_ids))
     assert logits.type() == "torch.FloatTensor"
     assert logits.ndim == 2
     assert logits.shape[0] == 3
+    assert len(kv_cache) == model.model.config.n_layer
+    assert len(kv_cache[0]) == 2
+    assert kv_cache[0][0].shape[1] == model.model.config.n_head
+    assert kv_cache[0][0].shape[2] == 3  # number of tokens
 
     with pytest.raises(AssertionError):
         input_ids = torch.tensor([[[0, 1, 2], [3, 4, 5]], [[6, 7, 8], [0, 1, 2]]])
@@ -92,7 +100,7 @@ def test_model():
 
 
 def test_tokenizer_eq_hash():
-    tokenizer = TransformersTokenizer("gpt2")
-    tokenizer2 = TransformersTokenizer("gpt2")
+    tokenizer = TransformerTokenizer("gpt2")
+    tokenizer2 = TransformerTokenizer("gpt2")
     assert tokenizer == tokenizer2
     assert hash(tokenizer) == hash(tokenizer2)

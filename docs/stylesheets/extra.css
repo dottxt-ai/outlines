@@ -1,0 +1,52 @@
+:root > * {
+  --md-default-bg-color: #FFFFFF;
+  --md-text-font-family: "Inter";
+}
+
+.index-pre-code {
+  margin: 50px;
+  max-width: 700px;
+  left: 50%;
+}
+
+.index-pre-code pre>code {
+  text-align: left;
+}
+
+.md-typeset pre>code {
+  border-radius: 1rem;
+  box-shadow: 10px 5px 5px #EEEEEE;
+
+}
+
+h1.title {
+  color: #FFFFFF;
+  margin: 0px 0px 5px;
+}
+
+h2.subtitle {
+  margin: 5px 0px 25px;
+}
+
+.md-typeset {
+  line-height: 24px;
+  font-weight: 400;
+}
+
+.md-typeset h1 {
+  font-weight: bold;
+  color: #000000;
+}
+
+.md-typeset h2 {
+  font-weight: bold;
+  color: #000000;
+}
+
+span.md-ellipsis {
+  color: black;
+}
+
+.md-nav__link--active {
+  background-color: #ECEFF4;
+}
