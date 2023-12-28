@@ -350,7 +350,7 @@ def find_ref_keys(d):
 
 
 NUMBER_CONDITIONS = set(["exclusiveMaximum", "exclusiveMinimum", "maximum", "minimum", "multipleOf"])
-STRING_CONDITIONS = set(["maxLength", "minLength", "strip_whitespace", "to_lower", "to_upper"])
+STRING_CONDITIONS = set(["pattern", "maxLength", "minLength", "strip_whitespace", "to_lower", "to_upper"])
 CONDITIONS = NUMBER_CONDITIONS | STRING_CONDITIONS
 
 
@@ -375,12 +375,12 @@ def parse_pydantic_schema(raw_schema, definitions, attribute=None, parent_desc=N
             is_of = False
             if "anyOf" in value:
                 is_of = True
-                description = value.get("description")
+                description = value.get('description')
 
                 value = value.get("anyOf")  # TODO Only first value, handle more TBD
                 value = value[0]
 
-            condition_str = "|".join({f"{k}={v}" for k, v in value.items() if k in CONDITIONS})
+            condition_str = "|".join({f"{k}='{v}'" if isinstance(v, str) else f"{k}={v}" for k, v in value.items() if k in CONDITIONS})
 
             type_ = None
             is_list = False
@@ -399,14 +399,14 @@ def parse_pydantic_schema(raw_schema, definitions, attribute=None, parent_desc=N
 
             if "description" in value:
                 description = value.get("description")
-                rendered_str += f"|description={description}"
+                rendered_str += f"|description='{description}'"
 
             elif is_of:
                 if description:
-                    rendered_str += f"|description={description}"
+                    rendered_str += f"|description='{description}'"
 
             elif parent_desc:
-                rendered_str += f"|description={parent_desc}"
+                rendered_str += f"|description='{parent_desc}'"
 
             if condition_str:
                 rendered_str += f"|{condition_str}"
@@ -453,9 +453,9 @@ def parse_pydantic_schema(raw_schema, definitions, attribute=None, parent_desc=N
         description = {}  # TODO add constraints keys
         if "description" in raw_schema:
             description = raw_schema.get("description")
-            rendered_str += f"|description={description}"
+            rendered_str += f"|description='{description}'"
         elif parent_desc:
-            rendered_str += f"|description={parent_desc}"
+            rendered_str += f"|description='{parent_desc}'"
 
         return rendered_str + ">"
 
