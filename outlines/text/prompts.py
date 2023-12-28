@@ -299,7 +299,14 @@ def get_schema_pydantic(model: Type[BaseModel]):
     definitions = raw_schema.get(def_key, None)
     schema = parse_pydantic_schema(raw_schema, definitions)
 
-    return json.dumps(schema, indent=2)
+    json_dumped = json.dumps(schema, indent=2)
+    # TODO add regex instead
+    json_dumped = json_dumped.replace('": "<', "\": <")
+    json_dumped = json_dumped.replace('>"\n', ">\n")
+    json_dumped = json_dumped.replace('>",\n', ">,\n")
+    json_dumped = json_dumped.replace('    "<', "    <")
+
+    return json_dumped
 
 
 def find_ref_keys(d):
