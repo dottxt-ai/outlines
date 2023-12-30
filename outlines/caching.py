@@ -1,20 +1,79 @@
+import asyncio
+import hashlib
 import os
 from typing import Callable, Optional
 
-from perscache import Cache, NoCache
-from perscache.serializers import JSONSerializer
-from perscache.storage import LocalFileStorage
+import cloudpickle
+import torch
+from diskcache import Cache
 
 home_dir = os.path.expanduser("~")
 cache_dir = os.environ.get("OUTLINES_CACHE_DIR", f"{home_dir}/.cache/outlines")
-memory = Cache(serializer=JSONSerializer(), storage=LocalFileStorage(cache_dir))
+memory = Cache(cache_dir, eviction_policy="none", cull_limit=0)
+_caching_enabled = True
 
 
-def cache(ignore: Optional[str] = None):
-    def cache_fn(fn: Callable):
-        return memory.cache(ignore=ignore)(fn)
+def hash_data(*data) -> str:
+    """Pickles and hashes all the data passed to it as args.
+    Pickling and then hashing significantly reduces the size of the key especially when dealing with large tensors.
+    """
+    result = hashlib.md5()  # nosec B303
+    for datum in data:
+        if isinstance(datum, torch.Tensor):
+            datum = datum.cpu().numpy()
+        result.update(cloudpickle.dumps(datum))
+    return result.hexdigest()
 
-    return cache_fn
+
+def cache(key_function: Optional[Callable] = None):
+    """Caching decorator for memoizing function calls.
+    The cache key is created based on the values returned by the key_function callable
+    if provided or based on the arguments of the decorated function directly otherwise
+    Parameters
+    ----------
+    key_function
+      A callable function used to generate a unique key for each function call. It's
+      called with the arguments of the decorated function as arguments
+    Returns
+    -------
+      A decorator function that can be applied to other functions.
+    """
+
+    def decorator(cached_function: Callable):
+        def wrapper(*args, **kwargs):
+            if not _caching_enabled:
+                return cached_function(*args, **kwargs)
+            if key_function:
+                key_args = key_function(*args, **kwargs)
+                cache_key = hash_data(*key_args)
+            else:
+                cache_key = hash_data(*args, **kwargs)
+            if cache_key in memory:
+                return memory[cache_key]
+            result = cached_function(*args, **kwargs)
+            memory[cache_key] = result
+            return result
+
+        async def async_wrapper(*args, **kwargs):
+            if not _caching_enabled:
+                return await cached_function(*args, **kwargs)
+            if key_function:
+                key_args = key_function(*args, **kwargs)
+                cache_key = hash_data(*key_args)
+            else:
+                cache_key = hash_data(*args, **kwargs)
+            if cache_key in memory:
+                return memory[cache_key]
+            result = await cached_function(*args, **kwargs)
+            memory[cache_key] = result
+            return result
+
+        if asyncio.iscoroutinefunction(cached_function):
+            return async_wrapper
+        else:
+            return wrapper
+
+    return decorator
 
 
 def get_cache():
@@ -51,11 +110,11 @@ def disable_cache():
     >>> cache.disable()
 
     """
-    global memory
-    memory = NoCache()
+    global _caching_enabled
+    _caching_enabled = False
 
 
 def clear_cache():
     """Erase the cache completely."""
     global memory
-    memory.storage.clear()
+    memory.clear()

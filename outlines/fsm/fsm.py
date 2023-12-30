@@ -103,12 +103,18 @@ class RegexFSM(FSM):
         regex_string: str,
         tokenizer: "Tokenizer",
     ):
-        @cache()
+        def func_cache_key_args(
+            regex_string: str, tokenizer: "Tokenizer"
+        ) -> Tuple[str, list]:
+            """Return the values that will be used to create the cache key of create_states_mapping"""
+            cacheable_vocabulary = sorted(tokenizer.vocabulary.values())
+            return (regex_string, cacheable_vocabulary)
+
+        @cache(func_cache_key_args)
         def create_states_mapping(
-            regex_string: str, cachable_vocabulary: List[Tuple[str, int]]
-        ) -> Tuple[dict, list, list]:
-            """
-            Create the variables related the mapping between stzates and tokens
+            regex_string: str, tokenizer: "Tokenizer"
+        ) -> Tuple[dict, set, set]:
+            """Create the variables related the mapping between stzates and tokens
             The parameters of the function are used for caching purpose
             """
             regex_pattern = interegular.parse_pattern(regex_string)
@@ -132,26 +138,16 @@ class RegexFSM(FSM):
             final_states = regex_fsm.finals | {
                 -1
             }  # Include the EOS token in final states
-            return states_to_token_maps, list(empty_token_ids), list(final_states)
+            return states_to_token_maps, empty_token_ids, final_states
 
-        def convert_dict_items_to_int(item: dict) -> dict:
-            """Recursively converts the keys/values of a dict to integers"""
-            if not isinstance(item, dict):
-                return int(item)
-            return {
-                int(key): convert_dict_items_to_int(value)
-                for key, value in item.items()
-            }
-
+        (
+            self.states_to_token_maps,
+            self.empty_token_ids,
+            self.final_states,
+        ) = create_states_mapping(regex_string, tokenizer)
+        self.num_tokens_generated = 0
         self.vocabulary = tokenizer.vocabulary.values()
         self.end_token_id = tokenizer.eos_token_id
-        cachable_vocabulary = sorted(self.vocabulary)
-        states_to_token_maps, empty_token_ids, final_states = create_states_mapping(
-            regex_string, cachable_vocabulary
-        )
-        self.states_to_token_maps = convert_dict_items_to_int(states_to_token_maps)
-        self.empty_token_ids = set(empty_token_ids)
-        self.final_states = set(final_states)
 
     def allowed_token_ids(self, state: FSMState) -> List[int]:
         """Generate a list of allowed tokens for the next step.
