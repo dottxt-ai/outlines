@@ -22,6 +22,7 @@ def test_regex_vocabulary_error():
     class MockTokenizer:
         vocabulary = {"a": 1}
         special_tokens = {"eos"}
+        eos_token_id = 3
 
         def convert_token_to_string(self, token):
             return token
