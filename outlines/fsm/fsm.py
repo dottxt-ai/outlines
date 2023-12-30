@@ -1,9 +1,10 @@
-from typing import TYPE_CHECKING, List, NewType, Protocol
+from typing import TYPE_CHECKING, List, NewType, Protocol, Tuple
 
 import interegular
 from lark import Lark
 
 # from outlines.fsm.parsing import PartialLark
+from outlines.caching import cache
 from outlines.fsm.regex import create_fsm_index_tokenizer, make_deterministic_fsm
 
 if TYPE_CHECKING:
@@ -97,30 +98,60 @@ class StopAtTokenFSM(FSM):
 class RegexFSM(FSM):
     """FSM to generate text that is in the language of a regular expression."""
 
-    def __init__(self, regex_string: str, tokenizer: "Tokenizer"):
-        regex_pattern = interegular.parse_pattern(regex_string)
-        regex_fsm, _ = make_deterministic_fsm(regex_pattern.to_fsm().reduce())
-        (
-            self.states_to_token_maps,
-            self.empty_token_ids,
-        ) = create_fsm_index_tokenizer(regex_fsm, tokenizer)
+    def __init__(
+        self,
+        regex_string: str,
+        tokenizer: "Tokenizer",
+    ):
+        @cache()
+        def create_states_mapping(
+            regex_string: str, cachable_vocabulary: List[Tuple[str, int]]
+        ) -> Tuple[dict, list, list]:
+            """
+            Create the variables related the mapping between stzates and tokens
+            The parameters of the function are used for caching purpose
+            """
+            regex_pattern = interegular.parse_pattern(regex_string)
+            regex_fsm, _ = make_deterministic_fsm(regex_pattern.to_fsm().reduce())
+            (
+                states_to_token_maps,
+                empty_token_ids,
+            ) = create_fsm_index_tokenizer(regex_fsm, tokenizer)
 
-        # We make sure that it is possible to generate strings in the language
-        # of the regular expression with the tokens present in the model's
-        # vocabulary.
-        if not any(
-            regex_fsm.finals.intersection(v.values())
-            for v in self.states_to_token_maps.values()
-        ):
-            raise ValueError(
-                "The vocabulary does not allow us to build a sequence that matches the input regex"
-            )
+            # We make sure that it is possible to generate strings in the language
+            # of the regular expression with the tokens present in the model's
+            # vocabulary.
+            if not any(
+                regex_fsm.finals.intersection(v.values())
+                for v in states_to_token_maps.values()
+            ):
+                raise ValueError(
+                    "The vocabulary does not allow us to build a sequence that matches the input regex"
+                )
 
-        self.final_states = regex_fsm.finals | {
-            -1
-        }  # Include the EOS token in final states
+            final_states = regex_fsm.finals | {
+                -1
+            }  # Include the EOS token in final states
+            return states_to_token_maps, list(empty_token_ids), list(final_states)
+
+        def convert_dict_items_to_int(item: dict) -> dict:
+            """Recursively converts the keys/values of a dict to integers"""
+            if not isinstance(item, dict):
+                return int(item)
+            return {
+                int(key): convert_dict_items_to_int(value)
+                for key, value in item.items()
+            }
+
         self.vocabulary = tokenizer.vocabulary.values()
         self.end_token_id = tokenizer.eos_token_id
+        cachable_vocabulary = sorted(self.vocabulary)
+        states_to_token_maps, empty_token_ids, final_states = create_states_mapping(
+            regex_string, cachable_vocabulary
+        )
+        self.states_to_token_maps = convert_dict_items_to_int(states_to_token_maps)
+        self.empty_token_ids = set(empty_token_ids)
+        self.final_states = set(final_states)
 
     def allowed_token_ids(self, state: FSMState) -> List[int]:
         """Generate a list of allowed tokens for the next step.
