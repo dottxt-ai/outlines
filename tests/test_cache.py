@@ -1,8 +1,7 @@
 import os
 import tempfile
-from pathlib import Path
 
-import perscache
+import diskcache
 import pytest
 
 
@@ -35,19 +34,18 @@ def test_cache(refresh_environment):
         import outlines
 
         memory = outlines.get_cache()
-        assert memory.storage.location == Path(tempdir)
+        assert memory.directory == tempdir
 
         yield outlines.caching.cache()
 
-        memory.storage.clear()
+        memory.clear()
 
 
 def test_get_cache(test_cache):
     import outlines
 
     memory = outlines.get_cache()
-    assert isinstance(memory, perscache.Cache)
-    assert isinstance(memory.storage, perscache.storage.LocalFileStorage)
+    assert isinstance(memory, diskcache.Cache)
 
     # If the cache is enabled then the size
     # of `store` should not increase the
