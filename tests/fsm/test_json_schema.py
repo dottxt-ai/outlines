@@ -1,17 +1,19 @@
 import json
-import re
 from typing import List
 
 import pytest
+import regex as re
 from pydantic import BaseModel, constr
 
 from outlines.fsm.json_schema import (
     BOOLEAN,
     INTEGER,
+    JSON_VALUE,
     NULL,
     NUMBER,
     STRING,
     STRING_INNER,
+    WHITESPACE,
     build_regex_from_object,
     get_schema_from_signature,
     to_regex,
@@ -47,8 +49,7 @@ def test_from_pydantic():
         value: float
         is_true: bool
 
-    schema = json.dumps(User.model_json_schema())
-    schedule = build_regex_from_object(schema)
+    schedule = build_regex_from_object(User)
     assert isinstance(schedule, str)
 
 
@@ -57,7 +58,7 @@ def test_from_pydantic():
     [
         ({"integer": "0"}, True),
         ({"integer": "1"}, True),
-        ({"integer": "-1"}, False),
+        ({"integer": "-1"}, True),
         ({"integer": "01"}, False),
         ({"integer": "1.3"}, False),
         ({"integer": "t"}, False),
@@ -66,11 +67,12 @@ def test_from_pydantic():
 def test_match_integer(pattern, does_match):
     step = {"title": "Foo", "type": "integer"}
     regex = to_regex(None, step)
-    assert regex == INTEGER
+    assert regex.endswith(INTEGER)
 
     value = pattern["integer"]
     match = re.fullmatch(regex, value)
     if does_match:
+        assert match is not None
         assert match[0] == value
         assert match.span() == (0, len(value))
     else:
@@ -86,18 +88,20 @@ def test_match_integer(pattern, does_match):
         ({"number": ".3"}, False),
         ({"number": "1.3"}, True),
         ({"number": "-1.3"}, True),
-        ({"number": "1.3e9"}, False),
+        ({"number": "1.3e9"}, True),
         ({"number": "1.3e+9"}, True),
     ],
 )
 def test_match_number(pattern, does_match):
-    step = {"title": "Foo", "type": "number"}
-    regex = to_regex(None, step)
-    assert regex == NUMBER
+    schema = {"title": "Foo", "type": "number"}
+    regex = to_regex(None, schema)
+    assert regex.endswith(NUMBER)
+    print(regex)
 
     value = pattern["number"]
     match = re.fullmatch(regex, value)
     if does_match:
+        assert match is not None
         assert match[0] == value
         assert match.span() == (0, len(value))
     else:
@@ -105,41 +109,74 @@ def test_match_number(pattern, does_match):
 
 
 @pytest.mark.parametrize(
-    "schema,regex,examples",
+    "schema,definitions,regex,examples",
     [
+        # Empty schema
+        (
+            {},
+            {},
+            rf"{JSON_VALUE}",
+            [
+                ("null", True),
+                ("true", True),
+                ("false", True),
+                ("0", True),
+                ('{"foo": "bar"}', True),
+                ('["foo", "bar"]', True),
+                ('{"foo"}', False),
+                ("", False),
+                ("1.3", True),
+                ('"foo"', True),
+                ("[]", True),
+                ("[,]", False),
+                ("{}", True),
+                ("[1,2]", True),
+                ("[1,2,]", False),
+                ('{"foo": "bar", "spam": "eggs"}', True),
+                ('{"foo": "bar", "spam": "eggs",}', False),
+                ('{"foo": "bar", "spam": {"eggs": "ham"}}', True),
+                ('{"foo": "bar", "spam": {"eggs": "ham",}}', False),
+            ],
+        ),
         # String
         (
             {"title": "Foo", "type": "string"},
+            {},
             STRING,
             [("unquotedstring", False), ('"quoted_string"', True)],
         ),
         # String with maximum length
         (
             {"title": "Foo", "type": "string", "maxLength": 3},
+            {},
             f'"{STRING_INNER}{{,3}}"',
             [('"ab"', True), ('"a""', False), ('"abcd"', False)],
         ),
         # String with minimum length
         (
             {"title": "Foo", "type": "string", "minLength": 3},
+            {},
             f'"{STRING_INNER}{{3,}}"',
             [('"ab"', False), ('"abcd"', True), ('"abc""', False)],
         ),
         # String with both minimum and maximum length
         (
             {"title": "Foo", "type": "string", "minLength": 3, "maxLength": 5},
+            {},
             f'"{STRING_INNER}{{3,5}}"',
             [('"ab"', False), ('"abcd"', True), ('"abcdef""', False)],
         ),
         # String defined by a regular expression
         (
             {"title": "Foo", "type": "string", "pattern": r"^[a-z]$"},
+            {},
             r'(^"[a-z]"$)',
             [('"a"', True), ('"1"', False)],
         ),
         # Boolean
         (
             {"title": "Foo", "type": "boolean"},
+            {},
             BOOLEAN,
             [
                 ("true", True),
@@ -151,6 +188,7 @@ def test_match_number(pattern, does_match):
         # Null
         (
             {"title": "Foo", "type": "null"},
+            {},
             NULL,
             [
                 ("null", True),
@@ -161,18 +199,21 @@ def test_match_number(pattern, does_match):
         # Enum string
         (
             {"title": "Foo", "enum": ["Marc", "Jean"], "type": "string"},
+            {},
             '("Marc"|"Jean")',
             [('"Marc"', True), ('"Jean"', True), ('"John"', False)],
         ),
         # Make sure strings are escaped
         (
             {"title": "Foo", "enum": [".*", r"\s*"], "type": "string"},
+            {},
             r'("\.\*"|"\\s\*")',
             [('".*"', True), (r'"\s*"', True), (r'"\.\*"', False)],
         ),
         # Enum integer
         (
             {"title": "Foo", "enum": [0, 1], "type": "integer"},
+            {},
             "(0|1)",
             [("0", True), ("1", True), ("a", False)],
         ),
@@ -183,12 +224,14 @@ def test_match_number(pattern, does_match):
                 "type": "object",
                 "properties": {"count": {"title": "Count", "type": "integer"}},
             },
-            '\\{[\\n ]*"count"[\\n ]*:[\\n ]*(0|[1-9][0-9]*)[\\n ]*\\}',
+            {},
+            rf'\{{{WHITESPACE}"count"{WHITESPACE}:{WHITESPACE}{INTEGER}{WHITESPACE}\}}',
             [('{\n  "count": 100\n}', True)],
         ),
         # array
         (
             {"title": "Foo", "type": "array", "items": {"type": "number"}},
+            {},
             rf"\[({NUMBER})(,({NUMBER}))*\]",
             [("[1e+9,1.3]", True)],
         ),
@@ -201,6 +244,7 @@ def test_match_number(pattern, does_match):
                 "minItems": 1,
                 "maxItems": 1,
             },
+            {},
             rf"\[({INTEGER})(,({INTEGER})){{0}}\]",
             [("[1]", True), ("[1,2]", False), ('["a"]', False), ("[]", False)],
         ),
@@ -213,6 +257,7 @@ def test_match_number(pattern, does_match):
                 "minItems": 3,
                 "maxItems": 3,
             },
+            {},
             rf"\[({INTEGER})(,({INTEGER})){{2}}\]",
             [("[1]", False), ("[]", False), ("[1,2,3]", True), ("[1,2,3,4]", False)],
         ),
@@ -222,6 +267,7 @@ def test_match_number(pattern, does_match):
                 "title": "Foo",
                 "oneOf": [{"type": "string"}, {"type": "number"}, {"type": "boolean"}],
             },
+            {},
             rf"(({STRING})(?!.*({NUMBER}|{BOOLEAN}))|({NUMBER})(?!.*({STRING}|{BOOLEAN}))|({BOOLEAN})(?!.*({STRING}|{NUMBER})))",
             [
                 ("12.3", True),
@@ -240,7 +286,8 @@ def test_match_number(pattern, does_match):
                 "title": "Foo",
                 "anyOf": [{"type": "string"}, {"type": "integer"}],
             },
-            r'(("(?:[^"\\\x00-\x1f\x7f-\x9f]|\\.)*")|((0|[1-9][0-9]*))|("(?:[^"\\\x00-\x1f\x7f-\x9f]|\\.)*"(0|[1-9][0-9]*))|((0|[1-9][0-9]*)"(?:[^"\\\x00-\x1f\x7f-\x9f]|\\.)*"))',
+            {},
+            rf"(({STRING})|({INTEGER})|({STRING}{INTEGER})|({INTEGER}{STRING}))",
             [("12", True), ('"a"', True), ('1"a"', True)],
         ),
         # allOf
@@ -249,6 +296,7 @@ def test_match_number(pattern, does_match):
                 "title": "Foo",
                 "allOf": [{"type": "string"}, {"type": "integer"}],
             },
+            {},
             rf"({STRING}{INTEGER})",
             [('"a"1', True), ('"a"', False), ('"1"', False)],
         ),
@@ -265,7 +313,8 @@ def test_match_number(pattern, does_match):
                     }
                 },
             },
-            f'\\{{[\\n ]*"fuzz"[\\n ]*:[\\n ]*\\{{[\\n ]*"spam"[\\n ]*:[\\n ]*{INTEGER}[\\n ]*\\}}[\\n ]*\\}}',
+            {},
+            rf'\{{{WHITESPACE}"fuzz"{WHITESPACE}:{WHITESPACE}\{{{WHITESPACE}"spam"{WHITESPACE}:{WHITESPACE}{INTEGER}{WHITESPACE}\}}{WHITESPACE}\}}',
             [('{\n  "fuzz": {\n    "spam": 100\n  }\n}', True)],
         ),
         # Schema with a reference
@@ -280,7 +329,10 @@ def test_match_number(pattern, does_match):
                 },
                 "required": ["user_id", "name"],
             },
-            f'\\{{[\\n ]*"user_id"[\\n ]*:[\\n ]*{INTEGER}[\\n ]*,[\\n ]*"name"[\\n ]*:[\\n ]*{STRING}[\\n ]*,[\\n ]*"a"[\\n ]*:[\\n ]*{STRING}[\\n ]*\\}}',
+            {
+                "_properties_name": "(?&__string__)",
+            },
+            rf'\{{{WHITESPACE}"user_id"{WHITESPACE}:{WHITESPACE}{INTEGER}{WHITESPACE},{WHITESPACE}"name"{WHITESPACE}:{WHITESPACE}{STRING}{WHITESPACE},{WHITESPACE}"a"{WHITESPACE}:{WHITESPACE}(?&_properties_name){WHITESPACE}\}}',
             [('{"user_id": 100, "name": "John", "a": "Marc"}', True)],
         ),
         (
@@ -295,7 +347,10 @@ def test_match_number(pattern, does_match):
                 },
                 "required": ["user_id", "name"],
             },
-            f'\\{{[\\n ]*"user_id"[\\n ]*:[\\n ]*{INTEGER}[\\n ]*,[\\n ]*"name"[\\n ]*:[\\n ]*{STRING}[\\n ]*,[\\n ]*"name2"[\\n ]*:[\\n ]*{STRING}[\\n ]*\\}}',
+            {
+                "__defs_name": "(?&__string__)",
+            },
+            rf'\{{{WHITESPACE}"user_id"{WHITESPACE}:{WHITESPACE}{INTEGER}{WHITESPACE},{WHITESPACE}"name"{WHITESPACE}:{WHITESPACE}{STRING}{WHITESPACE},{WHITESPACE}"name2"{WHITESPACE}:{WHITESPACE}(?&__defs_name){WHITESPACE}\}}',
             [('{"user_id": 100, "name": "John", "name2": "Marc"}', True)],
         ),
         (
@@ -335,7 +390,10 @@ def test_match_number(pattern, does_match):
                     }
                 },
             },
-            f'\\{{[\\n ]*"name"[\\n ]*:[\\n ]*{STRING}[\\n ]*,[\\n ]*"last_name"[\\n ]*:[\\n ]*{STRING}[\\n ]*,[\\n ]*"address"[\\n ]*:[\\n ]*\\{{[\\n ]*"city"[\\n ]*:[\\n ]*{STRING}[\\n ]*\\}}[\\n ]*\\}}',
+            {
+                "customer__defs_address": rf'\{{{WHITESPACE}"city"{WHITESPACE}:{WHITESPACE}{STRING}{WHITESPACE}\}}',
+            },
+            rf'\{{{WHITESPACE}"name"{WHITESPACE}:{WHITESPACE}{STRING}{WHITESPACE},{WHITESPACE}"last_name"{WHITESPACE}:{WHITESPACE}{STRING}{WHITESPACE},{WHITESPACE}"address"{WHITESPACE}:{WHITESPACE}(?&customer__defs_address){WHITESPACE}\}}',
             [
                 (
                     '{"name": "John", "last_name": "Doe", "address": {"city": "Paris"}}',
@@ -343,16 +401,41 @@ def test_match_number(pattern, does_match):
                 )
             ],
         ),
+        # Recursive schema
+        (
+            {
+                "$id": "tree",
+                "title": "Rose Tree",
+                "type": "object",
+                "properties": {
+                    "value": {"type": "integer"},
+                    "children": {"type": "array", "items": {"$ref": "tree"}},
+                },
+            },
+            {
+                "tree": rf'\{{{WHITESPACE}"value"{WHITESPACE}:{WHITESPACE}{INTEGER}{WHITESPACE},{WHITESPACE}"children"{WHITESPACE}:{WHITESPACE}\[{WHITESPACE}(?&tree){WHITESPACE}\]{WHITESPACE}\}}',
+            },
+            rf'\{{{WHITESPACE}"value"{WHITESPACE}:{WHITESPACE}{INTEGER}{WHITESPACE},{WHITESPACE}"children"{WHITESPACE}:{WHITESPACE}\[{WHITESPACE}(?&tree){WHITESPACE}\]{WHITESPACE}\}}',
+            [
+                (
+                    '{"value": 1, "children": [{"value": 2, "children": []}]}',
+                    True,
+                )
+            ],
+        ),
     ],
 )
-def test_match(schema, regex, examples):
+def test_match(schema, definitions, regex, examples):
     schema = json.dumps(schema)
     test_regex = build_regex_from_object(schema)
-    assert test_regex == regex
+    for name, value in definitions.items():
+        assert f"(?P<{name}>{value})" in test_regex
+    assert test_regex.endswith(regex)
 
     for string, does_match in examples:
         match = re.fullmatch(test_regex, string)
         if does_match:
+            assert match is not None
             assert match[0] == string
             assert match.span() == (0, len(string))
         else:
