@@ -310,7 +310,8 @@ def test_transformers_json_schema():
       "properties": {
            "foo" : {"type": "integer"},
            "bar": {"type": "string", "maxLength": 4}
-        }
+        },
+      "required": ["foo", "bar"]
       }
     """
 
