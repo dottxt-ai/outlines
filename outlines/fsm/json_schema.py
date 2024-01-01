@@ -103,9 +103,10 @@ def to_regex(resolver: Resolver, instance: dict):
         properties = instance["properties"]
         required_properties = instance.get("required", [])
         is_required = [item in required_properties for item in properties]
-        # If at least one property is required, we include it without any comma.
+        # If at least one property is required, we include the one in the lastest position
+        # without any comma.
         # For each property before it (optional or required), we add with a comma after the property.
-        # For each property after it (optional or required), we add with a comma before the property.
+        # For each property after it (optional), we add with a comma before the property.
         if any(is_required):
             last_required_pos = max([i for i, value in enumerate(is_required) if value])
             for i, (name, value) in enumerate(properties.items()):
@@ -132,7 +133,7 @@ def to_regex(resolver: Resolver, instance: dict):
                 for subregex in property_subregexes[:i]:
                     pattern += f"({subregex}{whitespace},)?"
                 pattern += property_subregexes[i]
-                for subregex in property_subregexes[i+1:]:
+                for subregex in property_subregexes[i + 1 :]:
                     pattern += f"({whitespace},{subregex})?"
                 possible_patterns.append(pattern)
             regex += f"({'|'.join(possible_patterns)})?"

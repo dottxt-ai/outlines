@@ -182,6 +182,7 @@ def test_match_number(pattern, does_match):
                 "title": "Foo",
                 "type": "object",
                 "properties": {"count": {"title": "Count", "type": "integer"}},
+                "required": ["count"],
             },
             '\\{[\\n ]*"count"[\\n ]*:[\\n ]*(0|[1-9][0-9]*)[\\n ]*\\}',
             [('{\n  "count": 100\n}', True)],
@@ -262,8 +263,10 @@ def test_match_number(pattern, does_match):
                         "title": "Foo",
                         "type": "object",
                         "properties": {"spam": {"title": "Spam", "type": "integer"}},
+                        "required": ["spam"],
                     }
                 },
+                "required": ["fuzz"],
             },
             f'\\{{[\\n ]*"fuzz"[\\n ]*:[\\n ]*\\{{[\\n ]*"spam"[\\n ]*:[\\n ]*{INTEGER}[\\n ]*\\}}[\\n ]*\\}}',
             [('{\n  "fuzz": {\n    "spam": 100\n  }\n}', True)],
@@ -278,7 +281,7 @@ def test_match_number(pattern, does_match):
                     "name": {"title": "Name", "type": "string"},
                     "a": {"$ref": "#/properties/name"},
                 },
-                "required": ["user_id", "name"],
+                "required": ["user_id", "name", "a"],
             },
             f'\\{{[\\n ]*"user_id"[\\n ]*:[\\n ]*{INTEGER}[\\n ]*,[\\n ]*"name"[\\n ]*:[\\n ]*{STRING}[\\n ]*,[\\n ]*"a"[\\n ]*:[\\n ]*{STRING}[\\n ]*\\}}',
             [('{"user_id": 100, "name": "John", "a": "Marc"}', True)],
@@ -293,7 +296,7 @@ def test_match_number(pattern, does_match):
                     "name": {"title": "Name", "type": "string"},
                     "name2": {"$ref": "#/$defs/name"},
                 },
-                "required": ["user_id", "name"],
+                "required": ["user_id", "name", "name2"],
             },
             f'\\{{[\\n ]*"user_id"[\\n ]*:[\\n ]*{INTEGER}[\\n ]*,[\\n ]*"name"[\\n ]*:[\\n ]*{STRING}[\\n ]*,[\\n ]*"name2"[\\n ]*:[\\n ]*{STRING}[\\n ]*\\}}',
             [('{"user_id": 100, "name": "John", "name2": "Marc"}', True)],
@@ -310,8 +313,10 @@ def test_match_number(pattern, does_match):
                     "address": {"$ref": "customer#/$defs/address"},
                 },
                 "required": [
+                    "name",
                     "first_name",
                     "last_name",
+                    "address",
                     "shipping_address",
                     "billing_address",
                 ],
@@ -341,6 +346,95 @@ def test_match_number(pattern, does_match):
                     '{"name": "John", "last_name": "Doe", "address": {"city": "Paris"}}',
                     True,
                 )
+            ],
+        ),
+        # Optional properties
+        # Last required property in first position
+        (
+            {
+                "properties": {
+                    "name": {"type": "string"},
+                    "age": {"anyOf": [{"type": "integer"}, {"type": "null"}]},
+                    "weapon": {"anyOf": [{"type": "string"}, {"type": "null"}]},
+                },
+                "required": ["name"],
+                "title": "Character",
+                "type": "object",
+            },
+            f'\\{{[\\n ]*"name"[\\n ]*:[\\n ]*{STRING}([\\n ]*,[\\n ]*"age"[\\n ]*:[\\n ]*(({INTEGER})|(null)|({INTEGER}null)|(null{INTEGER})))?([\\n ]*,[\\n ]*"weapon"[\\n ]*:[\\n ]*(({STRING})|(null)|({STRING}null)|(null{STRING})))?[\\n ]*\\}}',
+            [
+                ('{ "name" : "Player" }', True),
+                ('{ "name" : "Player", "weapon" : "sword" }', True),
+                ('{ "age" : 10, "weapon" : "sword" }', False),
+            ],
+        ),
+        # Last required property in middle position
+        (
+            {
+                "properties": {
+                    "name": {"type": "string"},
+                    "age": {"anyOf": [{"type": "integer"}, {"type": "null"}]},
+                    "weapon": {"type": "string"},
+                    "strength": {"anyOf": [{"type": "integer"}, {"type": "null"}]},
+                },
+                "required": ["name", "weapon"],
+                "title": "Character",
+                "type": "object",
+            },
+            f'\\{{[\\n ]*"name"[\\n ]*:[\\n ]*{STRING}[\\n ]*,([\\n ]*"age"[\\n ]*:[\\n ]*(({INTEGER})|(null)|({INTEGER}null)|(null{INTEGER}))[\\n ]*,)?[\\n ]*"weapon"[\\n ]*:[\\n ]*{STRING}([\\n ]*,[\\n ]*"strength"[\\n ]*:[\\n ]*(({INTEGER})|(null)|({INTEGER}null)|(null{INTEGER})))?[\\n ]*\\}}',
+            [
+                ('{ "name" : "Player" , "weapon" : "sword" }', True),
+                (
+                    '{ "name" : "Player", "age" : 10, "weapon" : "sword" , "strength" : 10 }',
+                    True,
+                ),
+                ('{ "weapon" : "sword" }', False),
+            ],
+        ),
+        # Last required property in last position
+        (
+            {
+                "properties": {
+                    "name": {"anyOf": [{"type": "string"}, {"type": "null"}]},
+                    "age": {"type": "integer"},
+                    "armor": {"type": "string"},
+                    "strength": {"anyOf": [{"type": "integer"}, {"type": "null"}]},
+                    "weapon": {"title": "Weapon", "type": "string"},
+                },
+                "required": ["age", "armor", "weapon"],
+                "title": "Character",
+                "type": "object",
+            },
+            f'\\{{([\\n ]*"name"[\\n ]*:[\\n ]*(({STRING})|(null)|({STRING}null)|(null{STRING}))[\\n ]*,)?[\\n ]*"age"[\\n ]*:[\\n ]*{INTEGER}[\\n ]*,[\\n ]*"armor"[\\n ]*:[\\n ]*{STRING}[\\n ]*,([\\n ]*"strength"[\\n ]*:[\\n ]*(({INTEGER})|(null)|({INTEGER}null)|(null{INTEGER}))[\\n ]*,)?[\\n ]*"weapon"[\\n ]*:[\\n ]*{STRING}[\\n ]*\\}}',
+            [
+                (
+                    '{ "name" : "Player", "age" : 10, "armor" : "plate", "strength" : 11, "weapon" : "sword" }',
+                    True,
+                ),
+                ('{ "age" : 10, "armor" : "plate", "weapon" : "sword" }', True),
+                (
+                    '{ "name" : "Kahlhanbeh", "armor" : "plate", "weapon" : "sword" }',
+                    False,
+                ),
+            ],
+        ),
+        # All properties are optional
+        (
+            {
+                "properties": {
+                    "name": {"anyOf": [{"type": "string"}, {"type": "null"}]},
+                    "age": {"anyOf": [{"type": "integer"}, {"type": "null"}]},
+                    "strength": {"anyOf": [{"type": "integer"}, {"type": "null"}]},
+                },
+                "title": "Character",
+                "type": "object",
+            },
+            f'\\{{([\\n ]*"name"[\\n ]*:[\\n ]*(({STRING})|(null)|({STRING}null)|(null{STRING}))([\\n ]*,[\\n ]*"age"[\\n ]*:[\\n ]*(({INTEGER})|(null)|({INTEGER}null)|(null{INTEGER})))?([\\n ]*,[\\n ]*"strength"[\\n ]*:[\\n ]*(({INTEGER})|(null)|({INTEGER}null)|(null{INTEGER})))?|([\\n ]*"name"[\\n ]*:[\\n ]*(({STRING})|(null)|({STRING}null)|(null{STRING}))[\\n ]*,)?[\\n ]*"age"[\\n ]*:[\\n ]*(({INTEGER})|(null)|({INTEGER}null)|(null{INTEGER}))([\\n ]*,[\\n ]*"strength"[\\n ]*:[\\n ]*(({INTEGER})|(null)|({INTEGER}null)|(null{INTEGER})))?|([\\n ]*"name"[\\n ]*:[\\n ]*(({STRING})|(null)|({STRING}null)|(null{STRING}))[\\n ]*,)?([\\n ]*"age"[\\n ]*:[\\n ]*(({INTEGER})|(null)|({INTEGER}null)|(null{INTEGER}))[\\n ]*,)?[\\n ]*"strength"[\\n ]*:[\\n ]*(({INTEGER})|(null)|({INTEGER}null)|(null{INTEGER})))?[\\n ]*\\}}',
+            [
+                ('{ "name" : "Player" }', True),
+                ('{ "name" : "Player", "age" : 10, "strength" : 10 }', True),
+                ('{ "age" : 10, "strength" : 10 }', True),
+                ("{ }", True),
             ],
         ),
     ],
