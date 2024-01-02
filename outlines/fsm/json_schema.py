@@ -2,7 +2,7 @@ import inspect
 import itertools as it
 import json
 import re
-from typing import Any, Callable, Type, Union
+from typing import Any, Callable, Optional, Type, Union
 
 from jsonschema.protocols import Validator
 from jsonschema.validators import validator_for
@@ -103,7 +103,7 @@ def build_regex_from_object(
     return to_regex(resolver, content)
 
 
-def to_regex(resolver: None | Resolver, instance: Schema) -> str:
+def to_regex(resolver: Optional[Resolver], instance: Schema) -> str:
     """Translate a JSON Schema instance into a regex that validates the schema.
 
     Note
@@ -133,7 +133,7 @@ def to_regex(resolver: None | Resolver, instance: Schema) -> str:
     class Regex(str):
         pass
 
-    definitions: dict[str, Path | Regex] = {
+    definitions: dict[str, Union[Path, Regex]] = {
         name: Regex(regex) for name, regex in DEFINITIONS.items()
     }
 
