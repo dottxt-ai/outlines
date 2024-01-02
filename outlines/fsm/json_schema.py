@@ -11,7 +11,6 @@ from referencing import Registry, Resource
 from referencing._core import Resolver
 from referencing.jsonschema import DRAFT202012, Schema
 
-
 DEFINITIONS = {
     "__whitespace__": r"(?:[ \t\n\r]*)",
     "__json_object__": r"\{\s*(?&__members__)?\s*\}",
