@@ -16,7 +16,7 @@ import json
 from typing import AsyncGenerator
 
 import uvicorn
-import vllm
+import vllm.model_executor.layers.sampler as sampler
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, Response, StreamingResponse
 from vllm.engine.arg_utils import AsyncEngineArgs
@@ -24,15 +24,20 @@ from vllm.engine.async_llm_engine import AsyncLLMEngine
 from vllm.sampling_params import SamplingParams
 from vllm.utils import random_uuid
 
-from .vllm import JSONLogitsProcessor, PatchedSampler
+from .vllm import (
+    JSONLogitsProcessor,
+    RegexLogitsProcessor,
+    _patched_apply_logits_processors,
+)
+
+# Patch the _apply_logits_processors so it is compatible with `JSONLogitsProcessor`
+sampler._apply_logits_processors = _patched_apply_logits_processors
+
 
 TIMEOUT_KEEP_ALIVE = 5  # seconds.
 TIMEOUT_TO_PREVENT_DEADLOCK = 1  # seconds.
 app = FastAPI()
 engine = None
-
-# Patch the sampler so it is compatible with `JSONLogitsProcessor`
-vllm.model_executor.layers.sampler.Sampler = PatchedSampler
 
 
 @app.get("/health")
@@ -47,22 +52,28 @@ async def generate(request: Request) -> Response:
 
     The request should be a JSON object with the following fields:
     - prompt: the prompt to use for the generation.
-    - schema: the JSON schema to use for the generation
+    - schema: the JSON schema to use for the generation (if regex is not provided).
+    - regex: the regex to use for the generation (if schema is not provided).
     - stream: whether to stream the results or not.
     - other fields: the sampling parameters (See `SamplingParams` for details).
     """
+    assert engine is not None
+
     request_dict = await request.json()
     prompt = request_dict.pop("prompt")
     stream = request_dict.pop("stream", False)
 
     json_schema = request_dict.pop("schema", None)
+    regex_string = request_dict.pop("regex", None)
     if json_schema is not None:
-        logits_processors = [JSONLogitsProcessor(json_schema, engine.engine)]  # type: ignore
+        logits_processors = [JSONLogitsProcessor(json_schema, engine.engine)]
+    elif regex_string is not None:
+        logits_processors = [RegexLogitsProcessor(regex_string, engine.engine)]
     else:
         logits_processors = []
 
     sampling_params = SamplingParams(
-        **request_dict, logits_processors=logits_processors
+        **request_dict, logits_processors=logits_processors  # type: ignore
     )
     request_id = random_uuid()
 
@@ -106,7 +117,7 @@ if __name__ == "__main__":
 
     # Adds the `engine_use_ray`,  `disable_log_requests` and `max_log_len`
     # arguments
-    engine_args = AsyncEngineArgs.from_cli_args(args)
+    engine_args: AsyncEngineArgs = AsyncEngineArgs.from_cli_args(args)  # type: ignore
 
     # Sets default for the model (`facebook/opt-125m`)
     engine = AsyncLLMEngine.from_engine_args(engine_args)

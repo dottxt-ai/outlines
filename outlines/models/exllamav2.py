@@ -1,12 +1,12 @@
 from typing import TYPE_CHECKING, Optional
 
 import torch
-from transformers import PreTrainedTokenizer
 
 from .transformers import TransformerTokenizer
 
 if TYPE_CHECKING:
     from exllamav2 import ExLlamaV2, ExLlamaV2Cache
+    from transformers import PreTrainedTokenizer
 
 
 class ExLlamaV2Model:

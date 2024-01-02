@@ -13,7 +13,10 @@ from numpy.lib.function_base import (
 )
 
 # Allow nested loops, useful to run in notebooks
-nest_asyncio.apply()
+try:
+    nest_asyncio.apply()
+except ValueError as e:
+    print("Could not apply nest_asyncio:", e)
 
 
 class vectorize:
