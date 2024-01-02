@@ -28,5 +28,5 @@ repos:
   rev: v1.2.0
   hooks:
     - id: mypy
-      args: [--allow-redefinition]
+      args: [--allow-redefinition, --install-types]
       exclude: ^examples/
