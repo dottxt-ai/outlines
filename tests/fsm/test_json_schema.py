@@ -109,13 +109,12 @@ def test_match_number(pattern, does_match):
 
 
 @pytest.mark.parametrize(
-    "schema,definitions,regex,examples",
+    "schema,definitions,examples",
     [
         # Empty schema
         (
             {},
-            {},
-            rf"{JSON_VALUE}",
+            {"__self__": rf"{JSON_VALUE}"},
             [
                 ("null", True),
                 ("true", True),
@@ -141,43 +140,37 @@ def test_match_number(pattern, does_match):
         # String
         (
             {"title": "Foo", "type": "string"},
-            {},
-            STRING,
+            {"__self__": STRING},
             [("unquotedstring", False), ('"quoted_string"', True)],
         ),
         # String with maximum length
         (
             {"title": "Foo", "type": "string", "maxLength": 3},
-            {},
-            f'"{STRING_INNER}{{,3}}"',
+            {"__self__": rf'"{STRING_INNER}{{,3}}"'},
             [('"ab"', True), ('"a""', False), ('"abcd"', False)],
         ),
         # String with minimum length
         (
             {"title": "Foo", "type": "string", "minLength": 3},
-            {},
-            f'"{STRING_INNER}{{3,}}"',
+            {"__self__": rf'"{STRING_INNER}{{3,}}"'},
             [('"ab"', False), ('"abcd"', True), ('"abc""', False)],
         ),
         # String with both minimum and maximum length
         (
             {"title": "Foo", "type": "string", "minLength": 3, "maxLength": 5},
-            {},
-            f'"{STRING_INNER}{{3,5}}"',
+            {"__self__": rf'"{STRING_INNER}{{3,5}}"'},
             [('"ab"', False), ('"abcd"', True), ('"abcdef""', False)],
         ),
         # String defined by a regular expression
         (
             {"title": "Foo", "type": "string", "pattern": r"^[a-z]$"},
-            {},
-            r'(^"[a-z]"$)',
+            {"__self__": r'(^"[a-z]"$)'},
             [('"a"', True), ('"1"', False)],
         ),
         # Boolean
         (
             {"title": "Foo", "type": "boolean"},
-            {},
-            BOOLEAN,
+            {"__self__": BOOLEAN},
             [
                 ("true", True),
                 ("false", True),
@@ -188,8 +181,7 @@ def test_match_number(pattern, does_match):
         # Null
         (
             {"title": "Foo", "type": "null"},
-            {},
-            NULL,
+            {"__self__": NULL},
             [
                 ("null", True),
                 ("true", False),
@@ -199,22 +191,19 @@ def test_match_number(pattern, does_match):
         # Enum string
         (
             {"title": "Foo", "enum": ["Marc", "Jean"], "type": "string"},
-            {},
-            '("Marc"|"Jean")',
+            {"__self__": r'("Marc"|"Jean")'},
             [('"Marc"', True), ('"Jean"', True), ('"John"', False)],
         ),
         # Make sure strings are escaped
         (
             {"title": "Foo", "enum": [".*", r"\s*"], "type": "string"},
-            {},
-            r'("\.\*"|"\\s\*")',
+            {"__self__": r'("\.\*"|"\\s\*")'},
             [('".*"', True), (r'"\s*"', True), (r'"\.\*"', False)],
         ),
         # Enum integer
         (
             {"title": "Foo", "enum": [0, 1], "type": "integer"},
-            {},
-            "(0|1)",
+            {"__self__": r"(0|1)"},
             [("0", True), ("1", True), ("a", False)],
         ),
         # integer
@@ -224,16 +213,38 @@ def test_match_number(pattern, does_match):
                 "type": "object",
                 "properties": {"count": {"title": "Count", "type": "integer"}},
             },
-            {},
-            rf'\{{{WHITESPACE}"count"{WHITESPACE}:{WHITESPACE}{INTEGER}{WHITESPACE}\}}',
+            {
+                "__self__": rf'\{{{WHITESPACE}"count"{WHITESPACE}:{WHITESPACE}{INTEGER}{WHITESPACE}\}}'
+            },
             [('{\n  "count": 100\n}', True)],
         ),
         # array
         (
             {"title": "Foo", "type": "array", "items": {"type": "number"}},
-            {},
-            rf"\[({NUMBER})(,({NUMBER}))*\]",
-            [("[1e+9,1.3]", True)],
+            {"__self__": rf"\[({NUMBER}(,{NUMBER})*)?\]"},
+            [("[1e+9,1.3]", True), ("[1e+9,1.3,]", False), ("[]", True)],
+        ),
+        # array with a minimum length of 1
+        (
+            {
+                "title": "Foo",
+                "type": "array",
+                "items": {"type": "integer"},
+                "minItems": 1,
+            },
+            {"__self__": rf"\[{INTEGER}(,{INTEGER}){{0,}}\]"},
+            [("[1]", True), ("[]", False), ("[1,2]", True)],
+        ),
+        # array with a maximum length of 1
+        (
+            {
+                "title": "Foo",
+                "type": "array",
+                "items": {"type": "integer"},
+                "maxItems": 1,
+            },
+            {"__self__": rf"\[({INTEGER}(,{INTEGER}){{0,0}})?\]"},
+            [("[1]", True), ("[]", True), ("[1,2]", False)],
         ),
         # array with a set length of 1
         (
@@ -244,8 +255,7 @@ def test_match_number(pattern, does_match):
                 "minItems": 1,
                 "maxItems": 1,
             },
-            {},
-            rf"\[({INTEGER})(,({INTEGER})){{0}}\]",
+            {"__self__": rf"\[{INTEGER}(,{INTEGER}){{0,0}}\]"},
             [("[1]", True), ("[1,2]", False), ('["a"]', False), ("[]", False)],
         ),
         # array with a set length greather than 1
@@ -257,9 +267,20 @@ def test_match_number(pattern, does_match):
                 "minItems": 3,
                 "maxItems": 3,
             },
-            {},
-            rf"\[({INTEGER})(,({INTEGER})){{2}}\]",
+            {"__self__": rf"\[{INTEGER}(,{INTEGER}){{2,2}}\]"},
             [("[1]", False), ("[]", False), ("[1,2,3]", True), ("[1,2,3,4]", False)],
+        ),
+        # array with a length between 1 and 3
+        (
+            {
+                "title": "Foo",
+                "type": "array",
+                "items": {"type": "integer"},
+                "minItems": 1,
+                "maxItems": 3,
+            },
+            {"__self__": rf"\[{INTEGER}(,{INTEGER}){{0,2}}\]"},
+            [("[1]", True), ("[]", False), ("[1,2,3]", True), ("[1,2,3,4]", False)],
         ),
         # oneOf
         (
@@ -267,8 +288,9 @@ def test_match_number(pattern, does_match):
                 "title": "Foo",
                 "oneOf": [{"type": "string"}, {"type": "number"}, {"type": "boolean"}],
             },
-            {},
-            rf"(({STRING})(?!.*({NUMBER}|{BOOLEAN}))|({NUMBER})(?!.*({STRING}|{BOOLEAN}))|({BOOLEAN})(?!.*({STRING}|{NUMBER})))",
+            {
+                "__self__": rf"(({STRING})(?!.*({NUMBER}|{BOOLEAN}))|({NUMBER})(?!.*({STRING}|{BOOLEAN}))|({BOOLEAN})(?!.*({STRING}|{NUMBER})))"
+            },
             [
                 ("12.3", True),
                 ("true", True),
@@ -286,8 +308,9 @@ def test_match_number(pattern, does_match):
                 "title": "Foo",
                 "anyOf": [{"type": "string"}, {"type": "integer"}],
             },
-            {},
-            rf"(({STRING})|({INTEGER})|({STRING}{INTEGER})|({INTEGER}{STRING}))",
+            {
+                "__self__": rf"(({STRING})|({INTEGER})|({STRING}{INTEGER})|({INTEGER}{STRING}))"
+            },
             [("12", True), ('"a"', True), ('1"a"', True)],
         ),
         # allOf
@@ -296,8 +319,7 @@ def test_match_number(pattern, does_match):
                 "title": "Foo",
                 "allOf": [{"type": "string"}, {"type": "integer"}],
             },
-            {},
-            rf"({STRING}{INTEGER})",
+            {"__self__": rf"({STRING}{INTEGER})"},
             [('"a"1', True), ('"a"', False), ('"1"', False)],
         ),
         # Nested schema
@@ -313,8 +335,9 @@ def test_match_number(pattern, does_match):
                     }
                 },
             },
-            {},
-            rf'\{{{WHITESPACE}"fuzz"{WHITESPACE}:{WHITESPACE}\{{{WHITESPACE}"spam"{WHITESPACE}:{WHITESPACE}{INTEGER}{WHITESPACE}\}}{WHITESPACE}\}}',
+            {
+                "__self__": rf'\{{{WHITESPACE}"fuzz"{WHITESPACE}:{WHITESPACE}\{{{WHITESPACE}"spam"{WHITESPACE}:{WHITESPACE}{INTEGER}{WHITESPACE}\}}{WHITESPACE}\}}'
+            },
             [('{\n  "fuzz": {\n    "spam": 100\n  }\n}', True)],
         ),
         # Schema with a reference
@@ -331,8 +354,8 @@ def test_match_number(pattern, does_match):
             },
             {
                 "_properties_name": "(?&__string__)",
+                "__self__": rf'\{{{WHITESPACE}"user_id"{WHITESPACE}:{WHITESPACE}{INTEGER}{WHITESPACE},{WHITESPACE}"name"{WHITESPACE}:{WHITESPACE}{STRING}{WHITESPACE},{WHITESPACE}"a"{WHITESPACE}:{WHITESPACE}(?&_properties_name){WHITESPACE}\}}',
             },
-            rf'\{{{WHITESPACE}"user_id"{WHITESPACE}:{WHITESPACE}{INTEGER}{WHITESPACE},{WHITESPACE}"name"{WHITESPACE}:{WHITESPACE}{STRING}{WHITESPACE},{WHITESPACE}"a"{WHITESPACE}:{WHITESPACE}(?&_properties_name){WHITESPACE}\}}',
             [('{"user_id": 100, "name": "John", "a": "Marc"}', True)],
         ),
         (
@@ -349,8 +372,8 @@ def test_match_number(pattern, does_match):
             },
             {
                 "__defs_name": "(?&__string__)",
+                "__self__": rf'\{{{WHITESPACE}"user_id"{WHITESPACE}:{WHITESPACE}{INTEGER}{WHITESPACE},{WHITESPACE}"name"{WHITESPACE}:{WHITESPACE}{STRING}{WHITESPACE},{WHITESPACE}"name2"{WHITESPACE}:{WHITESPACE}(?&__defs_name){WHITESPACE}\}}',
             },
-            rf'\{{{WHITESPACE}"user_id"{WHITESPACE}:{WHITESPACE}{INTEGER}{WHITESPACE},{WHITESPACE}"name"{WHITESPACE}:{WHITESPACE}{STRING}{WHITESPACE},{WHITESPACE}"name2"{WHITESPACE}:{WHITESPACE}(?&__defs_name){WHITESPACE}\}}',
             [('{"user_id": 100, "name": "John", "name2": "Marc"}', True)],
         ),
         (
@@ -392,8 +415,8 @@ def test_match_number(pattern, does_match):
             },
             {
                 "customer__defs_address": rf'\{{{WHITESPACE}"city"{WHITESPACE}:{WHITESPACE}{STRING}{WHITESPACE}\}}',
+                "__self__": rf'\{{{WHITESPACE}"name"{WHITESPACE}:{WHITESPACE}{STRING}{WHITESPACE},{WHITESPACE}"last_name"{WHITESPACE}:{WHITESPACE}{STRING}{WHITESPACE},{WHITESPACE}"address"{WHITESPACE}:{WHITESPACE}(?&customer__defs_address){WHITESPACE}\}}',
             },
-            rf'\{{{WHITESPACE}"name"{WHITESPACE}:{WHITESPACE}{STRING}{WHITESPACE},{WHITESPACE}"last_name"{WHITESPACE}:{WHITESPACE}{STRING}{WHITESPACE},{WHITESPACE}"address"{WHITESPACE}:{WHITESPACE}(?&customer__defs_address){WHITESPACE}\}}',
             [
                 (
                     '{"name": "John", "last_name": "Doe", "address": {"city": "Paris"}}',
@@ -413,9 +436,9 @@ def test_match_number(pattern, does_match):
                 },
             },
             {
-                "tree": rf'\{{{WHITESPACE}"value"{WHITESPACE}:{WHITESPACE}{INTEGER}{WHITESPACE},{WHITESPACE}"children"{WHITESPACE}:{WHITESPACE}\[{WHITESPACE}(?&tree){WHITESPACE}\]{WHITESPACE}\}}',
+                "tree": rf'\{{{WHITESPACE}"value"{WHITESPACE}:{WHITESPACE}{INTEGER}{WHITESPACE},{WHITESPACE}"children"{WHITESPACE}:{WHITESPACE}\[((?&tree)(,(?&tree))*)?\]{WHITESPACE}\}}',
+                "__self__": rf'\{{{WHITESPACE}"value"{WHITESPACE}:{WHITESPACE}{INTEGER}{WHITESPACE},{WHITESPACE}"children"{WHITESPACE}:{WHITESPACE}\[((?&tree)(,(?&tree))*)?\]{WHITESPACE}\}}',
             },
-            rf'\{{{WHITESPACE}"value"{WHITESPACE}:{WHITESPACE}{INTEGER}{WHITESPACE},{WHITESPACE}"children"{WHITESPACE}:{WHITESPACE}\[{WHITESPACE}(?&tree){WHITESPACE}\]{WHITESPACE}\}}',
             [
                 (
                     '{"value": 1, "children": [{"value": 2, "children": []}]}',
@@ -425,12 +448,11 @@ def test_match_number(pattern, does_match):
         ),
     ],
 )
-def test_match(schema, definitions, regex, examples):
+def test_match(schema, definitions, examples):
     schema = json.dumps(schema)
     test_regex = build_regex_from_object(schema)
     for name, value in definitions.items():
         assert f"(?P<{name}>{value})" in test_regex
-    assert test_regex.endswith(regex)
 
     for string, does_match in examples:
         match = re.fullmatch(test_regex, string)
