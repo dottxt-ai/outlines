@@ -2,7 +2,7 @@ import inspect
 import itertools as it
 import json
 import re
-from typing import Any, Callable, Optional, Type, Union
+from typing import Any, Callable, Dict, Optional, Type, Union
 
 from jsonschema.protocols import Validator
 from jsonschema.validators import validator_for
@@ -133,7 +133,7 @@ def to_regex(resolver: Optional[Resolver], instance: Schema) -> str:
     class Regex(str):
         pass
 
-    definitions: dict[str, Union[Path, Regex]] = {
+    definitions: Dict[str, Union[Path, Regex]] = {
         name: Regex(regex) for name, regex in DEFINITIONS.items()
     }
 
@@ -353,7 +353,7 @@ def to_regex(resolver: Optional[Resolver], instance: Schema) -> str:
     return regex
 
 
-def get_schema_from_signature(fn: Callable) -> dict[str, Any]:
+def get_schema_from_signature(fn: Callable) -> Dict[str, Any]:
     """Turn a function signature into a JSON schema.
 
     Every JSON object valid to the output JSON Schema can be passed
