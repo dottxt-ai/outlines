@@ -83,7 +83,7 @@ def build_regex_from_object(
     if isinstance(object, BaseModel):
         schema = object.model_json_schema()
     elif isinstance(object, type) and issubclass(object, BaseModel):
-        schema = object.model_json_schema()
+        schema = object.model_json_schema()  # type: ignore
     elif callable(object):
         schema = get_schema_from_signature(object)
     else:
