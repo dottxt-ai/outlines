@@ -52,6 +52,7 @@ test = [
     "beartype<0.16.0",
     "datasets",
     "responses",
+    "types-regex",
 ]
 serve = [
     "vllm==0.2.6",
