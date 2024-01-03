@@ -104,10 +104,6 @@ class OpenAI:
             parameters that cannot be set by calling this class' methods.
 
         """
-        if model_name not in ["gpt-4", "gpt-3.5-turbo"]:
-            raise ValueError(
-                "Invalid model_name. It must be either 'gpt-4' or 'gpt-3.5-turbo'."
-            )
 
         try:
             import openai
@@ -125,6 +121,13 @@ class OpenAI:
                 raise ValueError(
                     "You must specify an API key to use the OpenAI API integration."
                 )
+        try:
+            client = openai.OpenAI()
+            client.models.retrieve(model_name)
+        except openai.NotFoundError:
+            raise ValueError(
+                "Invalid model_name. Check openai models list at https://platform.openai.com/docs/models"
+            )
 
         if config is not None:
             self.config = replace(config, model=model_name)  # type: ignore
