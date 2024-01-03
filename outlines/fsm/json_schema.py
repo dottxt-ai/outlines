@@ -24,6 +24,18 @@ type_to_regex = {
     "null": NULL,
 }
 
+DATE_TIME = r"(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(\.[0-9]{3})?(Z)?"
+DATE = r"(?:\d{4})-(?:0[1-9]|1[0-2])-(?:0[1-9]|[1-2][0-9]|3[0-1])"
+TIME = r"(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(\\.[0-9]+)?(Z)?"
+UUID = r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+
+format_to_regex = {
+    "uuid": UUID,
+    "date-time": DATE_TIME,
+    "date": DATE,
+    "time": TIME,
+}
+
 
 def build_regex_from_object(object: Union[str, Callable, BaseModel]):
     """Turn a JSON schema into a regex that matches any JSON object that follows
@@ -210,6 +222,20 @@ def to_regex(resolver: Resolver, instance: dict):
                     return rf'(^"{pattern[1:-1]}"$)'
                 else:
                     return rf'("{pattern}")'
+            elif "format" in instance:
+                format = instance["format"]
+                if format == "date-time":
+                    return format_to_regex["date-time"]
+                elif format == "uuid":
+                    return format_to_regex["uuid"]
+                elif format == "date":
+                    return format_to_regex["date"]
+                elif format == "time":
+                    return format_to_regex["time"]
+                else:
+                    raise NotImplementedError(
+                        f"Format {format} is not supported by Outlines"
+                    )
             else:
                 return type_to_regex["string"]
 
