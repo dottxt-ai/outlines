@@ -7,11 +7,15 @@ from pydantic import BaseModel, constr
 
 from outlines.fsm.json_schema import (
     BOOLEAN,
+    DATE,
+    DATE_TIME,
     INTEGER,
     NULL,
     NUMBER,
     STRING,
     STRING_INNER,
+    TIME,
+    UUID,
     build_regex_from_object,
     get_schema_from_signature,
     to_regex,
@@ -440,6 +444,78 @@ def test_match_number(pattern, does_match):
     ],
 )
 def test_match(schema, regex, examples):
+    schema = json.dumps(schema)
+    test_regex = build_regex_from_object(schema)
+    assert test_regex == regex
+
+    for string, does_match in examples:
+        match = re.fullmatch(test_regex, string)
+        if does_match:
+            assert match[0] == string
+            assert match.span() == (0, len(string))
+        else:
+            assert match is None
+
+
+@pytest.mark.parametrize(
+    "schema,regex,examples",
+    [
+        # UUID
+        (
+            {"title": "Foo", "type": "string", "format": "uuid"},
+            UUID,
+            [
+                ("123e4567-e89b-12d3-a456-426614174000", True),
+                ("123e4567-e89b-12d3-a456-42661417400", False),
+                ("123e4567-e89b-12d3-a456-42661417400g", False),
+                ("123e4567-e89b-12d3-a456-42661417400-", False),
+                ("", False),
+            ],
+        ),
+        # DATE-TIME
+        (
+            {"title": "Foo", "type": "string", "format": "date-time"},
+            DATE_TIME,
+            [
+                ("2018-11-13T20:20:39Z", True),
+                ("2016-09-18T17:34:02.666Z", True),
+                ("2008-05-11T15:30:00Z", True),
+                ("2021-01-01T00:00:00", True),
+                ("2022-01-10 07:19:30", False),  # missing T
+                ("2022-12-10T10-04-29", False),  # incorrect separator
+                ("2023-01-01", False),
+            ],
+        ),
+        # DATE
+        (
+            {"title": "Foo", "type": "string", "format": "date"},
+            DATE,
+            [
+                ("2018-11-13", True),
+                ("2016-09-18", True),
+                ("2008-05-11", True),
+                ("2015-13-01", False),  # incorrect month
+                ("2022-01", False),  # missing day
+                ("2022/12/01", False),  # incorrect separator"
+            ],
+        ),
+        # TIME
+        (
+            {"title": "Foo", "type": "string", "format": "time"},
+            TIME,
+            [
+                ("20:20:39Z", True),
+                ("15:30:00Z", True),
+                ("25:30:00", False),  # incorrect hour
+                ("15:30", False),  # missing seconds
+                ("15:30:00.000", False),  # missing Z
+                ("15-30-00", False),  # incorrect separator
+                ("15:30:00+01:00", False),  # incorrect separator
+            ],
+        ),
+    ],
+)
+def test_format(schema, regex, examples):
     schema = json.dumps(schema)
     test_regex = build_regex_from_object(schema)
     assert test_regex == regex
