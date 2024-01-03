@@ -257,6 +257,11 @@ def test_create_fsm_index_end_to_end():
     vocabulary_nb.update(vocabulary)
 
     res = create_fsm_index_end_to_end(regex_fsm.fsm_info, vocabulary_nb)
+    res = {
+        state: set(tokens_id_end_state_list)
+        for state, tokens_id_end_state_list in enumerate(res)
+        if tokens_id_end_state_list
+    }
 
     assert res == {0: {(2, 2), (3, 1)}, 2: {(2, 2), (3, 2)}}
 

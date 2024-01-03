@@ -491,40 +491,37 @@ def state_scan_tokens(
     return res
 
 
+@numba.njit(cache=True, nogil=True)
 def create_fsm_index_end_to_end(
     fsm_info: FSMInfo,
     vocabulary: Dict[str, List[int]],
-) -> Dict[int, Set[Tuple[int, int]]]:
+) -> List[List[Tuple[int, int]]]:
     """Create an FSM state-to-vocabulary map/index through end-to-end token parsing."""
 
-    # TODO: Consider using a `List` of `Set`s instead; that way we can JIT this
-    # code, too.
-    states_to_token_subsets: Dict[int, Set[Tuple[int, int]]] = {}
-    seen: Set[int] = set()
-    next_states = {fsm_info.initial}
+    finals_list = numba.typed.List.empty_list(numba.int64)
+    for final in fsm_info.finals:
+        finals_list.append(final)
 
-    while next_states:
-        start_state = next_states.pop()
+    all_states = set(fsm_info.transitions.values())
+    all_states.add(fsm_info.initial)
+    num_states = max(all_states)
+    states_to_token_subsets = numba.typed.List(
+        [numba.typed.List.empty_list(nb_int_pair_type) for _ in range(num_states + 1)]
+    )
 
+    for state_id in all_states:
         token_ids_end_states = state_scan_tokens(
             fsm_info.transitions,
             fsm_info.alphabet_symbol_mapping,
             fsm_info.alphabet_anything_value,
             fsm_info.initial,
-            fsm_info.finals,
+            finals_list,
             vocabulary,
-            start_state,
+            state_id,
         )
 
         for token_id_and_end_state in token_ids_end_states:
-            states_to_token_subsets.setdefault(start_state, set()).add(
-                token_id_and_end_state
-            )
-            end_state = token_id_and_end_state[1]
-            if end_state not in seen:
-                next_states.add(end_state)
-
-        seen.add(start_state)
+            states_to_token_subsets[state_id].append(token_id_and_end_state)
 
     return states_to_token_subsets
 
@@ -571,6 +568,11 @@ def create_fsm_index_tokenizer(
     vocabulary, empty_token_ids = reduced_vocabulary(tokenizer)
 
     states_to_token_subsets = create_fsm_index_end_to_end(fsm.fsm_info, vocabulary)
+    states_to_token_subsets: Dict[int, Set[Tuple[int, int]]] = {
+        state: set(tokens_id_end_state_list)
+        for state, tokens_id_end_state_list in enumerate(states_to_token_subsets)
+        if tokens_id_end_state_list
+    }
 
     # Allow transitions to EOS from all terminals FSM states that are
     # reachable
