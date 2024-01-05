@@ -263,10 +263,7 @@ def expand_attention_masks(attention_masks: torch.Tensor) -> torch.Tensor:
 
 
 @torch.inference_mode()
-def bias_logits(
-    logits: torch.Tensor,
-    allowed_token_ids: List,
-) -> torch.Tensor:
+def bias_logits(logits: torch.Tensor, allowed_token_ids: List) -> torch.Tensor:
     """Mask the logits.
 
     The function iterates over a nested list where each list corresponds to the
