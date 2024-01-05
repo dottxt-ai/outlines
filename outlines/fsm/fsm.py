@@ -36,7 +36,6 @@ class StopAtTokenFSM(FSM):
     """
 
     def __init__(self, tokenizer: "Tokenizer", stop_token_id: int):
-        self.tokenizer = tokenizer
         self.stop_token_id = stop_token_id
         self.vocabulary = tokenizer.vocabulary.values()
         self.final_states = {1}
@@ -99,9 +98,6 @@ class RegexFSM(FSM):
     """FSM to generate text that is in the language of a regular expression."""
 
     def __init__(self, regex_string: str, tokenizer: "Tokenizer"):
-        self.regex_string = regex_string
-        self.tokenizer = tokenizer
-
         regex_pattern = interegular.parse_pattern(regex_string)
         regex_fsm, _ = make_deterministic_fsm(regex_pattern.to_fsm().reduce())
         (
@@ -214,7 +210,6 @@ class CFGFSM(FSM):
                 self.terminal_regexps[terminal.name] = terminal.pattern.to_regexp()
         self.terminal_regexps["$END"] = tokenizer.eos_token
 
-        self.tokenizer = tokenizer
         self.generation = ""
         self.reset_state = False
         self.allow_eos = False
