@@ -18,8 +18,6 @@ hide:
     [:fontawesome-solid-bolt: Get started](welcome.md){ .md-button .md-button--primary }
     [:fontawesome-brands-discord: Join the Community](https://discord.gg/ZxBxyWmW5n){ .md-button }
 
- pip install outlines
-
 <div class="index-pre-code">
 ```bash
 pip install outlines
