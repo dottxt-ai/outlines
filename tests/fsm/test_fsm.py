@@ -81,27 +81,27 @@ def test_cfg():
 
     assert set(fsm.allowed_token_ids(state=0)) == {1, 3, 5}
     state = fsm.next_state(state=0, token_id=1)
-    assert fsm.generations[0] == "{"
+    assert fsm.generation == "{"
     assert not fsm.is_final_state(0)
 
     assert set(fsm.allowed_token_ids(state=state)) == {1, 2, 3}
     state = fsm.next_state(state=state, token_id=3)
-    assert fsm.generations[0] == "{["
+    assert fsm.generation == "{["
     assert not fsm.is_final_state(0)
 
     assert set(fsm.allowed_token_ids(state=state)) == {1, 3, 4}
     state = fsm.next_state(state=state, token_id=4)
-    assert fsm.generations[0] == "{[]"
+    assert fsm.generation == "{[]"
     assert not fsm.is_final_state(0)
 
     assert set(fsm.allowed_token_ids(state=state)) == {2}
     state = fsm.next_state(state=state, token_id=2)
-    assert fsm.generations[0] == "{[]}"
+    assert fsm.generation == "{[]}"
     assert not fsm.is_final_state(0)
 
     assert set(fsm.allowed_token_ids(state=state)) == {5}
     state = fsm.next_state(state=state, token_id=5)
-    assert fsm.generations[0] == "{[]}"
+    assert fsm.generation == "{[]}"
     assert fsm.is_final_state(0)
 
 
@@ -132,18 +132,18 @@ def test_cfg_early_termination():
 
     assert set(fsm.allowed_token_ids(state=0)) == {1}
     state = fsm.next_state(state=0, token_id=1)
-    assert fsm.generations[0] == "("
+    assert fsm.generation == "("
     assert not fsm.is_final_state(0)
 
     assert set(fsm.allowed_token_ids(state=state)) == {1, 2}
     state = fsm.next_state(state=state, token_id=2)
-    assert fsm.generations[0] == "()"
+    assert fsm.generation == "()"
     assert not fsm.is_final_state(0)
 
     # possible to continue or terminate
     assert set(fsm.allowed_token_ids(state=state)) == {1, 3}
     state = fsm.next_state(state=state, token_id=3)  # feed eos
-    assert fsm.generations[0] == "()"
+    assert fsm.generation == "()"
     assert fsm.is_final_state(0)
 
     # once eos generated, can only terminate
@@ -175,21 +175,21 @@ def test_cfg_multitoken_subexpr():
     fsm = CFGFSM(cfg_str, tokenizer)
 
     assert set(fsm.allowed_token_ids(state=0)) == {1, 2}
-    assert fsm.reset_state[0]  # starting new regex
+    assert fsm.reset_state  # starting new regex
     state = fsm.next_state(state=0, token_id=1)
-    assert fsm.generations[0] == "a"
+    assert fsm.generation == "a"
     assert not fsm.is_final_state(0)
 
     assert set(fsm.allowed_token_ids(state=state)) == {1}
-    assert not fsm.reset_state[0]  # continuing current regex
+    assert not fsm.reset_state  # continuing current regex
     state = fsm.next_state(state=state, token_id=1)
-    assert fsm.generations[0] == "aa"
+    assert fsm.generation == "aa"
     assert not fsm.is_final_state(0)
 
     assert set(fsm.allowed_token_ids(state=state)) == {3}
-    assert not fsm.reset_state[0]  # completing current regex
+    assert not fsm.reset_state  # completing current regex
     state = fsm.next_state(state=state, token_id=3)
-    assert fsm.generations[0] == "aa"
+    assert fsm.generation == "aa"
     assert fsm.is_final_state(0)
 
 
@@ -224,7 +224,7 @@ def test_cfg_overlapping_subexpr():
 
     assert set(fsm.allowed_token_ids(state=0)) == {1, 2}
     state = fsm.next_state(state=0, token_id=1)
-    assert fsm.generations[0] == "a"
+    assert fsm.generation == "a"
     assert not fsm.is_final_state(0)
 
     # INTENDED LOGIC
@@ -239,5 +239,5 @@ def test_cfg_overlapping_subexpr():
     # This implementation is sound, and always terminates, but is not complete
     assert set(fsm.allowed_token_ids(state=state)) == {3}
     state = fsm.next_state(state=state, token_id=3)
-    assert fsm.generations[0] == "a"
+    assert fsm.generation == "a"
     assert fsm.is_final_state(0)
