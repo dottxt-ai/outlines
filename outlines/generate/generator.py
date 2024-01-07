@@ -52,7 +52,7 @@ def init_generator_state(
 
 def sequence_generator(
     token_generator: Callable,
-    fsm: "FSM",
+    fsms: List["FSM"],
     init_state: Tuple,
     fsm_states: List[FSMState],
     rng: torch.Generator,
@@ -64,8 +64,9 @@ def sequence_generator(
     token_generator
         A callable that generate a new token given the current generation state
         and logits biases.
-    fsm
-        The finite-state machine that drives the text generation.
+    fsms
+        List of finite-state machines that drive the text generation,
+        one for each sequence in the batch.
     init_state
         The initial generation state for the batches.
     fsm_states
@@ -78,7 +79,7 @@ def sequence_generator(
     """
     token_ids, attention_masks, kv_cache = init_state
     while True:
-        allowed_tokens = get_allowed_tokens(fsm, fsm_states)
+        allowed_tokens = get_allowed_tokens(fsms, fsm_states)
 
         next_token_ids, kv_cache, logits, _ = token_generator(
             token_ids,
@@ -91,8 +92,8 @@ def sequence_generator(
         token_ids = update_token_ids(token_ids, next_token_ids)
         attention_masks = expand_attention_masks(attention_masks)
 
-        fsm_states = get_next_fsm_states(fsm, fsm_states, next_token_ids)
-        is_finished = is_generation_finished(fsm, fsm_states)
+        fsm_states = get_next_fsm_states(fsms, fsm_states, next_token_ids)
+        is_finished = is_generation_finished(fsms, fsm_states)
 
         if is_finished:
             yield GenerationState(token_ids, kv_cache, logits, fsm_states)
@@ -149,7 +150,7 @@ def token_generator(model, sampler: "Sampler") -> Callable:
 
 
 def get_next_fsm_states(
-    fsm: "FSM", fsm_states: List[FSMState], next_token_ids: torch.Tensor
+    fsms: List["FSM"], fsm_states: List[FSMState], next_token_ids: torch.Tensor
 ) -> List[FSMState]:
     """
 
@@ -166,14 +167,12 @@ def get_next_fsm_states(
 
     """
     return [
-        fsm.next_state(fsm_state, int(token_id[0]), idx)
-        for idx, fsm_state, token_id in zip(
-            range(len(fsm_states)), fsm_states, next_token_ids
-        )
+        fsm.next_state(fsm_state, int(token_id[0]))
+        for fsm, fsm_state, token_id in zip(fsms, fsm_states, next_token_ids)
     ]
 
 
-def get_allowed_tokens(fsm: "FSM", fsm_states: List[FSMState]) -> torch.Tensor:
+def get_allowed_tokens(fsms: List["FSM"], fsm_states: List[FSMState]) -> torch.Tensor:
     """Get the new instructions for each sequence from the finite-state machine.
 
     Parameters
@@ -188,10 +187,10 @@ def get_allowed_tokens(fsm: "FSM", fsm_states: List[FSMState]) -> torch.Tensor:
     A nested list that contains the ids of the logits to keep.
 
     """
-    return [fsm.allowed_token_ids(state, idx) for idx, state in enumerate(fsm_states)]
+    return [fsm.allowed_token_ids(state) for fsm, state in zip(fsms, fsm_states)]
 
 
-def is_generation_finished(fsm: "FSM", fsm_states: List[FSMState]) -> bool:
+def is_generation_finished(fsms: List["FSM"], fsm_states: List[FSMState]) -> bool:
     """Determine if the generation is finished.
 
     A generation is considered finished if the FSM of every sequence in the
@@ -212,7 +211,7 @@ def is_generation_finished(fsm: "FSM", fsm_states: List[FSMState]) -> bool:
     Whether all sequences are finished sampling.
 
     """
-    return all([fsm.is_final_state(state, idx) for idx, state in enumerate(fsm_states)])
+    return all([fsm.is_final_state(state) for fsm, state in zip(fsms, fsm_states)])
 
 
 @torch.inference_mode()
@@ -264,10 +263,7 @@ def expand_attention_masks(attention_masks: torch.Tensor) -> torch.Tensor:
 
 
 @torch.inference_mode()
-def bias_logits(
-    logits: torch.Tensor,
-    allowed_token_ids: List,
-) -> torch.Tensor:
+def bias_logits(logits: torch.Tensor, allowed_token_ids: List) -> torch.Tensor:
     """Mask the logits.
 
     The function iterates over a nested list where each list corresponds to the

@@ -21,17 +21,17 @@ from outlines.generate.generator import (
 
 def test_sequence_generator_class():
     class MockFSM:
-        def next_state(self, state, next_token_ids, _):
+        def next_state(self, state, next_token_ids):
             return 4
 
         def allowed_token_ids(self, *_):
             return [4]
 
-        def is_final_state(self, _, idx=0):
+        def is_final_state(self, _):
             return True
 
-        def reset(self):
-            pass
+        def copy(self):
+            return self
 
     class MockTokenizer:
         def encode(self, _):
@@ -74,17 +74,14 @@ def test_sequence_generator_class():
 
 def test_init_sequence_generator():
     class MockFSM:
-        def next_state(self, state, next_token_ids, idx=0):
+        def next_state(self, state, next_token_ids):
             return 0
 
-        def allowed_token_ids(self, _, idx=0):
+        def allowed_token_ids(self, _):
             return []
 
-        def is_final_state(self, _, idx=0):
+        def is_final_state(self, _):
             return True
-
-        def reset(self):
-            pass
 
     class MockTokenizer:
         def encode(self, _):
@@ -112,17 +109,14 @@ def test_init_sequence_generator():
 
 def test_sequence_generator_1d_single_iteration():
     class MockFSM:
-        def next_state(self, state, next_token_ids, idx=0):
+        def next_state(self, state, next_token_ids):
             return 0
 
-        def allowed_token_ids(self, _, idx=0):
+        def allowed_token_ids(self, _):
             return [0, 1, 2, 3]
 
-        def is_final_state(self, _, idx=0):
+        def is_final_state(self, _):
             return True
-
-        def reset(self):
-            pass
 
     class MockTokenizer:
         def encode(self, _):
@@ -145,7 +139,7 @@ def test_sequence_generator_1d_single_iteration():
     init_fsm_states = [0]
     generate = token_generator(MockModel(), sampler)
     sequence = sequence_generator(
-        generate, MockFSM(), init_state, init_fsm_states, torch.Generator()
+        generate, [MockFSM()], init_state, init_fsm_states, torch.Generator()
     )
     result = next(sequence)
 
@@ -158,20 +152,17 @@ def test_sequence_generator_1d_single_iteration():
 
 def test_sequence_generator_1d_several_iterations():
     class MockFSM:
-        def next_state(self, state, next_token_ids, idx=0):
+        def next_state(self, state, next_token_ids):
             return FSMState(state + 1)
 
-        def allowed_token_ids(self, _, idx=0):
+        def allowed_token_ids(self, _):
             return [0, 1, 2, 3]
 
-        def is_final_state(self, state, idx=0):
+        def is_final_state(self, state):
             if state < 2:
                 return False
             else:
                 return True
-
-        def reset(self):
-            pass
 
     class MockTokenizer:
         def encode(self, _):
@@ -194,7 +185,7 @@ def test_sequence_generator_1d_several_iterations():
     init_fsm_states = [0]
     generate = token_generator(MockModel(), sampler)
     sequence = sequence_generator(
-        generate, MockFSM(), init_state, init_fsm_states, torch.Generator()
+        generate, [MockFSM()], init_state, init_fsm_states, torch.Generator()
     )
 
     result = next(sequence)
@@ -211,17 +202,14 @@ def test_sequence_generator_1d_several_iterations():
 
 def test_sequence_generator_2d_single_iteration():
     class MockFSM:
-        def next_state(self, state, next_token_ids, idx=0):
+        def next_state(self, state, next_token_ids):
             return 0
 
-        def allowed_token_ids(self, _, idx=0):
+        def allowed_token_ids(self, _):
             return [0, 1, 2, 3]
 
-        def is_final_state(self, _, idx=0):
+        def is_final_state(self, _):
             return True
-
-        def reset(self):
-            pass
 
     class MockTokenizer:
         def encode(self, _):
@@ -248,9 +236,10 @@ def test_sequence_generator_2d_single_iteration():
         None,
     )
     init_fsm_states = [0, 0]
+    fsms = [MockFSM(), MockFSM()]
     generate = token_generator(MockModel(), sampler)
     sequence = sequence_generator(
-        generate, MockFSM(), init_state, init_fsm_states, torch.Generator()
+        generate, fsms, init_state, init_fsm_states, torch.Generator()
     )
 
     result = next(sequence)
@@ -267,20 +256,17 @@ def test_sequence_generator_2d_single_iteration():
 
 def test_sequence_generator_2d_several_iterations():
     class MockFSM:
-        def next_state(self, state, next_token_ids, idx=0):
+        def next_state(self, state, next_token_ids):
             return FSMState(state + 1)
 
-        def allowed_token_ids(self, _, idx=0):
+        def allowed_token_ids(self, _):
             return [0, 1, 2, 3]
 
-        def is_final_state(self, state, idx=0):
+        def is_final_state(self, state):
             if state < 2:
                 return False
             else:
                 return True
-
-        def reset(self):
-            pass
 
     class MockTokenizer:
         def encode(self, _):
@@ -307,9 +293,10 @@ def test_sequence_generator_2d_several_iterations():
         None,
     )
     init_fsm_states = [0, 0]
+    fsms = [MockFSM(), MockFSM()]
     generate = token_generator(MockModel(), sampler)
     sequence = sequence_generator(
-        generate, MockFSM(), init_state, init_fsm_states, torch.Generator()
+        generate, fsms, init_state, init_fsm_states, torch.Generator()
     )
 
     result = next(sequence)
@@ -411,44 +398,48 @@ def test_generator_2d(logits_biases, expected_result, expected_biased_logits):
 
 def test_get_next_fsm_states():
     class MockFSM:
-        def next_state(self, state, next_token_ids, idx=0):
+        def next_state(self, state, next_token_ids):
             return 0
 
-    result = get_next_fsm_states(MockFSM(), [0], torch.tensor([[0]]))
+    result = get_next_fsm_states([MockFSM()], [0], torch.tensor([[0]]))
     assert result == [0]
 
-    result = get_next_fsm_states(MockFSM(), [0, 0], torch.tensor([[0], [0]]))
+    result = get_next_fsm_states(
+        [MockFSM(), MockFSM()], [0, 0], torch.tensor([[0], [0]])
+    )
     assert result == [0, 0]
 
 
 def test_get_allowed_token_idss():
     class MockFSM:
-        def allowed_token_ids(self, _, idx=0):
+        def allowed_token_ids(self, _):
             return [1, 2, 3, 4]
 
-    result = get_allowed_tokens(MockFSM(), [0])
+    result = get_allowed_tokens([MockFSM()], [0])
     assert result == [[1, 2, 3, 4]]
 
-    result = get_allowed_tokens(MockFSM(), [0, 1])
+    result = get_allowed_tokens([MockFSM(), MockFSM()], [0, 1])
     assert result == [[1, 2, 3, 4], [1, 2, 3, 4]]
 
 
 def test_is_generation_finished():
     class MockFSMFinished:
-        def is_final_state(self, _, idx=0):
+        def is_final_state(self, _):
             return True
 
-    result = is_generation_finished(MockFSMFinished(), [1, 1])
+    result = is_generation_finished([MockFSMFinished(), MockFSMFinished()], [1, 1])
     assert result is True
 
     class MockFSMNotFinished:
-        def is_final_state(self, state, idx=0):
+        def is_final_state(self, state):
             if state == 0:
                 return False
             else:
                 return True
 
-    result = is_generation_finished(MockFSMNotFinished(), [0, 1])
+    result = is_generation_finished(
+        [MockFSMNotFinished(), MockFSMNotFinished()], [0, 1]
+    )
     assert result is False
 
 

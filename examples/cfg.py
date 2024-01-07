@@ -1,5 +1,3 @@
-from lark.exceptions import UnexpectedCharacters, UnexpectedToken
-
 import outlines.generate as generate
 import outlines.models as models
 
@@ -49,19 +47,13 @@ calc_grammar = """
 
 model = models.transformers("hf-internal-testing/tiny-random-gpt2")
 batch_size = 10
-max_tokens = 30
 for grammar in [nlamb_grammar, calc_grammar]:
     generator = generate.cfg(model, grammar)
-    sequences = generator([" "] * batch_size, max_tokens=max_tokens)
+    sequences = generator([" "] * batch_size)
     for seq in sequences:
         try:
             parse = generator.fsm.parser.parse(seq)
             assert parse is not None
             print("SUCCESS", seq)
-        except (UnexpectedCharacters, UnexpectedToken):
-            if generator.fsm.num_tokens_generated == max_tokens:
-                print("MAXTOKEN", seq)
-            else:
-                print("FAILURE", seq)
         except Exception:
             print("FAILURE", seq)
