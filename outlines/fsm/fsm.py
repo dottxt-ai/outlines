@@ -105,16 +105,16 @@ class RegexFSM(FSM):
     ):
         def func_cache_key_args(
             regex_string: str, tokenizer: "Tokenizer"
-        ) -> Tuple[str, list]:
+        ) -> Tuple[str, tuple]:
             """Return the values that will be used to create the cache key of create_states_mapping"""
-            cacheable_vocabulary = sorted(tokenizer.vocabulary.values())
+            cacheable_vocabulary = tuple(sorted(tokenizer.vocabulary.items()))
             return (regex_string, cacheable_vocabulary)
 
         @cache(func_cache_key_args)
         def create_states_mapping(
             regex_string: str, tokenizer: "Tokenizer"
         ) -> Tuple[dict, set, set]:
-            """Create the variables related the mapping between stzates and tokens
+            """Create the variables related to the mapping between states and tokens
             The parameters of the function are used for caching purpose
             """
             regex_pattern = interegular.parse_pattern(regex_string)

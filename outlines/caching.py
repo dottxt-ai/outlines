@@ -4,7 +4,6 @@ import os
 from typing import Callable, Optional
 
 import cloudpickle
-import torch
 from diskcache import Cache
 
 home_dir = os.path.expanduser("~")
@@ -13,15 +12,11 @@ memory = Cache(cache_dir, eviction_policy="none", cull_limit=0)
 _caching_enabled = True
 
 
-def hash_data(*data) -> str:
-    """Pickles and hashes all the data passed to it as args.
-    Pickling and then hashing significantly reduces the size of the key especially when dealing with large tensors.
-    """
-    result = hashlib.md5()  # nosec B303
-    for datum in data:
-        if isinstance(datum, torch.Tensor):
-            datum = datum.cpu().numpy()
-        result.update(cloudpickle.dumps(datum))
+def hash_arguments(*args, **kwargs) -> str:
+    """Create a hash out of the args and kwargs provided"""
+    result = hashlib.md5()
+    for item in list(args) + sorted(kwargs.items()):
+        result.update(cloudpickle.dumps(item))
     return result.hexdigest()
 
 
@@ -45,9 +40,9 @@ def cache(key_function: Optional[Callable] = None):
                 return cached_function(*args, **kwargs)
             if key_function:
                 key_args = key_function(*args, **kwargs)
-                cache_key = hash_data(*key_args)
+                cache_key = hash_arguments(*key_args)
             else:
-                cache_key = hash_data(*args, **kwargs)
+                cache_key = hash_arguments(*args, **kwargs)
             if cache_key in memory:
                 return memory[cache_key]
             result = cached_function(*args, **kwargs)
@@ -59,9 +54,9 @@ def cache(key_function: Optional[Callable] = None):
                 return await cached_function(*args, **kwargs)
             if key_function:
                 key_args = key_function(*args, **kwargs)
-                cache_key = hash_data(*key_args)
+                cache_key = hash_arguments(*key_args)
             else:
-                cache_key = hash_data(*args, **kwargs)
+                cache_key = hash_arguments(*args, **kwargs)
             if cache_key in memory:
                 return memory[cache_key]
             result = await cached_function(*args, **kwargs)
