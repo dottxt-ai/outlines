@@ -196,6 +196,17 @@ class OpenAI:
 
             return response
 
+    @property
+    def tokenizer(self):
+        try:
+            import tiktoken
+        except ImportError:
+            raise ImportError(
+                "The `tiktoken` library needs to be installed in order to choose `outlines.models.openai` with `is_in`"
+            )
+
+        return tiktoken.encoding_for_model(self.config.model)
+
     def generate_choice(
         self, prompt: str, choices: List[str], max_tokens: Optional[int] = None
     ) -> str:
@@ -211,21 +222,12 @@ class OpenAI:
             The maximum number of tokens to generate
 
         """
-        try:
-            import tiktoken
-        except ImportError:
-            raise ImportError(
-                "The `tiktoken` library needs to be installed in order to choose `outlines.models.openai` with `is_in`"
-            )
-
         config = replace(self.config, max_tokens=max_tokens)
-
-        tokenizer = tiktoken.encoding_for_model(self.config.model)
 
         greedy = False
         decoded: List[str] = []
         encoded_choices_left: List[List[int]] = [
-            tokenizer.encode(word) for word in choices
+            self.tokenizer.encode(word) for word in choices
         ]
 
         while len(encoded_choices_left) > 0:
@@ -254,7 +256,7 @@ class OpenAI:
             self.prompt_tokens += prompt_tokens
             self.completion_tokens += completion_tokens
 
-            encoded_response = tokenizer.encode(response)
+            encoded_response = self.tokenizer.encode(response)
 
             if encoded_response in encoded_choices_left:
                 decoded.append(response)
@@ -271,10 +273,10 @@ class OpenAI:
                     greedy = True  # next iteration will be "greedy"
                     continue
                 else:
-                    decoded.append("".join(tokenizer.decode(encoded_response)))
+                    decoded.append("".join(self.tokenizer.decode(encoded_response)))
 
                     if len(encoded_choices_left) == 1:  # only one choice left
-                        choice_left = tokenizer.decode(encoded_choices_left[0])
+                        choice_left = self.tokenizer.decode(encoded_choices_left[0])
                         decoded.append(choice_left)
                         break
 

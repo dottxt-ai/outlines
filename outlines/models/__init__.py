@@ -6,6 +6,7 @@ codebase.
 
 """
 from .awq import awq
+from .azure import AzureOpenAI, azure_openai
 from .exllamav2 import exl2
 from .gptq import gptq
 from .llamacpp import LlamaCpp, llamacpp
