@@ -1,9 +1,9 @@
 import asyncio
+import builtins
 import functools
 import inspect
 from typing import Callable, Optional
 
-import nest_asyncio
 import numpy as np
 from numpy.lib.function_base import (
     _calculate_shapes,
@@ -12,11 +12,17 @@ from numpy.lib.function_base import (
     _update_dim_sizes,
 )
 
-# Allow nested loops, useful to run in notebooks
-try:
-    nest_asyncio.apply()
-except ValueError as e:
-    print("Could not apply nest_asyncio:", e)
+# Allow nested loops for running in notebook. We don't enable it globally as it
+# may interfere with other libraries that use asyncio.
+if hasattr(builtins, "__IPYTHON__"):
+    try:
+        import nest_asyncio
+
+        nest_asyncio.apply()
+    except ImportError:
+        print(
+            "Couldn't patch nest_asyncio because it's not installed. Running in the notebook might be have issues"
+        )
 
 
 class vectorize:
