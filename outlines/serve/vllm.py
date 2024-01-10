@@ -2,12 +2,48 @@
 import json
 import math
 from collections import defaultdict
-from typing import DefaultDict, List
+from typing import Callable, DefaultDict, List
 
 import torch
 
-from outlines.fsm.fsm import RegexFSM
+from outlines.fsm.fsm import CFGFSM, FSM, RegexFSM
 from outlines.fsm.json_schema import build_regex_from_object
+
+
+def _adapt_tokenizer(tokenizer):
+    """Adapt vLLM's tokenizer to use to compile the FSM.
+
+    The API of Outlines tokenizers is slightly different to that of
+    `transformers`. In addition we need to handle the missing spaces to
+    Llama's tokenizer to be able to compile FSMs for this model.
+
+    """
+    tokenizer.vocabulary = tokenizer.get_vocab()
+    tokenizer.special_tokens = set(tokenizer.all_special_tokens)
+
+    def convert_token_to_string(token: str) -> str:
+        from transformers.file_utils import SPIECE_UNDERLINE
+
+        string = tokenizer.convert_tokens_to_string([token])
+
+        # A hack to handle missing spaces to HF's Llama tokenizers
+        if token.startswith(SPIECE_UNDERLINE) or token == "<0x20>":
+            return " " + string
+
+        return string
+
+    def change_decoder(
+        decoder: Callable[[List[int]], str]
+    ) -> Callable[[List[int]], List[str]]:
+        def new_decoder(inp_tokens: List[int]) -> List[str]:
+            return [decoder(inp_tokens)]
+
+        return new_decoder
+
+    tokenizer.convert_token_to_string = convert_token_to_string
+    tokenizer.decode = change_decoder(tokenizer.decode)
+
+    return tokenizer
 
 
 def _patched_apply_logits_processors(
@@ -39,21 +75,9 @@ def _patched_apply_logits_processors(
     return logits
 
 
-class RegexLogitsProcessor:
-    def __init__(self, regex_string, llm):
-        """Compile the FSM that drives the regex-guided generation.
-
-        Parameters
-        ----------
-        regex_string
-            A string that represents a regular expression
-        llm
-            An instance of `vllm.LLM`
-
-        """
-        tokenizer = self.adapt_tokenizer(llm.tokenizer)
-
-        fsm = RegexFSM(regex_string, tokenizer)
+class FSMLogitsProcessor:
+    def __init__(self):
+        fsm = FSM()
         self.fsm = fsm
 
     def __call__(
@@ -77,31 +101,37 @@ class RegexLogitsProcessor:
 
         return biased_scores
 
-    def adapt_tokenizer(self, tokenizer):
-        """Adapt vLLM's tokenizer to use to compile the FSM.
 
-        The API of Outlines tokenizers is slightly different to that of
-        `transformers`. In addition we need to handle the missing spaces to
-        Llama's tokenizer to be able to compile FSMs for this model.
+class RegexLogitsProcessor(FSMLogitsProcessor):
+    def __init__(self, regex_string, llm):
+        """Compile the FSM that drives the regex-guided generation.
+
+        Parameters
+        ----------
+        regex_string
+            A string that represents a regular expression
+        llm
+            An instance of `vllm.LLM`
 
         """
-        tokenizer.vocabulary = tokenizer.get_vocab()
-        tokenizer.special_tokens = set(tokenizer.all_special_tokens)
+        fsm = RegexFSM(regex_string, llm.tokenizer)
+        self.fsm = fsm
 
-        def convert_token_to_string(token: str) -> str:
-            from transformers.file_utils import SPIECE_UNDERLINE
 
-            string = tokenizer.convert_tokens_to_string([token])
+class CFGLogitsProcessor(FSMLogitsProcessor):
+    def __init__(self, cfg_string, llm):
+        """Compile the FSM that drives the cfg-guided generation.
 
-            # A hack to handle missing spaces to HF's Llama tokenizers
-            if token.startswith(SPIECE_UNDERLINE) or token == "<0x20>":
-                return " " + string
+        Parameters
+        ----------
+        regex_string
+            A string that represents a regular expression
+        llm
+            An instance of `vllm.LLM`
 
-            return string
-
-        tokenizer.convert_token_to_string = convert_token_to_string
-
-        return tokenizer
+        """
+        fsm = CFGFSM(cfg_string, llm.tokenizer)
+        self.fsm = fsm
 
 
 class JSONLogitsProcessor(RegexLogitsProcessor):

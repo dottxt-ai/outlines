@@ -24,8 +24,9 @@ You can then query the model in shell by passing a prompt and either
 
 1. a [JSON Schema][jsonschema]{:target="_blank"} specification or
 2. a [Regex][regex]{:target="_blank"} pattern
+2. an EBNF grammar
 
-with the `schema` or `regex` parameters, respectively, to the `/generate` endpoint. If both are specified, the schema will be used. If neither is specified, the generated text will be unconstrained.
+with the `schema`, `regex` of `cfg` parameters, respectively, to the `/generate` endpoint. If both are specified, the schema will be used. If neither is specified, the generated text will be unconstrained.
 
 For example, to generate a string that matches the schema `{"type": "string"}` (any string):
 
@@ -44,6 +45,16 @@ curl http://127.0.0.1:8000/generate \
     -d '{
         "prompt": "What is Pi? Give me the first 15 digits: ",
         "regex": "(-)?(0|[1-9][0-9]*)(\\.[0-9]+)?([eE][+-][0-9]+)?"
+        }'
+```
+
+To generate a string that matches the grammar `<grammar>`:
+
+```bash
+curl http://127.0.0.1:8000/generate \
+    -d '{
+        "prompt": "What is Pi? Give me the first 15 digits: ",
+        "cfg": <grammar>
         }'
 ```
 

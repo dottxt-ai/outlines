@@ -25,6 +25,7 @@ from vllm.sampling_params import SamplingParams
 from vllm.utils import random_uuid
 
 from .vllm import (
+    CFGLogitsProcessor,
     JSONLogitsProcessor,
     RegexLogitsProcessor,
     _patched_apply_logits_processors,
@@ -65,10 +66,13 @@ async def generate(request: Request) -> Response:
 
     json_schema = request_dict.pop("schema", None)
     regex_string = request_dict.pop("regex", None)
+    cfg_string = request_dict.pop("cfg", None)
     if json_schema is not None:
         logits_processors = [JSONLogitsProcessor(json_schema, engine.engine)]
     elif regex_string is not None:
         logits_processors = [RegexLogitsProcessor(regex_string, engine.engine)]
+    elif cfg_string is not None:
+        logits_processors = [CFGLogitsProcessor(cfg_string, engine.engine)]
     else:
         logits_processors = []
 
