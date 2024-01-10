@@ -1,12 +1,16 @@
 # Large language models playing chess
 
-In this example we will make a quantized version of Mistral-7B play chess against itself. On its own the model easily generates invalid move, so we will give it a little help. At each step we will generate a regex that only matches valid move, and use it to help the model only generating valid moves.
+In this example we will make a Phi-2 model play chess against itself. On its own the model easily generates invalid moves, so we will give it a little help. At each step we will generate a regex that only matches valid move, and use it to help the model only generating valid moves.
 
 ## The chessboard
 
 The game will be played on a standard checkboard. We will use the `chess` [library](https://github.com/niklasf/python-chess) to track the opponents' moves, and check that the moves are valid.
 
 ```python
+%pip install outlines -q 
+%pip install chess -q
+%pip install transformers accelerate einops -q
+
 import chess
 
 board = chess.Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
@@ -14,17 +18,18 @@ board = chess.Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
 
 ## The opponents
 
-Mistral-7B quantized will be playing against itself:
+Phi-2 will be playing against itself:
 
 ```python
 from outlines import models
 
-board_state = models.transformers("TheBloke/Mistral-7B-OpenOrca-AWQ", device="cuda")
+model = models.transformers("microsoft/phi-2")
+
 ```
 
 ## A little help for the language model
 
-To make sure Mistral-7B generates valid chess moves we will use Outline's regex-guided generation. We define a function that takes the current state of the board and returns a regex that matches all possible legal moves:
+To make sure Phi-2 generates valid chess moves we will use Outline's regex-guided generation. We define a function that takes the current state of the board and returns a regex that matches all possible legal moves:
 
 ```python
 import re
@@ -44,22 +49,22 @@ def legal_moves_regex(board):
 The prompt corresponds to the current state of the board, so we start with:
 
 ```python
-prompt = "Score: 1-0 WhiteElo: 1600 BlackElo: 1600 Timecontrol: 1800+0 Moves: 1."
+prompt = "Let's play Chess. Moves: "
+
 ```
 
 We update the prompt at each step so it reflects the state of the board after the previous move.
 
-## Let's play!
-
+## Let's play
 
 ```python
 from outlines import generate
 
-
+board_state = " " 
 turn_number = 0
 while not board.is_game_over():
     regex_pattern = legal_moves_regex(board)
-    guided = generate.regex(model, regex_pattern)(board_state)
+    guided = generate.regex(model, regex_pattern)(prompt + board_state)
     move = board.parse_san(guided)
 
     if turn_number % 2 == 0 :  # It's White's turn
@@ -74,7 +79,10 @@ while not board.is_game_over():
     print(board_state)
 ```
 
-It turns out Mistal-7B (quantized) is not very good at playing chess: the game systematically ends because of the threefold repetition rule.
+Interestingly enough, Phi-2 hates capturing.
 
+```pgn
+ e4 e5 1.Nf3 Ne7 3.b4 Nf5 5.Nc3 Ne7 7.Bb5 a6 9.Na4 b6 11.c3 Nec6 13.c4 a5 15.d4 Qg5 17.Nd2 Bb7 19.dxe5 
+```
 
 *This example was originally authored by [@903124S](https://x.com/903124S) in [this gist](https://gist.github.com/903124/cfbefa24da95e2316e0d5e8ef8ed360d).*
