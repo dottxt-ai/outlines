@@ -458,6 +458,47 @@ def get_sub_fsms_from_seq(
     )
 
 
+VocabTrie = namedtuple(
+    "VocabTrie",
+    [
+        "parent_children_map",
+        "idx_to_token_str",
+        "token_str_to_idx",
+    ],
+)
+
+
+@numba.njit(cache=True, nogil=True)
+def create_vocab_trie(vocabulary: Dict[str, List[int]]) -> VocabTrie:
+    # Initialize the trie as a flat dictionary
+    trie = numba.typed.Dict.empty(numba.int64, nb_int_list_type)
+
+    vocab_list = numba.typed.List.empty_list(numba.types.string)
+    reverse_vocab = numba.typed.Dict.empty(numba.types.string, numba.int64)
+    for i, token in enumerate(vocabulary):
+        vocab_list.append(token)
+        reverse_vocab[token] = numba.int64(i)
+
+    for token, token_id in reverse_vocab.items():
+        for i in range(len(token), 0, -1):
+            prefix = token[:i]
+            if prefix == token:
+                continue
+            if prefix in vocabulary:
+                prefix_id = numba.int64(reverse_vocab[prefix])
+                trie.setdefault(
+                    prefix_id, numba.typed.List.empty_list(numba.int64)
+                ).append(numba.int64(token_id))
+                break
+        else:
+            root_prefix_id = -1
+            trie.setdefault(
+                root_prefix_id, numba.typed.List.empty_list(numba.int64)
+            ).append(numba.int64(token_id))
+
+    return VocabTrie(trie, vocab_list, reverse_vocab)
+
+
 @numba.njit(cache=True, nogil=True)
 def state_scan_tokens(
     fsm_transitions: Dict[Tuple[int, int], int],
@@ -466,11 +507,19 @@ def state_scan_tokens(
     fsm_initial: int,
     fsm_finals: Set[int],
     vocabulary: Dict[str, List[int]],
+    vocab_trie: VocabTrie,
     start_state: int,
 ) -> Set[Tuple[int, int]]:
     res = set()
 
-    for token, token_ids in vocabulary.items():
+    # Initialize the stack with tokens having no prefixes
+    stack = numba.typed.List()
+    for next_token_idx in vocab_trie.parent_children_map[-1]:
+        stack.append(vocab_trie.idx_to_token_str[next_token_idx])
+
+    # Process the tokens using the stack
+    while len(stack) > 0:
+        token = stack.pop()
         state_seq = _walk_fsm(
             fsm_transitions,
             alphabet_symbol_mapping,
@@ -485,8 +534,14 @@ def state_scan_tokens(
         if state_seq is not None and len(state_seq) < len(token):
             continue
 
-        for token_id in token_ids:
+        for token_id in vocabulary[token]:
             res.add((token_id, state_seq[-1]))
+
+        # Add successors to the stack
+        token_idx = vocab_trie.token_str_to_idx[token]
+        if token_idx in vocab_trie.parent_children_map:
+            for next_token_idx in vocab_trie.parent_children_map[token_idx]:
+                stack.append(vocab_trie.idx_to_token_str[next_token_idx])
 
     return res
 
@@ -509,6 +564,8 @@ def create_fsm_index_end_to_end(
         [numba.typed.List.empty_list(nb_int_pair_type) for _ in range(num_states + 1)]
     )
 
+    vocab_trie = create_vocab_trie(vocabulary)
+
     for state_id in all_states:
         token_ids_end_states = state_scan_tokens(
             fsm_info.transitions,
@@ -517,6 +574,7 @@ def create_fsm_index_end_to_end(
             fsm_info.initial,
             finals_list,
             vocabulary,
+            vocab_trie,
             state_id,
         )
 
