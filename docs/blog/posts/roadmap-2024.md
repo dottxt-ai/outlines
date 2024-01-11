@@ -8,7 +8,7 @@ authors:
 
 # Roadmap for 2024
 
-Outlines is not even one year old and it's already gone a long way! As we just reached 4000k stars, and before laying out the roadmap for the following year, we would like to pause and thank all of you for supporting us, using and contributing to the library!
+Outlines is not even one year old and it's already gone a long way! As we just reached 4000 stars, and before laying out the roadmap for the following year, we would like to pause and thank all of you for supporting us, using and contributing to the library!
 
 ![4000 stars](../assets/4000_stars.png)
 
@@ -37,8 +37,8 @@ Let's be honest, Outlines is lacking clear and thorough examples. We want to cha
 
 * How does Outlines work? What can you do with it?
 * What can you do with Outlines that is harder or impossible to do with other libraries?
-* How you can perform standard LLM workflows, for instance Chain of Thoughts, Tree of Throughts, etc?
-* How does Oultines integrates with the larger ecosysten, for instance other libraries like LangChain and LlamaIndex?
+* How you can perform standard LLM workflows, for instance Chain of Thoughts, Tree of Thoughts, etc?
+* How does Oultines integrates with the larger ecosystem, for instance other libraries like LangChain and LlamaIndex?
 
 ### Simplify the integrations
 
