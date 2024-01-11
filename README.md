@@ -24,7 +24,7 @@ First time here? Go to our [setup guide](https://outlines-dev.github.io/outlines
 
 ## Features
 
-- [x] 🤖 [Multiple model integrations](https://outlines-dev.github.io/outlines/installation): OpenAI, transformers, AutoGPTQ, AutoAWQ
+- [x] 🤖 [Multiple model integrations](https://outlines-dev.github.io/outlines/installation): OpenAI, transformers, llama.cpp, exllama2, mamba
 - [x] 🖍️ Simple and powerful prompting primitives based on the [Jinja templating engine](https://jinja.palletsprojects.com/)
 - [x] 🚄 [Multiple choices](#multiple-choices), [type constraints](#type-constraint) and dynamic stopping
 - [x] ⚡ Fast [regex-guided generation](#efficient-regex-guided-generation)
