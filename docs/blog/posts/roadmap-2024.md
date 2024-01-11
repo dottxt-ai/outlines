@@ -18,7 +18,7 @@ Before delving into [the detailed roadmap](#detailed-roadmap), let me share a fe
 
 *Outlines currently differentiates itself* from other libraries with its efficient JSON- and regex- constrained generation. A user-facing interface for grammar-guided generation (it had been hidden in the repository) was also recently added. But there is much more we can do along these lines. In 2024 will we will keep pushing in the direction of more accurate, faster constrained generation.
 
-Outlines also supports many models providers: `transformers`, `autoawq`, `autogptq`, `mamba`, `llama.cpp` and `exllama2`. Those *integrations represent a lot of maintenance*, and we will need to simplify them. For instance, `transformers` now supports quantized models, and we will soon deprecate the support for `autoawq` and `autogptq`.
+Outlines also supports many models providers: `transformers`, `mamba`, `llama.cpp` and `exllama2`. Those *integrations represent a lot of maintenance*, and we will need to simplify them. For instance, `transformers` now supports quantized models, and we will soon deprecate the support for `autoawq` and `autogptq`.
 Thanks to a refactor of the library, it is now possible to use our constrained generation method by using logits processor with all other libraries, except `mamba`. We will look for libraries that provide state-space models and allow to pass a logits processor during inference. We will interface with `llama.cpp` and `exllama2` using logits processors.
 
 *We would like expand our work to the whole sampling layer*, and add new sampling methods that should make guided generation more accurate. This means we will keep the `transformers` integration as it is today and will expand our text generation logic around this library.
@@ -44,11 +44,10 @@ Let's be honest, Outlines is lacking clear and thorough examples. We want to cha
 
 We want to keep the current integrations but lower the maintenance cost so we can focus on what we bring to the table.
 
-* Deprecate every obsolete integration: `transformers` has recently integrated `autoawq` and `autogptq` for instance.
-* Integrate via logits processors as much as we can:
-  * See if we can integrate to a library that provides state-space models via a logit processing function;
-  * Integrate with llama.cpp via a logits processor;
-  * Integrate with exllamav2 via a logits processor;
+* Deprecate every obsolete integration: `transformers` has recently integrated `autoawq` and `autogptq` for instance. ([PR](https://github.com/outlines-dev/outlines/pull/527))
+* See if we can integrate to a library that provides state-space models via a logit processing function;
+* Integrate with llama.cpp via a logits processor;
+* Integrate with exllamav2 via a logits processor;
 
 ### Push guided generation further
 

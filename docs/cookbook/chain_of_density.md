@@ -86,7 +86,7 @@ class Summaries(BaseModel):
 We now generate the prompt by passing the article we want to summarize to the template. We load a quantized version of Mistral-7B using the AutoAWQ library, and then use JSON-guided generation to generate the summaries:
 
 ```python
-model = outlines.models.awq("TheBloke/Mistral-7B-OpenOrca-AWQ")
+model = outlines.models.transformers("TheBloke/Mistral-7B-OpenOrca-AWQ")
 
 prompt = chain_of_density(article)
 result = outlines.generate.json(model, Summaries)(prompt)
