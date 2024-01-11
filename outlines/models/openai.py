@@ -176,14 +176,11 @@ class OpenAI:
             Up to 4 words where the API will stop the completion.
 
         """
-        config = replace(self.config, max_tokens=max_tokens, n=samples, stop=stop_at)  # type: ignore
+        config = replace(
+            self.config, max_tokens=max_tokens, n=samples, stop=stop_at
+        )  # type: ignore
 
-        def call_func_cache_key_args(
-            prompt: Union[str, List[str]], config: OpenAIConfig
-        ):
-            return (prompt, config)
-
-        @cache(key_function=call_func_cache_key_args)
+        @cache
         def cached_call(prompt: Union[str, List[str]], config: OpenAIConfig):
             if "text-" in self.config.model:
                 raise NotImplementedError(
@@ -289,7 +286,8 @@ class OpenAI:
                         decoded.append(choice_left)
                         break
 
-                    greedy = False  # after each success, stay with (or switch to) "optimistic" approach
+                    # after each success, stay with (or switch to) "optimistic" approach
+                    greedy = False
 
                 prompt = prompt + "".join(decoded)
 
