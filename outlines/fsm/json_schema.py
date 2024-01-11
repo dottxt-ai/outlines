@@ -81,12 +81,10 @@ def to_regex(resolver: Resolver, instance: dict):
     ----
     Many features of JSON schema are missing:
     - Support the fact that fields in an object are optional by default
-    - Handle `required` keyword
     - Handle `additionalProperties` keyword
     - Handle types defined as a list
     - Handle constraints on numbers
     - Handle special patterns: `date`, `uri`, etc.
-    - Handle optional fields (not in `required`)
 
     This does not support recursive definitions.
 
@@ -102,13 +100,43 @@ def to_regex(resolver: Resolver, instance: dict):
     if "properties" in instance:
         regex = ""
         regex += r"\{"
-        for i, (name, value) in enumerate(instance["properties"].items()):
-            regex += f'{whitespace}"{name}"{whitespace}:{whitespace}'
-            regex += to_regex(resolver, value)
-
-            # No comma after the last key-value pair in JSON
-            if i < len(instance["properties"]) - 1:
-                regex += f"{whitespace},"
+        properties = instance["properties"]
+        required_properties = instance.get("required", [])
+        is_required = [item in required_properties for item in properties]
+        # If at least one property is required, we include the one in the lastest position
+        # without any comma.
+        # For each property before it (optional or required), we add with a comma after the property.
+        # For each property after it (optional), we add with a comma before the property.
+        if any(is_required):
+            last_required_pos = max([i for i, value in enumerate(is_required) if value])
+            for i, (name, value) in enumerate(properties.items()):
+                subregex = f'{whitespace}"{name}"{whitespace}:{whitespace}'
+                subregex += to_regex(resolver, value)
+                if i < last_required_pos:
+                    subregex = f"{subregex}{whitespace},"
+                elif i > last_required_pos:
+                    subregex = f"{whitespace},{subregex}"
+                regex += subregex if is_required[i] else f"({subregex})?"
+        # If no property is required, we have to create a possible pattern for each property in which
+        # it's the last one necessarilly present. Then, we add the others as optional before and after
+        # following the same strategy as described above.
+        # The whole block is made optional to allow the case in which no property is returned.
+        else:
+            property_subregexes = []
+            for i, (name, value) in enumerate(properties.items()):
+                subregex = f'{whitespace}"{name}"{whitespace}:{whitespace}'
+                subregex += to_regex(resolver, value)
+                property_subregexes.append(subregex)
+            possible_patterns = []
+            for i in range(len(property_subregexes)):
+                pattern = ""
+                for subregex in property_subregexes[:i]:
+                    pattern += f"({subregex}{whitespace},)?"
+                pattern += property_subregexes[i]
+                for subregex in property_subregexes[i + 1 :]:
+                    pattern += f"({whitespace},{subregex})?"
+                possible_patterns.append(pattern)
+            regex += f"({'|'.join(possible_patterns)})?"
 
         regex += f"{whitespace}" + r"\}"
 

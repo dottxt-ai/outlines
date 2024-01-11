@@ -184,8 +184,6 @@ class SequenceGenerator:
 
         """
 
-        self.fsm.reset()
-
         if isinstance(prompts, str):
             prompts = [prompts]
 
@@ -195,6 +193,7 @@ class SequenceGenerator:
         stop_sequences = stop_at or self.stop_sequences
         max_tokens = max_tokens or self.max_tokens
         num_sequences = len(prompts)
+        fsms = [self.fsm.copy() for _ in prompts]
 
         if rng is None:
             rng = torch.Generator(device=self.device)
@@ -206,7 +205,7 @@ class SequenceGenerator:
         init_fsm_states = [FSMState(0) for _ in range(num_sequences)]
 
         states = sequence_generator(
-            self.generate_token, self.fsm, init_state, init_fsm_states, rng
+            self.generate_token, fsms, init_state, init_fsm_states, rng
         )
 
         while True:
@@ -283,13 +282,16 @@ class SequenceGenerator:
 
         """
 
-        self.fsm.reset()
-
-        max_tokens = max_tokens or self.max_tokens
+        if isinstance(prompts, str):
+            prompts = [prompts]
 
         if isinstance(stop_at, str):
             stop_at = [stop_at]
+
         stop_sequences = stop_at or self.stop_sequences
+        max_tokens = max_tokens or self.max_tokens
+        num_sequences = len(prompts)
+        fsms = [self.fsm.copy() for _ in prompts]
 
         if rng is None:
             rng = torch.Generator(device=self.device)
@@ -298,14 +300,10 @@ class SequenceGenerator:
         init_state = init_generator_state(
             self.tokenizer, self.device, prompts, kv_cache
         )
-
-        token_ids = init_state[1]
-        num_sequences = token_ids.shape[0]
-
         init_fsm_states = [FSMState(0) for _ in range(num_sequences)]
 
         states = sequence_generator(
-            self.generate_token, self.fsm, init_state, init_fsm_states, rng
+            self.generate_token, fsms, init_state, init_fsm_states, rng
         )
 
         def token_generator() -> Iterator[Union[List[str], str]]:
@@ -398,10 +396,7 @@ def cfg(
 
 
 def format(
-    model,
-    python_type,
-    max_tokens: Optional[int] = None,
-    sampler: Sampler = multinomial,
+    model, python_type, max_tokens: Optional[int] = None, sampler: Sampler = multinomial
 ):
     regex_str = python_types_to_regex(python_type)
     return regex(model, regex_str, max_tokens, sampler)

@@ -86,6 +86,7 @@ extra_css:
   - stylesheets/extra.css
 
 plugins:
+  - blog
   - mkdocstrings:
       default_handler: python
       handlers:
@@ -126,19 +127,21 @@ nav:
         - Prompt templating: reference/prompting.md
         - Outlines functions: reference/functions.md
     - Models:
-        - OpenAI: reference/openai_text_generation.md
+        - OpenAI: reference/models/openai.md
+        - Llama.cpp: reference/models/llamacpp.md
 
   - API Reference:
-      - api/index.md
-      - api/models.md
-      - api/prompts.md
-      - api/json_schema.md
-      - api/fsm.md
-      - api/parsing.md
-      - api/regex.md
-      - api/samplers.md
+    - api/index.md
+    - api/models.md
+    - api/prompts.md
+    - api/json_schema.md
+    - api/fsm.md
+    - api/parsing.md
+    - api/regex.md
+    - api/samplers.md
   - Community:
-      - community/index.md
-      - Feedback 🫶: community/feedback.md
-      - Chat with us ☕: https://discord.com/invite/R9DSu34mGd
-      - How to contribute 🏗️: community/contribute.md
+    - community/index.md
+    - Feedback 🫶: community/feedback.md
+    - Chat with us ☕: https://discord.com/invite/R9DSu34mGd
+    - How to contribute 🏗️: community/contribute.md
+  - Blog: blog/index.md

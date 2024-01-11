@@ -53,8 +53,15 @@ test = [
     "beartype<0.16.0",
     "datasets",
     "responses",
+    "llama-cpp-python",
+    "huggingface_hub"
 ]
-serve = ["vllm==0.2.5"]
+serve = [
+    "vllm==0.2.6",
+    "ray==2.9.0",
+    "uvicorn",
+    "fastapi"
+]
 
 [project.urls]
 homepage = "https://github.com/outlines-dev/outlines"
@@ -89,8 +96,6 @@ exclude=["examples"]
 
 [[tool.mypy.overrides]]
 module = [
-    "awq.*",
-    "auto_gptq.*",
     "exllamav2.*",
     "jinja2",
     "joblib.*",
@@ -108,6 +113,8 @@ module = [
     "tiktoken.*",
     "torch.*",
     "transformers.*",
+    "llama_cpp",
+    "huggingface_hub",
     "lark.*",
     "interegular.*",
     "datasets.*",

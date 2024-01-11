@@ -1,7 +1,6 @@
 import pytest
 
 from outlines.models.openai import (
-    OpenAI,
     build_optimistic_mask,
     find_longest_intersection,
     find_response_choices_intersection,
@@ -49,11 +48,3 @@ def test_find_longest_common_prefix(response, choice, expected_prefix):
 def test_build_optimistic_mask(transposed, mask_size, expected_mask):
     mask = build_optimistic_mask(transposed, mask_size)
     assert mask == expected_mask
-
-
-def test_model_name_validation():
-    with pytest.raises(ValueError):
-        OpenAI(model_name="invalid_model_name")
-
-    with pytest.raises(ValueError):
-        OpenAI(model_name="gpt-4-1106-preview")

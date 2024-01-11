@@ -1,5 +1,9 @@
 # Generate text with the OpenAI API
 
+!!! Installation
+
+    You need to install the `openai` and `tiktoken` libraries to be able to use the OpenAI API in Outlines.
+
 Outlines supports models available via the OpenAI Chat API, e.g. ChatGPT and GPT-4. The following models can be used with Outlines:
 
 ```python
@@ -11,6 +15,7 @@ model = models.openai("gpt-4")
 print(type(model))
 # OpenAI
 ```
+
 
 It is possible to pass a system message to the model when initializing it:
 
