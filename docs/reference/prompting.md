@@ -22,7 +22,7 @@ allows to easily compose complex prompts.
 
 !!! warning "Prompt rendering"
 
-    Prompt functions are opinionated when it comes to prompt rendering. These opinions are meant to avoid common prompting errors, but can have unintended consequences if you are doing something unusuable. We advise to always print the prompt before using it. You can also [read the
+    Prompt functions are opinionated when it comes to prompt rendering. These opinions are meant to avoid common prompting errors, but can have unintended consequences if you are doing something unusual. We advise to always print the prompt before using it. You can also [read the
     reference](#formatting-conventions) section if you want to know more.
 
 ## Your first prompt

@@ -293,7 +293,7 @@ A great advantage of passing functions directly to specify the structure is that
 
 ## Prompting
 
-Buiding prompts can get messy. **Outlines** makes it easier to write and manage
+Building prompts can get messy. **Outlines** makes it easier to write and manage
 prompts by encapsulating templates inside "template functions".
 
 These functions make it possible to neatly separate the prompt logic from the
@@ -306,7 +306,7 @@ templating engine to help build complex prompts in a concise manner:
 import outlines
 
 examples = [
-    ("The food was digusting", "Negative"),
+    ("The food was disgusting", "Negative"),
     ("We had a fantastic night", "Positive"),
     ("Recommended", "Positive"),
     ("The waiter was rude", "Negative")

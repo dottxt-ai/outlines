@@ -247,7 +247,7 @@ Or use the [requests][requests]{:target="_blank"} library from another python pr
 
 ### Prompt templates
 
-Prompting can lead to messy code. Outlines' prompt functions are python functions that contain a template for the prompt in their docstring. We use a powerful templating language to allow you to loop over lists, dictionnaries, add conditionals, etc. directly from the prompt. When called, a prompt function returns the rendered template:
+Prompting can lead to messy code. Outlines' prompt functions are python functions that contain a template for the prompt in their docstring. We use a powerful templating language to allow you to loop over lists, dictionaries, add conditionals, etc. directly from the prompt. When called, a prompt function returns the rendered template:
 
 ```python
 import outlines
