@@ -33,10 +33,13 @@ def init_generator_state(
 
     Parameters
     ----------
+    tokenizer:
+        The model's tokenizer.
+    device:
+        The name of the device on which to load the token ids and attention
+        masks.
     prompt
         The prompt on which the generation is conditioned.
-    rng
-        The state of the random number generator.
 
     Returns
     -------
@@ -55,7 +58,8 @@ def sequence_generator(
     fsms: List["FSM"],
     init_state: Tuple,
     fsm_states: List[FSMState],
-    rng: torch.Generator,
+    num_samples: int = 1,
+    rng: torch.Generator = torch.Generator(),
 ) -> Iterator[GenerationState]:
     """Generates sequences of tokens.
 
@@ -78,6 +82,16 @@ def sequence_generator(
 
     """
     token_ids, attention_masks, kv_cache = init_state
+    batch_shape = token_ids.shape[:-1]
+
+    # To take several samples we duplicate `token_ids`, `attention_masks`
+    # and `fsm_states` as many times as the number of samples requested.
+    # The resulting tensors are of shape (num_samples * num_batches, num_tokens)
+    token_ids = torch.repeat_interleave(token_ids, num_samples, dim=0)
+    attention_masks = torch.repeat_interleave(attention_masks, num_samples, dim=0)
+    fsm_states = [state for state in fsm_states for _ in range(num_samples)]
+    fsms = [fsm.copy() for fsm in fsms for _ in range(num_samples)]
+
     while True:
         allowed_tokens = get_allowed_tokens(fsms, fsm_states)
 
@@ -88,7 +102,6 @@ def sequence_generator(
             rng=rng,
             allowed_tokens=allowed_tokens,
         )
-
         token_ids = update_token_ids(token_ids, next_token_ids)
         attention_masks = expand_attention_masks(attention_masks)
 
@@ -96,10 +109,20 @@ def sequence_generator(
         is_finished = is_generation_finished(fsms, fsm_states)
 
         if is_finished:
-            yield GenerationState(token_ids, kv_cache, logits, fsm_states)
+            yield GenerationState(
+                token_ids.reshape((num_samples,) + batch_shape + token_ids.shape[-1:]),
+                kv_cache,
+                logits,
+                fsm_states,
+            )
             return
 
-        yield GenerationState(token_ids, kv_cache, logits, fsm_states)
+        yield GenerationState(
+            token_ids.reshape((num_samples,) + batch_shape + token_ids.shape[-1:]),
+            kv_cache,
+            logits,
+            fsm_states,
+        )
 
 
 def token_generator(model, sampler: "Sampler") -> Callable:

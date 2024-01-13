@@ -29,12 +29,7 @@ def test_multinomial():
     next_token_ids = multinomial(logits, 1, rng)
     assert next_token_ids.equal(torch.tensor([[2]]))
 
-    next_token_ids = multinomial(logits, 2, rng)
-    assert next_token_ids.equal(torch.tensor([[2, 1]]))
-
+    sampler = MultinomialSampler()
     logits = torch.tensor([[10.0, 0.0, 9.0], [-math.inf, 4.0, 5.0]])
-    next_token_ids = multinomial(logits, 1, rng)
-    assert next_token_ids.equal(torch.tensor([[0], [1]]))
-
-    next_token_ids = multinomial(logits, 2, rng)
-    assert next_token_ids.equal(torch.tensor([[2, 0], [2, 1]]))
+    next_token_ids = sampler(logits, rng)
+    assert next_token_ids.equal(torch.tensor([[0], [2]]))
