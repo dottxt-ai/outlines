@@ -14,7 +14,7 @@ class User(BaseModel):
 
 
 llm = vllm.LLM(model="gpt2")
-logits_processor = JSONLogitsProcessor(User, llm)
+logits_processor = JSONLogitsProcessor(User, llm.llm_engine)
 result = llm.generate(
     ["A prompt", "Another prompt"],
     sampling_params=vllm.SamplingParams(
