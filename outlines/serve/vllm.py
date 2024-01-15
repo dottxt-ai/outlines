@@ -29,7 +29,7 @@ def _patched_apply_logits_processors(
                 logits_row = logits[logits_row_idx]
                 token_ids = sampling_metadata.seq_data[seq_id].output_token_ids
                 for logits_processor in logits_processors:
-                    logits_row = logits_processor(seq_id, token_ids, logits_row)
+                    logits_row = logits_processor(token_ids, logits_row)
                 logits[logits_row_idx] = logits_row
                 logits_row_idx += 1
         else:
@@ -56,20 +56,21 @@ class RegexLogitsProcessor:
         fsm = RegexFSM(regex_string, tokenizer)
         self.fsm = fsm
 
-    def __call__(
-        self, seq_id: int, input_ids: List[int], scores: torch.Tensor
-    ) -> torch.Tensor:
+    def __call__(self, input_ids: List[int], scores: torch.Tensor) -> torch.Tensor:
         """Use the FSM to bias the logits before sampling the next token."""
+
+        state_id = hash(tuple(input_ids))
 
         if len(input_ids) == 0:  # Initialize the fsm states
             self.fsm_state: DefaultDict[int, int] = defaultdict(int)
         else:
+            prev_state_id = hash(tuple(input_ids[:-1]))
             last_token = input_ids[-1]
-            self.fsm_state[seq_id] = self.fsm.next_state(
-                self.fsm_state[seq_id], last_token
+            self.fsm_state[state_id] = self.fsm.next_state(
+                self.fsm_state[prev_state_id], last_token
             )
 
-        allowed_tokens = self.fsm.allowed_token_ids(self.fsm_state[seq_id])
+        allowed_tokens = self.fsm.allowed_token_ids(self.fsm_state[state_id])
 
         mask = torch.full((scores.shape[-1],), -math.inf, device=scores.device)
         mask[allowed_tokens] = 0
