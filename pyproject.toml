@@ -63,7 +63,8 @@ serve = [
     "vllm>=0.3.0",
     "ray==2.9.0",
     "uvicorn",
-    "fastapi"
+    "fastapi",
+    "pydantic>=2.0",
 ]
 
 [project.urls]
