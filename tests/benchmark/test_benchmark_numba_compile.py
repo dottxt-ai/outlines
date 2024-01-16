@@ -2,12 +2,10 @@ import importlib
 
 import interegular
 import numba
-import pytest
 
 from outlines.fsm import regex
 
 
-@pytest.mark.run("first")
 def test_benchmark_compile_numba(benchmark, tokenizer, mocker):
     """Compile a basic regex to benchmark the numba compilation time"""
 
