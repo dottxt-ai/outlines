@@ -7,7 +7,6 @@ outlines.disable_cache()
 from outlines.fsm.fsm import RegexFSM  # noqa: E402
 from outlines.fsm.json_schema import build_regex_from_object  # noqa: E402
 
-
 simple_schema = """{
         "$defs": {
             "Armor": {
