@@ -56,6 +56,16 @@ And run the code style checks:
 pre-commit run --all-files
 ```
 
+#### Performance testing
+
+Run benchmark tests:
+
+```python
+pytest --benchmark-only
+```
+
+([other pytest-benchmark command line options](https://pytest-benchmark.readthedocs.io/en/latest/usage.html#commandline-options))
+
 ### Open a Pull Request
 
 Create a new branch on your fork, commit and push the changes:
