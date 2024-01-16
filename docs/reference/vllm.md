@@ -4,9 +4,12 @@ Outlines can be deployed as an LLM service using the vLLM inference engine and a
 
 ```bash
 pip install outlines[serve]
+pip install pydantic>=2.0
 ```
 
-Note: only vLLM v0.2.6 with ray 2.9.0 is supported at the moment.
+!!! Warning
+
+    Updating Pydantic to v2 after the installation is necessary.
 
 You can then start the server with:
 
@@ -33,7 +36,7 @@ For example, to generate a string that matches the schema `{"type": "string"}` (
 curl http://127.0.0.1:8000/generate \
     -d '{
         "prompt": "What is the capital of France?",
-        "schema": {"type": "string"}
+        "schema": {"type": "string", "maxLength": 5}
         }'
 ```
 
@@ -53,3 +56,5 @@ Please consult the [vLLM documentation][vllm]{:target="_blank"} for details on a
 
 [requests]: https://requests.readthedocs.io/en/latest/
 [vllm]: https://docs.vllm.ai/en/latest/index.html
+[jsonschema]: https://json-schema.org/learn/getting-started-step-by-step
+[regex]: https://www.regular-expressions.info/tutorial.html
