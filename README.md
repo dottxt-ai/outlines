@@ -60,7 +60,9 @@ Is the following review positive or negative?
 
 Review: This restaurant is just awesome!
 """
-answer = outlines.generate.choice(model, ["Positive", "Negative"])(prompt)
+
+generator = outlines.generate.choice(model, ["Positive", "Negative"])
+answer = generator(prompt)
 ```
 
 ### Type constraint
@@ -77,7 +79,9 @@ prompt = "1+1="
 answer = outlines.generate.format(model, int)(prompt)
 
 prompt = "sqrt(2)="
-answer = outlines.generate.format(model, float)(prompt)
+
+generator = outlines.generate.format(model, float)
+answer = generator(prompt)
 ```
 
 ### Efficient regex-guided generation
@@ -92,11 +96,15 @@ import outlines
 model = outlines.models.transformers("mistralai/Mistral-7B-v0.1")
 
 prompt = "What is the IP address of the Google DNS servers? "
-unguided = outlines.generate.text(model)(prompt, max_tokens=30)
-guided = outlines.generate.regex(
+
+generator = outlines.generate.text(model)
+unguided = generator(prompt, max_tokens=30)
+
+generator = outlines.generate.regex(
     model,
     r"((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)",
-)(prompt, max_tokens=30)
+)
+guided = generator(prompt, max_tokens=30)
 
 print(unguided)
 # What is the IP address of the Google DNS servers?
@@ -186,7 +194,6 @@ Sometimes you just want to be able to pass a JSON Schema instead of a Pydantic m
 
 ``` python
 import outlines
-import torch
 
 schema = '''{
     "title": "Character",
