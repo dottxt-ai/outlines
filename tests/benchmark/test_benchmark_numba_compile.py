@@ -4,9 +4,10 @@ import interegular
 import numba
 
 import outlines
-from outlines.fsm import regex
 
 outlines.disable_cache()
+
+from outlines.fsm import regex  # noqa: E402
 
 
 def test_benchmark_compile_numba(benchmark, tokenizer, mocker):

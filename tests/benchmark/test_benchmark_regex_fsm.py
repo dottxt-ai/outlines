@@ -1,10 +1,10 @@
 import pytest
 
 import outlines
-from outlines.fsm.fsm import RegexFSM
 
 outlines.disable_cache()
 
+from outlines.fsm.fsm import RegexFSM  # noqa: E402
 
 regex_samples = {
     "email": r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?",
