@@ -8,6 +8,7 @@ import outlines
 outlines.disable_cache()
 
 
+
 def test_benchmark_compile_numba(benchmark, tokenizer, mocker):
     """Compile a basic regex to benchmark the numba compilation time"""
 
