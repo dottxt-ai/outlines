@@ -290,6 +290,7 @@ class CFGFSM(FSM):
         self.reset_state = True
 
         proposal += self.regex_fsm.allowed_token_ids(self.first_state)
+
         if self.allow_eos:
             self.allow_eos = False
         else:

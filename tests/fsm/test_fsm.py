@@ -1,5 +1,6 @@
 import pytest
 
+
 import outlines.grammars
 from outlines.fsm.fsm import CFGFSM, RegexFSM, StopAtEosFSM
 
