@@ -1,21 +1,21 @@
 import pytest
 
-from outlines.fsm.fsm import CFGFSM, RegexFSM, StopAtTokenFSM
+from outlines.fsm.fsm import CFGFSM, RegexFSM, StopAtEosFSM
 
 
 def test_stop_at_token():
     class MockTokenizer:
         vocabulary = {"a": 1, "eos": 2}
-        special_tokens = {"eos"}
+        eos_token_id = 2
 
-    fsm = StopAtTokenFSM(MockTokenizer(), 2)
+    fsm = StopAtEosFSM(MockTokenizer())
 
     assert fsm.allowed_token_ids(0) == [1, 2]
     assert fsm.allowed_token_ids(1) == [2]
-    assert fsm.next_state(0, 2) == 1
+    assert fsm.next_state(0, 2) == fsm.final_state
     assert fsm.next_state(0, 1) == 0
     assert fsm.is_final_state(0) is False
-    assert fsm.is_final_state(1) is True
+    assert fsm.is_final_state(fsm.final_state) is True
 
 
 def test_regex_vocabulary_error():
@@ -49,11 +49,10 @@ def test_regex():
     assert fsm.states_to_token_maps == {0: {1: 1}}
     assert fsm.allowed_token_ids(state=0) == [1]
     assert fsm.next_state(state=0, token_id=1) == 1
-    assert fsm.next_state(state=0, token_id=tokenizer.eos_token_id) == -1
+    assert fsm.next_state(state=0, token_id=tokenizer.eos_token_id) == fsm.final_state
 
-    assert fsm.is_final_state(1) is True
     assert fsm.is_final_state(0) is False
-    assert fsm.is_final_state(-1) is True
+    assert fsm.is_final_state(fsm.final_state) is True
 
 
 def test_cfg():
@@ -83,27 +82,27 @@ def test_cfg():
     assert set(fsm.allowed_token_ids(state=0)) == {1, 3, 5}
     state = fsm.next_state(state=0, token_id=1)
     assert fsm.generation == "{"
-    assert not fsm.is_final_state(0)
+    assert not fsm.is_final_state(state)
 
     assert set(fsm.allowed_token_ids(state=state)) == {1, 2, 3}
     state = fsm.next_state(state=state, token_id=3)
     assert fsm.generation == "{["
-    assert not fsm.is_final_state(0)
+    assert not fsm.is_final_state(state)
 
     assert set(fsm.allowed_token_ids(state=state)) == {1, 3, 4}
     state = fsm.next_state(state=state, token_id=4)
     assert fsm.generation == "{[]"
-    assert not fsm.is_final_state(0)
+    assert not fsm.is_final_state(state)
 
     assert set(fsm.allowed_token_ids(state=state)) == {2}
     state = fsm.next_state(state=state, token_id=2)
     assert fsm.generation == "{[]}"
-    assert not fsm.is_final_state(0)
+    assert not fsm.is_final_state(state)
 
     assert set(fsm.allowed_token_ids(state=state)) == {5}
     state = fsm.next_state(state=state, token_id=5)
     assert fsm.generation == "{[]}"
-    assert fsm.is_final_state(0)
+    assert fsm.is_final_state(state)
 
 
 def test_cfg_early_termination():
@@ -134,18 +133,18 @@ def test_cfg_early_termination():
     assert set(fsm.allowed_token_ids(state=0)) == {1}
     state = fsm.next_state(state=0, token_id=1)
     assert fsm.generation == "("
-    assert not fsm.is_final_state(0)
+    assert not fsm.is_final_state(state)
 
     assert set(fsm.allowed_token_ids(state=state)) == {1, 2}
     state = fsm.next_state(state=state, token_id=2)
     assert fsm.generation == "()"
-    assert not fsm.is_final_state(0)
+    assert not fsm.is_final_state(state)
 
     # possible to continue or terminate
     assert set(fsm.allowed_token_ids(state=state)) == {1, 3}
     state = fsm.next_state(state=state, token_id=3)  # feed eos
     assert fsm.generation == "()"
-    assert fsm.is_final_state(0)
+    assert fsm.is_final_state(state)
 
     # once eos generated, can only terminate
     assert set(fsm.allowed_token_ids(state=state)) == {3}
@@ -179,19 +178,19 @@ def test_cfg_multitoken_subexpr():
     assert fsm.reset_state  # starting new regex
     state = fsm.next_state(state=0, token_id=1)
     assert fsm.generation == "a"
-    assert not fsm.is_final_state(0)
+    assert not fsm.is_final_state(state)
 
     assert set(fsm.allowed_token_ids(state=state)) == {1}
     assert not fsm.reset_state  # continuing current regex
     state = fsm.next_state(state=state, token_id=1)
     assert fsm.generation == "aa"
-    assert not fsm.is_final_state(0)
+    assert not fsm.is_final_state(state)
 
     assert set(fsm.allowed_token_ids(state=state)) == {3}
     assert not fsm.reset_state  # completing current regex
     state = fsm.next_state(state=state, token_id=3)
     assert fsm.generation == "aa"
-    assert fsm.is_final_state(0)
+    assert fsm.is_final_state(state)
 
 
 @pytest.mark.xfail(
@@ -226,7 +225,7 @@ def test_cfg_overlapping_subexpr():
     assert set(fsm.allowed_token_ids(state=0)) == {1, 2}
     state = fsm.next_state(state=0, token_id=1)
     assert fsm.generation == "a"
-    assert not fsm.is_final_state(0)
+    assert not fsm.is_final_state(state)
 
     # INTENDED LOGIC
     # This will fail until we fix TODO raised in https://github.com/outlines-dev/outlines/pull/391
@@ -241,4 +240,4 @@ def test_cfg_overlapping_subexpr():
     assert set(fsm.allowed_token_ids(state=state)) == {3}
     state = fsm.next_state(state=state, token_id=3)
     assert fsm.generation == "a"
-    assert fsm.is_final_state(0)
+    assert fsm.is_final_state(state)
