@@ -1,7 +1,11 @@
 import pytest
 
+import outlines
 from outlines.fsm.fsm import RegexFSM
 from outlines.fsm.json_schema import build_regex_from_object
+
+outlines.disable_cache()
+
 
 simple_schema = """{
         "$defs": {

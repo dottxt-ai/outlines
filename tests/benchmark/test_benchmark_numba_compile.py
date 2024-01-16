@@ -3,7 +3,10 @@ import importlib
 import interegular
 import numba
 
+import outlines
 from outlines.fsm import regex
+
+outlines.disable_cache()
 
 
 def test_benchmark_compile_numba(benchmark, tokenizer, mocker):
