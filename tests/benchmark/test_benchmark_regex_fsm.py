@@ -2,14 +2,6 @@ import pytest
 
 from outlines.fsm.fsm import RegexFSM
 
-
-@pytest.fixture(autouse=True)
-def ensure_compiled():
-    # Setup code here
-    print("Running setup before each test in this module")
-    # You can perform any setup actions here
-
-
 regex_samples = {
     "email": r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?",
     "complex_phone": "\\+?\\d{1,4}?[-.\\s]?\\(?\\d{1,3}?\\)?[-.\\s]?\\d{1,4}[-.\\s]?\\d{1,4}[-.\\s]?\\d{1,9}",

@@ -3,14 +3,6 @@ import pytest
 from outlines.fsm.fsm import RegexFSM
 from outlines.fsm.json_schema import build_regex_from_object
 
-
-@pytest.fixture(autouse=True)
-def ensure_compiled():
-    # Setup code here
-    print("Running setup before each test in this module")
-    # You can perform any setup actions here
-
-
 simple_schema = """{
         "$defs": {
             "Armor": {
