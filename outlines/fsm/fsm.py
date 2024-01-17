@@ -220,18 +220,22 @@ class CFGFSM(FSM):
         """Generate a list of allowed tokens for the next step.
 
         Upon initialization, the CFG incremental parser is used to determine the
-        first regex.
+        first regex and construct the first FSM to generate the first terminal.
 
-        This regex is used for proposals until either:
+        This FSM is used for proposals until either:
 
-        - The regex is exhausted, and its only remaining option is the EOS
-          token, in which case we always transition to the next regex
-        - The regex can be exhausted, but the EOS token is not the only
-          remaining option, in which case we transition to the next regex with
-          probability P (TODO) or remove the possibility of generating the EOS
-          token and continue with the current regex
+        - The FSM is exhausted, and its only remaining option is the EOS
+          token, in which case we feed the generated terminal to the
+          CFG incremental parser and allow it to propose the next regex
+          corresponding to the next set of valid terminals.
+        - The current FSM can be exhausted, but the EOS token is not the only
+          remaining option. In this case we allow proposal of current terminal extensions,
+          store the current FSM and its state, then also use the CFG parser
+          to propose a new regex corresponding to terminating the current terminal
+          and starting the next one. The model can then sample from either of these sets
+          to determine whether to extend the current terminal or terminate it and start the next one.
 
-        The CFG incremental parser is allowed to propose the EOS token from any final state,
+        The CFG incremental parser is allowed to propose the EOS token from any accepting state,
         and once it is generated, the FSM will continue to always generate the EOS token.
 
         Parameters
