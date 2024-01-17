@@ -352,6 +352,7 @@ def test_cfg_allow_both_extend_and_shift_terminal():
     tokenizer = MockTokenizer()
     fsm = CFGFSM(cfg_str, tokenizer)
 
+
     assert set(fsm.allowed_token_ids(state=fsm.first_state)) == {1, 3}
     state = fsm.next_state(state=fsm.first_state, token_id=1)
     assert fsm.generation == "("
