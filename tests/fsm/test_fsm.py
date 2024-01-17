@@ -150,7 +150,7 @@ def test_cfg_early_termination():
     assert set(fsm.allowed_token_ids(state=state)) == {3}
 
 
-def test_cfg_multitoken_subexpr():
+def test_cfg_multitoken_terminal():
     class MockTokenizer:
         vocabulary = {"a": 1, "b": 2, "eos": 3}
         special_tokens = {"eos"}
@@ -193,17 +193,12 @@ def test_cfg_multitoken_subexpr():
     assert fsm.is_final_state(state)
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="Current regex implementation is not complete",
-    raises=NotImplementedError,
-)
-def test_cfg_overlapping_subexpr():
+def test_cfg_allow_both_extend_and_shift_terminal():
     class MockTokenizer:
-        vocabulary = {"a": 1, "b": 2, "eos": 3}
+        vocabulary = {"(": 1, ")": 2, "a": 3, "eos": 4}
         special_tokens = {"eos"}
         eos_token = "eos"
-        eos_token_id = 3
+        eos_token_id = 4
 
         def convert_token_to_string(self, token):
             return token
@@ -216,28 +211,33 @@ def test_cfg_overlapping_subexpr():
             return [self.inverse_vocabulary[t] for t in token_ids]
 
     cfg_str = """
-        start: S
-        S: "a" | "b" | "aa" | "bb"
+        start: s
+        s: "(" s ")" | /a+/
     """
     tokenizer = MockTokenizer()
     fsm = CFGFSM(cfg_str, tokenizer)
 
-    assert set(fsm.allowed_token_ids(state=fsm.first_state)) == {1, 2}
+    assert set(fsm.allowed_token_ids(state=fsm.first_state)) == {1, 3}
     state = fsm.next_state(state=fsm.first_state, token_id=1)
-    assert fsm.generation == "a"
+    assert fsm.generation == "("
     assert not fsm.is_final_state(state)
 
-    # INTENDED LOGIC
-    # This will fail until we fix TODO raised in https://github.com/outlines-dev/outlines/pull/391
-    try:
-        assert set(fsm.allowed_token_ids(state=state)) == {1, 3}
-    except AssertionError:
-        raise NotImplementedError("TODO: fix this")
-
-    # CURRENT LOGIC
-    # For now, the FSM can only generate the greedy completion, ending at "a", never "aa"
-    # This implementation is sound, and always terminates, but is not complete
-    assert set(fsm.allowed_token_ids(state=state)) == {3}
+    assert set(fsm.allowed_token_ids(state=state)) == {1, 3}
     state = fsm.next_state(state=state, token_id=3)
-    assert fsm.generation == "a"
+    assert fsm.generation == "(a"
+    assert not fsm.is_final_state(state)
+
+    assert set(fsm.allowed_token_ids(state=state)) == {2, 3}
+    state = fsm.next_state(state=state, token_id=3)
+    assert fsm.generation == "(aa"
+    assert not fsm.is_final_state(state)
+
+    assert set(fsm.allowed_token_ids(state=state)) == {2, 3}
+    state = fsm.next_state(state=state, token_id=2)
+    assert fsm.generation == "(aa)"
+    assert not fsm.is_final_state(state)
+
+    assert set(fsm.allowed_token_ids(state=state)) == {4}
+    state = fsm.next_state(state=state, token_id=4)
+    assert fsm.generation == "(aa)"
     assert fsm.is_final_state(state)
