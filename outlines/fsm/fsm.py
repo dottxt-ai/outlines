@@ -212,6 +212,10 @@ class CFGFSM(FSM):
         self.allow_eos = False
         self.regex_fsm: RegexFSM
 
+        self.check_last = False
+        self.proposal_last: List[int] = []
+        self.regex_fsm_last: RegexFSM
+
     def allowed_token_ids(self, state: FSMState) -> List[int]:
         """Generate a list of allowed tokens for the next step.
 
@@ -243,14 +247,21 @@ class CFGFSM(FSM):
         if self.is_final_state(state):
             return [self.tokenizer.eos_token_id]
 
+        proposal = []
         if self.generation != "":
-            proposal = self.regex_fsm.allowed_token_ids(state)
+            if self.check_last:
+                proposer = self.regex_fsm_last
+            else:
+                proposer = self.regex_fsm
+            proposal += proposer.allowed_token_ids(state)
             if self.tokenizer.eos_token_id not in proposal:
                 return proposal
-            if set(proposal) != {self.tokenizer.eos_token_id}:
-                if False:  # TODO: THIS NEEDS TO BE SAMPLED
-                    proposal = [x for x in proposal if x != self.tokenizer.eos_token_id]
-                    return proposal
+            self.check_last = False
+            proposal = [x for x in proposal if x != self.tokenizer.eos_token_id]
+            if len(proposal) > 0:
+                self.check_last = True
+                self.proposal_last = proposal.copy()
+                self.regex_fsm_last = proposer
 
         interactive = self.parser.parse_interactive(self.generation)
         interactive.exhaust_lexer()
@@ -268,7 +279,7 @@ class CFGFSM(FSM):
         self.regex_fsm = RegexFSM(regex_string, self.tokenizer)
         self.reset_state = True
 
-        proposal = self.regex_fsm.allowed_token_ids(self.first_state)
+        proposal += self.regex_fsm.allowed_token_ids(self.first_state)
         if self.allow_eos:
             self.allow_eos = False
         else:
@@ -296,11 +307,17 @@ class CFGFSM(FSM):
         """
         if token_id == self.tokenizer.eos_token_id:
             return self.final_state
+
+        self.generation += self.tokenizer.decode([token_id])[0]
+
+        if self.check_last:
+            if token_id in self.proposal_last:
+                return self.regex_fsm_last.next_state(state, token_id)
+            self.check_last = False
+
         if self.reset_state:
             self.reset_state = False
             state = self.first_state
-
-        self.generation += self.tokenizer.decode([token_id])[0]
 
         return self.regex_fsm.next_state(state, token_id)
 
