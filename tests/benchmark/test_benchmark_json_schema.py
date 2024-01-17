@@ -68,7 +68,7 @@ schemas = dict(simple_schema=simple_schema, complex_schema=complex_schema)
 
 
 @pytest.mark.parametrize("schema_name", schemas.keys())
-def test_benchmark_json_schema_to_regex(benchmark, schema_name):
+def test_benchmark_json_schema_to_regex(benchmark, ensure_numba_compiled, schema_name):
     """Benchmark convert json schema to regex"""
     schema = schemas[schema_name]
     benchmark.pedantic(
@@ -79,7 +79,9 @@ def test_benchmark_json_schema_to_regex(benchmark, schema_name):
 
 
 @pytest.mark.parametrize("schema_name", schemas.keys())
-def test_benchmark_json_schema_to_fsm(benchmark, tokenizer, schema_name):
+def test_benchmark_json_schema_to_fsm(
+    benchmark, tokenizer, ensure_numba_compiled, schema_name
+):
     """Benchmark compile json schema as FSM"""
     schema = schemas[schema_name]
     regex = build_regex_from_object(schema)

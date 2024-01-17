@@ -20,7 +20,9 @@ regex_samples = {
 
 
 @pytest.mark.parametrize("regex_name", regex_samples.keys())
-def test_benchmark_regex_to_fsm(benchmark, tokenizer, regex_name):
+def test_benchmark_regex_to_fsm(
+    benchmark, tokenizer, ensure_numba_compiled, regex_name
+):
     """Benchmark converting regex to FSM"""
     regex_str = regex_samples[regex_name]
     benchmark.pedantic(
