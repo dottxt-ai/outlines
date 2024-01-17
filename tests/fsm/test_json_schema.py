@@ -241,8 +241,8 @@ def test_match_number(pattern, does_match):
                 "title": "Foo",
                 "anyOf": [{"type": "string"}, {"type": "integer"}],
             },
-            r'(("(?:[^"\\\x00-\x1f\x7f-\x9f]|\\.)*")|((0|[1-9][0-9]*))|("(?:[^"\\\x00-\x1f\x7f-\x9f]|\\.)*"(0|[1-9][0-9]*))|((0|[1-9][0-9]*)"(?:[^"\\\x00-\x1f\x7f-\x9f]|\\.)*"))',
-            [("12", True), ('"a"', True), ('1"a"', True)],
+            rf"({STRING}|{INTEGER})",
+            [("12", True), ('"a"', True), ('1"a"', False)],
         ),
         # allOf
         (
@@ -361,7 +361,7 @@ def test_match_number(pattern, does_match):
                 "title": "Character",
                 "type": "object",
             },
-            f'\\{{[\\n ]*"name"[\\n ]*:[\\n ]*{STRING}([\\n ]*,[\\n ]*"age"[\\n ]*:[\\n ]*(({INTEGER})|(null)|({INTEGER}null)|(null{INTEGER})))?([\\n ]*,[\\n ]*"weapon"[\\n ]*:[\\n ]*(({STRING})|(null)|({STRING}null)|(null{STRING})))?[\\n ]*\\}}',
+            f'\\{{[\\n ]*"name"[\\n ]*:[\\n ]*{STRING}([\\n ]*,[\\n ]*"age"[\\n ]*:[\\n ]*({INTEGER}|null))?([\\n ]*,[\\n ]*"weapon"[\\n ]*:[\\n ]*({STRING}|null))?[\\n ]*\\}}',
             [
                 ('{ "name" : "Player" }', True),
                 ('{ "name" : "Player", "weapon" : "sword" }', True),
@@ -381,7 +381,7 @@ def test_match_number(pattern, does_match):
                 "title": "Character",
                 "type": "object",
             },
-            f'\\{{[\\n ]*"name"[\\n ]*:[\\n ]*{STRING}[\\n ]*,([\\n ]*"age"[\\n ]*:[\\n ]*(({INTEGER})|(null)|({INTEGER}null)|(null{INTEGER}))[\\n ]*,)?[\\n ]*"weapon"[\\n ]*:[\\n ]*{STRING}([\\n ]*,[\\n ]*"strength"[\\n ]*:[\\n ]*(({INTEGER})|(null)|({INTEGER}null)|(null{INTEGER})))?[\\n ]*\\}}',
+            f'\\{{[\\n ]*"name"[\\n ]*:[\\n ]*{STRING}[\\n ]*,([\\n ]*"age"[\\n ]*:[\\n ]*({INTEGER}|null)[\\n ]*,)?[\\n ]*"weapon"[\\n ]*:[\\n ]*{STRING}([\\n ]*,[\\n ]*"strength"[\\n ]*:[\\n ]*({INTEGER}|null))?[\\n ]*\\}}',
             [
                 ('{ "name" : "Player" , "weapon" : "sword" }', True),
                 (
@@ -405,7 +405,7 @@ def test_match_number(pattern, does_match):
                 "title": "Character",
                 "type": "object",
             },
-            f'\\{{([\\n ]*"name"[\\n ]*:[\\n ]*(({STRING})|(null)|({STRING}null)|(null{STRING}))[\\n ]*,)?[\\n ]*"age"[\\n ]*:[\\n ]*{INTEGER}[\\n ]*,[\\n ]*"armor"[\\n ]*:[\\n ]*{STRING}[\\n ]*,([\\n ]*"strength"[\\n ]*:[\\n ]*(({INTEGER})|(null)|({INTEGER}null)|(null{INTEGER}))[\\n ]*,)?[\\n ]*"weapon"[\\n ]*:[\\n ]*{STRING}[\\n ]*\\}}',
+            f'\\{{([\\n ]*"name"[\\n ]*:[\\n ]*({STRING}|null)[\\n ]*,)?[\\n ]*"age"[\\n ]*:[\\n ]*{INTEGER}[\\n ]*,[\\n ]*"armor"[\\n ]*:[\\n ]*{STRING}[\\n ]*,([\\n ]*"strength"[\\n ]*:[\\n ]*({INTEGER}|null)[\\n ]*,)?[\\n ]*"weapon"[\\n ]*:[\\n ]*{STRING}[\\n ]*\\}}',
             [
                 (
                     '{ "name" : "Player", "age" : 10, "armor" : "plate", "strength" : 11, "weapon" : "sword" }',
@@ -429,7 +429,7 @@ def test_match_number(pattern, does_match):
                 "title": "Character",
                 "type": "object",
             },
-            f'\\{{([\\n ]*"name"[\\n ]*:[\\n ]*(({STRING})|(null)|({STRING}null)|(null{STRING}))([\\n ]*,[\\n ]*"age"[\\n ]*:[\\n ]*(({INTEGER})|(null)|({INTEGER}null)|(null{INTEGER})))?([\\n ]*,[\\n ]*"strength"[\\n ]*:[\\n ]*(({INTEGER})|(null)|({INTEGER}null)|(null{INTEGER})))?|([\\n ]*"name"[\\n ]*:[\\n ]*(({STRING})|(null)|({STRING}null)|(null{STRING}))[\\n ]*,)?[\\n ]*"age"[\\n ]*:[\\n ]*(({INTEGER})|(null)|({INTEGER}null)|(null{INTEGER}))([\\n ]*,[\\n ]*"strength"[\\n ]*:[\\n ]*(({INTEGER})|(null)|({INTEGER}null)|(null{INTEGER})))?|([\\n ]*"name"[\\n ]*:[\\n ]*(({STRING})|(null)|({STRING}null)|(null{STRING}))[\\n ]*,)?([\\n ]*"age"[\\n ]*:[\\n ]*(({INTEGER})|(null)|({INTEGER}null)|(null{INTEGER}))[\\n ]*,)?[\\n ]*"strength"[\\n ]*:[\\n ]*(({INTEGER})|(null)|({INTEGER}null)|(null{INTEGER})))?[\\n ]*\\}}',
+            f'\\{{([\\n ]*"name"[\\n ]*:[\\n ]*({STRING}|null)([\\n ]*,[\\n ]*"age"[\\n ]*:[\\n ]*({INTEGER}|null))?([\\n ]*,[\\n ]*"strength"[\\n ]*:[\\n ]*({INTEGER}|null))?|([\\n ]*"name"[\\n ]*:[\\n ]*({STRING}|null)[\\n ]*,)?[\\n ]*"age"[\\n ]*:[\\n ]*({INTEGER}|null)([\\n ]*,[\\n ]*"strength"[\\n ]*:[\\n ]*({INTEGER}|null))?|([\\n ]*"name"[\\n ]*:[\\n ]*({STRING}|null)[\\n ]*,)?([\\n ]*"age"[\\n ]*:[\\n ]*({INTEGER}|null)[\\n ]*,)?[\\n ]*"strength"[\\n ]*:[\\n ]*({INTEGER}|null))?[\\n ]*\\}}',
             [
                 ('{ "name" : "Player" }', True),
                 ('{ "name" : "Player", "age" : 10, "strength" : 10 }', True),
