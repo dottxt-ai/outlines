@@ -29,6 +29,7 @@ class LlamaCpp:
 
         self.ctx = llama_instance.llama_new_context_with_model(model, context_params)
 
+
     def forward(self, input_ids: torch.LongTensor, *_):
         """Compute a forward pass through the llama_cpp model."""
         if input_ids.ndim == 2:
@@ -58,8 +59,12 @@ class LlamaCpp:
             batch.logits[batch.n_tokens - 1] = True
             seq_token_ids.append(batch.n_tokens - 1)
 
-        if self.llama_instance.llama_decode(self.ctx, batch) != 0:
-            print("Error decoding")
+    
+        if rtn_code := self.llama_instance.llama_decode(self.ctx, batch) != 0:
+            if rtn_code == 1:
+                print("could not find a KV slot for the batch (try reducing the size of the batch or increase the context)")
+            else:    
+                print("Error decoding")
 
         all_logits = []
         for seq_token in seq_token_ids:
@@ -71,6 +76,8 @@ class LlamaCpp:
             all_logits.append(logits_tensor)
 
         self.llama_instance.llama_batch_free(batch)
+        self.llama_instance.llama_kv_cache_clear(self.ctx)
+        self.n_past = 0
 
         stacked_logits = torch.stack(all_logits)
         return stacked_logits, None
@@ -176,8 +183,14 @@ class LlamaCppTokenizer(Tokenizer):
         return token_ids, torch.ones_like(token_ids)
 
     def decode(self, token_ids: NDArray[np.int64]) -> List[str]:
+        if isinstance(token_ids, torch.Tensor):
+            token_ids = token_ids.numpy()
         if isinstance(token_ids, list):
-            token_ids = np.array(token_ids)
+            if isinstance(token_ids[0], torch.Tensor):
+                token_ids = token_ids[0].numpy()
+            else:
+                print(token_ids)
+                token_ids = np.array(token_ids)
         if token_ids.ndim == 1:
             token_ids = [token_ids]
 
@@ -191,11 +204,10 @@ class LlamaCppTokenizer(Tokenizer):
                     self.model, self.llama_instance.llama_token(id), buffer, size
                 )
 
-                token_piece = buffer[:n].decode("utf-8")  # type: ignore
-
+                token_piece = buffer[:n]
                 seq.append(token_piece)
 
-            pieces.append("".join(seq))
+            pieces.append(b"".join(seq).decode('utf-8'))
 
         return pieces
 
@@ -257,6 +269,10 @@ def llamacpp(
             )
             model_params.tensor_split = tensor_split_arr
 
+    model = llama_cpp.llama_load_model_from_file(
+        model_name.encode("utf-8"), model_params
+    )
+
     context_params = llama_cpp.llama_context_default_params()
     context_params.n_batch = model_kwargs.pop("n_batch", context_params.n_batch)
     context_params.n_ctx = model_kwargs.pop("n_ctx", context_params.n_ctx)
@@ -292,9 +308,6 @@ def llamacpp(
         "offload_kqv", context_params.offload_kqv
     )
 
-    model = llama_cpp.llama_load_model_from_file(
-        model_name.encode("utf-8"), model_params
-    )
 
     model_kwargs["n_vocab"] = llama_cpp.llama_n_vocab(model)
     tokenizer_kwargs["n_vocab"] = model_kwargs.get("n_vocab")
