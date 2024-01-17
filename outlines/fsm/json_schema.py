@@ -1,5 +1,4 @@
 import inspect
-import itertools as it
 import json
 import re
 from typing import Callable, Union
@@ -80,7 +79,6 @@ def to_regex(resolver: Resolver, instance: dict):
     Note
     ----
     Many features of JSON schema are missing:
-    - Support the fact that fields in an object are optional by default
     - Handle `additionalProperties` keyword
     - Handle types defined as a list
     - Handle constraints on numbers
@@ -153,13 +151,7 @@ def to_regex(resolver: Resolver, instance: dict):
     # any (one or more) of the given subschemas.
     elif "anyOf" in instance:
         subregexes = [to_regex(resolver, t) for t in instance["anyOf"]]
-        combinations = [
-            "(" + "".join(c) + ")"
-            for r in range(1, len(subregexes) + 1)
-            for c in it.permutations(subregexes, r)
-        ]
-
-        return rf"({'|'.join(combinations)})"
+        return rf"({'|'.join(subregexes)})"
 
     # To validate against oneOf, the given data must be valid against exactly
     # one of the given subschemas.
