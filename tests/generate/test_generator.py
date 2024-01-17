@@ -21,6 +21,8 @@ from outlines.generate.generator import (
 
 def test_sequence_generator_class():
     class MockFSM:
+        first_state = 0
+
         def next_state(self, state, next_token_ids):
             return 4
 
