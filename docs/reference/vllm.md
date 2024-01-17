@@ -33,7 +33,8 @@ For example, to generate a string that matches the schema `{"type": "string"}` (
 curl http://127.0.0.1:8000/generate \
     -d '{
         "prompt": "What is the capital of France?",
-        "schema": {"type": "string"}
+        "grammar_mode": "json_schema",
+        "grammar": {"type": "string"}
         }'
 ```
 
@@ -43,7 +44,8 @@ To generate a string that matches the regex `(-)?(0|[1-9][0-9]*)(\.[0-9]+)?([eE]
 curl http://127.0.0.1:8000/generate \
     -d '{
         "prompt": "What is Pi? Give me the first 15 digits: ",
-        "regex": "(-)?(0|[1-9][0-9]*)(\\.[0-9]+)?([eE][+-][0-9]+)?"
+        "grammar_mode": "regex",
+        "grammar": "(-)?(0|[1-9][0-9]*)(\\.[0-9]+)?([eE][+-][0-9]+)?"
         }'
 ```
 

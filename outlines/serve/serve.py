@@ -40,6 +40,12 @@ app = FastAPI()
 engine = None
 
 
+GRAMMAR_LOGITS_PROCESSORS = {
+    'json_schema': JSONLogitsProcessor,
+    'regex': RegexLogitsProcessor,
+}
+
+
 @app.get("/health")
 async def health() -> Response:
     """Health check."""
@@ -63,12 +69,24 @@ async def generate(request: Request) -> Response:
     prompt = request_dict.pop("prompt")
     stream = request_dict.pop("stream", False)
 
+    grammar_mode = request_dict.pop("grammar_mode", None)
+    grammar = request_dict.pop("grammar", None)
+
+    # Backwards compatibility with legacy parameters (as long as we need it)
     json_schema = request_dict.pop("schema", None)
     regex_string = request_dict.pop("regex", None)
     if json_schema is not None:
-        logits_processors = [JSONLogitsProcessor(json_schema, engine.engine)]
+        grammar_mode = 'json_schema'
+        grammar = json_schema
     elif regex_string is not None:
-        logits_processors = [RegexLogitsProcessor(regex_string, engine.engine)]
+        grammar_mode = 'regex'
+        grammar = regex_string
+
+    if grammar_mode is not None:
+        logits_processor_cls = GRAMMAR_LOGITS_PROCESSORS.get(grammar_mode)
+        if logits_processor_cls is None:
+            return Response(status_code=400, content=f'Invalid grammar_mode: {grammar_mode}')
+        logits_processors = [logits_processor_cls(grammar, engine.engine)]
     else:
         logits_processors = []
 
