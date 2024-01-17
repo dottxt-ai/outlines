@@ -40,7 +40,7 @@ app = FastAPI()
 engine = None
 
 
-GRAMMAR_LOGITS_PROCESSORS = {
+LOGITS_PROCESSOR_CLASSES = {
     'json_schema': JSONLogitsProcessor,
     'regex': RegexLogitsProcessor,
 }
@@ -58,8 +58,8 @@ async def generate(request: Request) -> Response:
 
     The request should be a JSON object with the following fields:
     - prompt: the prompt to use for the generation.
-    - schema: the JSON schema to use for the generation (if regex is not provided).
-    - regex: the regex to use for the generation (if schema is not provided).
+    - constraint_mode: json_schema or regex
+    - constraint: definition of the constraint
     - stream: whether to stream the results or not.
     - other fields: the sampling parameters (See `SamplingParams` for details).
     """
@@ -69,24 +69,24 @@ async def generate(request: Request) -> Response:
     prompt = request_dict.pop("prompt")
     stream = request_dict.pop("stream", False)
 
-    grammar_mode = request_dict.pop("grammar_mode", None)
-    grammar = request_dict.pop("grammar", None)
+    constraint_mode = request_dict.pop("constraint_mode", None)
+    constraint = request_dict.pop("constraint", None)
 
     # Backwards compatibility with legacy parameters (as long as we need it)
     json_schema = request_dict.pop("schema", None)
     regex_string = request_dict.pop("regex", None)
     if json_schema is not None:
-        grammar_mode = 'json_schema'
-        grammar = json_schema
+        constraint_mode = 'json_schema'
+        constraint = json_schema
     elif regex_string is not None:
-        grammar_mode = 'regex'
-        grammar = regex_string
+        constraint_mode = 'regex'
+        constraint = regex_string
 
-    if grammar_mode is not None:
-        logits_processor_cls = GRAMMAR_LOGITS_PROCESSORS.get(grammar_mode)
+    if constraint_mode is not None:
+        logits_processor_cls = LOGITS_PROCESSOR_CLASSES.get(constraint_mode)
         if logits_processor_cls is None:
-            return Response(status_code=400, content=f'Invalid grammar_mode: {grammar_mode}')
-        logits_processors = [logits_processor_cls(grammar, engine.engine)]
+            return Response(status_code=400, content=f'Invalid constraint_mode: {constraint_mode}')
+        logits_processors = [logits_processor_cls(constraint, engine.engine)]
     else:
         logits_processors = []
 
