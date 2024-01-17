@@ -1,6 +1,5 @@
 import pytest
 
-
 from outlines.fsm.fsm import RegexFSM
 from outlines.models.transformers import TransformerTokenizer
 
