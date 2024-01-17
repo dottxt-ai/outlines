@@ -14,6 +14,7 @@ FSMState = NewType("FSMState", int)
 
 
 class FSM(Protocol):
+    first_state: FSMState = FSMState(0)
     final_state: FSMState = FSMState(-1)
 
     def is_final_state(self, state: FSMState) -> bool:
@@ -53,17 +54,16 @@ class StopAtEosFSM(FSM):
         A list that contains the tokens to mask.
 
         """
-        if state == 0:
-            return list(self.vocabulary)
-        else:
+        if self.is_final_state(state):
             return [self.eos_token_id]
+        return list(self.vocabulary)
 
     def next_state(self, state: FSMState, token_id: int) -> FSMState:
         """Update the state of the FSM.
 
         The FSM stays in the initial state `0` unless the specified stop token
         has been generated or the maximum number of tokens has been reached. In
-        which case the FSM moves to the final state `1`.
+        which case the FSM moves to the final state `-1`.
 
         Parameters
         ----------
@@ -80,7 +80,7 @@ class StopAtEosFSM(FSM):
         if token_id == self.eos_token_id:
             return self.final_state
 
-        return FSMState(0)
+        return self.first_state
 
     def copy(self) -> "StopAtEosFSM":
         """Create a copy of the FSM."""
@@ -240,7 +240,7 @@ class CFGFSM(FSM):
         A list that contains the tokens to mask.
 
         """
-        if state == self.final_state:
+        if self.is_final_state(state):
             return [self.tokenizer.eos_token_id]
 
         if self.generation != "":
@@ -268,7 +268,7 @@ class CFGFSM(FSM):
         self.regex_fsm = RegexFSM(regex_string, self.tokenizer)
         self.reset_state = True
 
-        proposal = self.regex_fsm.allowed_token_ids(FSMState(0))
+        proposal = self.regex_fsm.allowed_token_ids(self.first_state)
         if self.allow_eos:
             self.allow_eos = False
         else:
@@ -298,7 +298,7 @@ class CFGFSM(FSM):
             return self.final_state
         if self.reset_state:
             self.reset_state = False
-            state = FSMState(0)
+            state = self.first_state
 
         self.generation += self.tokenizer.decode([token_id])[0]
 

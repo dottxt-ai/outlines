@@ -3,18 +3,18 @@ import pytest
 from outlines.fsm.fsm import CFGFSM, RegexFSM, StopAtEosFSM
 
 
-def test_stop_at_token():
+def test_stop_at_eos():
     class MockTokenizer:
         vocabulary = {"a": 1, "eos": 2}
         eos_token_id = 2
 
     fsm = StopAtEosFSM(MockTokenizer())
 
-    assert fsm.allowed_token_ids(0) == [1, 2]
-    assert fsm.allowed_token_ids(1) == [2]
-    assert fsm.next_state(0, 2) == fsm.final_state
-    assert fsm.next_state(0, 1) == 0
-    assert fsm.is_final_state(0) is False
+    assert fsm.allowed_token_ids(fsm.first_state) == [1, 2]
+    assert fsm.allowed_token_ids(fsm.final_state) == [2]
+    assert fsm.next_state(fsm.first_state, 2) == fsm.final_state
+    assert fsm.next_state(fsm.first_state, 1) == fsm.first_state
+    assert fsm.is_final_state(fsm.first_state) is False
     assert fsm.is_final_state(fsm.final_state) is True
 
 
@@ -79,8 +79,8 @@ def test_cfg():
     tokenizer = MockTokenizer()
     fsm = CFGFSM(cfg_str, tokenizer)
 
-    assert set(fsm.allowed_token_ids(state=0)) == {1, 3, 5}
-    state = fsm.next_state(state=0, token_id=1)
+    assert set(fsm.allowed_token_ids(state=fsm.first_state)) == {1, 3, 5}
+    state = fsm.next_state(state=fsm.first_state, token_id=1)
     assert fsm.generation == "{"
     assert not fsm.is_final_state(state)
 
@@ -130,8 +130,8 @@ def test_cfg_early_termination():
     tokenizer = MockTokenizer()
     fsm = CFGFSM(cfg_str, tokenizer)
 
-    assert set(fsm.allowed_token_ids(state=0)) == {1}
-    state = fsm.next_state(state=0, token_id=1)
+    assert set(fsm.allowed_token_ids(state=fsm.first_state)) == {1}
+    state = fsm.next_state(state=fsm.first_state, token_id=1)
     assert fsm.generation == "("
     assert not fsm.is_final_state(state)
 
@@ -174,9 +174,9 @@ def test_cfg_multitoken_subexpr():
     tokenizer = MockTokenizer()
     fsm = CFGFSM(cfg_str, tokenizer)
 
-    assert set(fsm.allowed_token_ids(state=0)) == {1, 2}
+    assert set(fsm.allowed_token_ids(state=fsm.first_state)) == {1, 2}
     assert fsm.reset_state  # starting new regex
-    state = fsm.next_state(state=0, token_id=1)
+    state = fsm.next_state(state=fsm.first_state, token_id=1)
     assert fsm.generation == "a"
     assert not fsm.is_final_state(state)
 
@@ -222,8 +222,8 @@ def test_cfg_overlapping_subexpr():
     tokenizer = MockTokenizer()
     fsm = CFGFSM(cfg_str, tokenizer)
 
-    assert set(fsm.allowed_token_ids(state=0)) == {1, 2}
-    state = fsm.next_state(state=0, token_id=1)
+    assert set(fsm.allowed_token_ids(state=fsm.first_state)) == {1, 2}
+    state = fsm.next_state(state=fsm.first_state, token_id=1)
     assert fsm.generation == "a"
     assert not fsm.is_final_state(state)
 

@@ -5,7 +5,7 @@ from typing import Callable, Iterator, List, Optional, Tuple, Union
 import torch
 from pydantic import BaseModel
 
-from outlines.fsm.fsm import CFGFSM, FSMState, RegexFSM, StopAtEosFSM
+from outlines.fsm.fsm import CFGFSM, RegexFSM, StopAtEosFSM
 from outlines.fsm.json_schema import build_regex_from_object, get_schema_from_signature
 from outlines.fsm.types import python_types_to_regex
 from outlines.generate.generator import (
@@ -192,7 +192,6 @@ class SequenceGenerator:
 
         stop_sequences = stop_at or self.stop_sequences
         max_tokens = max_tokens or self.max_tokens
-        num_sequences = len(prompts)
         fsms = [self.fsm.copy() for _ in prompts]
 
         if rng is None:
@@ -202,7 +201,7 @@ class SequenceGenerator:
         init_state = init_generator_state(
             self.tokenizer, self.device, prompts, kv_cache
         )
-        init_fsm_states = [FSMState(0) for _ in range(num_sequences)]
+        init_fsm_states = [self.fsm.first_state for _ in prompts]
 
         states = sequence_generator(
             self.generate_token, fsms, init_state, init_fsm_states, rng
@@ -290,7 +289,6 @@ class SequenceGenerator:
 
         stop_sequences = stop_at or self.stop_sequences
         max_tokens = max_tokens or self.max_tokens
-        num_sequences = len(prompts)
         fsms = [self.fsm.copy() for _ in prompts]
 
         if rng is None:
@@ -300,16 +298,16 @@ class SequenceGenerator:
         init_state = init_generator_state(
             self.tokenizer, self.device, prompts, kv_cache
         )
-        init_fsm_states = [FSMState(0) for _ in range(num_sequences)]
+        init_fsm_states = [self.fsm.first_state for _ in prompts]
 
         states = sequence_generator(
             self.generate_token, fsms, init_state, init_fsm_states, rng
         )
 
         def token_generator() -> Iterator[Union[List[str], str]]:
-            previously_generated_sequences = ["" for _ in range(num_sequences)]
+            previously_generated_sequences = ["" for _ in prompts]
             num_generated = 0
-            is_stop_at_reached = [False for _ in range(num_sequences)]
+            is_stop_at_reached = [False for _ in prompts]
             while True:
                 if (max_tokens and num_generated >= max_tokens) or all(
                     is_stop_at_reached
