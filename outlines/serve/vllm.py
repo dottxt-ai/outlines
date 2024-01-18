@@ -1,12 +1,11 @@
 """Make vLLM compatible with Outlines' guided generation."""
 import json
 import math
-from collections import defaultdict
-from typing import DefaultDict, List
+from typing import Dict, List
 
 import torch
 
-from outlines.fsm.fsm import RegexFSM
+from outlines.fsm.fsm import FSMState, RegexFSM
 from outlines.fsm.json_schema import build_regex_from_object
 
 
@@ -55,28 +54,36 @@ class RegexLogitsProcessor:
 
         fsm = RegexFSM(regex_string, tokenizer)
         self.fsm = fsm
+        self.fsm_state_cache: Dict[int, FSMState] = {}
 
     def __call__(self, input_ids: List[int], scores: torch.Tensor) -> torch.Tensor:
         """Use the FSM to bias the logits before sampling the next token."""
-
-        state_id = hash(tuple(input_ids))
-
-        if len(input_ids) == 0:  # Initialize the fsm states
-            self.fsm_state: DefaultDict[int, int] = defaultdict(int)
-        else:
-            prev_state_id = hash(tuple(input_ids[:-1]))
-            last_token = input_ids[-1]
-            self.fsm_state[state_id] = self.fsm.next_state(
-                self.fsm_state[prev_state_id], last_token
-            )
-
-        allowed_tokens = self.fsm.allowed_token_ids(self.fsm_state[state_id])
+        state = self.get_fsm_state(input_ids)
+        allowed_tokens = self.fsm.allowed_token_ids(state)
 
         mask = torch.full((scores.shape[-1],), -math.inf, device=scores.device)
         mask[allowed_tokens] = 0
         biased_scores = scores + mask
 
         return biased_scores
+
+    def get_fsm_state(self, input_ids: List[int]) -> FSMState:
+        if not input_ids:
+            return FSMState(0)
+
+        state_key = hash(tuple(input_ids))
+        state = self.fsm_state_cache.get(state_key)
+        if state is not None:
+            return state
+
+        prev_input_ids = input_ids[:-1]
+        prev_state = self.get_fsm_state(prev_input_ids)
+
+        last_token = input_ids[-1]
+        state = self.fsm.next_state(prev_state, last_token)
+
+        self.fsm_state_cache[state_key] = state
+        return state
 
     def adapt_tokenizer(self, tokenizer):
         """Adapt vLLM's tokenizer to use to compile the FSM.
