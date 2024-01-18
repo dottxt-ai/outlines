@@ -2,12 +2,12 @@
 import json
 import math
 from collections import defaultdict
-from typing import DefaultDict, List, Callable
+from typing import Callable, DefaultDict, List
 
 import torch
 from vllm import LLMEngine
 
-from outlines.fsm.fsm import RegexFSM, CFGFSM, FSM
+from outlines.fsm.fsm import CFGFSM, FSM, RegexFSM
 from outlines.fsm.json_schema import build_regex_from_object
 
 

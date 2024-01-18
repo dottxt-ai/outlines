@@ -23,11 +23,7 @@ You can then query the model in shell by passing a prompt and either
 1. a [JSON Schema][jsonschema]{:target="_blank"} specification or
 2. a [Regex][regex]{:target="_blank"} pattern
 
-<<<<<<< HEAD
-with the `schema` or `regex` parameters, respectively, to the `/generate` endpoint. If both are specified, the schema will be used. If neither is specified, the generated text will be unconstrained.
-=======
-with the `schema`, `regex` or `cfg` parameters, respectively, to the `/generate` endpoint. If both are specified, the schema will be used. If neither is specified, the generated text will be unconstrained.
->>>>>>> 43ff5c5 (Expect vllm.LLMEngine as processor's argument)
+with the `schema`, `regex` or `grammar` parameters, respectively, to the `/generate` endpoint. If both are specified, the schema will be used. If neither is specified, the generated text will be unconstrained.
 
 For example, to generate a string that matches the schema `{"type": "string"}` (any string):
 
@@ -46,6 +42,16 @@ curl http://127.0.0.1:8000/generate \
     -d '{
         "prompt": "What is Pi? Give me the first 15 digits: ",
         "regex": "(-)?(0|[1-9][0-9]*)(\\.[0-9]+)?([eE][+-][0-9]+)?"
+        }'
+```
+
+To generate a string that matches the grammar `<grammar>`:
+
+```bash
+curl http://127.0.0.1:8000/generate \
+    -d '{
+        "prompt": "What is Pi? Give me the first 15 digits: ",
+        "grammar": "start: DECIMAL \r\nDIGIT: \"0\"..\"9\"\r\nINT: DIGIT+\r\nDECIMAL: INT \".\" INT? | \".\" INT"
         }'
 ```
 

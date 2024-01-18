@@ -15,10 +15,14 @@ class User(BaseModel):
 
 llm = vllm.LLM(model="gpt2")
 logits_processor = JSONLogitsProcessor(User, llm.llm_engine)
-result = llm.generate(
+outputs = llm.generate(
     ["A prompt", "Another prompt"],
     sampling_params=vllm.SamplingParams(
         max_tokens=100, logits_processors=[logits_processor]
     ),
 )
-print(result)
+
+for output in outputs:
+    prompt = output.prompt
+    generated_text = output.outputs[0].text
+    print(f"Prompt: {prompt!r}, Generated text: {generated_text!r}")
