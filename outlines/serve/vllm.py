@@ -68,22 +68,20 @@ class RegexLogitsProcessor:
         return biased_scores
 
     def get_fsm_state(self, input_ids: List[int]) -> FSMState:
-        if not input_ids:
-            return FSMState(0)
-
         state_key = hash(tuple(input_ids))
-        state = self.fsm_state_cache.get(state_key)
-        if state is not None:
-            return state
 
-        prev_input_ids = input_ids[:-1]
-        prev_state = self.get_fsm_state(prev_input_ids)
+        if not input_ids:
+            self.fsm_state_cache[state_key] = FSMState(0)
 
-        last_token = input_ids[-1]
-        state = self.fsm.next_state(prev_state, last_token)
+        elif state_key not in self.fsm_state_cache:
+            prev_state_key = hash(tuple(input_ids[:-1]))
+            prev_state = self.fsm_state_cache[prev_state_key]
+            last_token = input_ids[-1]
+            self.fsm_state_cache[state_key] = self.fsm.next_state(
+                prev_state, last_token
+            )
 
-        self.fsm_state_cache[state_key] = state
-        return state
+        return self.fsm_state_cache[state_key]
 
     def adapt_tokenizer(self, tokenizer):
         """Adapt vLLM's tokenizer to use to compile the FSM.
