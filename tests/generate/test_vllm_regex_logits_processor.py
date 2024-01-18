@@ -24,7 +24,6 @@ def test_time_regexp():
     while True:
         random_scores = -10 + 20 * torch.rand(len(llm.tokenizer.vocab))
         logits = logits_processor(
-            seq_id=0,
             input_ids=token_ids,
             scores=random_scores,
         )
@@ -86,5 +85,4 @@ def test_time_regexp_multiple_samples():
 
     assert len(results) == num_seq
     for result in results:
-        print(llm.tokenizer.decode(result))
         assert re.fullmatch(pattern, llm.tokenizer.decode(result)) is not None
