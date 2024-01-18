@@ -83,11 +83,15 @@ async def generate(request: Request) -> Response:
         constraint = regex_string
 
     if constraint_mode is not None:
+        if constraint is None:
+            return Response(status_code=400, content=f'Please set constraint in addition to constraint_mode.')
         logits_processor_cls = LOGITS_PROCESSOR_CLASSES.get(constraint_mode)
         if logits_processor_cls is None:
             return Response(status_code=400, content=f'Invalid constraint_mode: {constraint_mode}')
         logits_processors = [logits_processor_cls(constraint, engine.engine)]
     else:
+        if constraint is not None:
+            return Response(status_code=400, content=f'Please set constraint_mode in addition to constraint.')
         logits_processors = []
 
     sampling_params = SamplingParams(
