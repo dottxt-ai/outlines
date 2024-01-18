@@ -56,7 +56,7 @@ test = [
     "beartype<0.16.0",
     "datasets",
     "responses",
-    "llama-cpp-python",
+    "llama-cpp-python>=0.2.42",
     "huggingface_hub"
 ]
 serve = [

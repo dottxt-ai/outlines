@@ -3,6 +3,7 @@ from functools import singledispatch
 from outlines.fsm.fsm import CFGFSM
 from outlines.generate.api import SequenceGenerator
 from outlines.models import OpenAI
+from outlines.models.llamacpp import CFGLogitsProcessor, LlamaCpp
 from outlines.samplers import Sampler, multinomial
 
 
@@ -29,6 +30,24 @@ def cfg(model, cfg_str: str, sampler: Sampler = multinomial()) -> SequenceGenera
     generator = SequenceGenerator(fsm, model, sampler, device)
 
     return generator
+
+
+@cfg.register(LlamaCpp)
+def cfg_llamacpp(
+    model: LlamaCpp,
+    cfg_str: str,
+    sampler: Sampler = multinomial(),
+):
+    if not isinstance(sampler, multinomial):
+        raise NotImplementedError(
+            r"The llama.cpp integration does not currently support any other sampling algorithm "
+            + "than the multinomial sampler."
+        )
+
+    logits_processor = CFGLogitsProcessor(cfg_str, model.tokenizer)
+    model.logits_processor = logits_processor
+
+    return model
 
 
 @cfg.register(OpenAI)

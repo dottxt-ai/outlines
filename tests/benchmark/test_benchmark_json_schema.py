@@ -5,7 +5,7 @@ import outlines
 outlines.disable_cache()
 
 from outlines.fsm.fsm import RegexFSM  # noqa: E402
-from outlines.fsm.json_schema import build_regex_from_object  # noqa: E402
+from outlines.fsm.json_schema import build_regex_from_schema  # noqa: E402
 
 simple_schema = """{
         "$defs": {
@@ -72,7 +72,7 @@ def test_benchmark_json_schema_to_regex(benchmark, ensure_numba_compiled, schema
     """Benchmark convert json schema to regex"""
     schema = schemas[schema_name]
     benchmark.pedantic(
-        build_regex_from_object,
+        build_regex_from_schema,
         args=(schema,),
         rounds=8,
     )
@@ -84,7 +84,7 @@ def test_benchmark_json_schema_to_fsm(
 ):
     """Benchmark compile json schema as FSM"""
     schema = schemas[schema_name]
-    regex = build_regex_from_object(schema)
+    regex = build_regex_from_schema(schema)
     benchmark.pedantic(
         RegexFSM,
         args=(regex, tokenizer),
