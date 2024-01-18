@@ -2,7 +2,7 @@ from functools import singledispatch
 
 from outlines.fsm.fsm import StopAtEosFSM
 from outlines.generate import SequenceGenerator
-from outlines.models import OpenAI
+from outlines.models import LlamaCpp, OpenAI
 from outlines.samplers import Sampler, multinomial
 
 
@@ -36,12 +36,23 @@ def text(model, sampler: Sampler = multinomial()) -> SequenceGenerator:
     return generator
 
 
+@text.register(LlamaCpp)
+def text_llamacpp(model: LlamaCpp, sampler: Sampler = multinomial()):
+    if not isinstance(sampler, multinomial):
+        raise NotImplementedError(
+            r"The llama.cpp API does not support any other sampling algorithm "
+            + "than the multinomial sampler."
+        )
+
+    return model
+
+
 @text.register(OpenAI)
 def text_openai(model: OpenAI, sampler: Sampler = multinomial()) -> OpenAI:
     if not isinstance(sampler, multinomial):
         raise NotImplementedError(
             r"The OpenAI API does not support any other sampling algorithm "
-            + "that the multinomial sampler."
+            + "than the multinomial sampler."
         )
 
     return model

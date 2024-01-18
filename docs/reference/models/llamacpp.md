@@ -11,5 +11,5 @@ Assuming [Phi2's weights](https://huggingface.co/TheBloke/phi-2-GGUF) are in the
 ```python
 from outlines import models, generate
 
-model = models.llamacpp("./phi-2.Q4_K_M.gguf", device="cpu")
+model = models.llamacpp("./phi-2.Q4_K_M.gguf")
 ```

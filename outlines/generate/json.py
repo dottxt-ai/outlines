@@ -4,7 +4,7 @@ from typing import Callable, Optional, Union
 
 from pydantic import BaseModel
 
-from outlines.fsm.json_schema import build_regex_from_object, get_schema_from_signature
+from outlines.fsm.json_schema import build_regex_from_schema, get_schema_from_signature
 from outlines.generate.api import SequenceGenerator
 from outlines.models import OpenAI
 from outlines.samplers import Sampler, multinomial
@@ -45,17 +45,17 @@ def json(
     """
     if isinstance(schema_object, type(BaseModel)):
         schema = pyjson.dumps(schema_object.model_json_schema())
-        regex_str = build_regex_from_object(schema, whitespace_pattern)
+        regex_str = build_regex_from_schema(schema, whitespace_pattern)
         generator = regex(model, regex_str, sampler)
         generator.format_sequence = lambda x: schema_object.parse_raw(x)
     elif callable(schema_object):
         schema = pyjson.dumps(get_schema_from_signature(schema_object))
-        regex_str = build_regex_from_object(schema, whitespace_pattern)
+        regex_str = build_regex_from_schema(schema, whitespace_pattern)
         generator = regex(model, regex_str, sampler)
         generator.format_sequence = lambda x: pyjson.loads(x)
     elif isinstance(schema_object, str):
         schema = schema_object
-        regex_str = build_regex_from_object(schema, whitespace_pattern)
+        regex_str = build_regex_from_schema(schema, whitespace_pattern)
         generator = regex(model, regex_str, sampler)
         generator.format_sequence = lambda x: pyjson.loads(x)
     else:

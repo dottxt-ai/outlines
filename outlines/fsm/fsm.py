@@ -91,7 +91,7 @@ class StopAtEosFSM(FSM):
 class RegexFSM(FSM):
     """FSM to generate text that is in the language of a regular expression."""
 
-    def __init__(self, regex_string: str, tokenizer: "Tokenizer"):
+    def __init__(self, regex_string: str, tokenizer):
         @cache()
         def create_states_mapping(
             regex_string: str, cacheable_vocabulary: Tuple[Tuple[str, int]]
@@ -190,7 +190,7 @@ class RegexFSM(FSM):
 class CFGFSM(FSM):
     """FSM to generate text that is in the language of a context-free grammar."""
 
-    def __init__(self, cfg_string: str, tokenizer: "Tokenizer"):
+    def __init__(self, cfg_string: str, tokenizer):
         self.cfg_string = cfg_string
         self.tokenizer = tokenizer
 

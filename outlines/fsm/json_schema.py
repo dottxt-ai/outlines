@@ -1,10 +1,10 @@
 import inspect
 import json
 import re
-from typing import Callable, Optional, Union
+from typing import Callable, Optional
 
 from jsonschema.protocols import Validator
-from pydantic import BaseModel, create_model
+from pydantic import create_model
 from referencing import Registry, Resource
 from referencing._core import Resolver
 from referencing.jsonschema import DRAFT202012
@@ -38,9 +38,7 @@ format_to_regex = {
 }
 
 
-def build_regex_from_object(
-    object: Union[str, Callable, BaseModel], whitespace_pattern: Optional[str] = None
-):
+def build_regex_from_schema(schema: str, whitespace_pattern: Optional[str] = None):
     """Turn a JSON schema into a regex that matches any JSON object that follows
     this schema.
 
@@ -72,13 +70,7 @@ def build_regex_from_object(
 
     """
 
-    if isinstance(object, type(BaseModel)):
-        schema = object.model_json_schema()
-    elif callable(object):
-        schema = get_schema_from_signature(object)
-    else:
-        schema = json.loads(object)
-
+    schema = json.loads(schema)
     Validator.check_schema(schema)
 
     # Build reference resolver

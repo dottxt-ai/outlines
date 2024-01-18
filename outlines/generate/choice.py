@@ -13,7 +13,11 @@ def choice(
     model, choices: List[str], sampler: Sampler = multinomial()
 ) -> SequenceGenerator:
     regex_str = r"(" + r"|".join(choices) + r")"
-    return regex(model, regex_str, sampler)
+
+    generator = regex(model, regex_str, sampler)
+    generator.format_sequence = lambda x: x
+
+    return generator
 
 
 @choice.register(OpenAI)

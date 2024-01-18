@@ -17,7 +17,7 @@ from outlines.fsm.json_schema import (
     TIME,
     UUID,
     WHITESPACE,
-    build_regex_from_object,
+    build_regex_from_schema,
     get_schema_from_signature,
     to_regex,
 )
@@ -53,7 +53,7 @@ def test_from_pydantic():
         is_true: bool
 
     schema = json.dumps(User.model_json_schema())
-    schedule = build_regex_from_object(schema)
+    schedule = build_regex_from_schema(schema)
     assert isinstance(schedule, str)
 
 
@@ -458,7 +458,7 @@ def test_match_number(pattern, does_match):
 )
 def test_match(schema, regex, examples):
     schema = json.dumps(schema)
-    test_regex = build_regex_from_object(schema)
+    test_regex = build_regex_from_schema(schema)
     assert test_regex == regex
 
     for string, does_match in examples:
@@ -530,7 +530,7 @@ def test_match(schema, regex, examples):
 )
 def test_format(schema, regex, examples):
     schema = json.dumps(schema)
-    test_regex = build_regex_from_object(schema)
+    test_regex = build_regex_from_schema(schema)
     assert test_regex == regex
 
     for string, does_match in examples:
@@ -550,12 +550,14 @@ def test_json_schema_custom_whitespace_pattern(whitespace_pattern):
         foo: int
         bar: str
 
+    schema = json.dumps(MockModel.model_json_schema())
+
     # assert any ws pattern can be used
     if whitespace_pattern == "abc":
-        build_regex_from_object(MockModel, whitespace_pattern)
+        build_regex_from_schema(schema, whitespace_pattern)
         return
 
-    pattern = build_regex_from_object(MockModel, whitespace_pattern)
+    pattern = build_regex_from_schema(schema, whitespace_pattern)
 
     mock_result_mult_ws = (
         """{     "foo"   :   4, \n\n\n   "bar": "baz    baz baz bar"\n\n}"""

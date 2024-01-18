@@ -3,6 +3,7 @@ from functools import singledispatch
 from outlines.fsm.fsm import RegexFSM
 from outlines.generate.api import SequenceGenerator
 from outlines.models import OpenAI
+from outlines.models.llamacpp import LlamaCpp, RegexLogitsProcessor
 from outlines.samplers import Sampler, multinomial
 
 
@@ -35,8 +36,30 @@ def regex(model, regex_str: str, sampler: Sampler = multinomial()):
     return generator
 
 
+@regex.register(LlamaCpp)
+def regex_llamacpp(
+    model: LlamaCpp,
+    regex_str: str,
+    sampler: Sampler = multinomial(),
+):
+    if not isinstance(sampler, multinomial):
+        raise NotImplementedError(
+            r"The llama.cpp integration does not currently support any other sampling algorithm "
+            + "than the multinomial sampler."
+        )
+
+    logits_processor = RegexLogitsProcessor(regex_str, model.tokenizer)
+    model.logits_processor = logits_processor
+
+    return model
+
+
 @regex.register(OpenAI)
-def regex_openai(model, regex_str: str, sampler: Sampler = multinomial()):
+def regex_openai(
+    model: OpenAI,
+    regex_str: str,
+    sampler: Sampler = multinomial(),
+):
     raise NotImplementedError(
         "Cannot use regex-structured generation with an OpenAI model"
         + "due to the limitations of the OpenAI API."
