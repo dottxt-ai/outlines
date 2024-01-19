@@ -44,12 +44,10 @@ NUMBER: FLOAT | INT
 SIGNED_NUMBER: ["+"|"-"] NUMBER
 
 //
-// Strings
-// Modified to be regularx
-// credit: https://github.com/outlines-dev/outlines/issues/456#issuecomment-1878769667
+// TODO: Working escaped_string
 //
-inner: /([^"]|\\\")+/ |
-escaped_string : "\"" inner "\""
+UNESCAPED_STRING: /\"[^"]*\"/
+
 
 
 //
