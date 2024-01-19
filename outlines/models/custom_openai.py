@@ -32,11 +32,12 @@ class CustomOpenAI(OpenAI):
         model_name
             Model to use, as defined in OpenAI's documentation
         api_key
-            Secret key to use with the OpenAI API. One can also set the
-            `OPENAI_API_KEY` environment variable, or the value of
+            Secret key to use with the OpenAI compatible API. One can also set the
+            `INFERENCE_API_KEY` environment variable, or the value of
             `openai.api_key`.
         base_url
             Base URL to use for the API calls. Required if a Custom OpenAI endpoint is used.
+            Can also be set with the `INFERENCE_BASE_URL` environment variable.
         max_retries
             The maximum number of retries when calls to the API fail.
         timeout
