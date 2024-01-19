@@ -4,6 +4,7 @@ import interegular
 from lark import Lark
 
 # from outlines.fsm.parsing import PartialLark
+from outlines import grammars
 from outlines.caching import cache
 from outlines.fsm.regex import create_fsm_index_tokenizer, make_deterministic_fsm
 
@@ -200,6 +201,7 @@ class CFGFSM(FSM):
             propagate_positions=False,
             maybe_placeholders=False,
             regex=True,
+            import_paths=[grammars.GRAMMAR_PATH],
         )
         self.terminal_regexps = dict()
         for terminal in self.parser.terminals:

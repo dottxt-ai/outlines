@@ -1,5 +1,6 @@
 """Outlines is a Generative Model Programming Framework."""
 import outlines.generate
+import outlines.grammars
 import outlines.models
 import outlines.text.generate
 from outlines.base import vectorize
@@ -14,4 +15,5 @@ __all__ = [
     "Function",
     "prompt",
     "vectorize",
+    "grammars",
 ]

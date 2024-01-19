@@ -1,0 +1,18 @@
+?start: sum
+
+?sum: product
+| sum "+" product   -> add
+| sum "-" product   -> sub
+
+?product: atom
+| product "*" atom  -> mul
+| product "/" atom  -> div
+
+?atom: NUMBER           -> number
+| "-" atom         -> neg
+| "(" sum ")"
+
+%import common.NUMBER
+%import common.WS_INLINE
+
+%ignore WS_INLINE

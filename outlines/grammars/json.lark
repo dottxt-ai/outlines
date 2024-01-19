@@ -1,0 +1,19 @@
+?start: value
+
+?value: object
+| array
+| UNESCAPED_STRING
+| SIGNED_NUMBER      -> number
+| "true"             -> true
+| "false"            -> false
+| "null"             -> null
+
+array  : "[" [value ("," value)*] "]"
+object : "{" [pair ("," pair)*] "}"
+pair   : UNESCAPED_STRING ":" value
+
+%import common.UNESCAPED_STRING
+%import common.SIGNED_NUMBER
+%import common.WS
+
+%ignore WS
