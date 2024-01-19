@@ -261,7 +261,7 @@ def test_cfg_grammar_lark():
     """Ensure we can use outlines.grammars.lark to generate json"""
 
     class MockTokenizer:
-        vocabulary = {"{": 1, '"': 2, "a": 3, "4": 4, "}": 5, "\\": 6, ":": 7}
+        vocabulary = {"{": 1, '"': 2, "a": 3, "4": 4, "}": 5, ":": 6}
         special_tokens = {"eos"}
         eos_token = "eos"
         eos_token_id = 10
@@ -291,42 +291,35 @@ def test_cfg_grammar_lark():
     state = fsm.next_state(state=state, token_id=2)
     assert fsm.generation == '{"'
     assert not fsm.is_final_state(0)
-    assert set(fsm.allowed_token_ids(state=state)) == {1, 2, 3, 4, 5, 6, 7}
+    assert set(fsm.allowed_token_ids(state=state)) == {1, 2, 3, 4, 5, 6}
+
+    state = fsm.next_state(state=state, token_id=3)
+    assert fsm.generation == '{"a'
+    assert not fsm.is_final_state(0)
+    assert set(fsm.allowed_token_ids(state=state)) == {1, 2, 3, 4, 5, 6}
+
+    state = fsm.next_state(state=state, token_id=2)
+    assert fsm.generation == '{"a"'
+    assert not fsm.is_final_state(0)
+    assert set(fsm.allowed_token_ids(state=state)) == {6}
 
     state = fsm.next_state(state=state, token_id=6)
-    assert fsm.generation == '{"\\'
+    assert fsm.generation == '{"a":'
     assert not fsm.is_final_state(0)
-    assert set(fsm.allowed_token_ids(state=state)) == {2}
+    assert set(fsm.allowed_token_ids(state=state)) == {1, 2, 4}
 
-    state = fsm.next_state(state=state, token_id=2)
-    assert fsm.generation == '{"\\"'
+    state = fsm.next_state(state=state, token_id=4)
+    assert fsm.generation == '{"a":4'
     assert not fsm.is_final_state(0)
-    assert set(fsm.allowed_token_ids(state=state)) == {1, 2, 3, 4, 5, 6, 7}
+    assert set(fsm.allowed_token_ids(state=state)) == {4, 5}
 
-    state = fsm.next_state(state=state, token_id=3)
-    assert fsm.generation == '{"\\a"'
+    state = fsm.next_state(state=state, token_id=5)
+    assert fsm.generation == '{"a":4}'
     assert not fsm.is_final_state(0)
-    assert set(fsm.allowed_token_ids(state=state)) == {1, 2, 3, 4, 5, 6, 7}
+    assert set(fsm.allowed_token_ids(state=state)) == {tokenizer.eos_token_id}
 
-    state = fsm.next_state(state=state, token_id=2)
-    assert fsm.generation == '{"\\a""'
-    assert not fsm.is_final_state(0)
-    assert set(fsm.allowed_token_ids(state=state)) == {7}
-
-    state = fsm.next_state(state=state, token_id=7)
-    assert fsm.generation == '{"\\a"":'
-    assert not fsm.is_final_state(0)
-    assert set(fsm.allowed_token_ids(state=state)) == {7}
-
-    state = fsm.next_state(state=state, token_id=2)
-    assert fsm.generation == '{"a\\'
-    assert not fsm.is_final_state(0)
-    assert set(fsm.allowed_token_ids(state=state)) == {3}
-    assert not fsm.reset_state  # completing current regex
-
-    state = fsm.next_state(state=state, token_id=3)
-    assert fsm.generation == "aa"
-    assert fsm.is_final_state(0)
+    state = fsm.next_state(state=state, token_id=tokenizer.eos_token_id)
+    assert fsm.is_final_state(state)
 
 
 def test_cfg_grammar_lark():
