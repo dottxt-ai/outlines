@@ -6,12 +6,12 @@ from typing import List, Optional, Union
 
 import numpy as np
 
-from outlines.models.openai import generate_chat, OpenAIConfig, OpenAI
+from outlines.models.openai import OpenAI, OpenAIConfig, generate_chat
 
-__all__ = ["CustomOpenAI", "custom_openai"]
+__all__ = ["OpenAICompatibleAPI", "openai_compatible_api"]
 
 
-class CustomOpenAI(OpenAI):
+class OpenAICompatibleAPI(OpenAI):
     """An object that represents an OpenAI-compatible API."""
 
     def __init__(
@@ -23,7 +23,7 @@ class CustomOpenAI(OpenAI):
         timeout: Optional[float] = None,
         system_prompt: Optional[str] = None,
         config: Optional[OpenAIConfig] = None,
-        encoding = "gpt4" # Default for tiktoken, should USUALLY work
+        encoding="gpt4",  # Default for tiktoken, should USUALLY work
     ):
         """Create an `OpenAI` instance.
 
@@ -66,7 +66,7 @@ class CustomOpenAI(OpenAI):
                 raise ValueError(
                     "You must specify an API key to use the Custom OpenAI API integration."
                 )
-            
+
         if base_url is None:
             if os.getenv("INFERENCE_BASE_URL") is not None:
                 base_url = os.getenv("INFERENCE_BASE_URL")
@@ -100,7 +100,6 @@ class CustomOpenAI(OpenAI):
         self.encoding = encoding
 
 
-    
     def __call__(
         self,
         prompt: Union[str, List[str]],
@@ -137,7 +136,7 @@ class CustomOpenAI(OpenAI):
         self.completion_tokens += completion_tokens
 
         return response
-    
+
     @property
     def tokenizer(self):
         """Defaults to gpt4, as that seems to work with most custom endpoints. Can be overridden if required in the constructor"""
@@ -150,4 +149,4 @@ class CustomOpenAI(OpenAI):
 
         return tiktoken.encoding_for_model(self.encoding)
 
-custom_openai = CustomOpenAI
+openai_compatible_api = OpenAICompatibleAPI
