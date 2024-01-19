@@ -73,16 +73,6 @@ class CustomOpenAI(OpenAI):
                 raise ValueError(
                     "You must specify a base URL to use the Custom OpenAI API integration."
                 )
-            
-        # NOTE: Many OpenAI compatible endpoints (such as various local wrappers for llama.cpp) don't support this particular API.
-        # Uncomment if it's ever more widely supported.
-        # try:
-        #     client = openai.OpenAI()
-        #     client.models.retrieve(model_name)
-        # except openai.NotFoundError:
-        #     raise ValueError(
-        #         "Invalid model_name. Check openai models list at https://platform.openai.com/docs/models"
-        #     )
 
         if config is not None:
             self.config = replace(config, model=model_name)  # type: ignore
