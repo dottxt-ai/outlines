@@ -99,7 +99,6 @@ class OpenAICompatibleAPI(OpenAI):
         self.completion_tokens = 0
         self.encoding = encoding
 
-
     def __call__(
         self,
         prompt: Union[str, List[str]],
@@ -148,5 +147,6 @@ class OpenAICompatibleAPI(OpenAI):
             )
 
         return tiktoken.encoding_for_model(self.encoding)
+
 
 openai_compatible_api = OpenAICompatibleAPI
