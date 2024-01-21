@@ -16,6 +16,7 @@ csv = read_grammar("csv.lark")
 yaml = read_grammar("yaml.lark")
 
 python3 = read_grammar("python3.lark")
+python3_interactive = read_grammar("python3_interactive.lark")
 lisp = read_grammar("lisp.lark")
 
 sqlite = read_grammar("sqlite.lark")

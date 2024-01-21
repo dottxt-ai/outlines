@@ -32,6 +32,8 @@
 // NB: compound_stmt in single_input is followed by extra NEWLINE!
 //
 
+start: file_input
+
 single_input: _NEWLINE | simple_stmt | compound_stmt _NEWLINE
 file_input: (_NEWLINE | stmt)*
 eval_input: testlist _NEWLINE*
@@ -149,7 +151,7 @@ literal_pattern: inner_literal_pattern
 ?inner_literal_pattern: "None" -> const_none
                       | "True" -> const_true
                       | "False" -> const_false
-                      | STRING -> string
+                      | string
                       | number
 
 attr_pattern: NAME ("." NAME)+ -> value
@@ -284,7 +286,7 @@ yield_expr: "yield" [testlist]
           | "yield" "from" test -> yield_from
 
 number: DEC_NUMBER | HEX_NUMBER | BIN_NUMBER | OCT_NUMBER | FLOAT_NUMBER | IMAG_NUMBER
-string: STRING | LONG_STRING
+string: short_string | long_string
 
 // Other terminals
 
@@ -302,8 +304,14 @@ _NEWLINE: ( /\r?\n[\t ]*/ | COMMENT )+
 NAME: /[^\W\d]\w*/
 COMMENT: /#[^\n]*/
 
-STRING: /([ubf]?r?|r[ubf])("(?!"").*?(?<!\\)(\\\\)*?"|'(?!'').*?(?<!\\)(\\\\)*?')/i
-LONG_STRING: /([ubf]?r?|r[ubf])(""".*?(?<!\\)(\\\\)*?"""|'''.*?(?<!\\)(\\\\)*?''')/is
+
+// Patched ot remove lookaheads and lookbacks
+short_string: STRING_DOUBLE | STRING_SINGLE
+STRING_DOUBLE: /([ubf]?r?|r[ubf])"[^"]*"/
+STRING_SINGLE: /([ubf]?r?|r[ubf])'[^']*'/
+long_string: LONG_STRING_DOUBLE | LONG_STRING_SINGLE
+LONG_STRING_DOUBLE: /([ubf]?r?|r[ubf])"""[^"]*"""/i
+LONG_STRING_SINGLE: /([ubf]?r?|r[ubf])'''[^']*'''/si
 
 _SPECIAL_DEC: "0".."9"        ("_"?  "0".."9"                       )*
 DEC_NUMBER:   "1".."9"        ("_"?  "0".."9"                       )*

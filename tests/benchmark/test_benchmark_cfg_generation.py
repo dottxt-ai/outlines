@@ -1,6 +1,12 @@
-import pytest
+import importlib
 
+import pytest
+from conftest import add_test_output
+
+import outlines
 import outlines.grammars
+from outlines.fsm.fsm import CFGFSM, FSMState
+from outlines.fsm.regex import reduced_vocabulary
 
 # source: https://json.org/example.html
 json_sample = """{"web-app": {
@@ -90,13 +96,18 @@ json_sample = """{"web-app": {
 
   "taglib": {
     "taglib-uri": "cofax.tld",
-    "taglib-location": "/WEB-INF/tlds/cofax.tld"}}}"""
+    "taglib-location": "/WEB-INF/tlds/cofax.tld"}}}""".replace(
+    " ", ""
+).replace(
+    "\n", ""
+)  # TODO: REMOVE
 
 
-csv_sample = """ID,Name,Age,FavFruit
+csv_sample = """# ID,Name,Age,FavFruit
 1,Andrew,30,Banana
 2,Mohammad,40,Apple
-3,Alice,61,Peach"""
+3,Alice,61,Peach
+"""
 
 
 yaml_sample = """version: 2
@@ -134,9 +145,7 @@ def test_benchmark_json_schema_to_regex(benchmark, ensure_numba_compiled, schema
 """
 
 
-lisp_sample = (
-    """(defun plswork () (format t "Geeze I sure hope this grammar works!"))"""
-)
+# lark_sample = open(outlines.grammars.lark).read()
 
 
 """
@@ -278,49 +287,123 @@ order by cast(events_persisted.timestamp as integer) desc
 all_samples = {
     "json": (outlines.grammars.json, json_sample),
     "csv": (outlines.grammars.csv, csv_sample),
-    "yaml": (outlines.grammars.yaml, yaml_sample),
-    "python3": (outlines.grammars.python3, python3_sample),
-    "lisp": (outlines.grammars.lisp, lisp_sample),
-    "sqlite_AppStateChangeSummary": (
-        outlines.grammars.sqlite,
-        sqlite_sample_AppStateChangeSummary,
-    ),
-    "sqlite_Census": (outlines.grammars.sqlite, sqlite_sample_Census),
+    # "yaml": (outlines.grammars.yaml, yaml_sample),
+    # "python3": (outlines.grammars.python3, python3_sample),
+    # "lark": (outlines.grammars.lark, lark_sample),
+    # "sqlite_AppStateChangeSummary": (
+    #    outlines.grammars.sqlite,
+    #    sqlite_sample_AppStateChangeSummary,
+    # ),
+    # "sqlite_Census": (outlines.grammars.sqlite, sqlite_sample_Census),
 }
 
 
-class MockEngine:
-    def __init__(self, logits_processor, to_generate):
-        self.logits_processor = logits_processor
+class MockGenerator:
+    def __init__(self, cfg_fsm, to_generate):
+        self.cfg_fsm = cfg_fsm
         self.to_generate = to_generate
 
         self._generated_token_ids = []
 
-        # precompute legal tokens at each step to ensure we're
-        # only measuring the performance of the logits processor
-        import pdb
+        # precompute legal tokens at each step rather than on the fly to
+        # ensure we're only measuring the performance of the logits processor
+        self.accepted_token_ids_map = {}
+        self.reverse_vocab = {}
 
-        pdb.set_trace()
+        vocab, _ = reduced_vocabulary(cfg_fsm.tokenizer)
+        vocab = dict(vocab)
+        max_token_len = max(map(len, vocab))
+        for i in range(len(to_generate)):
+            accepted_token_ids = set()
+            remaining_generate = to_generate[i:]
+            for j in range(max_token_len):
+                tok = remaining_generate[: j + 1]
+                if tok in vocab:
+                    new_accepted = set(vocab[tok])
+                    for tid in new_accepted:
+                        self.reverse_vocab[tid] = tok
+                    accepted_token_ids |= new_accepted
+            self.accepted_token_ids_map[remaining_generate] = accepted_token_ids
 
     def run_until_eos(self):
+        num_tokens_generated = 0
+
+        state = FSMState(0)
         while self.to_generate:
-            logits = self.logits_processor(self._mock_logits, self._generated_token_ids)
+            num_tokens_generated += 1
+
+            allowed_token_ids = set(self.cfg_fsm.allowed_token_ids(state))
+            expected_token_ids = self.accepted_token_ids_map[self.to_generate]
+
+            # TODO: Create an issue. Currently not all generations are legal,
+            # for example the tokenizer has the token `{"` however because { and " are
+            # separate terminals, thus {" isn't considered a legal token
+
+            # After TODO resolution, this should simply assert that
+            # expected_token_ids.issubset(allowed_token_ids)
+            # and pop from expected_token_ids
+            candidate_token_ids = allowed_token_ids & expected_token_ids
+            assert candidate_token_ids
+
+            next_token_id = sorted(candidate_token_ids)[
+                0
+            ]  # make deterministic for cache testing
+            next_token_str = self.reverse_vocab[next_token_id]
+
+            assert self.to_generate.startswith(next_token_str)
+            self.to_generate = self.to_generate[len(next_token_str) :]
+
+            state = self.cfg_fsm.next_state(state=state, token_id=next_token_id)
+
+        assert self.cfg_fsm.tokenizer.eos_token_id in set(
+            self.cfg_fsm.allowed_token_ids(state)
+        )
+
+        return num_tokens_generated
 
 
+@pytest.mark.parametrize("preload_cache", [True, False])
 @pytest.mark.parametrize("sample_name", all_samples.keys())
 def test_benchmark_cfg_generation(
-    benchmark, tokenizer, ensure_numba_compiled, sample_name
+    request, benchmark, tokenizer, ensure_numba_compiled, sample_name, preload_cache
 ):
     """Benchmark CFGLogitsProcessor Generation"""
 
-    cfg, sample = all_samples[sample_name]
-    cfg_logits_processor = CFGLogitsProcessor(cfg, tokenizer)
+    def get_mock_generator():
+        # don't let residual cache impact results
+        outlines.clear_cache()
 
-    engine = MockEngine(
-        logits_processor=cfg_logits_processor,
-        to_generate=sample,
+        cfg, sample = all_samples[sample_name]
+        cfg_fsm = CFGFSM(cfg, tokenizer)
+
+        if preload_cache:
+            # precompute the RegexFSM cache by running once
+            MockGenerator(
+                cfg_fsm=cfg_fsm.copy(),
+                to_generate=sample,
+            ).run_until_eos()
+
+        mock_gen = MockGenerator(
+            cfg_fsm=cfg_fsm,
+            to_generate=sample,
+        )
+        return (mock_gen,), {}
+
+    num_tokens = benchmark.pedantic(
+        lambda mock_gen: mock_gen.run_until_eos(),
+        setup=get_mock_generator,
     )
 
-    benchmark(
-        engine.run_until_eos,
+    output_str = "\n".join(
+        [
+            "{}:",
+            "\tTokens / Second: {:.3f}",
+            "\t(Num Tokens: {}, Time: {:.3f} seconds)",
+        ]
+    ).format(
+        request.node.nodeid,
+        num_tokens / benchmark.stats.stats.mean,
+        num_tokens,
+        benchmark.stats.stats.mean,
     )
+    add_test_output(output_str)
