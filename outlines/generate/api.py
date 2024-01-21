@@ -226,15 +226,7 @@ class SequenceGenerator:
             self.strip_stop_sequences(sequence, stop_sequences)
             for sequence in generated
         ]
-        try:
-            formatted = [self.format_sequence(sequence) for sequence in stripped]
-        except pyjson.decoder.JSONDecodeError:
-            raise TypeError(
-                "Could not format the output of the model into a dictionary or a Pydantic model."
-                + " The model has likely exceeded its context length. Please try again using `constr` (for Pydantic)"
-                + " and `maxLength` (for JSON Schema) to limit the length of the string fields. If this exception"
-                + " is raised nevertheless please open an issue: https://github.com/outlines-dev/outlines/issues"
-            )
+        formatted = [self.format_sequence(sequence) for sequence in stripped]
 
         return formatted if len(formatted) > 1 else formatted[0]
 
