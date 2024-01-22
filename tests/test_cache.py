@@ -112,3 +112,47 @@ def test_clear_cache(test_cache):
     outlines.clear_cache()
     f(1)
     assert len(store) == store_size + 1
+
+
+def test_version_upgrade_cache_invalidate(test_cache, mocker):
+    """Ensure we can change the signature of a cached function if we upgrade the version"""
+
+    def simulate_restart_outlines():
+        # clearing in-memory lru_cache which returns the diskcache in
+        # order to simulate a reload, we're not clearing the diskcache itself
+        outlines.caching.get_cache.cache_clear()
+
+    import outlines.caching
+
+    mocker.patch("outlines._version.__version__", new="0.0.0")
+
+    # initialize cache with signature of Tuple-of-3
+    @test_cache
+    def foo():
+        return (1, 2, 3)
+
+    a, b, c = foo()
+
+    # "restart" outlines without upgrading version
+    simulate_restart_outlines()
+
+    # change signature to Tuple-of-2
+    @test_cache
+    def foo():
+        return (1, 2)
+
+    # assert without version upgrade, old, bad cache is used
+    with pytest.raises(ValueError):
+        a, b = foo()
+
+    # "restart" outlines WITH version upgrade
+    mocker.patch("outlines._version.__version__", new="0.0.1")
+    simulate_restart_outlines()
+
+    # change signature to Tuple-of-2
+    @test_cache
+    def foo():
+        return (1, 2)
+
+    # assert with version upgrade, old cache is invalidated and new cache is used
+    a, b = foo()
