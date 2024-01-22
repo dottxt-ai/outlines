@@ -117,14 +117,15 @@ def test_clear_cache(test_cache):
 def test_version_upgrade_cache_invalidate(test_cache, mocker):
     """Ensure we can change the signature of a cached function if we upgrade the version"""
 
+    import outlines.caching
+
     def simulate_restart_outlines():
         # clearing in-memory lru_cache which returns the diskcache in
         # order to simulate a reload, we're not clearing the diskcache itself
         outlines.caching.get_cache.cache_clear()
 
-    import outlines.caching
-
     mocker.patch("outlines._version.__version__", new="0.0.0")
+    simulate_restart_outlines()
 
     # initialize cache with signature of Tuple-of-3
     @test_cache
