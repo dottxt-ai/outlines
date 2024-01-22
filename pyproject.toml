@@ -47,6 +47,7 @@ test = [
     "pre-commit",
     "pytest",
     "pytest-cov",
+    "pytest-mocker",
     "transformers",
     "coverage[toml]>=5.1",
     "diff-cover",
