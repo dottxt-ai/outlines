@@ -22,7 +22,7 @@ def get_cache():
     environment variable.
 
     """
-    from outlines._version import __version__ as outlines_version
+    from outlines._version import __version__ as outlines_version  # type: ignore
 
     home_dir = os.path.expanduser("~")
     cache_dir = os.environ.get("OUTLINES_CACHE_DIR", f"{home_dir}/.cache/outlines")
