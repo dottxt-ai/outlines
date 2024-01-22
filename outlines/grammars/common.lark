@@ -48,6 +48,9 @@ SIGNED_NUMBER: ["+"|"-"] NUMBER
 //
 UNESCAPED_STRING: /\"[^"]*\"/
 
+inner: /([^"]|\\\")+/ |
+escaped_string : "\"" inner "\""
+
 
 
 //

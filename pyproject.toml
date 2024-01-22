@@ -80,7 +80,7 @@ content-type = "text/markdown"
 packages = ["outlines"]
 
 [tool.setuptools.package-data]
-"outlines" = ["py.typed"]
+"outlines" = ["py.typed", "lark/*.lark"]
 
 [tool.setuptools_scm]
 write_to = "outlines/_version.py"

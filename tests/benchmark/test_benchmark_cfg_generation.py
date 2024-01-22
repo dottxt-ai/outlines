@@ -145,7 +145,7 @@ def test_benchmark_json_schema_to_regex(benchmark, ensure_numba_compiled, schema
 """
 
 
-# lark_sample = open(outlines.grammars.lark).read()
+lark_sample = open(outlines.grammars.lark).read()
 
 
 """
@@ -285,11 +285,11 @@ order by cast(events_persisted.timestamp as integer) desc
 
 
 all_samples = {
-    "json": (outlines.grammars.json, json_sample),
-    "csv": (outlines.grammars.csv, csv_sample),
+    # "json": (outlines.grammars.json, json_sample),
+    # "csv": (outlines.grammars.csv, csv_sample),
     # "yaml": (outlines.grammars.yaml, yaml_sample),
     # "python3": (outlines.grammars.python3, python3_sample),
-    # "lark": (outlines.grammars.lark, lark_sample),
+    "lark": (outlines.grammars.lark, lark_sample),
     # "sqlite_AppStateChangeSummary": (
     #    outlines.grammars.sqlite,
     #    sqlite_sample_AppStateChangeSummary,
@@ -327,6 +327,7 @@ class MockGenerator:
 
     def run_until_eos(self):
         num_tokens_generated = 0
+        generated = ""
 
         state = FSMState(0)
         while self.to_generate:
@@ -343,7 +344,10 @@ class MockGenerator:
             # expected_token_ids.issubset(allowed_token_ids)
             # and pop from expected_token_ids
             candidate_token_ids = allowed_token_ids & expected_token_ids
-            assert candidate_token_ids
+            try:
+                assert candidate_token_ids, generated
+            except:
+                import pdb;pdb.set_trace()
 
             next_token_id = sorted(candidate_token_ids)[
                 0
@@ -352,6 +356,7 @@ class MockGenerator:
 
             assert self.to_generate.startswith(next_token_str)
             self.to_generate = self.to_generate[len(next_token_str) :]
+            generated += next_token_str
 
             state = self.cfg_fsm.next_state(state=state, token_id=next_token_id)
 
