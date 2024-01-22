@@ -50,11 +50,15 @@ def test_sequence_generator_class():
         def __call__(*_):
             return torch.tensor([[0, 1, 2, 3, 4]], dtype=torch.float), None
 
-    def sampler(biased_logits, *_):
-        return torch.argmax(biased_logits, keepdims=True)
+    class sampler:
+        def __init__(self):
+            self.particles = 1
+
+        def __call__(self, biased_logits, *_):
+            return torch.argmax(biased_logits, keepdims=True)
 
     # Stream
-    generator = SequenceGenerator(MockFSM(), MockModel(), sampler, "cpu")
+    generator = SequenceGenerator(MockFSM(), MockModel(), sampler(), "cpu")
     assert generator.device == "cpu"
     assert isinstance(generator.tokenizer, MockTokenizer)
     assert isinstance(generator.fsm, MockFSM)
@@ -69,7 +73,7 @@ def test_sequence_generator_class():
         next(sequence)
 
     # Call
-    generator = SequenceGenerator(MockFSM(), MockModel(), sampler, "cpu")
+    generator = SequenceGenerator(MockFSM(), MockModel(), sampler(), "cpu")
     result = generator("test")
     assert result == "x"
 

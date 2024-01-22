@@ -20,7 +20,6 @@ class SequenceGenerator:
         sampler,
         device,
         *,
-        num_samples: int = 1,
         max_tokens=None,
         stop_at=None,
     ):
@@ -29,7 +28,7 @@ class SequenceGenerator:
         self.tokenizer = model.tokenizer
         self.device = device
         self.max_tokens = max_tokens
-        self.num_samples = num_samples
+        self.num_particles = sampler.particles
 
         if isinstance(stop_at, str):
             stop_at = [stop_at]
@@ -167,7 +166,6 @@ class SequenceGenerator:
         prompts: Union[str, List[str]],
         max_tokens: Optional[int] = None,
         stop_at: Optional[Union[str, List[str]]] = None,
-        num_samples: int = 1,
         rng: Optional[torch.Generator] = None,
         kv_cache: Optional[torch.tensor] = None,
     ) -> Union[str, List[str], List[List[str]]]:
@@ -210,6 +208,11 @@ class SequenceGenerator:
 
         stop_sequences = stop_at or self.stop_sequences
         max_tokens = max_tokens or self.max_tokens
+<<<<<<< HEAD
+=======
+        num_samples = self.num_particles
+        num_sequences = len(prompts)
+>>>>>>> c8bf540 (Pass number of samples via sampler)
         fsms = [self.fsm.copy() for _ in prompts]
 
         if rng is None:
@@ -276,7 +279,6 @@ class SequenceGenerator:
         prompts: Union[str, List[str]],
         max_tokens: Optional[int] = None,
         stop_at: Optional[Union[str, List[str]]] = None,
-        num_samples: int = 1,
         rng: Optional[torch.Generator] = None,
         kv_cache: Optional[torch.tensor] = None,
     ) -> Iterator[Union[List[str], List[List[str]], str]]:
@@ -318,6 +320,11 @@ class SequenceGenerator:
 
         stop_sequences = stop_at or self.stop_sequences
         max_tokens = max_tokens or self.max_tokens
+<<<<<<< HEAD
+=======
+        num_samples = self.num_particles
+        num_sequences = len(prompts)
+>>>>>>> c8bf540 (Pass number of samples via sampler)
         fsms = [self.fsm.copy() for _ in prompts]
 
         if rng is None:
