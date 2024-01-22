@@ -27,9 +27,12 @@ def get_cache():
     home_dir = os.path.expanduser("~")
     cache_dir = os.environ.get("OUTLINES_CACHE_DIR", f"{home_dir}/.cache/outlines")
     memory = Cache(cache_dir, eviction_policy="none", cull_limit=0)
+
+    # ensure if version upgrade occurs, old cache is pruned
     if outlines_version != memory.get("__version__"):
         memory.clear()
     memory["__version__"] = outlines_version
+
     return memory
 
 
