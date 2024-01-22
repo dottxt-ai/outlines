@@ -4,7 +4,7 @@ Outlines can be deployed as an LLM service using the vLLM inference engine and a
 
 ```bash
 pip install outlines[serve]
-pip install pydantic>=2.0
+pip install "pydantic>=2.0"
 ```
 
 !!! Warning
