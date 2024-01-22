@@ -10,6 +10,7 @@ from pydantic import BaseModel, constr
 import outlines.generate as generate
 import outlines.models as models
 from outlines.fsm.regex import reduced_vocabulary
+from outlines.generate.samplers import multinomial
 from outlines.models.transformers import TransformerTokenizer
 
 
@@ -91,14 +92,16 @@ def test_transformers_integration_text_multiple_samples():
 
     model_name = "hf-internal-testing/tiny-random-GPTJForCausalLM"
     model = models.transformers(model_name, device="cpu")
-    sequence = generate.text(model)("Write a short sentence ", num_samples=2, rng=rng)
+    sampler = multinomial(2)
+
+    sequence = generate.text(model, sampler=sampler)("Write a short sentence ", rng=rng)
     assert isinstance(sequence, list)
     assert len(sequence) == 2
     assert model.tokenizer.eos_token not in sequence
 
     prompts = ["Write a short sentence ", "And another one "]
-    sequence = generate.text(model)(
-        prompts, max_tokens=10, num_samples=2, stop_at=[".", ","], rng=rng
+    sequence = generate.text(model, sampler=sampler)(
+        prompts, max_tokens=10, stop_at=[".", ","], rng=rng
     )
     assert isinstance(sequence, list)
     assert len(sequence) == 2
@@ -138,11 +141,12 @@ def test_transformers_integration_streaming_batch_samples():
 
     model_name = "hf-internal-testing/tiny-random-GPTJForCausalLM"
     model = models.transformers(model_name, device="cpu")
-    sequence = generate.text(model).stream(
+    sampler = multinomial(samples=2)
+
+    sequence = generate.text(model, sampler=sampler).stream(
         ["Prompt1", "Prompt2"],
         max_tokens=10,
         stop_at=[".", ","],
-        num_samples=2,
         rng=rng,
     )
     tokens = next(sequence)
@@ -202,12 +206,13 @@ def test_transformers_various_regexes_prompt_list_multiple_samples():
 
     model_name = "hf-internal-testing/tiny-random-GPTJForCausalLM"
     model = models.transformers(model_name, device="cpu")
+    sampler = multinomial(samples=2)
     prompt = "Write an email address"
     regex_str = r"([a-z]{10})@([a-z]{5})\.([a-z]{3})"
-    generator = generate.regex(model, regex_str)
+    generator = generate.regex(model, regex_str, sampler=sampler)
 
     # Two prompts
-    sequence = generator([prompt, prompt], num_samples=2, rng=rng)
+    sequence = generator([prompt, prompt], rng=rng)
     assert isinstance(sequence, list)
     assert len(sequence) == 2
     assert re.fullmatch(regex_str, sequence[0][0]) is not None
@@ -397,6 +402,7 @@ def test_transformers_json_batch():
 def test_transformers_json_batch_multiple_samples():
     model_name = "hf-internal-testing/tiny-random-GPTJForCausalLM"
     model = models.transformers(model_name, device="cpu")
+    sampler = multinomial(samples=2)
     prompts = ["Output some JSON ", "Output more JSON"]
 
     class Spam(BaseModel):
@@ -408,7 +414,9 @@ def test_transformers_json_batch_multiple_samples():
     rng = torch.Generator()
     rng.manual_seed(0)  # make sure that `bar` is not an int
 
-    result = generate.json(model, Spam)(prompts, max_tokens=500, rng=rng, num_samples=2)
+    result = generate.json(model, Spam, sampler=sampler)(
+        prompts, max_tokens=500, rng=rng
+    )
     assert isinstance(result, list)
     assert len(result) == 2
     assert isinstance(result[0][0], BaseModel)
@@ -560,18 +568,22 @@ def test_custom_sampler():
     seen = False
     target_token_ids = model.tokenizer.encode(["c"])[0]
 
-    def biased_sampler(
-        logits: torch.DoubleTensor, samples: int, *_
-    ) -> torch.DoubleTensor:
-        nonlocal seen
+    class biased_sampler:
+        def __init__(self, samples: int = 1):
+            self.particles = samples
 
-        if not seen:
-            seen = True
-            return target_token_ids
-        else:
-            return torch.tensor([[model.tokenizer.eos_token_id]])
+        def __call__(
+            logits: torch.DoubleTensor, samples: int, *_
+        ) -> torch.DoubleTensor:
+            nonlocal seen
 
-    generator = generate.choice(model, ["a", "b", "c"], sampler=biased_sampler)
+            if not seen:
+                seen = True
+                return target_token_ids
+            else:
+                return torch.tensor([[model.tokenizer.eos_token_id]])
+
+    generator = generate.choice(model, ["a", "b", "c"], sampler=biased_sampler(1))
     sequence = generator(
         """What is 1+1?
     a. 3
