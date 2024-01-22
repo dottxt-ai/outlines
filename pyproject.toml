@@ -38,6 +38,7 @@ dependencies = [
    "referencing",
    "jsonschema",
    "requests",
+   "transformers==4.36.2",  # TODO: unpin when HF fixes release (4.37.0 is broken)
 ]
 dynamic = ["version"]
 
