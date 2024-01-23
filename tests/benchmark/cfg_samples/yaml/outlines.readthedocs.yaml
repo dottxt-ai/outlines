@@ -1,0 +1,15 @@
+version: 2
+
+python:
+  version: "3.8"
+  install:
+      - method: pip
+        path: .
+        extra_requirements:
+          - rtd
+      - requirements: requirements-doc.txt
+
+sphinx:
+  builder: html
+  configuration: docs/source/conf.py
+  fail_on_warning: true
