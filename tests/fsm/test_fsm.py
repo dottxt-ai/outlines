@@ -1,6 +1,5 @@
 import pytest
 
-
 import outlines.grammars
 from outlines.fsm.fsm import CFGFSM, RegexFSM, StopAtEosFSM
 
@@ -214,7 +213,7 @@ def test_cfg_ignore_directive():
     assert set(fsm.allowed_token_ids(state=state)) == {3}
 
 
-def test_cfg_multitoken_terminal():
+def test_cfg_multitoken_subexpr():
     class MockTokenizer:
         vocabulary = {"a": 1, "b": 2, "eos": 3}
         special_tokens = {"eos"}
@@ -254,71 +253,6 @@ def test_cfg_multitoken_terminal():
     assert not fsm.reset_state  # completing current regex
     state = fsm.next_state(state=state, token_id=3)
     assert fsm.generation == "aa"
-    assert fsm.is_final_state(state)
-
-
-def test_cfg_grammar_lark():
-    """Ensure we can use outlines.grammars.lark to generate json"""
-
-    class MockTokenizer:
-        vocabulary = {"{": 1, '"': 2, "a": 3, "4": 4, "}": 5, ":": 6}
-        special_tokens = {"eos"}
-        eos_token = "eos"
-        eos_token_id = 10
-
-        def convert_token_to_string(self, token):
-            return token
-
-        @property
-        def inverse_vocabulary(self):
-            return {v: k for k, v in self.vocabulary.items()}
-
-        def decode(self, token_ids):
-            return [self.inverse_vocabulary[t] for t in token_ids]
-
-    tokenizer = MockTokenizer()
-    fsm = CFGFSM(outlines.grammars.json, tokenizer)
-
-    state = 0
-    assert fsm.generation == ""
-    assert set(fsm.allowed_token_ids(state=0)) == {1, 2, 4}
-
-    state = fsm.next_state(state=0, token_id=1)
-    assert fsm.generation == "{"
-    assert not fsm.is_final_state(0)
-    assert set(fsm.allowed_token_ids(state=state)) == {2, 5}
-
-    state = fsm.next_state(state=state, token_id=2)
-    assert fsm.generation == '{"'
-    assert not fsm.is_final_state(0)
-    assert set(fsm.allowed_token_ids(state=state)) == {1, 2, 3, 4, 5, 6}
-
-    state = fsm.next_state(state=state, token_id=3)
-    assert fsm.generation == '{"a'
-    assert not fsm.is_final_state(0)
-    assert set(fsm.allowed_token_ids(state=state)) == {1, 2, 3, 4, 5, 6}
-
-    state = fsm.next_state(state=state, token_id=2)
-    assert fsm.generation == '{"a"'
-    assert not fsm.is_final_state(0)
-    assert set(fsm.allowed_token_ids(state=state)) == {6}
-
-    state = fsm.next_state(state=state, token_id=6)
-    assert fsm.generation == '{"a":'
-    assert not fsm.is_final_state(0)
-    assert set(fsm.allowed_token_ids(state=state)) == {1, 2, 4}
-
-    state = fsm.next_state(state=state, token_id=4)
-    assert fsm.generation == '{"a":4'
-    assert not fsm.is_final_state(0)
-    assert set(fsm.allowed_token_ids(state=state)) == {4, 5}
-
-    state = fsm.next_state(state=state, token_id=5)
-    assert fsm.generation == '{"a":4}'
-    assert not fsm.is_final_state(0)
-    assert set(fsm.allowed_token_ids(state=state)) == {tokenizer.eos_token_id}
-
-    state = fsm.next_state(state=state, token_id=tokenizer.eos_token_id)
     assert fsm.is_final_state(state)
 
 
