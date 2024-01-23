@@ -1,3 +1,5 @@
+from typing import List
+
 import pytest
 
 from outlines.fsm.fsm import RegexFSM
@@ -15,7 +17,7 @@ def ensure_numba_compiled(tokenizer):
     return True
 
 
-test_outputs = []
+test_outputs: List[str] = []
 
 
 def pytest_terminal_summary(terminalreporter):
@@ -25,5 +27,5 @@ def pytest_terminal_summary(terminalreporter):
         terminalreporter.write(f"{output}\n")
 
 
-def add_test_output(data):
+def add_test_output(data: str):
     test_outputs.append(data)
