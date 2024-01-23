@@ -2,7 +2,7 @@ import warnings
 from typing import Callable, List, Optional, Union
 
 import outlines
-from outlines.generate.samplers import MultinomialSampler, Sampler
+from outlines.samplers import MultinomialSampler, Sampler
 
 
 def json(

@@ -10,8 +10,8 @@ from pydantic import BaseModel, constr
 import outlines.generate as generate
 import outlines.models as models
 from outlines.fsm.regex import reduced_vocabulary
-from outlines.generate.samplers import multinomial
 from outlines.models.transformers import TransformerTokenizer
+from outlines.samplers import multinomial
 
 
 def test_deprecation():

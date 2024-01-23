@@ -18,15 +18,12 @@ class GreedySampler:
     Greedy sampling consists in choosing the token with the largest
     likelihood at every step.
 
-    Attributes
-    ----------
-    particles
-        The number of samples taken for each input sequence.
+    We don't allow more than one sample as this does not really make sense.
 
     """
 
-    def __init__(self, samples: int = 1):
-        self.particles = samples
+    def __init__(self):
+        self.particles = 1
 
     def __call__(self, logits: torch.DoubleTensor, *_) -> torch.DoubleTensor:
         """Call the greedy sampler.
@@ -41,15 +38,10 @@ class GreedySampler:
 
         Returns
         -------
-        The ids of the sampled tokens having shape ``(samples, n_seqs)``.
+        The ids of the sampled tokens, of shape ``(n_seqs, 1)``
 
         """
-        if self.particles == 1:
-            next_token_ids = torch.argmax(logits, dim=-1, keepdim=True)
-        else:
-            next_token_ids = torch.topk(
-                logits, self.particles, dim=-1, largest=True, sorted=True
-            ).indices.T
+        next_token_ids = torch.argmax(logits, dim=-1, keepdim=True)
 
         return next_token_ids
 

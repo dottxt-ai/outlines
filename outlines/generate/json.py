@@ -5,8 +5,8 @@ from typing import Callable, Optional, Union
 from pydantic import BaseModel
 
 from outlines.fsm.json_schema import build_regex_from_object, get_schema_from_signature
-from outlines.generate.samplers import Sampler, multinomial
 from outlines.models import OpenAI
+from outlines.samplers import Sampler, multinomial
 
 from .regex import regex
 
@@ -16,7 +16,7 @@ def json(
     model,
     schema_object: Union[str, object, Callable],
     max_tokens: Optional[int] = None,
-    sampler: Sampler = multinomial,
+    sampler: Sampler = multinomial(),
 ):
     if isinstance(schema_object, type(BaseModel)):
         schema = pyjson.dumps(schema_object.model_json_schema())
@@ -48,7 +48,7 @@ def json_openai(
     model,
     schema_object: Union[str, object, Callable],
     max_tokens: Optional[int] = None,
-    sampler: Sampler = multinomial,
+    sampler: Sampler = multinomial(),
 ):
     raise NotImplementedError(
         "Cannot use JSON Schema-structure generation with an OpenAI model "

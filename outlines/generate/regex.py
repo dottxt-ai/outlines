@@ -3,8 +3,8 @@ from typing import Optional
 
 from outlines.fsm.fsm import RegexFSM
 from outlines.generate.api import SequenceGenerator
-from outlines.generate.samplers import Sampler, multinomial
 from outlines.models import OpenAI
+from outlines.samplers import Sampler, multinomial
 
 
 @singledispatch
@@ -12,7 +12,7 @@ def regex(
     model,
     regex_str: str,
     max_tokens: Optional[int] = None,
-    sampler: Sampler = multinomial,
+    sampler: Sampler = multinomial(),
 ):
     fsm = RegexFSM(regex_str, model.tokenizer)
 
@@ -27,7 +27,7 @@ def regex_openai(
     model,
     regex_str: str,
     max_tokens: Optional[int] = None,
-    sampler: Sampler = multinomial,
+    sampler: Sampler = multinomial(),
 ):
     raise NotImplementedError(
         "Cannot use regex-structured generation with an OpenAI model"

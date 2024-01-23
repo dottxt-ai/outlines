@@ -8,8 +8,8 @@ from outlines.fsm.fsm import FSMState
 
 if TYPE_CHECKING:
     from outlines.fsm.fsm import FSM
-    from outlines.generate.samplers import Sampler
     from outlines.models.tokenizer import Tokenizer
+    from outlines.samplers import Sampler
 
 
 @dataclasses.dataclass(frozen=True)
