@@ -122,6 +122,7 @@ nav:
         - Grammar: reference/cfg.md
         - Regex: reference/regex.md
         - Types: reference/types.md
+        - Samplers: reference/samplers.md
     - Utilities:
         - Serve with vLLM: reference/vllm.md
         - Prompt templating: reference/prompting.md
