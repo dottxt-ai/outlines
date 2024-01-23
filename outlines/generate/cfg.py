@@ -3,8 +3,8 @@ from typing import List, Optional, Union
 
 from outlines.fsm.fsm import CFGFSM
 from outlines.generate.api import SequenceGenerator
-from outlines.generate.samplers import Sampler, multinomial
 from outlines.models import OpenAI
+from outlines.samplers import Sampler, multinomial
 
 
 @singledispatch
@@ -13,7 +13,7 @@ def cfg(
     cfg_str: str,
     max_tokens: Optional[int] = None,
     stop_at: Optional[Union[str, List[str]]] = None,
-    sampler: Sampler = multinomial,
+    sampler: Sampler = multinomial(),
 ):
     fsm = CFGFSM(cfg_str, model.tokenizer)
 
@@ -31,7 +31,7 @@ def cfg_openai(
     cfg_str: str,
     max_tokens: Optional[int] = None,
     stop_at: Optional[Union[str, List[str]]] = None,
-    sampler: Sampler = multinomial,
+    sampler: Sampler = multinomial(),
 ):
     raise NotImplementedError(
         "Cannot use grammar-structured generation with an OpenAI model"
