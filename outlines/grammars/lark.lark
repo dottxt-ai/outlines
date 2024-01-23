@@ -1,0 +1,84 @@
+// From https://github.com/lark-parser/lark/blob/master/lark/grammars/lark.lark
+// Lark License:
+// Copyright © 2017 Erez Shinan
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy of
+// this software and associated documentation files (the "Software"), to deal in
+// the Software without restriction, including without limitation the rights to
+// use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+// the Software, and to permit persons to whom the Software is furnished to do so,
+// subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+// FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR
+// COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+// IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+// CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+
+# Lark grammar of Lark's syntax
+# Note: Lark is not bootstrapped, its parser is implemented in load_grammar.py
+
+start: (_item? _NL)* _item?
+
+_item: rule
+     | token
+     | statement
+
+rule: RULE rule_params priority? ":" expansions
+token: TOKEN token_params priority? ":" expansions
+
+rule_params: ["{" RULE ("," RULE)* "}"]
+token_params: ["{" TOKEN ("," TOKEN)* "}"]
+
+priority: "." NUMBER
+
+statement: "%ignore" expansions                    -> ignore
+         | "%import" import_path ["->" name]       -> import
+         | "%import" import_path name_list         -> multi_import
+         | "%override" rule                        -> override_rule
+         | "%declare" name+                        -> declare
+
+!import_path: "."? name ("." name)*
+name_list: "(" name ("," name)* ")"
+
+?expansions: alias (_VBAR alias)*
+
+?alias: expansion ["->" RULE]
+
+?expansion: expr*
+
+?expr: atom [OP | "~" NUMBER [".." NUMBER]]
+
+?atom: "(" expansions ")"
+     | "[" expansions "]" -> maybe
+     | value
+
+?value: string ".." string -> literal_range
+      | name
+      | (REGEXP | string) -> literal
+      | name "{" value ("," value)* "}" -> template_usage
+
+name: RULE
+    | TOKEN
+
+_VBAR: _NL? "|"
+OP: /[+*]|[?](?![a-z])/
+RULE: /!?[_?]?[a-z][_a-z0-9]*/
+TOKEN: /_?[A-Z][_A-Z0-9]*/
+string: escaped_string "i"?
+REGEXP: /\/(?!\/)(\\\/|\\\\|[^\/])*?\/[imslux]*/
+_NL: /(\r?\n)+\s*/
+
+%import common.escaped_string
+%import common.SIGNED_INT -> NUMBER
+%import common.WS_INLINE
+
+COMMENT: /\s*/ "//" /[^\n]/* | /\s*/ "#" /[^\n]/*
+
+%ignore WS_INLINE
+%ignore COMMENT
