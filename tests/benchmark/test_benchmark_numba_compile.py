@@ -7,13 +7,13 @@ import outlines
 
 outlines.disable_cache()
 
-from outlines.fsm import regex  # noqa: E402
-
 
 def test_benchmark_compile_numba(benchmark, tokenizer, mocker):
     """Compile a basic regex to benchmark the numba compilation time"""
 
     def setup():
+        from outlines.fsm import regex
+
         original_njit = numba.njit
 
         def mock_njit(*args, **kwargs):
