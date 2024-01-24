@@ -51,7 +51,7 @@ class RegexLogitsProcessor:
             An instance of `vllm.LLM`
 
         """
-        tokenizer = self.adapt_tokenizer(llm.tokenizer)
+        tokenizer = self.adapt_tokenizer(llm.tokenizer.tokenizer)
 
         fsm = RegexFSM(regex_string, tokenizer)
         self.fsm = fsm
