@@ -103,10 +103,10 @@ class OpenAICompatibleAPI(OpenAI):
         self,
         prompt: Union[str, List[str]],
         max_tokens: Optional[int] = None,
+        stop_at: Optional[Union[List[str], str]] = None,
         *,
         temperature: float = 1.0,
         samples: int = 1,
-        stop_at: Optional[Union[List[str], str]] = None,
     ) -> np.ndarray:
         """Call the OpenAI compatible API to generate text.
 

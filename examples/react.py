@@ -45,7 +45,8 @@ def search_wikipedia(query: str):
 
 
 prompt = build_reAct_prompt("Where is Apple Computers headquarted? ")
-complete = models.openai("gpt-3.5-turbo")
+model = models.openai("gpt-3.5-turbo")
+complete = outlines.generate.text(model)
 
 for i in range(1, 10):
     mode = complete.generate_choice(prompt, choices=["Tho", "Act"], max_tokens=128)

@@ -155,10 +155,10 @@ class OpenAI:
         self,
         prompt: Union[str, List[str]],
         max_tokens: Optional[int] = None,
+        stop_at: Optional[Union[List[str], str]] = None,
         *,
         temperature: float = 1.0,
         samples: int = 1,
-        stop_at: Optional[Union[List[str], str]] = None,
     ) -> np.ndarray:
         """Call the OpenAI API to generate text.
 
@@ -178,6 +178,11 @@ class OpenAI:
         """
         config = replace(self.config, max_tokens=max_tokens, n=samples, stop=stop_at)  # type: ignore
 
+        if isinstance(stop_at, list) and len(stop_at) > 4:
+            raise NotImplementedError(
+                "The OpenAI API supports at most 4 stop sequences."
+            )
+
         if "text-" in self.config.model:
             raise NotImplementedError(
                 textwrap.dedent(
@@ -195,6 +200,11 @@ class OpenAI:
             self.completion_tokens += completion_tokens
 
             return response
+
+    def stream(self, *args, **kwargs):
+        raise NotImplementedError(
+            "Streaming is currently not supported for the OpenAI API"
+        )
 
     @property
     def tokenizer(self):

@@ -11,6 +11,7 @@ import outlines
 import outlines.models as models
 
 model = models.openai("gpt-3.5-turbo")
+complete = outlines.generate.text(model)
 
 
 #################
@@ -127,12 +128,12 @@ def one_cycle(objective: str, task_list, next_task_id: int):
     task = task_list.popleft()
 
     prompt = perform_task_ppt(objective, task)
-    result = model(prompt)
+    result = complete(prompt)
 
     prompt = create_tasks_ppt(
         objective, first_task["task_name"], result, [first_task["task_name"]]
     )
-    new_tasks = model(prompt)
+    new_tasks = complete(prompt)
 
     new_tasks = create_tasks_fmt(new_tasks)
 
@@ -143,7 +144,7 @@ def one_cycle(objective: str, task_list, next_task_id: int):
     prompt = prioritize_tasks_ppt(
         objective, [task["task_name"] for task in task_list], next_task_id
     )
-    prioritized_tasks = model(prompt)
+    prioritized_tasks = complete(prompt)
 
     prioritized_tasks = prioritize_tasks_fmt(prioritized_tasks)
 
