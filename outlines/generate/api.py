@@ -4,7 +4,7 @@ from typing import Iterator, List, Optional, Tuple, Union
 
 import torch
 
-from outlines.fsm.fsm import CFGFSM, RegexFSM
+from outlines.fsm.fsm import CFGFSM
 from outlines.generate.generator import (
     GenerationState,
     init_generator_state,
@@ -339,20 +339,6 @@ class SequenceGenerator:
                 yield next_tokens
 
         return token_generator()
-
-
-def regex(
-    model,
-    regex_str: str,
-    max_tokens: Optional[int] = None,
-    sampler: Sampler = multinomial,
-):
-    fsm = RegexFSM(regex_str, model.tokenizer)
-
-    device = model.device
-    generator = SequenceGenerator(fsm, model, sampler, device, max_tokens=max_tokens)
-
-    return generator
 
 
 def cfg(

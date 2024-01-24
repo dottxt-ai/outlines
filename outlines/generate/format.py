@@ -5,7 +5,7 @@ from outlines.fsm.types import python_types_to_regex
 from outlines.generate.samplers import Sampler, multinomial
 from outlines.models import OpenAI
 
-from .api import regex
+from .regex import regex
 
 
 @singledispatch
