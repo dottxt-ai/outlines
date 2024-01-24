@@ -61,11 +61,18 @@ body:
   - type: textarea
     attributes:
       label: "Outlines/Python version information:"
-      description: Please run the following code and paste the output here.
-      placeholder: |
-          import outlines; print("Outlines", outlines.__version__)
-          import sys; print("Python", sys.version)
-      render: python
+      description: |
+          Please run the following code and paste the output here.
+          python -c "from outlines import _version; print(_version.__version__)"
+          python -c "import sys; print('Python', sys.version)"
+          pip freeze
+      value: |
+          Version information
+          <details>
+          ```
+          (command output here)
+          ```
+          </details>
     validations:
       required: true
 
