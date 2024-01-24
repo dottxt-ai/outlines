@@ -363,7 +363,7 @@ Once you are done experimenting with a prompt and an output structure, it is use
 
 ### Built-In Grammars
 
-You can take advantage of Outlines' grammar library by passing a grammar definition from `outlines.grammars.`.
+You can take advantage of Outlines' grammar library by passing a grammar definition from `outlines.grammars.`. (See available grammars [here](/outlines/grammars))
 
 ```python
 from outlines import models, generate, grammars
