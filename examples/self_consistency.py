@@ -56,8 +56,9 @@ def few_shots(question, examples):
 
 
 model = models.openai("gpt-3.5-turbo")
+generator = outlines.generate.text(model)
 prompt = few_shots(question, examples)
-answers = model(prompt, samples=100)
+answers = generator(prompt, samples=100)
 
 digits = []
 for answer in answers:

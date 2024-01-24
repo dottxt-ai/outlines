@@ -5,7 +5,7 @@ from typing import Callable, Iterator, List, Optional, Tuple, Union
 import torch
 from pydantic import BaseModel
 
-from outlines.fsm.fsm import CFGFSM, RegexFSM, StopAtEosFSM
+from outlines.fsm.fsm import CFGFSM, RegexFSM
 from outlines.fsm.json_schema import build_regex_from_object, get_schema_from_signature
 from outlines.fsm.types import python_types_to_regex
 from outlines.generate.generator import (
@@ -342,23 +342,6 @@ class SequenceGenerator:
                 yield next_tokens
 
         return token_generator()
-
-
-def text(
-    model,
-    max_tokens: Optional[int] = None,
-    stop_at: Optional[Union[str, List[str]]] = None,
-    *,
-    sampler: Sampler = multinomial,
-):
-    fsm = StopAtEosFSM(model.tokenizer)
-
-    device = model.device
-    generator = SequenceGenerator(
-        fsm, model, sampler, device, max_tokens=max_tokens, stop_at=stop_at
-    )
-
-    return generator
 
 
 def regex(

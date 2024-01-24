@@ -30,11 +30,12 @@ def build_ooo_prompt(options):
 
 
 model = models.openai("gpt-3.5-turbo")
+generator = outlines.generate.text(model)
 
 options = ["sea", "mountains", "plains", "sock"]
 prompt = build_ooo_prompt(options)
-reasoning = model(prompt, stop_at=["Pick the odd word", "So the odd one"])
+reasoning = generator(prompt, stop_at=["Pick the odd word", "So the odd one"])
 prompt += reasoning
-result = model(prompt)
+result = generator(prompt)
 prompt += result
 print(prompt)
