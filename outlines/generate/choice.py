@@ -4,7 +4,7 @@ from typing import Callable, List, Optional
 from outlines.generate.samplers import Sampler, multinomial
 from outlines.models import OpenAI
 
-from .api import regex
+from .regex import regex
 
 
 @singledispatch

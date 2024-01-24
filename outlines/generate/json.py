@@ -8,7 +8,7 @@ from outlines.fsm.json_schema import build_regex_from_object, get_schema_from_si
 from outlines.generate.samplers import Sampler, multinomial
 from outlines.models import OpenAI
 
-from .api import regex
+from .regex import regex
 
 
 @singledispatch
