@@ -374,7 +374,7 @@ generator = generate.cfg(model, grammars.arithmetic, max_tokens=100)
 result = generator("Write a series of operations on integers that return the number 5")
 print(result)
 # 4*5*3*2*1/6*4*3*2*1/2*1*1*1/4*1*1*1/2*1*1*1/2*1*1/2*1*1*5*1/2*2*1*1/2*1*1*6*1*1/2*1*1*1*1*2*1*1*1*1
-    ```
+```
 
 
 ## Going further
