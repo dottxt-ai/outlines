@@ -4,14 +4,12 @@ from typing import Iterator, List, Optional, Tuple, Union
 
 import torch
 
-from outlines.fsm.fsm import CFGFSM
 from outlines.generate.generator import (
     GenerationState,
     init_generator_state,
     sequence_generator,
     token_generator,
 )
-from outlines.generate.samplers import Sampler, multinomial
 
 
 class SequenceGenerator:
@@ -339,17 +337,3 @@ class SequenceGenerator:
                 yield next_tokens
 
         return token_generator()
-
-
-def cfg(
-    model,
-    cfg_str: str,
-    max_tokens: Optional[int] = None,
-    sampler: Sampler = multinomial,
-):
-    fsm = CFGFSM(cfg_str, model.tokenizer)
-
-    device = model.device
-    generator = SequenceGenerator(fsm, model, sampler, device, max_tokens=max_tokens)
-
-    return generator
