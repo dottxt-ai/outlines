@@ -7,7 +7,6 @@ from pydantic import BaseModel
 
 from outlines.fsm.fsm import CFGFSM, RegexFSM
 from outlines.fsm.json_schema import build_regex_from_object, get_schema_from_signature
-from outlines.fsm.types import python_types_to_regex
 from outlines.generate.generator import (
     GenerationState,
     init_generator_state,
@@ -370,13 +369,6 @@ def cfg(
     generator = SequenceGenerator(fsm, model, sampler, device, max_tokens=max_tokens)
 
     return generator
-
-
-def format(
-    model, python_type, max_tokens: Optional[int] = None, sampler: Sampler = multinomial
-):
-    regex_str = python_types_to_regex(python_type)
-    return regex(model, regex_str, max_tokens, sampler)
 
 
 def json(
