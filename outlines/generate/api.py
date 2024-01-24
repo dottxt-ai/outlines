@@ -379,16 +379,6 @@ def format(
     return regex(model, regex_str, max_tokens, sampler)
 
 
-def choice(
-    model,
-    choices: List[str],
-    max_tokens: Optional[int] = None,
-    sampler: Sampler = multinomial,
-):
-    regex_str = r"(" + r"|".join(choices) + r")"
-    return regex(model, regex_str, max_tokens, sampler)
-
-
 def json(
     model,
     schema_object: Union[str, object, Callable],
