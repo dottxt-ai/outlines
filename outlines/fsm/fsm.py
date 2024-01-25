@@ -215,34 +215,9 @@ class CFGFSM(FSM):
         self.allow_eos = False
         self.regex_fsm: RegexFSM
 
-    def _set_next_regex_fsm(self) -> None:
-        """Use the CFG incremental parser to set the next regex FSM.
-
-        Check what the CFG incremental parser proposes next:
-        - If the only proposal is the EOS token we set the state to done and
-          return.
-        - If there are other proposals, we set a new regex FSM and return.
-
-        """
-        interactive = self.parser.parse_interactive(self.generation)
-        interactive.exhaust_lexer()
-
-        options = {self.terminal_regexps[x] for x in interactive.accepts()}
-        # add %ignore terminals
-        options |= {self.terminal_regexps[x] for x in self.parser.lexer_conf.ignore}
-
-        if self.terminal_regexps["$END"] in options:
-            options.remove(self.terminal_regexps["$END"])
-            if len(options) == 0:
-                self.done = True
-                return
-            self.allow_eos = True
-            options.add("")
-            assert len(options) > 1
-
-        regex_string = r"(" + r"|".join([r"(" + x + r")" for x in options]) + r")"
-        self.regex_fsm = RegexFSM(regex_string, self.tokenizer)
-        self.reset_state = True
+        self.check_last = False
+        self.proposal_last: List[int] = []
+        self.regex_fsm_last: RegexFSM
 
     def allowed_token_ids(self, state: FSMState) -> List[int]:
         """Generate a list of allowed tokens for the next step.
