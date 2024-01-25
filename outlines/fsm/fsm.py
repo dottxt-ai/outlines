@@ -91,25 +91,35 @@ class StopAtEosFSM(FSM):
 class RegexFSM(FSM):
     """FSM to generate text that is in the language of a regular expression."""
 
-    def __init__(self, regex_string: str, tokenizer: "Tokenizer"):
+    def __init__(self, regex_string: Union[List[str], str], tokenizer: "Tokenizer"):
         @cache()
         def create_states_mapping(
-            regex_string: str, cacheable_vocabulary: Tuple[Tuple[str, int]]
+            regex_string: Union[List[str], str], cacheable_vocabulary: Tuple[Tuple[str, int]], tokenizer
         ) -> Tuple[dict, set]:
             """Create the variables related to the mapping between states and tokens
             The parameters of the function are used for caching purpose
             """
-            regex_pattern = interegular.parse_pattern(regex_string)
-            regex_fsm, _ = make_deterministic_fsm(regex_pattern.to_fsm().reduce())
+            if isinstance(regex_string, list):
+                regex_strings = [r for r in regex_string if r]
+                regex_fsm = interegular.parse_pattern(regex_strings[0]).to_fsm().reduce()
+                for s in regex_strings[1:]:
+                    regex_fsm |= interegular.parse_pattern(s).to_fsm().reduce()
+            elif isinstance(regex_string, str):
+                regex_fsm = interegular.parse_pattern(regex_string).to_fsm().reduce()
+            else:
+                raise TypeError("regex_string argument of RegexFSM must be List[str] or str")
+
+            deterministic_fsm, _ = make_deterministic_fsm(regex_fsm)
+
             states_to_token_maps, empty_token_ids = create_fsm_index_tokenizer(
-                regex_fsm, tokenizer
+                deterministic_fsm, tokenizer
             )
 
             # We make sure that it is possible to generate strings in the language
             # of the regular expression with the tokens present in the model's
             # vocabulary.
             if not any(
-                regex_fsm.finals.intersection(v.values())
+                deterministic_fsm.finals.intersection(v.values())
                 for v in states_to_token_maps.values()
             ):
                 raise ValueError(
@@ -118,9 +128,9 @@ class RegexFSM(FSM):
 
             return states_to_token_maps, empty_token_ids
 
+
         self.states_to_token_maps, self.empty_token_ids = create_states_mapping(
-            regex_string,
-            tuple(sorted(tokenizer.vocabulary.items())),
+            regex_string, tuple(sorted(tokenizer.vocabulary.items())), tokenizer
         )
         self.vocabulary = tokenizer.vocabulary.values()
         self.eos_token_id = tokenizer.eos_token_id
@@ -310,8 +320,7 @@ class CFGFSM(FSM):
             options.add("")
             assert len(options) > 1
 
-        regex_string = r"(" + r"|".join([r"(" + x + r")" for x in options]) + r")"
-        self.regex_fsm = RegexFSM(regex_string, self.tokenizer)
+        self.regex_fsm = RegexFSM(list(options), self.tokenizer)
         self.reset_state = True
 
         proposal += self.regex_fsm.allowed_token_ids(self.first_state)

@@ -20,21 +20,6 @@ for sample_collection_path in examples_path.iterdir():
         with open(sample_path) as f:
             all_samples[test_name] = (grammar, f.read())
 
-"""
-all_samples = {
-    # "json": (outlines.grammars.json, json_sample),
-    # "csv": (outlines.grammars.csv, csv_sample),
-    # "yaml": (outlines.grammars.yaml, yaml_sample),
-    # "python3": (outlines.grammars.python3, python3_sample),
-    "lark": (outlines.grammars.lark, lark_sample),
-    # "sqlite_AppStateChangeSummary": (
-    #    outlines.grammars.sqlite,
-    #    sqlite_sample_AppStateChangeSummary,
-    # ),
-    # "sqlite_Census": (outlines.grammars.sqlite, sqlite_sample_Census),
-}
-"""
-
 
 class MockGenerator:
     def __init__(self, cfg_fsm, to_generate):
@@ -78,9 +63,8 @@ class MockGenerator:
             # for example the tokenizer has the token `{"` however because { and " are
             # separate terminals, thus {" isn't considered a legal token
 
-            # After TODO resolution, this should simply assert that
-            # expected_token_ids.issubset(allowed_token_ids)
-            # and pop from expected_token_ids
+            # After https://github.com/outlines-dev/outlines/issues/573 resolution,
+            # this should simply assert that expected_token_ids.issubset(allowed_token_ids)
             candidate_token_ids = allowed_token_ids & expected_token_ids
             try:
                 assert candidate_token_ids, generated
