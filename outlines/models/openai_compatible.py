@@ -106,7 +106,7 @@ class OpenAICompatibleAPI(OpenAI):
         stop_at: Optional[Union[List[str], str]] = None,
         *,
         temperature: float = 1.0,
-        samples: int = 1,
+        samples: Optional[int] = None,
     ) -> np.ndarray:
         """Call the OpenAI compatible API to generate text.
 
@@ -124,6 +124,9 @@ class OpenAICompatibleAPI(OpenAI):
             Up to 4 words where the API will stop the completion.
 
         """
+        if samples is None:
+            samples = self.config.n
+
         config = replace(self.config, max_tokens=max_tokens, n=samples, stop=stop_at, temperature=temperature)  # type: ignore
 
         # We assume it's using the chat completion API style as that's the most commonly supported
