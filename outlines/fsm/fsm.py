@@ -196,7 +196,7 @@ class CFGFSM(FSM):
         self.tokenizer = tokenizer
 
         self.parser = Lark(
-            self.cfg_string,
+            cfg_string,
             parser="lalr",
             lexer="contextual",
             propagate_positions=False,
