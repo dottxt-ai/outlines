@@ -45,7 +45,7 @@ curl http://127.0.0.1:8000/generate \
         }'
 ```
 
-To generate a string that matches the grammar `<grammar>`:
+To generate a string that matches a given grammar `<grammar>`:
 
 ```bash
 curl http://127.0.0.1:8000/generate \
