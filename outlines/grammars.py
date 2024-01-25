@@ -17,6 +17,7 @@ yaml = read_grammar("yaml.lark")
 
 python3 = read_grammar("python3.lark")
 python3_interactive = read_grammar("python3_interactive.lark")
+lark = read_grammar("lark.lark")
 lisp = read_grammar("lisp.lark")
 
 sqlite = read_grammar("sqlite.lark")
