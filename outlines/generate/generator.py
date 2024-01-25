@@ -282,7 +282,7 @@ def bias_logits(logits: torch.Tensor, allowed_token_ids: List) -> torch.Tensor:
     A view of the original logits tensor where some values are masked.
 
     """
-    biased_logits = torch.full(logits.shape, -math.inf, device=logits.device)
+    biased_logits = torch.full_like(logits, -math.inf, device=logits.device)
     for i, ids in enumerate(allowed_token_ids):
-        biased_logits[i, ids] = logits[i, ids].to(biased_logits.dtype)
+        biased_logits[i, ids] = logits[i, ids]
     return biased_logits
