@@ -284,5 +284,5 @@ def bias_logits(logits: torch.Tensor, allowed_token_ids: List) -> torch.Tensor:
     """
     biased_logits = torch.full(logits.shape, -math.inf, device=logits.device)
     for i, ids in enumerate(allowed_token_ids):
-        biased_logits[i, ids] = logits[i, ids]
+        biased_logits[i, ids] = logits[i, ids].to(biased_logits.dtype)
     return biased_logits
