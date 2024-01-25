@@ -122,7 +122,7 @@ class OpenAI:
                     "You must specify an API key to use the OpenAI API integration."
                 )
         try:
-            client = openai.OpenAI()
+            client = openai.OpenAI(api_key=api_key)
             client.models.retrieve(model_name)
         except openai.NotFoundError:
             raise ValueError(
