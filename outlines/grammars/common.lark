@@ -43,14 +43,11 @@ SIGNED_FLOAT: ["+"|"-"] FLOAT
 NUMBER: FLOAT | INT
 SIGNED_NUMBER: ["+"|"-"] NUMBER
 
-//
-// TODO: Working escaped_string
-//
+// modified for outlines to use lookaheads not lookbehinds for compatability with interegular
+_STRING_INNER: /(?:[^"\\]|\\.)*?/
+ESCAPED_STRING : "\"" _STRING_INNER "\""
+
 UNESCAPED_STRING: /\"[^"]*\"/
-
-inner: /([^"\\]|\\["\\])+/ |
-escaped_string : "\"" inner "\""
-
 
 
 //

@@ -66,6 +66,7 @@ name_list: "(" name ("," name)* ")"
 name: RULE
     | TOKEN
 
+TEST_ESCAPE_STRING: "aaa\"bbb"
 _VBAR: _NL? "|"
 OP: /[+*]|[?](?![a-z])/
 RULE: /!?[_?]?[a-z][_a-z0-9]*/

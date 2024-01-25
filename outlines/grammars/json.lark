@@ -10,9 +10,9 @@
 
 array  : "[" [value ("," value)*] "]"
 object : "{" [pair ("," pair)*] "}"
-pair   : UNESCAPED_STRING ":" value
+pair   : ESCAPED_STRING ":" value
 
-%import common.UNESCAPED_STRING
+%import common.ESCAPED_STRING
 %import common.SIGNED_NUMBER
 %import common.WS
 

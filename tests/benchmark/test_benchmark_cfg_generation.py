@@ -68,10 +68,11 @@ class MockGenerator:
             candidate_token_ids = allowed_token_ids & expected_token_ids
             try:
                 assert candidate_token_ids, generated
-            except:
+            except Exception as e:
                 import pdb
 
                 pdb.set_trace()
+                print(e)
 
             next_token_id = sorted(candidate_token_ids)[
                 0

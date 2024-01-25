@@ -20,9 +20,6 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-# Lark grammar of Lark's syntax
-# Note: Lark is not bootstrapped, its parser is implemented in load_grammar.py
-
 start: (_item? _NL)* _item?
 
 _item: rule
@@ -58,9 +55,9 @@ name_list: "(" name ("," name)* ")"
      | "[" expansions "]" -> maybe
      | value
 
-?value: string ".." string -> literal_range
+?value: STRING ".." STRING -> literal_range
       | name
-      | (REGEXP | string) -> literal
+      | (REGEXP | STRING) -> literal
       | name "{" value ("," value)* "}" -> template_usage
 
 name: RULE
@@ -70,15 +67,25 @@ _VBAR: _NL? "|"
 OP: /[+*]|[?](?![a-z])/
 RULE: /!?[_?]?[a-z][_a-z0-9]*/
 TOKEN: /_?[A-Z][_A-Z0-9]*/
-string: escaped_string "i"?
+STRING: _STRING "i"?
 REGEXP: /\/(?!\/)(\\\/|\\\\|[^\/])*?\/[imslux]*/
 _NL: /(\r?\n)+\s*/
 
-%import common.escaped_string
+%import common.ESCAPED_STRING -> _STRING
 %import common.SIGNED_INT -> NUMBER
 %import common.WS_INLINE
 
-COMMENT: /\s*/ "//" /[^\n]/* | /\s*/ "#" /[^\n]/*
+// TODO: FIX.
+// This is necessary because the parser is currently LALR(0) not LALR(1)
+// specifically has issues when parsing the string `REGEXP: /\/(?!\/)(\\\/|\\\\|[^\/])*?\/[imslux]*/`
+// because " /" requires the parser to resolve as a comment
+// it only *MAY* terminate the RegexFSM, it doesn't have to, and because "/" is next,
+// it doesn't. Only Comments match " /", it doesn't consider the possibility of
+// " ", "/<rest of regexp>/"
+// to reproduce, run
+// pytest tests/benchmark/test_benchmark_cfg_generation.py::test_benchmark_cfg_generation[lark_lark_self_grammar.lark-False]
+//COMMENT: /\s*/ "//" /[^\n]/* | /\s*/ "#" /[^\n]/*
+COMMENT: "//" /[^\n]/* | "#" /[^\n]/*
 
 %ignore WS_INLINE
 %ignore COMMENT
