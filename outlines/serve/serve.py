@@ -28,7 +28,6 @@ from .vllm import (
     CFGLogitsProcessor,
     JSONLogitsProcessor,
     RegexLogitsProcessor,
-    CFGLogitsProcessor,
     _patched_apply_logits_processors,
 )
 

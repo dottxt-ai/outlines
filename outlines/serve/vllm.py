@@ -5,7 +5,6 @@ from collections import defaultdict
 from typing import Callable, DefaultDict, List
 
 import torch
-from vllm import LLMEngine
 
 from outlines.fsm.fsm import CFGFSM, FSM, RegexFSM
 from outlines.fsm.json_schema import build_regex_from_object
@@ -113,7 +112,7 @@ class FSMLogitsProcessor:
 
 
 class RegexLogitsProcessor(FSMLogitsProcessor):
-    def __init__(self, regex_string, llm: LLMEngine):
+    def __init__(self, regex_string, llm):
         """Compile the FSM that drives the regex-guided generation.
 
         Parameters
@@ -130,7 +129,7 @@ class RegexLogitsProcessor(FSMLogitsProcessor):
 
 
 class CFGLogitsProcessor(FSMLogitsProcessor):
-    def __init__(self, cfg_string, llm: LLMEngine):
+    def __init__(self, cfg_string, llm):
         """Compile the FSM that drives the cfg-guided generation.
 
         Parameters
@@ -147,7 +146,7 @@ class CFGLogitsProcessor(FSMLogitsProcessor):
 
 
 class JSONLogitsProcessor(RegexLogitsProcessor):
-    def __init__(self, schema, llm: LLMEngine):
+    def __init__(self, schema, llm):
         """Compile the FSM that drives the JSON-guided generation.
 
         Parameters
