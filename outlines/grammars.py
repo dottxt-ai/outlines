@@ -13,10 +13,7 @@ def read_grammar(grammar_file_name, base_grammar_path=GRAMMAR_PATH):
 arithmetic = read_grammar("arithmetic.lark")
 json = read_grammar("json.lark")
 csv = read_grammar("csv.lark")
-yaml = read_grammar("yaml.lark")
 
-python3 = read_grammar("python3.lark")
-python3_interactive = read_grammar("python3_interactive.lark")
 lark = read_grammar("lark.lark")
 lisp = read_grammar("lisp.lark")
 
