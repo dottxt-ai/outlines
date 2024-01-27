@@ -45,8 +45,6 @@ After:
 ```
 _STRING_INNER: /(?:[^"\\]|\\.)*?/
 ESCAPED_STRING : "\"" _STRING_INNER "\""
-
-UNESCAPED_STRING: /\"[^"]*\"/
 ```
 
 ##### Avoid Backreferences
