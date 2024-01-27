@@ -176,35 +176,37 @@ def test_cfg_ignore_directive():
     tokenizer = MockTokenizer()
     fsm = CFGFSM(cfg_str, tokenizer)
 
+    state = 0
+
     assert set(fsm.allowed_token_ids(state=0)) == {1, 2}
     state = fsm.next_state(state=0, token_id=2)
     assert fsm.generation == " "
-    assert not fsm.is_final_state(0)
+    assert not fsm.is_final_state(state)
 
     assert set(fsm.allowed_token_ids(state=0)) == {1, 2}
     state = fsm.next_state(state=0, token_id=1)
     assert fsm.generation == " a"
-    assert not fsm.is_final_state(0)
+    assert not fsm.is_final_state(state)
 
     assert set(fsm.allowed_token_ids(state=state)) == {1, 2, 3}
     state = fsm.next_state(state=state, token_id=2)
     assert fsm.generation == " a "
-    assert not fsm.is_final_state(0)
+    assert not fsm.is_final_state(state)
 
     assert set(fsm.allowed_token_ids(state=state)) == {1, 2, 3}
     state = fsm.next_state(state=state, token_id=2)
     assert fsm.generation == " a  "
-    assert not fsm.is_final_state(0)
+    assert not fsm.is_final_state(state)
 
     assert set(fsm.allowed_token_ids(state=state)) == {1, 2, 3}
     state = fsm.next_state(state=state, token_id=1)
     assert fsm.generation == " a  a"
-    assert not fsm.is_final_state(0)
+    assert not fsm.is_final_state(state)
 
     assert set(fsm.allowed_token_ids(state=state)) == {1, 2, 3}
     state = fsm.next_state(state=state, token_id=3)
     assert fsm.generation == " a  a"
-    assert fsm.is_final_state(0)
+    assert fsm.is_final_state(state)
 
     # once eos generated, can only terminate
     assert set(fsm.allowed_token_ids(state=state)) == {3}
