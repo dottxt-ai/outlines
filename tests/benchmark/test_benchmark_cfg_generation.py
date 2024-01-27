@@ -66,13 +66,19 @@ class MockGenerator:
             # After https://github.com/outlines-dev/outlines/issues/573 resolution,
             # this should simply assert that expected_token_ids.issubset(allowed_token_ids)
             candidate_token_ids = allowed_token_ids & expected_token_ids
-            try:
-                assert candidate_token_ids, generated
-            except Exception as e:
-                import pdb
-
-                pdb.set_trace()
-                print(e)
+            if not candidate_token_ids:
+                tok2str = lambda token_id: self.cfg_fsm.tokenizer.decode([token_id])[0]
+                raise Exception(
+                    "\n".join(
+                        [
+                            "Failed to produce any tokens which would complete the sampled grammar",
+                            f"expected_tokens: {list(map(tok2str, expected_token_ids))}",
+                            f"allowed_tokens: {list(map(tok2str, allowed_token_ids))}",
+                            f"lexed output: {list(self.cfg_fsm.parser.lex(generated))}",
+                            f"raw output: '{generated}'",
+                        ]
+                    )
+                )
 
             next_token_id = sorted(candidate_token_ids)[
                 0
@@ -87,7 +93,7 @@ class MockGenerator:
 
         assert self.cfg_fsm.tokenizer.eos_token_id in set(
             self.cfg_fsm.allowed_token_ids(state)
-        )
+        ), "Failed to produce EOS token at end of generation"
 
         return num_tokens_generated
 
@@ -117,6 +123,7 @@ def test_benchmark_cfg_generation(
             cfg_fsm=cfg_fsm,
             to_generate=sample,
         )
+        # import pdb; pdb.set_trace()
         return (mock_gen,), {}
 
     num_tokens = benchmark.pedantic(
