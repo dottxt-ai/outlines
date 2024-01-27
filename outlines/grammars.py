@@ -15,6 +15,5 @@ json = read_grammar("json.lark")
 csv = read_grammar("csv.lark")
 
 lark = read_grammar("lark.lark")
-lisp = read_grammar("lisp.lark")
 
 sql_select = read_grammar("sql_select.lark")
