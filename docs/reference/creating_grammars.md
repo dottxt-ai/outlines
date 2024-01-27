@@ -29,9 +29,13 @@ GrammarError: Reduce/Reduce collision in Terminal('B') between the following rul
 Outlines converts terminals to finite state machines using the [Interegular](https://github.com/MegaIng/interegular/) library. Not all regular expressions work with Interegular, mitigation is described in the subsections which follow.
 
 
-##### Avoid Lookarounds
+#### Avoid Lookarounds
 
-Example of removing lookaround while maintaining the same functionality from Outlines' modified `ESCAPED_STRING` in [common.lark](/outlines/grammars/common.lark).
+Examples of removing lookaround while maintaining the same functionality
+
+##### Example: Escaped String
+
+From Outlines' modified `ESCAPED_STRING` in [common.lark](/outlines/grammars/common.lark).
 
 Before:
 ```
@@ -47,9 +51,23 @@ _STRING_INNER: /(?:[^"\\]|\\.)*?/
 ESCAPED_STRING : "\"" _STRING_INNER "\""
 ```
 
-##### Avoid Backreferences
+##### Example: Lark OP
 
-Backreferences, for example `([ab]^*)\1`, cannot be simulated by a finite state machine, and will result in an error if used. Opt to use Lark rules instead.
+From Outlines' modified `OP` in [lark.lark](/outlines/grammars/lark.lark).
+
+Before:
+```
+REGEXP: /\/(?!\/)(\\\/|\\\\|[^\/])*?\/[imslux]*/
+```
+
+After:
+```
+REGEXP: /\/([^\/]+(\\\/|\\\\|[^\/])*)\/[imslux]*/
+```
+
+#### Avoid Backreferences
+
+Backreferences, for example `([ab]^*)\1`, cannot be simulated by a finite state machine, and will result in an error if used.
 
 # Creating a Valid Grammar
 
@@ -57,7 +75,7 @@ You can use Outlines' built-in grammar testing utilities to verify your grammar.
 
 ### 1) Create Your Grammar
 
-Create your grammar file named`'your_new_grammar.lark`, adhering to the guidelines provided above. Add it to `outlines/grammars/` (ensure attribution is included and license is compatible).
+Create your grammar file named `your_new_grammar.lark`, adhering to the guidelines provided above. Add it to `outlines/grammars/` (ensure attribution is included and license is compatible).
 
 Update `outlines/grammars.py` with a line including your grammar.
 

@@ -54,7 +54,6 @@ class MockGenerator:
 
         state = FSMState(0)
         while self.to_generate:
-            print(generated)
             num_tokens_generated += 1
 
             allowed_token_ids = set(self.cfg_fsm.allowed_token_ids(state))

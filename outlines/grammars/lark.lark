@@ -64,16 +64,28 @@ name: RULE
     | TOKEN
 
 _VBAR: _NL? "|"
-OP: /[+*]|[?](?![a-z])/
+
+// Removed lookarounds from the following pattern
+// OP: /[+*]|[?](?![a-z])/
+// terminal behavior is modified, numbers after OP are no longer restricted
+// however this is already restricted by the expr rule
+OP: /[+*]|[?]/
+
 RULE: /!?[_?]?[a-z][_a-z0-9]*/
 TOKEN: /_?[A-Z][_A-Z0-9]*/
 STRING: _STRING "i"?
-REGEXP: /\/(?!\/)(\\\/|\\\\|[^\/])*?\/[imslux]*/
+
+// Removed lookarounds from the following pattern
+// REGEXP: /\/(?!\/)(\\\/|\\\\|[^\/])*?\/[imslux]*/
+// Behavior is equivalent
+REGEXP: /\/((\\\/|[^\/])+\/[imslux]*)/
+
 _NL: /(\r?\n)+\s*/
 
 %import common.ESCAPED_STRING -> _STRING
 %import common.SIGNED_INT -> NUMBER
 %import common.WS_INLINE
+%import common.WS
 
 // TODO: FIX.
 // This is necessary because the parser is currently LALR(0) not LALR(1)
