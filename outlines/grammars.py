@@ -17,4 +17,4 @@ csv = read_grammar("csv.lark")
 lark = read_grammar("lark.lark")
 lisp = read_grammar("lisp.lark")
 
-sqlite = read_grammar("sqlite.lark")
+sql_select = read_grammar("sql_select.lark")
