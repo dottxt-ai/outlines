@@ -1,3 +1,3 @@
 SELECT *
 FROM myTable
-WHERE myTable.foo == 'bar'
+WHERE myTable.foo = 'bar'
