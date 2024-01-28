@@ -1,7 +1,7 @@
 from pathlib import Path
 
 import pytest
-from conftest import add_test_output
+from conftest import add_test_output  # type: ignore
 
 import outlines
 import outlines.grammars
@@ -18,7 +18,7 @@ for sample_collection_path in examples_path.iterdir():
     for sample_path in sample_collection_path.iterdir():
         test_name = f"{grammar_name}_{sample_path.name}"
         with open(sample_path) as f:
-            all_samples[test_name] = (grammar, f.read())
+            all_samples[test_name] = (grammar, f.read().rstrip("\n"))
 
 
 class MockGenerator:
