@@ -21,9 +21,9 @@
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
-start: header _NL row+
+start: header (_NL row)+ _NL?
 header: "#" " "? (WORD _SEPARATOR?)+
-row: (_anything _SEPARATOR?)+ _NL
+row: (_anything _SEPARATOR?)+
 _anything: INT | WORD | NON_SEPARATOR_STRING | FLOAT | SIGNED_FLOAT
 NON_SEPARATOR_STRING: /[a-zA-z.;\\\/]+/
 _SEPARATOR: /[  ]+/
