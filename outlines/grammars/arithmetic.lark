@@ -1,16 +1,12 @@
-?start: sum
+?start: expression
 
-?sum: product
-| sum "+" product   -> add
-| sum "-" product   -> sub
+?expression: term (("+" | "-") term)*
 
-?product: atom
-| product "*" atom  -> mul
-| product "/" atom  -> div
+?term: factor (("*" | "/") factor)*
 
-?atom: NUMBER           -> number
-| "-" atom         -> neg
-| "(" sum ")"
+?factor: NUMBER
+       | "-" factor
+       | "(" expression ")"
 
 %import common.NUMBER
 %import common.WS_INLINE
