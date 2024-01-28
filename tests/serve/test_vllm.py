@@ -1,13 +1,39 @@
 import re
 
 import torch
-from transformers import AutoTokenizer
 
 from outlines.serve.vllm import RegexLogitsProcessor, _patched_apply_logits_processors
 
 
+class MockTokenizer:
+    vocabulary = {
+        **{chr(i): i for i in range(256)},
+        **{"eos": 256},
+    }
+    special_tokens = {"eos"}
+    eos_token_id = 256
+
+    @property
+    def inverse_vocabulary(self):
+        return {v: k for k, v in self.vocabulary.items()}
+
+    def decode(self, token_ids):
+        return "".join([self.inverse_vocabulary[t] for t in token_ids])
+
+    ####
+    # vLLM tokenizer features
+    ####
+    all_special_tokens = list(special_tokens)
+
+    def convert_tokens_to_string(self, token):
+        return token[0]
+
+    def get_vocab(self):
+        return MockTokenizer.vocabulary
+
+
 class MockModel:
-    tokenizer = AutoTokenizer.from_pretrained("gpt2")
+    tokenizer = MockTokenizer()
 
 
 def sample_from_logits(logits):
@@ -22,7 +48,7 @@ def test_time_regexp():
 
     token_ids = []
     while True:
-        random_scores = -10 + 20 * torch.rand(len(llm.tokenizer.vocab))
+        random_scores = -10 + 20 * torch.rand(len(llm.tokenizer.vocabulary))
         logits = logits_processor(
             input_ids=token_ids,
             scores=random_scores,
@@ -58,7 +84,7 @@ def test_time_regexp_multiple_samples():
     while True:
         complete_seq_ids = set()
 
-        logits = torch.randn(len(sampling_meta.seq_data), len(llm.tokenizer.vocab))
+        logits = torch.randn(len(sampling_meta.seq_data), len(llm.tokenizer.vocabulary))
         new_logits = _patched_apply_logits_processors(logits, sampling_meta)
         seq_ids = sorted(sampling_meta.seq_groups[0][0])
         for logits_row, seq_id in zip(new_logits, seq_ids):
