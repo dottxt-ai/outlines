@@ -15,7 +15,8 @@ LEFT JOIN (
 ) avg_salaries ON a.department_id = avg_salaries.department_id
 WHERE
     a.location = 'New York'
-ORDER BY
-    a.name,
-    avg_salaries.avg_salary DESC
+-- disabled because not LALR1
+--ORDER BY
+--    a.name,
+--    avg_salaries.avg_salary DESC
 LIMIT 5 OFFSET 10
