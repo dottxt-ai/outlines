@@ -34,7 +34,6 @@ First time here? Go to our [setup guide](https://outlines-dev.github.io/outlines
 - [x] 💾 Caching of generations
 - [x] 🗂️ Batch inference
 - [x] 🚀 [Serve with vLLM](https://outlines-dev.github.io/outlines/reference/vllm)
-- [x] 📄 Built-in guided SQL, JSON, and CSV generation via `outlines.grammars`
 
 
 Outlines 〰 has new releases and features coming every week. Make sure to ⭐ star and 👀 watch this repository, follow [@dottxtai][twitter] to stay up to date!
