@@ -50,6 +50,50 @@ curl http://127.0.0.1:8000/generate \
         }'
 ```
 
+To start the vLLM OpenAI server use:
+
+```bash
+python3 -m outlines.serve.openai_server
+```
+
+Example of openai_server running on `http://localhost:8000` using local GPTQ quantized model:
+
+```bash
+ python3 -m outlines.serve.openai_server --port 8000 --model ./Mistral-7B-Instruct-v0.2-GPTQ --dtype float16
+```
+
+To use `v1/chat/completions` (or `v1/completions`) to generate an int for exemple use `{"type": "integer"}`:
+
+```bash
+curl http://localhost:8000/v1/chat/completions \
+    -H "Content-Type: application/json" \
+    -d '{
+        "model": "./Mistral-7B-Instruct-v0.2-GPTQ",
+        "messages": [{"role": "user","content": "Hello!"}],
+        "schema": {"type": "integer"},
+        "max_tokens": 5
+        }'
+```
+```bash
+curl http://localhost:8000/v1/completions \
+    -H "Content-Type: application/json" \
+    -d '{
+        "model": "./Mistral-7B-Instruct-v0.2-GPTQ",
+        "prompt": "Hello!",
+        "schema": {"type": "integer"},
+        "max_tokens": 5
+        }'
+```
+To use with Langchain or with OpenAI add the argument `extra_body`:
+
+```bash
+llm = ChatOpenAI( openai_api_key = "EMPTY",
+                  openai_api_base = "http://localhost:8000/v1",
+                  model_name = "./Mistral-7B-Instruct-v0.2-GPTQ",
+                  extra_body = { "schema": { "type": "integer" } },
+                )
+```
+
 Instead of `curl`, you can also use the [requests][requests]{:target="_blank"} library from another python program.
 
 Please consult the [vLLM documentation][vllm]{:target="_blank"} for details on additional request parameters. You can also [read the code](https://github.com/outlines-dev/outlines/blob/main/outlines/serve/serve.py) in case you need to customize the solution to your needs.
