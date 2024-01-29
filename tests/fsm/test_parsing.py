@@ -1,5 +1,7 @@
+import importlib
 from copy import copy
 
+import lark.lark
 import pytest
 from lark.indenter import DedentError
 from lark.lexer import UnexpectedCharacters, UnexpectedToken
@@ -134,6 +136,9 @@ def test_partial_parsing():
     assert len(parser_state.state_stack) == 4
     assert parser_state.value_stack[-1].type == "LPAR"
 
+    # Clean up lark.lark.LarkOptions._defaults
+    importlib.reload(lark.lark)
+
 
 def test_sequential_parse_example():
     input_tokens = [
@@ -195,3 +200,6 @@ def test_sequential_parse_example():
 
         if i + 1 == len(input_tokens):
             assert all(tk in next_vocab for tk in ["\n", "\nde", "  ", " + 1"])
+
+    # Clean up lark.lark.LarkOptions._defaults
+    importlib.reload(lark.lark)
