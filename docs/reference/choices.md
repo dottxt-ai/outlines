@@ -6,7 +6,7 @@ In some cases we know the output is to be chosen between different options. We c
 ```python
 import outlines.models as models
 
-complete = models.text_completion.openai("text-davinci-002")
+complete = models.openai("gpt-3.5-turbo")
 answer = complete(
     "Pick the odd word out: skirt, dress, pen, jacket",
     is_in=["skirt", "dress", "pen", "jacket"]
