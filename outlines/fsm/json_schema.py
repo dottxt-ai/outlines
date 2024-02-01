@@ -15,6 +15,7 @@ INTEGER = r"(0|[1-9][0-9]*)"
 NUMBER = rf"(-)?({INTEGER})(\.[0-9]+)?([eE][+-][0-9]+)?"
 BOOLEAN = r"(true|false)"
 NULL = r"null"
+WHITESPACE = r"[\n ]*"
 
 type_to_regex = {
     "string": STRING,
@@ -105,7 +106,6 @@ def to_regex(resolver: Resolver, instance: dict):
     instance
         The instance to translate
     """
-    whitespace = r"[\n ]*"
 
     if "properties" in instance:
         regex = ""
@@ -120,12 +120,12 @@ def to_regex(resolver: Resolver, instance: dict):
         if any(is_required):
             last_required_pos = max([i for i, value in enumerate(is_required) if value])
             for i, (name, value) in enumerate(properties.items()):
-                subregex = f'{whitespace}"{name}"{whitespace}:{whitespace}'
+                subregex = f'{WHITESPACE}"{name}"{WHITESPACE}:{WHITESPACE}'
                 subregex += to_regex(resolver, value)
                 if i < last_required_pos:
-                    subregex = f"{subregex}{whitespace},"
+                    subregex = f"{subregex}{WHITESPACE},"
                 elif i > last_required_pos:
-                    subregex = f"{whitespace},{subregex}"
+                    subregex = f"{WHITESPACE},{subregex}"
                 regex += subregex if is_required[i] else f"({subregex})?"
         # If no property is required, we have to create a possible pattern for each property in which
         # it's the last one necessarilly present. Then, we add the others as optional before and after
@@ -134,21 +134,21 @@ def to_regex(resolver: Resolver, instance: dict):
         else:
             property_subregexes = []
             for i, (name, value) in enumerate(properties.items()):
-                subregex = f'{whitespace}"{name}"{whitespace}:{whitespace}'
+                subregex = f'{WHITESPACE}"{name}"{WHITESPACE}:{WHITESPACE}'
                 subregex += to_regex(resolver, value)
                 property_subregexes.append(subregex)
             possible_patterns = []
             for i in range(len(property_subregexes)):
                 pattern = ""
                 for subregex in property_subregexes[:i]:
-                    pattern += f"({subregex}{whitespace},)?"
+                    pattern += f"({subregex}{WHITESPACE},)?"
                 pattern += property_subregexes[i]
                 for subregex in property_subregexes[i + 1 :]:
-                    pattern += f"({whitespace},{subregex})?"
+                    pattern += f"({WHITESPACE},{subregex})?"
                 possible_patterns.append(pattern)
             regex += f"({'|'.join(possible_patterns)})?"
 
-        regex += f"{whitespace}" + r"\}"
+        regex += f"{WHITESPACE}" + r"\}"
 
         return regex
 
