@@ -70,7 +70,7 @@ def prompt(fn: Callable) -> Prompt:
     ...     Please solve the following task: {{task}}
     ...     '''
     ...
-    >>> hal = ft.partial(solve_taks, "HAL", "Travel to Jupiter")
+    >>> hal = ft.partial(solve_task, "HAL", "Travel to Jupiter")
 
     Returns
     -------
