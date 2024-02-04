@@ -516,10 +516,9 @@ def create_fsm_index_end_to_end(
             start_state,
         )
 
+        states_to_token_subsets[start_state] = set(token_ids_end_states)
+
         for token_id_and_end_state in token_ids_end_states:
-            states_to_token_subsets.setdefault(start_state, set()).add(
-                token_id_and_end_state
-            )
             end_state = token_id_and_end_state[1]
             if end_state not in seen:
                 next_states.add(end_state)
@@ -572,13 +571,9 @@ def create_fsm_index_tokenizer(
 
     states_to_token_subsets = create_fsm_index_end_to_end(fsm.fsm_info, vocabulary)
 
-    # Allow transitions to EOS from all terminals FSM states that are
-    # reachable
-    # TODO: Do we really need this anymore?
+    # Allow transitions to EOS from all terminals FSM states that are reachable
     for state in fsm.fsm_info.finals:
-        subset = states_to_token_subsets.get(state)
-        if subset is not None:
-            subset.add((tokenizer.eos_token_id, state))
+        states_to_token_subsets[state].add((tokenizer.eos_token_id, state))
 
     # Convert to token-to-end-state maps
     states_to_token_subsets = {k: dict(v) for k, v in states_to_token_subsets.items()}
