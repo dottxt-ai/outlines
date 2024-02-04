@@ -46,7 +46,7 @@ def test_regex():
     tokenizer = MockTokenizer()
     fsm = RegexFSM(regex_str, tokenizer)
 
-    assert fsm.states_to_token_maps == {0: {1: 1}}
+    assert fsm.states_to_token_maps == {0: {1: 1}, 1: {3: 1}}
     assert fsm.allowed_token_ids(state=0) == [1]
     assert fsm.next_state(state=0, token_id=1) == 1
     assert fsm.next_state(state=0, token_id=tokenizer.eos_token_id) == fsm.final_state
