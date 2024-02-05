@@ -101,7 +101,7 @@ class RegexLogitsProcessor:
             An instance of `vllm.LLM`
 
         """
-        adapted_tokenizer = self.adapt_tokenizer(llm.tokenizer.tokenizer)
+        adapted_tokenizer = adapt_tokenizer(llm.tokenizer.tokenizer)
 
         fsm = self.fsm_cache.get(regex_string)
         if fsm is None:
