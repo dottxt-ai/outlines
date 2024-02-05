@@ -32,8 +32,12 @@ class MockTokenizer:
         return MockTokenizer.vocabulary
 
 
-class MockModel:
+class MockTokenizerGroup:
     tokenizer = MockTokenizer()
+
+
+class MockModel:
+    tokenizer = MockTokenizerGroup()
 
 
 def sample_from_logits(logits):
