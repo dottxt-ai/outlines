@@ -249,7 +249,7 @@ def to_regex(resolver: Resolver, instance: dict):
             min_items = int(instance.get("minItems", "0"))
             max_items = instance.get("maxItems", None)
             max_items = max_items if max_items is None else int(max_items)
-            
+
             if max_items is None:
                 num_repeats = rf"{{{max(min_items - 1, 0)},}}"
             else:
@@ -261,7 +261,7 @@ def to_regex(resolver: Resolver, instance: dict):
 
             if "items" in instance:
                 items_regex = to_regex(resolver, instance["items"])
-                return rf"\[(({items_regex})(,{WHITESPACE}({items_regex})){num_repeats}){allow_empty}\]"
+                return rf"\[{WHITESPACE}(({items_regex})(,{WHITESPACE}({items_regex})){num_repeats}){allow_empty}{WHITESPACE}\]"
             else:
                 # Here we need to make the choice to exclude generating list of objects
                 # if the specification of the object is not given, even though a JSON
@@ -274,9 +274,7 @@ def to_regex(resolver: Resolver, instance: dict):
                     {"type": "string"},
                 ]
                 regexes = [to_regex(resolver, t) for t in types]
-                return (
-                    rf"\[({'|'.join(regexes)})(,{WHITESPACE}({'|'.join(regexes)})){num_repeats}){allow_empty}\]"
-                )
+                return rf"\[{WHITESPACE}({'|'.join(regexes)})(,{WHITESPACE}({'|'.join(regexes)})){num_repeats}){allow_empty}{WHITESPACE}\]"
 
         elif instance_type == "boolean":
             return type_to_regex["boolean"]
