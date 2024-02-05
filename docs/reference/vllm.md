@@ -82,6 +82,8 @@ curl http://localhost:8000/v1/completions \
 To use with Langchain or with OpenAI add the argument `extra_body`:
 
 ```bash
+from langchain_openai import ChatOpenAI
+
 llm = ChatOpenAI( openai_api_key = "EMPTY",
                   openai_api_base = "http://localhost:8000/v1",
                   model_name = "./Mistral-7B-Instruct-v0.2-GPTQ",
