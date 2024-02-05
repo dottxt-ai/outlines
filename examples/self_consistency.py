@@ -58,7 +58,7 @@ def few_shots(question, examples):
 model = models.openai("gpt-3.5-turbo")
 generator = outlines.generate.text(model)
 prompt = few_shots(question, examples)
-answers = generator(prompt, samples=100)
+answers = generator(prompt, samples=10)
 
 digits = []
 for answer in answers:
@@ -73,3 +73,10 @@ for answer in answers:
 unique_digits, counts = np.unique(digits, return_counts=True)
 results = {d: c for d, c in zip(unique_digits, counts)}
 print(results)
+
+max_count = max(results.values())
+answer_value = [key for key, value in results.items() if value == max_count][0]
+total_count = sum(results.values())
+print(
+    f"The most likely answer is {answer_value} ({max_count/total_count*100}% consensus)"
+)

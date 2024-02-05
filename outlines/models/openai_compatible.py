@@ -23,7 +23,7 @@ class OpenAICompatibleAPI(OpenAI):
         timeout: Optional[float] = None,
         system_prompt: Optional[str] = None,
         config: Optional[OpenAIConfig] = None,
-        encoding="gpt4",  # Default for tiktoken, should USUALLY work
+        encoding="gpt-4",  # Default for tiktoken, should USUALLY work
     ):
         """Create an `OpenAI` instance.
 

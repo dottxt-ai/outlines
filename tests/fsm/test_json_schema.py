@@ -16,6 +16,7 @@ from outlines.fsm.json_schema import (
     STRING_INNER,
     TIME,
     UUID,
+    WHITESPACE,
     build_regex_from_object,
     get_schema_from_signature,
     to_regex,
@@ -24,7 +25,7 @@ from outlines.fsm.json_schema import (
 
 def test_function_basic():
     def test_function(foo: str, bar: List[int]):
-        ...
+        pass
 
     result = get_schema_from_signature(test_function)
     assert result["type"] == "object"
@@ -36,7 +37,7 @@ def test_function_basic():
 
 def test_function_no_type():
     def test_function(foo, bar: List[int]):
-        ...
+        pass
 
     with pytest.raises(ValueError):
         get_schema_from_signature(test_function)
@@ -194,8 +195,8 @@ def test_match_number(pattern, does_match):
         # array
         (
             {"title": "Foo", "type": "array", "items": {"type": "number"}},
-            rf"\[({NUMBER})(,({NUMBER}))*\]",
-            [("[1e+9,1.3]", True)],
+            rf"\[{WHITESPACE}(({NUMBER})(,{WHITESPACE}({NUMBER})){{0,}})?{WHITESPACE}\]",
+            [("[1e+9,1.3]", True), ("[]", True), ("[1", False)],
         ),
         # array with a set length of 1
         (
@@ -206,7 +207,7 @@ def test_match_number(pattern, does_match):
                 "minItems": 1,
                 "maxItems": 1,
             },
-            rf"\[({INTEGER})(,({INTEGER})){{0}}\]",
+            rf"\[{WHITESPACE}(({INTEGER})(,{WHITESPACE}({INTEGER})){{0,0}}){WHITESPACE}\]",
             [("[1]", True), ("[1,2]", False), ('["a"]', False), ("[]", False)],
         ),
         # array with a set length greather than 1
@@ -218,8 +219,20 @@ def test_match_number(pattern, does_match):
                 "minItems": 3,
                 "maxItems": 3,
             },
-            rf"\[({INTEGER})(,({INTEGER})){{2}}\]",
+            rf"\[{WHITESPACE}(({INTEGER})(,{WHITESPACE}({INTEGER})){{2,2}}){WHITESPACE}\]",
             [("[1]", False), ("[]", False), ("[1,2,3]", True), ("[1,2,3,4]", False)],
+        ),
+        # array with length 0
+        (
+            {
+                "title": "Foo",
+                "type": "array",
+                "items": {"type": "integer"},
+                "minItems": 0,
+                "maxItems": 0,
+            },
+            rf"\[{WHITESPACE}\]",
+            [("[1]", False), ("[]", True), ("[1,2,3]", False), ("[1,2,3,4]", False)],
         ),
         # oneOf
         (

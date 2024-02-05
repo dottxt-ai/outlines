@@ -60,7 +60,7 @@ test = [
     "huggingface_hub"
 ]
 serve = [
-    "vllm>=0.2.6",
+    "vllm>=0.3.0",
     "ray==2.9.0",
     "uvicorn",
     "fastapi"
