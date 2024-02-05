@@ -1,7 +1,7 @@
 """Make vLLM compatible with Outlines' guided generation."""
 import json
 import math
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 import torch
 
@@ -38,7 +38,59 @@ def _patched_apply_logits_processors(
     return logits
 
 
+def adapt_tokenizer(tokenizer):
+    """Adapt vLLM's tokenizer to use to compile the FSM.
+
+    The API of Outlines tokenizers is slightly different to that of
+    `transformers`. In addition, we need to handle the missing spaces to
+    Llama's tokenizer to be able to compile FSMs for this model.
+
+    """
+    tokenizer.vocabulary = tokenizer.get_vocab()
+    tokenizer.special_tokens = set(tokenizer.all_special_tokens)
+
+    def convert_token_to_string(token: str) -> str:
+        from transformers.file_utils import SPIECE_UNDERLINE
+
+        string = tokenizer.convert_tokens_to_string([token])
+
+        # A hack to handle missing spaces to HF's Llama tokenizers
+        if token.startswith(SPIECE_UNDERLINE) or token == "<0x20>":
+            return " " + string
+
+        return string
+
+    tokenizer.convert_token_to_string = convert_token_to_string
+
+    return tokenizer
+
+
+class CachedRegexFSM(RegexFSM):
+    def __init__(self, regex_string: str, adapted_tokenizer):
+        super().__init__(regex_string, adapted_tokenizer)
+        self.state_cache: Dict[int, FSMState] = {}
+
+    def get_state_by_token_ids(self, input_ids: Tuple[int]) -> FSMState:
+        state_key = hash(input_ids)
+
+        if not input_ids:
+            self.state_cache[state_key] = FSMState(0)
+
+        elif state_key not in self.state_cache:
+            prev_state_key = hash(input_ids[:-1])
+            prev_state = self.state_cache[prev_state_key]
+
+            last_token = input_ids[-1]
+            new_state = self.next_state(prev_state, last_token)
+            self.state_cache[state_key] = new_state
+
+        return self.state_cache[state_key]
+
+
 class RegexLogitsProcessor:
+    fsm_cache: Dict[str, CachedRegexFSM] = {}
+    adapted_tokenizer = None
+
     def __init__(self, regex_string, llm):
         """Compile the FSM that drives the regex-guided generation.
 
@@ -50,15 +102,18 @@ class RegexLogitsProcessor:
             An instance of `vllm.LLM`
 
         """
-        tokenizer = self.adapt_tokenizer(llm.tokenizer.tokenizer)
+        adapted_tokenizer = self.adapt_tokenizer(llm.tokenizer.tokenizer)
 
-        fsm = RegexFSM(regex_string, tokenizer)
+        fsm = self.fsm_cache.get(regex_string)
+        if fsm is None:
+            fsm = CachedRegexFSM(regex_string, adapted_tokenizer)
+            self.fsm_cache[regex_string] = fsm
+
         self.fsm = fsm
-        self.fsm_state_cache: Dict[int, FSMState] = {}
 
     def __call__(self, input_ids: List[int], scores: torch.Tensor) -> torch.Tensor:
         """Use the FSM to bias the logits before sampling the next token."""
-        state = self.get_fsm_state(input_ids)
+        state = self.fsm.get_state_by_token_ids(tuple(input_ids))
         allowed_tokens = self.fsm.allowed_token_ids(state)
 
         mask = torch.full((scores.shape[-1],), -math.inf, device=scores.device)
@@ -66,48 +121,6 @@ class RegexLogitsProcessor:
         biased_scores = scores + mask
 
         return biased_scores
-
-    def get_fsm_state(self, input_ids: List[int]) -> FSMState:
-        state_key = hash(tuple(input_ids))
-
-        if not input_ids:
-            self.fsm_state_cache[state_key] = FSMState(0)
-
-        elif state_key not in self.fsm_state_cache:
-            prev_state_key = hash(tuple(input_ids[:-1]))
-            prev_state = self.fsm_state_cache[prev_state_key]
-            last_token = input_ids[-1]
-            self.fsm_state_cache[state_key] = self.fsm.next_state(
-                prev_state, last_token
-            )
-
-        return self.fsm_state_cache[state_key]
-
-    def adapt_tokenizer(self, tokenizer):
-        """Adapt vLLM's tokenizer to use to compile the FSM.
-
-        The API of Outlines tokenizers is slightly different to that of
-        `transformers`. In addition we need to handle the missing spaces to
-        Llama's tokenizer to be able to compile FSMs for this model.
-
-        """
-        tokenizer.vocabulary = tokenizer.get_vocab()
-        tokenizer.special_tokens = set(tokenizer.all_special_tokens)
-
-        def convert_token_to_string(token: str) -> str:
-            from transformers.file_utils import SPIECE_UNDERLINE
-
-            string = tokenizer.convert_tokens_to_string([token])
-
-            # A hack to handle missing spaces to HF's Llama tokenizers
-            if token.startswith(SPIECE_UNDERLINE) or token == "<0x20>":
-                return " " + string
-
-            return string
-
-        tokenizer.convert_token_to_string = convert_token_to_string
-
-        return tokenizer
 
 
 class JSONLogitsProcessor(RegexLogitsProcessor):
@@ -124,5 +137,7 @@ class JSONLogitsProcessor(RegexLogitsProcessor):
         """
         if isinstance(schema, dict):
             schema = json.dumps(schema)
+
         regex_string = build_regex_from_object(schema)
+
         super().__init__(regex_string, llm)
