@@ -7,12 +7,10 @@ codebase.
 """
 from typing import Union
 
-from .azure import AzureOpenAI, azure_openai
 from .exllamav2 import ExLlamaV2Model, exl2
 from .llamacpp import LlamaCpp, llamacpp
 from .mamba import Mamba, mamba
 from .openai import OpenAI, openai
-from .openai_compatible import OpenAICompatibleAPI, openai_compatible_api
 from .transformers import Transformers, transformers
 
 LogitsGenerator = Union[Transformers, LlamaCpp, ExLlamaV2Model, Mamba]
