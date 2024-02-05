@@ -89,7 +89,6 @@ class CachedRegexFSM(RegexFSM):
 
 class RegexLogitsProcessor:
     fsm_cache: Dict[str, CachedRegexFSM] = {}
-    adapted_tokenizer = None
 
     def __init__(self, regex_string, llm):
         """Compile the FSM that drives the regex-guided generation.
