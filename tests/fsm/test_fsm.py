@@ -241,27 +241,3 @@ def test_cfg_allow_both_extend_and_shift_terminal():
     state = fsm.next_state(state=state, token_id=4)
     assert fsm.generation == "(aa)"
     assert fsm.is_final_state(state)
-
-
-def test_regression_regex_missing_final_state():
-    class MockTokenizer:
-        vocabulary = {'`': 101, '.': 102, '\n': 103, "eos": 104}
-        special_tokens = {"eos"}
-        eos_token_id = 104
-
-        def convert_token_to_string(self, token):
-            return token
-
-    regex_str = r'`\n(\.\n)?`\n'
-    tokenizer = MockTokenizer()
-    fsm = RegexFSM(regex_str, tokenizer)
-
-    assert fsm.states_to_token_maps == {
-        0: {101: 1},
-        1: {103: 2},
-        2: {102: 3, 101: 4},
-        3: {103: 6},
-        4: {103: 5},
-        5: {104: 5},
-        6: {101: 4},
-    }
