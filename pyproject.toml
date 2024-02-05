@@ -32,7 +32,7 @@ dependencies = [
    "diskcache",
    "pydantic>=2.0",
    "scipy",
-   "torch==2.1.1",
+   "torch<2.1",
    "numba",
    "joblib",
    "referencing",
