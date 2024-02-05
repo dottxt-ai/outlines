@@ -1,20 +1,15 @@
 """Integration with OpenAI's API."""
 import functools
-import os
-import textwrap
 from dataclasses import asdict, dataclass, field, replace
 from itertools import zip_longest
-from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Set, Tuple, Union
+from typing import Callable, Dict, List, Optional, Set, Tuple, Union
 
 import numpy as np
 
 from outlines.base import vectorize
 from outlines.caching import cache
 
-__all__ = ["OpenAI", "openai"]
-
-if TYPE_CHECKING:
-    from openai import AsyncOpenAI
+__all__ = ["OpenAI", "openai", "azure_openai"]
 
 
 @dataclass(frozen=True)
@@ -27,7 +22,7 @@ class OpenAIConfig:
 
     Properties
     ----------
-    model_name
+    model
         The name of the model. Available models can be found on OpenAI's website.
     frequence_penalty
         Number between 2.0 and -2.0. Positive values penalize new tokens based on
@@ -66,7 +61,7 @@ class OpenAIConfig:
     response_format: Optional[Dict[str, str]] = None
     seed: Optional[int] = None
     stop: Optional[Union[str, List[str]]] = None
-    temperature: Optional[float] = None
+    temperature: float = 1.0
     top_p: int = 1
     user: str = field(default_factory=str)
 
@@ -76,74 +71,31 @@ class OpenAI:
 
     def __init__(
         self,
-        model_name: str,
-        api_key: Optional[str] = None,
-        max_retries: int = 6,
-        timeout: Optional[float] = None,
+        client,
+        config,
+        tokenizer=None,
         system_prompt: Optional[str] = None,
-        config: Optional[OpenAIConfig] = None,
     ):
         """Create an `OpenAI` instance.
 
+        This class supports the standard OpenAI API, the Azure OpeanAI API as
+        well as compatible APIs that rely on the OpenAI client.
+
         Parameters
         ----------
-        model_name
-            Model to use, as defined in OpenAI's documentation
-        api_key
-            Secret key to use with the OpenAI API. One can also set the
-            `OPENAI_API_KEY` environment variable, or the value of
-            `openai.api_key`.
-        max_retries
-            The maximum number of retries when calls to the API fail.
-        timeout
-            Duration after which the request times out.
-        system_prompt
-            The content of the system message that precedes the user's prompt.
+        client
+            An instance of the API's async client.
         config
             An instance of `OpenAIConfig`. Can be useful to specify some
             parameters that cannot be set by calling this class' methods.
+        tokenizer
+            The tokenizer associated with the model the client connects to.
 
         """
 
-        try:
-            import openai
-        except ImportError:
-            raise ImportError(
-                "The `openai` library needs to be installed in order to use Outlines' OpenAI integration."
-            )
-
-        if api_key is None:
-            if os.getenv("OPENAI_API_KEY") is not None:
-                api_key = os.getenv("OPENAI_API_KEY")
-            elif openai.api_key is not None:
-                api_key = openai.api_key
-            else:
-                raise ValueError(
-                    "You must specify an API key to use the OpenAI API integration."
-                )
-        try:
-            client = openai.OpenAI(api_key=api_key)
-            client.models.retrieve(model_name)
-        except openai.NotFoundError:
-            raise ValueError(
-                "Invalid model_name. Check openai models list at https://platform.openai.com/docs/models"
-            )
-
-        if config is not None:
-            self.config = replace(config, model=model_name)  # type: ignore
-        else:
-            self.config = OpenAIConfig(model=model_name)
-
-        # This is necesssary because of an issue with the OpenAI API.
-        # Status updates: https://github.com/openai/openai-python/issues/769
-        self.create_client = functools.partial(
-            openai.AsyncOpenAI,
-            api_key=api_key,
-            max_retries=max_retries,
-            timeout=timeout,
-        )
-
-        self.system_prompt = system_prompt
+        self.client = client
+        self.tokenizer = tokenizer
+        self.config = config
 
         # We count the total number of prompt and generated tokens as returned
         # by the OpenAI API, summed over all the requests performed with this
@@ -157,7 +109,8 @@ class OpenAI:
         max_tokens: Optional[int] = None,
         stop_at: Optional[Union[List[str], str]] = None,
         *,
-        temperature: float = 1.0,
+        system_prompt: Optional[str] = None,
+        temperature: Optional[float] = None,
         samples: Optional[int] = None,
     ) -> np.ndarray:
         """Call the OpenAI API to generate text.
@@ -168,6 +121,11 @@ class OpenAI:
             A string or list of strings that will be used to prompt the model
         max_tokens
             The maximum number of tokens to generate
+        stop_at
+            A string or array of strings which, such that the generation stops
+            when they are generated.
+        system_prompt
+            The content of the system message that precedes the user's prompt.
         temperature
             The value of the temperature used to sample tokens
         samples
@@ -176,52 +134,36 @@ class OpenAI:
             Up to 4 words where the API will stop the completion.
 
         """
+        if max_tokens is None:
+            max_tokens = self.config.max_tokens
+        if stop_at is None:
+            stop_at = self.config.stop
+        if temperature is None:
+            temperature = self.config.temperature
         if samples is None:
             samples = self.config.n
 
-        config = replace(self.config, max_tokens=max_tokens, n=samples, stop=stop_at)  # type: ignore
+        config = replace(self.config, max_tokens=max_tokens, temperature=temperature, n=samples, stop=stop_at)  # type: ignore
 
-        if isinstance(stop_at, list) and len(stop_at) > 4:
-            raise NotImplementedError(
-                "The OpenAI API supports at most 4 stop sequences."
-            )
+        response, prompt_tokens, completion_tokens = generate_chat(
+            prompt, system_prompt, self.client, config
+        )
+        self.prompt_tokens += prompt_tokens
+        self.completion_tokens += completion_tokens
 
-        if "text-" in self.config.model:
-            raise NotImplementedError(
-                textwrap.dedent(
-                    "Most models that support the legacy completion endpoints will be "
-                    "deprecated on January 2024. Use Chat models instead.\n"
-                    "The list of chat models is available at https://platform.openai.com/docs/guides/text-generation."
-                )
-            )
-        if "gpt-" in self.config.model:
-            client = self.create_client()
-            response, prompt_tokens, completion_tokens = generate_chat(
-                prompt, self.system_prompt, client, config
-            )
-            self.prompt_tokens += prompt_tokens
-            self.completion_tokens += completion_tokens
-
-            return response
+        return response
 
     def stream(self, *args, **kwargs):
         raise NotImplementedError(
             "Streaming is currently not supported for the OpenAI API"
         )
 
-    @property
-    def tokenizer(self):
-        try:
-            import tiktoken
-        except ImportError:
-            raise ImportError(
-                "The `tiktoken` library needs to be installed in order to choose `outlines.models.openai` with `is_in`"
-            )
-
-        return tiktoken.encoding_for_model(self.config.model)
-
     def generate_choice(
-        self, prompt: str, choices: List[str], max_tokens: Optional[int] = None
+        self,
+        prompt: str,
+        choices: List[str],
+        max_tokens: Optional[int] = None,
+        system_prompt: Optional[str] = None,
     ) -> str:
         """Call the OpenAI API to generate one of several choices.
 
@@ -233,8 +175,15 @@ class OpenAI:
             The list of strings between which we ask the model to choose
         max_tokens
             The maximum number of tokens to generate
+        system_prompt
+            The content of the system message that precedes the user's prompt.
 
         """
+        if self.tokenizer is None:
+            raise ValueError(
+                "You must initialize the `OpenAI` class with a tokenizer to use `outlines.generate.choice`"
+            )
+
         config = replace(self.config, max_tokens=max_tokens)
 
         greedy = False
@@ -262,9 +211,8 @@ class OpenAI:
 
             config = replace(config, logit_bias=mask, max_tokens=max_tokens_left)
 
-            client = self.create_client()
             response, prompt_tokens, completion_tokens = generate_chat(
-                prompt, self.system_prompt, client, config
+                prompt, system_prompt, self.client, config
             )
             self.prompt_tokens += prompt_tokens
             self.completion_tokens += completion_tokens
@@ -316,7 +264,7 @@ class OpenAI:
 async def generate_chat(
     prompt: str,
     system_prompt: Union[str, None],
-    client: "AsyncOpenAI",
+    client,
     config: OpenAIConfig,
 ) -> Tuple[np.ndarray, int, int]:
     """Call OpenAI's Chat Completion API.
@@ -340,14 +288,13 @@ async def generate_chat(
 
     """
 
+    @error_handler
     @cache()
     async def call_api(prompt, system_prompt, config):
         responses = await client.chat.completions.create(
             messages=system_message + user_message,
             **asdict(config),  # type: ignore
         )
-        await client.close()
-
         return responses.model_dump()
 
     system_message = (
@@ -363,9 +310,6 @@ async def generate_chat(
     usage = responses["usage"]
 
     return results, usage["prompt_tokens"], usage["completion_tokens"]
-
-
-openai = OpenAI
 
 
 def find_longest_intersection(response: List[int], choice: List[int]) -> List[int]:
@@ -468,3 +412,55 @@ def error_handler(api_call_fn: Callable) -> Callable:
             raise e
 
     return call
+
+
+def openai(
+    model_name: str,
+    api_key: Optional[str] = None,
+    config: Optional[OpenAIConfig] = None,
+):
+    try:
+        import tiktoken
+        from openai import AsyncOpenAI
+    except ImportError:
+        raise ImportError(
+            "The `openai` and `tiktoken` libraries needs to be installed in order to use Outlines' OpenAI integration."
+        )
+
+    if config is not None:
+        config = replace(config, model=model_name)  # type: ignore
+    else:
+        config = OpenAIConfig(model=model_name)
+
+    client = AsyncOpenAI(api_key=api_key)
+    tokenizer = tiktoken.encoding_for_model(model_name)
+
+    return OpenAI(client, config, tokenizer)
+
+
+def azure_openai(
+    deployment_name: str,
+    azure_endpoint: Optional[str] = None,
+    api_version: Optional[str] = None,
+    api_key: Optional[str] = None,
+    config: Optional[OpenAIConfig] = None,
+):
+    try:
+        import tiktoken
+        from openai import AzureAsyncOpenAI
+    except ImportError:
+        raise ImportError(
+            "The `openai` and `tiktoken` libraries needs to be installed in order to use Outlines' Azure OpenAI integration."
+        )
+
+    if config is not None:
+        config = replace(config, model=deployment_name)  # type: ignore
+    if config is None:
+        config = OpenAIConfig(model=deployment_name)
+
+    client = AzureAsyncOpenAI(
+        azure_endpoint=azure_endpoint, api_version=api_version, api_key=api_key
+    )
+    tokenizer = tiktoken.encoding_for_model(deployment_name)
+
+    return OpenAI(client, config, tokenizer)
