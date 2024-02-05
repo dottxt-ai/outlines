@@ -79,7 +79,7 @@ curl http://localhost:8000/v1/completions \
         "max_tokens": 5
         }'
 ```
-To use with Langchain or with OpenAI add the argument `extra_body`:
+To use with Langchain or with other modules that use openai.OpenAI add the argument `extra_body`:
 
 ```bash
 from langchain_openai import ChatOpenAI
