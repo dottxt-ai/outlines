@@ -3,7 +3,6 @@ import importlib
 import pytest
 import torch
 
-import outlines.logging
 from outlines.generate.generator import sequence_generator, token_generator
 
 
@@ -37,21 +36,28 @@ def test_token_generator_logger_call(enable_logger, mocker):
     def sampler(biased_logits, *_):
         return torch.argmax(biased_logits, keepdims=True)
 
+    # reset logger state
+    import outlines.logging  # type: ignore
+
     importlib.reload(outlines.logging)
     if enable_logger:
         outlines.logging.enable_logits_logging()
 
     mock_logits_logger_info = mocker.patch("outlines.logging.logits_logger.info")
 
-    init_state = (
+    token_ids, attention_mask = (
         torch.tensor([[0, 1, 2, 3, 4, 5, 6, 7]]),
         torch.tensor([[1, 1, 1, 1, 1, 1, 1, 1]]),
-        None,
     )
     init_fsm_states = [0]
     generate = token_generator(MockModel(), sampler)
     sequence = sequence_generator(
-        generate, [MockFSM()], init_state, init_fsm_states, torch.Generator()
+        generate,
+        [MockFSM()],
+        token_ids,
+        attention_mask,
+        init_fsm_states,
+        torch.Generator(),
     )
     next(sequence)
 
