@@ -33,6 +33,7 @@ First time here? Go to our [setup guide](https://outlines-dev.github.io/outlines
 - [x] 🐍 Interleave completions with loops, conditionals, and custom Python functions
 - [x] 💾 Caching of generations
 - [x] 🗂️ Batch inference
+- [x] 🎲 Sample with the greedy, multinomial and beam search algorithms (and more to come!)
 - [x] 🚀 [Serve with vLLM](https://outlines-dev.github.io/outlines/reference/vllm)
 
 

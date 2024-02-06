@@ -219,12 +219,16 @@ class SequenceGenerator:
         attention_masks = torch.repeat_interleave(attention_masks, num_samples, dim=0)
         fsm_states = [FSMState(0) for _ in range(batch_size * num_samples)]
         fsms = [self.fsm.copy() for _ in range(batch_size * num_samples)]
+        weights = torch.zeros(
+            (batch_size * num_samples), dtype=torch.float, device=self.device
+        )
 
         states = sequence_generator(
             self.model,
             self.sampler,
             fsms,
             prompt_token_ids,
+            weights,
             attention_masks,
             fsm_states,
             rng=rng,
@@ -259,17 +263,16 @@ class SequenceGenerator:
         ]
         formatted = [self.format_sequence(sequence) for sequence in stripped]
 
-        # We reshape the output to (sample_size, batch_size)
+        # We reshape the output to (batch_size, sample_size)
         output = []
-        step = len(prompts)
-        for i in range(0, len(formatted), step):
-            output.append(formatted[i : i + step])
+        for i in range(len(prompts)):
+            output.append(formatted[i : i + num_samples])
 
         # We remove leading dimensions for the output
         if len(prompts) == 1 and num_samples == 1:
             return output[0][0]
         elif num_samples == 1:
-            return output[0]
+            return [seq[0] for seq in output]
         else:
             return output
 
@@ -339,12 +342,16 @@ class SequenceGenerator:
         attention_masks = torch.repeat_interleave(attention_masks, num_samples, dim=0)
         fsm_states = [FSMState(0) for _ in range(batch_size * num_samples)]
         fsms = [self.fsm.copy() for _ in range(batch_size * num_samples)]
+        weights = torch.zeros(
+            (batch_size * num_samples), dtype=torch.float, device=self.device
+        )
 
         states = sequence_generator(
             self.model,
             self.sampler,
             fsms,
             prompt_token_ids,
+            weights,
             attention_masks,
             fsm_states,
             rng=rng,

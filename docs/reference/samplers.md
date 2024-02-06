@@ -1,5 +1,7 @@
 # Samplers
 
+Outlines offers different sequence sampling algorithms, and we will integrate more in the future. You can read [this blog post](https://huggingface.co/blog/how-to-generate) for an overview of the different sampling algorithm.
+
 ## Multinomial sampling
 
 Outlines defaults to the multinomial sampler without top-p or top-k sampling, and temperature equal to 1. Not specifying a sampler is equivalent to:
@@ -71,3 +73,22 @@ print(answer)
 ```
 
 You cannot ask for multiple samples with the greedy sampler since it does not clear what the result should be.
+
+
+## Beam Search
+
+Outlines also comes with the Beam Search sampling algorithm:
+
+```python
+from outlines import models, generate, samplers
+
+
+model = models.transformers("mistralai/Mistral-7B-Instruct-v0.2")
+sampler = samplers.beam_search(beams=5)
+
+generator = generate.text(model, sampler=sampler)
+answer = generator("What is 2+2?")
+
+print(answer)
+# 4
+```

@@ -11,7 +11,7 @@ import outlines.generate as generate
 import outlines.models as models
 from outlines.fsm.regex import reduced_vocabulary
 from outlines.models.transformers import TransformerTokenizer
-from outlines.samplers import multinomial
+from outlines.samplers import beam_search, multinomial
 
 
 def test_deprecation():
@@ -158,6 +158,29 @@ def test_transformers_integration_streaming_batch_samples():
     assert len(tokens[1]) == 2
 
 
+def test_transformers_integration_streaming_batch_beam_search():
+    rng = torch.Generator()
+    rng.manual_seed(10000)  # Choosen so <EOS> is generated
+
+    model_name = "hf-internal-testing/tiny-random-GPTJForCausalLM"
+    model = models.transformers(model_name, device="cpu")
+    sampler = beam_search(beams=2)
+
+    sequence = generate.text(model, sampler=sampler).stream(
+        ["Prompt1", "Prompt2"],
+        max_tokens=10,
+        stop_at=[".", ","],
+        rng=rng,
+    )
+    tokens = next(sequence)
+    assert isinstance(tokens, list)
+    assert len(tokens) == 2
+    assert isinstance(tokens[0], list)
+    assert len(tokens[0]) == 2
+    assert isinstance(tokens[0], list)
+    assert len(tokens[1]) == 2
+
+
 def test_transformers_integration_text_stop():
     rng = torch.Generator()
     rng.manual_seed(10000)  # Choosen so <EOS> is generated
@@ -215,6 +238,29 @@ def test_transformers_various_regexes_prompt_list_multiple_samples():
     sequence = generator([prompt, prompt], rng=rng)
     assert isinstance(sequence, list)
     assert len(sequence) == 2
+    assert re.fullmatch(regex_str, sequence[0][0]) is not None
+    assert re.fullmatch(regex_str, sequence[0][1]) is not None
+    assert re.fullmatch(regex_str, sequence[1][0]) is not None
+    assert re.fullmatch(regex_str, sequence[1][1]) is not None
+
+
+def test_transformers_various_regexes_prompt_list_beam_search():
+    rng = torch.Generator()
+    rng.manual_seed(0)
+
+    model_name = "hf-internal-testing/tiny-random-GPTJForCausalLM"
+    model = models.transformers(model_name, device="cpu")
+    sampler = beam_search(5)
+    prompt_1 = "Write an email address"
+    prompt_2 = "Random"
+    regex_str = r"([a-z]{10})@([a-z]{5})\.([a-z]{3})"
+    generator = generate.regex(model, regex_str, sampler=sampler)
+
+    # Two prompts
+    sequence = generator([prompt_1, prompt_2], rng=rng)
+    assert isinstance(sequence, list)
+    assert len(sequence) == 2
+    assert len(sequence[0]) == 5
     assert re.fullmatch(regex_str, sequence[0][0]) is not None
     assert re.fullmatch(regex_str, sequence[0][1]) is not None
     assert re.fullmatch(regex_str, sequence[1][0]) is not None
