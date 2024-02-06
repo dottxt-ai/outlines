@@ -30,9 +30,9 @@ def log_logits(
 
     Disabled unless you call enable_logits_logging()
 
-    Simple wrapper which logs
+    Simple utility function which logs
     - selected next token string
-    - probabilities for the EOS token, and the top n tokens
+    - probabilities for the EOS token, and the top n tokens for biased and unbiased logits
     """
     # this function is expensive, skip it if logging isn't enabled
     if logits_logger.getEffectiveLevel() >= LOG_LEVEL_OFF:
