@@ -22,7 +22,6 @@ from typing import AsyncGenerator, Dict, List, Optional, Tuple, Union
 
 import fastapi
 import uvicorn
-
 import vllm.model_executor.layers.sampler as sampler
 from aioprometheus import MetricsMiddleware
 from aioprometheus.asgi.starlette import metrics
@@ -30,7 +29,6 @@ from fastapi import Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response, StreamingResponse
-
 from vllm.engine.arg_utils import AsyncEngineArgs
 from vllm.engine.async_llm_engine import AsyncLLMEngine
 from vllm.engine.metrics import add_global_metrics_labels
@@ -59,12 +57,12 @@ from vllm.outputs import RequestOutput
 from vllm.sampling_params import SamplingParams
 from vllm.transformers_utils.tokenizer import get_tokenizer
 from vllm.utils import random_uuid
+
 from outlines.serve.vllm import (
     JSONLogitsProcessor,
     RegexLogitsProcessor,
     _patched_apply_logits_processors,
 )
-
 
 TIMEOUT_KEEP_ALIVE = 5  # seconds
 
@@ -330,8 +328,8 @@ async def create_chat_completion(request: ChatCompletionRequest, raw_request: Re
     except ValueError as e:
         return create_error_response(HTTPStatus.BAD_REQUEST, str(e))
 
-   result_generator = engine.generate(prompt, sampling_params, request_id, token_ids)
-
+    result_generator = engine.generate(prompt, sampling_params, request_id, token_ids)
+    
     def get_role() -> str:
         if request.add_generation_prompt:
             return response_role
@@ -576,7 +574,7 @@ async def create_completion(request: CompletionRequest, raw_request: Request):
         logits_processors = [RegexLogitsProcessor(regex, engine.engine)]
     else:
         logits_processors = []
-   
+
     try:
         spaces_between_special_tokens = request.spaces_between_special_tokens
         sampling_params = SamplingParams(
