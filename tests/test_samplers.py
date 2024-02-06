@@ -2,7 +2,14 @@ import math
 
 import torch
 
-from outlines.samplers import GreedySampler, MultinomialSampler, greedy, multinomial
+from outlines.samplers import (
+    BeamSearchSampler,
+    GreedySampler,
+    MultinomialSampler,
+    beam_search,
+    greedy,
+    multinomial,
+)
 
 
 def compute_logprobs(logits):
@@ -12,6 +19,7 @@ def compute_logprobs(logits):
 def test_aliases():
     assert greedy == GreedySampler
     assert multinomial == MultinomialSampler
+    assert beam_search == BeamSearchSampler
 
 
 def test_greedy():
@@ -59,3 +67,60 @@ def test_multinomial():
     assert next_token_ids.equal(torch.tensor([[0], [2]]))
     assert ancestors.equal(torch.tensor([0, 1]))
     assert weights.equal(torch.tensor([logprobs[0, 0], logprobs[1, 2]]))
+
+
+def test_beam_search():
+    # Two beams, single sequence
+    sampler = BeamSearchSampler(2)
+    logits = torch.tensor([[0.0, 1.0], [2.0, 0.0]])
+    init_weights = torch.tensor([0, 1.0])
+    next_token_ids, ancestors, weights = sampler(logits, init_weights, None)
+
+    logprobs = compute_logprobs(logits)
+    assert next_token_ids.equal(torch.tensor([[0], [1]]))
+    assert ancestors.equal(torch.tensor([1, 0]))
+    assert weights.equal(
+        torch.tensor([init_weights[1] + logprobs[1][0], logprobs[0][1]])
+    )
+
+    # Make sure that initial samples are different
+    sampler = BeamSearchSampler(2)
+    logits = torch.tensor([[0.0, 1.0], [0.0, 1.0]])
+    init_weights = torch.tensor([0, 0])
+    next_token_ids, ancestors, weights = sampler(logits, init_weights, None)
+
+    logprobs = compute_logprobs(logits)
+    assert next_token_ids.equal(torch.tensor([[1], [0]]))
+    assert ancestors.equal(torch.tensor([0, 0]))
+    assert weights.equal(torch.tensor([logprobs[0][1], logprobs[0][0]]))
+
+    # One beam, batch of two sequences. Reduces to Greedy Search.
+    sampler = BeamSearchSampler(1)
+    logits = torch.tensor([[0.0, 1.0], [2.0, 0.0]])
+    weights = torch.tensor([0, 0])
+    next_token_ids, ancestors, weights = sampler(logits, weights, None)
+
+    logprobs = compute_logprobs(logits)
+    assert next_token_ids.equal(torch.tensor([[1], [0]]))
+    assert ancestors.equal(torch.tensor([0, 1]))
+    assert weights.equal(torch.tensor([logprobs[0][1], logprobs[1][0]]))
+
+    # Two beams, batch of two sequences
+    sampler = BeamSearchSampler(2)
+    logits = torch.tensor([[0.0, 1.0], [2.0, 0.0], [3.0, 2.0], [0.0, 1.0]])
+    init_weights = torch.tensor([0, 0, 2.0, 0])
+    next_token_ids, ancestors, weights = sampler(logits, init_weights, None)
+
+    logprobs = compute_logprobs(logits)
+    assert next_token_ids.equal(torch.tensor([[0], [1], [0], [1]]))
+    assert ancestors.equal(torch.tensor([1, 0, 2, 2]))
+    assert weights.equal(
+        torch.tensor(
+            [
+                logprobs[1][0],
+                logprobs[0][1],
+                init_weights[2] + logprobs[2][0],
+                init_weights[2] + logprobs[2][1],
+            ]
+        )
+    )

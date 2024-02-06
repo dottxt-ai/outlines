@@ -24,6 +24,7 @@ def sequence_generator(
     sampler: Callable,
     fsms: List["FSM"],
     token_ids: torch.Tensor,
+    weights: torch.Tensor,
     attention_masks: torch.Tensor,
     fsm_states: List[FSMState],
     rng: torch.Generator = torch.Generator(),
@@ -32,14 +33,25 @@ def sequence_generator(
 
     Parameters
     ----------
-    token_generator
-        A callable that generate a new token given the current generation state
-        and logits biases.
+    model
+        A callable that generates a probability distribution over the
+        vocabulary when passed a tensor of token ids.
+    sampler
+        A callable that returns the next token ids, their ancestor sequence and
+        the updated sequence weights when passed a distribution over the
+        vocabulary.
+    token_ids
+        A tensor of token ids on which the sequence distribution is conditioned, of
+        shape ``(n_seqs, n_prompt_tokens)``
+    weights
+        A tensor that contains the initial weights of the sequences, of shape
+        ``(n_seqs,)``
+    attention_masks
+        A tensor of tensors that represent the tokens considered at the attention
+        layer, of shape ``(n_seqs, n_prompt_tokens)``.
     fsms
         List of finite-state machines that drive the text generation,
         one for each sequence in the batch.
-    init_state
-        The initial generation state for the batches.
     fsm_states
         The initial states of the finite-state machine for each sequence in the batch.
 
@@ -49,11 +61,8 @@ def sequence_generator(
 
     """
     kv_cache = None
-    weights = torch.ones(token_ids.shape[0])
 
     while True:
-        allowed_tokens = get_allowed_tokens(fsms, fsm_states)
-
         try:
             logits, kv_cache = model(token_ids, attention_masks, kv_cache)
         except IndexError:  # Exceeding the context length
@@ -61,6 +70,7 @@ def sequence_generator(
                 "The input length exceeds the context length of the model."
             )
 
+        allowed_tokens = get_allowed_tokens(fsms, fsm_states)
         biased_logits = bias_logits(logits, allowed_tokens)
         next_token_ids, ancestors, weights = sampler(biased_logits, weights, rng)
 
