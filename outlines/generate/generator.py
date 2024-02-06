@@ -1,6 +1,6 @@
 import dataclasses
 import math
-from typing import TYPE_CHECKING, Callable, Iterator, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Callable, Iterator, List, Union
 
 import torch
 
@@ -8,7 +8,6 @@ from outlines.fsm.fsm import FSMState
 
 if TYPE_CHECKING:
     from outlines.fsm.fsm import FSM
-    from outlines.models.tokenizer import Tokenizer
     from outlines.samplers import Sampler
 
 
@@ -20,45 +19,12 @@ class GenerationState:
     fsm_states: List[FSMState]
 
 
-def init_generator_state(
-    tokenizer: "Tokenizer",
-    device: str,
-    prompt: Union[str, List[str]],
-    kv_cache: Optional[torch.Tensor] = None,
-) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-    """Initialize the generation state.
-
-    This method is responsible for encoding the prompt, moving token ids
-    to the device and initializing the random number generator.
-
-    Parameters
-    ----------
-    tokenizer:
-        The model's tokenizer.
-    device:
-        The name of the device on which to load the token ids and attention
-        masks.
-    prompt
-        The prompt on which the generation is conditioned.
-
-    Returns
-    -------
-    A `GenerationState` object.
-
-    """
-    token_ids, attention_masks = tokenizer.encode(prompt)
-    token_ids = token_ids.to(device)
-    attention_masks = attention_masks.to(device)
-
-    return token_ids, attention_masks, kv_cache
-
-
 def sequence_generator(
     token_generator: Callable,
     fsms: List["FSM"],
-    init_state: Tuple,
+    token_ids: torch.Tensor,
+    attention_masks: torch.Tensor,
     fsm_states: List[FSMState],
-    num_samples: int = 1,
     rng: torch.Generator = torch.Generator(),
 ) -> Iterator[GenerationState]:
     """Generates sequences of tokens.
@@ -81,16 +47,7 @@ def sequence_generator(
     A new sequence.
 
     """
-    token_ids, attention_masks, kv_cache = init_state
-    batch_shape = token_ids.shape[:-1]
-
-    # To take several samples we duplicate `token_ids`, `attention_masks`
-    # and `fsm_states` as many times as the number of samples requested.
-    # The resulting tensors are of shape (num_samples * num_batches, num_tokens)
-    token_ids = torch.repeat_interleave(token_ids, num_samples, dim=0)
-    attention_masks = torch.repeat_interleave(attention_masks, num_samples, dim=0)
-    fsm_states = [state for state in fsm_states for _ in range(num_samples)]
-    fsms = [fsm.copy() for fsm in fsms for _ in range(num_samples)]
+    kv_cache = None
 
     while True:
         allowed_tokens = get_allowed_tokens(fsms, fsm_states)
@@ -110,7 +67,7 @@ def sequence_generator(
 
         if is_finished:
             yield GenerationState(
-                token_ids.reshape((num_samples,) + batch_shape + token_ids.shape[-1:]),
+                token_ids,
                 kv_cache,
                 logits,
                 fsm_states,
@@ -118,7 +75,7 @@ def sequence_generator(
             return
 
         yield GenerationState(
-            token_ids.reshape((num_samples,) + batch_shape + token_ids.shape[-1:]),
+            token_ids,
             kv_cache,
             logits,
             fsm_states,
