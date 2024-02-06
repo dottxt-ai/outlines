@@ -36,9 +36,7 @@ generator = outlines.generate.choice(model, ["Positive", "Negative"])
 answer = generator(prompt)
 ```
 
-#### Output (click to expand)
-
-<details>
+#### Output
 
 ```
 Selected: 'N' for batch_item=0
@@ -58,8 +56,6 @@ Selected: '' for batch_item=0
 	Top Guided Tokens: EOS: 1.000, '': 0.000, '\x04': 0.000, '\x01': 0.000, '\x00': 0.000, '': 0.000, '\x02': 0.000, '\x03': 0.000
 ```
 
-</details>
-
 #### Analysis
 
 The model incorrectly classified the review as "Negative".
@@ -71,7 +67,9 @@ We can observe in the "Raw Tokens" section that prior to constraining generation
 	Top Guided Tokens: 'P': 0.456, 'N': 0.330, 'Pos': 0.173, 'Ne': 0.018, 'Neg': 0.016, 'Po': 0.007, 'P': 0.000, 'N': 0.000, EOS: -0.000
 ```
 
-Ideally the Raw Tokens are closely aligned to Guided Tokens. To accomplish this, we update the prompt as follows
+#### Fix
+
+Ideally the Raw Tokens are closely aligned to Guided Tokens. To accomplish this, we update the prompt by appending a statement which we would expect to immediately precede "Positive" or "Negative" - "Review label:"
 
 ```python
 prompt = """You are a sentiment-labelling assistant.
