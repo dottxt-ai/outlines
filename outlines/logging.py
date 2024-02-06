@@ -52,6 +52,8 @@ def log_logits(
         top_probs, top_indices = torch.topk(probs, top_n)
 
         # ensure EOS is included
+        if top_indices.device != tokenizer.eos_token_id.device:
+            top_indices = top_indices.to(tokenizer.eos_token_id.device)
         if tokenizer.eos_token_id not in top_indices:
             top_indices = torch.cat(
                 (top_indices, torch.tensor([tokenizer.eos_token_id]))
