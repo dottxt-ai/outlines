@@ -125,7 +125,7 @@ def token_generator(model, sampler: "Sampler") -> Callable:
         biased_logits = bias_logits(logits, allowed_tokens)
         next_token_ids = sampler(biased_logits, rng)
 
-        log_logits(model.tokenizer, biased_logits, next_token_ids)
+        log_logits(model.tokenizer, logits, biased_logits, next_token_ids)
 
         return next_token_ids, new_kv_cache, logits, biased_logits
 
