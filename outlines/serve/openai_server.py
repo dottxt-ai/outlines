@@ -83,7 +83,7 @@ def parse_args():
     )
     parser.add_argument("--host", type=str, default=None, help="host name")
     parser.add_argument("--port", type=int, default=8000, help="port number")
-      parser.add_argument(
+    parser.add_argument(
         "--allow-credentials", action="store_true", help="allow credentials"
     )
     parser.add_argument(
