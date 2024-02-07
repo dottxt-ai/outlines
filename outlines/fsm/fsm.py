@@ -119,7 +119,8 @@ class RegexFSM(FSM):
             return states_to_token_maps, empty_token_ids
 
         self.states_to_token_maps, self.empty_token_ids = create_states_mapping(
-            regex_string, tuple(sorted(tokenizer.vocabulary.items()))
+            regex_string,
+            tuple(sorted(tokenizer.vocabulary.items())),
         )
         self.vocabulary = tokenizer.vocabulary.values()
         self.eos_token_id = tokenizer.eos_token_id
