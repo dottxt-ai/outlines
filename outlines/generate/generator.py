@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING, Callable, Iterator, List, Union
 import torch
 
 from outlines.fsm.fsm import FSMState
-from outlines.logging import log_logits
 
 if TYPE_CHECKING:
     from outlines.fsm.fsm import FSM
@@ -124,8 +123,6 @@ def token_generator(model, sampler: "Sampler") -> Callable:
 
         biased_logits = bias_logits(logits, allowed_tokens)
         next_token_ids = sampler(biased_logits, rng)
-
-        log_logits(model.tokenizer, logits, biased_logits, next_token_ids)
 
         return next_token_ids, new_kv_cache, logits, biased_logits
 
