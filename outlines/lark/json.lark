@@ -2,7 +2,7 @@
 
 ?value: object
 | array
-| string
+| escaped_string
 | SIGNED_NUMBER      -> number
 | "true"             -> true
 | "false"            -> false
@@ -10,9 +10,9 @@
 
 array  : "[" [value ("," value)*] "]"
 object : "{" [pair ("," pair)*] "}"
-pair   : string ":" value
+pair   : escaped_string ":" value
 
-%import common.string
+%import common.escaped_string
 %import common.SIGNED_NUMBER
 %import common.WS
 
