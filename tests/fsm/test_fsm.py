@@ -293,7 +293,7 @@ def test_cfg_grammar_lark():
     assert set(fsm.allowed_token_ids(state=state)) == {1, 2, 3, 4, 5, 6, 7}
 
     state = fsm.next_state(state=state, token_id=6)
-    assert fsm.generation == '{"\\'
+    assert fsm.generation == '{"\\'  # ESCAPED_STRING
     assert not fsm.is_final_state(0)
     assert set(fsm.allowed_token_ids(state=state)) == {2}
 
@@ -303,29 +303,19 @@ def test_cfg_grammar_lark():
     assert set(fsm.allowed_token_ids(state=state)) == {1, 2, 3, 4, 5, 6, 7}
 
     state = fsm.next_state(state=state, token_id=3)
-    assert fsm.generation == '{"\\a"'
+    assert fsm.generation == '{"\\a'
     assert not fsm.is_final_state(0)
     assert set(fsm.allowed_token_ids(state=state)) == {1, 2, 3, 4, 5, 6, 7}
 
     state = fsm.next_state(state=state, token_id=2)
-    assert fsm.generation == '{"\\a""'
+    assert fsm.generation == '{"\\a"'
     assert not fsm.is_final_state(0)
     assert set(fsm.allowed_token_ids(state=state)) == {7}
 
     state = fsm.next_state(state=state, token_id=7)
-    assert fsm.generation == '{"\\a"":'
+    assert fsm.generation == '{"\\a":'
     assert not fsm.is_final_state(0)
     assert set(fsm.allowed_token_ids(state=state)) == {7}
-
-    state = fsm.next_state(state=state, token_id=2)
-    assert fsm.generation == '{"a\\'
-    assert not fsm.is_final_state(0)
-    assert set(fsm.allowed_token_ids(state=state)) == {3}
-    assert not fsm.reset_state  # completing current regex
-
-    state = fsm.next_state(state=state, token_id=3)
-    assert fsm.generation == "aa"
-    assert fsm.is_final_state(0)
 
 
 def test_cfg_allow_both_extend_and_shift_terminal():
