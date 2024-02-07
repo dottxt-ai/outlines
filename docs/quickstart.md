@@ -196,7 +196,7 @@ print(result)
 # 100-2-75+50-18+27-501.
 ```
 
-You may also use Outlines' [Built-In Grammars](#built-in-grammars) library.
+You may read more in the [Built-In Grammars](#built-in-grammars) section.
 
 
 ### Regex-guided generation
