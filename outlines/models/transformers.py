@@ -145,6 +145,8 @@ class TransformerTokenizer(Tokenizer):
         self.vocabulary = self.tokenizer.get_vocab()
         self.is_llama = isinstance(self.tokenizer, get_llama_tokenizer_types())
 
+        self._hash: Optional[int] = None
+
     def encode(
         self, prompt: Union[str, List[str]], **kwargs
     ) -> Tuple[torch.LongTensor, torch.LongTensor]:
@@ -175,9 +177,11 @@ class TransformerTokenizer(Tokenizer):
         return NotImplemented
 
     def __hash__(self):
-        from datasets.fingerprint import Hasher
+        if self._hash is None:
+            from datasets.fingerprint import Hasher
 
-        return hash(Hasher.hash(self.tokenizer))
+            self._hash = hash(Hasher.hash(self.tokenizer))
+        return self._hash
 
 
 def transformers(
