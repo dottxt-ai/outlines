@@ -83,7 +83,7 @@ Update `outlines/grammars.py` with a line including your grammar.
 
 Test grammar for false negatives, ensure sample grammars can be generated:
 - Add valid example outputs which are compliant with the grammar to `tests/benchmark/cfg_samples/your_new_grammar/`
-- run the tests for your grammar via `pytest tests/benchmark/test_benchmark_cfg_generation.py -k "test_benchmark_cfg_generation[your_new_grammar_"`
+- run the tests for your grammar via `pytest --benchmark-cfg tests/benchmark/test_benchmark_cfg_generation.py -k "test_benchmark_cfg_generation[your_new_grammar_"`
 
 Test grammar for false positives, ensure invalid outputs aren't generated:
 - Currently there isn't a builtin false positive testing utility.
