@@ -98,6 +98,7 @@ class MockGenerator:
         return num_tokens_generated
 
 
+@pytest.mark.benchmark_cfg
 @pytest.mark.parametrize("preload_cache", [True, False])
 @pytest.mark.parametrize("sample_name", all_samples.keys())
 def test_benchmark_cfg_generation(
