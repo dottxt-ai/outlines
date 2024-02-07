@@ -213,7 +213,7 @@ def test_cfg_ignore_directive():
     assert set(fsm.allowed_token_ids(state=state)) == {3}
 
 
-def test_cfg_multitoken_subexpr():
+def test_cfg_multitoken_terminal():
     class MockTokenizer:
         vocabulary = {"a": 1, "b": 2, "eos": 3}
         special_tokens = {"eos"}
