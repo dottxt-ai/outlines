@@ -4,7 +4,7 @@ from typing import Iterator, List, Optional, Union
 import torch
 
 from outlines.fsm.fsm import FSMState
-from outlines.generate.generator import sequence_generator, token_generator
+from outlines.generate.generator import sequence_generator
 
 
 class SequenceGenerator:
@@ -18,12 +18,13 @@ class SequenceGenerator:
         max_tokens=None,
         stop_at=None,
     ):
-        self.generate_token = token_generator(model, sampler)
         self.fsm = fsm
+        self.model = model
+        self.sampler = sampler
         self.tokenizer = model.tokenizer
         self.device = device
         self.max_tokens = max_tokens
-        self.num_particles = sampler.particles
+        self.num_samples = sampler.samples
 
         if isinstance(stop_at, str):
             stop_at = [stop_at]
@@ -198,7 +199,7 @@ class SequenceGenerator:
 
         stop_sequences = stop_at or self.stop_sequences
         max_tokens = max_tokens or self.max_tokens
-        num_samples = self.num_particles
+        num_samples = self.num_samples
 
         if rng is None:
             rng = torch.Generator(device=self.device)
@@ -211,7 +212,7 @@ class SequenceGenerator:
         # To draw multiple samples we repeat the prompt as many times
         # as there are samples. We copy the FSMs and initialize the
         # FSM states.
-        num_samples = self.num_particles
+        num_samples = self.num_samples
         batch_size = len(prompts)
 
         prompt_token_ids = torch.repeat_interleave(prompt_token_ids, num_samples, dim=0)
@@ -220,7 +221,8 @@ class SequenceGenerator:
         fsms = [self.fsm.copy() for _ in range(batch_size * num_samples)]
 
         states = sequence_generator(
-            self.generate_token,
+            self.model,
+            self.sampler,
             fsms,
             prompt_token_ids,
             attention_masks,
@@ -317,7 +319,7 @@ class SequenceGenerator:
 
         stop_sequences = stop_at or self.stop_sequences
         max_tokens = max_tokens or self.max_tokens
-        num_samples = self.num_particles
+        num_samples = self.num_samples
 
         if rng is None:
             rng = torch.Generator(device=self.device)
@@ -330,7 +332,7 @@ class SequenceGenerator:
         # To draw multiple samples we repeat the prompt as many times
         # as there are samples. We copy the FSMs and initialize the
         # FSM states.
-        num_samples = self.num_particles
+        num_samples = self.num_samples
         batch_size = len(prompts)
 
         prompt_token_ids = torch.repeat_interleave(prompt_token_ids, num_samples, dim=0)
@@ -339,7 +341,8 @@ class SequenceGenerator:
         fsms = [self.fsm.copy() for _ in range(batch_size * num_samples)]
 
         states = sequence_generator(
-            self.generate_token,
+            self.model,
+            self.sampler,
             fsms,
             prompt_token_ids,
             attention_masks,

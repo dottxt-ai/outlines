@@ -570,7 +570,7 @@ def test_custom_sampler():
 
     class biased_sampler:
         def __init__(self, samples: int = 1):
-            self.particles = samples
+            self.samples = samples
 
         def __call__(
             logits: torch.DoubleTensor, samples: int, *_
@@ -579,9 +579,13 @@ def test_custom_sampler():
 
             if not seen:
                 seen = True
-                return target_token_ids
+                return target_token_ids, torch.tensor([0]), None
             else:
-                return torch.tensor([[model.tokenizer.eos_token_id]])
+                return (
+                    torch.tensor([[model.tokenizer.eos_token_id]]),
+                    torch.tensor([0]),
+                    None,
+                )
 
     generator = generate.choice(model, ["a", "b", "c"], sampler=biased_sampler(1))
     sequence = generator(
