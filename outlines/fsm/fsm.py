@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING, List, NewType, Protocol, Tuple
 
 import interegular
+import lark.exceptions
 from lark import Lark
 
 # from outlines.fsm.parsing import PartialLark
@@ -253,6 +254,11 @@ class CFGFSM(FSM):
         if self.is_final_state(state):
             return [self.tokenizer.eos_token_id]
 
+        ####
+        # Algorithm:
+        # - If terminal is *necessarily* incomplete, continue with existing FSM
+        # - If terminal is potentially complete try lexing the generation, keep the existing FSM if illegal
+        ####
         proposal = []
         if self.generation != "":
             if self.check_last:
@@ -268,9 +274,11 @@ class CFGFSM(FSM):
                 self.check_last = True
                 self.proposal_last = proposal.copy()
                 self.regex_fsm_last = proposer
-
-        interactive = self.parser.parse_interactive(self.generation)
-        interactive.exhaust_lexer()
+        try:
+            interactive = self.parser.parse_interactive(self.generation)
+            interactive.exhaust_lexer()
+        except lark.exceptions.UnexpectedToken:
+            return proposal
 
         options = {self.terminal_regexps[x] for x in interactive.accepts()}
         # add %ignore terminals

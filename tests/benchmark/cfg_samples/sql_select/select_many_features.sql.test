@@ -22,8 +22,8 @@ WHERE
     T1.Department IS NOT NULL AND T2.TotalSales > 10000
 GROUP BY
     T1."Employee Name", T1.Department, T2.TotalSales, T5.Bonus
--- HAVING  # TODO: probably an issue with LALR(1)
---    AVG(T3.Salary) > 50000
+ HAVING
+    AVG(T3.Salary) > 50000
 ORDER BY
     SalesRank, T1.Department, T1."Employee Name"
 LIMIT 10
