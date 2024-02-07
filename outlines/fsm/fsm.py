@@ -1,12 +1,13 @@
+import functools
 from typing import TYPE_CHECKING, List, NewType, Protocol, Tuple
 
 import interegular
 import lark.exceptions
-from lark import Lark
 
 # from outlines.fsm.parsing import PartialLark
 from outlines import grammars
 from outlines.caching import cache
+from outlines.fsm.fast_lark import FastLark
 from outlines.fsm.regex import create_fsm_index_tokenizer, make_deterministic_fsm
 
 if TYPE_CHECKING:
@@ -89,6 +90,7 @@ class StopAtEosFSM(FSM):
         return self
 
 
+@functools.lru_cache(maxsize=1024)
 class RegexFSM(FSM):
     """FSM to generate text that is in the language of a regular expression."""
 
@@ -195,7 +197,7 @@ class CFGFSM(FSM):
         self.cfg_string = cfg_string
         self.tokenizer = tokenizer
 
-        self.parser = Lark(
+        self.parser = FastLark(
             cfg_string,
             parser="lalr",
             lexer="contextual",
