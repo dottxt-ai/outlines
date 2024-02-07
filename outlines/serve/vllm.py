@@ -1,11 +1,12 @@
 """Make vLLM compatible with Outlines' guided generation."""
 import json
 import math
-from typing import Dict, List
+from collections import defaultdict
+from typing import DefaultDict, List
 
 import torch
 
-from outlines.fsm.fsm import FSMState, RegexFSM
+from outlines.fsm.fsm import RegexFSM
 from outlines.fsm.json_schema import build_regex_from_object
 
 
@@ -28,7 +29,7 @@ def _patched_apply_logits_processors(
                 logits_row = logits[logits_row_idx]
                 token_ids = sampling_metadata.seq_data[seq_id].output_token_ids
                 for logits_processor in logits_processors:
-                    logits_row = logits_processor(token_ids, logits_row)
+                    logits_row = logits_processor(seq_id, token_ids, logits_row)
                 logits[logits_row_idx] = logits_row
                 logits_row_idx += 1
         else:
@@ -54,34 +55,27 @@ class RegexLogitsProcessor:
 
         fsm = RegexFSM(regex_string, tokenizer)
         self.fsm = fsm
-        self.fsm_state_cache: Dict[int, FSMState] = {}
 
-    def __call__(self, input_ids: List[int], scores: torch.Tensor) -> torch.Tensor:
+    def __call__(
+        self, seq_id: int, input_ids: List[int], scores: torch.Tensor
+    ) -> torch.Tensor:
         """Use the FSM to bias the logits before sampling the next token."""
-        state = self.get_fsm_state(input_ids)
-        allowed_tokens = self.fsm.allowed_token_ids(state)
+
+        if len(input_ids) == 0:  # Initialize the fsm states
+            self.fsm_state: DefaultDict[int, int] = defaultdict(int)
+        else:
+            last_token = input_ids[-1]
+            self.fsm_state[seq_id] = self.fsm.next_state(
+                self.fsm_state[seq_id], last_token
+            )
+
+        allowed_tokens = self.fsm.allowed_token_ids(self.fsm_state[seq_id])
 
         mask = torch.full((scores.shape[-1],), -math.inf, device=scores.device)
         mask[allowed_tokens] = 0
         biased_scores = scores + mask
 
         return biased_scores
-
-    def get_fsm_state(self, input_ids: List[int]) -> FSMState:
-        state_key = hash(tuple(input_ids))
-
-        if not input_ids:
-            self.fsm_state_cache[state_key] = FSMState(0)
-
-        elif state_key not in self.fsm_state_cache:
-            prev_state_key = hash(tuple(input_ids[:-1]))
-            prev_state = self.fsm_state_cache[prev_state_key]
-            last_token = input_ids[-1]
-            self.fsm_state_cache[state_key] = self.fsm.next_state(
-                prev_state, last_token
-            )
-
-        return self.fsm_state_cache[state_key]
 
     def adapt_tokenizer(self, tokenizer):
         """Adapt vLLM's tokenizer to use to compile the FSM.
