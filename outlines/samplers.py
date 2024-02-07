@@ -1,4 +1,4 @@
-from typing import Protocol
+from typing import Protocol, Tuple
 
 import torch
 
@@ -7,7 +7,10 @@ class Sampler(Protocol):
     particles: int
 
     def __call__(
-        self, logits: torch.DoubleTensor, rng: torch.Generator
+        self,
+        next_token_logits: torch.DoubleTensor,
+        sequence_weights: torch.DoubleTensor,
+        rng: torch.Generator,
     ) -> torch.DoubleTensor:
         ...
 
@@ -25,7 +28,12 @@ class GreedySampler:
     def __init__(self):
         self.particles = 1
 
-    def __call__(self, logits: torch.DoubleTensor, *_) -> torch.DoubleTensor:
+    def __call__(
+        self,
+        next_token_logits: torch.DoubleTensor,
+        sequence_weights: torch.DoubleTensor,
+        _,
+    ) -> torch.DoubleTensor:
         """Call the greedy sampler.
 
         Parameters
@@ -41,9 +49,13 @@ class GreedySampler:
         The ids of the sampled tokens, of shape ``(n_seqs, 1)``
 
         """
-        next_token_ids = torch.argmax(logits, dim=-1, keepdim=True)
+        logprobs = torch.nn.functional.log_softmax(next_token_logits, dim=-1)
+        next_token_ids = torch.argmax(logprobs, dim=-1, keepdim=True)
 
-        return next_token_ids
+        ancestors = torch.arange(next_token_logits.shape[0])
+        weights = sequence_weights + torch.gather(logprobs, 1, next_token_ids).squeeze()
+
+        return next_token_ids, ancestors, weights
 
 
 greedy = GreedySampler
@@ -68,8 +80,11 @@ class MultinomialSampler:
         self.particles = samples
 
     def __call__(
-        self, logits: torch.DoubleTensor, rng: torch.Generator
-    ) -> torch.DoubleTensor:
+        self,
+        next_token_logits: torch.DoubleTensor,
+        sequence_weights: torch.DoubleTensor,
+        rng: torch.Generator,
+    ) -> Tuple[torch.DoubleTensor, torch.DoubleTensor, torch.DoubleTensor]:
         """Call the multinomial sampler.
 
         Parameters
@@ -87,7 +102,12 @@ class MultinomialSampler:
         """
         probs = torch.nn.functional.softmax(logits, dim=-1)
         next_token_ids = torch.multinomial(probs, num_samples=1, generator=rng)
-        return next_token_ids
+
+        logprobs = torch.nn.functional.log_softmax(next_token_logits, dim=-1)
+        ancestors = torch.arange(next_token_logits.shape[0])
+        weights = sequence_weights + torch.gather(logprobs, 1, next_token_ids).squeeze()
+
+        return next_token_ids, ancestors, weights
 
 
 multinomial = MultinomialSampler
