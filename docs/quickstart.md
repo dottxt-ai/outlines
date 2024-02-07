@@ -183,7 +183,6 @@ print(result)
 # 4*5*3*2*1/6*4*3*2*1/2*1*1*1/4*1*1*1/2*1*1*1/2*1*1/2*1*1*5*1/2*2*1*1/2*1*1*6*1*1/2*1*1*1*1*2*1*1*1*1
 ```
 
-
 EBNF grammars can be cumbersome to write. This is why Outlines provides grammar definitions in the `outlines.grammars.` module
 
 ```python
@@ -361,6 +360,22 @@ Once you are done experimenting with a prompt and an output structure, it is use
     response = joke("baseball")
     ```
     It make it easier for the community to collaborate on the infinite number of use cases enabled by these models!
+
+### Built-In Grammars
+
+You can take advantage of Outlines' grammar library by passing a grammar definition from `outlines.grammars.`.
+
+```python
+from outlines import models, generate, grammars
+
+model = models.transformers("mistralai/Mistral-7B-v0.1")
+generator = generate.cfg(model, grammars.arithmetic, max_tokens=100)
+
+result = generator("Write a series of operations on integers that return the number 5")
+print(result)
+# 4*5*3*2*1/6*4*3*2*1/2*1*1*1/4*1*1*1/2*1*1*1/2*1*1/2*1*1*5*1/2*2*1*1/2*1*1*6*1*1/2*1*1*1*1*2*1*1*1*1
+    ```
+
 
 ## Going further
 
