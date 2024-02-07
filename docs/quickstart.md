@@ -15,7 +15,7 @@ The first step when writing a program with Outlines is to initialize a model. We
 ```python
 import outlines
 
-model = outlines.models.transformers("mistralai/Mistral-7B-v0.1")
+model = outlines.models.transformers("mistralai/Mistral-7B-Instruct-v0.2")
 ```
 
 ### Text generator
@@ -27,7 +27,7 @@ Once the model is initialized you can build a text generator. This generator can
     ```python
     import outlines
 
-    model = outlines.models.transformers("mistralai/Mistral-7B-v0.1")
+    model = outlines.models.transformers("mistralai/Mistral-7B-Instruct-v0.2")
     generator = outlines.generate.text(model, max_tokens=100)
 
     result = generator("What's 2+2?")
@@ -43,7 +43,7 @@ Once the model is initialized you can build a text generator. This generator can
     ```python
     import outlines
 
-    model = outlines.models.transformers("mistralai/Mistral-7B-v0.1")
+    model = outlines.models.transformers("mistralai/Mistral-7B-Instruct-v0.2")
     generator = outlines.generate.text(model, max_tokens=100)
 
     stream = generator.stream("What's 2+2?")
@@ -64,7 +64,7 @@ Outlines allows you to do multi-label classification by guiding the model so it 
 ```python
 import outlines
 
-model = outlines.models.transformers("mistralai/Mistral-7B-v0.1")
+model = outlines.models.transformers("mistralai/Mistral-7B-Instruct-v0.2")
 generator = outlines.generate.choice(model, ["Blue", "Red", "Yellow"])
 
 color = generator("What is the closest color to Indigo? ")
@@ -96,7 +96,7 @@ Outlines can guide models so that they output valid JSON **100%** of the time. Y
         armor: Armor
         strength: conint(gt=1, lt=100)
 
-    model = outlines.models.transformers("mistralai/Mistral-7B-v0.1")
+    model = outlines.models.transformers("mistralai/Mistral-7B-Instruct-v0.2")
     generator = outlines.generate.json(model, Character)
 
     character = generator(
@@ -131,7 +131,7 @@ Outlines can guide models so that they output valid JSON **100%** of the time. Y
         "type": "object"
     }"""
 
-    model = outlines.models.transformers("mistralai/Mistral-7B-v0.1")
+    model = outlines.models.transformers("mistralai/Mistral-7B-Instruct-v0.2")
     generator = outlines.generate.json(model, schema)
     character = generator(
         "Generate a new character for my awesome game: "
@@ -175,12 +175,12 @@ arithmetic_grammar = """
     %ignore WS_INLINE
 """
 
-model = models.transformers("mistralai/Mistral-7B-v0.1")
+model = models.transformers("mistralai/Mistral-7B-Instruct-v0.2")
 generator = generate.cfg(model, arithmetic_grammar, max_tokens=100)
 
-result = generator("Write a series of operations on integers that return the number 5")
+result = generator("Question: How can you write 5*5 using addition?\nAnswer:")
 print(result)
-# 4*5*3*2*1/6*4*3*2*1/2*1*1*1/4*1*1*1/2*1*1*1/2*1*1/2*1*1*5*1/2*2*1*1/2*1*1*6*1*1/2*1*1*1*1*2*1*1*1*1
+# 5+5+5+5+5
 ```
 
 
@@ -189,12 +189,12 @@ EBNF grammars can be cumbersome to write. This is why Outlines provides grammar 
 ```python
 from outlines import models, generate, grammars
 
-model = models.transformers("mistralai/Mistral-7B-v0.1")
+model = models.transformers("mistralai/Mistral-7B-Instruct-v0.2")
 generator = generate.cfg(model, grammars.arithmetic, max_tokens=100)
 
-result = generator("Write a series of operations on integers that return the number 5 ")
+result = generator("Question: How can you write 5*5 using addition?\nAnswer:")
 print(result)
-# 100-2-75+50-18+27-501.
+# 5+5+5+5+5
 ```
 
 The available grammars are listed [here](https://github.com/outlines-dev/outlines/tree/main/outlines/grammars).
@@ -207,14 +207,14 @@ Slightly simpler, but no less useful, Outlines can generate text that is in the 
 ```python
 from outlines import models, generate
 
-model = models.transformers("mistralai/Mistral-7B-v0.1")
+model = models.transformers("mistralai/Mistral-7B-Instruct-v0.2")
 
 regex_str = r"((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)"
 generator = generate.regex(model, regex_str)
 
-result = generator("What is the IP address of Google's DNS sever?")
+result = generator("What is the IP address of localhost?\nIP: ")
 print(result)
-# 0.0.0.0
+# 127.0.0.100
 ```
 
 ### Generate a given Python type
@@ -224,7 +224,7 @@ We provide a shortcut to regex-guided generation for simple use cases. Pass a Py
 ```python
 from outlines import models, generate
 
-model = models.transformers("mistralai/Mistral-7B-v0.1")
+model = models.transformers("mistralai/Mistral-7B-Instruct-v0.2")
 generator = generate.format(model, int)
 
 result = generator("What is 2+2?")
@@ -245,15 +245,15 @@ python -m outlines.serve.serve
 This will by default start a server at `http://127.0.0.1:8000` (check what the console says, though)  with the OPT-125M model. If you want to specify another model:
 
 ```python
-python -m outlines.serve.serve --model="mistralai/Mistral-7B-v0.1"
+python -m outlines.serve.serve --model="mistralai/Mistral-7B-Instruct-v0.2"
 ```
 
 You can then query the model in shell by passing a prompt and a [JSON Schema][jsonschema]{:target="_blank"} specification for the structure of the output:
 
 ```bash
-curl http://0.0.0.1:8000 \
+curl http://127.0.0.1:8000/generate \
     -d '{
-        "prompt": "What is the capital of France?",
+        "prompt": "Question: What is a language model? Answer:",
         "schema": {"type": "string"}
         }'
 ```
@@ -329,25 +329,28 @@ Once you are done experimenting with a prompt and an output structure, it is use
 
     @outlines.prompt
     def tell_a_joke(topic):
-        """Tell me a joke about {{ topic }}."
+        """Tell me a joke about {{ topic }}."""
 
     class Joke(BaseModel):
         setup: str
         punchline: str
 
-    fn = outlines.Function(
+    generate_joke = outlines.Function(
         tell_a_joke,
         Joke,
-        "mistralai/Mistral-7B-v0.1"
+        "mistralai/Mistral-7B-Instruct-v0.2"
     )
     ```
 
 === "Call a function"
 
     ```python
-    from .function import fn as joke
+    from .function import generate_joke
 
-    response = joke("baseball")
+    response = generate_joke("baseball")
+
+    # haha
+    # Joke(setup='Why was the baseball in a bad mood?', punchline='Because it got hit around a lot.')
     ```
 
 === "Call a function stored on GitHub"
