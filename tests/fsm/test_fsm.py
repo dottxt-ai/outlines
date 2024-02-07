@@ -257,7 +257,7 @@ def test_cfg_multitoken_terminal():
 
 
 def test_cfg_grammar_lark():
-    """Ensure we can use outlines.grammars.lark to generate json"""
+    """Ensure we can use outlines.grammars.json to generate json"""
 
     class MockTokenizer:
         vocabulary = {"{": 1, '"': 2, "a": 3, "4": 4, "}": 5, "\\": 6, ":": 7}
