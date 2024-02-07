@@ -2,9 +2,9 @@ from copy import copy, deepcopy
 from typing import Dict, Optional
 
 from lark import Lark
+from lark.lexer import Token
 from lark.parsers.lalr_interactive_parser import InteractiveParser
 from lark.parsers.lalr_parser_state import ParserState
-from lark.parsers.lexer import Token
 
 
 class FastParserState(ParserState):
