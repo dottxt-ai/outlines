@@ -183,20 +183,7 @@ print(result)
 # 4*5*3*2*1/6*4*3*2*1/2*1*1*1/4*1*1*1/2*1*1*1/2*1*1/2*1*1*5*1/2*2*1*1/2*1*1*6*1*1/2*1*1*1*1*2*1*1*1*1
 ```
 
-EBNF grammars can be cumbersome to write. This is why Outlines provides grammar definitions in the `outlines.grammars.` module
-
-```python
-from outlines import models, generate, grammars
-
-model = models.transformers("mistralai/Mistral-7B-v0.1")
-generator = generate.cfg(model, grammars.arithmetic, max_tokens=100)
-
-result = generator("Write a series of operations on integers that return the number 5 ")
-print(result)
-# 100-2-75+50-18+27-501.
-```
-
-You may read more in the [Built-In Grammars](#built-in-grammars) section.
+EBNF grammars can be cumbersome to write. This is why Outlines provides grammar definitions in the `outlines.grammars.` module. You may read more in the [Built-In Grammars](#built-in-grammars). Outlines also provides [documentation on building custom grammars](reference/creating_grammars.md).
 
 
 ### Regex-guided generation
