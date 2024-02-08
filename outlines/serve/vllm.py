@@ -2,7 +2,7 @@
 import json
 import math
 from collections import defaultdict
-from typing import DefaultDict, List
+from typing import DefaultDict, List, Optional
 
 import torch
 
@@ -105,8 +105,8 @@ class RegexLogitsProcessor:
 
 
 class JSONLogitsProcessor(RegexLogitsProcessor):
-    def __init__(self, schema, llm):
-        """Compile the FSM that drives the JSON-structured generation.
+    def __init__(self, schema, llm, whitespace_pattern: Optional[str] = None):
+        """Compile the FSM that drives the JSON-guided generation.
 
         Parameters
         ----------
@@ -114,9 +114,11 @@ class JSONLogitsProcessor(RegexLogitsProcessor):
             A JSON schema that encodes the structure we want the model to generate
         llm
             An instance of `vllm.LLM`
-
+        whitespace_pattern
+            Pattern to use for JSON syntactic whitespace (doesn't impact string literals)
+            Example: allow only a single space or newline with `whitespace_pattern=r"[\n ]?"`
         """
         if isinstance(schema, dict):
             schema = json.dumps(schema)
-        regex_string = build_regex_from_object(schema)
+        regex_string = build_regex_from_object(schema, whitespace_pattern)
         super().__init__(regex_string, llm)

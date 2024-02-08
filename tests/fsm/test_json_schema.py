@@ -540,3 +540,32 @@ def test_format(schema, regex, examples):
             assert match.span() == (0, len(string))
         else:
             assert match is None
+
+
+@pytest.mark.parametrize("whitespace_pattern", [None, r"[\n ]?", "abc"])
+def test_json_schema_custom_whitespace_pattern(whitespace_pattern):
+    """assert whitespace_pattern setting respected"""
+
+    class MockModel(BaseModel):
+        foo: int
+        bar: str
+
+    # assert any ws pattern can be used
+    if whitespace_pattern == "abc":
+        build_regex_from_object(MockModel, whitespace_pattern)
+        return
+
+    pattern = build_regex_from_object(MockModel, whitespace_pattern)
+
+    mock_result_mult_ws = (
+        """{     "foo"   :   4, \n\n\n   "bar": "baz    baz baz bar"\n\n}"""
+    )
+    mock_result_maybe_ws = """{"foo" : 4 ,"bar":"baz    baz baz bar"}"""
+
+    match_default_ws = re.fullmatch(pattern, mock_result_mult_ws)
+    if whitespace_pattern is None:
+        assert match_default_ws
+    else:
+        assert match_default_ws is None
+
+    assert re.fullmatch(pattern, mock_result_maybe_ws)
