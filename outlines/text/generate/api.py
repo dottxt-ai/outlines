@@ -2,7 +2,7 @@ import warnings
 from typing import Callable, List, Optional, Union
 
 import outlines
-from outlines.generate.samplers import Sampler, multinomial
+from outlines.samplers import MultinomialSampler, Sampler
 
 
 def json(
@@ -10,7 +10,7 @@ def json(
     schema_object: Union[str, object, Callable],
     max_tokens: Optional[int] = None,
     *,
-    sampler: Sampler = multinomial,
+    sampler: Sampler = MultinomialSampler(),
 ):
     warnings.warn(
         "`outlines.text.generate.json` is deprecated, please use `outlines.generate.json` instead. "
@@ -25,7 +25,7 @@ def regex(
     regex_str: str,
     max_tokens: Optional[int] = None,
     *,
-    sampler: Sampler = multinomial,
+    sampler: Sampler = MultinomialSampler(),
 ):
     warnings.warn(
         "`outlines.text.generate.regex` is deprecated, please use `outlines.generate.regex` instead. "
@@ -39,7 +39,7 @@ def format(
     model,
     python_type,
     max_tokens: Optional[int] = None,
-    sampler: Sampler = multinomial,
+    sampler: Sampler = MultinomialSampler(),
 ):
     warnings.warn(
         "`outlines.text.generate.format` is deprecated, please use `outlines.generate.format` instead. "
@@ -54,7 +54,7 @@ def continuation(
     max_tokens: Optional[int] = None,
     stop_at: Optional[Union[str, List[str]]] = None,
     *,
-    sampler: Sampler = multinomial,
+    sampler: Sampler = MultinomialSampler(),
 ):
     warnings.warn(
         "`outlines.text.generate.continuation` is deprecated, please use `outlines.generate.text` instead. "
@@ -70,7 +70,7 @@ def choice(
     choices: List[str],
     max_tokens: Optional[int] = None,
     *,
-    sampler: Sampler = multinomial,
+    sampler: Sampler = MultinomialSampler(),
 ):
     warnings.warn(
         "`outlines.text.generate.choice` is deprecated, please use `outlines.generate.choice` instead. "

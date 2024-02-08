@@ -1,6 +1,6 @@
 import dataclasses
 import math
-from typing import TYPE_CHECKING, Callable, Iterator, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Callable, Iterator, List, Union
 
 import torch
 
@@ -8,8 +8,7 @@ from outlines.fsm.fsm import FSMState
 
 if TYPE_CHECKING:
     from outlines.fsm.fsm import FSM
-    from outlines.generate.samplers import Sampler
-    from outlines.models.tokenizer import Tokenizer
+    from outlines.samplers import Sampler
 
 
 @dataclasses.dataclass(frozen=True)
@@ -20,42 +19,13 @@ class GenerationState:
     fsm_states: List[FSMState]
 
 
-def init_generator_state(
-    tokenizer: "Tokenizer",
-    device: str,
-    prompt: Union[str, List[str]],
-    kv_cache: Optional[torch.Tensor] = None,
-) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-    """Initialize the generation state.
-
-    This method is responsible for encoding the prompt, moving token ids
-    to the device and initializing the random number generator.
-
-    Parameters
-    ----------
-    prompt
-        The prompt on which the generation is conditioned.
-    rng
-        The state of the random number generator.
-
-    Returns
-    -------
-    A `GenerationState` object.
-
-    """
-    token_ids, attention_masks = tokenizer.encode(prompt)
-    token_ids = token_ids.to(device)
-    attention_masks = attention_masks.to(device)
-
-    return token_ids, attention_masks, kv_cache
-
-
 def sequence_generator(
     token_generator: Callable,
     fsms: List["FSM"],
-    init_state: Tuple,
+    token_ids: torch.Tensor,
+    attention_masks: torch.Tensor,
     fsm_states: List[FSMState],
-    rng: torch.Generator,
+    rng: torch.Generator = torch.Generator(),
 ) -> Iterator[GenerationState]:
     """Generates sequences of tokens.
 
@@ -77,7 +47,8 @@ def sequence_generator(
     A new sequence.
 
     """
-    token_ids, attention_masks, kv_cache = init_state
+    kv_cache = None
+
     while True:
         allowed_tokens = get_allowed_tokens(fsms, fsm_states)
 
@@ -88,7 +59,6 @@ def sequence_generator(
             rng=rng,
             allowed_tokens=allowed_tokens,
         )
-
         token_ids = update_token_ids(token_ids, next_token_ids)
         attention_masks = expand_attention_masks(attention_masks)
 
@@ -96,10 +66,20 @@ def sequence_generator(
         is_finished = is_generation_finished(fsms, fsm_states)
 
         if is_finished:
-            yield GenerationState(token_ids, kv_cache, logits, fsm_states)
+            yield GenerationState(
+                token_ids,
+                kv_cache,
+                logits,
+                fsm_states,
+            )
             return
 
-        yield GenerationState(token_ids, kv_cache, logits, fsm_states)
+        yield GenerationState(
+            token_ids,
+            kv_cache,
+            logits,
+            fsm_states,
+        )
 
 
 def token_generator(model, sampler: "Sampler") -> Callable:
@@ -142,7 +122,7 @@ def token_generator(model, sampler: "Sampler") -> Callable:
             )
 
         biased_logits = bias_logits(logits, allowed_tokens)
-        next_token_ids = sampler(biased_logits, 1, rng)
+        next_token_ids = sampler(biased_logits, rng)
 
         return next_token_ids, new_kv_cache, logits, biased_logits
 

@@ -4,8 +4,8 @@ from typing import List, Optional, Union
 
 from outlines.fsm.fsm import StopAtEosFSM
 from outlines.generate import SequenceGenerator
-from outlines.generate.samplers import Sampler, multinomial
 from outlines.models import OpenAI
+from outlines.samplers import Sampler, multinomial
 
 
 @singledispatch
@@ -15,7 +15,7 @@ def text(
     stop_at: Optional[Union[str, List[str]]] = None,
     *,
     samples: int = 1,
-    sampler: Sampler = multinomial,
+    sampler: Sampler = multinomial(),
 ) -> SequenceGenerator:
     """Generate text with a `Transformer` model.
 
@@ -64,9 +64,9 @@ def text_openai(
     max_tokens: Optional[int] = None,
     stop_at: Optional[Union[List[str], str]] = None,
     *,
-    sampler: Sampler = multinomial,
+    sampler: Sampler = multinomial(),
 ) -> OpenAI:
-    if not sampler == multinomial:
+    if not isinstance(sampler, multinomial):
         raise NotImplementedError(
             r"The OpenAI API does not support any other sampling algorithm "
             + "that the multinomial sampler."

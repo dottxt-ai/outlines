@@ -1,24 +1,29 @@
-import json as pyjson
 import warnings
-from typing import Iterator, List, Optional, Tuple, Union
+from typing import Iterator, List, Optional, Union
 
 import torch
 
-from outlines.generate.generator import (
-    GenerationState,
-    init_generator_state,
-    sequence_generator,
-    token_generator,
-)
+from outlines.fsm.fsm import FSMState
+from outlines.generate.generator import sequence_generator, token_generator
 
 
 class SequenceGenerator:
-    def __init__(self, fsm, model, sampler, device, max_tokens=None, stop_at=None):
+    def __init__(
+        self,
+        fsm,
+        model,
+        sampler,
+        device,
+        *,
+        max_tokens=None,
+        stop_at=None,
+    ):
         self.generate_token = token_generator(model, sampler)
         self.fsm = fsm
         self.tokenizer = model.tokenizer
         self.device = device
         self.max_tokens = max_tokens
+        self.num_particles = sampler.particles
 
         if isinstance(stop_at, str):
             stop_at = [stop_at]
@@ -41,9 +46,10 @@ class SequenceGenerator:
 
     def get_generated_token_ids(
         self,
-        init_state: Tuple[torch.Tensor, torch.Tensor, torch.Tensor],
+        prompt_token_ids: torch.Tensor,
         prompts: List[str],
-        last_state: GenerationState,
+        token_ids: torch.Tensor,
+        num_samples: int,
     ) -> List[torch.Tensor]:
         """Get the tokens generated so far.
 
@@ -53,20 +59,25 @@ class SequenceGenerator:
             The initial state of the generation.
         prompts
             The prompts passed to the generator.
-        last_state
-            The current state of the generation
+        token_ids
+            The generated token ids.
+        num_samples
+            The number of samples taken for each sequence
 
         Returns
         -------
         A tensor that contains the token ids that have been generated so far.
 
         """
-        prompt_token_ids = init_state[0]
-        prompt_lengths = [len(prompt_token_ids[i]) for i in range(len(prompts))]
+        prompt_lengths = [
+            len(prompt_token_ids[i])
+            for _ in range(num_samples)
+            for i in range(len(prompts))
+        ]
 
         token_ids = [
             cur_token_ids[length:]
-            for cur_token_ids, length in zip(last_state.token_ids, prompt_lengths)
+            for cur_token_ids, length in zip(token_ids, prompt_lengths)
         ]
 
         return token_ids
@@ -147,7 +158,7 @@ class SequenceGenerator:
         stop_at: Optional[Union[str, List[str]]] = None,
         rng: Optional[torch.Generator] = None,
         kv_cache: Optional[torch.tensor] = None,
-    ) -> Union[str, List[str]]:
+    ) -> Union[str, List[str], List[List[str]]]:
         """Generate the full text sequence.
 
         Since `SequenceGenerator.stream` calls the tokenizer at every step this
@@ -187,27 +198,43 @@ class SequenceGenerator:
 
         stop_sequences = stop_at or self.stop_sequences
         max_tokens = max_tokens or self.max_tokens
-        fsms = [self.fsm.copy() for _ in prompts]
+        num_samples = self.num_particles
 
         if rng is None:
             rng = torch.Generator(device=self.device)
             rng.seed()
 
-        init_state = init_generator_state(
-            self.tokenizer, self.device, prompts, kv_cache
-        )
-        init_fsm_states = [self.fsm.first_state for _ in prompts]
+        prompt_token_ids, attention_masks = self.tokenizer.encode(prompts)
+        prompt_token_ids = prompt_token_ids.to(self.device)
+        attention_masks = attention_masks.to(self.device)
+
+        # To draw multiple samples we repeat the prompt as many times
+        # as there are samples. We copy the FSMs and initialize the
+        # FSM states.
+        num_samples = self.num_particles
+        batch_size = len(prompts)
+
+        prompt_token_ids = torch.repeat_interleave(prompt_token_ids, num_samples, dim=0)
+        attention_masks = torch.repeat_interleave(attention_masks, num_samples, dim=0)
+        fsm_states = [FSMState(0) for _ in range(batch_size * num_samples)]
+        fsms = [self.fsm.copy() for _ in range(batch_size * num_samples)]
 
         states = sequence_generator(
-            self.generate_token, fsms, init_state, init_fsm_states, rng
+            self.generate_token,
+            fsms,
+            prompt_token_ids,
+            attention_masks,
+            fsm_states,
+            rng=rng,
         )
 
         while True:
             try:
                 last_state = next(states)
                 if max_tokens or stop_sequences:
+                    token_ids = last_state.token_ids
                     generated_token_ids = self.get_generated_token_ids(
-                        init_state, prompts, last_state
+                        prompt_token_ids, prompts, token_ids, num_samples
                     )
                     if max_tokens and len(generated_token_ids[0]) >= max_tokens:
                         break
@@ -218,25 +245,31 @@ class SequenceGenerator:
             except StopIteration:
                 break
 
+        token_ids = last_state.token_ids
         generated_token_ids = self.get_generated_token_ids(
-            init_state, prompts, last_state
+            prompt_token_ids, prompts, token_ids, num_samples
         )
+
         generated = self.tokenizer.decode(generated_token_ids)
         stripped = [
             self.strip_stop_sequences(sequence, stop_sequences)
             for sequence in generated
         ]
-        try:
-            formatted = [self.format_sequence(sequence) for sequence in stripped]
-        except pyjson.decoder.JSONDecodeError:
-            raise TypeError(
-                "Could not format the output of the model into a dictionary or a Pydantic model."
-                + " The model has likely exceeded its context length. Please try again using `constr` (for Pydantic)"
-                + " and `maxLength` (for JSON Schema) to limit the length of the string fields. If this exception"
-                + " is raised nevertheless please open an issue: https://github.com/outlines-dev/outlines/issues"
-            )
+        formatted = [self.format_sequence(sequence) for sequence in stripped]
 
-        return formatted if len(formatted) > 1 else formatted[0]
+        # We reshape the output to (sample_size, batch_size)
+        output = []
+        step = len(prompts)
+        for i in range(0, len(formatted), step):
+            output.append(formatted[i : i + step])
+
+        # We remove leading dimensions for the output
+        if len(prompts) == 1 and num_samples == 1:
+            return output[0][0]
+        elif num_samples == 1:
+            return output[0]
+        else:
+            return output
 
     def stream(
         self,
@@ -245,7 +278,7 @@ class SequenceGenerator:
         stop_at: Optional[Union[str, List[str]]] = None,
         rng: Optional[torch.Generator] = None,
         kv_cache: Optional[torch.tensor] = None,
-    ) -> Iterator[Union[List[str], str]]:
+    ) -> Iterator[Union[List[str], List[List[str]], str]]:
         """Generate the text sequence one token at a time.
 
         Since `Tokenizer.decode` strips the whitespaces from the tokens we have no
@@ -284,25 +317,42 @@ class SequenceGenerator:
 
         stop_sequences = stop_at or self.stop_sequences
         max_tokens = max_tokens or self.max_tokens
-        fsms = [self.fsm.copy() for _ in prompts]
+        num_samples = self.num_particles
 
         if rng is None:
             rng = torch.Generator(device=self.device)
             rng.seed()
 
-        init_state = init_generator_state(
-            self.tokenizer, self.device, prompts, kv_cache
-        )
-        init_fsm_states = [self.fsm.first_state for _ in prompts]
+        prompt_token_ids, attention_masks = self.tokenizer.encode(prompts)
+        prompt_token_ids = prompt_token_ids.to(self.device)
+        attention_masks = attention_masks.to(self.device)
+
+        # To draw multiple samples we repeat the prompt as many times
+        # as there are samples. We copy the FSMs and initialize the
+        # FSM states.
+        num_samples = self.num_particles
+        batch_size = len(prompts)
+
+        prompt_token_ids = torch.repeat_interleave(prompt_token_ids, num_samples, dim=0)
+        attention_masks = torch.repeat_interleave(attention_masks, num_samples, dim=0)
+        fsm_states = [FSMState(0) for _ in range(batch_size * num_samples)]
+        fsms = [self.fsm.copy() for _ in range(batch_size * num_samples)]
 
         states = sequence_generator(
-            self.generate_token, fsms, init_state, init_fsm_states, rng
+            self.generate_token,
+            fsms,
+            prompt_token_ids,
+            attention_masks,
+            fsm_states,
+            rng=rng,
         )
 
-        def token_generator() -> Iterator[Union[List[str], str]]:
-            previously_generated_sequences = ["" for _ in prompts]
+        def token_generator() -> Iterator[Union[List[str], str, List[List[str]]]]:
+            previously_generated_sequences = [
+                "" for _ in range(batch_size)
+            ] * num_samples
             num_generated = 0
-            is_stop_at_reached = [False for _ in prompts]
+            is_stop_at_reached = [False for _ in range(batch_size)] * num_samples
             while True:
                 if (max_tokens and num_generated >= max_tokens) or all(
                     is_stop_at_reached
@@ -334,6 +384,18 @@ class SequenceGenerator:
                             generated_sequences, is_stop_at_reached
                         )
                     ]
-                yield next_tokens
+                # We reshape the output to (sample_size, batch_size)
+                output = []
+                step = len(prompts)
+                for i in range(0, len(next_tokens), step):
+                    output.append(next_tokens[i : i + step])
+
+                # We remove leading dimensions for the output
+                if len(prompts) == 1 and num_samples == 1:
+                    yield output[0][0]
+                elif num_samples == 1:
+                    yield output[0]
+                else:
+                    yield output
 
         return token_generator()

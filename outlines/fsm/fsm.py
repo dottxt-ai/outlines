@@ -271,7 +271,10 @@ class CFGFSM(FSM):
 
         interactive = self.parser.parse_interactive(self.generation)
         interactive.exhaust_lexer()
+
         options = {self.terminal_regexps[x] for x in interactive.accepts()}
+        # add %ignore terminals
+        options |= {self.terminal_regexps[x] for x in self.parser.lexer_conf.ignore}
 
         if self.terminal_regexps["$END"] in options:
             options.remove(self.terminal_regexps["$END"])

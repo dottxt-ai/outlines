@@ -32,13 +32,13 @@ dependencies = [
    "diskcache",
    "pydantic>=2.0",
    "scipy",
-   "torch>=2.1",
+   "torch>=2.1.0",
    "numba",
    "joblib",
    "referencing",
    "jsonschema",
    "requests",
-   "transformers==4.36.2",  # TODO: unpin when HF fixes release (4.37.0 is broken)
+   "transformers",
 ]
 dynamic = ["version"]
 
@@ -63,7 +63,8 @@ serve = [
     "vllm>=0.3.0",
     "ray==2.9.0",
     "uvicorn",
-    "fastapi"
+    "fastapi",
+    "pydantic>=2.0",
 ]
 
 [project.urls]
