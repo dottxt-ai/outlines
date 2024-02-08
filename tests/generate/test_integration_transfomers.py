@@ -543,6 +543,30 @@ def test_transformers_logits_vocab_size():
     assert sequence == "False"
 
 
+def test_transformers_json_custom_ws():
+    model_name = "hf-internal-testing/tiny-random-GPTJForCausalLM"
+    model = models.transformers(model_name, device="cpu")
+    prompt = "Output some JSON with newlines"  # try to force model to use newlines
+
+    schema = """{
+      "title": "spam",
+      "type": "object",
+      "properties": {
+           "foo" : {"type": "integer"},
+           "bar": {"type": "integer"}
+        },
+      "required": ["foo", "bar"]
+      }
+    """
+
+    rng = torch.Generator()
+    rng.manual_seed(0)
+
+    generator = generate.json(model, schema, whitespace_pattern=r"[ ]?")
+    generator.format_sequence = lambda x: x  # patch to return raw text
+    assert "\n" not in generator(prompt, max_tokens=500, rng=rng)
+
+
 def test_transformers_reduced_vocabulary_caching():
     tokenizer = TransformerTokenizer("gpt2")
     tokenizer2 = TransformerTokenizer("gpt2")
