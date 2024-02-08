@@ -10,35 +10,6 @@ from outlines.fsm.fsm import RegexFSM
 from outlines.fsm.json_schema import build_regex_from_object
 
 
-def _patched_apply_logits_processors(
-    logits,
-    sampling_metadata,
-):
-    """Patch vLLM's logit processor.
-
-    We need to patch the logits processor to pass the `seq_id` so we can
-    handle several sequences in `JSONLogitsProcessor`
-    """
-    logits_row_idx = 0
-    found_logits_processors = False
-    for seq_ids, sampling_params in sampling_metadata.seq_groups:
-        logits_processors = sampling_params.logits_processors
-        if logits_processors:
-            found_logits_processors = True
-            for seq_id in seq_ids:
-                logits_row = logits[logits_row_idx]
-                token_ids = sampling_metadata.seq_data[seq_id].output_token_ids
-                for logits_processor in logits_processors:
-                    logits_row = logits_processor(seq_id, token_ids, logits_row)
-                logits[logits_row_idx] = logits_row
-                logits_row_idx += 1
-        else:
-            logits_row_idx += len(seq_ids)
-    if found_logits_processors:
-        assert logits_row_idx == logits.shape[0]
-    return logits
-
-
 class RegexLogitsProcessor:
     def __init__(self, regex_string, llm):
         """Compile the FSM that drives the regex-structured generation.
@@ -56,10 +27,10 @@ class RegexLogitsProcessor:
         fsm = RegexFSM(regex_string, tokenizer)
         self.fsm = fsm
 
-    def __call__(
-        self, seq_id: int, input_ids: List[int], scores: torch.Tensor
-    ) -> torch.Tensor:
+    def __call__(self, input_ids: List[int], scores: torch.Tensor) -> torch.Tensor:
         """Use the FSM to bias the logits before sampling the next token."""
+
+        seq_id = hash(tuple(input_ids))
 
         if len(input_ids) == 0:  # Initialize the fsm states
             self.fsm_state: DefaultDict[int, int] = defaultdict(int)
