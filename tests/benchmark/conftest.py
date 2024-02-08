@@ -11,6 +11,14 @@ def tokenizer():
     return TransformerTokenizer("gpt2")
 
 
+raise Exception("TODO")
+
+
+@pytest.fixture
+def ensure_regexfsm_cache_cleared(tokenizer):
+    raise NotImplementedError
+
+
 @pytest.fixture
 def ensure_numba_compiled(tokenizer):
     RegexFSM("a", tokenizer)
