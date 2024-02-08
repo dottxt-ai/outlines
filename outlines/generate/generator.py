@@ -10,6 +10,10 @@ if TYPE_CHECKING:
     from outlines.fsm.fsm import FSM
 
 
+class ContextLengthExceededError(Exception):
+    pass
+
+
 @dataclasses.dataclass(frozen=True)
 class GenerationState:
     token_ids: torch.Tensor
@@ -24,7 +28,7 @@ def sequence_generator(
     sampler: Callable,
     fsms: List["FSM"],
     token_ids: torch.Tensor,
-    weights: torch.Tensor,
+    sequence_weights: torch.Tensor,
     attention_masks: torch.Tensor,
     fsm_states: List[FSMState],
     rng: torch.Generator = torch.Generator(),
@@ -43,7 +47,7 @@ def sequence_generator(
     token_ids
         A tensor of token ids on which the sequence distribution is conditioned, of
         shape ``(n_seqs, n_prompt_tokens)``
-    weights
+    sequence_weights
         A tensor that contains the initial weights of the sequences, of shape
         ``(n_seqs,)``
     attention_masks
@@ -66,13 +70,15 @@ def sequence_generator(
         try:
             logits, kv_cache = model(token_ids, attention_masks, kv_cache)
         except IndexError:  # Exceeding the context length
-            raise IndexError(
+            raise ContextLengthExceededError(
                 "The input length exceeds the context length of the model."
             )
 
         allowed_tokens = get_allowed_tokens(fsms, fsm_states)
         biased_logits = bias_logits(logits, allowed_tokens)
-        next_token_ids, ancestors, weights = sampler(biased_logits, weights, rng)
+        next_token_ids, ancestors, sequence_weights = sampler(
+            biased_logits, sequence_weights, rng
+        )
 
         token_ids = update_token_ids(token_ids, next_token_ids, ancestors)
         attention_masks = update_attention_masks(attention_masks, ancestors)
@@ -88,7 +94,7 @@ def sequence_generator(
                 token_ids,
                 kv_cache,
                 logits,
-                weights,
+                sequence_weights,
                 fsm_states,
             )
             return
@@ -97,7 +103,7 @@ def sequence_generator(
             token_ids,
             kv_cache,
             logits,
-            weights,
+            sequence_weights,
             fsm_states,
         )
 

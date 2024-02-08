@@ -48,34 +48,23 @@ class SequenceGenerator:
     def get_generated_token_ids(
         self,
         prompt_token_ids: torch.Tensor,
-        prompts: List[str],
         token_ids: torch.Tensor,
-        num_samples: int,
     ) -> List[torch.Tensor]:
         """Get the tokens generated so far.
 
         Parameters
         ----------
-        init_state
-            The initial state of the generation.
-        prompts
-            The prompts passed to the generator.
+        prompt_token_ids
+            Tensor that contains the token ids of the sequences' prompts.
         token_ids
             The generated token ids.
-        num_samples
-            The number of samples taken for each sequence
 
         Returns
         -------
         A tensor that contains the token ids that have been generated so far.
 
         """
-        prompt_lengths = [
-            len(prompt_token_ids[i])
-            for _ in range(num_samples)
-            for i in range(len(prompts))
-        ]
-
+        prompt_lengths = [len(prompt) for prompt in prompt_token_ids]
         token_ids = [
             cur_token_ids[length:]
             for cur_token_ids, length in zip(token_ids, prompt_lengths)
@@ -240,7 +229,7 @@ class SequenceGenerator:
                 if max_tokens or stop_sequences:
                     token_ids = last_state.token_ids
                     generated_token_ids = self.get_generated_token_ids(
-                        prompt_token_ids, prompts, token_ids, num_samples
+                        prompt_token_ids, token_ids
                     )
                     if max_tokens and len(generated_token_ids[0]) >= max_tokens:
                         break
@@ -252,9 +241,7 @@ class SequenceGenerator:
                 break
 
         token_ids = last_state.token_ids
-        generated_token_ids = self.get_generated_token_ids(
-            prompt_token_ids, prompts, token_ids, num_samples
-        )
+        generated_token_ids = self.get_generated_token_ids(prompt_token_ids, token_ids)
 
         generated = self.tokenizer.decode(generated_token_ids)
         stripped = [
@@ -265,14 +252,16 @@ class SequenceGenerator:
 
         # We reshape the output to (batch_size, sample_size)
         output = []
-        for i in range(len(prompts)):
+        for i in range(batch_size):
             output.append(formatted[i : i + num_samples])
 
         # We remove leading dimensions for the output
-        if len(prompts) == 1 and num_samples == 1:
+        if batch_size == 1 and num_samples == 1:
             return output[0][0]
+        elif batch_size == 1:
+            return output[0]
         elif num_samples == 1:
-            return [seq[0] for seq in output]
+            return [samples[0] for samples in output]
         else:
             return output
 
@@ -394,17 +383,19 @@ class SequenceGenerator:
                             generated_sequences, is_stop_at_reached
                         )
                     ]
-                # We reshape the output to (sample_size, batch_size)
+
+                # We reshape the output to (batch_size, sample_size)
                 output = []
-                step = len(prompts)
-                for i in range(0, len(next_tokens), step):
-                    output.append(next_tokens[i : i + step])
+                for i in range(batch_size):
+                    output.append(next_tokens[i : i + num_samples])
 
                 # We remove leading dimensions for the output
-                if len(prompts) == 1 and num_samples == 1:
+                if batch_size == 1 and num_samples == 1:
                     yield output[0][0]
-                elif num_samples == 1:
+                elif batch_size == 1:
                     yield output[0]
+                elif num_samples == 1:
+                    yield [samples[0] for samples in output]
                 else:
                     yield output
 
