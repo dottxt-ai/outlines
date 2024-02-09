@@ -33,8 +33,8 @@ if __name__ == "__main__":
     # Download model from https://huggingface.co/TheBloke/phi-2-GGUF
     model = outlines.models.llamacpp("./phi-2.Q3_K_M.gguf", device="cpu")
 
-    # Construct guided sequence generator
-    generator = outlines.generate.json(model, Character, max_tokens=512)
+    # Construct structured sequence generator
+    generator = outlines.generate.json(model, Character)
 
     # Draw a sample
     rng = torch.Generator(device="cpu")
@@ -42,5 +42,5 @@ if __name__ == "__main__":
 
     prompt = "Instruct: You are a leading role play gamer. You have seen thousands of different characters and their attributes.\nPlease return a JSON object with common attributes of an RPG character. Give me a character description\nOutput:"
 
-    sequence = generator(prompt, rng=rng)
+    sequence = generator(prompt, rng=rng, max_tokens=512)
     print(sequence)

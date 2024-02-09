@@ -147,7 +147,7 @@ model = outlines.models.transformers(
 )
 ```
 
-## JSON-guided generation of profiles
+## JSON-structured generation of profiles
 
 We will now generate a dating profile from a textual description of oneself:
 

@@ -75,9 +75,9 @@ print(labels)
 # ['URGENT', 'STANDARD']
 ```
 
-## Using JSON-guided generation
+## Using JSON-structured generation
 
-Another (convoluted) way to do multi-label classification is to JSON-guided generation in Outlines. We first need to define our Pydantic schema that contains the labels:
+Another (convoluted) way to do multi-label classification is to JSON-structured generation in Outlines. We first need to define our Pydantic schema that contains the labels:
 
 ```python
 from enum import Enum

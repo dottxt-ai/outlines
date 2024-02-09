@@ -14,7 +14,7 @@ hide:
 
 <center>
     <h1 class="title">Generate text with LLMs</h1>
-    <h2 class="subtitle">Robust prompting & (guided) text generation</h2>
+    <h2 class="subtitle">Robust prompting & (structured) text generation</h2>
     [:fontawesome-solid-bolt: Get started](welcome.md){ .md-button .md-button--primary }
     [:fontawesome-brands-discord: Join the Community](https://discord.gg/ZxBxyWmW5n){ .md-button }
 

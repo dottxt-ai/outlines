@@ -2,7 +2,7 @@
 
 Named Entity Extraction is a fundamental problem in NLP. It involves identifying and categorizing named entities within a document: people, organization, dates, places, etc. It is usually the first step in a more complex NLP worklow. Here we will use the example of a pizza restaurant that receives orders via their website and need to identify the number and types of pizzas that are being ordered.
 
-Getting LLMs to output the extracted entities in a structured format can be challenging. In this tutorial we will see how we can use Outlines' JSON-guided generation to extract entities from a document and return them in a valid JSON data structure 100% of the time.
+Getting LLMs to output the extracted entities in a structured format can be challenging. In this tutorial we will see how we can use Outlines' JSON-structured generation to extract entities from a document and return them in a valid JSON data structure 100% of the time.
 
 As always, we start with initializing the model. We will be using a quantized version of Mistal-7B-v0.1 (we're GPU poor):
 

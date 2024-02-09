@@ -16,12 +16,12 @@ Outlines is not even one year old and it's already gone a long way! As we just r
 
 Before delving into [the detailed roadmap](#detailed-roadmap), let me share a few thoughts and explain the general direction of the library. These thoughts are informed with my multiple interactions with users, either on [Twitter](https://twitter.com/remilouf) or in our [Discord server](https://discord.gg/ZxBxyWmW5n).
 
-*Outlines currently differentiates itself* from other libraries with its efficient JSON- and regex- constrained generation. A user-facing interface for grammar-guided generation (it had been hidden in the repository) was also recently added. But there is much more we can do along these lines. In 2024 will we will keep pushing in the direction of more accurate, faster constrained generation.
+*Outlines currently differentiates itself* from other libraries with its efficient JSON- and regex- constrained generation. A user-facing interface for grammar-structured generation (it had been hidden in the repository) was also recently added. But there is much more we can do along these lines. In 2024 will we will keep pushing in the direction of more accurate, faster constrained generation.
 
 Outlines also supports many models providers: `transformers`, `mamba`, `llama.cpp` and `exllama2`. Those *integrations represent a lot of maintenance*, and we will need to simplify them. For instance, `transformers` now supports quantized models, and we will soon deprecate the support for `autoawq` and `autogptq`.
 Thanks to a refactor of the library, it is now possible to use our constrained generation method by using logits processor with all other libraries, except `mamba`. We will look for libraries that provide state-space models and allow to pass a logits processor during inference. We will interface with `llama.cpp` and `exllama2` using logits processors.
 
-*We would like expand our work to the whole sampling layer*, and add new sampling methods that should make guided generation more accurate. This means we will keep the `transformers` integration as it is today and will expand our text generation logic around this library.
+*We would like expand our work to the whole sampling layer*, and add new sampling methods that should make structured generation more accurate. This means we will keep the `transformers` integration as it is today and will expand our text generation logic around this library.
 
 Making workflows re-usable and easy to share is difficult today. That is why *we are big believers in [outlines functions](https://github.com/outlines-dev/functions)*. We will keep improving the interface and adding examples.
 
@@ -49,12 +49,12 @@ We want to keep the current integrations but lower the maintenance cost so we ca
 * Integrate with llama.cpp via a logits processor;
 * Integrate with exllamav2 via a logits processor;
 
-### Push guided generation further
+### Push structured generation further
 
 We're just getting started!
 
-* Improve the performance of existing guided generation algorithms;
-* Improve the correctness of guided generation algorithms;
+* Improve the performance of existing structured generation algorithms;
+* Improve the correctness of structured generation algorithms;
 * Add ready-to-use grammars in the [grammars](https://github.com/outlines-dev/grammars) repository or in a submodule in Outlines.
 
 ### Keep developing Outlines functions
@@ -64,12 +64,12 @@ Functions are awesome, use them!
 * Implement a CLI `outlines serve` that allows to serve Outlines functions locally;
 * Add more functions to the [functions](https://github.com/outlines-dev/functions) repository.
 
-### Serve guided generation
+### Serve structured generation
 
-We want to make it easier to serve guided generation and outlines functions.
+We want to make it easier to serve structured generation and outlines functions.
 
 * Implement the outlines serve CLI `outlines serve`
-  - Serve local APIs that perform guided generation;
+  - Serve local APIs that perform structured generation;
   - Serve Outlines functions.
 
 ### Improve the generation layer

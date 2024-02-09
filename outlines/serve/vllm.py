@@ -1,4 +1,4 @@
-"""Make vLLM compatible with Outlines' guided generation."""
+"""Make vLLM compatible with Outlines' structured generation."""
 import json
 import math
 from collections import defaultdict
@@ -41,7 +41,7 @@ def _patched_apply_logits_processors(
 
 class RegexLogitsProcessor:
     def __init__(self, regex_string, llm):
-        """Compile the FSM that drives the regex-guided generation.
+        """Compile the FSM that drives the regex-structured generation.
 
         Parameters
         ----------
@@ -106,7 +106,7 @@ class RegexLogitsProcessor:
 
 class JSONLogitsProcessor(RegexLogitsProcessor):
     def __init__(self, schema, llm):
-        """Compile the FSM that drives the JSON-guided generation.
+        """Compile the FSM that drives the JSON-structured generation.
 
         Parameters
         ----------
