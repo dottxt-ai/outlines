@@ -28,9 +28,9 @@ Once the model is initialized you can build a text generator. This generator can
     import outlines
 
     model = outlines.models.transformers("mistralai/Mistral-7B-Instruct-v0.2")
-    generator = outlines.generate.text(model, max_tokens=100)
+    generator = outlines.generate.text(model)
 
-    result = generator("What's 2+2?")
+    result = generator("What's 2+2?", max_tokens=100)
 
     print(result)
     # That's right, it's 4! But remember, a delicious and nutrient dense 4,
@@ -44,9 +44,9 @@ Once the model is initialized you can build a text generator. This generator can
     import outlines
 
     model = outlines.models.transformers("mistralai/Mistral-7B-Instruct-v0.2")
-    generator = outlines.generate.text(model, max_tokens=100)
+    generator = outlines.generate.text(model)
 
-    stream = generator.stream("What's 2+2?")
+    stream = generator.stream("What's 2+2?", max_tokens=4)
     for i in range(5):
         token = next(stream)
         print(token)
@@ -72,7 +72,7 @@ print(color)
 # Blue
 ```
 
-### JSON-guided generation
+### JSON-structured generation
 
 Outlines can guide models so that they output valid JSON **100%** of the time. You can either specify the structure using [Pydantic][pydantic]{:target="_blank"} or a string that contains a [JSON Schema][jsonschema]{:target="_blank"}:
 
@@ -145,7 +145,7 @@ Outlines can guide models so that they output valid JSON **100%** of the time. Y
 
     We advise you to constrain the length of the strings fields when first testing your schema, especially with small models.
 
-### Grammar-guided generation
+### Grammar-structured generation
 
 Outlines also allows to generate text that is valid to any [context-free grammar][cfg]{:target="_blank"} (CFG) in the [EBNF format][ebnf]{:target="_blank"}. Grammars can be intimidating, but they are a very powerful tool! Indeed, they determine the syntax of every programming language, valid chess moves, molecule structure, can help with procedural graphics generation, etc.
 
@@ -200,7 +200,7 @@ print(result)
 The available grammars are listed [here](https://github.com/outlines-dev/outlines/tree/main/outlines/grammars).
 
 
-### Regex-guided generation
+### Regex-structured generation
 
 Slightly simpler, but no less useful, Outlines can generate text that is in the language of a [regular expression](https://www.regular-expressions.info/tutorial.html). For instance to force the model to generate IP addresses:
 
@@ -219,7 +219,7 @@ print(result)
 
 ### Generate a given Python type
 
-We provide a shortcut to regex-guided generation for simple use cases. Pass a Python type to the `outlines.generate.format` function and the LLM will output text that matches this type:
+We provide a shortcut to regex-structured generation for simple use cases. Pass a Python type to the `outlines.generate.format` function and the LLM will output text that matches this type:
 
 ```python
 from outlines import models, generate

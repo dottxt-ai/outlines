@@ -86,7 +86,7 @@ from outlines import models, generate, samplers
 model = models.transformers("mistralai/Mistral-7B-Instruct-v0.2")
 sampler = samplers.beam_search(beams=5)
 
-generator = generate.text(model, sampler=sampler)
+generator = generate.text(model, sampler)
 answer = generator("What is 2+2?")
 
 print(answer)

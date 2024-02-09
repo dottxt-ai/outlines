@@ -1,6 +1,7 @@
 from functools import singledispatch
-from typing import Callable, List, Optional
+from typing import Callable, List
 
+from outlines.generate.api import SequenceGenerator
 from outlines.models import OpenAI
 from outlines.samplers import Sampler, multinomial
 
@@ -9,21 +10,15 @@ from .regex import regex
 
 @singledispatch
 def choice(
-    model,
-    choices: List[str],
-    max_tokens: Optional[int] = None,
-    sampler: Sampler = multinomial(),
-):
+    model, choices: List[str], sampler: Sampler = multinomial()
+) -> SequenceGenerator:
     regex_str = r"(" + r"|".join(choices) + r")"
-    return regex(model, regex_str, max_tokens, sampler)
+    return regex(model, regex_str, sampler)
 
 
 @choice.register(OpenAI)
 def choice_openai(
-    model: OpenAI,
-    choices: List[str],
-    max_tokens: Optional[int] = None,
-    sampler: Sampler = multinomial(),
+    model: OpenAI, choices: List[str], sampler: Sampler = multinomial()
 ) -> Callable:
     if not isinstance(sampler, multinomial):
         raise NotImplementedError(
