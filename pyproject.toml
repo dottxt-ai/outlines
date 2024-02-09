@@ -11,7 +11,7 @@ keywords=[
     "machine learning",
     "deep learning",
     "language models",
-    "guided generation",
+    "structured generation",
 ]
 classifiers = [
     "Development Status :: 5 - Production/Stable",

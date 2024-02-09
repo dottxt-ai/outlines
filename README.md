@@ -9,7 +9,7 @@
 [![Discord][discord-badge]][discord]
 [![Twitter][twitter-badge]][twitter]
 
-*Robust (guided) text generation.*
+*Robust (structured) text generation.*
 
 </div>
 
@@ -27,9 +27,9 @@ First time here? Go to our [setup guide](https://outlines-dev.github.io/outlines
 - [x] 🤖 [Multiple model integrations](https://outlines-dev.github.io/outlines/installation): OpenAI, transformers, llama.cpp, exllama2, mamba
 - [x] 🖍️ Simple and powerful prompting primitives based on the [Jinja templating engine](https://jinja.palletsprojects.com/)
 - [x] 🚄 [Multiple choices](#multiple-choices), [type constraints](#type-constraint) and dynamic stopping
-- [x] ⚡ Fast [regex-guided generation](#efficient-regex-guided-generation)
+- [x] ⚡ Fast [regex-structured generation](#efficient-regex-structured-generation)
 - [x] 🔥 Fast [JSON generation](#efficient-json-generation-following-a-pydantic-model) following a JSON schema or a Pydantic model
-- [x] 📝 [Grammar-guided generation](#using-context-free-grammars-to-guide-generation)
+- [x] 📝 [Grammar-structured generation](#using-context-free-grammars-to-guide-generation)
 - [x] 🐍 Interleave completions with loops, conditionals, and custom Python functions
 - [x] 💾 Caching of generations
 - [x] 🗂️ Batch inference
@@ -40,7 +40,7 @@ First time here? Go to our [setup guide](https://outlines-dev.github.io/outlines
 Outlines 〰 has new releases and features coming every week. Make sure to ⭐ star and 👀 watch this repository, follow [@dottxtai][twitter] to stay up to date!
 
 
-## Guided generation
+## Structured generation
 
 The first step towards reliability of systems that include large language models
 is to ensure that there is a well-defined interface between their output and
@@ -88,10 +88,10 @@ print(answer)
 # 1.41421356
 ```
 
-### Efficient regex-guided generation
+### Efficient regex-structured generation
 
-Outlines also comes with fast regex-guided generation. In fact, the `choice` and
-`format` functions above all use regex-guided generation under the
+Outlines also comes with fast regex-structured generation. In fact, the `choice` and
+`format` functions above all use regex-structured generation under the
 hood:
 
 ``` python
@@ -102,28 +102,28 @@ model = outlines.models.transformers("mistralai/Mistral-7B-Instruct-v0.2")
 prompt = "What is the IP address of the Google DNS servers? "
 
 generator = outlines.generate.text(model)
-unguided = generator(prompt, max_tokens=30)
+unstructured = generator(prompt, max_tokens=30)
 
 generator = outlines.generate.regex(
     model,
     r"((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)",
 )
-guided = generator(prompt, max_tokens=30)
+structured = generator(prompt, max_tokens=30)
 
-print(unguided)
+print(unstructured)
 # What is the IP address of the Google DNS servers?
 #
 # Passive DNS servers are at DNS servers that are private.
 # In other words, both IP servers are private. The database
 # does not contain Chelsea Manning
 
-print(guided)
+print(structured)
 # What is the IP address of the Google DNS servers?
 # 2.2.6.1
 ```
 
-Unlike other libraries, regex-guided generation in Outlines is almost as fast
-as non-guided generation.
+Unlike other libraries, regex-structured generation in Outlines is almost as fast
+as non-structured generation.
 
 ### Efficient JSON generation following a Pydantic model
 
@@ -162,8 +162,8 @@ class Character(BaseModel):
 
 model = outlines.models.transformers("mistralai/Mistral-7B-Instruct-v0.2")
 
-# Construct guided sequence generator
-generator = outlines.generate.json(model, Character, max_tokens=100)
+# Construct structured sequence generator
+generator = outlines.generate.json(model, Character)
 
 # Draw a sample
 rng = torch.Generator(device="cuda")

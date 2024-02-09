@@ -29,7 +29,7 @@ model = models.transformers("microsoft/phi-2")
 
 ## A little help for the language model
 
-To make sure Phi-2 generates valid chess moves we will use Outline's regex-guided generation. We define a function that takes the current state of the board and returns a regex that matches all possible legal moves:
+To make sure Phi-2 generates valid chess moves we will use Outline's regex-structured generation. We define a function that takes the current state of the board and returns a regex that matches all possible legal moves:
 
 ```python
 import re
@@ -64,8 +64,8 @@ board_state = " "
 turn_number = 0
 while not board.is_game_over():
     regex_pattern = legal_moves_regex(board)
-    guided = generate.regex(model, regex_pattern)(prompt + board_state)
-    move = board.parse_san(guided)
+    structured = generate.regex(model, regex_pattern)(prompt + board_state)
+    move = board.parse_san(structured)
 
     if turn_number % 2 == 0 :  # It's White's turn
         board_state += board.san(move) + " "
