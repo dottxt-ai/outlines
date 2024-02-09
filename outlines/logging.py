@@ -92,7 +92,7 @@ def log_logits(
         next_token_id = next_token_ids[b]
         token_ids = token_ids_group[b]
 
-        generation = only(tokenizer.decode(token_ids))
+        generation = tokenizer.decode(token_ids)
         next_token = only(tokenizer.decode(next_token_id))
 
         # Log the information for the current batch
