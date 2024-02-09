@@ -20,41 +20,68 @@ def enable_logits_logging():
 
 def log_logits(
     tokenizer: "Tokenizer",
-    logits: torch.Tensor,
+    unbiased_logits_group: torch.Tensor,
+    biased_logits_group: torch.Tensor,
     next_token_ids: torch.Tensor,
     top_n: int = 8,
 ):
-    """ """
+    """
+    Intended for use with sequence generators to help debug low quality generations.
 
-    def only(l):
-        assert len(list(l)) == 1
-        return l[0]
+    Disabled unless you call enable_logits_logging()
 
+    Simple wrapper which logs
+    - selected next token string
+    - probabilities for the EOS token, and the top n tokens
+    """
     # this function is expensive, skip it if logging isn't enabled
     if logits_logger.getEffectiveLevel() >= LOG_LEVEL_OFF:
         return
 
-    if logits.dim() == 1:
-        logits = logits.unsqueeze(0)
-        next_token_ids = next_token_ids.unsqueeze(0)
+    def only(l):
+        # Assert only one item in iterable, return sole item
+        assert len(list(l)) == 1
+        return l[0]
 
-    batch_size = logits.size(0)
-
-    for b in range(batch_size):
-        current_logits = logits[b]
-        next_token_id = next_token_ids[b]
-
+    def get_top_token_props_log_str(logits):
+        """Get string representation of top_n token probs given logits"""
         # all token probs for the current batch
-        probs = torch.nn.functional.softmax(current_logits, dim=-1)
+        probs = torch.nn.functional.softmax(logits, dim=-1)
 
         # top candidate tokens probs
         top_probs, top_indices = torch.topk(probs, top_n)
-        top_tokens_detail_str = ", ".join(
+
+        # ensure EOS is included
+        if tokenizer.eos_token_id not in top_indices:
+            top_indices = torch.cat(
+                (top_indices, torch.tensor([tokenizer.eos_token_id]))
+            )
+            top_probs = torch.cat((top_probs, torch.tensor([min(top_probs) - 1e-6])))
+
+        top_token_reprs = [
+            "EOS"
+            if idx == tokenizer.eos_token_id
+            else repr(only(tokenizer.decode([idx])))
+            for idx in top_indices
+        ]
+        return ", ".join(
             [
-                f"{repr(only(tokenizer.decode([idx])))}: {prob.item():.3f}"
-                for prob, idx in zip(top_probs, top_indices)
+                f"{token_repr}: {prob.item():.3f}"
+                for prob, token_repr in zip(top_probs, top_token_reprs)
             ]
         )
+
+    # convert logits tensor of dimensions [n] to dimensions [1, n]
+    if unbiased_logits_group.dim() == 1:
+        unbiased_logits_group = unbiased_logits_group.unsqueeze(0)
+        biased_logits_group = biased_logits_group.unsqueeze(0)
+        next_token_ids = next_token_ids.unsqueeze(0)
+
+    batch_size = unbiased_logits_group.size(0)
+    for b in range(batch_size):
+        unbiased_logits = unbiased_logits_group[b]
+        biased_logits = biased_logits_group[b]
+        next_token_id = next_token_ids[b]
 
         # tokens from current_next_token_ids
         next_token = only(tokenizer.decode(next_token_id))
@@ -62,7 +89,8 @@ def log_logits(
         # Log the information for the current batch
         logits_logger.info(f"Selected: {repr(next_token)} for batch_item={b}")
         logits_logger.info(
-            f"\tEOS Prob: {probs[tokenizer.eos_token_id].item()}"
-            + f"(logit = {current_logits[tokenizer.eos_token_id].item()})"
+            f"\tTop Raw Tokens: {get_top_token_props_log_str(unbiased_logits)}"
         )
-        logits_logger.info(f"\tTop {top_n} Tokens: {top_tokens_detail_str}")
+        logits_logger.info(
+            f"\tTop Guided Tokens: {get_top_token_props_log_str(biased_logits)}"
+        )
