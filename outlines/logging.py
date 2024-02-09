@@ -20,6 +20,7 @@ def enable_logits_logging():
 
 def log_logits(
     tokenizer: "Tokenizer",
+    token_ids_group: torch.Tensor,
     unbiased_logits_group: torch.Tensor,
     biased_logits_group: torch.Tensor,
     next_token_ids: torch.Tensor,
@@ -77,21 +78,26 @@ def log_logits(
 
     # convert logits tensor of dimensions [n] to dimensions [1, n]
     if unbiased_logits_group.dim() == 1:
+        token_ids_group = token_ids_group.unsqueeze(0)
         unbiased_logits_group = unbiased_logits_group.unsqueeze(0)
         biased_logits_group = biased_logits_group.unsqueeze(0)
         next_token_ids = next_token_ids.unsqueeze(0)
+
+    logits_logger.info("--------Batch Logit Details--------")
 
     batch_size = unbiased_logits_group.size(0)
     for b in range(batch_size):
         unbiased_logits = unbiased_logits_group[b]
         biased_logits = biased_logits_group[b]
         next_token_id = next_token_ids[b]
+        token_ids = token_ids_group[b]
 
-        # tokens from current_next_token_ids
+        generation = only(tokenizer.decode(token_ids))
         next_token = only(tokenizer.decode(next_token_id))
 
         # Log the information for the current batch
-        logits_logger.info(f"Selected: {repr(next_token)} for batch_item={b}")
+        logits_logger.info(f"Generation: {generation}")
+        logits_logger.info(f"\tSelected: {repr(next_token)} for batch_item={b}")
         logits_logger.info(
             f"\tTop Raw Tokens: {get_top_token_props_log_str(unbiased_logits)}"
         )

@@ -82,7 +82,7 @@ def sequence_generator(
             biased_logits, sequence_weights, rng
         )
 
-        log_logits(model.tokenizer, token_ids, biased_logits, next_token_ids)
+        log_logits(model.tokenizer, token_ids, logits, biased_logits, next_token_ids)
 
         token_ids = update_token_ids(token_ids, next_token_ids, ancestors)
         attention_masks = update_attention_masks(attention_masks, ancestors)
