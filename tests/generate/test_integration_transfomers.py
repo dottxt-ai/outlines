@@ -14,56 +14,6 @@ from outlines.models.transformers import TransformerTokenizer
 from outlines.samplers import beam_search, multinomial
 
 
-def test_deprecation():
-    import outlines
-
-    model_name = "hf-internal-testing/tiny-random-GPTJForCausalLM"
-    model = models.transformers(model_name, device="cpu")
-
-    with pytest.warns(DeprecationWarning):
-        outlines.text.generate.continuation(model)
-
-    with pytest.warns(DeprecationWarning):
-        outlines.text.generate.continuation(model)
-
-    with pytest.warns(DeprecationWarning):
-        outlines.text.generate.choice(model, ["A", "B"])
-
-    with pytest.warns(DeprecationWarning):
-        outlines.text.generate.regex(model, "[0-9]")
-
-    with pytest.warns(DeprecationWarning):
-        outlines.text.generate.format(model, int)
-
-    with pytest.warns(DeprecationWarning):
-        outlines.generate.text(model, max_tokens=10)
-
-    with pytest.warns(DeprecationWarning):
-        outlines.generate.text(model, stop_at=["."])
-
-    with pytest.warns(DeprecationWarning):
-        outlines.generate.regex(model, "[0-9]", max_tokens=10)
-
-    with pytest.warns(DeprecationWarning):
-        outlines.generate.format(model, int, max_tokens=10)
-
-    with pytest.warns(DeprecationWarning):
-        outlines.generate.choice(model, ["A", "B"], max_tokens=10)
-
-    class Character(BaseModel):
-        name: str
-
-    with pytest.warns(DeprecationWarning):
-        outlines.generate.json(model, Character, max_tokens=10)
-
-    with pytest.warns(DeprecationWarning):
-
-        def function(a: int):
-            pass
-
-        outlines.text.generate.json(model, function, max_tokens=10)
-
-
 def test_transformers_integration_text():
     rng = torch.Generator()
     rng.manual_seed(10000)  # Choosen so <EOS> is generated

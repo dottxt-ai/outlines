@@ -1,4 +1,3 @@
-import warnings
 from typing import Iterator, List, Optional, Union
 
 import torch
@@ -14,36 +13,13 @@ class SequenceGenerator:
         model,
         sampler,
         device,
-        *,
-        max_tokens=None,
-        stop_at=None,
     ):
         self.fsm = fsm
         self.model = model
         self.sampler = sampler
         self.tokenizer = model.tokenizer
         self.device = device
-        self.max_tokens = max_tokens
         self.num_samples = sampler.samples
-
-        if isinstance(stop_at, str):
-            stop_at = [stop_at]
-        self.stop_sequences = stop_at
-
-        if stop_at is not None:
-            warnings.warn(
-                "The use of the `stop_at` keyword when initiating a SequenceGenerator is deprecated, "
-                "please use it when calling the genetator instead. "
-                "The parameter will be removed in Outlines v0.1.0.",
-                DeprecationWarning,
-            )
-        if max_tokens is not None:
-            warnings.warn(
-                "The use of the `max_tokens` keyword when initiating a SequenceGenerator is deprecated, "
-                "please use it when calling the genetator instead. "
-                "The parameter will be removed in Outlines v0.1.0.",
-                DeprecationWarning,
-            )
 
     def get_generated_token_ids(
         self,
@@ -98,7 +74,9 @@ class SequenceGenerator:
             ]
         )
 
-    def strip_stop_sequences(self, sequence: str, stop_sequences: List[str]) -> str:
+    def strip_stop_sequences(
+        self, sequence: str, stop_sequences: Optional[List[str]]
+    ) -> str:
         """Remove the stop sequences from the generated sequences.
 
         Parameters
@@ -186,8 +164,7 @@ class SequenceGenerator:
         if isinstance(stop_at, str):
             stop_at = [stop_at]
 
-        stop_sequences = stop_at or self.stop_sequences
-        max_tokens = max_tokens or self.max_tokens
+        stop_sequences = stop_at
         num_samples = self.num_samples
 
         if rng is None:
@@ -309,8 +286,7 @@ class SequenceGenerator:
         if isinstance(stop_at, str):
             stop_at = [stop_at]
 
-        stop_sequences = stop_at or self.stop_sequences
-        max_tokens = max_tokens or self.max_tokens
+        stop_sequences = stop_at
         num_samples = self.num_samples
 
         if rng is None:
