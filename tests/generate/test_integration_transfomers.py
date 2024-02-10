@@ -226,8 +226,7 @@ def test_transformers_integration_integer():
     prompt = "Write a short sentence"
     sequence = generate.format(model, int)(prompt, max_tokens=10, rng=rng)
 
-    assert sequence != ""
-    int(sequence)
+    assert isinstance(sequence, int)
 
 
 def test_transformers_integration_integer_array():
@@ -240,8 +239,8 @@ def test_transformers_integration_integer_array():
     sequence = generate.format(model, int)(prompts, max_tokens=10, rng=rng)
     assert isinstance(sequence, list)
     assert len(sequence) == 2
-    int(sequence[0])
-    int(sequence[1])
+    assert isinstance(sequence[0], int)
+    assert isinstance(sequence[1], int)
 
 
 def test_transformers_integration_float():
@@ -254,7 +253,7 @@ def test_transformers_integration_float():
     sequence = generate.format(model, float)(prompt, max_tokens=10, rng=rng)
 
     assert sequence != ""
-    float(sequence)
+    assert isinstance(sequence, float)
 
 
 def test_transformers_integration_bool():
@@ -267,7 +266,7 @@ def test_transformers_integration_bool():
     sequence = generate.format(model, bool)(prompt, max_tokens=10, rng=rng)
 
     assert sequence != ""
-    bool(sequence)
+    assert isinstance(sequence, bool)
 
 
 def test_transformers_integration_date():
@@ -280,7 +279,7 @@ def test_transformers_integration_date():
     sequence = generate.format(model, datetime.date)(prompt, max_tokens=10, rng=rng)
 
     assert sequence != ""
-    datetime.datetime.strptime(sequence, "%Y-%m-%d")
+    assert isinstance(sequence, datetime.date)
 
 
 def test_transformers_integration_time():
@@ -293,7 +292,7 @@ def test_transformers_integration_time():
     sequence = generate.format(model, datetime.time)(prompt, max_tokens=10, rng=rng)
 
     assert sequence != ""
-    datetime.datetime.strptime(sequence, "%H:%M:%S")
+    assert isinstance(sequence, datetime.time)
 
 
 def test_transformers_integration_datetime():
@@ -306,7 +305,7 @@ def test_transformers_integration_datetime():
     sequence = generate.format(model, datetime.datetime)(prompt, max_tokens=20, rng=rng)
 
     assert sequence != 0
-    datetime.datetime.strptime(sequence, "%Y-%m-%d %H:%M:%S")
+    assert isinstance(sequence, datetime.datetime)
 
 
 def test_transformers_integration_choice():

@@ -10,8 +10,31 @@ from .regex import regex
 
 @singledispatch
 def format(model, python_type, sampler: Sampler = multinomial()) -> SequenceGenerator:
-    regex_str = python_types_to_regex(python_type)
-    return regex(model, regex_str, sampler)
+    """Generate structured data that can be parsed as a Python type.
+
+    Parameters
+    ----------
+    model:
+        An instance of `Transformer` that represents a model from the
+        `transformers` library.
+    python_type:
+        A Python type. The output of the generator must be parseable into
+        this type.
+    sampler:
+        The sampling algorithm to use to generate token ids from the logits
+        distribution.
+
+    Returns
+    -------
+    A `SequenceGenerator` instance that generates text constrained by the Python type
+    and translates this text into the corresponding type.
+
+    """
+    regex_str, format_fn = python_types_to_regex(python_type)
+    generator = regex(model, regex_str, sampler)
+    generator.format_sequence = format_fn
+
+    return generator
 
 
 @format.register(OpenAI)
