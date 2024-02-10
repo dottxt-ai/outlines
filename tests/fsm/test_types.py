@@ -25,5 +25,5 @@ from outlines.fsm.types import (
     ],
 )
 def test_python_types(python_type, regex):
-    test_regex = python_types_to_regex(python_type)
+    test_regex, _ = python_types_to_regex(python_type)
     assert regex == test_regex

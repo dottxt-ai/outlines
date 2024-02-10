@@ -30,8 +30,6 @@ def json(
     schema_object:
         The JSON Schema to generate data for. Can be a JSON string, a Pydantic model, or a callable
         that returns a JSON schema.
-    max_tokens:
-        The maximum number of tokens to generate.
     sampler:
         The sampling algorithm to use to generate token ids from the logits
         distribution.
@@ -43,6 +41,7 @@ def json(
     -------
     A `SequenceGenerator` instance that generates text constrained by the schema_object and
     transforms the result if BaseModel is used.
+
     """
     if isinstance(schema_object, type(BaseModel)):
         schema = pyjson.dumps(schema_object.model_json_schema())
