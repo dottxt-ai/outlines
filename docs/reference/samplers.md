@@ -60,6 +60,15 @@ You can ask Outlines to only consider the top-k logits at each step by specifyin
 sampler = samplers.multinomial(3, top_k=10)
 ```
 
+### Top-p sampling
+
+You can ask Outlines to only consider the highest probability tokens such that their cumulative probability is greater than a threshold `p`. Specify the `top_p` keyword argument when initializing the sampler:
+
+
+```python
+sampler = samplers.multinomial(3, top_p=0.95)
+```
+
 ## Greedy sampler
 
 You can also use the greedy sampler. For this you need to initialize the generator with the sampler:

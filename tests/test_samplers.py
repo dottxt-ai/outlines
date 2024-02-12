@@ -10,6 +10,7 @@ from outlines.samplers import (
     beam_search,
     greedy,
     keep_top_k_logits,
+    keep_top_p_logits,
     multinomial,
 )
 
@@ -71,7 +72,13 @@ def test_multinomial():
     assert weights.equal(torch.tensor([logprobs[0, 0], logprobs[1, 2]]))
 
 
-def test_topk():
+def test_top_k():
+    with pytest.raises(ValueError, match="`k` must be a strictly"):
+        keep_top_k_logits(-1)
+
+    with pytest.raises(ValueError, match="`k` must be a strictly"):
+        keep_top_k_logits(0.1)
+
     logits = torch.tensor([[1.0, 2.0, 3.0, 4.0]])
 
     logits_processor = keep_top_k_logits(1)
@@ -82,18 +89,72 @@ def test_topk():
     result = logits_processor(logits)
     assert result.equal(torch.tensor([[1.0, 2.0, 3.0, 4.0]]))
 
-    with pytest.raises(ValueError, match="`top_k` must be a strictly"):
-        keep_top_k_logits(-1)
-
-    with pytest.raises(ValueError, match="`top_k` must be a strictly"):
-        keep_top_k_logits(0.1)
-
     logits = torch.tensor([[1.0, 2.0, 3.0, 4.0], [5.0, 6.0, 7.0, 8.0]])
     logits_processor = keep_top_k_logits(2)
     result = logits_processor(logits)
     assert result.equal(
         torch.tensor(
             [[-math.inf, -math.inf, 3.0, 4.0], [-math.inf, -math.inf, 7.0, 8.0]]
+        )
+    )
+
+
+def test_top_p():
+    with pytest.raises(ValueError, match="`p` must be a floating point"):
+        keep_top_p_logits(-0.1)
+
+    with pytest.raises(ValueError, match="`p` must be a floating point"):
+        keep_top_p_logits(0.0)
+
+    with pytest.raises(ValueError, match="`p` must be a floating point"):
+        keep_top_p_logits(1.1)
+
+    logits = torch.tensor([[1.0, 1.01, 1.02, 4.0]])
+
+    logits_processor = keep_top_p_logits(0.1)
+    result = logits_processor(logits)
+    assert result.equal(torch.tensor([[-math.inf, -math.inf, -math.inf, 4.0]]))
+
+    logits_processor = keep_top_p_logits(0.95)
+    result = logits_processor(logits)
+    assert result.equal(torch.tensor([[-math.inf, 1.01, 1.02, 4.0]]))
+
+    logits_processor = keep_top_p_logits(1.0)
+    result = logits_processor(logits)
+    assert result.equal(torch.tensor([[1.0, 1.01, 1.02, 4.0]]))
+
+    logits = torch.tensor([[1.0, 2.0, 3.0, 4.0], [5.0, 6.0, 7.0, 8.0]])
+
+    logits_processor = keep_top_p_logits(0.1)
+    result = logits_processor(logits)
+    assert result.equal(
+        torch.tensor(
+            [
+                [-math.inf, -math.inf, -math.inf, 4.0],
+                [-math.inf, -math.inf, -math.inf, 8.0],
+            ]
+        )
+    )
+
+    logits_processor = keep_top_p_logits(0.95)
+    result = logits_processor(logits)
+    assert result.equal(
+        torch.tensor(
+            [
+                [-math.inf, 2.0, 3.0, 4.0],
+                [-math.inf, 6.0, 7.0, 8.0],
+            ]
+        )
+    )
+
+    logits_processor = keep_top_p_logits(1.0)
+    result = logits_processor(logits)
+    assert result.equal(
+        torch.tensor(
+            [
+                [1.0, 2.0, 3.0, 4.0],
+                [5.0, 6.0, 7.0, 8.0],
+            ]
         )
     )
 
