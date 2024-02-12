@@ -52,6 +52,13 @@ print(answer)
 # [[4, 4, 4], [6, 6, 6]]
 ```
 
+### Top-k sampling
+
+You can ask Outlines to only consider the top-k logits at each step by specifying the value of the `top-k` keyword argument when initializing the sampler.
+
+```python
+sampler = samplers.multinomial(3, top_k=10)
+```
 
 ## Greedy sampler
 

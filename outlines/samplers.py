@@ -1,4 +1,5 @@
-from typing import Protocol, Tuple
+import math
+from typing import Callable, Optional, Protocol, Tuple
 
 import torch
 
@@ -89,8 +90,12 @@ class MultinomialSampler:
 
     """
 
-    def __init__(self, samples: int = 1):
+    def __init__(self, samples: int = 1, *, top_k: Optional[int] = None):
         self.samples = samples
+
+        self.logits_processor = lambda x: x
+        if top_k is not None:
+            self.logits_processor = keep_top_k_logits(top_k)
 
     def __call__(
         self,
@@ -119,17 +124,40 @@ class MultinomialSampler:
         cumulative weights of each sequence of shape ``(n_seqs,)``.
 
         """
-        probs = torch.nn.functional.softmax(next_token_logits, dim=-1)
+        altered_next_token_logits = self.logits_processor(next_token_logits)
+        probs = torch.nn.functional.softmax(altered_next_token_logits, dim=-1)
         next_token_ids = torch.multinomial(probs, num_samples=1, generator=rng)
 
-        logprobs = torch.nn.functional.log_softmax(next_token_logits, dim=-1)
-        ancestors = torch.arange(next_token_logits.shape[0])
+        logprobs = torch.nn.functional.log_softmax(altered_next_token_logits, dim=-1)
+        ancestors = torch.arange(altered_next_token_logits.shape[0])
         weights = sequence_weights + torch.gather(logprobs, 1, next_token_ids).squeeze()
 
         return next_token_ids, ancestors, weights
 
 
 multinomial = MultinomialSampler
+
+
+def keep_top_k_logits(k) -> Callable[[torch.Tensor], torch.Tensor]:
+    """Build a function that masks logits values smaller than the top `k` ones.
+
+    Parameters
+    ----------
+    k
+        The ranking below which logit values are replaced by `-math.inf`.
+
+    """
+    if not isinstance(k, int) or k < 1:
+        raise ValueError(
+            f"`top_k` must be a strictly positive integers, got {k} instead."
+        )
+
+    def logits_processor(logits: torch.Tensor) -> torch.Tensor:
+        num_to_keep = min(k, logits.size(-1))
+        mask_idx = logits < torch.topk(logits, num_to_keep)[0][..., -1, None]
+        return logits.masked_fill(mask_idx, -math.inf)
+
+    return logits_processor
 
 
 class BeamSearchSampler:
