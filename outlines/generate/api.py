@@ -125,7 +125,6 @@ class SequenceGenerator:
         max_tokens: Optional[int] = None,
         stop_at: Optional[Union[str, List[str]]] = None,
         rng: Optional[torch.Generator] = None,
-        kv_cache: Optional[torch.tensor] = None,
     ) -> Union[str, List[str], List[List[str]]]:
         """Generate the full text sequence.
 
@@ -144,10 +143,6 @@ class SequenceGenerator:
             (per prompt)
         stop_at
             A string or list of strings at which the text generated will stop
-        kv_cache
-            A tensor containing the past key-value cache. It can be for instance
-            used when we are interleaving prompting and model calls. Defaults to
-            `None`.
         rng
             The random number generator. Defaults to a non-seeded `torch.Generator`
             instance.
@@ -248,7 +243,6 @@ class SequenceGenerator:
         max_tokens: Optional[int] = None,
         stop_at: Optional[Union[str, List[str]]] = None,
         rng: Optional[torch.Generator] = None,
-        kv_cache: Optional[torch.tensor] = None,
     ) -> Iterator[Union[List[str], List[List[str]], str]]:
         """Generate the text sequence one token at a time.
 
@@ -266,10 +260,6 @@ class SequenceGenerator:
             (per prompt)
         stop_at
             A string or list of strings at which the text generated will stop
-        kv_cache
-            A tensor containing the past key-value cache. It can be for instance
-            used when we are interleaving prompting and model calls. Defaults to
-            `None`.
         rng
             The random number generator. Defaults to a non-seeded `torch.Generator`
             instance.
