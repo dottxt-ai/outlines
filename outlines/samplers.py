@@ -147,7 +147,7 @@ class MultinomialSampler:
 
         logprobs = torch.nn.functional.log_softmax(altered_next_token_logits, dim=-1)
         ancestors = torch.arange(
-            altered_next_token_logits.shape[0], device=altered_next_token_logits.device
+            altered_next_token_logits.shape[0], device=next_token_logits.device
         )
         weights = sequence_weights + torch.gather(logprobs, 1, next_token_ids).squeeze()
 
@@ -296,7 +296,7 @@ class BeamSearchSampler:
 
         # Re-shape the weights, next_token_ids and ancestors to (n_batch * n_samples, 1)
         first_batch_idx = torch.arange(
-            0, batch_size * self.samples, self.samples, device=indices.device
+            0, batch_size * self.samples, self.samples, device=next_token_logits.device
         ).unsqueeze(1)
         ancestors = ancestors + first_batch_idx
 
