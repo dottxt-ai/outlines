@@ -1,5 +1,6 @@
 import math
 
+import pytest
 import torch
 
 from outlines.samplers import (
@@ -8,6 +9,7 @@ from outlines.samplers import (
     MultinomialSampler,
     beam_search,
     greedy,
+    keep_top_k_logits,
     multinomial,
 )
 
@@ -67,6 +69,33 @@ def test_multinomial():
     assert next_token_ids.equal(torch.tensor([[0], [2]]))
     assert ancestors.equal(torch.tensor([0, 1]))
     assert weights.equal(torch.tensor([logprobs[0, 0], logprobs[1, 2]]))
+
+
+def test_topk():
+    logits = torch.tensor([[1.0, 2.0, 3.0, 4.0]])
+
+    logits_processor = keep_top_k_logits(1)
+    result = logits_processor(logits)
+    assert result.equal(torch.tensor([[-math.inf, -math.inf, -math.inf, 4.0]]))
+
+    logits_processor = keep_top_k_logits(10)
+    result = logits_processor(logits)
+    assert result.equal(torch.tensor([[1.0, 2.0, 3.0, 4.0]]))
+
+    with pytest.raises(ValueError, match="`top_k` must be a strictly"):
+        keep_top_k_logits(-1)
+
+    with pytest.raises(ValueError, match="`top_k` must be a strictly"):
+        keep_top_k_logits(0.1)
+
+    logits = torch.tensor([[1.0, 2.0, 3.0, 4.0], [5.0, 6.0, 7.0, 8.0]])
+    logits_processor = keep_top_k_logits(2)
+    result = logits_processor(logits)
+    assert result.equal(
+        torch.tensor(
+            [[-math.inf, -math.inf, 3.0, 4.0], [-math.inf, -math.inf, 7.0, 8.0]]
+        )
+    )
 
 
 def test_beam_search():
