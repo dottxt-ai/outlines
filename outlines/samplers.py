@@ -90,12 +90,20 @@ class MultinomialSampler:
 
     """
 
-    def __init__(self, samples: int = 1, *, top_k: Optional[int] = None):
+    def __init__(
+        self,
+        samples: int = 1,
+        *,
+        top_k: Optional[int] = None,
+        top_p: Optional[float] = None,
+    ):
         self.samples = samples
 
         self.logits_processor = lambda x: x
         if top_k is not None:
             self.logits_processor = keep_top_k_logits(top_k)
+        elif top_p is not None:
+            self.logits_processor = keep_top_p_logits(top_p)
 
     def __call__(
         self,
@@ -138,7 +146,7 @@ class MultinomialSampler:
 multinomial = MultinomialSampler
 
 
-def keep_top_k_logits(k) -> Callable[[torch.Tensor], torch.Tensor]:
+def keep_top_k_logits(k: int) -> Callable[[torch.Tensor], torch.Tensor]:
     """Build a function that masks logits values smaller than the top `k` ones.
 
     Parameters
@@ -148,13 +156,41 @@ def keep_top_k_logits(k) -> Callable[[torch.Tensor], torch.Tensor]:
 
     """
     if not isinstance(k, int) or k < 1:
-        raise ValueError(
-            f"`top_k` must be a strictly positive integers, got {k} instead."
-        )
+        raise ValueError(f"`k` must be a strictly positive integers, got {k} instead.")
 
     def logits_processor(logits: torch.Tensor) -> torch.Tensor:
         num_to_keep = min(k, logits.size(-1))
         mask_idx = logits < torch.topk(logits, num_to_keep)[0][..., -1, None]
+        return logits.masked_fill(mask_idx, -math.inf)
+
+    return logits_processor
+
+
+def keep_top_p_logits(p: float) -> Callable[[torch.Tensor], torch.Tensor]:
+    """Build a function that masks the lowest probability tokens whose
+    cumulative probability is below a certain threshold.
+
+    Parameters
+    ----------
+    p
+        The value of the threshold. We keep the highest probability tokens whose
+        cumulative distribution is greater than or equal to `p` and mask the
+        others. Its value must be between 0 (excluded) and 1 (included).
+
+    """
+    if p <= 0.0 or p > 1.0:
+        raise ValueError(
+            f"`p` must be a floating point number between 0 (excluded) and 1 (included), got {p} instead."
+        )
+
+    def logits_processor(logits: torch.Tensor) -> torch.Tensor:
+        sorted_logits, sorted_idx = torch.sort(logits, descending=False)
+        cumulative_probabilties = torch.nn.functional.softmax(
+            sorted_logits, dim=-1
+        ).cumsum(dim=-1)
+
+        sorted_masked_idx = cumulative_probabilties <= (1 - p)
+        mask_idx = torch.scatter(sorted_masked_idx, 1, sorted_idx, sorted_masked_idx)
         return logits.masked_fill(mask_idx, -math.inf)
 
     return logits_processor
