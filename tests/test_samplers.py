@@ -12,6 +12,7 @@ from outlines.samplers import (
     keep_top_k_logits,
     keep_top_p_logits,
     multinomial,
+    rescale_logits,
 )
 
 
@@ -70,6 +71,32 @@ def test_multinomial():
     assert next_token_ids.equal(torch.tensor([[0], [2]]))
     assert ancestors.equal(torch.tensor([0, 1]))
     assert weights.equal(torch.tensor([logprobs[0, 0], logprobs[1, 2]]))
+
+
+def test_multinomial_init():
+    sampler = MultinomialSampler()
+    assert sampler.logits_processors == []
+
+    sampler = MultinomialSampler(3)
+    assert sampler.logits_processors == []
+
+    sampler = MultinomialSampler(top_k=1)
+    assert len(sampler.logits_processors) == 1
+
+    sampler = MultinomialSampler(top_p=0.95)
+    assert len(sampler.logits_processors) == 1
+
+    sampler = MultinomialSampler(top_k=1, top_p=0.95)
+    assert len(sampler.logits_processors) == 1
+
+    sampler = MultinomialSampler(temperature=1.0)
+    assert len(sampler.logits_processors) == 1
+
+    sampler = MultinomialSampler(top_k=1, temperature=1.0)
+    assert len(sampler.logits_processors) == 2
+
+    sampler = MultinomialSampler(top_p=0.95, temperature=1.0)
+    assert len(sampler.logits_processors) == 2
 
 
 def test_top_k():
@@ -157,6 +184,17 @@ def test_top_p():
             ]
         )
     )
+
+
+def test_rescale():
+    with pytest.raises(ValueError, match="`temperature` must"):
+        rescale_logits(1)
+
+    with pytest.raises(ValueError, match="`temperature` must"):
+        rescale_logits(-0.1)
+
+    with pytest.raises(ValueError, match="Please use the greedy sampler"):
+        rescale_logits(0.0)
 
 
 def test_beam_search():

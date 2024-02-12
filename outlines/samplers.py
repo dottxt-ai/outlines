@@ -96,14 +96,18 @@ class MultinomialSampler:
         *,
         top_k: Optional[int] = None,
         top_p: Optional[float] = None,
+        temperature: Optional[float] = None,
     ):
         self.samples = samples
 
-        self.logits_processor = lambda x: x
+        self.logits_processors = []
         if top_k is not None:
-            self.logits_processor = keep_top_k_logits(top_k)
+            self.logits_processors.append(keep_top_k_logits(top_k))
         elif top_p is not None:
-            self.logits_processor = keep_top_p_logits(top_p)
+            self.logits_processors.append(keep_top_p_logits(top_p))
+
+        if temperature is not None:
+            self.logits_processors.append(rescale_logits(temperature))
 
     def __call__(
         self,
@@ -132,7 +136,10 @@ class MultinomialSampler:
         cumulative weights of each sequence of shape ``(n_seqs,)``.
 
         """
-        altered_next_token_logits = self.logits_processor(next_token_logits)
+        altered_next_token_logits = next_token_logits
+        for logit_processor in self.logits_processors:
+            altered_next_token_logits = logit_processor(next_token_logits)
+
         probs = torch.nn.functional.softmax(altered_next_token_logits, dim=-1)
         next_token_ids = torch.multinomial(probs, num_samples=1, generator=rng)
 
@@ -192,6 +199,31 @@ def keep_top_p_logits(p: float) -> Callable[[torch.Tensor], torch.Tensor]:
         sorted_masked_idx = cumulative_probabilties <= (1 - p)
         mask_idx = torch.scatter(sorted_masked_idx, 1, sorted_idx, sorted_masked_idx)
         return logits.masked_fill(mask_idx, -math.inf)
+
+    return logits_processor
+
+
+def rescale_logits(temperature: float) -> Callable[[torch.Tensor], torch.Tensor]:
+    """Build a function that rescales the token probabilities exponentially.
+
+    Parameters
+    ----------
+    temperature
+        The value by which we rescale the logits.
+
+    """
+
+    if not isinstance(temperature, float) or temperature < 0.0:
+        raise ValueError(
+            f"`temperature` must be a strictly negative floating point number, got {temperature} instead."
+        )
+    elif temperature == 0.0:
+        raise ValueError(
+            "Please use the greedy sampler instead of setting the temperature to 0."
+        )
+
+    def logits_processor(logits: torch.Tensor) -> torch.Tensor:
+        return logits / temperature
 
     return logits_processor
 
