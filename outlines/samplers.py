@@ -144,7 +144,9 @@ class MultinomialSampler:
         next_token_ids = torch.multinomial(probs, num_samples=1, generator=rng)
 
         logprobs = torch.nn.functional.log_softmax(altered_next_token_logits, dim=-1)
-        ancestors = torch.arange(altered_next_token_logits.shape[0])
+        ancestors = torch.arange(
+            altered_next_token_logits.shape[0], device=altered_next_token_logits.device
+        )
         weights = sequence_weights + torch.gather(logprobs, 1, next_token_ids).squeeze()
 
         return next_token_ids, ancestors, weights
