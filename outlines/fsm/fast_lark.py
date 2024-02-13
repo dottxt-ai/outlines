@@ -5,6 +5,7 @@ from lark import Lark
 from lark.lexer import Token
 from lark.parsers.lalr_interactive_parser import InteractiveParser
 from lark.parsers.lalr_parser_state import ParserState
+from lru import LRU
 
 
 class FastParserState(ParserState):
@@ -14,7 +15,7 @@ class FastParserState(ParserState):
     any operations which mutate Tokens
     """
 
-    copy_memo: Dict[str, Token] = {}
+    copy_memo: Dict[str, Token] = LRU(int(2**16))
 
     def __copy__(self):
         new_value_stack = []

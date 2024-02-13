@@ -39,6 +39,7 @@ dependencies = [
    "jsonschema",
    "requests",
    "transformers",
+   "lru-dict",
 ]
 dynamic = ["version"]
 
@@ -128,6 +129,7 @@ module = [
     "vllm.*",
     "uvicorn.*",
     "fastapi.*",
+    "lru.*",
 ]
 ignore_missing_imports = true
 
