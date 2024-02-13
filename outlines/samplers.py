@@ -66,7 +66,9 @@ class GreedySampler:
         logprobs = torch.nn.functional.log_softmax(next_token_logits, dim=-1)
         next_token_ids = torch.argmax(logprobs, dim=-1, keepdim=True)
 
-        ancestors = torch.arange(next_token_logits.shape[0])
+        ancestors = torch.arange(
+            next_token_logits.shape[0], device=next_token_logits.device
+        )
         weights = sequence_weights + torch.gather(logprobs, 1, next_token_ids).squeeze()
 
         return next_token_ids, ancestors, weights
@@ -144,7 +146,9 @@ class MultinomialSampler:
         next_token_ids = torch.multinomial(probs, num_samples=1, generator=rng)
 
         logprobs = torch.nn.functional.log_softmax(altered_next_token_logits, dim=-1)
-        ancestors = torch.arange(altered_next_token_logits.shape[0])
+        ancestors = torch.arange(
+            altered_next_token_logits.shape[0], device=next_token_logits.device
+        )
         weights = sequence_weights + torch.gather(logprobs, 1, next_token_ids).squeeze()
 
         return next_token_ids, ancestors, weights
@@ -292,7 +296,7 @@ class BeamSearchSampler:
 
         # Re-shape the weights, next_token_ids and ancestors to (n_batch * n_samples, 1)
         first_batch_idx = torch.arange(
-            0, batch_size * self.samples, self.samples
+            0, batch_size * self.samples, self.samples, device=next_token_logits.device
         ).unsqueeze(1)
         ancestors = ancestors + first_batch_idx
 
