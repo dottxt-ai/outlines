@@ -259,7 +259,7 @@ print(sequence)
 # (8-2)
 ```
 
-This was a very simple grammar, and you can use `outlines.generate.cfg` to generate syntactically valid Python, SQL, and much more than this. Any kind of structured text, really. All you have to do is search for "X EBNF grammar" on the web, and take a look at the [Outlines Grammars repository](https://github.com/outlines-dev/grammars).
+This was a very simple grammar, and you can use `outlines.generate.cfg` to generate syntactically valid Python, SQL, and much more than this. Any kind of structured text, really. All you have to do is search for "X EBNF grammar" on the web, or take a look at Outlines' [Built-In Grammars](/docs/quickstart.md#built-in-grammars).
 
 ### Open functions
 
