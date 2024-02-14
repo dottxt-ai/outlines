@@ -265,7 +265,7 @@ def reorder_kv_cache(
     for cache_item in kv_cache:
         new_cache_item: Tuple = tuple()
         for layer in cache_item:
-            layer = torch.index_select(layer, 0, ancestors)
+            layer = torch.index_select(layer, 0, ancestors.to(layer.device))
             new_cache_item += (layer,)
         new_kv_cache += (new_cache_item,)
 
