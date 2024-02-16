@@ -99,7 +99,7 @@ def _get_num_items_pattern(min_items, max_items, whitespace_pattern):
     else:
         max_items = int(max_items)
         if max_items < 1:
-            return rf"\[{whitespace_pattern}\]"
+            return None
         return rf"{{{max(min_items - 1, 0)},{max_items - 1}}}"
 
 
@@ -281,6 +281,8 @@ def to_regex(
             num_repeats = _get_num_items_pattern(
                 instance.get("minItems"), instance.get("maxItems"), whitespace_pattern
             )
+            if num_repeats is None:
+                return rf"\[{whitespace_pattern}\]"
 
             allow_empty = "?" if int(instance.get("minItems", 0)) == 0 else ""
 
@@ -310,6 +312,9 @@ def to_regex(
                 instance.get("maxProperties"),
                 whitespace_pattern,
             )
+            if num_repeats is None:
+                return rf"\{{{whitespace_pattern}\}}"
+
             allow_empty = "?" if int(instance.get("minProperties", 0)) == 0 else ""
 
             value_pattern = to_regex(
