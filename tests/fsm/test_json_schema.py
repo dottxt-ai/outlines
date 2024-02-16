@@ -284,7 +284,7 @@ def test_match_number(pattern, does_match):
                     """{"test_dict": {"anykey": {"anykey": 123}, "anykey2": {"bif": 456}}}""",
                     True,
                 ),
-                ("""{"test_dict": {"empty dicts are ok": {}}}""", True),
+                ("""{"test_dict": {}}""", True),
                 ("""{"test_dict": {"dict of empty dicts are ok": {} }}""", True),
                 (
                     """{"test_dict": {"anykey": {"ONLY Dict[Dict]": 123}, "No Dict[int]" 1: }}""",
