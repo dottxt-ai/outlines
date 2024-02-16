@@ -91,6 +91,18 @@ def build_regex_from_object(
     return to_regex(resolver, content, whitespace_pattern)
 
 
+def _get_num_items_pattern(min_items, max_items, whitespace_pattern):
+    # Helper function for arrays and objects
+    min_items = int(min_items or 0)
+    if max_items is None:
+        return rf"{{{max(min_items - 1, 0)},}}"
+    else:
+        max_items = int(max_items)
+        if max_items < 1:
+            return None
+        return rf"{{{max(min_items - 1, 0)},{max_items - 1}}}"
+
+
 def to_regex(
     resolver: Resolver, instance: dict, whitespace_pattern: Optional[str] = None
 ):
@@ -266,18 +278,13 @@ def to_regex(
             return type_to_regex["integer"]
 
         elif instance_type == "array":
-            min_items = int(instance.get("minItems", "0"))
-            max_items = instance.get("maxItems", None)
-            max_items = max_items if max_items is None else int(max_items)
+            num_repeats = _get_num_items_pattern(
+                instance.get("minItems"), instance.get("maxItems"), whitespace_pattern
+            )
+            if num_repeats is None:
+                return rf"\[{whitespace_pattern}\]"
 
-            if max_items is None:
-                num_repeats = rf"{{{max(min_items - 1, 0)},}}"
-            else:
-                if max_items < 1:
-                    return rf"\[{whitespace_pattern}\]"
-                num_repeats = rf"{{{max(min_items - 1, 0)},{max_items - 1}}}"
-
-            allow_empty = "?" if min_items == 0 else ""
+            allow_empty = "?" if int(instance.get("minItems", 0)) == 0 else ""
 
             if "items" in instance:
                 items_regex = to_regex(resolver, instance["items"], whitespace_pattern)
@@ -295,6 +302,39 @@ def to_regex(
                 ]
                 regexes = [to_regex(resolver, t, whitespace_pattern) for t in types]
                 return rf"\[{whitespace_pattern}({'|'.join(regexes)})(,{whitespace_pattern}({'|'.join(regexes)})){num_repeats}){allow_empty}{whitespace_pattern}\]"
+
+        elif instance_type == "object":
+            # pattern for json object with values defined by instance["additionalProperties"]
+            # enforces value type constraints recursively, "minProperties", and "maxProperties"
+            # doesn't enforce "required", "dependencies", "propertyNames" "any/all/on Of"
+            num_repeats = _get_num_items_pattern(
+                instance.get("minProperties"),
+                instance.get("maxProperties"),
+                whitespace_pattern,
+            )
+            if num_repeats is None:
+                return rf"\{{{whitespace_pattern}\}}"
+
+            allow_empty = "?" if int(instance.get("minProperties", 0)) == 0 else ""
+
+            value_pattern = to_regex(
+                resolver, instance["additionalProperties"], whitespace_pattern
+            )
+            key_value_pattern = (
+                f"{STRING}{whitespace_pattern}:{whitespace_pattern}{value_pattern}"
+            )
+            key_value_successor_pattern = (
+                f"{whitespace_pattern},{whitespace_pattern}{key_value_pattern}"
+            )
+            multiple_key_value_pattern = f"({key_value_pattern}({key_value_successor_pattern}){num_repeats}){allow_empty}"
+
+            return (
+                r"\{"
+                + whitespace_pattern
+                + multiple_key_value_pattern
+                + whitespace_pattern
+                + r"\}"
+            )
 
         elif instance_type == "boolean":
             return type_to_regex["boolean"]

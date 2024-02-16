@@ -234,6 +234,64 @@ def test_match_number(pattern, does_match):
             rf"\[{WHITESPACE}\]",
             [("[1]", False), ("[]", True), ("[1,2,3]", False), ("[1,2,3,4]", False)],
         ),
+        # object
+        (
+            {
+                "title": "TestSchema",
+                "type": "object",
+                "properties": {
+                    "test_dict": {
+                        "title": "Test Dict",
+                        "additionalProperties": {"type": "string"},
+                        "type": "object",
+                    }
+                },
+                "required": ["test_dict"],
+            },
+            rf"""\{{{WHITESPACE}"test_dict"{WHITESPACE}:{WHITESPACE}\{{{WHITESPACE}({STRING}{WHITESPACE}:{WHITESPACE}{STRING}({WHITESPACE},{WHITESPACE}{STRING}{WHITESPACE}:{WHITESPACE}{STRING}){{0,}})?{WHITESPACE}\}}{WHITESPACE}\}}""",
+            [
+                ("""{ "test_dict":{"foo":"bar","baz": "bif"}}""", True),
+                ("""{ "test_dict":{"foo":"bar"\n}}""", True),
+                ("""{ "test_dict":{}}""", True),
+                ("""{ "WRONG_KEY":{}}""", False),
+                ("""{ "test_dict":{"wrong_type" 1}}""", False),
+            ],
+        ),
+        # object containing object
+        (
+            {
+                "title": "TestSchema",
+                "type": "object",
+                "properties": {
+                    "test_dict": {
+                        "title": "Test Dict",
+                        "additionalProperties": {
+                            "additionalProperties": {"type": "integer"},
+                            "type": "object",
+                        },
+                        "type": "object",
+                    }
+                },
+                "required": ["test_dict"],
+            },
+            rf"""\{{{WHITESPACE}"test_dict"{WHITESPACE}:{WHITESPACE}\{{{WHITESPACE}({STRING}{WHITESPACE}:{WHITESPACE}\{{{WHITESPACE}({STRING}{WHITESPACE}:{WHITESPACE}{INTEGER}({WHITESPACE},{WHITESPACE}{STRING}{WHITESPACE}:{WHITESPACE}{INTEGER}){{0,}})?{WHITESPACE}\}}({WHITESPACE},{WHITESPACE}{STRING}{WHITESPACE}:{WHITESPACE}\{{{WHITESPACE}({STRING}{WHITESPACE}:{WHITESPACE}{INTEGER}({WHITESPACE},{WHITESPACE}{STRING}{WHITESPACE}:{WHITESPACE}{INTEGER}){{0,}})?{WHITESPACE}\}}){{0,}})?{WHITESPACE}\}}{WHITESPACE}\}}""",
+            [
+                (
+                    """{"test_dict": {"foo": {"bar": 123, "apple": 99}, "baz": {"bif": 456}}}""",
+                    True,
+                ),
+                (
+                    """{"test_dict": {"anykey": {"anykey": 123}, "anykey2": {"bif": 456}}}""",
+                    True,
+                ),
+                ("""{"test_dict": {}}""", True),
+                ("""{"test_dict": {"dict of empty dicts are ok": {} }}""", True),
+                (
+                    """{"test_dict": {"anykey": {"ONLY Dict[Dict]": 123}, "No Dict[int]" 1: }}""",
+                    False,
+                ),
+            ],
+        ),
         # oneOf
         (
             {
@@ -464,6 +522,8 @@ def test_match(schema, regex, examples):
     for string, does_match in examples:
         match = re.fullmatch(test_regex, string)
         if does_match:
+            if match is None:
+                raise ValueError(f"Expected match for '{string}'")
             assert match[0] == string
             assert match.span() == (0, len(string))
         else:
