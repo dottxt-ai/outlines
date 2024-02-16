@@ -1,11 +1,12 @@
 import math
-from typing import List, Optional, Union
+from typing import List, Optional, Tuple, Union
 
 import numpy as np
 import torch
 from numpy.typing import NDArray
 
 from outlines.fsm.fsm import CFGFSM, FSM, FSMState, RegexFSM
+from outlines.models.tokenizer import Tokenizer
 
 
 class LlamaCpp:
@@ -89,19 +90,33 @@ class LlamaCpp:
         )
 
 
-class LlamaCppTokenizer:
+class LlamaCppTokenizer(Tokenizer):
     def __init__(self, model, **kwargs):
+        self.tokenizer = model.model.tokenizer()
+
         self.eos_token_id = model.model.token_eos()
+        self.eos_token = self.tokenizer.decode([self.eos_token_id])
         self.pad_token_id = self.eos_token_id
         self.special_tokens = {}
 
         self.vocabulary = {}
         for t in range(model.model.n_vocab()):
-            token_piece = model.model.tokenizer().decode([t])
+            token_piece = self.tokenizer.decode([t])
             self.vocabulary[token_piece] = t
 
     def convert_token_to_string(self, token: str) -> str:
         return token
+
+    def encode(
+        self, prompt: Union[str, List[str]]
+    ) -> Tuple[NDArray[np.int64], NDArray[np.int64]]:
+        return self.tokenizer.encode(prompt)
+
+    def decode(self, token_ids: NDArray[np.int64]) -> List[str]:
+        return self.tokenizer.decode(token_ids)
+
+    def __hash__(self):
+        raise NotImplementedError
 
 
 def llamacpp(

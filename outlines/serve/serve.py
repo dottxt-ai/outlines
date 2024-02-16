@@ -23,7 +23,11 @@ from vllm.engine.async_llm_engine import AsyncLLMEngine
 from vllm.sampling_params import SamplingParams
 from vllm.utils import random_uuid
 
-from .vllm import JSONLogitsProcessor, RegexLogitsProcessor
+from outlines.processors.vllm import (
+    CFGLogitsProcessor,
+    JSONLogitsProcessor,
+    RegexLogitsProcessor,
+)
 
 TIMEOUT_KEEP_ALIVE = 5  # seconds.
 TIMEOUT_TO_PREVENT_DEADLOCK = 1  # seconds.
@@ -56,10 +60,13 @@ async def generate(request: Request) -> Response:
 
     json_schema = request_dict.pop("schema", None)
     regex_string = request_dict.pop("regex", None)
+    grammar = request_dict.pop("grammar", None)
     if json_schema is not None:
         logits_processors = [JSONLogitsProcessor(json_schema, engine.engine)]
     elif regex_string is not None:
         logits_processors = [RegexLogitsProcessor(regex_string, engine.engine)]
+    elif grammar is not None:
+        logits_processors = [CFGLogitsProcessor(grammar, engine.engine)]
     else:
         logits_processors = []
 
