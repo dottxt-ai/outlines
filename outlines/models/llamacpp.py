@@ -115,9 +115,6 @@ class LlamaCppTokenizer(Tokenizer):
     def decode(self, token_ids: NDArray[np.int64]) -> List[str]:
         return self.tokenizer.decode(token_ids)
 
-    def __hash__(self):
-        raise NotImplementedError
-
 
 def llamacpp(
     model_name: str,

@@ -1,16 +1,20 @@
+import hashlib
+import json
 from abc import abstractmethod
-from typing import Dict, Hashable, List, Protocol, Set, Tuple, Union
+from typing import Dict, List, Optional, Protocol, Set, Tuple, Union
 
 import numpy as np
 from numpy.typing import NDArray
 
 
-class Tokenizer(Protocol, Hashable):
+class Tokenizer(Protocol):
     eos_token: str
     eos_token_id: int
     pad_token_id: int
     vocabulary: Dict[str, int]
     special_tokens: Set[int]
+
+    _hash: Optional[int] = None
 
     @abstractmethod
     def encode(
@@ -34,3 +38,24 @@ class Tokenizer(Protocol, Hashable):
 
         """
         ...
+
+    def __eq__(self, other):
+        return hash(self) == hash(other)
+
+    def __hash__(self):
+        if self._hash is None:
+            result = hashlib.md5()
+            result.update(
+                json.dumps(
+                    [
+                        self.eos_token,
+                        self.eos_token_id,
+                        self.pad_token_id,
+                        self.vocabulary,
+                        sorted(self.special_tokens),
+                    ],
+                    sort_keys=True,
+                ).encode("utf-8")
+            )
+            self._hash = hash(result.hexdigest())
+        return self._hash

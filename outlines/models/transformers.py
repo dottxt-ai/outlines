@@ -169,16 +169,6 @@ class TransformerTokenizer(Tokenizer):
 
         return string
 
-    def __eq__(self, other):
-        if isinstance(other, type(self)):
-            return other.model_name == self.model_name and other.kwargs == self.kwargs
-        return NotImplemented
-
-    def __hash__(self):
-        from datasets.fingerprint import Hasher
-
-        return hash(Hasher.hash(self.tokenizer))
-
 
 def transformers(
     model_name: str,
