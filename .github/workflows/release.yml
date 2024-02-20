@@ -7,10 +7,28 @@ on:
 
 jobs:
   release-job:
-    name: Build and publish on PyPi
+    name: Build and publish on PyPi and Docker Hub
     runs-on: ubuntu-latest
+    environment: release
     steps:
-    - uses: actions/checkout@v2
+
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        push: true
+        tags: |
+          lapp0/outlines-serve:latest
+          lapp0/outlines-serve:${{ github.event.release.tag_name }}
+        build-args: |
+          BUILDKIT_CONTEXT_KEEP_GIT_DIR=true
     - name: Set up Python
       uses: actions/setup-python@v2
       with:

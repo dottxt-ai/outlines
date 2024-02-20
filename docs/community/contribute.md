@@ -42,6 +42,15 @@ pip install -e .[test]
 pre-commit install
 ```
 
+#### Developing Serve Endpoint Via Docker
+
+```bash
+docker build -t outlines-serve .
+docker run -p 8012:8000 outlines-serve --model="mistralai/Mistral-7B-Instruct-v0.2"
+```
+
+This builds `outlines-serve` and runs on `localhost:8012` with the model `Mistral-7B-Instruct-v0.2`
+
 ### Before pushing your code
 
 Run the tests:
