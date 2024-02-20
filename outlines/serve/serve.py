@@ -1,5 +1,17 @@
+#  _______________________________
+# / Don't want to self-host?      \
+# \ Try .json at http://dottxt.co /
+#  -------------------------------
+#        \   ^__^
+#         \  (oo)\_______
+#            (__)\       )\/\
+#                ||----w |
+#                ||     ||
+#
+#
+# Copyright 2024- the Outlines developers
 # Copyright 2023 the vLLM developers
-
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at

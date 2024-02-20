@@ -81,11 +81,22 @@ via the next-token logits.
 
 ## Acknowledgements
 
+<div class="grid" markdown>
+
 <figure markdown>
+
+<figure markdown>
+  <a href="http://www.dottxt.co">
+  ![Normal Computing logo](assets/images/dottxt.png){ width="150" }
+  </a>
+</figure>
+
   <a href="https://www.normalcomputing.ai">
   ![Normal Computing logo](assets/images/normal_computing.jpg){ width="150" }
   </a>
 </figure>
+
+</div>
 
 Outlines was originally developed at [@NormalComputing](https://twitter.com/NormalComputing) by [@remilouf](https://twitter.com/remilouf) and [@BrandonTWillard](https://twitter.com/BrandonTWillard). It is now maintained by [.txt](https://dottxt.co).
 

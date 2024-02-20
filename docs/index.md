@@ -17,6 +17,7 @@ hide:
     <h2 class="subtitle">Robust prompting & (structured) text generation</h2>
     [:fontawesome-solid-bolt: Get started](welcome.md){ .md-button .md-button--primary }
     [:fontawesome-brands-discord: Join the Community](https://discord.gg/ZxBxyWmW5n){ .md-button }
+    [:fontawesome-solid-wifi: API](https://form.typeform.com/to/ZgBCvJHF){ .md-button }
 
 <div class="index-pre-code">
 ```bash

@@ -14,7 +14,8 @@
 </div>
 
 Made with ❤👷️ by the team at [.txt](https://dottxt.co).
-We'd love to have your [feedback][discord]!
+
+Looking for an API that returns valid JSON? [Give .json a try](https://h1xbpbfsf0w.typeform.com/to/ZgBCvJHF) ✨
 
 ``` bash
 pip install outlines
