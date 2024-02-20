@@ -34,7 +34,7 @@ First time here? Go to our [setup guide](https://outlines-dev.github.io/outlines
 - [x] 💾 Caching of generations
 - [x] 🗂️ Batch inference
 - [x] 🎲 Sample with the greedy, multinomial and beam search algorithms (and more to come!)
-- [x] 🚀 [Serve with vLLM](https://outlines-dev.github.io/outlines/reference/vllm)
+- [x] 🚀 [Serve with vLLM](https://outlines-dev.github.io/outlines/reference/vllm), with official Docker image, [`lapp0/outlines-serve`](https://hub.docker.com/r/lapp0/outlines-serve)!
 
 
 Outlines 〰 has new releases and features coming every week. Make sure to ⭐ star and 👀 watch this repository, follow [@dottxtai][twitter] to stay up to date!
