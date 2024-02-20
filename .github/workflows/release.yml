@@ -30,7 +30,7 @@ jobs:
         build-args: |
           BUILDKIT_CONTEXT_KEEP_GIT_DIR=true
     - name: Clean docker cache
-      run: docker buildx prune --all --force
+      run: docker system prune --all --force
 
     - name: Set up Python
       uses: actions/setup-python@v2
