@@ -19,7 +19,7 @@ This will by default start a server at `http://127.0.0.1:8000` (check what the c
 You can install and run the server with Outlines' official Docker image using the command
 
 ```bash
-docker run -p 8000:8000 lapp0/outlines-serve --model="mistralai/Mistral-7B-Instruct-v0.2"
+docker run -p 8000:8000 outlinesdev/outlines --model="mistralai/Mistral-7B-Instruct-v0.2"
 ```
 
 ## Querying Endpoint

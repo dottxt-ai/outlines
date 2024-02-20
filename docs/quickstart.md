@@ -245,7 +245,7 @@ python -m outlines.serve.serve --model="mistralai/Mistral-7B-Instruct-v0.2"
 Or you can start the server with Outlines' official Docker image:
 
 ```bash
-docker run -p 8000:8000 lapp0/outlines-serve --model="mistralai/Mistral-7B-Instruct-v0.2"
+docker run -p 8000:8000 outlinesdev/outlines --model="mistralai/Mistral-7B-Instruct-v0.2"
 ```
 
 This will by default start a server at `http://127.0.0.1:8000` (check what the console says, though)  with the OPT-125M model. If you want to specify another model:

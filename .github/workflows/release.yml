@@ -25,8 +25,8 @@ jobs:
       with:
         push: true
         tags: |
-          lapp0/outlines-serve:latest
-          lapp0/outlines-serve:${{ github.event.release.tag_name }}
+          outlinesdev/outlines:latest
+          outlinesdev/outlines:${{ github.event.release.tag_name }}
         build-args: |
           BUILDKIT_CONTEXT_KEEP_GIT_DIR=true
     - name: Clean docker cache
