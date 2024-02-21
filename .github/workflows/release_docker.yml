@@ -16,7 +16,6 @@ jobs:
     runs-on: ubuntu-latest
     environment: release
     steps:
-
     - name: Checkout
       uses: actions/checkout@v4
     - name: Log in to Docker Hub
@@ -30,7 +29,7 @@ jobs:
         push: true
         tags: |
           outlinesdev/outlines:latest
-          outlinesdev/outlines:${{ github.event.release.tag_name }}
+          outlinesdev/outlines:${{ github.event.release.tag_name || github.event.inputs.release_tag }}
         build-args: |
           BUILDKIT_CONTEXT_KEEP_GIT_DIR=true
     - name: Clean docker cache
