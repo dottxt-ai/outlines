@@ -1,45 +1,15 @@
-name: Release
+name: Release PyPi
 
 on:
   release:
     types:
       - created
-  workflow_dispatch:
-    inputs:
-      release_tag:
-        description: 'Docker Tag'
-        required: false
-        default: 'latest'
-
 jobs:
   release-job:
-    name: Build and publish on PyPi and Docker Hub
+    name: Build and publish on PyPi
     runs-on: ubuntu-latest
-    environment: release
     steps:
-
-    - name: Checkout
-      uses: actions/checkout@v4
-
-    - name: Log in to Docker Hub
-      uses: docker/login-action@v3
-      with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
-    - name: Build and push Docker image
-      uses: docker/build-push-action@v5
-      with:
-        push: true
-        tags: |
-          outlinesdev/outlines:latest
-          outlinesdev/outlines:${{ github.event.release.tag_name || github.event.inputs.release_tag }}
-        build-args: |
-          BUILDKIT_CONTEXT_KEEP_GIT_DIR=true
-    - name: Clean docker cache
-      run: docker system prune --all --force
-
     - name: Set up Python
-      if: ${{ github.event_name == 'workflow_dispatch' }}
       uses: actions/setup-python@v2
       with:
         python-version: "3.10"
@@ -49,11 +19,9 @@ jobs:
         python -m pip install build
         python -m build
     - name: Check that the package version matches the Release name
-      if: ${{ github.event_name == 'workflow_dispatch' }}
       run: |
         grep -Rq "^Version: ${GITHUB_REF:10}$" outlines.egg-info/PKG-INFO
     - name: Check sdist install and imports
-      if: ${{ github.event_name == 'workflow_dispatch' }}
       run: |
         mkdir -p test-sdist
         cd test-sdist
@@ -61,7 +29,6 @@ jobs:
         venv-sdist/bin/python -m pip install ../dist/outlines-*.tar.gz
         venv-sdist/bin/python -c "import outlines"
     - name: Check wheel install and imports
-      if: ${{ github.event_name == 'workflow_dispatch' }}
       run: |
         mkdir -p test-wheel
         cd test-wheel
@@ -69,7 +36,6 @@ jobs:
         venv-wheel/bin/python -m pip install ../dist/outlines-*.whl
         venv-wheel/bin/python -c "import outlines"
     - name: Publish to PyPi
-      if: ${{ github.event_name == 'workflow_dispatch' }}
       uses: pypa/gh-action-pypi-publish@v1.4.2
       with:
         user: __token__
