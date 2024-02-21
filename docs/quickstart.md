@@ -239,14 +239,17 @@ Outlines can be deployed as a LLM service using [vLLM][vllm]{:target="_blank"} a
 First start the server:
 
 ```python
-python -m outlines.serve.serve
-```
-
-This will by default start a server at `http://127.0.0.1:8000` (check what the console says, though)  with the OPT-125M model. If you want to specify another model:
-
-```python
 python -m outlines.serve.serve --model="mistralai/Mistral-7B-Instruct-v0.2"
 ```
+
+Or you can start the server with Outlines' official Docker image:
+
+```bash
+docker run -p 8000:8000 outlinesdev/outlines --model="mistralai/Mistral-7B-Instruct-v0.2"
+```
+
+This will by default start a server at `http://127.0.0.1:8000` (check what the console says, though). Without the `--model` argument set, the OPT-125M model is used.
+
 
 You can then query the model in shell by passing a prompt and a [JSON Schema][jsonschema]{:target="_blank"} specification for the structure of the output:
 

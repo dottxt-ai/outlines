@@ -13,14 +13,20 @@ pip install outlines[serve]
 You can then start the server with:
 
 ```bash
-python -m outlines.serve.serve
-```
-
-This will by default start a server at `http://127.0.0.1:8000` (check what the console says, though) with the OPT-125M model. If you want to specify another model (e.g. Mistral-7B-Instruct-v0.2), you can do so with the `--model` parameter:
-
-```bash
 python -m outlines.serve.serve --model="mistralai/Mistral-7B-Instruct-v0.2"
 ```
+
+This will by default start a server at `http://127.0.0.1:8000` (check what the console says, though). Without the `--model` argument set, the OPT-125M model is used. The `--model` argument allows you to specify any model of your choosing.
+
+### Alternative Method: Via Docker
+
+You can install and run the server with Outlines' official Docker image using the command
+
+```bash
+docker run -p 8000:8000 outlinesdev/outlines --model="mistralai/Mistral-7B-Instruct-v0.2"
+```
+
+## Querying Endpoint
 
 You can then query the model in shell by passing a prompt and either
 
