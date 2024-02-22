@@ -3,6 +3,7 @@ from functools import singledispatch
 from outlines.fsm.fsm import StopAtEosFSM
 from outlines.generate import SequenceGenerator
 from outlines.models import LlamaCpp, OpenAI
+from outlines.models.llamacpp import LlamaSequenceGenerator
 from outlines.samplers import Sampler, multinomial
 
 
@@ -44,7 +45,9 @@ def text_llamacpp(model: LlamaCpp, sampler: Sampler = multinomial()):
             + "than the multinomial sampler."
         )
 
-    return model
+    generator = LlamaSequenceGenerator(None, model)
+
+    return generator
 
 
 @text.register(OpenAI)

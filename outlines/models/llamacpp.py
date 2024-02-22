@@ -8,17 +8,12 @@ from numpy.typing import NDArray
 from outlines.fsm.fsm import CFGFSM, FSM, FSMState, RegexFSM
 
 
-class LlamaCpp:
-    """Represents a `llama_cpp` model."""
-
+class LlamaSequenceGenerator:
     def __init__(
-        self, model_path, logits_processor: Optional["LogitsProcessor"] = None, **kwargs
+        self, logits_processor: Optional["LogitsProcessor"], model: "LlamaCpp"
     ):
-        from llama_cpp import Llama
-
+        self.model = model.model
         self.logits_processor = logits_processor
-        self.model = Llama(model_path, **kwargs)
-        self.tokenizer = LlamaCppTokenizer(self)
 
     def __call__(
         self,
@@ -87,6 +82,16 @@ class LlamaCpp:
         raise NotImplementedError(
             "Streaming is not implemented for the `llama.cpp` integration."
         )
+
+
+class LlamaCpp:
+    """Represents a `llama_cpp` model."""
+
+    def __init__(self, model_path, **kwargs):
+        from llama_cpp import Llama
+
+        self.model = Llama(model_path, **kwargs)
+        self.tokenizer = LlamaCppTokenizer(self)
 
 
 class LlamaCppTokenizer:

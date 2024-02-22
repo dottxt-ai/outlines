@@ -3,7 +3,11 @@ from functools import singledispatch
 from outlines.fsm.fsm import CFGFSM
 from outlines.generate.api import SequenceGenerator
 from outlines.models import OpenAI
-from outlines.models.llamacpp import CFGLogitsProcessor, LlamaCpp
+from outlines.models.llamacpp import (
+    CFGLogitsProcessor,
+    LlamaCpp,
+    LlamaSequenceGenerator,
+)
 from outlines.samplers import Sampler, multinomial
 
 
@@ -45,9 +49,9 @@ def cfg_llamacpp(
         )
 
     logits_processor = CFGLogitsProcessor(cfg_str, model.tokenizer)
-    model.logits_processor = logits_processor
+    generator = LlamaSequenceGenerator(logits_processor, model)
 
-    return model
+    return generator
 
 
 @cfg.register(OpenAI)
