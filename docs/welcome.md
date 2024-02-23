@@ -28,7 +28,7 @@ We support Openai, but the true power of Outlines〰 is unleashed with Open Sour
     [:octicons-arrow-right-24: Deploy outlines](reference/vllm.md)
 
 
--   :material-regex:{ .lg .middle } __Make LLMs follows a Regex__
+-   :material-regex:{ .lg .middle } __Make LLMs follow a Regex__
 
     ---
 
