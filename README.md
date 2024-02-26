@@ -11,6 +11,8 @@
 
 *Robust (structured) text generation.*
 
+🙏 Help us by answering the [developer survey](https://h1xbpbfsf0w.typeform.com/to/EeDhccYI) 🙏
+
 </div>
 
 Made with ❤👷️ by the team at [.txt](https://dottxt.co).
