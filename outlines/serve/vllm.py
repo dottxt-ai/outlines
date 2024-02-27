@@ -47,7 +47,19 @@ class RegexLogitsProcessor:
             An instance of `vllm.LLM`
 
         """
-        tokenizer = self.adapt_tokenizer(llm.tokenizer.tokenizer)
+        if hasattr(llm, "get_tokenizer"):
+            tokenizer = llm.get_tokenizer()
+        elif hasattr(llm, "tokenizer"):
+            if hasattr(llm.tokenizer, "tokenizer"):
+                tokenizer = llm.tokenizer.tokenizer
+            else:
+                tokenizer = llm.tokenizer
+        else:
+            raise ValueError(
+                "The provided LLM instance in `RegexLogitsProcessor` neither has a "
+                "`tokenizer` attribute or a `get_tokenizer` method."
+            )
+        tokenizer = self.adapt_tokenizer(tokenizer=tokenizer)
 
         fsm = RegexFSM(regex_string, tokenizer)
         self.fsm = fsm

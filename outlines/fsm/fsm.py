@@ -121,7 +121,7 @@ class RegexFSM(FSM):
         self.states_to_token_maps, self.empty_token_ids = create_states_mapping(
             regex_string, tuple(sorted(tokenizer.vocabulary.items()))
         )
-        self.vocabulary = tokenizer.vocabulary.values()
+        self.vocabulary = list(tokenizer.vocabulary.values())
         self.eos_token_id = tokenizer.eos_token_id
 
     def allowed_token_ids(self, state: FSMState) -> List[int]:
@@ -218,7 +218,7 @@ class RegexFSM(FSM):
         ) = create_states_mapping_from_interegular_fsm(
             interegular_fsm, tuple(sorted(tokenizer.vocabulary.items()))
         )
-        from_interegular_instance.vocabulary = tokenizer.vocabulary.values()
+        from_interegular_instance.vocabulary = list(tokenizer.vocabulary.values())
         from_interegular_instance.eos_token_id = tokenizer.eos_token_id
         return from_interegular_instance
 
