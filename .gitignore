@@ -5,3 +5,4 @@ docs/build
 .coverage
 .idea/
 *.gguf
+.venv
