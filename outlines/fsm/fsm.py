@@ -218,7 +218,7 @@ class RegexFSM(FSM):
         ) = create_states_mapping_from_interegular_fsm(
             interegular_fsm, tuple(sorted(tokenizer.vocabulary.items()))
         )
-        from_interegular_instance.vocabulary = tokenizer.vocabulary.values()
+        from_interegular_instance.vocabulary = list(tokenizer.vocabulary.values())
         from_interegular_instance.eos_token_id = tokenizer.eos_token_id
         return from_interegular_instance
 
