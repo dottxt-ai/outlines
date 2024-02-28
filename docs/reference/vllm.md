@@ -32,8 +32,9 @@ You can then query the model in shell by passing a prompt and either
 
 1. a [JSON Schema][jsonschema]{:target="_blank"} specification or
 2. a [Regex][regex]{:target="_blank"} pattern
+3. [Grammar][cfg]{:target="_blank"}
 
-with the `schema` or `regex` parameters, respectively, to the `/generate` endpoint. If both are specified, the schema will be used. If neither is specified, the generated text will be unconstrained.
+with the `schema`, `regex`, or `cfg` parameters, respectively, to the `/generate` endpoint. If both are specified, the schema will be used. If neither is specified, the generated text will be unconstrained.
 
 For example, to generate a string that matches the schema `{"type": "string"}` (any string):
 
@@ -52,6 +53,16 @@ curl http://127.0.0.1:8000/generate \
     -d '{
         "prompt": "What is Pi? Give me the first 15 digits: ",
         "regex": "(-)?(0|[1-9][0-9]*)(\\.[0-9]+)?([eE][+-][0-9]+)?"
+        }'
+```
+
+To generate a string that matches the grammar `?start: expression \n?expression: term ((\"+\" | \"-\") term)* \n?term: factor ((\"*\" | \"/\") factor)* \n?factor: NUMBER | \"-\" factor | \"(\" expression \")\" \n%import common.NUMBER` (arithmetic expressions):
+
+```bash
+curl http://127.0.0.1:8000/generate \
+    -d '{
+        "prompt": "Alice had 4 apples and Bob ate 2. Write an expression for Alice's apples:",
+        "cfg": "?start: expression \n?expression: term ((\"+\" | \"-\") term)* \n?term: factor ((\"*\" | \"/\") factor)* \n?factor: NUMBER | \"-\" factor | \"(\" expression \")\" \n%import common.NUMBER"
         }'
 ```
 
