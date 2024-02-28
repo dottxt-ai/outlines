@@ -164,7 +164,7 @@ class CFGLogitsProcessor(RegexLogitsProcessor):
                 tokenizer = llm.tokenizer
         else:
             raise ValueError(
-                "The provided LLM instance in `RegexLogitsProcessor` neither has a "
+                "The provided LLM instance in `CFGLogitsProcessor` neither has a "
                 "`tokenizer` attribute or a `get_tokenizer` method."
             )
         tokenizer = self.adapt_tokenizer(tokenizer=tokenizer)
