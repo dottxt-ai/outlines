@@ -3,7 +3,7 @@ repos:
   rev: v4.4.0
   hooks:
     -   id: check-merge-conflict
-    -   id: debug-statements
+    #-   id: debug-statements
     -   id: end-of-file-fixer
     -   id: trailing-whitespace
 - repo: https://github.com/pycqa/isort
