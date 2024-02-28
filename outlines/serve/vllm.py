@@ -31,7 +31,7 @@ from typing import DefaultDict, Dict, List, Optional
 import torch
 from pydantic import BaseModel
 
-from outlines.fsm.fsm import RegexFSM
+from outlines.fsm.fsm import RegexFSM, CFGFSM
 from outlines.fsm.json_schema import build_regex_from_schema
 
 
@@ -141,3 +141,33 @@ class JSONLogitsProcessor(RegexLogitsProcessor):
             )
         regex_string = build_regex_from_schema(schema_str, whitespace_pattern)
         super().__init__(regex_string, llm)
+
+
+class CFGLogitsProcessor(RegexLogitsProcessor):
+    def __init__(self, cfg_str: str, llm):
+        """Compile the FSM that drives the CFG-structured generation.
+
+        Parameters
+        ----------
+        cfg_str
+            A string that represents a context-free grammar
+        llm
+            An instance of `vllm.LLM`
+
+        """
+        if hasattr(llm, "get_tokenizer"):
+            tokenizer = llm.get_tokenizer()
+        elif hasattr(llm, "tokenizer"):
+            if hasattr(llm.tokenizer, "tokenizer"):
+                tokenizer = llm.tokenizer.tokenizer
+            else:
+                tokenizer = llm.tokenizer
+        else:
+            raise ValueError(
+                "The provided LLM instance in `RegexLogitsProcessor` neither has a "
+                "`tokenizer` attribute or a `get_tokenizer` method."
+            )
+        tokenizer = self.adapt_tokenizer(tokenizer=tokenizer)
+
+        fsm = CFGFSM(cfg_str, tokenizer)
+        self.fsm = fsm
