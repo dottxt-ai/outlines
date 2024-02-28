@@ -1,8 +1,13 @@
+import datetime
 from typing import Iterator, List, Optional, Union
 
 import torch
 
 from outlines.generate.generator import sequence_generator
+
+FormattedOutput = Union[
+    str, int, float, bool, datetime.date, datetime.time, datetime.datetime
+]
 
 
 class SequenceGenerator:
@@ -100,7 +105,7 @@ class SequenceGenerator:
 
         return sequence
 
-    def format_sequence(self, sequence: str) -> str:
+    def format_sequence(self, sequence: str) -> FormattedOutput:
         """Translate the generated sequence to another type.
 
         This method is for instance overridden when generating JSON to either
@@ -124,7 +129,7 @@ class SequenceGenerator:
         max_tokens: Optional[int] = None,
         stop_at: Optional[Union[str, List[str]]] = None,
         rng: Optional[torch.Generator] = None,
-    ) -> Union[str, List[str], List[List[str]]]:
+    ) -> Union[FormattedOutput, List[FormattedOutput], List[List[FormattedOutput]]]:
         """Generate the full text sequence.
 
         Since `SequenceGenerator.stream` calls the tokenizer at every step this
@@ -148,8 +153,7 @@ class SequenceGenerator:
 
         Returns
         -------
-        A string or list of strings that contain the generated text.
-
+        The generation(s), potentially cast to another type.
         """
 
         if isinstance(prompts, str):
@@ -222,7 +226,7 @@ class SequenceGenerator:
         formatted = [self.format_sequence(sequence) for sequence in stripped]
 
         # We reshape the output to (batch_size, sample_size)
-        output = []
+        output: List[List[FormattedOutput]] = list()
         for i in range(batch_size):
             output.append(formatted[i : i + num_samples])
 
@@ -242,7 +246,7 @@ class SequenceGenerator:
         max_tokens: Optional[int] = None,
         stop_at: Optional[Union[str, List[str]]] = None,
         rng: Optional[torch.Generator] = None,
-    ) -> Iterator[Union[List[str], List[List[str]], str]]:
+    ) -> Iterator[Union[List[str], str, List[List[str]]]]:
         """Generate the text sequence one token at a time.
 
         Since `Tokenizer.decode` strips the whitespaces from the tokens we have no
@@ -352,7 +356,7 @@ class SequenceGenerator:
                     ]
 
                 # We reshape the output to (batch_size, sample_size)
-                output = []
+                output: List[List[str]] = list()
                 for i in range(batch_size):
                     output.append(next_tokens[i : i + num_samples])
 
