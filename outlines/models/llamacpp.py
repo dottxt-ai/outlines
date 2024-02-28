@@ -1,20 +1,39 @@
-import math
 from typing import TYPE_CHECKING, List, Optional, Union
 
-import numpy as np
 import torch
-from numpy.typing import NDArray
 
-from outlines.fsm.guide import CFGGuide, Guide, RegexGuide
+from outlines.integrations.llamacpp import (  # noqa: F401
+    CFGLogitsProcessor,
+    JSONLogitsProcessor,
+    LlamaCppTokenizer,
+    LogitsProcessor,
+    RegexLogitsProcessor,
+)
 
 if TYPE_CHECKING:
     from llama_cpp import Llama
 
 
+class LlamaCpp:
+    """Represents a `llama_cpp` model."""
+
+    def __init__(self, model: "Llama"):
+        self.model = model
+        self.tokenizer = LlamaCppTokenizer(model=model)
+
+
+def llamacpp(model_path: str, device: Optional[str] = None, **model_kwargs) -> LlamaCpp:
+    from llama_cpp import Llama
+
+    if device == "cuda":
+        model_kwargs["n_gpu_layers"].setdefault(-1)
+
+    model = Llama(model_path, **model_kwargs)
+    return LlamaCpp(model=model)
+
+
 class LlamaSequenceGenerator:
-    def __init__(
-        self, logits_processor: Optional["LogitsProcessor"], model: "LlamaCpp"
-    ):
+    def __init__(self, logits_processor: Optional[LogitsProcessor], model: LlamaCpp):
         self.model = model.model
         self.logits_processor = logits_processor
 
@@ -41,14 +60,16 @@ class LlamaSequenceGenerator:
             if self.logits_processor is not None:
                 processors = [self.logits_processor.copy()]
 
-            result = self.model.create_completion(
+            completion = self.model.create_completion(
                 prompt,
                 max_tokens=max_tokens,
                 stop=stop_at,
                 seed=rng.initial_seed(),
                 logits_processor=LogitsProcessorList(processors),
                 **model_kwargs,
-            )["choices"][0]["text"]
+            )
+            assert isinstance(completion, dict)
+            result = completion["choices"][0]["text"]
             results.append(result)
 
             self.model.reset()
@@ -71,7 +92,6 @@ class LlamaSequenceGenerator:
         Returns
         -------
         The formatted sequence.
-
         """
         return sequence
 
@@ -85,113 +105,3 @@ class LlamaSequenceGenerator:
         raise NotImplementedError(
             "Streaming is not implemented for the `llama.cpp` integration."
         )
-
-
-class LlamaCpp:
-    """Represents a `llama_cpp` model."""
-
-    def __init__(self, model: "Llama", **kwargs):
-        self.model = model
-        self.tokenizer = LlamaCppTokenizer(model)
-
-
-class LlamaCppTokenizer:
-    def __init__(self, model, **kwargs):
-        self.eos_token_id = model.token_eos()
-        self.pad_token_id = self.eos_token_id
-        self.special_tokens = {}
-
-        self.vocabulary = {}
-        for t in range(model.n_vocab()):
-            token_piece = model.tokenizer().decode([t])
-            self.vocabulary[token_piece] = t
-
-    def convert_token_to_string(self, token: str) -> str:
-        return token
-
-
-def llamacpp(
-    model_path: str,
-    device: Optional[str] = None,
-    **model_kwargs,
-):
-    from llama_cpp import Llama
-
-    if device == "cuda":
-        model_kwargs["n_gpu_layers"].setdefault(-1)
-
-    model = Llama(model_path, **model_kwargs)
-
-    return LlamaCpp(model)
-
-
-class LogitsProcessor:
-    def __init__(self, tokenizer: LlamaCppTokenizer, fsm: Guide):
-        """A FSM-based logits processor.
-
-        Parameters
-        ----------
-        tokenizer
-            An instance of `Tokenizer`
-        fsm
-            An instance of `FSM`
-
-        """
-        self.tokenizer = tokenizer
-        self.fsm_state = 0
-        self.fsm: Guide = fsm
-        self.is_first_token = True
-
-    def __call__(
-        self, input_ids: NDArray[np.int64], scores: NDArray[np.float32]
-    ) -> NDArray[np.float32]:
-        """Use the FSM to bias the logits before sampling the next token."""
-
-        if self.is_first_token:
-            self.is_first_token = False
-        else:
-            last_token = input_ids[-1]
-            self.fsm_state = self.fsm.get_next_state(self.fsm_state, last_token)
-
-        allowed_tokens = self.fsm.get_next_instruction(self.fsm_state).tokens
-
-        mask = torch.full((scores.shape[-1],), -math.inf, device="cpu").numpy()
-        mask[allowed_tokens] = 0
-        biased_scores = scores + mask
-
-        return biased_scores
-
-    def copy(self):
-        return LogitsProcessor(self.tokenizer, self.fsm.copy())
-
-
-class RegexLogitsProcessor(LogitsProcessor):
-    def __init__(self, regex_string: str, tokenizer: LlamaCppTokenizer):
-        """Compile the FSM that drives the regex-guided generation.
-
-        Parameters
-        ----------
-        regex_string
-            A string that represents a regular expression
-        tokenizer
-            An instance of `Tokenizer`
-
-        """
-        fsm = RegexGuide(regex_string, tokenizer)
-        super().__init__(tokenizer, fsm)
-
-
-class CFGLogitsProcessor(LogitsProcessor):
-    def __init__(self, cfg_str: str, tokenizer: LlamaCppTokenizer):
-        """Compile the FSM that drives the CFG-guided generation.
-
-        Parameters
-        ----------
-        cfg_str
-            A string that represents a grammar
-        tokenizer
-            An instance of `Tokenizer`
-
-        """
-        fsm = CFGGuide(cfg_str, tokenizer)
-        super().__init__(tokenizer, fsm)

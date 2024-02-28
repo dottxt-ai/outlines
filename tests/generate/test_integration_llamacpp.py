@@ -23,9 +23,7 @@ def model(tmp_path_factory):
         local_dir_use_symlinks="auto",
         filename="TinyMistral-248M-v2-Instruct.Q4_K_M.gguf",
     )
-
-    model = llamacpp(TEST_MODEL, "cpu")
-    return model
+    return llamacpp(model_path=TEST_MODEL, device="cpu")
 
 
 def test_llamacpp_integration_text(model):
@@ -58,6 +56,7 @@ def test_llamacpp_integration_text_stop(model):
         "<|im_start|>user\nWrite a short sentence<|im_end|>\n<|im_start|>assistant\n"
     )
     sequence = generate.text(model)(prompt, stop_at="a")
+    assert isinstance(sequence, str)
     assert sequence[len(prompt) :].find("a") == -1
 
 
@@ -70,8 +69,9 @@ def test_llamacpp_various_regexes(model):
     generator = generate.regex(model, regex_str)
 
     # One prompt
-    sequence = generator(prompt)
-    assert re.fullmatch(regex_str, sequence) is not None
+    sequence = generator(prompts=prompt)
+    assert isinstance(sequence, str)
+    assert re.fullmatch(pattern=regex_str, string=sequence) is not None
 
 
 def test_llamacpp_various_regexes_prompt_list(model):
@@ -83,9 +83,12 @@ def test_llamacpp_various_regexes_prompt_list(model):
     generator = generate.regex(model, regex_str)
 
     # Two prompts
-    sequence = generator([prompt, prompt])
-    assert re.fullmatch(regex_str, sequence[0]) is not None
-    assert re.fullmatch(regex_str, sequence[1]) is not None
+    sequence = generator(prompts=[prompt, prompt])
+    assert isinstance(sequence, list)
+    assert len(sequence) == 2
+    for s in sequence:
+        assert isinstance(s, str)
+        assert re.fullmatch(pattern=regex_str, string=s) is not None
 
 
 def test_llamacpp_integration_integer(model):
@@ -94,7 +97,7 @@ def test_llamacpp_integration_integer(model):
         "<|im_start|>user\nWrite a short sentence<|im_end|>\n<|im_start|>assistant\n"
     )
     sequence = generate.format(model, int)(prompt, max_tokens=10)
-
+    assert isinstance(sequence, int)
     assert sequence != ""
     int(sequence)
 
@@ -103,10 +106,12 @@ def test_llamacpp_integration_integer_array(model):
     model.model.reset()
     prompts = ["Give me a number", "And another one"]
     sequence = generate.format(model, int)(prompts, max_tokens=10)
+
     assert isinstance(sequence, list)
     assert len(sequence) == 2
-    int(sequence[0])
-    int(sequence[1])
+    for s in sequence:
+        assert isinstance(s, int)
+        int(s)
 
 
 def test_llamacpp_integration_float(model):
@@ -115,6 +120,7 @@ def test_llamacpp_integration_float(model):
         "<|im_start|>user\nWrite a short sentence<|im_end|>\n<|im_start|>assistant\n"
     )
     sequence = generate.format(model, float)(prompt, max_tokens=10)
+    assert isinstance(sequence, float)
 
     assert sequence != ""
     float(sequence)
@@ -126,6 +132,7 @@ def test_llamacpp_integration_bool(model):
         "<|im_start|>user\nIs this True or False?<|im_end|>\n<|im_start|>assistant\n"
     )
     sequence = generate.format(model, bool)(prompt, max_tokens=10)
+    assert isinstance(sequence, bool)
 
     assert sequence != ""
     bool(sequence)
@@ -137,7 +144,6 @@ def test_llamacpp_integration_date(model):
         "<|im_start|>user\nWhat day is it today?<|im_end|>\n<|im_start|>assistant\n"
     )
     sequence = generate.format(model, datetime.date)(prompt, max_tokens=10)
-
     assert isinstance(sequence, datetime.date)
 
 
@@ -145,7 +151,6 @@ def test_llamacpp_integration_time(model):
     model.model.reset()
     prompt = "<|im_start|>user\nWhat time is it?<|im_end|>\n<|im_start|>assistant\n"
     sequence = generate.format(model, datetime.time)(prompt, max_tokens=10)
-
     assert isinstance(sequence, datetime.time)
 
 
@@ -153,7 +158,6 @@ def test_llamacpp_integration_datetime(model):
     model.model.reset()
     prompt = "<|im_start|>user\nWhat time is it?<|im_end|>\n<|im_start|>assistant\n"
     sequence = generate.format(model, datetime.datetime)(prompt, max_tokens=20)
-
     assert isinstance(sequence, datetime.datetime)
 
 
@@ -163,7 +167,6 @@ def test_llamacpp_integration_choice(model):
         "<|im_start|>user\nWrite a short sentence<|im_end|>\n<|im_start|>assistant\n"
     )
     sequence = generate.choice(model, ["test", "choice"])(prompt)
-
     assert sequence == "test" or sequence == "choice"
 
 

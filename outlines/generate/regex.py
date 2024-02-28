@@ -2,12 +2,9 @@ from functools import singledispatch
 
 from outlines.fsm.guide import RegexGuide
 from outlines.generate.api import SequenceGenerator
+from outlines.integrations.llamacpp import RegexLogitsProcessor
 from outlines.models import OpenAI
-from outlines.models.llamacpp import (
-    LlamaCpp,
-    LlamaSequenceGenerator,
-    RegexLogitsProcessor,
-)
+from outlines.models.llamacpp import LlamaCpp, LlamaSequenceGenerator
 from outlines.samplers import Sampler, multinomial
 
 
@@ -52,8 +49,8 @@ def regex_llamacpp(
             + "than the multinomial sampler."
         )
 
-    logits_processor = RegexLogitsProcessor(regex_str, model.tokenizer)
-    generator = LlamaSequenceGenerator(logits_processor, model)
+    logits_processor = RegexLogitsProcessor(regex_str, llm=model.model)
+    generator = LlamaSequenceGenerator(logits_processor=logits_processor, model=model)
 
     return generator
 
