@@ -66,7 +66,6 @@ class RegexLogitsProcessor:
 
     def __call__(self, input_ids: List[int], scores: torch.Tensor) -> torch.Tensor:
         """Use the FSM to bias the logits before sampling the next token."""
-        breakpoint()
 
         seq_id = hash(tuple(input_ids))
 
