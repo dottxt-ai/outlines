@@ -618,7 +618,7 @@ def test_custom_sampler():
 
 
 def test_transformers_use_existing_model_and_tokenizer():
-    from transformers import AutoTokenizer, AutoModelForCausalLM
+    from transformers import AutoModelForCausalLM, AutoTokenizer
 
     rng = torch.Generator()
     rng.manual_seed(10000)
