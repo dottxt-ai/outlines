@@ -58,7 +58,9 @@ def get_llama_tokenizer_types():
 class TransformerTokenizer(Tokenizer):
     """Represents a tokenizer for models in the `transformers` library."""
 
-    def __init__(self, tokenizer_or_model_name: Union["PreTrainedTokenizerBase", str], **kwargs):
+    def __init__(
+        self, tokenizer_or_model_name: Union["PreTrainedTokenizerBase", str], **kwargs
+    ):
         if isinstance(tokenizer_or_model_name, str):
             from transformers import AutoTokenizer
 
@@ -66,10 +68,12 @@ class TransformerTokenizer(Tokenizer):
             self.model_name = tokenizer_or_model_name
             # TODO: Do something to make this hashable?
             self.kwargs = kwargs
-            self.tokenizer = AutoTokenizer.from_pretrained(tokenizer_or_model_name, **kwargs)
+            self.tokenizer = AutoTokenizer.from_pretrained(
+                tokenizer_or_model_name, **kwargs
+            )
         else:
             self.tokenizer = tokenizer_or_model_name
-        
+
         self.eos_token_id = self.tokenizer.eos_token_id
         self.eos_token = self.tokenizer.eos_token
 
@@ -112,7 +116,9 @@ class TransformerTokenizer(Tokenizer):
     def __eq__(self, other):
         if isinstance(other, type(self)):
             if hasattr(self, "model_name") and hasattr(self, "kwargs"):
-                return other.model_name == self.model_name and other.kwargs == self.kwargs
+                return (
+                    other.model_name == self.model_name and other.kwargs == self.kwargs
+                )
             else:
                 return other.tokenizer == self.tokenizer
         return NotImplemented
