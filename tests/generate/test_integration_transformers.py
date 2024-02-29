@@ -10,7 +10,7 @@ from pydantic import BaseModel, constr
 import outlines.generate as generate
 import outlines.models as models
 from outlines.fsm.regex import reduced_vocabulary
-from outlines.models.transformers import TransformerTokenizer
+from outlines.models.transformers import Transformer, TransformerTokenizer
 from outlines.samplers import beam_search, multinomial
 
 
@@ -615,3 +615,18 @@ def test_custom_sampler():
     )
 
     assert sequence == "c"
+
+
+def test_transformers_use_existing_model_and_tokenizer():
+    from transformers import AutoTokenizer, AutoModelForCausalLM
+
+    rng = torch.Generator()
+    rng.manual_seed(10000)
+
+    model_name = "hf-internal-testing/tiny-random-GPTJForCausalLM"
+    hf_tokenizer = AutoTokenizer.from_pretrained(model_name)
+    hf_model = AutoModelForCausalLM.from_pretrained(model_name)
+    tokenizer = TransformerTokenizer(hf_tokenizer)
+    model = Transformer(hf_model, tokenizer)
+    sequence = generate.text(model)("Write a short sentence ", rng=rng)
+    assert isinstance(sequence, str)
