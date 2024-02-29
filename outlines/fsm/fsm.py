@@ -78,7 +78,7 @@ class StopAtEosFSM(FSM):
         The new state of the FSM.
 
         """
-        if token_id == self.eos_token_id:
+        if token_id == self.eos_token_id or state == self.final_state:
             return self.final_state
 
         return self.first_state
