@@ -279,13 +279,9 @@ class SequenceGenerator:
         stop_sequences = stop_at
         num_samples = self.num_samples
 
-        if rng is None:
-            rng = torch.Generator(device=self.device)
-            rng.seed()
-
         prompt_token_ids, attention_masks = self.tokenizer.encode(prompts)
         prompt_token_ids = prompt_token_ids.to(self.device)
-        attention_masks = attention_masks.to(self.device)
+        attention_masks = attention_masks.to(prompt_token_ids.device)
 
         # To draw multiple samples we repeat the prompt as many times
         # as there are samples. We copy the FSMs and initialize the
@@ -298,8 +294,14 @@ class SequenceGenerator:
         fsm_states = [FSMState(0) for _ in range(batch_size * num_samples)]
         fsms = [self.fsm.copy() for _ in range(batch_size * num_samples)]
         weights = torch.zeros(
-            (batch_size * num_samples), dtype=torch.float, device=self.device
+            (batch_size * num_samples),
+            dtype=torch.float,
+            device=prompt_token_ids.device,
         )
+
+        if rng is None:
+            rng = torch.Generator(device=prompt_token_ids.device)
+            rng.seed()
 
         states = sequence_generator(
             self.model,
