@@ -177,7 +177,7 @@ def test_match_number(pattern, does_match):
         ),
         # Const integer
         (
-            {"title": "Foo", "enum": 0, "type": "integer"},
+            {"title": "Foo", "const": 0, "type": "integer"},
             "0",
             [("0", True), ("1", False), ("a", False)],
         ),
