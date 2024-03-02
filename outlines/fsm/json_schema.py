@@ -213,9 +213,14 @@ def to_regex(
                 choices.append(re.escape(str(choice)))
             elif type(choice) == str:
                 choices.append(f'"{re.escape(choice)}"')
-
         return f"({'|'.join(choices)})"
-
+    elif "const" in instance:
+        const = instance["const"]
+        if type(const) in [int, float, bool, None]:
+            const = re.escape(str(const))
+        elif type(const) == str:
+            const = f'"{re.escape(const)}"'
+        return const
     elif "$ref" in instance:
         path = f"{instance['$ref']}"
         instance = resolver.lookup(path).contents
