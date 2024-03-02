@@ -163,6 +163,24 @@ def test_match_number(pattern, does_match):
                 ("0", False),
             ],
         ),
+        # Const string
+        (
+            {"title": "Foo", "const": "Marc", "type": "string"},
+            '"Marc"',
+            [('"Marc"', True), ('"Jean"', False), ('"John"', False)],
+        ),
+        # Make sure strings are escaped
+        (
+            {"title": "Foo", "const": ".*", "type": "string"},
+            r'"\.\*"',
+            [('".*"', True), (r'"\s*"', False), (r'"\.\*"', False)],
+        ),
+        # Const integer
+        (
+            {"title": "Foo", "const": 0, "type": "integer"},
+            "0",
+            [("0", True), ("1", False), ("a", False)],
+        ),
         # Enum string
         (
             {"title": "Foo", "enum": ["Marc", "Jean"], "type": "string"},
