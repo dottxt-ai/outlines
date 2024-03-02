@@ -223,6 +223,7 @@ def to_regex(
         elif type(const) == str:
             const = f'"{re.escape(const)}"'
         return const
+
     elif "$ref" in instance:
         path = f"{instance['$ref']}"
         instance = resolver.lookup(path).contents
