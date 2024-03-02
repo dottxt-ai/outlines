@@ -213,7 +213,9 @@ def to_regex(
                 choices.append(re.escape(str(choice)))
             elif type(choice) == str:
                 choices.append(f'"{re.escape(choice)}"')
+
         return f"({'|'.join(choices)})"
+
     elif "const" in instance:
         const = instance["const"]
         if type(const) in [int, float, bool, None]:
