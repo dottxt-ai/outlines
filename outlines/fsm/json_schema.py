@@ -138,7 +138,7 @@ def to_regex(
         if any(is_required):
             last_required_pos = max([i for i, value in enumerate(is_required) if value])
             for i, (name, value) in enumerate(properties.items()):
-                subregex = f'{whitespace_pattern}"{name}"{whitespace_pattern}:{whitespace_pattern}'
+                subregex = f'{whitespace_pattern}"{re.escape(name)}"{whitespace_pattern}:{whitespace_pattern}'
                 subregex += to_regex(resolver, value, whitespace_pattern)
                 if i < last_required_pos:
                     subregex = f"{subregex}{whitespace_pattern},"
