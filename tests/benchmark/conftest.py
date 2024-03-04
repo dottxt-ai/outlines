@@ -1,4 +1,5 @@
 import pytest
+from transformers import AutoTokenizer
 
 from outlines.fsm.fsm import RegexFSM
 from outlines.models.transformers import TransformerTokenizer
@@ -6,7 +7,8 @@ from outlines.models.transformers import TransformerTokenizer
 
 @pytest.fixture
 def tokenizer():
-    return TransformerTokenizer("gpt2")
+    tokenizer = AutoTokenizer.from_pretrained("gpt2")
+    return TransformerTokenizer(tokenizer)
 
 
 @pytest.fixture

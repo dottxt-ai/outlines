@@ -1,11 +1,14 @@
 import math
-from typing import List, Optional, Union
+from typing import TYPE_CHECKING, List, Optional, Union
 
 import numpy as np
 import torch
 from numpy.typing import NDArray
 
 from outlines.fsm.fsm import CFGFSM, FSM, FSMState, RegexFSM
+
+if TYPE_CHECKING:
+    from llama_cpp import Llama
 
 
 class LlamaSequenceGenerator:
@@ -87,22 +90,20 @@ class LlamaSequenceGenerator:
 class LlamaCpp:
     """Represents a `llama_cpp` model."""
 
-    def __init__(self, model_path, **kwargs):
-        from llama_cpp import Llama
-
-        self.model = Llama(model_path, **kwargs)
-        self.tokenizer = LlamaCppTokenizer(self)
+    def __init__(self, model: "Llama", **kwargs):
+        self.model = model
+        self.tokenizer = LlamaCppTokenizer(model)
 
 
 class LlamaCppTokenizer:
     def __init__(self, model, **kwargs):
-        self.eos_token_id = model.model.token_eos()
+        self.eos_token_id = model.token_eos()
         self.pad_token_id = self.eos_token_id
         self.special_tokens = {}
 
         self.vocabulary = {}
-        for t in range(model.model.n_vocab()):
-            token_piece = model.model.tokenizer().decode([t])
+        for t in range(model.n_vocab()):
+            token_piece = model.tokenizer().decode([t])
             self.vocabulary[token_piece] = t
 
     def convert_token_to_string(self, token: str) -> str:
@@ -110,11 +111,18 @@ class LlamaCppTokenizer:
 
 
 def llamacpp(
-    model_name: str,
+    model_path: str,
     device: Optional[str] = None,
-    model_kwargs: dict = {},
+    **model_kwargs,
 ):
-    return LlamaCpp(model_name, **model_kwargs)
+    from llama_cpp import Llama
+
+    if device == "cuda":
+        model_kwargs["n_gpu_layers"].setdefault(-1)
+
+    model = Llama(model_path, **model_kwargs)
+
+    return LlamaCpp(model)
 
 
 class LogitsProcessor:
