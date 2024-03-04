@@ -1,5 +1,6 @@
 import pytest
 import torch
+from transformers import AutoTokenizer
 from transformers.models.gpt2 import GPT2TokenizerFast
 
 from outlines.models.transformers import TransformerTokenizer, transformers
@@ -8,7 +9,8 @@ TEST_MODEL = "hf-internal-testing/tiny-random-GPTJForCausalLM"
 
 
 def test_tokenizer():
-    tokenizer = TransformerTokenizer(TEST_MODEL)
+    tokenizer = AutoTokenizer.from_pretrained(TEST_MODEL, padding_side="left")
+    tokenizer = TransformerTokenizer(tokenizer)
     assert tokenizer.eos_token_id == 0
     assert tokenizer.pad_token_id == 0
     assert isinstance(tokenizer.tokenizer, GPT2TokenizerFast)
@@ -37,15 +39,17 @@ def test_tokenizer():
     isinstance(text[0], str)
     isinstance(text[1], str)
 
-    tokenizer = TransformerTokenizer(
+    tokenizer = AutoTokenizer.from_pretrained(
         TEST_MODEL, additional_special_tokens=["<t1>", "<t2>"]
     )
+    tokenizer = TransformerTokenizer(tokenizer)
     assert "<t1>" in tokenizer.special_tokens
     assert "<t2>" in tokenizer.special_tokens
 
 
 def test_llama_tokenizer():
-    tokenizer = TransformerTokenizer("hf-internal-testing/llama-tokenizer")
+    tokenizer = AutoTokenizer.from_pretrained("hf-internal-testing/llama-tokenizer")
+    tokenizer = TransformerTokenizer(tokenizer)
 
     # Broken
     assert tokenizer.tokenizer.convert_tokens_to_string(["▁baz"]) == "baz"
@@ -100,7 +104,9 @@ def test_model():
 
 
 def test_tokenizer_eq_hash():
-    tokenizer = TransformerTokenizer("gpt2")
-    tokenizer2 = TransformerTokenizer("gpt2")
+    tokenizer_hf = AutoTokenizer.from_pretrained("gpt2")
+
+    tokenizer = TransformerTokenizer(tokenizer_hf)
+    tokenizer2 = TransformerTokenizer(tokenizer_hf)
     assert tokenizer == tokenizer2
     assert hash(tokenizer) == hash(tokenizer2)

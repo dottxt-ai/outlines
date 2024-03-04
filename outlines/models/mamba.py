@@ -20,7 +20,7 @@ class Mamba:
     ):
         self.device = device
         self.model = model
-        self.tokenizer = tokenizer
+        self.tokenizer = TransformerTokenizer(tokenizer)
 
     def forward(self, input_ids: torch.LongTensor, *_):
         """Compute a forward pass through the mamba model."""
@@ -41,6 +41,7 @@ def mamba(
 ):
     try:
         from mamba_ssm import MambaLMHeadModel
+        from transformers import AutoTokenizer
     except ImportError:
         raise ImportError(
             "The `mamba_ssm` library needs to be installed in order to use Mamba people."
@@ -53,6 +54,8 @@ def mamba(
             device = "cuda"
 
     model = MambaLMHeadModel.from_pretrained(model_name, device=device)
-    tokenizer = TransformerTokenizer(TOKENIZER_MODEL, **tokenizer_kwargs)
+
+    tokenizer_kwargs.setdefault("padding_side", "left")
+    tokenizer = AutoTokenizer.from_pretrained(TOKENIZER_MODEL, **tokenizer_kwargs)
 
     return Mamba(model, tokenizer, device)

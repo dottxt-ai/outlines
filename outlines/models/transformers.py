@@ -5,7 +5,7 @@ import torch
 from outlines.models.tokenizer import Tokenizer
 
 if TYPE_CHECKING:
-    from transformers import PreTrainedModel, PreTrainedTokenizerBase
+    from transformers import PreTrainedModel, PreTrainedTokenizer
 
 __all__ = ["transformers"]
 
@@ -58,22 +58,8 @@ def get_llama_tokenizer_types():
 class TransformerTokenizer(Tokenizer):
     """Represents a tokenizer for models in the `transformers` library."""
 
-    def __init__(
-        self, tokenizer_or_model_name: Union["PreTrainedTokenizerBase", str], **kwargs
-    ):
-        if isinstance(tokenizer_or_model_name, str):
-            from transformers import AutoTokenizer
-
-            kwargs.setdefault("padding_side", "left")
-            self.model_name = tokenizer_or_model_name
-            # TODO: Do something to make this hashable?
-            self.kwargs = kwargs
-            self.tokenizer = AutoTokenizer.from_pretrained(
-                tokenizer_or_model_name, **kwargs
-            )
-        else:
-            self.tokenizer = tokenizer_or_model_name
-
+    def __init__(self, tokenizer: "PreTrainedTokenizer", **kwargs):
+        self.tokenizer = tokenizer
         self.eos_token_id = self.tokenizer.eos_token_id
         self.eos_token = self.tokenizer.eos_token
 
@@ -129,17 +115,17 @@ class TransformerTokenizer(Tokenizer):
         return hash(Hasher.hash(self.tokenizer))
 
 
-class Transformer:
+class Transformers:
     """Represents a `transformers` model."""
 
     def __init__(
         self,
         model: "PreTrainedModel",
-        tokenizer: TransformerTokenizer,
+        tokenizer: "PreTrainedTokenizer",
     ):
         self.device = model.device
         self.model = model
-        self.tokenizer = tokenizer
+        self.tokenizer = TransformerTokenizer(tokenizer)
 
     @torch.inference_mode
     def forward(
@@ -221,7 +207,7 @@ def transformers(
 
     """
     try:
-        from transformers import AutoModelForCausalLM
+        from transformers import AutoModelForCausalLM, AutoTokenizer
     except ImportError:
         raise ImportError(
             "The `transformers` library needs to be installed in order to use `transformers` models."
@@ -231,6 +217,8 @@ def transformers(
         model_kwargs["device_map"] = device
 
     model = AutoModelForCausalLM.from_pretrained(model_name, **model_kwargs)
-    tokenizer = TransformerTokenizer(model_name, **tokenizer_kwargs)
 
-    return Transformer(model, tokenizer)
+    tokenizer_kwargs.setdefault("padding_side", "left")
+    tokenizer = AutoTokenizer.from_pretrained(model_name, **tokenizer_kwargs)
+
+    return Transformers(model, tokenizer)
