@@ -1,0 +1,36 @@
+name: Release Docker
+
+on:
+  release:
+    types:
+      - created
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Release Tag (for manual dispatch)'
+        required: false
+        default: 'latest'
+jobs:
+  release-job:
+    name: Build and publish on Docker Hub
+    runs-on: ubuntu-latest
+    environment: release
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        push: true
+        tags: |
+          outlinesdev/outlines:latest
+          outlinesdev/outlines:${{ github.event.release.tag_name || github.event.inputs.release_tag }}
+        build-args: |
+          BUILDKIT_CONTEXT_KEEP_GIT_DIR=true
+    - name: Clean docker cache
+      run: docker system prune --all --force

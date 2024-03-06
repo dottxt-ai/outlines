@@ -1,1 +1,1 @@
-# Grammar-guided generation
+# Grammar-structured generation

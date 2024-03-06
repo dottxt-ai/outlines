@@ -17,7 +17,7 @@ from outlines.fsm.json_schema import (
     TIME,
     UUID,
     WHITESPACE,
-    build_regex_from_object,
+    build_regex_from_schema,
     get_schema_from_signature,
     to_regex,
 )
@@ -53,7 +53,7 @@ def test_from_pydantic():
         is_true: bool
 
     schema = json.dumps(User.model_json_schema())
-    schedule = build_regex_from_object(schema)
+    schedule = build_regex_from_schema(schema)
     assert isinstance(schedule, str)
 
 
@@ -163,6 +163,24 @@ def test_match_number(pattern, does_match):
                 ("0", False),
             ],
         ),
+        # Const string
+        (
+            {"title": "Foo", "const": "Marc", "type": "string"},
+            '"Marc"',
+            [('"Marc"', True), ('"Jean"', False), ('"John"', False)],
+        ),
+        # Make sure strings are escaped
+        (
+            {"title": "Foo", "const": ".*", "type": "string"},
+            r'"\.\*"',
+            [('".*"', True), (r'"\s*"', False), (r'"\.\*"', False)],
+        ),
+        # Const integer
+        (
+            {"title": "Foo", "const": 0, "type": "integer"},
+            "0",
+            [("0", True), ("1", False), ("a", False)],
+        ),
         # Enum string
         (
             {"title": "Foo", "enum": ["Marc", "Jean"], "type": "string"},
@@ -233,6 +251,64 @@ def test_match_number(pattern, does_match):
             },
             rf"\[{WHITESPACE}\]",
             [("[1]", False), ("[]", True), ("[1,2,3]", False), ("[1,2,3,4]", False)],
+        ),
+        # object
+        (
+            {
+                "title": "TestSchema",
+                "type": "object",
+                "properties": {
+                    "test_dict": {
+                        "title": "Test Dict",
+                        "additionalProperties": {"type": "string"},
+                        "type": "object",
+                    }
+                },
+                "required": ["test_dict"],
+            },
+            rf"""\{{{WHITESPACE}"test_dict"{WHITESPACE}:{WHITESPACE}\{{{WHITESPACE}({STRING}{WHITESPACE}:{WHITESPACE}{STRING}({WHITESPACE},{WHITESPACE}{STRING}{WHITESPACE}:{WHITESPACE}{STRING}){{0,}})?{WHITESPACE}\}}{WHITESPACE}\}}""",
+            [
+                ("""{ "test_dict":{"foo":"bar","baz": "bif"}}""", True),
+                ("""{ "test_dict":{"foo":"bar"\n}}""", True),
+                ("""{ "test_dict":{}}""", True),
+                ("""{ "WRONG_KEY":{}}""", False),
+                ("""{ "test_dict":{"wrong_type" 1}}""", False),
+            ],
+        ),
+        # object containing object
+        (
+            {
+                "title": "TestSchema",
+                "type": "object",
+                "properties": {
+                    "test_dict": {
+                        "title": "Test Dict",
+                        "additionalProperties": {
+                            "additionalProperties": {"type": "integer"},
+                            "type": "object",
+                        },
+                        "type": "object",
+                    }
+                },
+                "required": ["test_dict"],
+            },
+            rf"""\{{{WHITESPACE}"test_dict"{WHITESPACE}:{WHITESPACE}\{{{WHITESPACE}({STRING}{WHITESPACE}:{WHITESPACE}\{{{WHITESPACE}({STRING}{WHITESPACE}:{WHITESPACE}{INTEGER}({WHITESPACE},{WHITESPACE}{STRING}{WHITESPACE}:{WHITESPACE}{INTEGER}){{0,}})?{WHITESPACE}\}}({WHITESPACE},{WHITESPACE}{STRING}{WHITESPACE}:{WHITESPACE}\{{{WHITESPACE}({STRING}{WHITESPACE}:{WHITESPACE}{INTEGER}({WHITESPACE},{WHITESPACE}{STRING}{WHITESPACE}:{WHITESPACE}{INTEGER}){{0,}})?{WHITESPACE}\}}){{0,}})?{WHITESPACE}\}}{WHITESPACE}\}}""",
+            [
+                (
+                    """{"test_dict": {"foo": {"bar": 123, "apple": 99}, "baz": {"bif": 456}}}""",
+                    True,
+                ),
+                (
+                    """{"test_dict": {"anykey": {"anykey": 123}, "anykey2": {"bif": 456}}}""",
+                    True,
+                ),
+                ("""{"test_dict": {}}""", True),
+                ("""{"test_dict": {"dict of empty dicts are ok": {} }}""", True),
+                (
+                    """{"test_dict": {"anykey": {"ONLY Dict[Dict]": 123}, "No Dict[int]" 1: }}""",
+                    False,
+                ),
+            ],
         ),
         # oneOf
         (
@@ -458,12 +534,14 @@ def test_match_number(pattern, does_match):
 )
 def test_match(schema, regex, examples):
     schema = json.dumps(schema)
-    test_regex = build_regex_from_object(schema)
+    test_regex = build_regex_from_schema(schema)
     assert test_regex == regex
 
     for string, does_match in examples:
         match = re.fullmatch(test_regex, string)
         if does_match:
+            if match is None:
+                raise ValueError(f"Expected match for '{string}'")
             assert match[0] == string
             assert match.span() == (0, len(string))
         else:
@@ -530,7 +608,7 @@ def test_match(schema, regex, examples):
 )
 def test_format(schema, regex, examples):
     schema = json.dumps(schema)
-    test_regex = build_regex_from_object(schema)
+    test_regex = build_regex_from_schema(schema)
     assert test_regex == regex
 
     for string, does_match in examples:
@@ -540,3 +618,34 @@ def test_format(schema, regex, examples):
             assert match.span() == (0, len(string))
         else:
             assert match is None
+
+
+@pytest.mark.parametrize("whitespace_pattern", [None, r"[\n ]?", "abc"])
+def test_json_schema_custom_whitespace_pattern(whitespace_pattern):
+    """assert whitespace_pattern setting respected"""
+
+    class MockModel(BaseModel):
+        foo: int
+        bar: str
+
+    schema = json.dumps(MockModel.model_json_schema())
+
+    # assert any ws pattern can be used
+    if whitespace_pattern == "abc":
+        build_regex_from_schema(schema, whitespace_pattern)
+        return
+
+    pattern = build_regex_from_schema(schema, whitespace_pattern)
+
+    mock_result_mult_ws = (
+        """{     "foo"   :   4, \n\n\n   "bar": "baz    baz baz bar"\n\n}"""
+    )
+    mock_result_maybe_ws = """{"foo" : 4 ,"bar":"baz    baz baz bar"}"""
+
+    match_default_ws = re.fullmatch(pattern, mock_result_mult_ws)
+    if whitespace_pattern is None:
+        assert match_default_ws
+    else:
+        assert match_default_ws is None
+
+    assert re.fullmatch(pattern, mock_result_maybe_ws)

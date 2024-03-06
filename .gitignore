@@ -4,3 +4,5 @@ __pycache__
 docs/build
 .coverage
 .idea/
+*.gguf
+.venv

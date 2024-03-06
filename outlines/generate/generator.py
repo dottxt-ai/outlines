@@ -1,6 +1,6 @@
 import dataclasses
 import math
-from typing import TYPE_CHECKING, Callable, Iterator, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Callable, Iterator, List, Optional, Tuple
 
 import torch
 
@@ -8,8 +8,10 @@ from outlines.fsm.fsm import FSMState
 
 if TYPE_CHECKING:
     from outlines.fsm.fsm import FSM
-    from outlines.generate.samplers import Sampler
-    from outlines.models.tokenizer import Tokenizer
+
+
+class ContextLengthExceededError(Exception):
+    pass
 
 
 @dataclasses.dataclass(frozen=True)
@@ -17,58 +19,43 @@ class GenerationState:
     token_ids: torch.Tensor
     kv_cache: torch.Tensor
     logits: torch.Tensor
+    weights: torch.Tensor
     fsm_states: List[FSMState]
 
 
-def init_generator_state(
-    tokenizer: "Tokenizer",
-    device: str,
-    prompt: Union[str, List[str]],
-    kv_cache: Optional[torch.Tensor] = None,
-) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-    """Initialize the generation state.
-
-    This method is responsible for encoding the prompt, moving token ids
-    to the device and initializing the random number generator.
-
-    Parameters
-    ----------
-    prompt
-        The prompt on which the generation is conditioned.
-    rng
-        The state of the random number generator.
-
-    Returns
-    -------
-    A `GenerationState` object.
-
-    """
-    token_ids, attention_masks = tokenizer.encode(prompt)
-    token_ids = token_ids.to(device)
-    attention_masks = attention_masks.to(device)
-
-    return token_ids, attention_masks, kv_cache
-
-
 def sequence_generator(
-    token_generator: Callable,
+    model: Callable,
+    sampler: Callable,
     fsms: List["FSM"],
-    init_state: Tuple,
+    token_ids: torch.Tensor,
+    sequence_weights: torch.Tensor,
+    attention_masks: torch.Tensor,
     fsm_states: List[FSMState],
-    rng: torch.Generator,
+    rng: torch.Generator = torch.Generator(),
 ) -> Iterator[GenerationState]:
     """Generates sequences of tokens.
 
     Parameters
     ----------
-    token_generator
-        A callable that generate a new token given the current generation state
-        and logits biases.
+    model
+        A callable that generates a probability distribution over the
+        vocabulary when passed a tensor of token ids.
+    sampler
+        A callable that returns the next token ids, their ancestor sequence and
+        the updated sequence weights when passed a distribution over the
+        vocabulary.
+    token_ids
+        A tensor of token ids on which the sequence distribution is conditioned, of
+        shape ``(n_seqs, n_prompt_tokens)``
+    sequence_weights
+        A tensor that contains the initial weights of the sequences, of shape
+        ``(n_seqs,)``
+    attention_masks
+        A tensor of tensors that represent the tokens considered at the attention
+        layer, of shape ``(n_seqs, n_prompt_tokens)``.
     fsms
         List of finite-state machines that drive the text generation,
         one for each sequence in the batch.
-    init_state
-        The initial generation state for the batches.
     fsm_states
         The initial states of the finite-state machine for each sequence in the batch.
 
@@ -77,76 +64,48 @@ def sequence_generator(
     A new sequence.
 
     """
-    token_ids, attention_masks, kv_cache = init_state
-    while True:
-        allowed_tokens = get_allowed_tokens(fsms, fsm_states)
+    kv_cache = None
 
-        next_token_ids, kv_cache, logits, _ = token_generator(
-            token_ids,
-            attention_masks,
-            kv_cache,
-            rng=rng,
-            allowed_tokens=allowed_tokens,
+    while True:
+        try:
+            logits, kv_cache = model(token_ids, attention_masks, kv_cache)
+        except IndexError:  # Exceeding the context length
+            raise ContextLengthExceededError(
+                "The input length exceeds the context length of the model."
+            )
+
+        allowed_tokens = get_allowed_tokens(fsms, fsm_states)
+        biased_logits = bias_logits(logits, allowed_tokens)
+        next_token_ids, ancestors, sequence_weights = sampler(
+            biased_logits, sequence_weights, rng
         )
 
-        token_ids = update_token_ids(token_ids, next_token_ids)
-        attention_masks = expand_attention_masks(attention_masks)
+        token_ids = update_token_ids(token_ids, next_token_ids, ancestors)
+        attention_masks = update_attention_masks(attention_masks, ancestors)
+        kv_cache = reorder_kv_cache(kv_cache, ancestors)
+        fsms = reorder_fsms(fsms, ancestors)
+        fsm_states = reorder_fsm_states(fsm_states, ancestors)
 
         fsm_states = get_next_fsm_states(fsms, fsm_states, next_token_ids)
         is_finished = is_generation_finished(fsms, fsm_states)
 
         if is_finished:
-            yield GenerationState(token_ids, kv_cache, logits, fsm_states)
+            yield GenerationState(
+                token_ids,
+                kv_cache,
+                logits,
+                sequence_weights,
+                fsm_states,
+            )
             return
 
-        yield GenerationState(token_ids, kv_cache, logits, fsm_states)
-
-
-def token_generator(model, sampler: "Sampler") -> Callable:
-    """Generate one token at a time.
-
-    This process is designed to be steered by another supervising
-    process that supplies the current sequence and the indices
-    of the tokens to mask before sampling.
-
-    Parameters
-    ----------
-    model
-        A model that takes a sequence of tokens as an input and
-        returns a probability distribution over the next tokens.
-    sampler
-        A function that samples tokens from a probability
-        distribution over the next tokens.
-
-    Returns
-    -------
-    A tuple that contains a tensor with the sampled tokens, a tensor with
-    the K-V cache for the sequence and the tensor that contains the next-token
-    logits that were returned by the model.
-
-    """
-
-    @torch.inference_mode()
-    def generate(
-        token_ids: torch.Tensor,
-        attention_masks: torch.Tensor,
-        kv_cache: torch.Tensor,
-        allowed_tokens: List[List[int]],
-        rng: torch.Generator,
-    ) -> Union[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
-        try:
-            logits, new_kv_cache = model(token_ids, attention_masks, kv_cache)
-        except IndexError:  # Exceeding the context length
-            raise IndexError(
-                "The input length exceeds the context length of the model."
-            )
-
-        biased_logits = bias_logits(logits, allowed_tokens)
-        next_token_ids = sampler(biased_logits, 1, rng)
-
-        return next_token_ids, new_kv_cache, logits, biased_logits
-
-    return generate
+        yield GenerationState(
+            token_ids,
+            kv_cache,
+            logits,
+            sequence_weights,
+            fsm_states,
+        )
 
 
 def get_next_fsm_states(
@@ -216,7 +175,7 @@ def is_generation_finished(fsms: List["FSM"], fsm_states: List[FSMState]) -> boo
 
 @torch.inference_mode()
 def update_token_ids(
-    token_ids: torch.Tensor, next_token_ids: torch.Tensor
+    token_ids: torch.Tensor, next_token_ids: torch.Tensor, ancestors: torch.Tensor
 ) -> torch.Tensor:
     """Append the sampled tokens to the running sequence of tokens.
 
@@ -227,6 +186,8 @@ def update_token_ids(
     next_token_ids
         The tokens that were just generated and that we need to append
         to the existing sequences.
+    ancestors
+        The sequences to which the token ids need to be added.
 
     Returns
     -------
@@ -234,23 +195,29 @@ def update_token_ids(
     just generated.
 
     """
+    token_ids = torch.index_select(token_ids, 0, ancestors)
     return torch.concatenate([token_ids, next_token_ids], dim=-1)
 
 
 @torch.inference_mode()
-def expand_attention_masks(attention_masks: torch.Tensor) -> torch.Tensor:
+def update_attention_masks(
+    attention_masks: torch.Tensor, ancestors: torch.Tensor
+) -> torch.Tensor:
     """Expand the attention masks.
 
     Parameters
     ----------
     attention_masks
         The attention masks for each sequence in the batch.
+    ancestors
+        The sequences to which the token ids need to be added.
 
     Returns
     -------
     The attention masks padded with 1s.
 
     """
+    attention_masks = torch.index_select(attention_masks, 0, ancestors)
     return torch.concatenate(
         [
             attention_masks,
@@ -260,6 +227,49 @@ def expand_attention_masks(attention_masks: torch.Tensor) -> torch.Tensor:
         ],
         axis=-1,
     )
+
+
+def reorder_fsms(fsms: List["FSM"], ancestors: torch.Tensor) -> List["FSM"]:
+    reordered_fsms = []
+    for ancestor in ancestors:
+        reordered_fsms.append(fsms[ancestor].copy())
+
+    return reordered_fsms
+
+
+def reorder_fsm_states(
+    fsm_states: List[FSMState], ancestors: torch.Tensor
+) -> List[FSMState]:
+    reordered_states = []
+    for ancestor in ancestors:
+        reordered_states.append(fsm_states[ancestor])
+
+    return reordered_states
+
+
+def reorder_kv_cache(
+    kv_cache: Optional[Tuple], ancestors: torch.Tensor
+) -> Optional[Tuple]:
+    """Re-order the KV-cache based on the ancestors.
+
+    In transformers, the object that stores the KV-cache is a tuple who elements
+    are the key cache and the value cache. Each of these caches are tuples where
+    each element correpond to a layer. To each layer corresponds a tensor whose
+    first dimension is the batch size.
+
+    """
+    if kv_cache is None:
+        return None
+
+    new_kv_cache: Tuple = tuple()
+    for cache_item in kv_cache:
+        new_cache_item: Tuple = tuple()
+        for layer in cache_item:
+            layer = torch.index_select(layer, 0, ancestors.to(layer.device))
+            new_cache_item += (layer,)
+        new_kv_cache += (new_cache_item,)
+
+    return new_kv_cache
 
 
 @torch.inference_mode()

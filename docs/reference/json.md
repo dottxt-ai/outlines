@@ -26,12 +26,20 @@ class User(BaseModel):
     id: int
 
 
-model = models.transformers("mistralai/Mistral-7B")
+model = models.transformers("mistralai/Mistral-7B-v0.1")
 generator = text.generate.json(model, User)
 result = generator("Create a user profile with the fields name, last_name and id")
 print(result)
 # User(name="John", last_name="Doe", id=11)
 ```
+
+!!! warning "JSON and whitespaces"
+
+    By default Outlines lets model choose the number of linebreaks and white spaces used to structure the JSON. Small models tend to struggle with this, in which case we recommend to set the value of the parameter `whitespace_pattern` to the empty string:
+
+    ```python
+    generator = text.generate.json(model, User, whitespace_pattern="")
+    ```
 
 ## From a function's signature
 
@@ -44,7 +52,7 @@ from outlines import text
 def add(a: int, b: int):
     return a + b
 
-model = models.transformers("mistralai/Mistral-7B")
+model = models.transformers("mistralai/Mistral-7B-v0.1")
 generator = text.generate.json(model, add)
 result = generator("Return two integers named a and b respectively. a is odd and b even.")
 

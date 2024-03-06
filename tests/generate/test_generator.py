@@ -8,13 +8,11 @@ from outlines.fsm.fsm import FSMState
 from outlines.generate.api import SequenceGenerator
 from outlines.generate.generator import (
     bias_logits,
-    expand_attention_masks,
     get_allowed_tokens,
     get_next_fsm_states,
-    init_generator_state,
     is_generation_finished,
     sequence_generator,
-    token_generator,
+    update_attention_masks,
     update_token_ids,
 )
 
@@ -38,7 +36,7 @@ def test_sequence_generator_class():
     class MockTokenizer:
         def encode(self, _):
             # Input: "test"
-            return torch.tensor([[0, 1, 2, 3]]), torch.tensor([[1, 1, 1, 1, 1]])
+            return torch.tensor([[0, 1, 2, 3]]), torch.tensor([[1, 1, 1, 1]])
 
         def decode(self, tokens):
             return ["testx"[i] for i in tokens]
@@ -50,15 +48,18 @@ def test_sequence_generator_class():
         def __call__(*_):
             return torch.tensor([[0, 1, 2, 3, 4]], dtype=torch.float), None
 
-    def sampler(biased_logits, *_):
-        return torch.argmax(biased_logits, keepdims=True)
+    class sampler:
+        def __init__(self):
+            self.samples = 1
+
+        def __call__(self, biased_logits, *_):
+            return torch.argmax(biased_logits, keepdims=True), torch.tensor([0]), None
 
     # Stream
-    generator = SequenceGenerator(MockFSM(), MockModel(), sampler, "cpu")
+    generator = SequenceGenerator(MockFSM(), MockModel(), sampler(), "cpu")
     assert generator.device == "cpu"
     assert isinstance(generator.tokenizer, MockTokenizer)
     assert isinstance(generator.fsm, MockFSM)
-    assert callable(generator.generate_token)
 
     sequence = generator.stream("test")
     assert isinstance(sequence, Generator)
@@ -69,44 +70,9 @@ def test_sequence_generator_class():
         next(sequence)
 
     # Call
-    generator = SequenceGenerator(MockFSM(), MockModel(), sampler, "cpu")
+    generator = SequenceGenerator(MockFSM(), MockModel(), sampler(), "cpu")
     result = generator("test")
     assert result == "x"
-
-
-def test_init_sequence_generator():
-    class MockFSM:
-        def next_state(self, state, next_token_ids):
-            return 0
-
-        def allowed_token_ids(self, _):
-            return []
-
-        def is_final_state(self, _):
-            return True
-
-    class MockTokenizer:
-        def encode(self, _):
-            return torch.tensor([[0, 1, 2, 3]]), torch.tensor([[1, 1, 1, 1]])
-
-        def decode(self, _):
-            return "x"
-
-    class MockModel:
-        def __init__(self):
-            self.tokenizer = MockTokenizer()
-
-        def __call__(*_):
-            return torch.tensor([[0, 1, 2, 3]], dtype=torch.float), None
-
-    def sampler(biased_logits, *_):
-        return torch.argmax(biased_logits, keepdims=True)
-
-    result = init_generator_state(MockTokenizer(), "cpu", "")
-    token_ids, attention_masks, kv_cache = result
-    assert torch.equal(token_ids, torch.tensor([[0, 1, 2, 3]]))
-    assert torch.equal(attention_masks, torch.tensor([[1, 1, 1, 1]]))
-    assert kv_cache is None
 
 
 def test_sequence_generator_1d_single_iteration():
@@ -119,6 +85,9 @@ def test_sequence_generator_1d_single_iteration():
 
         def is_final_state(self, _):
             return True
+
+        def copy(self):
+            return self
 
     class MockTokenizer:
         def encode(self, _):
@@ -135,13 +104,22 @@ def test_sequence_generator_1d_single_iteration():
             return torch.tensor([[0, 1, 2, 3]], dtype=torch.float), None
 
     def sampler(biased_logits, *_):
-        return torch.argmax(biased_logits, keepdims=True)
+        return torch.argmax(biased_logits, keepdims=True), torch.tensor([0]), None
 
-    init_state = (torch.tensor([[0, 1, 2, 3]]), torch.tensor([[1, 1, 1, 1]]), None)
+    token_ids, attention_mask = (
+        torch.tensor([[0, 1, 2, 3]]),
+        torch.tensor([[1, 1, 1, 1]]),
+    )
     init_fsm_states = [0]
-    generate = token_generator(MockModel(), sampler)
     sequence = sequence_generator(
-        generate, [MockFSM()], init_state, init_fsm_states, torch.Generator()
+        MockModel(),
+        sampler,
+        [MockFSM()],
+        token_ids,
+        torch.tensor([0]),
+        attention_mask,
+        init_fsm_states,
+        rng=torch.Generator(),
     )
     result = next(sequence)
 
@@ -166,6 +144,9 @@ def test_sequence_generator_1d_several_iterations():
             else:
                 return True
 
+        def copy(self):
+            return self
+
     class MockTokenizer:
         def encode(self, _):
             return torch.tensor([[0, 1, 2, 3]]), torch.tensor([[1, 1, 1, 1]])
@@ -181,13 +162,22 @@ def test_sequence_generator_1d_several_iterations():
             return torch.tensor([[0, 1, 2, 3]], dtype=torch.float), None
 
     def sampler(biased_logits, *_):
-        return torch.argmax(biased_logits, keepdims=True)
+        return torch.argmax(biased_logits, keepdims=True), torch.tensor([0]), None
 
-    init_state = (torch.tensor([[0, 1, 2, 3]]), torch.tensor([[1, 1, 1, 1]]), None)
+    token_ids, attention_mask = (
+        torch.tensor([[0, 1, 2, 3]]),
+        torch.tensor([[1, 1, 1, 1]]),
+    )
     init_fsm_states = [0]
-    generate = token_generator(MockModel(), sampler)
     sequence = sequence_generator(
-        generate, [MockFSM()], init_state, init_fsm_states, torch.Generator()
+        MockModel(),
+        sampler,
+        [MockFSM()],
+        token_ids,
+        torch.tensor([0]),
+        attention_mask,
+        init_fsm_states,
+        rng=torch.Generator(),
     )
 
     result = next(sequence)
@@ -213,6 +203,9 @@ def test_sequence_generator_2d_single_iteration():
         def is_final_state(self, _):
             return True
 
+        def copy(self):
+            return self
+
     class MockTokenizer:
         def encode(self, _):
             return torch.tensor([[0, 1, 2, 3], [4, 5, 6, 7]]), torch.tensor(
@@ -230,18 +223,27 @@ def test_sequence_generator_2d_single_iteration():
             return torch.tensor([[0, 1, 2, 3], [4, 5, 7, 6]], dtype=torch.float), None
 
     def sampler(biased_logits, *_):
-        return torch.argmax(biased_logits, keepdims=True, dim=-1)
+        return (
+            torch.argmax(biased_logits, keepdims=True, dim=-1),
+            torch.tensor([0, 1]),
+            None,
+        )
 
-    init_state = (
+    token_ids, attention_mask = (
         torch.tensor([[0, 1, 2, 3], [4, 5, 6, 7]]),
         torch.tensor([[1, 1, 1, 1], [1, 1, 1, 1]]),
-        None,
     )
     init_fsm_states = [0, 0]
     fsms = [MockFSM(), MockFSM()]
-    generate = token_generator(MockModel(), sampler)
     sequence = sequence_generator(
-        generate, fsms, init_state, init_fsm_states, torch.Generator()
+        MockModel(),
+        sampler,
+        fsms,
+        token_ids,
+        torch.tensor([0, 0]),
+        attention_mask,
+        init_fsm_states,
+        rng=torch.Generator(),
     )
 
     result = next(sequence)
@@ -270,6 +272,9 @@ def test_sequence_generator_2d_several_iterations():
             else:
                 return True
 
+        def copy(self):
+            return self
+
     class MockTokenizer:
         def encode(self, _):
             return torch.tensor([[0, 1, 2, 3], [4, 5, 6, 7]]), torch.tensor(
@@ -287,18 +292,27 @@ def test_sequence_generator_2d_several_iterations():
             return torch.tensor([[0, 1, 2, 3], [4, 5, 7, 6]], dtype=torch.float), None
 
     def sampler(biased_logits, *_):
-        return torch.argmax(biased_logits, keepdims=True, dim=-1)
+        return (
+            torch.argmax(biased_logits, keepdims=True, dim=-1),
+            torch.tensor([0, 1]),
+            None,
+        )
 
-    init_state = (
+    token_ids, attention_mask = (
         torch.tensor([[0, 1, 2, 3], [4, 5, 6, 7]]),
         torch.tensor([[1, 1, 1, 1], [1, 1, 1, 1]]),
-        None,
     )
     init_fsm_states = [0, 0]
     fsms = [MockFSM(), MockFSM()]
-    generate = token_generator(MockModel(), sampler)
     sequence = sequence_generator(
-        generate, fsms, init_state, init_fsm_states, torch.Generator()
+        MockModel(),
+        sampler,
+        fsms,
+        token_ids,
+        torch.tensor([0, 0]),
+        attention_mask,
+        init_fsm_states,
+        rng=torch.Generator(),
     )
 
     result = next(sequence)
@@ -321,87 +335,13 @@ def test_sequence_generator_2d_several_iterations():
         next(sequence)
 
 
-def test_generator_error():
-    def model(*_):
-        raise IndexError
-
-    def sampler():
-        return None
-
-    generator = token_generator(model, sampler)
-    with pytest.raises(IndexError, match="The input length"):
-        generator(None, None, None, None, None)
-
-
-@pytest.mark.parametrize(
-    "logits_biases,expected_result,expected_biased_logits",
-    [
-        ([[0, 1, 2, 3]], [[3]], [[0, 1, 2, 3]]),
-        ([[0, 1, 2]], [[2]], [[0, 1, 2, -math.inf]]),
-        ([[0, 1]], [[1]], [[0, 1, -math.inf, -math.inf]]),
-    ],
-)
-def test_generator_1d(logits_biases, expected_result, expected_biased_logits):
-    class MockTokenizer:
-        def decode(self, _):
-            return "x"
-
-    class MockModel:
-        tokenizer = MockTokenizer()
-
-        def __call__(self, *_):
-            return torch.tensor([[0, 1, 2, 3]], dtype=torch.float), None
-
-    def sampler(biased_logits, *_):
-        return torch.argmax(biased_logits, keepdims=True)
-
-    generator = token_generator(MockModel(), sampler)
-    result, _, _, biased_logits = generator(None, None, None, logits_biases, None)
-    assert torch.equal(result, torch.tensor(expected_result))
-    assert torch.equal(biased_logits, torch.tensor(expected_biased_logits))
-
-
-@pytest.mark.parametrize(
-    "logits_biases,expected_result,expected_biased_logits",
-    [
-        ([[0, 1, 2, 3], [0, 1, 2, 3]], [[3], [3]], [[0, 1, 2, 3], [4, 5, 6, 7]]),
-        (
-            [[0, 1, 2], [0, 1, 2]],
-            [[2], [2]],
-            [[0, 1, 2, -math.inf], [4, 5, 6, -math.inf]],
-        ),
-        ([[0, 1, 2], [0, 1, 2, 3]], [[2], [3]], [[0, 1, 2, -math.inf], [4, 5, 6, 7]]),
-        (
-            [[0, 1], [0, 1, 2]],
-            [[1], [2]],
-            [[0, 1, -math.inf, -math.inf], [4, 5, 6, -math.inf]],
-        ),
-    ],
-)
-def test_generator_2d(logits_biases, expected_result, expected_biased_logits):
-    class MockTokenizer:
-        def decode(self, _):
-            return "x"
-
-    class MockModel:
-        tokenizer = MockTokenizer()
-
-        def __call__(self, *_):
-            return torch.tensor([[0, 1, 2, 3], [4, 5, 6, 7]], dtype=torch.float), None
-
-    def sampler(biased_logits, *_):
-        return torch.argmax(biased_logits, dim=1, keepdims=True)
-
-    generator = token_generator(MockModel(), sampler)
-    result, _, _, biased_logits = generator(None, None, None, logits_biases, None)
-    assert torch.equal(result, torch.tensor(expected_result))
-    assert torch.equal(biased_logits, torch.tensor(expected_biased_logits))
-
-
 def test_get_next_fsm_states():
     class MockFSM:
         def next_state(self, state, next_token_ids):
             return 0
+
+        def copy(self):
+            return self
 
     result = get_next_fsm_states([MockFSM()], [0], torch.tensor([[0]]))
     assert result == [0]
@@ -446,36 +386,77 @@ def test_is_generation_finished():
 
 
 @pytest.mark.parametrize(
-    "token_ids,next_token_ids,expected_result",
+    "token_ids,next_token_ids,ancestors,expected_result",
     [
-        (torch.tensor([[1]]), torch.tensor([[2]]), torch.tensor([[1, 2]])),
         (
-            torch.tensor([[1], [1]]),
-            torch.tensor([[2], [3]]),
-            torch.tensor([[1, 2], [1, 3]]),
+            torch.tensor([[1]]),
+            torch.tensor([[2]]),
+            torch.tensor([0]),
+            torch.tensor([[1, 2]]),
+        ),
+        (
+            torch.tensor([[1], [2]]),
+            torch.tensor([[3], [4]]),
+            torch.tensor([0, 1]),
+            torch.tensor([[1, 3], [2, 4]]),
+        ),
+        (
+            torch.tensor([[1], [2]]),
+            torch.tensor([[3], [4]]),
+            torch.tensor([0, 0]),
+            torch.tensor([[1, 3], [1, 4]]),
+        ),
+        (
+            torch.tensor([[1], [2]]),
+            torch.tensor([[3], [4]]),
+            torch.tensor([1, 0]),
+            torch.tensor([[2, 3], [1, 4]]),
+        ),
+        (
+            torch.tensor([[1, 2], [3, 5]]),
+            torch.tensor([[3], [4]]),
+            torch.tensor([1, 0]),
+            torch.tensor([[3, 5, 3], [1, 2, 4]]),
         ),
     ],
 )
-def test_update_token_ids(token_ids, next_token_ids, expected_result):
-    result = update_token_ids(token_ids, next_token_ids)
+def test_update_token_ids(token_ids, next_token_ids, ancestors, expected_result):
+    result = update_token_ids(token_ids, next_token_ids, ancestors)
     assert torch.equal(result, expected_result)
 
 
 @pytest.mark.parametrize(
-    "attention_masks,expected_result",
+    "attention_masks,ancestors,expected_result",
     [
         (
             torch.tensor([[1, 1]], dtype=torch.float),
+            torch.tensor([0]),
             torch.tensor([[1, 1, 1]], dtype=torch.float),
         ),
         (
             torch.tensor([[1, 1], [1, 1]], dtype=torch.float),
+            torch.tensor([0, 0]),
+            torch.tensor([[1, 1, 1], [1, 1, 1]], dtype=torch.float),
+        ),
+        (
+            torch.tensor([[0, 1], [1, 1]], dtype=torch.float),
+            torch.tensor([0, 1]),
+            torch.tensor([[0, 1, 1], [1, 1, 1]], dtype=torch.float),
+        ),
+        (
+            torch.tensor([[0, 1], [1, 1]], dtype=torch.float),
+            torch.tensor([1, 0]),
+            torch.tensor([[1, 1, 1], [0, 1, 1]], dtype=torch.float),
+        ),
+        (
+            torch.tensor([[0, 1], [1, 1]], dtype=torch.float),
+            torch.tensor([1, 1]),
             torch.tensor([[1, 1, 1], [1, 1, 1]], dtype=torch.float),
         ),
     ],
 )
-def test_expand_attention_masks(attention_masks, expected_result):
-    result = expand_attention_masks(attention_masks)
+def test_expand_attention_masks(attention_masks, ancestors, expected_result):
+    result = update_attention_masks(attention_masks, ancestors)
     assert torch.equal(result, expected_result)
 
 

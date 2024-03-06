@@ -21,7 +21,7 @@ class ExLlamaV2Model:
     ):
         self.device = device
         self.model = model
-        self.tokenizer = tokenizer
+        self.tokenizer = TransformerTokenizer(tokenizer)
         self.cache = cache
         self.past_seq = None
 
@@ -75,20 +75,21 @@ class ExLlamaV2Model:
 
 
 def exl2(
-    model_name: str,
+    model_path: str,
     device: Optional[str] = None,
     model_kwargs: dict = {},
     tokenizer_kwargs: dict = {},
 ):
     try:
         from exllamav2 import ExLlamaV2, ExLlamaV2Cache, ExLlamaV2Config
+        from transformers import AutoTokenizer
     except ImportError:
         raise ImportError(
             "The `exllamav2` library needs to be installed in order to use `exllamav2` models."
         )
 
     config = ExLlamaV2Config()
-    config.model_dir = model_name
+    config.model_dir = model_path
     config.prepare()
 
     config.max_seq_len = model_kwargs.pop("max_seq_len", config.max_seq_len)
@@ -108,7 +109,10 @@ def exl2(
         split = [float(alloc) for alloc in model_kwargs["gpu_split"].split(",")]
 
     model.load(split)
-    tokenizer = TransformerTokenizer(model_name, **tokenizer_kwargs)
+
+    tokenizer_kwargs.setdefault("padding_side", "left")
+    tokenizer = AutoTokenizer.from_pretrained(model_path, **tokenizer_kwargs)
+
     cache = ExLlamaV2Cache(model)
 
     return ExLlamaV2Model(model, tokenizer, device, cache)

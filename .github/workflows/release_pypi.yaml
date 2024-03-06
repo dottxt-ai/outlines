@@ -1,16 +1,16 @@
-name: Release
+name: Release PyPi
 
 on:
   release:
     types:
       - created
-
 jobs:
   release-job:
     name: Build and publish on PyPi
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout
+      uses: actions/checkout@v2
     - name: Set up Python
       uses: actions/setup-python@v2
       with:

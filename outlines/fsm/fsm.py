@@ -78,7 +78,7 @@ class StopAtEosFSM(FSM):
         The new state of the FSM.
 
         """
-        if token_id == self.eos_token_id:
+        if token_id == self.eos_token_id or state == self.final_state:
             return self.final_state
 
         return self.first_state
@@ -91,10 +91,10 @@ class StopAtEosFSM(FSM):
 class RegexFSM(FSM):
     """FSM to generate text that is in the language of a regular expression."""
 
-    def __init__(self, regex_string: str, tokenizer: "Tokenizer"):
+    def __init__(self, regex_string: str, tokenizer):
         @cache()
         def create_states_mapping(
-            regex_string: str, cacheable_vocabulary: Tuple[Tuple[str, int]]
+            regex_string: str, cacheable_vocabulary: Tuple[Tuple[str, int], ...]
         ) -> Tuple[dict, set]:
             """Create the variables related to the mapping between states and tokens
             The parameters of the function are used for caching purpose
@@ -121,7 +121,7 @@ class RegexFSM(FSM):
         self.states_to_token_maps, self.empty_token_ids = create_states_mapping(
             regex_string, tuple(sorted(tokenizer.vocabulary.items()))
         )
-        self.vocabulary = tokenizer.vocabulary.values()
+        self.vocabulary = list(tokenizer.vocabulary.values())
         self.eos_token_id = tokenizer.eos_token_id
 
     def allowed_token_ids(self, state: FSMState) -> List[int]:
@@ -172,7 +172,7 @@ class RegexFSM(FSM):
         The new state of the FSM.
 
         """
-        if token_id == self.eos_token_id:
+        if token_id == self.eos_token_id or state == self.final_state:
             return self.final_state
 
         last_token_to_end_state = self.states_to_token_maps[state]
@@ -182,6 +182,46 @@ class RegexFSM(FSM):
 
         return FSMState(next_state)
 
+    @classmethod
+    def from_interegular_fsm(
+        cls, interegular_fsm: interegular.fsm.FSM, tokenizer: "Tokenizer"
+    ):
+        from_interegular_instance = cls.__new__(cls)
+
+        def create_states_mapping_from_interegular_fsm(
+            fsm: interegular.fsm.FSM, cacheable_vocabulary: Tuple[Tuple[str, int], ...]
+        ) -> Tuple[dict, set]:
+            """Create the variables related to the mapping between states and tokens
+            The parameters of the function are used for caching purpose
+            """
+            regex_fsm, _ = make_deterministic_fsm(fsm.reduce())
+            states_to_token_maps, empty_token_ids = create_fsm_index_tokenizer(
+                regex_fsm, tokenizer
+            )
+
+            # We make sure that it is possible to generate strings in the language
+            # of the regular expression with the tokens present in the model's
+            # vocabulary.
+            if not any(
+                regex_fsm.finals.intersection(v.values())
+                for v in states_to_token_maps.values()
+            ):
+                raise ValueError(
+                    "The vocabulary does not allow us to build a sequence that matches the input regex"
+                )
+
+            return states_to_token_maps, empty_token_ids
+
+        (
+            from_interegular_instance.states_to_token_maps,
+            from_interegular_instance.empty_token_ids,
+        ) = create_states_mapping_from_interegular_fsm(
+            interegular_fsm, tuple(sorted(tokenizer.vocabulary.items()))
+        )
+        from_interegular_instance.vocabulary = list(tokenizer.vocabulary.values())
+        from_interegular_instance.eos_token_id = tokenizer.eos_token_id
+        return from_interegular_instance
+
     def copy(self) -> "RegexFSM":
         """Create a copy of the FSM."""
         return self
@@ -190,7 +230,7 @@ class RegexFSM(FSM):
 class CFGFSM(FSM):
     """FSM to generate text that is in the language of a context-free grammar."""
 
-    def __init__(self, cfg_string: str, tokenizer: "Tokenizer"):
+    def __init__(self, cfg_string: str, tokenizer):
         self.cfg_string = cfg_string
         self.tokenizer = tokenizer
 
@@ -271,7 +311,10 @@ class CFGFSM(FSM):
 
         interactive = self.parser.parse_interactive(self.generation)
         interactive.exhaust_lexer()
+
         options = {self.terminal_regexps[x] for x in interactive.accepts()}
+        # add %ignore terminals
+        options |= {self.terminal_regexps[x] for x in self.parser.lexer_conf.ignore}
 
         if self.terminal_regexps["$END"] in options:
             options.remove(self.terminal_regexps["$END"])
@@ -311,7 +354,7 @@ class CFGFSM(FSM):
         -------
         The new state of the FSM.
         """
-        if token_id == self.tokenizer.eos_token_id:
+        if token_id == self.tokenizer.eos_token_id or state == self.final_state:
             return self.final_state
 
         self.generation += self.tokenizer.decode([token_id])[0]

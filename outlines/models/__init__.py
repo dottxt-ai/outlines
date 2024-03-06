@@ -13,6 +13,6 @@ from .llamacpp import LlamaCpp, llamacpp
 from .mamba import Mamba, mamba
 from .openai import OpenAI, openai
 from .openai_compatible import OpenAICompatibleAPI, openai_compatible_api
-from .transformers import Transformer, transformers
+from .transformers import Transformers, transformers
 
-LogitsGenerator = Union[Transformer, LlamaCpp, ExLlamaV2Model, Mamba]
+LogitsGenerator = Union[Transformers, LlamaCpp, ExLlamaV2Model, Mamba]

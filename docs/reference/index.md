@@ -1,6 +1,6 @@
 # Reference
 
-## Constrained generation
+## Structured generation
 
 While LLM capabilities are increasingly impressive, we can make their output more reliable by steering the generation. Outlines thus offers mechanisms to specify high level constraints on text completions by generative language models.
 

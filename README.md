@@ -9,12 +9,15 @@
 [![Discord][discord-badge]][discord]
 [![Twitter][twitter-badge]][twitter]
 
-*Robust (guided) text generation.*
+*Robust (structured) text generation.*
+
+🙏 Help us by answering the [developer survey](https://h1xbpbfsf0w.typeform.com/to/EeDhccYI) 🙏
 
 </div>
 
 Made with ❤👷️ by the team at [.txt](https://dottxt.co).
-We'd love to have your [feedback][discord]!
+
+Looking for an API that returns valid JSON? [Give .json a try](https://h1xbpbfsf0w.typeform.com/to/ZgBCvJHF) ✨
 
 ``` bash
 pip install outlines
@@ -27,19 +30,20 @@ First time here? Go to our [setup guide](https://outlines-dev.github.io/outlines
 - [x] 🤖 [Multiple model integrations](https://outlines-dev.github.io/outlines/installation): OpenAI, transformers, llama.cpp, exllama2, mamba
 - [x] 🖍️ Simple and powerful prompting primitives based on the [Jinja templating engine](https://jinja.palletsprojects.com/)
 - [x] 🚄 [Multiple choices](#multiple-choices), [type constraints](#type-constraint) and dynamic stopping
-- [x] ⚡ Fast [regex-guided generation](#efficient-regex-guided-generation)
+- [x] ⚡ Fast [regex-structured generation](#efficient-regex-structured-generation)
 - [x] 🔥 Fast [JSON generation](#efficient-json-generation-following-a-pydantic-model) following a JSON schema or a Pydantic model
-- [x] 📝 [Grammar-guided generation](#using-context-free-grammars-to-guide-generation)
+- [x] 📝 [Grammar-structured generation](#using-context-free-grammars-to-guide-generation)
 - [x] 🐍 Interleave completions with loops, conditionals, and custom Python functions
 - [x] 💾 Caching of generations
 - [x] 🗂️ Batch inference
-- [x] 🚀 [Serve with vLLM](https://outlines-dev.github.io/outlines/reference/vllm)
+- [x] 🎲 Sample with the greedy, multinomial and beam search algorithms (and more to come!)
+- [x] 🚀 [Serve with vLLM](https://outlines-dev.github.io/outlines/reference/vllm), with official Docker image, [`outlinesdev/outlines`](https://hub.docker.com/r/outlinesdev/outlines)!
 
 
 Outlines 〰 has new releases and features coming every week. Make sure to ⭐ star and 👀 watch this repository, follow [@dottxtai][twitter] to stay up to date!
 
 
-## Guided generation
+## Structured generation
 
 The first step towards reliability of systems that include large language models
 is to ensure that there is a well-defined interface between their output and
@@ -53,7 +57,7 @@ You can reduce the completion to a choice between multiple possibilities:
 ``` python
 import outlines
 
-model = outlines.models.transformers("mistralai/Mistral-7B-v0.1")
+model = outlines.models.transformers("mistralai/Mistral-7B-Instruct-v0.2")
 
 prompt = """You are a sentiment-labelling assistant.
 Is the following review positive or negative?
@@ -73,53 +77,56 @@ You can instruct the model to only return integers or floats:
 ``` python
 import outlines
 
-model = outlines.models.transformers("mistralai/Mistral-7B-v0.1")
+model = outlines.models.transformers("WizardLM/WizardMath-7B-V1.1")
 
-prompt = "1+1="
+prompt = "<s>result of 9 + 9 = 18</s><s>result of 1 + 2 = "
 answer = outlines.generate.format(model, int)(prompt)
+print(answer)
+# 3
 
 prompt = "sqrt(2)="
-
 generator = outlines.generate.format(model, float)
-answer = generator(prompt)
+answer = generator(prompt, max_tokens=10)
+print(answer)
+# 1.41421356
 ```
 
-### Efficient regex-guided generation
+### Efficient regex-structured generation
 
-Outlines also comes with fast regex-guided generation. In fact, the `choice` and
-`format` functions above all use regex-guided generation under the
+Outlines also comes with fast regex-structured generation. In fact, the `choice` and
+`format` functions above all use regex-structured generation under the
 hood:
 
 ``` python
 import outlines
 
-model = outlines.models.transformers("mistralai/Mistral-7B-v0.1")
+model = outlines.models.transformers("mistralai/Mistral-7B-Instruct-v0.2")
 
 prompt = "What is the IP address of the Google DNS servers? "
 
 generator = outlines.generate.text(model)
-unguided = generator(prompt, max_tokens=30)
+unstructured = generator(prompt, max_tokens=30)
 
 generator = outlines.generate.regex(
     model,
     r"((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)",
 )
-guided = generator(prompt, max_tokens=30)
+structured = generator(prompt, max_tokens=30)
 
-print(unguided)
+print(unstructured)
 # What is the IP address of the Google DNS servers?
 #
 # Passive DNS servers are at DNS servers that are private.
 # In other words, both IP servers are private. The database
 # does not contain Chelsea Manning
 
-print(guided)
+print(structured)
 # What is the IP address of the Google DNS servers?
 # 2.2.6.1
 ```
 
-Unlike other libraries, regex-guided generation in Outlines is almost as fast
-as non-guided generation.
+Unlike other libraries, regex-structured generation in Outlines is almost as fast
+as non-structured generation.
 
 ### Efficient JSON generation following a Pydantic model
 
@@ -156,34 +163,24 @@ class Character(BaseModel):
     strength: int
 
 
-model = outlines.models.transformers("mistralai/Mistral-7B-v0.1", device="cuda")
+model = outlines.models.transformers("mistralai/Mistral-7B-Instruct-v0.2")
 
-# Construct guided sequence generator
-generator = outlines.generate.json(model, Character, max_tokens=100)
+# Construct structured sequence generator
+generator = outlines.generate.json(model, Character)
 
 # Draw a sample
 rng = torch.Generator(device="cuda")
 rng.manual_seed(789001)
 
-sequence = generator("Give me a character description", rng=rng)
-print(sequence)
-# {
-#   "name": "clerame",
-#   "age": 7,
-#   "armor": "plate",
-#   "weapon": "mace",
-#   "strength": 4171
-# }
+character = generator("Give me a character description", rng=rng)
 
-sequence = generator("Give me an interesting character description", rng=rng)
-print(sequence)
-# {
-#   "name": "piggyback",
-#   "age": 23,
-#   "armor": "chainmail",
-#   "weapon": "sword",
-#   "strength": 0
-# }
+print(repr(character))
+# Character(name='Anderson', age=28, armor=<Armor.chainmail: 'chainmail'>, weapon=<Weapon.sword: 'sword'>, strength=8)
+
+character = generator("Give me an interesting character description", rng=rng)
+
+print(repr(character))
+# Character(name='Vivian Thr', age=44, armor=<Armor.plate: 'plate'>, weapon=<Weapon.crossbow: 'crossbow'>, strength=125)
 ```
 
 The method works with union types, optional types, arrays, nested schemas, etc. Some field constraints are [not supported yet](https://github.com/outlines-dev/outlines/issues/215), but everything else should work.
@@ -232,9 +229,9 @@ schema = '''{
     }
 }'''
 
-model = outlines.models.transformers("mistralai/Mistral-7B-v0.1", device="cuda")
+model = outlines.models.transformers("mistralai/Mistral-7B-Instruct-v0.2")
 generator = outlines.generate.json(model, schema)
-sequence = generator("Give me a character description")
+character = generator("Give me a character description")
 ```
 
 ### Using context-free grammars to guide generation
@@ -245,37 +242,28 @@ Formal grammars rule the world, and Outlines makes them rule LLMs too. You can p
 import outlines
 
 arithmetic_grammar = """
-    ?start: sum
+    ?start: expression
 
-    ?sum: product
-        | sum "+" product   -> add
-        | sum "-" product   -> sub
+    ?expression: term (("+" | "-") term)*
 
-    ?product: atom
-        | product "*" atom  -> mul
-        | product "/" atom  -> div
+    ?term: factor (("*" | "/") factor)*
 
-    ?atom: NUMBER           -> number
-         | "-" atom         -> neg
-         | "(" sum ")"
+    ?factor: NUMBER
+           | "-" factor
+           | "(" expression ")"
 
     %import common.NUMBER
-    %import common.WS_INLINE
-
-    %ignore WS_INLINE
 """
 
-model = outlines.models.transformers("mistralai/Mistral-7B-v0.1", device="cuda")
+model = outlines.models.transformers("WizardLM/WizardMath-7B-V1.1")
 generator = outlines.generate.cfg(model, arithmetic_grammar)
-sequence = generator("Write a formula that returns 5 using only additions and subtractions.")
-
-# It looks like Mistral is not very good at arithmetics :)
+sequence = generator("Alice had 4 apples and Bob ate 2. Write an expression for Alice's apples:")
 
 print(sequence)
-# 1+3-2-4+5-7+8-6+9-6+4-2+3+5-1+1
+# (8-2)
 ```
 
-This was a very simple grammar, and you can use `outlines.generate.cfg` to generate syntactically valid Python, SQL, and much more than this. Any kind of structured text, really. All you have to do is search for "X EBNF grammar" on the web, and take a look at the [Outlines Grammars repository](https://github.com/outlines-dev/grammars).
+This was a very simple grammar, and you can use `outlines.generate.cfg` to generate syntactically valid Python, SQL, and much more than this. Any kind of structured text, really. All you have to do is search for "X EBNF grammar" on the web, and take a look at the [Outlines `grammars` module](https://github.com/outlines-dev/outlines/tree/main/outlines/grammars).
 
 ### Open functions
 
@@ -288,9 +276,9 @@ import outlines
 def add(a: int, b: int):
     return a + b
 
-model = outlines.models.transformers("mistralai/Mistral-7B-v0.1")
+model = outlines.models.transformers("WizardLM/WizardMath-7B-V1.1")
 generator = outlines.generate.json(model, add)
-result = generator("Return two integers named a and b respectively. a is odd and b even.")
+result = generator("Return json with two integers named a and b respectively. a is odd and b even.")
 
 print(add(**result))
 # 3
@@ -329,7 +317,7 @@ def labelling(to_label, examples):
     {{ to_label }} //
     """
 
-model = outlines.models.transformers("mistralai/Mistral-7B-v0.1")
+model = outlines.models.transformers("mistralai/Mistral-7B-Instruct-v0.2")
 prompt = labelling("Just awesome", examples)
 answer = outlines.generate.text(model)(prompt, max_tokens=100)
 ```

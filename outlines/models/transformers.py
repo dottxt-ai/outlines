@@ -55,7 +55,67 @@ def get_llama_tokenizer_types():
     )
 
 
-class Transformer:
+class TransformerTokenizer(Tokenizer):
+    """Represents a tokenizer for models in the `transformers` library."""
+
+    def __init__(self, tokenizer: "PreTrainedTokenizer", **kwargs):
+        self.tokenizer = tokenizer
+        self.eos_token_id = self.tokenizer.eos_token_id
+        self.eos_token = self.tokenizer.eos_token
+
+        if not self.tokenizer.pad_token_id:
+            self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
+            self.pad_token_id = self.eos_token_id
+        else:
+            self.pad_token_id = self.tokenizer.pad_token_id
+            self.pad_token = self.tokenizer.pad_token
+
+        self.special_tokens = set(self.tokenizer.all_special_tokens)
+
+        self.vocabulary = self.tokenizer.get_vocab()
+        self.is_llama = isinstance(self.tokenizer, get_llama_tokenizer_types())
+
+    def encode(
+        self, prompt: Union[str, List[str]], **kwargs
+    ) -> Tuple[torch.LongTensor, torch.LongTensor]:
+        kwargs["padding"] = True
+        kwargs["return_tensors"] = "pt"
+        output = self.tokenizer(prompt, **kwargs)
+        return output["input_ids"], output["attention_mask"]
+
+    def decode(self, token_ids: torch.LongTensor) -> List[str]:
+        text = self.tokenizer.batch_decode(token_ids, skip_special_tokens=True)
+        return text
+
+    def convert_token_to_string(self, token: str) -> str:
+        from transformers.file_utils import SPIECE_UNDERLINE
+
+        string = self.tokenizer.convert_tokens_to_string([token])
+
+        if self.is_llama:
+            # A hack to handle missing spaces to HF's Llama tokenizers
+            if token.startswith(SPIECE_UNDERLINE) or token == "<0x20>":
+                return " " + string
+
+        return string
+
+    def __eq__(self, other):
+        if isinstance(other, type(self)):
+            if hasattr(self, "model_name") and hasattr(self, "kwargs"):
+                return (
+                    other.model_name == self.model_name and other.kwargs == self.kwargs
+                )
+            else:
+                return other.tokenizer == self.tokenizer
+        return NotImplemented
+
+    def __hash__(self):
+        from datasets.fingerprint import Hasher
+
+        return hash(Hasher.hash(self.tokenizer))
+
+
+class Transformers:
     """Represents a `transformers` model."""
 
     def __init__(
@@ -65,7 +125,7 @@ class Transformer:
     ):
         self.device = model.device
         self.model = model
-        self.tokenizer = tokenizer
+        self.tokenizer = TransformerTokenizer(tokenizer)
 
     @torch.inference_mode
     def forward(
@@ -119,67 +179,6 @@ class Transformer:
         return next_token_logits, kv_cache
 
 
-class TransformerTokenizer(Tokenizer):
-    """Represents a tokenizer for models in the `transformers` library."""
-
-    def __init__(self, model_name: str, **kwargs):
-        from transformers import AutoTokenizer
-
-        kwargs.setdefault("padding_side", "left")
-        self.model_name = model_name
-        # TODO: Do something to make this hashable?
-        self.kwargs = kwargs
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name, **kwargs)
-        self.eos_token_id = self.tokenizer.eos_token_id
-        self.eos_token = self.tokenizer.eos_token
-
-        if not self.tokenizer.pad_token_id:
-            self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
-            self.pad_token_id = self.eos_token_id
-        else:
-            self.pad_token_id = self.tokenizer.pad_token_id
-            self.pad_token = self.tokenizer.pad_token
-
-        self.special_tokens = set(self.tokenizer.all_special_tokens)
-
-        self.vocabulary = self.tokenizer.get_vocab()
-        self.is_llama = isinstance(self.tokenizer, get_llama_tokenizer_types())
-
-    def encode(
-        self, prompt: Union[str, List[str]], **kwargs
-    ) -> Tuple[torch.LongTensor, torch.LongTensor]:
-        kwargs["padding"] = True
-        kwargs["return_tensors"] = "pt"
-        output = self.tokenizer(prompt, **kwargs)
-        return output["input_ids"], output["attention_mask"]
-
-    def decode(self, token_ids: torch.LongTensor) -> List[str]:
-        text = self.tokenizer.batch_decode(token_ids, skip_special_tokens=True)
-        return text
-
-    def convert_token_to_string(self, token: str) -> str:
-        from transformers.file_utils import SPIECE_UNDERLINE
-
-        string = self.tokenizer.convert_tokens_to_string([token])
-
-        if self.is_llama:
-            # A hack to handle missing spaces to HF's Llama tokenizers
-            if token.startswith(SPIECE_UNDERLINE) or token == "<0x20>":
-                return " " + string
-
-        return string
-
-    def __eq__(self, other):
-        if isinstance(other, type(self)):
-            return other.model_name == self.model_name and other.kwargs == self.kwargs
-        return NotImplemented
-
-    def __hash__(self):
-        from datasets.fingerprint import Hasher
-
-        return hash(Hasher.hash(self.tokenizer))
-
-
 def transformers(
     model_name: str,
     device: Optional[str] = None,
@@ -208,7 +207,7 @@ def transformers(
 
     """
     try:
-        from transformers import AutoModelForCausalLM
+        from transformers import AutoModelForCausalLM, AutoTokenizer
     except ImportError:
         raise ImportError(
             "The `transformers` library needs to be installed in order to use `transformers` models."
@@ -218,6 +217,8 @@ def transformers(
         model_kwargs["device_map"] = device
 
     model = AutoModelForCausalLM.from_pretrained(model_name, **model_kwargs)
-    tokenizer = TransformerTokenizer(model_name, **tokenizer_kwargs)
 
-    return Transformer(model, tokenizer)
+    tokenizer_kwargs.setdefault("padding_side", "left")
+    tokenizer = AutoTokenizer.from_pretrained(model_name, **tokenizer_kwargs)
+
+    return Transformers(model, tokenizer)

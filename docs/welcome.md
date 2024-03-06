@@ -2,7 +2,7 @@
 title: Welcome to Outlines!
 ---
 
-Outlines〰 is a Python library that allows you to use Large Language Model in a simple and robust way (with guided generation). It is built by [.txt][.txt]{:target="_blank"}, and is already used in production by many companies.
+Outlines〰 is a Python library that allows you to use Large Language Model in a simple and robust way (with structured generation). It is built by [.txt][.txt]{:target="_blank"}, and is already used in production by many companies.
 
 ## What models do you support?
 
@@ -23,12 +23,12 @@ We support Openai, but the true power of Outlines〰 is unleashed with Open Sour
 
     ---
 
-    Deploy a LLM service using Outlines' JSON guided generation and vLLM
+    Deploy a LLM service using Outlines' JSON structured generation and vLLM
 
     [:octicons-arrow-right-24: Deploy outlines](reference/vllm.md)
 
 
--   :material-regex:{ .lg .middle } __Make LLMs follows a Regex__
+-   :material-regex:{ .lg .middle } __Make LLMs follow a Regex__
 
     ---
 
@@ -47,7 +47,7 @@ We support Openai, but the true power of Outlines〰 is unleashed with Open Sour
 
 ## Why Outlines over alternatives?
 
-Outlines〰 is built at [.txt][.txt] by engineers with decades of experience in software engineering, machine learning (Bayesian Statistics and NLP), and compilers. [.txt][.txt] is a VC-backed company fully focused on the topic of guided generation and is committed to make the community benefit from its experience.
+Outlines〰 is built at [.txt][.txt] by engineers with decades of experience in software engineering, machine learning (Bayesian Statistics and NLP), and compilers. [.txt][.txt] is a VC-backed company fully focused on the topic of structured generation and is committed to make the community benefit from its experience.
 
 We are also open source veterans and have authored/maintained many libraries over the years: the [Aesara][aesara]{:target="_blank"} and [Pythological][pythological]{:target="_blank"} ecosystems, [Blackjax][blackjax]{:target="_blank"} and [Hy][hy]{:target="_blank"} among many others.
 .
@@ -61,7 +61,7 @@ Outlines does not use unnecessary abstractions that tend to get in your way. We 
 more flexible replacement for the `generate` method in the
 [transformers](https://github.com/huggingface/transformers) library.
 
-**Outlines** 〰 helps developers *guide text generation* to build robust
+**Outlines** 〰 helps developers *structure text generation* to build robust
 interfaces with external systems. Provides generation methods that
 guarantee that the output will match a regular expressions, or follow
 a JSON schema.
@@ -81,11 +81,22 @@ via the next-token logits.
 
 ## Acknowledgements
 
+<div class="grid" markdown>
+
 <figure markdown>
+
+<figure markdown>
+  <a href="http://www.dottxt.co">
+  ![Normal Computing logo](assets/images/dottxt.png){ width="150" }
+  </a>
+</figure>
+
   <a href="https://www.normalcomputing.ai">
   ![Normal Computing logo](assets/images/normal_computing.jpg){ width="150" }
   </a>
 </figure>
+
+</div>
 
 Outlines was originally developed at [@NormalComputing](https://twitter.com/NormalComputing) by [@remilouf](https://twitter.com/remilouf) and [@BrandonTWillard](https://twitter.com/BrandonTWillard). It is now maintained by [.txt](https://dottxt.co).
 

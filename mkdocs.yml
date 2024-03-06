@@ -2,7 +2,7 @@
 site_name: Outlines 〰️
 site_author: The Outlines developers
 site_description: >-
-  Guided text generation with LLMs
+  Structured text generation with LLMs
 
 
 # Repository
@@ -122,6 +122,8 @@ nav:
         - Grammar: reference/cfg.md
         - Regex: reference/regex.md
         - Types: reference/types.md
+        - Samplers: reference/samplers.md
+        - Custom FSM operations: reference/custom_fsm_ops.md
     - Utilities:
         - Serve with vLLM: reference/vllm.md
         - Prompt templating: reference/prompting.md

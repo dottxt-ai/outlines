@@ -1,6 +1,6 @@
 # Summarize documents using Chain of Density prompting
 
-A good summary should be informative, concise and clear. While large language models are generally good at summarizing documents, their summaries tend to be long and contain redundant information; their information density tends to be on the lower end. This is where [chain of Density](https://arxiv.org/abs/2309.04269), a new prompting technique, comes in. In this example we will show how one can implement chain of density with a few lines of code using Outlines, leveraging both Outline's prompt templating and its guided generation capabilities.
+A good summary should be informative, concise and clear. While large language models are generally good at summarizing documents, their summaries tend to be long and contain redundant information; their information density tends to be on the lower end. This is where [chain of Density](https://arxiv.org/abs/2309.04269), a new prompting technique, comes in. In this example we will show how one can implement chain of density with a few lines of code using Outlines, leveraging both Outline's prompt templating and its structured generation capabilities.
 
 The article we will try to summarize is the first three paragraphs of the [Alan Turing page on Wikipedia](https://en.wikipedia.org/wiki/Alan_Turing):
 
@@ -22,7 +22,7 @@ Chain Of Density starts with asking the model to generate a first long and non-s
 2. Add all entities marked as missing in the previous step, while not dropping entities;
 3. Make the summary more concise;
 
-The prompt also asks the model to return a list of JSON objects that contain the missing entities and the new summary. This is where guided generation will come in handy :) The paper provides the prompt and an example:
+The prompt also asks the model to return a list of JSON objects that contain the missing entities and the new summary. This is where structured generation will come in handy :) The paper provides the prompt and an example:
 
 ![Figure 2 in the paper](./images/chain_of_density.png)
 
@@ -70,7 +70,7 @@ def chain_of_density(article):
 
 ## Outlines implementation
 
-We will use Outline's JSON-guided generation to ensure that the model's output is consistent with the format specified in the prompt. We start with defining the JSON objects that the model is asked to return using Pydantic. One JSON object that contains a list of `Summary` objects that contain the missing entities and new summary:
+We will use Outline's JSON-structured generation to ensure that the model's output is consistent with the format specified in the prompt. We start with defining the JSON objects that the model is asked to return using Pydantic. One JSON object that contains a list of `Summary` objects that contain the missing entities and new summary:
 
 ```python
 from pydantic import BaseModel, conlist
@@ -83,7 +83,7 @@ class Summaries(BaseModel):
     summaries: conlist(Summary, max_length=5, min_length=5)
 ```
 
-We now generate the prompt by passing the article we want to summarize to the template. We load a quantized version of Mistral-7B using the AutoAWQ library, and then use JSON-guided generation to generate the summaries:
+We now generate the prompt by passing the article we want to summarize to the template. We load a quantized version of Mistral-7B using the AutoAWQ library, and then use JSON-structured generation to generate the summaries:
 
 ```python
 model = outlines.models.transformers("TheBloke/Mistral-7B-OpenOrca-AWQ")

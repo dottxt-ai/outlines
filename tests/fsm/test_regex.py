@@ -1,6 +1,7 @@
 import interegular
 import numba
 import pytest
+from transformers import AutoTokenizer
 
 from outlines.fsm.regex import (
     _walk_fsm,
@@ -272,7 +273,8 @@ def test_create_fsm_index_tokenizer():
     num_fsm_states = len(regex_fsm.states)
     assert num_fsm_states == 220
 
-    tokenizer = TransformerTokenizer("gpt2")
+    tokenizer = AutoTokenizer.from_pretrained("gpt2")
+    tokenizer = TransformerTokenizer(tokenizer)
 
     states_to_token_subsets, empty_token_ids = create_fsm_index_tokenizer(
         regex_fsm, tokenizer
@@ -295,7 +297,8 @@ def test_regex_index_performance():
     num_fsm_states = len(regex_fsm.states)
     assert num_fsm_states == 220
 
-    tokenizer = TransformerTokenizer("gpt2")
+    tokenizer = AutoTokenizer.from_pretrained("gpt2")
+    tokenizer = TransformerTokenizer(tokenizer)
 
     # Pre-compile Numba functions
     res, _ = create_fsm_index_tokenizer(regex_fsm, tokenizer)

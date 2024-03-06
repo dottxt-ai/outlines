@@ -150,6 +150,68 @@ def test_cfg_early_termination():
     assert set(fsm.allowed_token_ids(state=state)) == {3}
 
 
+def test_cfg_ignore_directive():
+    class MockTokenizer:
+        vocabulary = {"a": 1, " ": 2, "eos": 3}
+        special_tokens = {"eos"}
+        eos_token = "eos"
+        eos_token_id = 3
+
+        def convert_token_to_string(self, token):
+            return token
+
+        @property
+        def inverse_vocabulary(self):
+            return {v: k for k, v in self.vocabulary.items()}
+
+        def decode(self, token_ids):
+            return [self.inverse_vocabulary[t] for t in token_ids]
+
+    cfg_str = """
+        start: LETTER+
+        LETTER: "a"
+        WS: " "
+        %ignore WS
+    """
+    tokenizer = MockTokenizer()
+    fsm = CFGFSM(cfg_str, tokenizer)
+
+    state = 0
+
+    assert set(fsm.allowed_token_ids(state=0)) == {1, 2}
+    state = fsm.next_state(state=0, token_id=2)
+    assert fsm.generation == " "
+    assert not fsm.is_final_state(state)
+
+    assert set(fsm.allowed_token_ids(state=0)) == {1, 2}
+    state = fsm.next_state(state=0, token_id=1)
+    assert fsm.generation == " a"
+    assert not fsm.is_final_state(state)
+
+    assert set(fsm.allowed_token_ids(state=state)) == {1, 2, 3}
+    state = fsm.next_state(state=state, token_id=2)
+    assert fsm.generation == " a "
+    assert not fsm.is_final_state(state)
+
+    assert set(fsm.allowed_token_ids(state=state)) == {1, 2, 3}
+    state = fsm.next_state(state=state, token_id=2)
+    assert fsm.generation == " a  "
+    assert not fsm.is_final_state(state)
+
+    assert set(fsm.allowed_token_ids(state=state)) == {1, 2, 3}
+    state = fsm.next_state(state=state, token_id=1)
+    assert fsm.generation == " a  a"
+    assert not fsm.is_final_state(state)
+
+    assert set(fsm.allowed_token_ids(state=state)) == {1, 2, 3}
+    state = fsm.next_state(state=state, token_id=3)
+    assert fsm.generation == " a  a"
+    assert fsm.is_final_state(state)
+
+    # once eos generated, can only terminate
+    assert set(fsm.allowed_token_ids(state=state)) == {3}
+
+
 def test_cfg_multitoken_terminal():
     class MockTokenizer:
         vocabulary = {"a": 1, "b": 2, "eos": 3}
