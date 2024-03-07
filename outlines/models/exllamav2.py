@@ -6,7 +6,7 @@ import torch
 from .transformers import TransformerTokenizer
 
 if TYPE_CHECKING:
-    from exllamav2 import ExLlamaV2, ExLlamaV2Cache
+    from exllamav2 import ExLlamaV2, ExLlamaV2Cache, ExLlamaV2Lora
     from transformers import PreTrainedTokenizer
 
 
@@ -19,12 +19,14 @@ class ExLlamaV2Model:
         tokenizer: "PreTrainedTokenizer",
         device,
         cache: "ExLlamaV2Cache",
+        lora: Optional["ExLlamaV2Lora"] = None,
     ):
         self.device = device
         self.model = model
         self.tokenizer = TransformerTokenizer(tokenizer)
         self.cache = cache
         self.past_seq = None
+        self.lora = lora
 
     def forward(self, input_ids: torch.LongTensor, *_):
         """Compute a forward pass through the exl2 model."""
@@ -51,6 +53,7 @@ class ExLlamaV2Model:
                         seq_tensor[longest_prefix:-1].view(1, -1),
                         self.cache,
                         preprocess_only=True,
+                        loras=self.lora,
                     )
                 elif seq_tensor.shape[0] == longest_prefix:
                     self.cache.current_seq_len -= 1
@@ -62,17 +65,25 @@ class ExLlamaV2Model:
                     seq_tensor[:-1].view(1, -1),
                     self.cache,
                     preprocess_only=True,
+                    loras=self.lora,
                 )
 
         self.past_seq = seq_tensor
 
-        return self.model.forward(seq_tensor[-1:].view(1, -1), self.cache)
+        return self.model.forward(
+            seq_tensor[-1:].view(1, -1), self.cache, loras=self.lora
+        )
 
     def __call__(self, input_ids: torch.LongTensor, *_) -> torch.FloatTensor:
         logits = self.forward(input_ids)
         next_token_logits = logits[..., -1, :]
 
         return next_token_logits, None
+
+    def update_lora(self, lora_path):
+        """Update and apply the LoRA to the model. Input the LoRA path"""
+        self.lora = ExLlamaV2Lora.from_directory(self.model, lora_path)
+        print(" -- Loading LoRA...")
 
 
 def exl2(
