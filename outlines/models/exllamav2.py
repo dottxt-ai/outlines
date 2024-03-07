@@ -55,7 +55,7 @@ class ExLlamaV2Model:
                         seq_tensor[longest_prefix:-1].view(1, -1),
                         self.cache,
                         preprocess_only=True,
-                        loras=self.lora,
+                        loras=[self.lora],
                     )
                 elif seq_tensor.shape[0] == longest_prefix:
                     self.cache.current_seq_len -= 1
@@ -67,13 +67,13 @@ class ExLlamaV2Model:
                     seq_tensor[:-1].view(1, -1),
                     self.cache,
                     preprocess_only=True,
-                    loras=self.lora,
+                    loras=[self.lora],
                 )
 
         self.past_seq = seq_tensor
 
         return self.model.forward(
-            seq_tensor[-1:].view(1, -1), self.cache, loras=self.lora
+            seq_tensor[-1:].view(1, -1), self.cache, loras=[self.lora]
         )
 
     def __call__(self, input_ids: torch.LongTensor, *_) -> torch.FloatTensor:
