@@ -80,10 +80,20 @@ class ExLlamaV2Model:
 
         return next_token_logits, None
 
-    def update_lora(self, lora_path):
-        """Update and apply the LoRA to the model. Input the LoRA path"""
-        self.lora = ExLlamaV2Lora.from_directory(self.model, lora_path)
-        print(" -- Loading LoRA...")
+    def update_lora(self, lora_path: Optional[str] = None):
+        """
+        Update and apply the LoRA to the model.
+
+        Args:
+            lora_path (Optional[str]): The path to the LoRA directory. If None, the LoRA will be unloaded.
+        """
+        if lora_path is None:
+            if self.lora is not None:
+                print(" -- Unloading LoRA...")
+            self.lora = None
+        else:
+            self.lora = ExLlamaV2Lora.from_directory(self.model, lora_path)
+            print(" -- Loading LoRA...")
 
 
 def exl2(
