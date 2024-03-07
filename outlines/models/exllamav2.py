@@ -166,10 +166,13 @@ def exl2(
     # Set config options
     if max_seq_len is not None:
         config.max_seq_len = max_seq_len
-    config.scale_pos_emb = scale_pos_emb
-    config.scale_alpha_value = scale_alpha_value
-    config.no_flash_attn = no_flash_attn
-    if num_experts_per_token:
+    if scale_pos_emb is not None:
+        config.scale_pos_emb = scale_pos_emb
+    if scale_alpha_value is not None:
+        config.scale_alpha_value = scale_alpha_value
+    if no_flash_attn is not None:
+        config.no_flash_attn = no_flash_attn
+    if num_experts_per_token is not None:
         config.num_experts_per_token = num_experts_per_token
     if low_mem:
         config.set_low_mem()
