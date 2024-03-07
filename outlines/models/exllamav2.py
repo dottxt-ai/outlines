@@ -100,7 +100,7 @@ class ExLlamaV2Model:
 
 def exl2(
     model_path: str,
-    device: Optional[torch.device] = None,
+    device: torch.device = None,
     max_seq_len: Optional[int] = None,
     scale_pos_emb: Optional[float] = None,
     scale_alpha_value: Optional[float] = None,
@@ -118,7 +118,7 @@ def exl2(
 
     Args:
         model_path (str): Path to the model directory.
-        device (Optional[torch.device], optional): Device to load the model on. Defaults to None.
+        device (torch.device): Device to load the model on. Defaults to None.
         max_seq_len (Optional[int], optional): Maximum sequence length. Defaults to None.
         scale_pos_emb (Optional[float], optional): Scale factor for positional embeddings. Defaults to None.
         scale_alpha_value (Optional[float], optional): Scale alpha value. Defaults to None.
