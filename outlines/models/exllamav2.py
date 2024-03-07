@@ -3,11 +3,11 @@ from typing import TYPE_CHECKING, Optional
 
 import torch
 
-from .transformers import TransformerTokenizer
-
 if TYPE_CHECKING:
     from exllamav2 import ExLlamaV2, ExLlamaV2Cache, ExLlamaV2Lora
     from transformers import PreTrainedTokenizer
+
+from .transformers import TransformerTokenizer
 
 
 class ExLlamaV2Model:
@@ -137,6 +137,7 @@ def exl2(
     """
 
     try:
+        from exllamav2 import ExLlamaV2Lora  # noqa: F401
         from exllamav2 import (  # , ExLlamaV2Cache_Q4
             ExLlamaV2,
             ExLlamaV2Cache,
