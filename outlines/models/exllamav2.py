@@ -164,8 +164,8 @@ def exl2(
     config.prepare()
 
     # Set config options
-
-    config.max_seq_len = max_seq_len
+    if max_seq_len is not None:
+        config.max_seq_len = max_seq_len
     config.scale_pos_emb = scale_pos_emb
     config.scale_alpha_value = scale_alpha_value
     config.no_flash_attn = no_flash_attn
