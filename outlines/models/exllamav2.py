@@ -4,10 +4,8 @@ from typing import TYPE_CHECKING, Optional
 import torch
 
 if TYPE_CHECKING:
-    from exllamav2 import ExLlamaV2, ExLlamaV2Cache
+    from exllamav2 import ExLlamaV2, ExLlamaV2Cache, ExLlamaV2Lora
     from transformers import PreTrainedTokenizer
-
-from exllamav2 import ExLlamaV2Lora
 
 from .transformers import TransformerTokenizer
 
@@ -89,6 +87,12 @@ class ExLlamaV2Model:
         Args:
             lora_path (Optional[str]): The path to the LoRA directory. If None, the LoRA will be unloaded.
         """
+        try:
+            from exllamav2 import ExLlamaV2Lora
+        except ImportError:
+            raise ImportError(
+                "The `exllamav2` library needs to be installed in order to use `exllamav2` models."
+            )
         if lora_path is None:
             if self.lora is not None:
                 print(" -- Unloading LoRA...")
