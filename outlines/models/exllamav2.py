@@ -143,10 +143,11 @@ def exl2(
     """
 
     try:
-        from exllamav2 import (  # , ExLlamaV2Cache_Q4
+        from exllamav2 import (
             ExLlamaV2,
             ExLlamaV2Cache,
             ExLlamaV2Cache_8bit,
+            ExLlamaV2Cache_Q4,
             ExLlamaV2Config,
         )
         from transformers import AutoTokenizer
@@ -209,8 +210,8 @@ def exl2(
 
     if cache_8bit:
         cache = ExLlamaV2Cache_8bit(model, lazy=not model.loaded)
-    # elif cache_q4:
-    #     cache = ExLlamaV2Cache_Q4(model, lazy = not model.loaded)
+    elif cache_q4:
+        cache = ExLlamaV2Cache_Q4(model, lazy=not model.loaded)
     else:
         cache = ExLlamaV2Cache(model, lazy=not model.loaded)
 
