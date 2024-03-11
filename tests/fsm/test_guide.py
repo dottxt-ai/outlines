@@ -67,6 +67,99 @@ def test_regex():
         assert fsm.is_final_state(state) is True
 
 
+def test_regex_multi_byte_llama_like():
+    class MockTokenizer:
+        vocabulary = {
+            "1": 1,
+            "a": 2,
+            "eos": 3,
+            "😍": 4,
+            "<0xF0>": 5,
+            "<0x9F>": 6,
+            "<0x98>": 7,
+            "<0x88>": 8,  # 😈
+            "\ufffd": 9,
+            "\ufffd\ufffd": 10,
+        }
+        special_tokens = {"eos"}
+        eos_token_id = 3
+
+        def convert_token_to_string(self, token):
+            if token[0] == "<":
+                return "\ufffd"
+            return token
+
+    regex_str = "[😁-😎]"
+    tokenizer = MockTokenizer()
+    fsm = RegexGuide(regex_str, tokenizer)
+
+    assert fsm.states_to_token_maps == {
+        0: {5: 1, 4: 2},
+        1: {6: 3},
+        3: {7: 4},
+        4: {8: 2},
+    }
+
+    instruction = fsm.get_next_instruction(0)
+    assert isinstance(instruction, Generate)
+    assert instruction.tokens == [5, 4]
+
+    assert fsm.get_next_state(state=0, token_id=5) == 1
+    assert fsm.get_next_state(state=0, token_id=tokenizer.eos_token_id) == -1
+
+    assert fsm.is_final_state(0) is False
+
+    for state in fsm.final_states:
+        assert fsm.is_final_state(state) is True
+
+
+def test_regex_multi_byte_gpt2_like():
+    class MockTokenizer:
+        vocabulary = {
+            "1": 1,
+            "a": 2,
+            "eos": 3,
+            "😍": 4,
+            " ": 5,
+            "\ufffd": 6,
+            "\ufffd\ufffd": 7,
+            "ðŁĺ": 8,
+            "Ī": 9,  # '😈'
+            "Ġð": 10,
+            "ŁĺĪ": 11,  # ' 😈'
+        }
+        special_tokens = {"eos"}
+        eos_token_id = 3
+
+        def convert_token_to_string(self, token):
+            if self.vocabulary[token] >= 8:
+                return "\ufffd"
+            return token
+
+    regex_str = " [😁-😎]"
+    tokenizer = MockTokenizer()
+    fsm = RegexGuide(regex_str, tokenizer)
+
+    assert fsm.states_to_token_maps == {
+        0: {5: 1, 10: 2},
+        1: {8: 5, 4: 3},
+        2: {11: 3},
+        5: {9: 3},
+    }
+
+    instruction = fsm.get_next_instruction(0)
+    assert isinstance(instruction, Generate)
+    assert instruction.tokens == [5, 10]
+
+    assert fsm.get_next_state(state=0, token_id=5) == 1
+    assert fsm.get_next_state(state=0, token_id=tokenizer.eos_token_id) == -1
+
+    assert fsm.is_final_state(0) is False
+
+    for state in fsm.final_states:
+        assert fsm.is_final_state(state) is True
+
+
 def test_regex_final_state():
     """Make sure that the FSM stays in the final state as we keep generating"""
 
