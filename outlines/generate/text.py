@@ -1,6 +1,6 @@
 from functools import singledispatch
 
-from outlines.fsm.fsm import StopAtEosFSM
+from outlines.fsm.guide import StopAtEOSGuide
 from outlines.generate import SequenceGenerator
 from outlines.models import LlamaCpp, OpenAI
 from outlines.models.llamacpp import LlamaSequenceGenerator
@@ -30,7 +30,7 @@ def text(model, sampler: Sampler = multinomial()) -> SequenceGenerator:
     A `SequenceGenerator` instance that generates text.
 
     """
-    fsm = StopAtEosFSM(model.tokenizer)
+    fsm = StopAtEOSGuide(model.tokenizer)
     device = model.device
     generator = SequenceGenerator(fsm, model, sampler, device)
 

@@ -1,6 +1,6 @@
 from functools import singledispatch
 
-from outlines.fsm.fsm import RegexFSM
+from outlines.fsm.guide import RegexGuide
 from outlines.generate.api import SequenceGenerator
 from outlines.models import OpenAI
 from outlines.models.llamacpp import (
@@ -32,7 +32,7 @@ def regex(model, regex_str: str, sampler: Sampler = multinomial()):
     regular expression.
 
     """
-    fsm = RegexFSM(regex_str, model.tokenizer)
+    fsm = RegexGuide(regex_str, model.tokenizer)
 
     device = model.device
     generator = SequenceGenerator(fsm, model, sampler, device)

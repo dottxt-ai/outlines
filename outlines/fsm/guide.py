@@ -1,9 +1,9 @@
-from typing import TYPE_CHECKING, List, NewType, Protocol, Tuple
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, List, Protocol, Tuple, Union
 
 import interegular
 from lark import Lark
 
-# from outlines.fsm.parsing import PartialLark
 from outlines import grammars
 from outlines.caching import cache
 from outlines.fsm.regex import create_fsm_index_tokenizer, make_deterministic_fsm
@@ -11,87 +11,96 @@ from outlines.fsm.regex import create_fsm_index_tokenizer, make_deterministic_fs
 if TYPE_CHECKING:
     from outlines.models.tokenizer import Tokenizer
 
-FSMState = NewType("FSMState", int)
+
+@dataclass(frozen=True)
+class Write:
+    """Write instruction.
+
+    Attributes
+    ----------
+    tokens
+        The sequence of tokens to be added to the current sequence by the
+        generation process.
+
+    """
+
+    tokens: List[int]
 
 
-class FSM(Protocol):
-    def is_final_state(self, state: FSMState) -> bool:
+@dataclass(frozen=True)
+class Generate:
+    """Generate instruction
+
+    Attributes
+    ----------
+    tokens
+        The tokens that lead to a valid completion if generated.
+    """
+
+    tokens: List[int]
+
+
+Instruction = Union[Write, Generate]
+
+
+class Guide(Protocol):
+    """Base definition of a generation guide.
+
+    A generation guide defines the behavior of a finite-state machine that guides
+    a text generation procedure. Unlike the DFAs built from regular expressions
+    guides can also emit a `Write` instructions which tells the model that it can
+    append a sequence of tokens (or token word) instead of generating it.
+
+    """
+
+    def get_next_instruction(self, state: int) -> Instruction:
         ...
 
-    def allowed_token_ids(self, state: FSMState) -> List[int]:
+    def get_next_state(self, state: int, token_id: int) -> int:
         ...
 
-    def next_state(self, state: FSMState, token_id: int) -> FSMState:
-        ...
-
-    def copy(self) -> "FSM":
+    def is_final_state(self, state: int) -> bool:
         ...
 
 
-class StopAtEosFSM:
-    """FSM to generate text until EOS has been generated."""
+class StopAtEOSGuide(Guide):
+    """Guide to generate tokens until the EOS token has been generated."""
+
+    final_state = 1
+    start_state = 0
 
     def __init__(self, tokenizer: "Tokenizer"):
+        """Initialize the generation guide.
+
+        model
+            The logit generator used to generate the next token.
+
+        """
         self.eos_token_id = tokenizer.eos_token_id
         self.vocabulary = tokenizer.vocabulary.values()
-        self.start_state: FSMState = FSMState(0)
-        self.final_state: FSMState = FSMState(1)
 
-    def allowed_token_ids(self, state: FSMState) -> List[int]:
-        """Generate a list of allowed tokens for the next step.
-
-        When in the initial state we allow every token to be generated.
-        In the final state the only allowed token is `stop_token_id`.
-
-        Parameters
-        ----------
-        state
-            The current state of the FSM.
-
-        Returns
-        -------
-        A list that contains the tokens to mask.
-
-        """
+    def get_next_instruction(self, state: int) -> Instruction:
         if self.is_final_state(state):
-            return [self.eos_token_id]
-        return list(self.vocabulary)
+            return Write([self.eos_token_id])
+        return Generate(list(self.vocabulary))
 
-    def next_state(self, state: FSMState, token_id: int) -> FSMState:
-        """Update the state of the FSM.
-
-        The FSM stays in the initial state `0` unless the specified stop token
-        has been generated or the maximum number of tokens has been reached. In
-        which case the FSM moves to the final state `-1`.
-
-        Parameters
-        ----------
-        state
-            The current state of the FSM.
-        token_id
-            The id of the token that was just generated.
-
-        Returns
-        -------
-        The new state of the FSM.
-
-        """
+    def get_next_state(self, state: int, token_id: int) -> int:
         if token_id == self.eos_token_id or state == self.final_state:
             return self.final_state
 
         return self.start_state
 
-    def is_final_state(self, state: FSMState) -> bool:
-        """Determine whether the current state of the FSM is a final state."""
+    def is_final_state(self, state: int):
         return state == self.final_state
 
-    def copy(self) -> "StopAtEosFSM":
-        """Create a copy of the FSM."""
+    def copy(self):
         return self
 
 
-class RegexFSM:
-    """FSM to generate text that is in the language of a regular expression."""
+class RegexGuide(Guide):
+    """Guide to generate text in the language of a regular expression."""
+
+    initial_state = 0
 
     def __init__(self, regex_string: str, tokenizer):
         @cache()
@@ -129,70 +138,66 @@ class RegexFSM:
         )
         self.vocabulary = list(tokenizer.vocabulary.values())
         self.eos_token_id = tokenizer.eos_token_id
-        self.start_state = FSMState(0)
         self.final_states = fsm_finals | {-1}
 
-    def allowed_token_ids(self, state: FSMState) -> List[int]:
-        """Generate a list of allowed tokens for the next step.
+    def get_next_instruction(self, state: int) -> Instruction:
+        """Return the next instruction for guided generation.
 
-        The initialization of the FSM builds an index which maps FSM states to a
-        map from authorized tokens to the state in which the FSM needs to move
+        The initialization of the guide builds an index which maps FSM states to a
+        map from authorized tokens to the state in which the guide needs to move
         if said token is generated. Therefore the authorized tokens at the
         current state are the keys of the map returned by the value of the index
         for current state.
 
         If the current state is not contained in the end this means that we are
-        in a final state of the FSM. We only authorize EOS tokens in the final
+        in a final state of the guide. We only authorize EOS tokens in the final
         state.
 
         Parameters
         ----------
         state
-            The current state of the FSM.
+            The current state of the guide.
 
         Returns
         -------
-        A list that contains the tokens to mask.
+        A `Generate` instance that contains the model and the allowed token ids.
 
         """
         next_tokens_to_end_states = self.states_to_token_maps.get(state)
-
         if next_tokens_to_end_states is None:
-            return [self.eos_token_id]
-        else:
-            return list(next_tokens_to_end_states.keys())
+            return Write([self.eos_token_id])
 
-    def next_state(self, state: FSMState, token_id: int) -> FSMState:
-        """Update the state of the FSM.
+        return Generate(list(next_tokens_to_end_states.keys()))
 
-        We use the index to determine to which state the FSM should transition
+    def get_next_state(self, state: int, token_id: int) -> int:
+        """Update the state of the guide.
+
+        We use the index to determine to which state the guide should transition
         given the token that was just generated.
 
         Parameters
         ----------
         state
-            The current state of the FSM.
+            The current state of the guide.
         token_id
             The id of the token that was just generated.
 
         Returns
         -------
-        The new state of the FSM.
+        The new state of the guide.
 
         """
         if token_id == self.eos_token_id:
-            return FSMState(-1)
-        elif (
-            state in self.final_states
-        ):  # Necessary because we keep generating EOS tokens when finished
+            return -1
+        elif state in self.final_states:
             return state
 
         last_token_to_end_state = self.states_to_token_maps[state]
         next_state = last_token_to_end_state.get(token_id)
         if next_state is None:
-            return FSMState(-1)
+            next_state = -1
 
-        return FSMState(next_state)
+        return next_state
 
     @classmethod
     def from_interegular_fsm(
@@ -234,16 +239,16 @@ class RegexFSM:
         from_interegular_instance.eos_token_id = tokenizer.eos_token_id
         return from_interegular_instance
 
-    def is_final_state(self, state: FSMState) -> bool:
+    def is_final_state(self, state: int) -> bool:
+        """Determine whether the current state of the guide is a final state."""
         return state in self.final_states
 
-    def copy(self) -> "RegexFSM":
-        """Create a copy of the FSM."""
+    def copy(self):
         return self
 
 
-class CFGFSM(FSM):
-    """FSM to generate text that is in the language of a context-free grammar."""
+class CFGGuide(Guide):
+    """Guide to generate text that is in the language of a context-free grammar."""
 
     def __init__(self, cfg_string: str, tokenizer):
         self.cfg_string = cfg_string
@@ -267,33 +272,34 @@ class CFGFSM(FSM):
         self.generation = ""
         self.reset_state = False
         self.allow_eos = False
-        self.regex_fsm: RegexFSM
+        self.regex_fsm: RegexGuide
 
         self.check_last = False
         self.proposal_last: List[int] = []
-        self.regex_fsm_last: RegexFSM
+        self.regex_fsm_last: RegexGuide
 
-        self.start_state = FSMState(0)
-        self.final_state = FSMState(-1)
+        self.start_state = 0
+        self.final_state = -1
 
-    def allowed_token_ids(self, state: FSMState) -> List[int]:
-        """Generate a list of allowed tokens for the next step.
+    def get_next_instruction(self, state: int) -> Instruction:
+        """Generate an instruction for the next step.
 
         Upon initialization, the CFG incremental parser is used to determine the
         first regex and construct the first FSM to generate the first terminal.
 
         This FSM is used for proposals until either:
 
-        - The FSM is exhausted, and its only remaining option is the EOS
-          token, in which case we feed the generated terminal to the
+        - The FSM is exhausted, and its only remaining option is the EOS token,
+          in which case we feed the generated terminal to the
           CFG incremental parser and allow it to propose the next regex
           corresponding to the next set of valid terminals.
         - The current FSM can be exhausted, but the EOS token is not the only
-          remaining option. In this case we allow proposal of current terminal extensions,
-          store the current FSM and its state, then also use the CFG parser
-          to propose a new regex corresponding to terminating the current terminal
-          and starting the next one. The model can then sample from either of these sets
-          to determine whether to extend the current terminal or terminate it and start the next one.
+          remaining option. In this case we allow proposal of current terminal
+          extensions, store the current FSM and its state, then also use the CFG
+          parser to propose a new regex corresponding to terminating the current
+          terminal and starting the next one. The model can then sample from
+          either of these sets to determine whether to extend the current
+          terminal or terminate it and start the next one.
 
         The CFG incremental parser is allowed to propose the EOS token from any accepting state,
         and once it is generated, the FSM will continue to always generate the EOS token.
@@ -309,17 +315,24 @@ class CFGFSM(FSM):
 
         """
         if self.is_final_state(state):
-            return [self.tokenizer.eos_token_id]
+            return Write([self.tokenizer.eos_token_id])
 
-        proposal = []
+        proposal: List[int] = []
         if self.generation != "":
             if self.check_last:
                 proposer = self.regex_fsm_last
             else:
                 proposer = self.regex_fsm
-            proposal += proposer.allowed_token_ids(state)
+
+            instruction = proposer.get_next_instruction(state)
+            if isinstance(instruction, Write):
+                proposal += instruction.tokens
+            else:
+                proposal += instruction.tokens
+
             if self.tokenizer.eos_token_id not in proposal:
-                return proposal
+                return Generate(proposal)
+
             self.check_last = False
             proposal = [x for x in proposal if x != self.tokenizer.eos_token_id]
             if len(proposal) > 0:
@@ -337,25 +350,31 @@ class CFGFSM(FSM):
         if self.terminal_regexps["$END"] in options:
             options.remove(self.terminal_regexps["$END"])
             if len(options) == 0:
-                return [self.tokenizer.eos_token_id]
+                return Write([self.tokenizer.eos_token_id])
             self.allow_eos = True
             options.add("")
             assert len(options) > 1
 
         regex_string = r"(" + r"|".join([r"(" + x + r")" for x in options]) + r")"
-        self.regex_fsm = RegexFSM(regex_string, self.tokenizer)
+        self.regex_fsm = RegexGuide(regex_string, self.tokenizer)
         self.reset_state = True
 
-        proposal += self.regex_fsm.allowed_token_ids(self.start_state)
+        instruction = self.regex_fsm.get_next_instruction(self.start_state)
+        if isinstance(instruction, Write):
+            proposal += instruction.tokens
+        else:
+            proposal += instruction.tokens
+
         if self.allow_eos:
             self.allow_eos = False
         else:
             proposal = [x for x in proposal if x != self.tokenizer.eos_token_id]
             assert len(proposal) > 0
-        return proposal
 
-    def next_state(self, state: FSMState, token_id: int) -> FSMState:
-        """Update the state of the FSM.
+        return Generate(proposal)
+
+    def get_next_state(self, state: int, token_id: int) -> int:
+        """Update the state of the guide.
 
         Transitions the underlying regex FSM to its next state.
         If at max tokens or EOS token, transition permanently to the final state.
@@ -382,18 +401,18 @@ class CFGFSM(FSM):
 
         if self.check_last:
             if token_id in self.proposal_last:
-                return self.regex_fsm_last.next_state(state, token_id)
+                return self.regex_fsm_last.get_next_state(state, token_id)
             self.check_last = False
 
         if self.reset_state:
             self.reset_state = False
             state = self.start_state
 
-        return self.regex_fsm.next_state(state, token_id)
+        return self.regex_fsm.get_next_state(state, token_id)
 
-    def is_final_state(self, state: FSMState) -> bool:
+    def is_final_state(self, state: int) -> bool:
         return state == self.final_state
 
-    def copy(self) -> "CFGFSM":
+    def copy(self) -> "CFGGuide":
         """Create a copy of the FSM."""
-        return CFGFSM(self.cfg_string, self.tokenizer)
+        return CFGGuide(self.cfg_string, self.tokenizer)

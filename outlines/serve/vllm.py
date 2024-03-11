@@ -31,7 +31,7 @@ from typing import DefaultDict, Dict, List, Optional
 import torch
 from pydantic import BaseModel
 
-from outlines.fsm.fsm import RegexFSM
+from outlines.fsm.guide import RegexGuide
 from outlines.fsm.json_schema import build_regex_from_schema
 
 
@@ -61,7 +61,7 @@ class RegexLogitsProcessor:
             )
         tokenizer = self.adapt_tokenizer(tokenizer=tokenizer)
 
-        fsm = RegexFSM(regex_string, tokenizer)
+        fsm = RegexGuide(regex_string, tokenizer)
         self.fsm = fsm
 
     def __call__(self, input_ids: List[int], scores: torch.Tensor) -> torch.Tensor:

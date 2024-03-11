@@ -1,7 +1,7 @@
 import pytest
 
 import outlines.grammars as grammars
-from outlines.fsm.fsm import CFGFSM
+from outlines.fsm.guide import CFGGuide
 
 
 @pytest.mark.parametrize("grammar", [grammars.json, grammars.arithmetic])
@@ -27,5 +27,5 @@ def test_grammar_module(grammar):
         s: "(" s ")" | /a+/
     """
     tokenizer = MockTokenizer()
-    fsm = CFGFSM(cfg_str, tokenizer)
-    assert isinstance(fsm, CFGFSM)
+    fsm = CFGGuide(cfg_str, tokenizer)
+    assert isinstance(fsm, CFGGuide)

@@ -1,7 +1,7 @@
 import pytest
 from transformers import AutoTokenizer
 
-from outlines.fsm.fsm import RegexFSM
+from outlines.fsm.guide import RegexGuide
 from outlines.models.transformers import TransformerTokenizer
 
 
@@ -13,5 +13,5 @@ def tokenizer():
 
 @pytest.fixture
 def ensure_numba_compiled(tokenizer):
-    RegexFSM("a", tokenizer)
+    RegexGuide("a", tokenizer)
     return True

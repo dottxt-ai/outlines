@@ -4,7 +4,7 @@ import outlines
 
 outlines.disable_cache()
 
-from outlines.fsm.fsm import RegexFSM  # noqa: E402
+from outlines.fsm.guide import RegexGuide  # noqa: E402
 from outlines.fsm.json_schema import build_regex_from_schema  # noqa: E402
 
 simple_schema = """{
@@ -86,7 +86,7 @@ def test_benchmark_json_schema_to_fsm(
     schema = schemas[schema_name]
     regex = build_regex_from_schema(schema)
     benchmark.pedantic(
-        RegexFSM,
+        RegexGuide,
         args=(regex, tokenizer),
         rounds=8,
     )
