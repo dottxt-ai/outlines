@@ -6,7 +6,11 @@ from lark import Lark
 
 from outlines import grammars
 from outlines.caching import cache
-from outlines.fsm.regex import create_fsm_index_tokenizer, make_deterministic_fsm
+from outlines.fsm.regex import (
+    create_fsm_index_tokenizer,
+    make_byte_level_fsm,
+    make_deterministic_fsm,
+)
 
 if TYPE_CHECKING:
     from outlines.models.tokenizer import Tokenizer
@@ -111,7 +115,10 @@ class RegexGuide(Guide):
             The parameters of the function are used for caching purpose
             """
             regex_pattern = interegular.parse_pattern(regex_string)
-            regex_fsm, _ = make_deterministic_fsm(regex_pattern.to_fsm().reduce())
+            byte_fsm = make_byte_level_fsm(
+                regex_pattern.to_fsm().reduce(), keep_utf8=True
+            )
+            regex_fsm, _ = make_deterministic_fsm(byte_fsm)
             states_to_token_maps, empty_token_ids = create_fsm_index_tokenizer(
                 regex_fsm, tokenizer
             )
@@ -211,7 +218,8 @@ class RegexGuide(Guide):
             """Create the variables related to the mapping between states and tokens
             The parameters of the function are used for caching purpose
             """
-            regex_fsm, _ = make_deterministic_fsm(fsm.reduce())
+            byte_fsm = make_byte_level_fsm(fsm.reduce(), keep_utf8=True)
+            regex_fsm, _ = make_deterministic_fsm(byte_fsm)
             states_to_token_maps, empty_token_ids = create_fsm_index_tokenizer(
                 regex_fsm, tokenizer
             )
