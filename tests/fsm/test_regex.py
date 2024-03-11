@@ -9,10 +9,15 @@ from outlines.fsm.regex import (
     create_fsm_index_tokenizer,
     fsm_union,
     get_sub_fsms_from_seq,
+    make_byte_level_fsm,
     make_deterministic_fsm,
     walk_fsm,
 )
 from outlines.models.transformers import TransformerTokenizer
+
+
+def to_bytes(s):
+    return [chr(b) if b < 0x80 else f"{b:02X}" for b in s.encode("utf-8")]
 
 
 def walk_fsm_numba(
@@ -282,6 +287,64 @@ def test_create_fsm_index_tokenizer():
 
     assert not empty_token_ids
     assert len(states_to_token_subsets) / num_fsm_states > 0.94
+
+
+@pytest.mark.parametrize(
+    "regex,string,should_accept",
+    [
+        ("[a-c]+", "😀", False),
+        ("[^a-c]+", "😀", True),
+        ("😀+", "😀😀😀", True),
+        ("😀+", "a", False),
+        ("[😀-😍]{2}", "😈😈", True),
+        ("[😀-😍]{2}", "aa", False),
+        ("[^😀-😍]{2}", "aa", True),
+        ("[^😀-😍]{2}", "😈😈", False),
+        ("[^😀-😍]{2}", "😎😎", True),
+        ("[^😀-😍]{2}", "😎😓", True),
+        ("[^😀-😍]{2}", "😎😈", False),
+        ("[😀-🙌]{2}", "😎😈", True),
+        ("[^😀-🙌]{2}", "😎😈", False),
+        ("[^😀-🙌]{2}", "🙏🙏", True),
+        ("[^😀-🙌]{2}", "🙏😎", False),
+    ],
+)
+def test_make_byte_level_fsm(regex, string, should_accept):
+    str_fsm = interegular.parse_pattern(regex).to_fsm()
+    str_accepts = str_fsm.accepts(string)
+    assert str_accepts == should_accept
+
+    byte_fsm = make_byte_level_fsm(str_fsm)
+    byte_accepts = byte_fsm.accepts(to_bytes(string))  # type: ignore
+    assert byte_accepts == str_accepts
+
+    mix_fsm = make_byte_level_fsm(str_fsm, keep_utf8=True)
+    mix_accepts = mix_fsm.accepts(to_bytes(string))  # type: ignore
+    assert mix_accepts == str_accepts
+
+    mix_accepts_utf8 = mix_fsm.accepts(string)  # type: ignore
+    assert mix_accepts_utf8 == str_accepts
+
+    def advance(fsm, state, seq):
+        for symbol in seq:
+            if state is None:
+                return None
+            key = fsm.alphabet[symbol]
+            state = fsm.map[state].get(key)
+        return state
+
+    # verify each state along the pattern
+    str_state = str_fsm.initial
+    byte_state = byte_fsm.initial
+    mix_state = byte_fsm.initial
+    for symbol in string:
+        str_state = advance(str_fsm, str_state, symbol)
+        byte_state = advance(byte_fsm, byte_state, to_bytes(symbol))
+        mix_state_utf8 = advance(mix_fsm, mix_state, symbol)
+        mix_state = advance(mix_fsm, mix_state, to_bytes(symbol))
+        assert byte_state == str_state
+        assert mix_state == str_state
+        assert mix_state_utf8 == str_state
 
 
 @pytest.mark.skip(reason="Only for local profiling")
