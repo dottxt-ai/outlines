@@ -4,7 +4,7 @@ import outlines
 
 outlines.disable_cache()
 
-from outlines.fsm.fsm import RegexFSM  # noqa: E402
+from outlines.fsm.guide import RegexGuide  # noqa: E402
 
 regex_samples = {
     "email": r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?",
@@ -26,7 +26,7 @@ def test_benchmark_regex_to_fsm(
     """Benchmark converting regex to FSM"""
     regex_str = regex_samples[regex_name]
     benchmark.pedantic(
-        RegexFSM,
+        RegexGuide,
         args=(regex_str, tokenizer),
         rounds=8,
     )
