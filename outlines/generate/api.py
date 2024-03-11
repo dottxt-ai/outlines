@@ -2,7 +2,6 @@ from typing import Iterator, List, Optional, Union
 
 import torch
 
-from outlines.fsm.fsm import FSMState
 from outlines.generate.generator import sequence_generator
 
 
@@ -178,7 +177,7 @@ class SequenceGenerator:
 
         prompt_token_ids = torch.repeat_interleave(prompt_token_ids, num_samples, dim=0)
         attention_masks = torch.repeat_interleave(attention_masks, num_samples, dim=0)
-        fsm_states = [FSMState(0) for _ in range(batch_size * num_samples)]
+        fsm_states = [0 for _ in range(batch_size * num_samples)]
         fsms = [self.fsm.copy() for _ in range(batch_size * num_samples)]
         weights = torch.zeros(
             (batch_size * num_samples), dtype=torch.float, device=self.device
@@ -291,7 +290,7 @@ class SequenceGenerator:
 
         prompt_token_ids = torch.repeat_interleave(prompt_token_ids, num_samples, dim=0)
         attention_masks = torch.repeat_interleave(attention_masks, num_samples, dim=0)
-        fsm_states = [FSMState(0) for _ in range(batch_size * num_samples)]
+        fsm_states = [0 for _ in range(batch_size * num_samples)]
         fsms = [self.fsm.copy() for _ in range(batch_size * num_samples)]
         weights = torch.zeros(
             (batch_size * num_samples),

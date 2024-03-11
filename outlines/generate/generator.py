@@ -4,10 +4,8 @@ from typing import TYPE_CHECKING, Callable, Iterator, List, Optional, Tuple
 
 import torch
 
-from outlines.fsm.fsm import FSMState
-
 if TYPE_CHECKING:
-    from outlines.fsm.fsm import FSM
+    from outlines.fsm.guide import Guide
 
 
 class ContextLengthExceededError(Exception):
@@ -20,17 +18,17 @@ class GenerationState:
     kv_cache: torch.Tensor
     logits: torch.Tensor
     weights: torch.Tensor
-    fsm_states: List[FSMState]
+    fsm_states: List[int]
 
 
 def sequence_generator(
     model: Callable,
     sampler: Callable,
-    fsms: List["FSM"],
+    fsms: List["Guide"],
     token_ids: torch.Tensor,
     sequence_weights: torch.Tensor,
     attention_masks: torch.Tensor,
-    fsm_states: List[FSMState],
+    fsm_states: List[int],
     rng: torch.Generator = torch.Generator(),
 ) -> Iterator[GenerationState]:
     """Generates sequences of tokens.
@@ -109,8 +107,8 @@ def sequence_generator(
 
 
 def get_next_fsm_states(
-    fsms: List["FSM"], fsm_states: List[FSMState], next_token_ids: torch.Tensor
-) -> List[FSMState]:
+    fsms: List["Guide"], fsm_states: List[int], next_token_ids: torch.Tensor
+) -> List[int]:
     """
 
     Parameters
@@ -126,12 +124,12 @@ def get_next_fsm_states(
 
     """
     return [
-        fsm.next_state(fsm_state, int(token_id[0]))
+        fsm.get_next_state(fsm_state, int(token_id[0]))
         for fsm, fsm_state, token_id in zip(fsms, fsm_states, next_token_ids)
     ]
 
 
-def get_allowed_tokens(fsms: List["FSM"], fsm_states: List[FSMState]) -> torch.Tensor:
+def get_allowed_tokens(fsms: List["Guide"], fsm_states: List[int]) -> torch.Tensor:
     """Get the new instructions for each sequence from the finite-state machine.
 
     Parameters
@@ -146,10 +144,12 @@ def get_allowed_tokens(fsms: List["FSM"], fsm_states: List[FSMState]) -> torch.T
     A nested list that contains the ids of the logits to keep.
 
     """
-    return [fsm.allowed_token_ids(state) for fsm, state in zip(fsms, fsm_states)]
+    return [
+        fsm.get_next_instruction(state).tokens for fsm, state in zip(fsms, fsm_states)
+    ]
 
 
-def is_generation_finished(fsms: List["FSM"], fsm_states: List[FSMState]) -> bool:
+def is_generation_finished(fsms: List["Guide"], fsm_states: List[int]) -> bool:
     """Determine if the generation is finished.
 
     A generation is considered finished if the FSM of every sequence in the
@@ -229,7 +229,7 @@ def update_attention_masks(
     )
 
 
-def reorder_fsms(fsms: List["FSM"], ancestors: torch.Tensor) -> List["FSM"]:
+def reorder_fsms(fsms: List["Guide"], ancestors: torch.Tensor) -> List["Guide"]:
     reordered_fsms = []
     for ancestor in ancestors:
         reordered_fsms.append(fsms[ancestor].copy())
@@ -237,9 +237,7 @@ def reorder_fsms(fsms: List["FSM"], ancestors: torch.Tensor) -> List["FSM"]:
     return reordered_fsms
 
 
-def reorder_fsm_states(
-    fsm_states: List[FSMState], ancestors: torch.Tensor
-) -> List[FSMState]:
+def reorder_fsm_states(fsm_states: List[int], ancestors: torch.Tensor) -> List[int]:
     reordered_states = []
     for ancestor in ancestors:
         reordered_states.append(fsm_states[ancestor])

@@ -161,6 +161,7 @@ def exl2(
         print(" -- Loading tokenizer...")
     tokenizer_kwargs.setdefault("padding_side", "left")
     tokenizer = AutoTokenizer.from_pretrained(model_path, **tokenizer_kwargs)
+    # tokenizer = TransformerTokenizer(model_path, **tokenizer_kwargs)
 
     # Check fasttensors for config
     if os.name != "nt":

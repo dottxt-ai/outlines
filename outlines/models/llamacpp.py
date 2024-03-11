@@ -5,7 +5,7 @@ import numpy as np
 import torch
 from numpy.typing import NDArray
 
-from outlines.fsm.fsm import CFGFSM, FSM, FSMState, RegexFSM
+from outlines.fsm.guide import CFGGuide, Guide, RegexGuide
 
 if TYPE_CHECKING:
     from llama_cpp import Llama
@@ -126,7 +126,7 @@ def llamacpp(
 
 
 class LogitsProcessor:
-    def __init__(self, tokenizer: LlamaCppTokenizer, fsm: FSM):
+    def __init__(self, tokenizer: LlamaCppTokenizer, fsm: Guide):
         """A FSM-based logits processor.
 
         Parameters
@@ -138,8 +138,8 @@ class LogitsProcessor:
 
         """
         self.tokenizer = tokenizer
-        self.fsm_state = FSMState(0)
-        self.fsm: FSM = fsm
+        self.fsm_state = 0
+        self.fsm: Guide = fsm
         self.is_first_token = True
 
     def __call__(
@@ -151,9 +151,9 @@ class LogitsProcessor:
             self.is_first_token = False
         else:
             last_token = input_ids[-1]
-            self.fsm_state = self.fsm.next_state(self.fsm_state, last_token)
+            self.fsm_state = self.fsm.get_next_state(self.fsm_state, last_token)
 
-        allowed_tokens = self.fsm.allowed_token_ids(self.fsm_state)
+        allowed_tokens = self.fsm.get_next_instruction(self.fsm_state).tokens
 
         mask = torch.full((scores.shape[-1],), -math.inf, device="cpu").numpy()
         mask[allowed_tokens] = 0
@@ -177,7 +177,7 @@ class RegexLogitsProcessor(LogitsProcessor):
             An instance of `Tokenizer`
 
         """
-        fsm = RegexFSM(regex_string, tokenizer)
+        fsm = RegexGuide(regex_string, tokenizer)
         super().__init__(tokenizer, fsm)
 
 
@@ -193,5 +193,5 @@ class CFGLogitsProcessor(LogitsProcessor):
             An instance of `Tokenizer`
 
         """
-        fsm = CFGFSM(cfg_str, tokenizer)
+        fsm = CFGGuide(cfg_str, tokenizer)
         super().__init__(tokenizer, fsm)

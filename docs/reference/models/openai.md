@@ -1,4 +1,4 @@
-# Generate text with the OpenAI API
+# Generate text with the OpenAI and compatible APIs
 
 !!! Installation
 
@@ -16,16 +16,33 @@ print(type(model))
 # OpenAI
 ```
 
+Outlines also supports Azure OpenAI models:
 
-It is possible to pass a system message to the model when initializing it:
 
-```python
+```
 from outlines import models
 
-model = models.openai("gpt-4", system_prompt="You are a useful assistant")
+model = models.azure_openai(
+    api_version="2023-07-01-preview",
+    azure_endpoint="https://example-endpoint.openai.azure.com",
+)
 ```
 
-This message will be used for every subsequent use of the model:
+More generally, you can use any API client compatible with the OpenAI interface by passing an instance of the client, a configuration, and optionally the corresponding tokenizer (if you want to be able to use `outlines.generate.choice`):
+
+```
+from openai import AsyncOpenAI
+import tiktoken
+
+from outlines.models.openai import OpenAI, OpenAIConfig
+
+config = OpenAIConfig(model="gpt-4")
+client = AsyncOpenAI()
+tokenizer = tiktoken.encoding_for_model("gpt-4")
+
+model = OpenAI(client, config, tokenizer)
+```
+
 
 ## Monitoring API use
 

@@ -137,7 +137,7 @@ nav:
     - api/models.md
     - api/prompts.md
     - api/json_schema.md
-    - api/fsm.md
+    - api/guide.md
     - api/parsing.md
     - api/regex.md
     - api/samplers.md

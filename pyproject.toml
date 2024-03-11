@@ -56,8 +56,9 @@ test = [
     "beartype<0.16.0",
     "datasets",
     "responses",
-    "llama-cpp-python>=0.2.42",
-    "huggingface_hub"
+    "llama-cpp-python",
+    "huggingface_hub",
+    "openai>=1.0.0"
 ]
 serve = [
     "vllm>=0.3.0",

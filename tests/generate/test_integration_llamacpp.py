@@ -328,15 +328,28 @@ def test_llamacpp_json_union(model):
 
 def test_llamacpp_json_function(model):
     model.model.reset()
-    prompt = "<|im_start|>user\nOutput arguments for the function<|im_end|>\n<|im_start|>assistant\n"
+    prompt = "<|im_start|>user\nOutput arguments for the function, array with 2 elements<|im_end|>\n<|im_start|>assistant\n"
 
     def function(foo: int, bar: List[int]):
         return foo + sum(bar)
 
     rng = torch.Generator(device="cpu")
-    rng.manual_seed(0)
+    rng.manual_seed(10)
     sequence = generate.json(model, function)(
         prompt, max_tokens=100, temperature=0.0, rng=rng
     )
     assert isinstance(sequence, dict)
     assert isinstance(function(**sequence), int)
+
+
+def test_llamacpp_successive_choices(model):
+    model.model.reset()
+
+    choose = generate.regex(model, r"(one|two|three)")
+    assert choose("pick a numner") in ["one", "two", "three"]
+
+    cities = ["New York", "Paris", "San Francisco"]
+    city = generate.choice(model, cities)
+    assert city("pick a city") in cities
+
+    assert choose("a number") in ["one", "two", "three"]
