@@ -156,13 +156,19 @@ def exl2(
             "The `exllamav2` library needs to be installed in order to use `exllamav2` models."
         )
 
+    # Load tokenizer
+    if not verbose:
+        print(" -- Loading tokenizer...")
+    tokenizer_kwargs.setdefault("padding_side", "left")
+    tokenizer = AutoTokenizer.from_pretrained(model_path, **tokenizer_kwargs)
+
+    # Check fasttensors for config
     if os.name != "nt":
         use_fasttensors = True
     else:
         use_fasttensors = False
 
     # Create config
-
     config = ExLlamaV2Config()
     config.model_dir = model_path
     config.fasttensors = use_fasttensors
@@ -182,32 +188,10 @@ def exl2(
     if low_mem:
         config.set_low_mem()
 
-    # Load the model
-
+    # Prepare the model from the config
     model = ExLlamaV2(config)
 
-    split = None
-    if gpu_split and gpu_split != "auto":
-        split = [float(alloc) for alloc in gpu_split.split(",")]
-
-    if gpu_split != "auto":
-        if not verbose:
-            print(" -- Loading model...")
-        model.load(split)
-
-    # Load tokenizer
-
-    if not verbose:
-        print(" -- Loading tokenizer...")
-
-    # tokenizer = ExLlamaV2Tokenizer(config)
-
-    tokenizer_kwargs.setdefault("padding_side", "left")
-    tokenizer = AutoTokenizer.from_pretrained(model_path, **tokenizer_kwargs)
-    # tokenizer = TransformerTokenizer(model_path, **tokenizer_kwargs)
-
     # Create cache
-
     if cache_8bit:
         cache = ExLlamaV2Cache_8bit(model, lazy=not model.loaded)
     elif cache_q4:
@@ -215,8 +199,15 @@ def exl2(
     else:
         cache = ExLlamaV2Cache(model, lazy=not model.loaded)
 
-    # Load model now if auto split enabled
+    # Load the model
+    split = None
+    if gpu_split and gpu_split != "auto":
+        split = [float(alloc) for alloc in gpu_split.split(",")]
+        if not verbose:
+            print(" -- Loading model...")
+        model.load(split)
 
+    # Autoload if no GPU split was provided
     if not model.loaded:
         print(" -- Loading model...")
         model.load_autosplit(cache)
