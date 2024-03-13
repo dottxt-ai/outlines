@@ -120,28 +120,44 @@ def exl2(
     """
     Load an ExLlamaV2 model.
 
-    Args:
-        model_path (str): Path to the model directory.
-        device (str): Device to load the model on. Pass in 'cuda' for GPU or 'cpu' for CPU
-        max_seq_len (Optional[int], optional): Maximum sequence length. Defaults to None.
-        scale_pos_emb (Optional[float], optional): Scale factor for positional embeddings. Defaults to None.
-        scale_alpha_value (Optional[float], optional): Scale alpha value. Defaults to None.
-        no_flash_attn (Optional[bool], optional): Disable flash attention. Defaults to None.
-        num_experts_per_token (Optional[int], optional): Number of experts per token. Defaults to None.
-        cache_8bit (bool, optional): Use 8-bit cache. Defaults to False.
-        cache_q4 (bool, optional): Use Q4 cache. Defaults to False.
-        tokenizer_kwargs (dict, optional): Additional keyword arguments for the tokenizer. Defaults to {}.
-        gpu_split (str): \"auto\", or VRAM allocation per GPU in GB. Auto will use exllama's autosplit feature
-        low_mem (bool, optional): Enable VRAM optimizations, potentially trading off speed
-        verbose (bool, optional): Enable if you want debugging statements
+    Parameters
+    ----------
+    model_path (str)
+        Path to the model directory.
+    device (str)
+        Device to load the model on. Pass in 'cuda' for GPU or 'cpu' for CPU
+    max_seq_len (Optional[int], optional)
+        Maximum sequence length. Defaults to None.
+    scale_pos_emb (Optional[float], optional)
+        Scale factor for positional embeddings. Defaults to None.
+    scale_alpha_value (Optional[float], optional)
+        Scale alpha value. Defaults to None.
+    no_flash_attn (Optional[bool], optional)
+        Disable flash attention. Defaults to None.
+    num_experts_per_token (Optional[int], optional)
+        Number of experts per token. Defaults to None.
+    cache_8bit (bool, optional)
+        Use 8-bit cache. Defaults to False.
+    cache_q4 (bool, optional)
+        Use Q4 cache. Defaults to False.
+    tokenizer_kwargs (dict, optional)
+        Additional keyword arguments for the tokenizer. Defaults to {}.
+    gpu_split (str)
+        \"auto\", or VRAM allocation per GPU in GB. Auto will use exllama's autosplit feature
+    low_mem (bool, optional)
+        Enable VRAM optimizations, potentially trading off speed
+    verbose (bool, optional)
+        Enable if you want debugging statements
 
-    Returns:
-        ExLlamaV2Model: Loaded ExLlamaV2 model.
+    Returns
+    -------
+    An `ExLlamaV2Model` instance.
 
-    Raises:
-        ImportError: If the `exllamav2` library is not installed.
+    Raises
+    ------
+    `ImportError` if the `exllamav2` library is not installed.
+
     """
-
     try:
         from exllamav2 import (
             ExLlamaV2,
