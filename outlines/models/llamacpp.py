@@ -22,7 +22,9 @@ class LlamaCpp:
         self.tokenizer = LlamaCppTokenizer(model=model)
 
 
-def llamacpp(model_path: str, device: Optional[str] = None, **model_kwargs) -> LlamaCpp:
+def llamacpp(
+    model_path: str, device: Optional[str] = None, model_kwargs: dict = {}
+) -> LlamaCpp:
     from llama_cpp import Llama
 
     if device == "cuda":

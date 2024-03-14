@@ -1,10 +1,30 @@
+import re
 from collections import namedtuple
 from functools import lru_cache
-from typing import TYPE_CHECKING, Dict, Generator, List, Sequence, Set, Tuple
+from typing import (
+    TYPE_CHECKING,
+    Dict,
+    FrozenSet,
+    Generator,
+    List,
+    Sequence,
+    Set,
+    Tuple,
+    Union,
+    cast,
+)
 
 import numba
 import numpy as np
-from interegular.fsm import FSM, Alphabet, OblivionError, anything_else
+from interegular.fsm import (
+    FSM,
+    Alphabet,
+    OblivionError,
+    State,
+    TransitionKey,
+    _AnythingElseCls,
+    anything_else,
+)
 from numba.typed.typedobjectutils import _nonoptional
 
 if TYPE_CHECKING:
@@ -60,11 +80,11 @@ class BetterFSM(FSM):
         if self._fsm_info is None:
             flat_transition_map_items = np.fromiter(
                 ((a[0], a[1], b) for a, b in self.flat_transition_map.items()),
-                dtype=np.dtype("i8, i8, i8"),
+                dtype=np.dtype("int64, int64, int64"),
             )
             trans_key_to_states_items = np.fromiter(
                 ((k, z) for k, v in self.trans_key_to_states.items() for z in v),
-                dtype=np.dtype("i8, i8"),
+                dtype=np.dtype("int64, int64"),
             )
             alphabet_symbol_mapping_items = np.fromiter(
                 (
@@ -72,9 +92,9 @@ class BetterFSM(FSM):
                     for it in self.alphabet._symbol_mapping.items()
                     if it[0] != anything_else
                 ),
-                dtype=np.dtype("U1, i8"),
+                dtype=np.dtype("U2, int64"),
             )
-            nb_finals = np.fromiter(self.finals, dtype=np.dtype("i8"))
+            nb_finals = np.fromiter(self.finals, dtype=np.dtype("int64"))
             self.__dict__["_fsm_info"] = create_fsm_info(
                 self.initial,
                 nb_finals,
@@ -89,7 +109,7 @@ class BetterFSM(FSM):
 
 nb_int_list_type = numba.types.ListType(numba.int64)
 nb_int_pair_type = numba.types.UniTuple(numba.int64, 2)
-nb_unichar_1_type = numba.types.UnicodeCharSeq(1)
+nb_unichar_2_type = numba.types.UnicodeCharSeq(2)
 
 
 @numba.njit(cache=True)
@@ -113,7 +133,9 @@ def create_fsm_info(
             (trans_key_and_state[0], trans_key_and_state[1])
         ] = trans_key_and_state[2]
 
-    alphabet_symbol_map = numba.typed.Dict.empty(nb_unichar_1_type, numba.int64)
+    # use 2-char strings so that we can represent incomplete utf-8 sequences
+    # as 2-hex-digit pairs
+    alphabet_symbol_map = numba.typed.Dict.empty(nb_unichar_2_type, numba.int64)
     for symbol_and_trans_key in alphabet_symbol_mapping_items:
         alphabet_symbol_map[symbol_and_trans_key[0]] = symbol_and_trans_key[1]
 
@@ -146,6 +168,173 @@ FSMInfo = namedtuple(
         "alphabet_symbol_mapping",
     ],
 )
+
+
+TransitionTrie = Dict[TransitionKey, "Union[TransitionTrie, State, None]"]
+
+
+def add_to_transition_trie(
+    trie: TransitionTrie,
+    key_seq: Sequence[TransitionKey],
+    value: Union[State, None],
+):
+    for key in key_seq[:-1]:
+        trie = cast(TransitionTrie, trie.setdefault(key, {}))
+        assert isinstance(trie, dict), "key sequence of incompatible length"
+    trie[key_seq[-1]] = value
+
+
+# merge default_trie into the trie, only updating entries not present in the trie
+def transition_trie_setdefault(
+    trie: TransitionTrie,
+    default_trie: TransitionTrie,
+):
+    for key, default_value in default_trie.items():
+        dest_value = trie.get(key)
+        if isinstance(dest_value, dict) and isinstance(default_value, dict):
+            transition_trie_setdefault(dest_value, default_value)
+        elif key not in trie:
+            trie[key] = default_value
+
+
+def byte_symbol(byte: int) -> str:
+    return f"{byte:02X}" if byte >= 0x80 else chr(byte)
+
+
+def make_byte_level_fsm(fsm: FSM, keep_utf8=False) -> FSM:
+    """Convert an FSM to a byte-level FSM, expanding multi-byte characters as
+    sequences of single-byte transitions. If keep_utf8 is set, the original
+    utf-8 characters are kept in the alphabet.
+    NOTE: we're representing bytes as strings to keep it type-compatible.
+    """
+
+    anything_else_key = fsm.alphabet[anything_else]
+    symbol_mapping: Dict[Union[str, _AnythingElseCls], TransitionKey] = {}
+    map: Dict[State, Dict[TransitionKey, State]] = {}
+    states: List[State] = list(fsm.states)
+
+    # identify all multi-byte characters in the alphabet and build a mapping
+    # from the original transition keys to sequences of new keys for each byte
+    key_to_key_seqs: Dict[TransitionKey, Set[Tuple[TransitionKey, ...]]] = {}
+    all_key_seqs: Set[Tuple[TransitionKey, ...]] = set()
+    all_bytes: Set[int] = set()
+    max_key = max(fsm.alphabet.values())
+    for symbol, transition_key in fsm.alphabet.items():
+        assert symbol == anything_else or len(symbol) == 1
+        if symbol == anything_else or ord(symbol) < 0x80:
+            symbol_mapping[symbol] = transition_key
+        else:
+            if keep_utf8:
+                symbol_mapping[symbol] = transition_key
+            key_list: List[TransitionKey] = []
+            for byte in symbol.encode("utf-8"):
+                symbol = byte_symbol(byte)
+                if symbol not in symbol_mapping:
+                    symbol_mapping[symbol] = max_key = TransitionKey(max_key + 1)
+                    all_bytes.add(byte)
+                key_list.append(symbol_mapping[symbol])
+            key_seq = tuple(key_list)
+            key_to_key_seqs.setdefault(transition_key, set()).add(key_seq)
+            all_key_seqs.add(key_seq)
+
+    # add all remaining multi-byte utf-8 bytes to the alphabet
+    # (this is required to represent `anything_else`)
+    utf8_ranges = {
+        1: (0x80, 0xC0),  # continuation bytes
+        2: (0xC0, 0xE0),  # 2-byte sequences
+        3: (0xE0, 0xF0),  # 3-byte sequences
+        4: (0xF0, 0xF8),  # 4-byte sequences
+    }
+    utf8_all_keys: Dict[int, Set[TransitionKey]] = {
+        n: set() for n in utf8_ranges.keys()
+    }
+    for n, (start, end) in utf8_ranges.items():
+        range_key = max_key = TransitionKey(max_key + 1)
+        for byte in range(start, end):
+            byte_key = symbol_mapping.setdefault(byte_symbol(byte), range_key)
+            utf8_all_keys[n].add(byte_key)
+
+    # cache of intermediate transition states by transitions from that state
+    state_cache: Dict[FrozenSet[Tuple[TransitionKey, State]], State] = {}
+
+    # helper function to create multi-step transitions between states
+    max_state = max(fsm.states)
+
+    def create_seq_transitions(
+        seq_transitions_trie: TransitionTrie,
+    ) -> Dict[TransitionKey, State]:
+        nonlocal max_state
+        result: Dict[TransitionKey, State] = {}
+
+        for next_key, next_trie in seq_transitions_trie.items():
+            if isinstance(next_trie, dict):
+                next_transitions = create_seq_transitions(next_trie)
+                if not next_transitions:
+                    continue
+                cache_key = frozenset(next_transitions.items())
+                next_state = state_cache.get(cache_key)
+                if next_state is None:
+                    next_state = max_state = State(max_state + 1)
+                    map[next_state] = next_transitions
+                    state_cache[cache_key] = next_state
+                    states.append(next_state)
+                result[next_key] = next_state
+            elif next_trie is not None:
+                result[next_key] = next_trie
+
+        return result
+
+    # create new states and transitions
+    for state, transitions in fsm.map.items():
+        seq_transitions_trie: TransitionTrie = {}
+        state_map: Dict[TransitionKey, State] = {}
+
+        for transition_key, to_state in transitions.items():
+            if transition_key in key_to_key_seqs:
+                if keep_utf8:
+                    state_map[transition_key] = to_state
+                for key_seq in key_to_key_seqs[transition_key]:
+                    add_to_transition_trie(seq_transitions_trie, key_seq, to_state)
+            else:  # keep single-byte transitions as is
+                state_map[transition_key] = to_state
+
+        # handle multi-byte anything_else sequences
+        if anything_else_key in transitions:
+            for key_seq in all_key_seqs:
+                add_to_transition_trie(seq_transitions_trie, key_seq, None)
+
+            anything_else_trie: TransitionTrie = {}
+            cont_trie: Union[TransitionTrie, State] = transitions[anything_else_key]
+            for n in range(2, 5):
+                cont_trie = {key: cont_trie for key in utf8_all_keys[1]}
+                for key in utf8_all_keys[n]:
+                    anything_else_trie[key] = cont_trie
+
+            transition_trie_setdefault(seq_transitions_trie, anything_else_trie)
+
+        # create new states and transitions
+        next_transitions = create_seq_transitions(seq_transitions_trie)
+        state_map.update(next_transitions)
+        map[state] = state_map
+
+    return FSM(
+        alphabet=Alphabet(symbol_mapping),
+        states=states,
+        initial=fsm.initial,
+        finals=fsm.finals,
+        map=map,
+    )
+
+
+def make_byte_level_better_fsm(fsm: BetterFSM, keep_utf8=False) -> BetterFSM:
+    new_fsm = make_byte_level_fsm(fsm, keep_utf8)
+    return BetterFSM(
+        alphabet=BetterAlphabet(new_fsm.alphabet._symbol_mapping),
+        states=new_fsm.states,
+        initial=new_fsm.initial,
+        finals=new_fsm.finals,
+        map=new_fsm.map,
+    )
 
 
 def make_deterministic_fsm(fsm: FSM) -> Tuple[BetterFSM, Dict[int, int]]:
@@ -229,7 +418,7 @@ def _walk_fsm(
     alphabet_anything_value: int,
     fsm_initial: int,
     fsm_finals: Set[int],
-    input_string: str,
+    input_string: Sequence[str],
     start_state: int,
     full_match: bool = True,
 ) -> List[int]:
@@ -263,7 +452,7 @@ def _walk_fsm(
 
 def walk_fsm(
     fsm: BetterFSM,
-    input_string: str,
+    input_string: Sequence[str],
     start_state: int,
     full_match: bool = True,
 ) -> List[int]:
@@ -465,12 +654,12 @@ def state_scan_tokens(
     alphabet_anything_value: int,
     fsm_initial: int,
     fsm_finals: Set[int],
-    vocabulary: Dict[str, List[int]],
+    vocabulary: List[Tuple[Sequence[str], Sequence[int]]],
     start_state: int,
 ) -> Set[Tuple[int, int]]:
     res = set()
 
-    for token, token_ids in vocabulary.items():
+    for token, token_ids in vocabulary:
         state_seq = _walk_fsm(
             fsm_transitions,
             alphabet_symbol_mapping,
@@ -493,7 +682,7 @@ def state_scan_tokens(
 
 def create_fsm_index_end_to_end(
     fsm_info: FSMInfo,
-    vocabulary: Dict[str, List[int]],
+    vocabulary: List[Tuple[Sequence[str], Sequence[int]]],
 ) -> Dict[int, Set[Tuple[int, int]]]:
     """Create an FSM state-to-vocabulary map/index through end-to-end token parsing."""
 
@@ -529,30 +718,101 @@ def create_fsm_index_end_to_end(
     return states_to_token_subsets
 
 
+re_llama_byte_token = re.compile(r"^<0x[0-9A-F]{2}>$")
+re_replacement_seq = re.compile(r"^�+$")
+
+
+# Copied from transformers.models.gpt2.tokenization_gpt2.bytes_to_unicode
+@lru_cache()
+def gpt2_bytes_to_unicode():
+    """
+    Returns list of utf-8 byte and a mapping to unicode strings. We specifically avoids mapping to whitespace/control
+    characters the bpe code barfs on.
+
+    The reversible bpe codes work on unicode strings. This means you need a large # of unicode characters in your vocab
+    if you want to avoid UNKs. When you're at something like a 10B token dataset you end up needing around 5K for
+    decent coverage. This is a significant percentage of your normal, say, 32K bpe vocab. To avoid that, we want lookup
+    tables between utf-8 bytes and unicode strings.
+    """
+    bs = (
+        list(range(ord("!"), ord("~") + 1))
+        + list(range(ord("¡"), ord("¬") + 1))
+        + list(range(ord("®"), ord("ÿ") + 1))
+    )
+    cs = bs[:]
+    n = 0
+    for b in range(2**8):
+        if b not in bs:
+            bs.append(b)
+            cs.append(2**8 + n)
+            n += 1
+    cs = [chr(n) for n in cs]
+    return dict(zip(bs, cs))
+
+
+@lru_cache()
+def gpt2_unicode_to_bytes():
+    return {v: k for k, v in gpt2_bytes_to_unicode().items()}
+
+
 # TODO: Cannot cache typed collections to disk, yet.  See
 # https://github.com/numba/numba/issues/4698
 @lru_cache
-def reduced_vocabulary(tokenizer: "Tokenizer"):
+def reduced_vocabulary(
+    tokenizer: "Tokenizer",
+) -> Tuple[List[Tuple[Sequence[str], Sequence[int]]], Set[int]]:
     """Create a map from decoded vocabulary tokens to lists of equivalent token ids."""
-    vocabulary = numba.typed.Dict.empty(
-        numba.types.string, numba.types.ListType(numba.int64)
-    )
     empty_token_ids = set()
+    vocabulary: Dict[Union[str, Tuple[str, ...]], List[int]] = {}
     for token, token_idx in tokenizer.vocabulary.items():
         if token in tokenizer.special_tokens:
             continue
 
-        token_str = tokenizer.convert_token_to_string(token)
+        token_str: Union[str, Tuple[str, ...]] = tokenizer.convert_token_to_string(
+            token
+        )
 
         if token_str:
-            vocabulary.setdefault(
-                token_str,
-                numba.typed.List.empty_list(numba.int64),
-            ).append(numba.int64(token_idx))
+            # invalid utf-8 sequences are replaced with � (\ufffd), but there
+            # might also be tokens specifically for �, ��, ���, etc.
+            if "\ufffd" in token_str and not re_replacement_seq.match(token):
+                if re_llama_byte_token.match(token):
+                    # llama-like tokenizers have <0xXX> tokens for all
+                    # bytes >= 0x80 and represent all incomplete utf-8
+                    # sequences using such tokens
+                    token_bytes = [int(token[3:5], 16)]
+                else:
+                    # gpt2-like tokenizers have multi-byte tokens that can
+                    # have a mix of full and incomplete utf-8 characters,
+                    # for example, b` \xf0` can be one token; these tokenizers
+                    # map each byte to a valid utf-8 character
+                    token_bytes = cast(
+                        List[int], [gpt2_unicode_to_bytes().get(c) for c in token]
+                    )
+                    if None in token_bytes:
+                        raise RuntimeError(
+                            f"Cannot convert token `{token}` ({token_idx}) to bytes: {token_str}"
+                        )
+                token_str = tuple(byte_symbol(b) for b in token_bytes)
+
+            vocabulary.setdefault(token_str, []).append(token_idx)
         else:
             empty_token_ids.add(numba.int64(token_idx))
 
-    return vocabulary, empty_token_ids
+    vocabulary_nb = numba.typed.List.empty_list(
+        numba.types.Tuple(
+            (
+                nb_unichar_2_type[:],
+                numba.int64[:],
+            )
+        )
+    )
+    for token_tuple, token_ids in vocabulary.items():
+        token_tuple_np = np.fromiter(token_tuple, dtype=np.dtype("U2"))
+        token_ids_np = np.fromiter(token_ids, dtype=np.dtype("int64"))
+        vocabulary_nb.append((token_tuple_np, token_ids_np))
+
+    return vocabulary_nb, empty_token_ids
 
 
 def create_fsm_index_tokenizer(
