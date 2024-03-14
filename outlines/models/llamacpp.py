@@ -22,10 +22,11 @@ class LlamaCpp:
         self.tokenizer = LlamaCppTokenizer(model=model)
 
 
-def llamacpp(model_path: str, device: Optional[str] = None, **model_kwargs) -> LlamaCpp:
+def llamacpp(
+    model_path: str, device: Optional[str] = None, model_kwargs: dict = {}
+) -> LlamaCpp:
     from llama_cpp import Llama
 
-    model_kwargs = model_kwargs.get("model_kwargs", {})
     if device == "cuda":
         model_kwargs["n_gpu_layers"].setdefault(-1)
 
