@@ -56,7 +56,11 @@ def adapt_tokenizer(tokenizer: PreTrainedTokenizerBase) -> PreTrainedTokenizerBa
         string = tokenizer.convert_tokens_to_string([token])
 
         # A hack to handle missing spaces to HF's Llama tokenizers
-        if type(token) is str and token.startswith(SPIECE_UNDERLINE) or token == "<0x20>":
+        if (
+            type(token) is str
+            and token.startswith(SPIECE_UNDERLINE)
+            or token == "<0x20>"
+        ):
             return " " + string
 
         return string
