@@ -52,11 +52,15 @@ def adapt_tokenizer(tokenizer: PreTrainedTokenizerBase) -> PreTrainedTokenizerBa
     tokenizer.vocabulary = tokenizer.get_vocab()
     tokenizer.special_tokens = set(tokenizer.all_special_tokens)
 
-    def convert_token_to_string(token: str) -> str:
+    def convert_token_to_string(token: Union[str, bytes]) -> str:
         string = tokenizer.convert_tokens_to_string([token])
 
         # A hack to handle missing spaces to HF's Llama tokenizers
-        if token.startswith(SPIECE_UNDERLINE) or token == "<0x20>":
+        if (
+            type(token) is str
+            and token.startswith(SPIECE_UNDERLINE)
+            or token == "<0x20>"
+        ):
             return " " + string
 
         return string
