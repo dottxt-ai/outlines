@@ -24,7 +24,7 @@ class LlamaCpp:
 
 def llamacpp(model_path: str, device: Optional[str] = None, **model_kwargs) -> LlamaCpp:
     from llama_cpp import Llama
-
+    model_kwargs = model_kwargs["model_kwargs"]
     if device == "cuda":
         model_kwargs["n_gpu_layers"].setdefault(-1)
 
