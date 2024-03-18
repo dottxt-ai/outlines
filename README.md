@@ -329,6 +329,16 @@ answer = outlines.generate.text(model)(prompt, max_tokens=100)
 - 🐞 **Found a bug?** Open an [issue](https://github.com/outlines-dev/outlines/issues)
 
 
+## Cite Outlines
+
+```
+@article{willard2023efficient,
+  title={Efficient Guided Generation for LLMs},
+  author={Willard, Brandon T and Louf, R{\'e}mi},
+  journal={arXiv preprint arXiv:2307.09702},
+  year={2023}
+}
+```
 
 [contributors]: https://github.com/outlines-dev/outlines/graphs/contributors
 [contributors-badge]: https://img.shields.io/github/contributors/outlines-dev/outlines?style=flat-square&logo=github&logoColor=white&color=ECEFF4
