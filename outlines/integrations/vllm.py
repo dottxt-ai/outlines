@@ -100,9 +100,7 @@ class RegexLogitsProcessor:
 
         # Initialize the FSM state dictionary if the input_ids are empty, as this means
         # that the input_ids are the first tokens of the sequence.
-        if len(input_ids) == 0:
-            self._fsm_state = defaultdict(int)
-        else:
+        if len(input_ids) > 0:
             last_token = input_ids[-1]
             last_seq_id = hash(tuple(input_ids[:-1]))
             self._fsm_state[seq_id] = self.fsm.get_next_state(
