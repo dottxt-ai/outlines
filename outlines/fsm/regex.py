@@ -719,7 +719,7 @@ def create_fsm_index_end_to_end(
 
 
 re_llama_byte_token = re.compile(r"^<0x[0-9A-F]{2}>$")
-re_replacement_seq = re.compile(r"^�+$")
+re_replacement_seq = re.compile(r"^▁*�+$")
 
 
 # Copied from transformers.models.gpt2.tokenization_gpt2.bytes_to_unicode
