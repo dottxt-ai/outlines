@@ -36,6 +36,7 @@ If Outlines has been helpful to you, let us know on [Discord][discord] or give u
 <body>
 
 <div class="tweet-masonry">
+<blockquote class="twitter-tweet"><p lang="en" dir="ltr">Impressive implementation of a true regex / json / grammar guided text generation <a href="https://t.co/RX5RVYaVIx">pic.twitter.com/RX5RVYaVIx</a></p>&mdash; Rohan Paul (@rohanpaul_ai) <a href="https://twitter.com/rohanpaul_ai/status/1741099984299135403?ref_src=twsrc%5Etfw">December 30, 2023</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 
 <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Most underrated Github Repo in AI + LLM JSON guided Generation: <a href="https://t.co/lSB8KIet1H">https://t.co/lSB8KIet1H</a></p>&mdash; 🎙Jean-Louis Queguiner (@JiliJeanlouis) <a href="https://twitter.com/JiliJeanlouis/status/1736857292581093706?ref_src=twsrc%5Etfw">December 18, 2023</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 
