@@ -16,10 +16,21 @@ Outlines supports OpenAI, transformers, Mamba, llama.cpp and exllama2 but **you 
 pip install openai
 pip install transformers datasets accelerate
 pip install llama-cpp-python
+pip install exllamav2
 pip install mamba_ssm
 ```
 
 If you encounter any problem using Outlines with these libraries, take a look at their installation instructions. The installation of `openai` and `transformers` should be straightforward, but other libraries have specific hardware requirements.
+
+## Bleeding edge
+
+You can install the latest version of Outlines on the repository's `main` branch:
+
+```python
+pip install git+https://github.com/outlines-dev/outlines.git@main
+```
+
+This can be useful, for instance, when a fix has been merged but not yet released.
 
 ## Installing for development
 
