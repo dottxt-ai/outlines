@@ -108,3 +108,8 @@ answer = generator("What is 2+2?")
 print(answer)
 # 4
 ```
+
+
+!!! Warning "Compatibility"
+
+    Only models from the `transformers`  and `exllamav2 ` libraries are compatible with Beam Search.

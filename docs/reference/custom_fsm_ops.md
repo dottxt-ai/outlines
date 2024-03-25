@@ -1,22 +1,25 @@
 # Custom FSM Operations
 
-```RegexFSM.from_interegular_fsm``` leverages the flexibility of ```interegular.FSM``` to use the available operations in ```interegular```.
+Outlines is fast because it compiles regular expressions into an index ahead of inference. To do so we use the equivalence between regular expressions and Finite State Machines (FSMs), and the library [interegular](https://github.com/MegaIng/interegular) to perform the translation.
 
-## Examples
+Alternatively, one can pass a FSM built using `integular` directly to structure the generation.
 
-### ```difference```
+## Example
 
-Returns an FSM which recognises only the strings recognised by the first FSM in the list, but none of the others.
+### Using the `difference` operation
+
+In the following example we build a fsm which recognizes only the strings valid to the first regular expression but not the second. In particular, it will prevent the words "pink" and "elephant" from being generated:
 
 ```python
+import interegular
+from outlines import models, generate
+
+
 list_of_strings_pattern = """\["[^"\s]*"(?:,"[^"\s]*")*\]"""
 pink_elephant_pattern = """.*(pink|elephant).*"""
 
 list_of_strings_fsm = interegular.parse_pattern(list_of_strings_pattern).to_fsm()
 pink_elephant_fsm = interegular.parse_pattern(pink_elephant_pattern).to_fsm()
-
-list_of_strings_fsm.accepts('["a","pink","elephant"]')
-# True
 
 difference_fsm = list_of_strings_fsm - pink_elephant_fsm
 
@@ -24,60 +27,11 @@ difference_fsm_fsm.accepts('["a","pink","elephant"]')
 # False
 difference_fsm_fsm.accepts('["a","blue","donkey"]')
 # True
+
+
+model = models.transformers("mistralai/Mistral-7B-Instruct-v0.2")
+generator = generate.fsm(model, difference_fsm)
+response = generator("Don't talk about pink elephants")
 ```
 
-### ```union```
-
-Returns a finite state machine which accepts any sequence of symbols that is accepted by either self or other.
-
-```python
-list_of_strings_pattern = """\["[^"\s]*"(?:,"[^"\s]*")*\]"""
-tuple_of_strings_pattern = """\("[^"\s]*"(?:,"[^"\s]*")*\)"""
-
-list_of_strings_fsm = interegular.parse_pattern(list_of_strings_pattern).to_fsm()
-tuple_of_strings_fsm = interegular.parse_pattern(tuple_of_strings_pattern).to_fsm()
-
-list_of_strings_fsm.accepts('("a","pink","elephant")')
-# False
-
-union_fsm = list_of_strings_fsm|tuple_of_strings_fsm
-
-union_fsm.accepts('["a","pink","elephant"]')
-# True
-union_fsm.accepts('("a","blue","donkey")')
-# True
-```
-
-### ```intersection```
-
-Returns an FSM which accepts any sequence of symbols that is accepted by both of the original FSMs.
-
-```python
-list_of_strings_pattern = """\["[^"\s]*"(?:,"[^"\s]*")*\]"""
-pink_elephant_pattern = """.*(pink|elephant).*"""
-
-list_of_strings_fsm = interegular.parse_pattern(list_of_strings_pattern).to_fsm()
-pink_elephant_fsm = interegular.parse_pattern(pink_elephant_pattern).to_fsm()
-
-list_of_strings_fsm.accepts('["a","blue","donkey"]')
-# True
-
-intersection_fsm = list_of_strings_fsm & pink_elephant_fsm
-
-intersection_fsm.accepts('["a","pink","elephant"]')
-# True
-intersection_fsm.accepts('["a","blue","donkey"]')
-# False
-```
-
-_There are more operations available, we refer to https://github.com/MegaIng/interegular/blob/master/interegular/fsm.py._
-
-# Loading Custom FSM
-
-```python
-import outlines
-
-generator = outlines.generate.fsm(model, custom_fsm)
-
-response = generator(prompt)
-```
+To see the other operations available, consult [interegular's documentation](https://github.com/MegaIng/interegular/blob/master/interegular/fsm.py).
