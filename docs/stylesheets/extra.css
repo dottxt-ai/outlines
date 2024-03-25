@@ -1,6 +1,14 @@
+@font-face {
+  font-family: 'Source Code Pro Custom', monospace;
+  src: url(https://fonts.googleapis.com/css2?family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&display=swap);
+}
+
 :root > * {
   --md-default-bg-color: #FFFFFF;
+  --md-code-bg-color: #2E3440;
+  --md-code-fg-color: #FFFFFF;
   --md-text-font-family: "Inter";
+  --md-code-font: "Source Code Pro Custom";
 }
 
 .index-pre-code {
@@ -15,8 +23,15 @@
 
 .md-typeset pre>code {
   border-radius: 1rem;
-  box-shadow: 10px 5px 5px #EEEEEE;
+  box-shadow: 10px 5px 5px #D8DEE9;
+}
 
+.md-typeset code {
+  font-weight: 500;
+}
+
+.language-python {
+  background: #FFFFFF ! important
 }
 
 h1.title {
