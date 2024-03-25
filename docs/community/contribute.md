@@ -4,10 +4,11 @@ title: Contribute
 
 ## What contributions?
 
-- **New features**. Please start a new [discussion][discussions], or [come chat with us][discord] beforehand!
+- **Documentation** contributions are very valuable to us!
+- **Examples.** Show us what you did with Outlines :)
 - **Bug reports** with a minimum working examples in the [issue tracker][issues]
-- **Bug fixes** are wonderful.
-- **Documentation** are very valuable to us! The community will be forever grateful.
+- **Bug fixes** are always a pleasure to review.
+- **New features**. Please start a new [discussion][discussions], or [come chat with us][discord] beforehand!
 
 Note that the [issue tracker][issues] is only intended for actionable items. In doubt, open a [discussion][discussions] or [come talk to us][discord].
 
@@ -42,15 +43,6 @@ pip install -e .[test]
 pre-commit install
 ```
 
-#### Developing Serve Endpoint Via Docker
-
-```bash
-docker build -t outlines-serve .
-docker run -p 8000:8000 outlines-serve --model="mistralai/Mistral-7B-Instruct-v0.2"
-```
-
-This builds `outlines-serve` and runs on `localhost:8000` with the model `Mistral-7B-Instruct-v0.2`
-
 ### Before pushing your code
 
 Run the tests:
@@ -65,17 +57,31 @@ And run the code style checks:
 pre-commit run --all-files
 ```
 
-#### Performance testing
-
-Run benchmark tests:
+When modifying the code related to the index compilation, we kindly ask you to
+post benchmarks before and after your changes. You can run benchmarks using:
 
 ```python
 pytest --benchmark-only
 ```
 
-([other pytest-benchmark command line options](https://pytest-benchmark.readthedocs.io/en/latest/usage.html#commandline-options))
+### Contribute to the documentation
 
-### Open a Pull Request
+To work on the *documentation* you will need to install the related dependencies:
+
+```python
+pip install -r requirements-doc.txt
+```
+
+To build the documentation and serve it locally, run the following command in the repository's root folder:
+
+```python
+mkdocs serve
+```
+
+By following the instruction you will be able to view the documentation locally.
+It will be updated every time you make a change.
+
+## Open a Pull Request
 
 Create a new branch on your fork, commit and push the changes:
 
