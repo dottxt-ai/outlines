@@ -6,7 +6,7 @@ Outlines〰 is a Python library that allows you to use Large Language Model in a
 
 ## What models do you support?
 
-We support Openai, but the true power of Outlines〰 is unleashed with Open Source models available via the Transformers, llama.cpp, exllama2 and mamba_ssm libraries. If you want to build and maintain an integration with another library, [get in touch][discord].
+We support [Openai](reference/models/openai.md), but the true power of Outlines〰 is unleashed with Open Source models available via the [transformers](reference/models/transformers.md), [llama.cpp](reference/models/transformers.md), [exllama2](reference/models/exllama2.md) and [mamba_ssm](reference/models/mamba.md) libraries. If you want to build and maintain an integration with another library, [get in touch][discord].
 
 ## What are the main features?
 
@@ -47,6 +47,7 @@ We support Openai, but the true power of Outlines〰 is unleashed with Open Sour
 
 ## Why Outlines over alternatives?
 
+
 Outlines〰 is built at [.txt][.txt] by engineers with decades of experience in software engineering, machine learning (Bayesian Statistics and NLP), and compilers. [.txt][.txt] is a VC-backed company fully focused on the topic of structured generation and is committed to make the community benefit from its experience.
 
 We are also open source veterans and have authored/maintained many libraries over the years: the [Aesara][aesara]{:target="_blank"} and [Pythological][pythological]{:target="_blank"} ecosystems, [Blackjax][blackjax]{:target="_blank"} and [Hy][hy]{:target="_blank"} among many others.
@@ -54,6 +55,7 @@ We are also open source veterans and have authored/maintained many libraries ove
 
 Outlines does not use unnecessary abstractions that tend to get in your way. We have a laser focus on reliable text generation with LLMs, a clear roadmap to push the state of the art in this area and a commitment to clean and robust code.
 
+And last but not least, unlike alternatives, Outlines' structured generation introduces **no overhead** during inference.
 
 ## Philosophy
 
@@ -62,7 +64,7 @@ more flexible replacement for the `generate` method in the
 [transformers](https://github.com/huggingface/transformers) library.
 
 **Outlines** 〰 helps developers *structure text generation* to build robust
-interfaces with external systems. Provides generation methods that
+interfaces with external systems. It provides generation methods that
 guarantee that the output will match a regular expressions, or follow
 a JSON schema.
 
@@ -76,7 +78,7 @@ and generation can be interleaved with control flow, conditionals, custom Python
 functions and calls to other libraries.
 
 **Outlines** 〰 is *compatible with every auto-regressive model*. It only interfaces with models
-via the next-token logits.
+via the next-token logits distribution.
 
 
 ## Acknowledgements

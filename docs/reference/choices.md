@@ -1,14 +1,16 @@
 # Multiple choices
 
-Choice between different options
-In some cases we know the output is to be chosen between different options. We can restrict the completion’s output to these choices using the is_in keyword argument:
+Oultines allows you to make sure the generated text is chosen between different options:
 
 ```python
-import outlines.models as models
+from outlines import models, generate
 
-complete = models.openai("gpt-3.5-turbo")
-answer = complete(
-    "Pick the odd word out: skirt, dress, pen, jacket",
-    is_in=["skirt", "dress", "pen", "jacket"]
-)
+model = models.transformers("mistralai/Mistral-7B-v0.1")
+generator = generate.choice(model, ["skirt", "dress", "pen", "jacket"])
+answer = generator("Pick the odd word out: skirt, dress, pen, jacket")
+
 ```
+
+!!! Note "Performance"
+
+    `generation.choice` computes an index that helps Outlines guide generation. This can take some time, but only needs to be done once. If you want to generate from the same list of choices several times make sure that you only call `generate.choice` once.

@@ -1,4 +1,4 @@
-# Make the LLM follow a JSON Schema
+# JSON structured generation
 
 Outlines can make any open source model return a JSON object that follows a structure that is specified by the user. This is useful whenever we want the output of the model to be processed by code downstream: code does not understand natural language but rather the structured language it has been programmed to understand.
 
@@ -16,8 +16,7 @@ Outlines can infer the structure of the output from a Pydantic model. The result
 ```python
 from pydantic import BaseModel
 
-from outlines import models
-from outlines import text
+from outlines import models, generate
 
 
 class User(BaseModel):
@@ -27,19 +26,58 @@ class User(BaseModel):
 
 
 model = models.transformers("mistralai/Mistral-7B-v0.1")
-generator = text.generate.json(model, User)
-result = generator("Create a user profile with the fields name, last_name and id")
+generator = generate.json(model, User)
+result = generator(
+    "Create a user profile with the fields name, last_name and id"
+)
 print(result)
 # User(name="John", last_name="Doe", id=11)
 ```
 
-!!! warning "JSON and whitespaces"
+!!! Note "JSON and whitespaces"
 
     By default Outlines lets model choose the number of linebreaks and white spaces used to structure the JSON. Small models tend to struggle with this, in which case we recommend to set the value of the parameter `whitespace_pattern` to the empty string:
 
     ```python
-    generator = text.generate.json(model, User, whitespace_pattern="")
+    generator = generate.json(model, User, whitespace_pattern="")
     ```
+
+!!! Note "Performance"
+
+    `generation.json` computes an index that helps Outlines guide generation. This can take some time, but only needs to be done once. If you want to generate several times with the same schema make sure that you only call `generate.json` once.
+
+
+## Using a JSON Schema
+
+Instead of a Pydantic model you can pass a string that represents a [JSON Schema](https://json-schema.org/) specification to `generate.json`:
+
+```python
+from pydantic import BaseModel
+
+from outlines import models
+from outlines import text
+
+model = models.transformers("mistralai/Mistral-7B-v0.1")
+
+schema = """
+{
+  "title": "User",
+  "type": "object",
+  "properties": {
+    "name": {"type": "string"},
+    "last_name": {"type": "string"},
+    "id": {"type": "integer"}
+  }
+}
+"""
+
+generator = generate.json(model, schema)
+result = generator(
+    "Create a user profile with the fields name, last_name and id"
+)
+print(result)
+# User(name="John", last_name="Doe", id=11)
+```
 
 ## From a function's signature
 

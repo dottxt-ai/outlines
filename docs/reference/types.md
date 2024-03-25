@@ -1,13 +1,22 @@
 # Type constraints
 
-We can ask completions to be restricted to valid integers or floating-point numbers using the `type` keyword argument, respectively with the “int” or “float” value:
+We can ask completions to be restricted to valid python types:
 
 ```python
-import outlines.models as models
+from outlines import models, generate
 
-complete = models.openai("gpt-3.5-turbo")
-answer = complete(
-    "When I was 6 my sister was half my age. Now I’m 70 how old is my sister?",
-    type="int"
-)
+model = models.transformers("mistralai/Mistral-7B-v0.1")
+generator = generate.format(model, int)
+answer = generator("When I was 6 my sister was half my age. Now I’m 70 how old is my sister?")
+print(answer)
+# 67
 ```
+
+The following types are currently available:
+
+- int
+- float
+- bool
+- datetime.date
+- datetime.time
+- datetime.datetime

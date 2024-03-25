@@ -1,6 +1,10 @@
 # Text generation
 
-Outlines provides a unified interface to generate text with many language models, API-based and local:
+Outlines provides a unified interface to generate text with many language models, API-based and local. The same pattern is used throughout the library:
+
+1. Instantiate a generator by calling `outlines.generate.text` with the model to be used.
+2. Call the generator with the prompt and (optionally) some generation parameters.
+
 
 ```python
 from outlines import models, generate
@@ -14,40 +18,7 @@ generator = generate.text(model)
 answer = generator("What is 2+2?")
 ```
 
-We generate text in two steps:
-
-1. Instantiate a generator with the model you want to use
-2. Call the generator with the prompt
-
-
-## Limit the number of tokens generated
-
-To limit the number of tokens generated you can pass the `max_tokens` positional argument to the generator:
-
-```python
-from outlines import models, generate
-
-model = models.transformers("mistralai/Mistral-7B-v0.1")
-generator = generate.text(model)
-
-answer = generator("What is 2+2?", 5)
-answer = generator("What is 2+2?", max_tokens=5)
-```
-
-## Stop when a given string is found
-
-You can also ask the model to stop generating text after a given string has been generated, for instance a period or a line break. You can pass a string or a line of string for the `stop_at` argument:
-
-
-```python
-from outlines import models, generate
-
-model = models.transformers("mistralai/Mistral-7B-v0.1")
-generator = generate.text(model)
-
-answer = generator("What is 2+2?", stop_at=".")
-answer = generator("What is 2+2?", stop_at=[".", "\n"])
-```
+By default Outlines uses the multinomial sampler with `temperature=1`. See [this section](samplers.md) to learn how to use different samplers.
 
 ## Streaming
 
@@ -65,17 +36,52 @@ for token in tokens:
     print(token)
 ```
 
-## Use a different sampler
+## Parameters
 
-Outlines uses the multinomial sampler by default. To specify another sampler, for instance the greedy sampler you need to specify it when instantiating the generator:
+### Limit the number of tokens generated
+
+To limit the number of tokens generated you can pass the `max_tokens` positional argument to the generator:
 
 ```python
 from outlines import models, generate
-from outlines.generate.samplers import greedy
-
 
 model = models.transformers("mistralai/Mistral-7B-v0.1")
-generator = generate.text(model, sampler=greedy)
+generator = generate.text(model)
 
-tokens = generator("What is 2+2?")
+answer = generator("What is 2+2?", 5)
+answer = generator("What is 2+2?", max_tokens=5)
+```
+
+### Stop after a given string is generated
+
+You can also ask the model to stop generating text after a given string has been generated, for instance a period or a line break. You can pass a string or a line of string for the `stop_at` argument:
+
+
+```python
+from outlines import models, generate
+
+model = models.transformers("mistralai/Mistral-7B-v0.1")
+generator = generate.text(model)
+
+answer = generator("What is 2+2?", stop_at=".")
+answer = generator("What is 2+2?", stop_at=[".", "\n"])
+```
+
+*The stopping string will be included in the response.*
+
+
+### Seed the generation
+
+It can be useful to seed the generation in order to get reproducible results:
+
+```python
+import torch
+from outlines import models, generate
+
+model = models.transformers("mistralai/Mistral-7B-v0.1")
+
+rng = torch.Generator(device="cuda")
+rng.manual_seed(789001)
+
+answer = generator("What is 2+2?", rng=rng)
 ```

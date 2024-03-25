@@ -45,20 +45,6 @@ extra:
   analytics:
     provider: google
     property: !ENV GOOGLE_ANALYTICS_KEY
-    feedback:
-      title: Was this page helpful?
-      ratings:
-        - icon: material/thumb-up-outline
-          name: This page was helpful
-          data: 1
-          note: >-
-            Thanks for your feedback!
-        - icon: material/thumb-down-outline
-          name: This page could be improved
-          data: 0
-          note: >-
-            Thanks for your feedback! Help us improve this page by
-            using our <a href="..." target="_blank" rel="noopener">feedback form</a>.
 
 # Extensions
 markdown_extensions:
@@ -115,14 +101,16 @@ nav:
       - Playing chess: cookbook/models_playing_chess.md
   - Docs:
     - reference/index.md
-    - Text generation:
-        - Free text: reference/text.md
-        - Classification: reference/choices.md
-        - JSON: reference/json.md
-        - Grammar: reference/cfg.md
-        - Regex: reference/regex.md
-        - Types: reference/types.md
+    - Generation:
+        - Text: reference/text.md
         - Samplers: reference/samplers.md
+    - Structured generation:
+        - Classification: reference/choices.md
+        - Regex: reference/regex.md
+        - Type constraints: reference/types.md
+        - JSON (function calling): reference/json.md
+        - JSON mode: reference/json_mode.md
+        - Grammar: reference/cfg.md
         - Custom FSM operations: reference/custom_fsm_ops.md
     - Utilities:
         - Serve with vLLM: reference/vllm.md
@@ -131,6 +119,9 @@ nav:
     - Models:
         - OpenAI: reference/models/openai.md
         - Llama.cpp: reference/models/llamacpp.md
+        - Transformers: reference/models/transformers.md
+        - ExllamaV2: reference/models/exllamav2.md
+        - Mamba: reference/models/mamba.md
 
   - API Reference:
     - api/index.md
