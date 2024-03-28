@@ -43,7 +43,7 @@ def customer_support(request):
 Outlines provides a shortcut to do multi-label classification, using the `outlines.generate.choice` function to initialize a generator. Outlines uses multinomial sampling by default, here we will use the greedy sampler to get the label with the highest probability:
 
 ```python
-from outlines.generate.samplers import greedy
+from outlines.samplers import greedy
 
 generator = outlines.generate.choice(model, ["URGENT", "STANDARD"], sampler=greedy)
 ```
