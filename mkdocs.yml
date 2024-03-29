@@ -113,10 +113,11 @@ nav:
         - Grammar: reference/cfg.md
         - Custom FSM operations: reference/custom_fsm_ops.md
     - Utilities:
-        - Serve with vLLM: reference/vllm.md
+        - Serve with vLLM: reference/serve/vllm.md
         - Prompt templating: reference/prompting.md
         - Outlines functions: reference/functions.md
     - Models:
+        - vLLM: reference/models/vllm.md
         - OpenAI: reference/models/openai.md
         - Llama.cpp: reference/models/llamacpp.md
         - Transformers: reference/models/transformers.md
