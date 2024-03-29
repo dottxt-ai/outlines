@@ -207,7 +207,7 @@ def test_match_number(pattern, does_match):
                 "properties": {"count": {"title": "Count", "type": "integer"}},
                 "required": ["count"],
             },
-            '\\{[\\n ]*"count"[\\n ]*:[\\n ]*(0|[1-9][0-9]*)[\\n ]*\\}',
+            '\\{[\\n ]*"count"[\\n ]*:[\\n ]*(-)?(0|[1-9][0-9]*)[\\n ]*\\}',
             [('{\n  "count": 100\n}', True)],
         ),
         # array
