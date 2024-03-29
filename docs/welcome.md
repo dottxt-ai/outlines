@@ -45,7 +45,7 @@ We support [Openai](reference/models/openai.md), but the true power of Outlinesã
     [:octicons-arrow-right-24: Learn more](reference/prompting.md)
 </div>
 
-## Why Outlines over alternatives?
+## Why use Outlines?
 
 
 Outlinesã€° is built at [.txt][.txt] by engineers with decades of experience in software engineering, machine learning (Bayesian Statistics and NLP), and compilers. [.txt][.txt] is a VC-backed company fully focused on the topic of structured generation and is committed to make the community benefit from its experience.
@@ -56,6 +56,62 @@ We are also open source veterans and have authored/maintained many libraries ove
 Outlines does not use unnecessary abstractions that tend to get in your way. We have a laser focus on reliable text generation with LLMs, a clear roadmap to push the state of the art in this area and a commitment to clean and robust code.
 
 And last but not least, unlike alternatives, Outlines' structured generation introduces **no overhead** during inference.
+
+## Who is using Outlines?
+
+Hundreds of organisations and the main LLM serving frameworks ([vLLM][vllm], [TGI][tgi], [LoRAX][lorax], [xinference][xinference]) are using Outlines. Some of the prominent companies and organizations that are using Outlines include:
+
+<head>
+  <style>
+  .row {
+      display: inline-block;
+      width: 100%;
+      margin-bottom: 50px;
+      margin-top: 0px !important;
+      break-inside: avoid;
+  }
+
+  /* Create two equal columns that sits next to each other */
+  .column {
+      column-count: 3;
+      column-gap: 20px;
+      padding: 20px;
+  }
+
+  </style>
+</head>
+<body>
+
+<div class="column">
+  <div class="row"><img src="../logos/amazon.png" width="200"></div>
+  <div class="row"><img src="../logos/apple.png" width="200"></div>
+  <div class="row"><img src="../logos/best_buy.png" width="200"></div>
+  <div class="row"><img src="../logos/canoe.png" width="200"></div>
+  <div class="row"><img src="../logos/cisco.png" width="200"></div>
+  <div class="row"><img src="../logos/dassault_systems.png" width="200"></div>
+  <div class="row"><img src="../logos/databricks.png" width="200"></div>
+  <div class="row"><img src="../logos/datadog.png" width="200"></div>
+  <div class="row"><img src="../logos/dbt_labs.png" width="200"></div>
+  <div class="row"><img src="../assets/images/dottxt.png" width="200"></div>
+  <div class="row"><img src="../logos/gladia.jpg" width="200"></div>
+  <div class="row"><img src="../logos/harvard.png" width="200"></div>
+  <div class="row"><img src="../logos/hf.png" width="200"></div>
+  <div class="row"><img src="../logos/johns_hopkins.png" width="200"></div>
+  <div class="row"><img src="../logos/meta.png" width="200"></div>
+  <div class="row"><img src="../logos/mit.png" width="200"></div>
+  <div class="row"><img src="../logos/mount_sinai.png" width="200"></div>
+  <div class="row"><img src="../logos/nyu.png" width="200"></div>
+  <div class="row"><img src="../logos/safran.png" width="200"></div>
+  <div class="row"><img src="../logos/salesforce.png" width="200"></div>
+  <div class="row"><img src="../logos/shopify.png" width="200"></div>
+  <div class="row"><img src="../logos/smithsonian.png" width="200"></div>
+  <div class="row"><img src="../logos/tinder.png" width="200"></div>
+  <div class="row"><img src="../logos/upenn.png" width="200"></div>
+</div>
+
+</body>
+
+Organizations are included either because they use Outlines as a dependency in a public repository, or because of direct communication between members of the Outlines team and employees at these organizations.
 
 ## Philosophy
 
@@ -85,7 +141,6 @@ via the next-token logits distribution.
 
 <div class="grid" markdown>
 
-<figure markdown>
 
 <figure markdown>
   <a href="http://www.dottxt.co">
@@ -93,6 +148,7 @@ via the next-token logits distribution.
   </a>
 </figure>
 
+<figure markdown>
   <a href="https://www.normalcomputing.ai">
   ![Normal Computing logo](assets/images/normal_computing.jpg){ width="150" }
   </a>
@@ -108,3 +164,7 @@ Outlines was originally developed at [@NormalComputing](https://twitter.com/Norm
 [pythological]: https://github.com/pythological
 [hy]: https://hylang.org/
 [.txt]: https://dottxt.co
+[vllm]: https://github.com/vllm-project/vllm
+[tgi]: https://github.com/huggingface/text-generation-inference
+[lorax]: https://github.com/predibase/lorax
+[xinference]: https://github.com/xorbitsai/inference
