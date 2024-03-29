@@ -62,7 +62,7 @@ def test_from_pydantic():
     [
         ({"integer": "0"}, True),
         ({"integer": "1"}, True),
-        ({"integer": "-1"}, False),
+        ({"integer": "-1"}, True),
         ({"integer": "01"}, False),
         ({"integer": "1.3"}, False),
         ({"integer": "t"}, False),
