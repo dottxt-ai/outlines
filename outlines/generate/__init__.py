@@ -1,6 +1,7 @@
 from .api import SequenceGenerator
 from .cfg import cfg
 from .choice import choice
+from .continuous import continuous
 from .format import format
 from .fsm import fsm
 from .json import json
