@@ -44,6 +44,7 @@ if TYPE_CHECKING:
 class LlamaCppTokenizer:
     def __init__(self, model: "Llama"):
         self.eos_token_id = model.token_eos()
+        self.eos_token = model.tokenizer().decode([self.eos_token_id])
         self.pad_token_id = self.eos_token_id
         self.special_tokens: Set[int] = set()
 
@@ -51,6 +52,8 @@ class LlamaCppTokenizer:
         for t in range(model.n_vocab()):
             token_piece = model.tokenizer().decode([t])
             self.vocabulary[token_piece] = t
+
+        self.decode = model.tokenizer().decode
 
     def convert_token_to_string(self, token: str) -> str:
         return token

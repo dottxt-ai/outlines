@@ -6,7 +6,7 @@ Outlines〰 is a Python library that allows you to use Large Language Model in a
 
 ## What models do you support?
 
-We support [Openai](reference/models/openai.md), but the true power of Outlines〰 is unleashed with Open Source models available via the [transformers](reference/models/transformers.md), [llama.cpp](reference/models/transformers.md), [exllama2](reference/models/exllama2.md) and [mamba_ssm](reference/models/mamba.md) libraries. If you want to build and maintain an integration with another library, [get in touch][discord].
+We support [Openai](reference/models/openai.md), but the true power of Outlines〰 is unleashed with Open Source models available via the [transformers](reference/models/transformers.md), [llama.cpp](reference/models/transformers.md), [exllama2](reference/models/exllamav2.md) and [mamba_ssm](reference/models/mamba.md) libraries. If you want to build and maintain an integration with another library, [get in touch][discord].
 
 ## What are the main features?
 
@@ -25,7 +25,7 @@ We support [Openai](reference/models/openai.md), but the true power of Outlines�
 
     Deploy a LLM service using Outlines' JSON structured generation and vLLM
 
-    [:octicons-arrow-right-24: Deploy outlines](reference/vllm.md)
+    [:octicons-arrow-right-24: Deploy outlines](reference/serve/vllm.md)
 
 
 -   :material-regex:{ .lg .middle } __Make LLMs follow a Regex__
@@ -59,7 +59,7 @@ And last but not least, unlike alternatives, Outlines' structured generation int
 
 ## Who is using Outlines?
 
-Hundreds of organisations and the main LLM serving frameworks ([vLLM][vllm], [TGI][tgi], [LoRAX][lorax], [xinference][xinference], [SGLang](sglang)) are using Outlines. Some of the prominent companies and organizations that are using Outlines include:
+Hundreds of organisations and the main LLM serving frameworks ([vLLM][vllm], [TGI][tgi], [LoRAX][lorax], [xinference][xinference], [SGLang][sglang]) are using Outlines. Some of the prominent companies and organizations that are using Outlines include:
 
 <head>
   <style>

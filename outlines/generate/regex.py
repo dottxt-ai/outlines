@@ -3,7 +3,7 @@ from functools import singledispatch
 from outlines.fsm.guide import RegexGuide
 from outlines.generate.api import SequenceGenerator, SequenceGeneratorAdapter
 from outlines.models import OpenAI
-from outlines.models.llamacpp import LlamaCpp, LlamaSequenceGenerator
+from outlines.models.llamacpp import LlamaCpp
 from outlines.models.vllm import VLLM
 from outlines.samplers import Sampler, multinomial
 
@@ -45,16 +45,8 @@ def regex_llamacpp(
 ):
     from outlines.integrations.llamacpp import RegexLogitsProcessor
 
-    if not isinstance(sampler, multinomial):
-        raise NotImplementedError(
-            r"The llama.cpp integration does not currently support any other sampling algorithm "
-            + "than the multinomial sampler."
-        )
-
     logits_processor = RegexLogitsProcessor(regex_str, llm=model.model)
-    generator = LlamaSequenceGenerator(logits_processor=logits_processor, model=model)
-
-    return generator
+    return SequenceGeneratorAdapter(model, logits_processor, sampler)
 
 
 @regex.register(VLLM)
@@ -66,9 +58,7 @@ def regex_vllm(
     from outlines.integrations.vllm import RegexLogitsProcessor
 
     logits_processor = RegexLogitsProcessor(regex_str, model.model)
-    generator = SequenceGeneratorAdapter(model, logits_processor, sampler)
-
-    return generator
+    return SequenceGeneratorAdapter(model, logits_processor, sampler)
 
 
 @regex.register(OpenAI)

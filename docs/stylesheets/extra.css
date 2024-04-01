@@ -23,6 +23,7 @@
   text-align: left;
 }
 
+
 .md-typeset pre>code {
   border-radius: .2rem;
   box-shadow: 10px 5px 5px #D8DEE9;
@@ -34,7 +35,25 @@
   font-weight: 500;
 }
 
+.md-typeset strong > code {
+  background: #ECEFF4;
+  color: #000000;
+  font-weight: 500;
+}
+
+.md-content p > code {
+  background: #ECEFF4;
+  color: #000000;
+  font-weight: 500;
+}
+
 .md-typeset td > code {
+  background: #ECEFF4;
+  color: #000000;
+  font-weight: 500;
+}
+
+.md-typeset li > code {
   background: #ECEFF4;
   color: #000000;
   font-weight: 500;

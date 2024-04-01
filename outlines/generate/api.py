@@ -379,7 +379,6 @@ class SequenceGenerator:
 class GenerationParameters:
     """Generation parameters used in Outlines' public API."""
 
-    prompts: Union[str, List[str]]
     max_tokens: Optional[int]
     stop_at: Optional[Union[str, List[str]]]
     seed: Optional[int]
@@ -434,7 +433,6 @@ class SequenceGeneratorAdapter:
 
     def prepare_generation_parameters(
         self,
-        prompts: Union[str, List[str]],
         max_tokens: Optional[int],
         stop_at: Optional[Union[str, List[str]]],
         seed: Optional[int],
@@ -443,13 +441,30 @@ class SequenceGeneratorAdapter:
             stop_at = [stop_at]
 
         generation_params = GenerationParameters(
-            prompts,
             max_tokens,
             stop_at,
             seed,
         )
 
         return generation_params
+
+    def format_sequence(self, sequence: str) -> FormattedOutput:
+        """Translate the generated sequence to another type.
+
+        This method is for instance overridden when generating JSON to either
+        return a dictionnary or a Pydantic model.
+
+        Parameters
+        ----------
+        sequence
+            A generated sequences.
+
+        Returns
+        -------
+        The formatted sequence.
+
+        """
+        return sequence
 
     def __call__(
         self,
@@ -460,15 +475,27 @@ class SequenceGeneratorAdapter:
         **model_specific_params,
     ):
         """Generate text from a prompt of list of prompts."""
+
+        def format(sequences):
+            """Apply formatting to every string in a completion."""
+            if isinstance(sequences, list):
+                return [format(sequence) for sequence in sequences]
+            else:
+                return self.format_sequence(sequences)
+
         generation_params = self.prepare_generation_parameters(
-            prompts, max_tokens, stop_at, seed
+            max_tokens, stop_at, seed
         )
-        return self.model.generate(
+
+        completions = self.model.generate(
+            prompts,
             generation_params,
             self.logits_processor,
             self.sampling_params,
             **model_specific_params,
         )
+
+        return format(completions)
 
     def stream(
         self,
@@ -480,9 +507,10 @@ class SequenceGeneratorAdapter:
     ):
         """Return a text generator from a prompt or a list of prompts."""
         generation_params = self.prepare_generation_parameters(
-            prompts, max_tokens, stop_at, seed
+            max_tokens, stop_at, seed
         )
         return self.model.stream(
+            prompts,
             generation_params,
             self.logits_processor,
             self.sampling_params,
