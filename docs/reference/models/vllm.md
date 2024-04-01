@@ -3,7 +3,7 @@
 
 !!! Note "Installation"
 
-    You need to install the `vllm` library to use the vLLM integration.
+    You need to install the `vllm` library to use the vLLM integration. See the [installation section](#installation) for instructions to install vLLM for CPU or ROCm.
 
 ## Load the model
 
@@ -32,7 +32,7 @@ Models are loaded from the [HuggingFace hub](https://huggingface.co/).
 
 !!! Warning "Device"
 
-    vLLM models can only be loaded on GPU.
+    The default installation of vLLM only allows to load models on GPU. See the [installation instructions](#installation) to run models on CPU.
 
 
 You can pass any parameter that you would normally pass to `vllm.LLM`, as keyword arguments:
@@ -98,7 +98,7 @@ model.load_lora(None)  # Unload LoRA adapter
 
 ## Generate text
 
-In addition to the parameters described in the [text generation section](text.md) you can pass an instance of `SamplingParams` directly to any generator via the `sampling_params` keyword argument:
+In addition to the parameters described in the [text generation section](../text.md) you can pass an instance of `SamplingParams` directly to any generator via the `sampling_params` keyword argument:
 
 ```python
 from vllm.sampling_params import SamplingParams
@@ -108,11 +108,11 @@ from outlines import models, generate
 model = models.vllm("mistralai/Mistral-7b-v0.1")
 generator = generate.text(model)
 
-params = SamplingParams(n=2, length_penalty=1., min_tokens=2)
+params = SamplingParams(n=2, frequence_penalty=1., min_tokens=2)
 answer = generator("A prompt", sampling_params=params)
 ```
 
-This also works with `generate.regex`, `generate.json`, `generate.cfg`, `generate.format` and `generate.choice`.
+This also works with generators built with `generate.regex`, `generate.json`, `generate.cfg`, `generate.format` and `generate.choice`.
 
 !!! Note
 
@@ -143,3 +143,74 @@ This also works with `generate.regex`, `generate.json`, `generate.cfg`, `generat
 | `min_tokens` | `int` | Minimum number of tokens to generate per output sequence before EOS or stop_token_ids can be generated | `0` |
 | `skip_special_tokens` | `bool` | Whether to skip special tokens in the output. | `True` |
 | `spaces_between_special_tokens` | `bool` |  Whether to add spaces between special tokens in the output.  Defaults to True. | `True` |
+
+### Streaming
+
+!!! Warning
+
+    Streaming is not available for the offline vLLM integration.
+
+
+## Installation
+
+By default the vLLM library is installed with pre-commpiled C++ and CUDA binaries and will only run on GPU:
+
+```python
+pip install vllm
+```
+
+### CPU
+
+You need to have the `gcc` compiler installed on your system. Then you will need to install vLLM from source. First clone the repository:
+
+```bash
+git clone https://github.com/vllm-project/vllm.git
+cd vllm
+```
+
+Install the Python packages needed for the installation:
+
+```bash
+pip install --upgrade pip
+pip install wheel packaging ninja setuptools>=49.4.0 numpy
+pip install -v -r requirements-cpu.txt --extra-index-url https://download.pytorch.org/whl/cpu
+```
+
+and finally run:
+
+```bash
+VLLM_TARGET_DEVICE=cpu python setup.py install
+```
+
+See the [vLLM documentation][vllm-install-cpu] for more details, alternative installation methods (Docker) and performance tips.
+
+### ROCm
+
+
+You will need to install vLLM from source. First install Pytorch on ROCm:
+
+```bash
+pip install torch==2.2.0.dev20231206+rocm5.7 --index-url https://download.pytorch.org/whl/nightly/rocm5.7 # tested version
+```
+
+You will then need to install flash attention for ROCm following [these instructions][rocm-flash-attention]. You can then install `xformers=0.0.23` and apply the patches needed to adapt Flash Attention for ROCm:
+
+```bash
+pip install xformers==0.0.23 --no-deps
+bash patch_xformers.rocm.sh
+```
+
+And finally build vLLM:
+
+```bash
+cd vllm
+pip install -U -r requirements-rocm.txt
+python setup.py install # This may take 5-10 minutes.
+```
+
+See the [vLLM documentation][vllm-install-rocm] for alternative installation methods (Docker).
+
+
+[vllm-install-cpu]: https://docs.vllm.ai/en/latest/getting_started/cpu-installation.html
+[vllm-install-rocm]: https://docs.vllm.ai/en/latest/getting_started/amd-installation.html
+[rocm-flash-attention]: https://github.com/ROCm/flash-attention/tree/flash_attention_for_rocm#amd-gpurocm-support

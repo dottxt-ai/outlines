@@ -1,5 +1,5 @@
 import dataclasses
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, List, Optional, Union
 
 from outlines.generate.api import GenerationParameters, SamplingParameters
 
@@ -24,8 +24,9 @@ class VLLM:
 
     def generate(
         self,
+        prompts: Union[str, List[str]],
         generation_parameters: GenerationParameters,
-        logits_procesor,
+        logits_processor,
         sampling_parameters: SamplingParameters,
         *,
         sampling_params: Optional["SamplingParams"] = None,
@@ -34,6 +35,8 @@ class VLLM:
 
         Arguments
         ---------
+        prompts
+            A prompt or list of prompts.
         generation_parameters
             An instance of `GenerationParameters` that contains the prompt,
             the maximum number of tokens, stop sequences and seed. All the
@@ -46,7 +49,7 @@ class VLLM:
             in Outlines.
         samplng_params
             An instance of `vllm.sampling_params.SamplingParams`. The values
-            passed via this dataclass superseded the values of the parameters
+            passed via this dataclass supersede the values of the parameters
             in `generation_parameters` and `sampling_parameters`. See the
             vLLM documentation for more details: https://docs.vllm.ai/en/latest/dev/sampling_params.html.
 
@@ -64,7 +67,7 @@ class VLLM:
         if sampling_params is None:
             sampling_params = SamplingParams()
 
-        prompts, max_tokens, stop_at, seed = dataclasses.astuple(generation_parameters)
+        max_tokens, stop_at, seed = dataclasses.astuple(generation_parameters)
 
         # We only update the values in `sampling_params` if they
         # are specified by the user when calling the generator.
@@ -76,7 +79,7 @@ class VLLM:
             sampling_params.seed = seed
 
         sampling_params.logits_processors = (
-            [logits_procesor] if logits_procesor is not None else []
+            [logits_processor] if logits_processor is not None else []
         )
 
         sampler, num_samples, top_p, top_k, temperature = dataclasses.astuple(

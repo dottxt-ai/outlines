@@ -19,7 +19,7 @@ def model():
 @pytest.mark.parametrize(
     "generator_type,params", ((generate.text, []), (generate.regex, ("[0-9]",)))
 )
-def test_outlines_generation_api(model, generator_type, params):
+def test_vllm_generation_api(model, generator_type, params):
     generator = generator_type(model, *params)
 
     res = generator("test")

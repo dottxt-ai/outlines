@@ -99,6 +99,7 @@ filterwarnings = [
 
 [tool.mypy]
 exclude=["examples"]
+enable_incomplete_feature = ["Unpack"]
 
 [[tool.mypy.overrides]]
 module = [
