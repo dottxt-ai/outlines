@@ -100,6 +100,7 @@ Hundreds of organisations and the main LLM serving frameworks ([vLLM][vllm], [TG
   <div class="row"><img src="../logos/meta.png" width="200"></div>
   <div class="row"><img src="../logos/mit.png" width="200"></div>
   <div class="row"><img src="../logos/mount_sinai.png" width="200"></div>
+  <div class="row"><img src="../logos/nvidia.png" width="200"></div>
   <div class="row"><img src="../logos/nyu.png" width="200"></div>
   <div class="row"><img src="../logos/safran.png" width="200"></div>
   <div class="row"><img src="../logos/salesforce.png" width="200"></div>
