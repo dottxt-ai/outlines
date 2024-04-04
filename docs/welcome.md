@@ -59,7 +59,7 @@ And last but not least, unlike alternatives, Outlines' structured generation int
 
 ## Who is using Outlines?
 
-Hundreds of organisations and the main LLM serving frameworks ([vLLM][vllm], [TGI][tgi], [LoRAX][lorax], [xinference][xinference]) are using Outlines. Some of the prominent companies and organizations that are using Outlines include:
+Hundreds of organisations and the main LLM serving frameworks ([vLLM][vllm], [TGI][tgi], [LoRAX][lorax], [xinference][xinference], [SGLang](sglang)) are using Outlines. Some of the prominent companies and organizations that are using Outlines include:
 
 <head>
   <style>
@@ -169,3 +169,4 @@ Outlines was originally developed at [@NormalComputing](https://twitter.com/Norm
 [tgi]: https://github.com/huggingface/text-generation-inference
 [lorax]: https://github.com/predibase/lorax
 [xinference]: https://github.com/xorbitsai/inference
+[sglang]: https://github.com/sgl-project/sglang/
