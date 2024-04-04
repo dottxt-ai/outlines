@@ -152,7 +152,7 @@ class JSONLogitsProcessor(RegexLogitsProcessor):
 
 
 class CFGLogitsProcessor:
-    """Bias vLLM generation based on a regular expression.
+    """Bias vLLM generation based on a context-free grammar.
 
     Attributes
     ----------
