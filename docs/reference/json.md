@@ -55,7 +55,7 @@ Instead of a Pydantic model you can pass a string that represents a [JSON Schema
 from pydantic import BaseModel
 
 from outlines import models
-from outlines import text
+from outlines import generate
 
 model = models.transformers("mistralai/Mistral-7B-v0.1")
 
@@ -85,13 +85,13 @@ Outlines can infer the structure of the output from the signature of a function.
 
 ```python
 from outlines import models
-from outlines import text
+from outlines import generate
 
 def add(a: int, b: int):
     return a + b
 
 model = models.transformers("mistralai/Mistral-7B-v0.1")
-generator = text.generate.json(model, add)
+generator = generate.json(model, add)
 result = generator("Return two integers named a and b respectively. a is odd and b even.")
 
 print(add(**result))
