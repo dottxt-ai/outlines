@@ -338,7 +338,7 @@ def test_llamacpp_json_function(model):
 
     rng = torch.Generator(device="cpu")
     rng.manual_seed(10)
-    sequence = generate.json(model, function)(
+    sequence = generate.json(model, function, whitespace_pattern="")(
         prompt, max_tokens=100, temperature=0.0, rng=rng
     )
     assert isinstance(sequence, dict)
