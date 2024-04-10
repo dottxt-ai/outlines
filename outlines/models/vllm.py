@@ -74,6 +74,8 @@ class VLLM:
         if max_tokens is not None:
             sampling_params.max_tokens = max_tokens
         if stop_at is not None:
+            if isinstance(stop_at, str):
+                stop_at = [stop_at]
             sampling_params.stop = stop_at
         if seed is not None:
             sampling_params.seed = seed

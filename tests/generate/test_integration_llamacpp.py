@@ -181,7 +181,7 @@ def test_llamacpp_date(model):
     prompt = (
         "<|im_start|>user\nWhat day is it today?<|im_end|>\n<|im_start|>assistant\n"
     )
-    sequence = generate.format(model, datetime.date)(prompt, max_tokens=10)
+    sequence = generate.format(model, datetime.date)(prompt, max_tokens=20, seed=10)
     assert isinstance(sequence, datetime.date)
 
 
