@@ -447,7 +447,7 @@ def azure_openai(
 ):
     try:
         import tiktoken
-        from openai import AzureAsyncOpenAI
+        from openai import AsyncAzureOpenAI
     except ImportError:
         raise ImportError(
             "The `openai` and `tiktoken` libraries needs to be installed in order to use Outlines' Azure OpenAI integration."
@@ -458,7 +458,7 @@ def azure_openai(
     if config is None:
         config = OpenAIConfig(model=deployment_name)
 
-    client = AzureAsyncOpenAI(
+    client = AsyncAzureOpenAI(
         azure_endpoint=azure_endpoint, api_version=api_version, api_key=api_key
     )
     tokenizer = tiktoken.encoding_for_model(deployment_name)
