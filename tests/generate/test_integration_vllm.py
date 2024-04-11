@@ -230,9 +230,6 @@ def test_vllm_json_schema(model):
     assert isinstance(result["bar"], str)
 
 
-@pytest.mark.xfail(
-    reason="The CFG logits processor for vLLM has not been implemented yet."
-)
 def test_vllm_cfg(model):
     prompt = "<|im_start|>user\nOutput a short and valid JSON object with two keys.<|im_end|>\n><|im_start|>assistant\n"
     result = generate.cfg(model, grammars.arithmetic)(prompt, seed=11)
