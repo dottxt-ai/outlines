@@ -1,23 +1,23 @@
-<div align="center">
+<div align="center" style="margin-bottom: 1em;">
 
 # Outlines 〰️
 
 <img src="./docs/assets/images/logo.png" alt="Outlines Logo" width=300></img>
 
-[![Pypi][pypi-badge]][pypi]
-[![Contributors][contributors-badge]][contributors]
-[![Discord][discord-badge]][discord]
 [![Twitter][twitter-badge]][twitter]
+
+[![Contributors][contributors-badge]][contributors]
+[![Downloads][downloads-badge]][pypistats]
+[![Discord][discord-badge]][discord]
+
 
 *Robust (structured) text generation.*
 
-🙏 Help us by answering the [developer survey](https://h1xbpbfsf0w.typeform.com/to/EeDhccYI) 🙏
+Made with ❤👷️ by the team at [.txt](https://dottxt.co). [Give our .json API a try](https://h1xbpbfsf0w.typeform.com/to/ZgBCvJHF) ✨
 
 </div>
 
-Made with ❤👷️ by the team at [.txt](https://dottxt.co).
 
-Looking for an API that returns valid JSON? [Give .json a try](https://h1xbpbfsf0w.typeform.com/to/ZgBCvJHF) ✨
 
 ``` bash
 pip install outlines
@@ -345,6 +345,6 @@ answer = outlines.generate.text(model)(prompt, max_tokens=100)
 [twitter]: https://twitter.com/dottxtai
 [discord]: https://discord.gg/R9DSu34mGd
 [discord-badge]: https://img.shields.io/discord/1182316225284554793?color=81A1C1&logo=discord&logoColor=white&style=flat-square
+[downloads-badge]: https://img.shields.io/pypi/dm/outlines?color=89AC6B&logo=python&logoColor=white&style=flat-square
+[pypistats]: https://pypistats.org/packages/outlines
 [twitter-badge]: https://img.shields.io/twitter/follow/dottxtai?style=social
-[pypi]: https://pypi.org/project/outlines/
-[pypi-badge]: https://img.shields.io/pypi/v/outlines?color=ECEFF4&logo=python&logoColor=white&style=flat-square
