@@ -99,6 +99,8 @@ nav:
       - Generate synthetic data: cookbook/dating_profiles.md
       - Summarize a document: cookbook/chain_of_density.md
       - Playing chess: cookbook/models_playing_chess.md
+      - Run on the cloud:
+          - Modal: cookbook/deploy-using-modal.md
   - Docs:
     - reference/index.md
     - Generation:
