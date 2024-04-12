@@ -15,6 +15,7 @@ class ContextLengthExceededError(Exception):
 @dataclasses.dataclass(frozen=True)
 class GenerationState:
     token_ids: torch.Tensor
+    attention_masks: torch.Tensor
     kv_cache: torch.Tensor
     logits: torch.Tensor
     weights: torch.Tensor
@@ -29,6 +30,7 @@ def sequence_generator(
     sequence_weights: torch.Tensor,
     attention_masks: torch.Tensor,
     fsm_states: List[int],
+    kv_cache: Optional[Tuple] = None,
     rng: torch.Generator = torch.Generator(),
 ) -> Iterator[GenerationState]:
     """Generates sequences of tokens.
@@ -62,7 +64,6 @@ def sequence_generator(
     A new sequence.
 
     """
-    kv_cache = None
 
     while True:
         try:
@@ -90,6 +91,7 @@ def sequence_generator(
         if is_finished:
             yield GenerationState(
                 token_ids,
+                attention_masks,
                 kv_cache,
                 logits,
                 sequence_weights,
@@ -99,6 +101,7 @@ def sequence_generator(
 
         yield GenerationState(
             token_ids,
+            attention_masks,
             kv_cache,
             logits,
             sequence_weights,
