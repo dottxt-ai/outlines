@@ -42,6 +42,12 @@ First time here? Go to our [setup guide](https://outlines-dev.github.io/outlines
 
 Outlines 〰 has new releases and features coming every week. Make sure to ⭐ star and 👀 watch this repository, follow [@dottxtai][twitter] to stay up to date!
 
+## Why should I use structured generation?
+
+* It doesn't add any overhead during inference (cost-free)
+* [It speeds up inference](http://blog.dottxt.co/coalescence.html)
+* [It improves the performance of base models (GSM8K)](http://blog.dottxt.co/performance-gsm8k.html)
+* [It improves the performance of finetuned models (CoNNL)](https://predibase.com/blog/lorax-outlines-better-json-extraction-with-structured-generation-and-lora)
 
 ## Structured generation
 
