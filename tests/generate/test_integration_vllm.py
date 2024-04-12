@@ -2,7 +2,8 @@ import datetime
 import re
 
 import pytest
-import torch
+
+# import torch
 from pydantic import BaseModel, constr
 from vllm.sampling_params import SamplingParams
 
@@ -11,9 +12,9 @@ import outlines.grammars as grammars
 import outlines.models as models
 import outlines.samplers as samplers
 
-pytestmark = pytest.mark.skipif(
-    not torch.cuda.is_available(), reason="vLLM models can only be run on GPU."
-)
+# pytestmark = pytest.mark.skipif(
+#     not torch.cuda.is_available(), reason="vLLM models can only be run on GPU."
+# )
 
 
 @pytest.fixture(scope="module")
