@@ -13,10 +13,9 @@
 
 *Robust (structured) text generation.*
 
-Made with ❤👷️ by the team at [.txt](https://dottxt.co). [Give our .json API a try](https://h1xbpbfsf0w.typeform.com/to/ZgBCvJHF) ✨
+Made with ❤👷️ by the team at [.txt](https://dottxt.co).
 
 </div>
-
 
 
 ``` bash
@@ -48,6 +47,14 @@ Outlines 〰 has new releases and features coming every week. Make sure to ⭐ s
 * [It speeds up inference](http://blog.dottxt.co/coalescence.html)
 * [It improves the performance of base models (GSM8K)](http://blog.dottxt.co/performance-gsm8k.html)
 * [It improves the performance of finetuned models (CoNNL)](https://predibase.com/blog/lorax-outlines-better-json-extraction-with-structured-generation-and-lora)
+
+## .txt company
+
+<div align="center">
+<img src="./docs/assets/images/dottxt.png" alt="Outlines Logo" width=100></img>
+</div>
+
+We started a company to keep pushing the boundaries of structured generation. Learn more about [.txt](https://twitter.com/dottxtai), and  [give our .json API a try](https://h1xbpbfsf0w.typeform.com/to/ZgBCvJHF) if you need a hosted solution ✨
 
 ## Structured generation
 
