@@ -568,13 +568,13 @@ def test_match(schema, regex, examples):
             {"title": "Foo", "type": "string", "format": "date-time"},
             DATE_TIME,
             [
-                ("2018-11-13T20:20:39Z", True),
-                ("2016-09-18T17:34:02.666Z", True),
-                ("2008-05-11T15:30:00Z", True),
-                ("2021-01-01T00:00:00", True),
-                ("2022-01-10 07:19:30", False),  # missing T
-                ("2022-12-10T10-04-29", False),  # incorrect separator
-                ("2023-01-01", False),
+                ('"2018-11-13T20:20:39Z"', True),
+                ('"2016-09-18T17:34:02.666Z"', True),
+                ('"2008-05-11T15:30:00Z"', True),
+                ('"2021-01-01T00:00:00"', True),
+                ('"2022-01-10 07:19:30"', False),  # missing T
+                ('"2022-12-10T10-04-29"', False),  # incorrect separator
+                ('"2023-01-01"', False),
             ],
         ),
         # DATE
@@ -582,12 +582,12 @@ def test_match(schema, regex, examples):
             {"title": "Foo", "type": "string", "format": "date"},
             DATE,
             [
-                ("2018-11-13", True),
-                ("2016-09-18", True),
-                ("2008-05-11", True),
-                ("2015-13-01", False),  # incorrect month
-                ("2022-01", False),  # missing day
-                ("2022/12/01", False),  # incorrect separator"
+                ('"2018-11-13"', True),
+                ('"2016-09-18"', True),
+                ('"2008-05-11"', True),
+                ('"2015-13-01"', False),  # incorrect month
+                ('"2022-01"', False),  # missing day
+                ('"2022/12/01"', False),  # incorrect separator"
             ],
         ),
         # TIME
@@ -595,13 +595,13 @@ def test_match(schema, regex, examples):
             {"title": "Foo", "type": "string", "format": "time"},
             TIME,
             [
-                ("20:20:39Z", True),
-                ("15:30:00Z", True),
-                ("25:30:00", False),  # incorrect hour
-                ("15:30", False),  # missing seconds
-                ("15:30:00.000", False),  # missing Z
-                ("15-30-00", False),  # incorrect separator
-                ("15:30:00+01:00", False),  # incorrect separator
+                ('"20:20:39Z"', True),
+                ('"15:30:00Z"', True),
+                ('"25:30:00"', False),  # incorrect hour
+                ('"15:30"', False),  # missing seconds
+                ('"15:30:00.000"', False),  # missing Z
+                ('"15-30-00"', False),  # incorrect separator
+                ('"15:30:00+01:00"', False),  # incorrect separator
             ],
         ),
     ],
