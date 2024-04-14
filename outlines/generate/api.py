@@ -1,11 +1,12 @@
 import datetime
 from dataclasses import dataclass
-from typing import Iterator, List, Optional, Union
-
-import torch
+from typing import TYPE_CHECKING, Iterator, List, Optional, Union
 
 from outlines.generate.generator import sequence_generator
 from outlines.samplers import BeamSearchSampler, GreedySampler, MultinomialSampler
+
+if TYPE_CHECKING:
+    import torch
 
 FormattedOutput = Union[
     str, int, float, bool, datetime.date, datetime.time, datetime.datetime
@@ -29,9 +30,9 @@ class SequenceGenerator:
 
     def get_generated_token_ids(
         self,
-        prompt_token_ids: torch.Tensor,
-        token_ids: torch.Tensor,
-    ) -> List[torch.Tensor]:
+        prompt_token_ids: "torch.Tensor",
+        token_ids: "torch.Tensor",
+    ) -> List["torch.Tensor"]:
         """Get the tokens generated so far.
 
         Parameters
@@ -130,7 +131,7 @@ class SequenceGenerator:
         prompts: Union[str, List[str]],
         max_tokens: Optional[int] = None,
         stop_at: Optional[Union[str, List[str]]] = None,
-        rng: Optional[torch.Generator] = None,
+        rng: Optional["torch.Generator"] = None,
     ) -> Union[FormattedOutput, List[FormattedOutput], List[List[FormattedOutput]]]:
         """Generate the full text sequence.
 
@@ -157,6 +158,7 @@ class SequenceGenerator:
         -------
         The generation(s), potentially cast to another type.
         """
+        import torch
 
         if isinstance(prompts, str):
             prompts = [prompts]
@@ -247,7 +249,7 @@ class SequenceGenerator:
         prompts: Union[str, List[str]],
         max_tokens: Optional[int] = None,
         stop_at: Optional[Union[str, List[str]]] = None,
-        rng: Optional[torch.Generator] = None,
+        rng: Optional["torch.Generator"] = None,
     ) -> Iterator[Union[List[str], str, List[List[str]]]]:
         """Generate the text sequence one token at a time.
 
@@ -274,6 +276,7 @@ class SequenceGenerator:
         A string or list of strings that contain the generated text.
 
         """
+        import torch
 
         if isinstance(prompts, str):
             prompts = [prompts]

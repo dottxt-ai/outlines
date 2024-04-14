@@ -31,12 +31,10 @@ dependencies = [
    "cloudpickle",
    "diskcache",
    "pydantic>=2.0",
-   "torch>=2.1.0",
    "numba",
    "referencing",
    "jsonschema",
    "requests",
-   "transformers",
 ]
 dynamic = ["version"]
 
@@ -47,7 +45,6 @@ test = [
     "pytest-benchmark",
     "pytest-cov",
     "pytest-mock",
-    "transformers",
     "coverage[toml]>=5.1",
     "diff-cover",
     "accelerate",
@@ -57,7 +54,9 @@ test = [
     "llama-cpp-python",
     "huggingface_hub",
     "openai>=1.0.0",
-    "vllm"
+    "vllm",
+    "torch",
+    "transformers",
 ]
 serve = [
     "vllm>=0.3.0",
