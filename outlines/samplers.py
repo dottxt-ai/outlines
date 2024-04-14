@@ -1,7 +1,8 @@
 import math
-from typing import Callable, Optional, Protocol, Tuple
+from typing import TYPE_CHECKING, Callable, Optional, Protocol, Tuple
 
-import torch
+if TYPE_CHECKING:
+    import torch
 
 
 class Sampler(Protocol):
@@ -9,10 +10,10 @@ class Sampler(Protocol):
 
     def __call__(
         self,
-        next_token_logits: torch.DoubleTensor,
-        sequence_weights: torch.DoubleTensor,
-        rng: torch.Generator,
-    ) -> torch.DoubleTensor:
+        next_token_logits: "torch.DoubleTensor",
+        sequence_weights: "torch.DoubleTensor",
+        rng: "torch.Generator",
+    ) -> "torch.DoubleTensor":
         ...
 
 
@@ -38,10 +39,10 @@ class GreedySampler:
 
     def __call__(
         self,
-        next_token_logits: torch.DoubleTensor,
-        sequence_weights: torch.DoubleTensor,
+        next_token_logits: "torch.DoubleTensor",
+        sequence_weights: "torch.DoubleTensor",
         _,
-    ) -> torch.DoubleTensor:
+    ) -> "torch.DoubleTensor":
         """Call the greedy sampler.
 
         Parameters
@@ -63,6 +64,8 @@ class GreedySampler:
         cumulative weights of each sequence of shape ``(n_seqs,)``.
 
         """
+        import torch
+
         logprobs = torch.nn.functional.log_softmax(next_token_logits, dim=-1)
         next_token_ids = torch.argmax(logprobs, dim=-1, keepdim=True)
 
@@ -116,10 +119,10 @@ class MultinomialSampler:
 
     def __call__(
         self,
-        next_token_logits: torch.DoubleTensor,
-        sequence_weights: torch.DoubleTensor,
-        rng: torch.Generator,
-    ) -> Tuple[torch.DoubleTensor, torch.DoubleTensor, torch.DoubleTensor]:
+        next_token_logits: "torch.DoubleTensor",
+        sequence_weights: "torch.DoubleTensor",
+        rng: "torch.Generator",
+    ) -> Tuple["torch.DoubleTensor", "torch.DoubleTensor", "torch.DoubleTensor"]:
         """Call the multinomial sampler.
 
         Parameters
@@ -141,6 +144,8 @@ class MultinomialSampler:
         cumulative weights of each sequence of shape ``(n_seqs,)``.
 
         """
+        import torch
+
         altered_next_token_logits = next_token_logits
         for logit_processor in self.logits_processors:
             altered_next_token_logits = logit_processor(next_token_logits)
@@ -160,7 +165,7 @@ class MultinomialSampler:
 multinomial = MultinomialSampler
 
 
-def keep_top_k_logits(k: int) -> Callable[[torch.Tensor], torch.Tensor]:
+def keep_top_k_logits(k: int) -> Callable[["torch.Tensor"], "torch.Tensor"]:
     """Build a function that masks logits values smaller than the top `k` ones.
 
     Parameters
@@ -169,6 +174,8 @@ def keep_top_k_logits(k: int) -> Callable[[torch.Tensor], torch.Tensor]:
         The ranking below which logit values are replaced by `-math.inf`.
 
     """
+    import torch
+
     if not isinstance(k, int) or k < 1:
         raise ValueError(f"`k` must be a strictly positive integers, got {k} instead.")
 
@@ -180,7 +187,7 @@ def keep_top_k_logits(k: int) -> Callable[[torch.Tensor], torch.Tensor]:
     return logits_processor
 
 
-def keep_top_p_logits(p: float) -> Callable[[torch.Tensor], torch.Tensor]:
+def keep_top_p_logits(p: float) -> Callable[["torch.Tensor"], "torch.Tensor"]:
     """Build a function that masks the lowest probability tokens whose
     cumulative probability is below a certain threshold.
 
@@ -192,6 +199,8 @@ def keep_top_p_logits(p: float) -> Callable[[torch.Tensor], torch.Tensor]:
         others. Its value must be between 0 (excluded) and 1 (included).
 
     """
+    import torch
+
     if p <= 0.0 or p > 1.0:
         raise ValueError(
             f"`p` must be a floating point number between 0 (excluded) and 1 (included), got {p} instead."
@@ -210,7 +219,7 @@ def keep_top_p_logits(p: float) -> Callable[[torch.Tensor], torch.Tensor]:
     return logits_processor
 
 
-def rescale_logits(temperature: float) -> Callable[[torch.Tensor], torch.Tensor]:
+def rescale_logits(temperature: float) -> Callable[["torch.Tensor"], "torch.Tensor"]:
     """Build a function that rescales the token probabilities exponentially.
 
     Parameters
@@ -229,7 +238,7 @@ def rescale_logits(temperature: float) -> Callable[[torch.Tensor], torch.Tensor]
             "Please use the greedy sampler instead of setting the temperature to 0."
         )
 
-    def logits_processor(logits: torch.Tensor) -> torch.Tensor:
+    def logits_processor(logits: "torch.Tensor") -> "torch.Tensor":
         return logits / temperature
 
     return logits_processor
@@ -250,10 +259,10 @@ class BeamSearchSampler:
 
     def __call__(
         self,
-        next_token_logits: torch.DoubleTensor,
-        sequence_weights: torch.DoubleTensor,
+        next_token_logits: "torch.DoubleTensor",
+        sequence_weights: "torch.DoubleTensor",
         _,
-    ) -> Tuple[torch.DoubleTensor, torch.DoubleTensor, torch.DoubleTensor]:
+    ) -> Tuple["torch.DoubleTensor", "torch.DoubleTensor", "torch.DoubleTensor"]:
         """Call the beam search sampler.
 
         Parameters
@@ -275,6 +284,8 @@ class BeamSearchSampler:
         cumulative weights of each sequence of shape ``(n_seqs,)``.
 
         """
+        import torch
+
         logprobs = torch.nn.functional.log_softmax(next_token_logits, dim=-1)
         weights = logprobs + sequence_weights.unsqueeze(1).expand_as(next_token_logits)
 
