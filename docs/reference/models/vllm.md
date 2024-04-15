@@ -84,6 +84,21 @@ model = models.vllm("https://huggingface.co/squeeze-ai-lab/sq-llama-30b-w4-s5", 
 
     To use GPTQ models you need to install the autoGTPQ and optimum libraries `pip install auto-gptq optimum`.
 
+
+### Multi-GPU usage
+
+To run multi-GPU inference with vLLM you need to set the `tensor_parallel_size` argument to the number of GPUs available when initializing the model. For instance to run inference on 2 GPUs:
+
+
+```python
+from outlines import models
+
+model = models.vllm(
+    "mistralai/Mistral-7B-v0.1"
+    tensor_parallel_size=2
+)
+```
+
 ### Load LoRA adapters
 
 You can load LoRA adapters and alternate between them dynamically:

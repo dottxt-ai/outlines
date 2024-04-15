@@ -18,6 +18,14 @@ python -m outlines.serve.serve --model="mistralai/Mistral-7B-Instruct-v0.2"
 
 This will by default start a server at `http://127.0.0.1:8000` (check what the console says, though). Without the `--model` argument set, the OPT-125M model is used. The `--model` argument allows you to specify any model of your choosing.
 
+To run inference on multiple GPUs you must pass the `--tensor-parallel-size` argument when initializing the server. For instance, to run inference on 2 GPUs:
+
+
+```bash
+python -m outlines.serve.serve --model="mistralai/Mistral-7B-Instruct-v0.2" --tensor-parallel-size 2
+```
+
+
 ### Alternative Method: Via Docker
 
 You can install and run the server with Outlines' official Docker image using the command
