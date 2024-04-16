@@ -1,11 +1,10 @@
 import os
 from typing import TYPE_CHECKING, Optional
 
-import torch
-
 if TYPE_CHECKING:
     from exllamav2 import ExLlamaV2, ExLlamaV2Cache, ExLlamaV2Lora
     from transformers import PreTrainedTokenizer
+    import torch
 
 from .transformers import TransformerTokenizer
 
@@ -28,8 +27,9 @@ class ExLlamaV2Model:
         self.past_seq = None
         self.lora = lora
 
-    def forward(self, input_ids: torch.LongTensor, *_):
+    def forward(self, input_ids: "torch.LongTensor", *_):
         """Compute a forward pass through the exl2 model."""
+        import torch
 
         # Caching with past_seq
         reset = True
@@ -74,7 +74,7 @@ class ExLlamaV2Model:
             seq_tensor[-1:].view(1, -1), self.cache, loras=[self.lora]
         )
 
-    def __call__(self, input_ids: torch.LongTensor, *_) -> torch.FloatTensor:
+    def __call__(self, input_ids: "torch.LongTensor", *_) -> "torch.FloatTensor":
         logits = self.forward(input_ids)
         next_token_logits = logits[..., -1, :]
 
@@ -169,7 +169,7 @@ def exl2(
         from transformers import AutoTokenizer
     except ImportError:
         raise ImportError(
-            "The `exllamav2` library needs to be installed in order to use `exllamav2` models."
+            "The `exllamav2`, `transformers` and `torch` libraries needs to be installed in order to use `exllamav2` models."
         )
 
     # Load tokenizer
