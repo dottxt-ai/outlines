@@ -572,6 +572,7 @@ def test_match(schema, regex, examples):
                 ('{"uuid":"123e4567-e89b-12d3-a456-42661417400"}', False),
                 ('{"uuid":"123e4567-e89b-12d3-a456-42661417400g"}', False),
                 ('{"uuid":"123e4567-e89b-12d3-a456-42661417400-"}', False),
+                ('{"uuid":123e4567-e89b-12d3-a456-426614174000}', False),  # missing quotes for value
                 ('{"uuid":""}', False),
             ],
         ),
@@ -600,6 +601,7 @@ def test_match(schema, regex, examples):
                 ('{"dateTime":"2021-01-01T00:00:00"}', True),
                 ('{"dateTime":"2022-01-10 07:19:30"}', False),  # missing T
                 ('{"dateTime":"2022-12-10T10-04-29"}', False),  # incorrect separator
+                ('{"dateTime":2018-11-13T20:20:39Z}', False),  # missing quotes for value
                 ('{"dateTime":"2023-01-01"}', False),
             ],
         ),
@@ -627,6 +629,7 @@ def test_match(schema, regex, examples):
                 ('{"date":"2015-13-01"}', False),  # incorrect month
                 ('{"date":"2022-01"}', False),  # missing day
                 ('{"date":"2022/12/01"}', False),  # incorrect separator"
+                ('{"date":2018-11-13}', False),  # missing quotes for value
             ],
         ),
         # TIME
@@ -655,6 +658,8 @@ def test_match(schema, regex, examples):
                 ('{"time":"15:30:00.000"}', False),  # missing Z
                 ('{"time":"15-30-00"}', False),  # incorrect separator
                 ('{"time":"15:30:00+01:00"}', False),  # incorrect separator
+                ('{"time":20:20:39Z}', False),  # missing quotes for value
+
             ],
         ),
     ],
