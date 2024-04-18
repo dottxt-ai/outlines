@@ -36,6 +36,13 @@ If Outlines has been helpful to you, let us know on [Discord][discord] or give u
 <body>
 
 <div class="tweet-masonry">
+
+<blockquote class="twitter-tweet"><p lang="en" dir="ltr">I am once again reminding you that structured extraction using LLMs is going to transform every single industry in the next 10 years <a href="https://t.co/xQ3tcWnrZ8">https://t.co/xQ3tcWnrZ8</a></p>&mdash; Sam Hogan (@0xSamHogan) <a href="https://twitter.com/0xSamHogan/status/1780637917737816323?ref_src=twsrc%5Etfw">April 17, 2024</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+
+<blockquote class="twitter-tweet"><p lang="en" dir="ltr">outline&#39;s growth is insane, using is an understatement! <a href="https://t.co/rHCNWhZdCs">https://t.co/rHCNWhZdCs</a></p>&mdash; jason liu (@jxnlco) <a href="https://twitter.com/jxnlco/status/1780618454040797554?ref_src=twsrc%5Etfw">April 17, 2024</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+
+<blockquote class="twitter-tweet"><p lang="en" dir="ltr">Outlines is an amazing lib and more popular than <a href="https://twitter.com/remilouf?ref_src=twsrc%5Etfw">@remilouf</a>’s modesty will admit. <a href="https://t.co/DfHbMPIlX1">https://t.co/DfHbMPIlX1</a> <a href="https://t.co/mDHIWJrD0C">https://t.co/mDHIWJrD0C</a></p>&mdash; Delip Rao e/σ (@deliprao) <a href="https://twitter.com/deliprao/status/1780780217180598377?ref_src=twsrc%5Etfw">April 18, 2024</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+
 <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Impressive implementation of a true regex / json / grammar guided text generation <a href="https://t.co/RX5RVYaVIx">pic.twitter.com/RX5RVYaVIx</a></p>&mdash; Rohan Paul (@rohanpaul_ai) <a href="https://twitter.com/rohanpaul_ai/status/1741099984299135403?ref_src=twsrc%5Etfw">December 30, 2023</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 
 <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Most underrated Github Repo in AI + LLM JSON guided Generation: <a href="https://t.co/lSB8KIet1H">https://t.co/lSB8KIet1H</a></p>&mdash; 🎙Jean-Louis Queguiner (@JiliJeanlouis) <a href="https://twitter.com/JiliJeanlouis/status/1736857292581093706?ref_src=twsrc%5Etfw">December 18, 2023</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
