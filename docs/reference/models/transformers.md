@@ -3,7 +3,11 @@
 
 !!! Installation
 
-    You need to install the `transformer` and `datasets` libraries to be able to use these models in Outlines.
+    You need to install the `transformer`, `datasets` and `torch` libraries to be able to use these models in Outlines:
+
+    ```bash
+    pip install torch transformers datasets
+    ```
 
 
 Outlines provides an integration with the `torch` implementation of causal models in the [transformers][transformers] library. You can initialize the model by passing its name:

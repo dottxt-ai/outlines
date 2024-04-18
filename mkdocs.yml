@@ -99,6 +99,8 @@ nav:
       - Generate synthetic data: cookbook/dating_profiles.md
       - Summarize a document: cookbook/chain_of_density.md
       - Playing chess: cookbook/models_playing_chess.md
+      - Run on the cloud:
+          - Modal: cookbook/deploy-using-modal.md
   - Docs:
     - reference/index.md
     - Generation:
@@ -138,4 +140,5 @@ nav:
     - Feedback 🫶: community/feedback.md
     - Chat with us ☕: https://discord.com/invite/R9DSu34mGd
     - How to contribute 🏗️: community/contribute.md
+    - Your projects 👏: community/examples.md
   - Blog: blog/index.md

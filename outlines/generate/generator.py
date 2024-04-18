@@ -2,9 +2,9 @@ import dataclasses
 import math
 from typing import TYPE_CHECKING, Callable, Iterator, List, Optional, Tuple
 
-import torch
-
 if TYPE_CHECKING:
+    import torch
+
     from outlines.fsm.guide import Guide
 
 
@@ -14,10 +14,10 @@ class ContextLengthExceededError(Exception):
 
 @dataclasses.dataclass(frozen=True)
 class GenerationState:
-    token_ids: torch.Tensor
-    kv_cache: torch.Tensor
-    logits: torch.Tensor
-    weights: torch.Tensor
+    token_ids: "torch.Tensor"
+    kv_cache: "torch.Tensor"
+    logits: "torch.Tensor"
+    weights: "torch.Tensor"
     fsm_states: List[int]
 
 
@@ -25,11 +25,11 @@ def sequence_generator(
     model: Callable,
     sampler: Callable,
     fsms: List["Guide"],
-    token_ids: torch.Tensor,
-    sequence_weights: torch.Tensor,
-    attention_masks: torch.Tensor,
+    token_ids: "torch.Tensor",
+    sequence_weights: "torch.Tensor",
+    attention_masks: "torch.Tensor",
     fsm_states: List[int],
-    rng: torch.Generator = torch.Generator(),
+    rng: "torch.Generator",
 ) -> Iterator[GenerationState]:
     """Generates sequences of tokens.
 
@@ -62,6 +62,11 @@ def sequence_generator(
     A new sequence.
 
     """
+    import torch
+
+    if rng is None:
+        rng = torch.Generator()
+
     kv_cache = None
 
     while True:
@@ -107,7 +112,7 @@ def sequence_generator(
 
 
 def get_next_fsm_states(
-    fsms: List["Guide"], fsm_states: List[int], next_token_ids: torch.Tensor
+    fsms: List["Guide"], fsm_states: List[int], next_token_ids: "torch.Tensor"
 ) -> List[int]:
     """
 
@@ -129,7 +134,7 @@ def get_next_fsm_states(
     ]
 
 
-def get_allowed_tokens(fsms: List["Guide"], fsm_states: List[int]) -> torch.Tensor:
+def get_allowed_tokens(fsms: List["Guide"], fsm_states: List[int]) -> "torch.Tensor":
     """Get the new instructions for each sequence from the finite-state machine.
 
     Parameters
@@ -173,10 +178,9 @@ def is_generation_finished(fsms: List["Guide"], fsm_states: List[int]) -> bool:
     return all([fsm.is_final_state(state) for fsm, state in zip(fsms, fsm_states)])
 
 
-@torch.inference_mode()
 def update_token_ids(
-    token_ids: torch.Tensor, next_token_ids: torch.Tensor, ancestors: torch.Tensor
-) -> torch.Tensor:
+    token_ids: "torch.Tensor", next_token_ids: "torch.Tensor", ancestors: "torch.Tensor"
+) -> "torch.Tensor":
     """Append the sampled tokens to the running sequence of tokens.
 
     Parameters
@@ -195,14 +199,15 @@ def update_token_ids(
     just generated.
 
     """
+    import torch
+
     token_ids = torch.index_select(token_ids, 0, ancestors)
     return torch.concatenate([token_ids, next_token_ids], dim=-1)
 
 
-@torch.inference_mode()
 def update_attention_masks(
-    attention_masks: torch.Tensor, ancestors: torch.Tensor
-) -> torch.Tensor:
+    attention_masks: "torch.Tensor", ancestors: "torch.Tensor"
+) -> "torch.Tensor":
     """Expand the attention masks.
 
     Parameters
@@ -217,6 +222,8 @@ def update_attention_masks(
     The attention masks padded with 1s.
 
     """
+    import torch
+
     attention_masks = torch.index_select(attention_masks, 0, ancestors)
     return torch.concatenate(
         [
@@ -229,7 +236,7 @@ def update_attention_masks(
     )
 
 
-def reorder_fsms(fsms: List["Guide"], ancestors: torch.Tensor) -> List["Guide"]:
+def reorder_fsms(fsms: List["Guide"], ancestors: "torch.Tensor") -> List["Guide"]:
     reordered_fsms = []
     for ancestor in ancestors:
         reordered_fsms.append(fsms[ancestor].copy())
@@ -237,7 +244,7 @@ def reorder_fsms(fsms: List["Guide"], ancestors: torch.Tensor) -> List["Guide"]:
     return reordered_fsms
 
 
-def reorder_fsm_states(fsm_states: List[int], ancestors: torch.Tensor) -> List[int]:
+def reorder_fsm_states(fsm_states: List[int], ancestors: "torch.Tensor") -> List[int]:
     reordered_states = []
     for ancestor in ancestors:
         reordered_states.append(fsm_states[ancestor])
@@ -246,7 +253,7 @@ def reorder_fsm_states(fsm_states: List[int], ancestors: torch.Tensor) -> List[i
 
 
 def reorder_kv_cache(
-    kv_cache: Optional[Tuple], ancestors: torch.Tensor
+    kv_cache: Optional[Tuple], ancestors: "torch.Tensor"
 ) -> Optional[Tuple]:
     """Re-order the KV-cache based on the ancestors.
 
@@ -256,6 +263,8 @@ def reorder_kv_cache(
     first dimension is the batch size.
 
     """
+    import torch
+
     if kv_cache is None:
         return None
 
@@ -270,8 +279,7 @@ def reorder_kv_cache(
     return new_kv_cache
 
 
-@torch.inference_mode()
-def bias_logits(logits: torch.Tensor, allowed_token_ids: List) -> torch.Tensor:
+def bias_logits(logits: "torch.Tensor", allowed_token_ids: List) -> "torch.Tensor":
     """Mask the logits.
 
     The function iterates over a nested list where each list corresponds to the
@@ -290,6 +298,8 @@ def bias_logits(logits: torch.Tensor, allowed_token_ids: List) -> torch.Tensor:
     A view of the original logits tensor where some values are masked.
 
     """
+    import torch
+
     biased_logits = torch.full_like(logits, -math.inf, device=logits.device)
     for i, ids in enumerate(allowed_token_ids):
         biased_logits[i, ids] = logits[i, ids]

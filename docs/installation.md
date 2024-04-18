@@ -14,10 +14,11 @@ Outlines supports OpenAI, transformers, Mamba, llama.cpp and exllama2 but **you 
 
 ```python
 pip install openai
-pip install transformers datasets accelerate
+pip install transformers datasets accelerate torch
 pip install llama-cpp-python
-pip install exllamav2
-pip install mamba_ssm
+pip install exllamav2 transformers torch
+pip install mamba_ssm transformers torch
+pip install vllm
 ```
 
 If you encounter any problem using Outlines with these libraries, take a look at their installation instructions. The installation of `openai` and `transformers` should be straightforward, but other libraries have specific hardware requirements.
