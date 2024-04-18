@@ -58,7 +58,6 @@ Outlines does not use unnecessary abstractions that tend to get in your way. We 
 And last but not least, unlike alternatives, Outlines' structured generation introduces **no overhead** during inference.
 
 
-
 ## Who is using Outlines?
 
 Hundreds of organisations and the main LLM serving frameworks ([vLLM][vllm], [TGI][tgi], [LoRAX][lorax], [xinference][xinference], [SGLang][sglang]) are using Outlines. Some of the prominent companies and organizations that are using Outlines include:
@@ -116,7 +115,7 @@ Hundreds of organisations and the main LLM serving frameworks ([vLLM][vllm], [TG
 
 Organizations are included either because they use Outlines as a dependency in a public repository, or because of direct communication between members of the Outlines team and employees at these organizations.
 
-Make sure to take a look at what the [community is building](community/examples.md)!
+Still not convinced, read [what people say about us](community/feedback.md). And make sure to take a look at what the [community is building](community/examples.md)!
 
 ## Philosophy
 
