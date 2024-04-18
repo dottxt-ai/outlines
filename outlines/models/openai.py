@@ -440,6 +440,7 @@ def openai(
 
 def azure_openai(
     deployment_name: str,
+    model_name: Optional[str] = None,
     azure_endpoint: Optional[str] = None,
     api_version: Optional[str] = None,
     api_key: Optional[str] = None,
@@ -461,6 +462,6 @@ def azure_openai(
     client = AsyncAzureOpenAI(
         azure_endpoint=azure_endpoint, api_version=api_version, api_key=api_key
     )
-    tokenizer = tiktoken.encoding_for_model(deployment_name)
+    tokenizer = tiktoken.encoding_for_model(model_name or deployment_name)
 
     return OpenAI(client, config, tokenizer)
