@@ -565,15 +565,15 @@ def test_match(schema, regex, examples):
         ),
         # NESTED UUID
         (
-                {"title": "Foo", "type": "object", "properties": {"uuid": {"type": "string", "format": "uuid"}}},
-                UUID,
-                [
-                    ('{"uuid": "123e4567-e89b-12d3-a456-426614174000"}', True),
-                    ('{"uuid":"123e4567-e89b-12d3-a456-42661417400"}', False),
-                    ('{"uuid":"123e4567-e89b-12d3-a456-42661417400g"}', False),
-                    ('{"uuid":"123e4567-e89b-12d3-a456-42661417400-"}', False),
-                    ('{"uuid":""}', False),
-                ],
+            {"title": "Foo", "type": "object", "properties": {"uuid": {"type": "string", "format": "uuid"}}},
+            UUID,
+            [
+                ('{"uuid": "123e4567-e89b-12d3-a456-426614174000"}', True),
+                ('{"uuid":"123e4567-e89b-12d3-a456-42661417400"}', False),
+                ('{"uuid":"123e4567-e89b-12d3-a456-42661417400g"}', False),
+                ('{"uuid":"123e4567-e89b-12d3-a456-42661417400-"}', False),
+                ('{"uuid":""}', False),
+            ],
         ),
         # DATE-TIME
         (
@@ -591,17 +591,17 @@ def test_match(schema, regex, examples):
         ),
         # NESTED DATE-TIME
         (
-                {"title": "Foo", "type": "object", "properties": {"dateTime": {"type": "string", "format": "date-time"}}},
-                DATE_TIME,
-                [
-                    ('{"dateTime": "2018-11-13T20:20:39Z"}', True),
-                    ('{"dateTime":"2016-09-18T17:34:02.666Z"}', True),
-                    ('{"dateTime":"2008-05-11T15:30:00Z"}', True),
-                    ('{"dateTime":"2021-01-01T00:00:00"}', True),
-                    ('{"dateTime":"2022-01-10 07:19:30"}', False),  # missing T
-                    ('{"dateTime":"2022-12-10T10-04-29"}', False),  # incorrect separator
-                    ('{"dateTime":"2023-01-01"}', False),
-                ],
+            {"title": "Foo", "type": "object", "properties": {"dateTime": {"type": "string", "format": "date-time"}}},
+            DATE_TIME,
+            [
+                ('{"dateTime": "2018-11-13T20:20:39Z"}', True),
+                ('{"dateTime":"2016-09-18T17:34:02.666Z"}', True),
+                ('{"dateTime":"2008-05-11T15:30:00Z"}', True),
+                ('{"dateTime":"2021-01-01T00:00:00"}', True),
+                ('{"dateTime":"2022-01-10 07:19:30"}', False),  # missing T
+                ('{"dateTime":"2022-12-10T10-04-29"}', False),  # incorrect separator
+                ('{"dateTime":"2023-01-01"}', False),
+            ],
         ),
         # DATE
         (
@@ -618,16 +618,16 @@ def test_match(schema, regex, examples):
         ),
         # NESTED DATE
         (
-                {"title": "Foo", "type": "object", "properties": {"date": {"type": "string", "format": "date"}}},
-                DATE,
-                [
-                    ('{"date": "2018-11-13"}', True),
-                    ('{"date":"2016-09-18"}', True),
-                    ('{"date":"2008-05-11"}', True),
-                    ('{"date":"2015-13-01"}', False),  # incorrect month
-                    ('{"date":"2022-01"}', False),  # missing day
-                    ('{"date":"2022/12/01"}', False),  # incorrect separator"
-                ],
+            {"title": "Foo", "type": "object", "properties": {"date": {"type": "string", "format": "date"}}},
+            DATE,
+            [
+                ('{"date": "2018-11-13"}', True),
+                ('{"date":"2016-09-18"}', True),
+                ('{"date":"2008-05-11"}', True),
+                ('{"date":"2015-13-01"}', False),  # incorrect month
+                ('{"date":"2022-01"}', False),  # missing day
+                ('{"date":"2022/12/01"}', False),  # incorrect separator"
+            ],
         ),
         # TIME
         (
@@ -645,17 +645,17 @@ def test_match(schema, regex, examples):
         ),
         # NESTED TIME
         (
-                {"title": "Foo", "type": "object", "properties": {"time": {"type": "string", "format": "time"}}},
-                DATE,
-                [
-                    ('{"time": "20:20:39Z"}', True),
-                    ('{"time":"15:30:00Z"}', True),
-                    ('{"time":"25:30:00"}', False),  # incorrect hour
-                    ('{"time":"15:30"}', False),  # missing seconds
-                    ('{"time":"15:30:00.000"}', False),  # missing Z
-                    ('{"time":"15-30-00"}', False),  # incorrect separator
-                    ('{"time":"15:30:00+01:00"}', False),  # incorrect separator
-                ],
+            {"title": "Foo", "type": "object", "properties": {"time": {"type": "string", "format": "time"}}},
+            DATE,
+            [
+                ('{"time": "20:20:39Z"}', True),
+                ('{"time":"15:30:00Z"}', True),
+                ('{"time":"25:30:00"}', False),  # incorrect hour
+                ('{"time":"15:30"}', False),  # missing seconds
+                ('{"time":"15:30:00.000"}', False),  # missing Z
+                ('{"time":"15-30-00"}', False),  # incorrect separator
+                ('{"time":"15:30:00+01:00"}', False),  # incorrect separator
+            ],
         ),
     ],
 )
