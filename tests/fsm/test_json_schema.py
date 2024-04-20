@@ -116,7 +116,12 @@ def test_match_number(pattern, does_match):
         (
             {"title": "Foo", "type": "string"},
             STRING,
-            [("unquotedstring", False), ('"quoted_string"', True)],
+            [
+                ("unquotedstring", False),
+                ('"quoted_string"', True),
+                (r'"escape_\character"', False),
+                (r'"double_\\escape"', True),
+            ],
         ),
         # String with maximum length
         (
