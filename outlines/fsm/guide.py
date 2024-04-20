@@ -111,9 +111,7 @@ class RegexGuide(Guide):
 
     def __init__(self, regex_string: str, tokenizer):
         @cache()
-        def create_states_mapping(
-            regex_string: str, cacheable_vocabulary: Tuple[Tuple[str, int], ...]
-        ) -> Tuple[dict, set, set]:
+        def create_states_mapping(regex_string: str) -> Tuple[dict, set, set]:
             """Create the variables related to the mapping between states and tokens
             The parameters of the function are used for caching purpose
             """
@@ -143,10 +141,7 @@ class RegexGuide(Guide):
             self.states_to_token_maps,
             self.empty_token_ids,
             fsm_finals,
-        ) = create_states_mapping(
-            regex_string, tuple(sorted(tokenizer.vocabulary.items()))
-        )
-        self.vocabulary = list(tokenizer.vocabulary.values())
+        ) = create_states_mapping(regex_string)
         self.eos_token_id = tokenizer.eos_token_id
         self.final_states = fsm_finals | {-1}
 
@@ -218,7 +213,7 @@ class RegexGuide(Guide):
         from_interegular_instance = cls.__new__(cls)
 
         def create_states_mapping_from_interegular_fsm(
-            fsm: interegular.fsm.FSM, cacheable_vocabulary: Tuple[Tuple[str, int], ...]
+            fsm: interegular.fsm.FSM,
         ) -> Tuple[dict, set]:
             """Create the variables related to the mapping between states and tokens
             The parameters of the function are used for caching purpose
@@ -245,10 +240,7 @@ class RegexGuide(Guide):
         (
             from_interegular_instance.states_to_token_maps,
             from_interegular_instance.empty_token_ids,
-        ) = create_states_mapping_from_interegular_fsm(
-            interegular_fsm, tuple(sorted(tokenizer.vocabulary.items()))
-        )
-        from_interegular_instance.vocabulary = list(tokenizer.vocabulary.values())
+        ) = create_states_mapping_from_interegular_fsm(interegular_fsm)
         from_interegular_instance.eos_token_id = tokenizer.eos_token_id
         return from_interegular_instance
 
