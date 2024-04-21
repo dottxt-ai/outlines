@@ -5,7 +5,6 @@ import interegular
 from lark import Lark
 
 from outlines import grammars
-from outlines.caching import cache
 from outlines.fsm.regex import (
     create_fsm_index_tokenizer,
     make_byte_level_fsm,
@@ -110,7 +109,6 @@ class RegexGuide(Guide):
     initial_state = 0
 
     def __init__(self, regex_string: str, tokenizer):
-        @cache()
         def create_states_mapping(regex_string: str) -> Tuple[dict, set, set]:
             """Create the variables related to the mapping between states and tokens
             The parameters of the function are used for caching purpose
