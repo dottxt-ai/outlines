@@ -25,7 +25,7 @@ from outlines import models
 from llama_cpp import Llama
 
 llm = Llama("./phi-2.Q4_K_M.gguf")
-model = models.llamacpp(llm)
+model = models.LlamaCpp(llm)
 ```
 
 If you need more control, you can pass the same keyword arguments to the model as you would pass in the [llama-ccp-library][llamacpp]:
