@@ -100,6 +100,7 @@ nav:
       - Summarize a document: cookbook/chain_of_density.md
       - Playing chess: cookbook/models_playing_chess.md
       - Run on the cloud:
+          - BentoML: cookbook/deploy-using-bentoml.md
           - Modal: cookbook/deploy-using-modal.md
   - Docs:
     - reference/index.md
