@@ -10,7 +10,7 @@ from typing import Union
 from .exllamav2 import ExLlamaV2Model, exl2
 from .llamacpp import LlamaCpp, llamacpp
 from .mamba import Mamba, mamba
-from .openai import OpenAI, openai
+from .openai import OpenAI, openai, azure_openai
 from .transformers import Transformers, transformers
 from .vllm import VLLM, vllm
 
