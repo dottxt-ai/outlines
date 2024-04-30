@@ -1,6 +1,6 @@
 import dataclasses
 import math
-from typing import TYPE_CHECKING, Callable, Iterator, List, Optional, Tuple
+from typing import TYPE_CHECKING, Callable, Iterable, Iterator, List, Optional, Tuple
 
 if TYPE_CHECKING:
     import torch
@@ -134,7 +134,9 @@ def get_next_fsm_states(
     ]
 
 
-def get_allowed_tokens(fsms: List["Guide"], fsm_states: List[int]) -> "torch.Tensor":
+def get_allowed_tokens(
+    fsms: List["Guide"], fsm_states: List[int]
+) -> List[Optional[Iterable[int]]]:
     """Get the new instructions for each sequence from the finite-state machine.
 
     Parameters
@@ -302,5 +304,8 @@ def bias_logits(logits: "torch.Tensor", allowed_token_ids: List) -> "torch.Tenso
 
     biased_logits = torch.full_like(logits, -math.inf, device=logits.device)
     for i, ids in enumerate(allowed_token_ids):
-        biased_logits[i, ids] = logits[i, ids]
+        if ids is not None:
+            biased_logits[i, ids] = logits[i, ids]
+        else:
+            biased_logits[i] = logits[i]
     return biased_logits

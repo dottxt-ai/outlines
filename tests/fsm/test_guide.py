@@ -12,7 +12,7 @@ def test_stop_at_eos():
 
     instruction = fsm.get_next_instruction(fsm.start_state)
     assert isinstance(instruction, Generate)
-    assert instruction.tokens == [1, 2]
+    assert instruction.tokens is None
 
     instruction = fsm.get_next_instruction(fsm.final_state)
     assert isinstance(instruction, Write)

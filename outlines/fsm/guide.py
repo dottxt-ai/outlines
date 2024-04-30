@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, List, Protocol, Tuple, Union
+from typing import TYPE_CHECKING, List, Optional, Protocol, Tuple, Union
 
 import interegular
 from lark import Lark
@@ -38,10 +38,11 @@ class Generate:
     Attributes
     ----------
     tokens
-        The tokens that lead to a valid completion if generated.
+        The tokens that lead to a valid completion if generated.  A value
+        of ``None`` indicates that all tokens are allowed.
     """
 
-    tokens: List[int]
+    tokens: Optional[List[int]]
 
 
 Instruction = Union[Write, Generate]
@@ -89,7 +90,7 @@ class StopAtEOSGuide(Guide):
     def get_next_instruction(self, state: int) -> Instruction:
         if self.is_final_state(state):
             return Write([self.eos_token_id])
-        return Generate(list(self.vocabulary))
+        return Generate(None)
 
     def get_next_state(self, state: int, token_id: int) -> int:
         if token_id == self.eos_token_id or state == self.final_state:
@@ -330,6 +331,9 @@ class CFGGuide(Guide):
                 proposer = self.regex_fsm
 
             instruction = proposer.get_next_instruction(state)
+
+            assert instruction.tokens is not None
+
             if isinstance(instruction, Write):
                 proposal += instruction.tokens
             else:
@@ -365,6 +369,9 @@ class CFGGuide(Guide):
         self.reset_state = True
 
         instruction = self.regex_fsm.get_next_instruction(self.start_state)
+
+        assert instruction.tokens is not None
+
         if isinstance(instruction, Write):
             proposal += instruction.tokens
         else:
