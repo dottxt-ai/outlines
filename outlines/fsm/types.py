@@ -1,6 +1,8 @@
 import datetime
 from typing import Protocol, Tuple, Type, Union
 
+from typing_extensions import _AnnotatedAlias, get_args
+
 INTEGER = r"[+-]?(0|[1-9][0-9]*)"
 BOOLEAN = "(True|False)"
 FLOAT = rf"{INTEGER}(\.[0-9]+)?([eE][+-][0-9]+)?"
@@ -17,6 +19,16 @@ class FormatFunction(Protocol):
 
 
 def python_types_to_regex(python_type: Type) -> Tuple[str, FormatFunction]:
+    # If it is a custom type
+    if isinstance(python_type, _AnnotatedAlias):
+        json_schema = get_args(python_type)[1].json_schema
+        type_class = get_args(python_type)[0]
+
+        regex_str = json_schema["pattern"]
+        format_fn = lambda x: type_class(x)
+
+        return regex_str, format_fn
+
     if python_type == float:
 
         def float_format_fn(sequence: str) -> float:

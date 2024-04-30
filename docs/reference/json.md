@@ -46,6 +46,9 @@ print(result)
 
     `generation.json` computes an index that helps Outlines guide generation. This can take some time, but only needs to be done once. If you want to generate several times with the same schema make sure that you only call `generate.json` once.
 
+!!! Tip "Custom types"
+
+    Outlines provides [custom Pydantic types](types.md) so you do not have to write regular expressions for common types, such as phone numbers or zip codes.
 
 ## Using a JSON Schema
 
