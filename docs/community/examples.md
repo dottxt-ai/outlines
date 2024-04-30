@@ -7,3 +7,5 @@ Publishing examples and articles about Outlines are a meaningful way to contrinu
 [LLM Data Gen](https://huggingface.co/spaces/lhoestq/LLM_DataGen) is a HuggingFace Space that generates synthetic dataset files in JSONLines format.
 
 [Fast, High-Fidelity LLM Decoding with Regex Constraints ](https://vivien000.github.io/blog/journal/llm-decoding-with-regex-constraints.html) presents an efficient alternative to Outlines's structured generation.
+
+[gigax](https://github.com/GigaxGames/gigax) is an Open-Source library that allows to create real-time LLM-powered NPCs for video games.
