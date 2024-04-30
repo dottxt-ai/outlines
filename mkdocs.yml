@@ -109,13 +109,14 @@ nav:
     - Structured generation:
         - Classification: reference/choices.md
         - Regex: reference/regex.md
-        - Type constraints: reference/types.md
+        - Type constraints: reference/format.md
         - JSON (function calling): reference/json.md
         - JSON mode: reference/json_mode.md
         - Grammar: reference/cfg.md
         - Custom FSM operations: reference/custom_fsm_ops.md
     - Utilities:
         - Serve with vLLM: reference/serve/vllm.md
+        - Custom types: reference/types.md
         - Prompt templating: reference/prompting.md
         - Outlines functions: reference/functions.md
     - Models:
