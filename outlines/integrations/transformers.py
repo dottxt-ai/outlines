@@ -26,7 +26,7 @@ limitations under the License.
 """
 
 from collections import defaultdict
-from typing import DefaultDict, List, Optional, Type, Union
+from typing import DefaultDict, Iterable, Optional, Type, Union
 
 import torch
 from pydantic import BaseModel
@@ -84,7 +84,7 @@ class RegexPrefixAllowedTokens:
         # apply the FSM to the generated tokens.
         self._prefix = [-1]
 
-    def __call__(self, batch_id: int, sent: torch.Tensor) -> List[int]:
+    def __call__(self, batch_id: int, sent: torch.Tensor) -> Optional[Iterable[int]]:
         """Use the FSM to bias the logits before sampling the next token.
 
         Parameters

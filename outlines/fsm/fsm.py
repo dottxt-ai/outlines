@@ -1,5 +1,5 @@
 import warnings
-from typing import TYPE_CHECKING, List, NewType
+from typing import TYPE_CHECKING, Iterable, NewType, Optional
 
 from outlines.fsm.guide import CFGGuide, RegexGuide, StopAtEOSGuide
 
@@ -20,7 +20,7 @@ class StopAtEosFSM(StopAtEOSGuide):
         )
         super().__init__(tokenizer)
 
-    def allowed_token_ids(self, state: FSMState) -> List[int]:
+    def allowed_token_ids(self, state: FSMState) -> Optional[Iterable[int]]:
         next_instruction = self.get_next_instruction(state)
         return next_instruction.tokens
 
@@ -39,7 +39,7 @@ class RegexFSM(RegexGuide):
         )
         super().__init__(regex_string, tokenizer)
 
-    def allowed_token_ids(self, state: FSMState) -> List[int]:
+    def allowed_token_ids(self, state: FSMState) -> Optional[Iterable[int]]:
         next_instruction = self.get_next_instruction(state)
         return next_instruction.tokens
 
@@ -58,7 +58,7 @@ class CFGFSM(CFGGuide):
         )
         super().__init__(cfg_string, tokenizer)
 
-    def allowed_token_ids(self, state: FSMState) -> List[int]:
+    def allowed_token_ids(self, state: FSMState) -> Optional[Iterable[int]]:
         return self.get_next_instruction(state).tokens
 
     def next_state(self, state: FSMState, token_id: int) -> FSMState:
