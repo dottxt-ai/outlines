@@ -9,3 +9,5 @@ Publishing examples and articles about Outlines are a meaningful way to contrinu
 [Fast, High-Fidelity LLM Decoding with Regex Constraints ](https://vivien000.github.io/blog/journal/llm-decoding-with-regex-constraints.html) presents an efficient alternative to Outlines's structured generation.
 
 [gigax](https://github.com/GigaxGames/gigax) is an Open-Source library that allows to create real-time LLM-powered NPCs for video games.
+
+[Improving Prompt Consistency with Structured Generations](https://huggingface.co/blog/evaluation-structured-outputs) shows how structured generation can improve consistency of evaluation runs by reducing sensitivity to changes in prompt format.
