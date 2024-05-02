@@ -1,5 +1,6 @@
 import datetime
-from typing import Protocol, Tuple, Type, Union
+from enum import EnumMeta
+from typing import Any, Protocol, Tuple, Type
 
 from typing_extensions import _AnnotatedAlias, get_args
 
@@ -12,9 +13,7 @@ DATETIME = rf"({DATE})(\s)({TIME})"
 
 
 class FormatFunction(Protocol):
-    def __call__(
-        self, sequence: str
-    ) -> Union[int, float, bool, datetime.date, datetime.time, datetime.datetime]:
+    def __call__(self, sequence: str) -> Any:
         ...
 
 
@@ -24,8 +23,17 @@ def python_types_to_regex(python_type: Type) -> Tuple[str, FormatFunction]:
         json_schema = get_args(python_type)[1].json_schema
         type_class = get_args(python_type)[0]
 
-        regex_str = json_schema["pattern"]
-        format_fn = lambda x: type_class(x)
+        custom_regex_str = json_schema["pattern"]
+
+        def custom_format_fn(sequence: str) -> Any:
+            return type_class(sequence)
+
+        return custom_regex_str, custom_format_fn
+
+    if isinstance(python_type, EnumMeta):
+        values = python_type.__members__.keys()
+        regex_str = "(" + "|".join(values) + ")"
+        format_fn = lambda x: str(x)
 
         return regex_str, format_fn
 

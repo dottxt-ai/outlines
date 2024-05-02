@@ -126,6 +126,7 @@ module = [
     "vllm.*",
     "uvicorn.*",
     "fastapi.*",
+    "pyairports.*",
 ]
 ignore_missing_imports = true
 

@@ -26,7 +26,7 @@ from outlines.fsm.types import python_types_to_regex
         (types.ISBN, "0-596-52068-9", True),
     ],
 )
-def test_phone_number(custom_type, test_string, should_match):
+def test_type_regex(custom_type, test_string, should_match):
     class Model(BaseModel):
         attr: custom_type
 
@@ -34,6 +34,31 @@ def test_phone_number(custom_type, test_string, should_match):
     assert schema["properties"]["attr"]["type"] == "string"
     regex_str = schema["properties"]["attr"]["pattern"]
     does_match = re.match(regex_str, test_string) is not None
+    assert does_match is should_match
+
+    regex_str, format_fn = python_types_to_regex(custom_type)
+    assert isinstance(format_fn(1), str)
+    does_match = re.match(regex_str, test_string) is not None
+    assert does_match is should_match
+
+
+@pytest.mark.parametrize(
+    "custom_type,test_string,should_match",
+    [
+        (types.airports.IATA, "CDG", True),
+        (types.airports.IATA, "XXX", False),
+    ],
+)
+def test_type_enum(custom_type, test_string, should_match):
+
+    type_name = custom_type.__name__
+
+    class Model(BaseModel):
+        attr: custom_type
+
+    schema = Model.model_json_schema()
+    assert isinstance(schema["$defs"][type_name]["enum"], list)
+    does_match = test_string in schema["$defs"][type_name]["enum"]
     assert does_match is should_match
 
     regex_str, format_fn = python_types_to_regex(custom_type)
