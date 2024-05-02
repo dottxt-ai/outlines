@@ -57,6 +57,8 @@ test = [
     "vllm",
     "torch",
     "transformers",
+    "pycountry",
+    "pyairports",
 ]
 serve = [
     "vllm>=0.3.0",
@@ -126,6 +128,7 @@ module = [
     "vllm.*",
     "uvicorn.*",
     "fastapi.*",
+    "pycountry.*",
     "pyairports.*",
 ]
 ignore_missing_imports = true
