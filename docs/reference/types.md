@@ -5,6 +5,7 @@ Outlines provides custom Pydantic types so you can focus on your use case rather
 - Using `outlines.types.ZipCode` will generate valid US Zip(+4) codes.
 - Using `outlines.types.PhoneNumber` will generate valid US phone numbers.
 - Using `outlines.types.ISBN` will generate ISBNs. Note that there is no guarantee that the [check digit](https://en.wikipedia.org/wiki/ISBN#Check_digits) will be correct.
+- Using `outlines.types.airports.IATA` will generate valid airport IATA codes.
 
 You can use these types in Pydantic schemas for JSON-structured generation:
 
