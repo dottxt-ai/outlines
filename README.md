@@ -48,6 +48,7 @@ Outlines 〰 has new releases and features coming every week. Make sure to ⭐ s
 * [It speeds up inference](http://blog.dottxt.co/coalescence.html)
 * [It improves the performance of base models (GSM8K)](http://blog.dottxt.co/performance-gsm8k.html)
 * [It improves the performance of finetuned models (CoNNL)](https://predibase.com/blog/lorax-outlines-better-json-extraction-with-structured-generation-and-lora)
+* [It improves model efficiency (less examples needed)](https://huggingface.co/blog/evaluation-structured-outputs)
 
 ## .txt company
 
