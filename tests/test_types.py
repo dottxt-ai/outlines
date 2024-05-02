@@ -47,10 +47,19 @@ def test_type_regex(custom_type, test_string, should_match):
     [
         (types.airports.IATA, "CDG", True),
         (types.airports.IATA, "XXX", False),
+        (types.countries.Alpha2, "FR", True),
+        (types.countries.Alpha2, "XX", False),
+        (types.countries.Alpha3, "UKR", True),
+        (types.countries.Alpha3, "XXX", False),
+        (types.countries.Numeric, "004", True),
+        (types.countries.Numeric, "900", False),
+        (types.countries.Name, "Ukraine", True),
+        (types.countries.Name, "Wonderland", False),
+        (types.countries.Flag, "🇿🇼", True),
+        (types.countries.Flag, "🤗", False),
     ],
 )
 def test_type_enum(custom_type, test_string, should_match):
-
     type_name = custom_type.__name__
 
     class Model(BaseModel):

@@ -32,10 +32,12 @@ def python_types_to_regex(python_type: Type) -> Tuple[str, FormatFunction]:
 
     if isinstance(python_type, EnumMeta):
         values = python_type.__members__.keys()
-        regex_str = "(" + "|".join(values) + ")"
-        format_fn = lambda x: str(x)
+        enum_regex_str: str = "(" + "|".join(values) + ")"
 
-        return regex_str, format_fn
+        def enum_format_fn(sequence: str) -> str:
+            return str(sequence)
+
+        return enum_regex_str, enum_format_fn
 
     if python_type == float:
 
