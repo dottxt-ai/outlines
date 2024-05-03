@@ -182,6 +182,10 @@ class LlamaCpp:
             **llama_cpp_params,
         )
         completion = self.model(prompts, **llama_cpp_params)
+        if completion["choices"][0]["finish_reason"] != "stop":
+            raise RuntimeError(
+                f"The generation stopped earlier than expected. The reason was: `{completion['choices'][0]['finish_reason']}`. The default `max_tokens` of LlamaCpp is 16. Consider pass a larger `max_tokens`."
+            )
         result = completion["choices"][0]["text"]
 
         self.model.reset()
