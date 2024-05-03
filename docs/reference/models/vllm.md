@@ -123,7 +123,7 @@ from outlines import models, generate
 model = models.vllm("mistralai/Mistral-7b-v0.1")
 generator = generate.text(model)
 
-params = SamplingParams(n=2, frequence_penalty=1., min_tokens=2)
+params = SamplingParams(n=2, frequency_penalty=1., min_tokens=2)
 answer = generator("A prompt", sampling_params=params)
 ```
 
