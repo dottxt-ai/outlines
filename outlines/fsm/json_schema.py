@@ -97,7 +97,7 @@ def build_regex_from_schema(
     return to_regex(resolver, content, whitespace_pattern)
 
 
-def is_null_type(instance: dict):
+def _is_null_type(instance: dict):
     if "type" in instance and (instance["type"] == "null" or instance["type"] is None):
         return True
     if "const" in instance and (
@@ -107,9 +107,9 @@ def is_null_type(instance: dict):
     return False
 
 
-def any_of_list_has_null_type(any_of_list: list[dict[str, str]]):
-    for subinstance in any_of_list:
-        if is_null_type(subinstance):
+def _has_null_type(instance_list: list[dict]):
+    for instance in instance_list:
+        if _is_null_type(instance):
             return True
     return False
 
@@ -134,12 +134,10 @@ def optimize_schema(instance):
                     subinstance_type == "array" and subinstance.get("minItems", 0) == 0
                 ):
                     new_optional_keys.add(key)
-            elif "anyOf" in subinstance and any_of_list_has_null_type(
-                subinstance["anyOf"]
-            ):
+            elif "anyOf" in subinstance and _has_null_type(subinstance["anyOf"]):
                 any_of_list = subinstance.pop("anyOf")
                 filtered_any_of_list = list(
-                    filter(lambda d: is_null_type(d), any_of_list)
+                    filter(lambda d: _is_null_type(d), any_of_list)
                 )
                 if len(filtered_any_of_list) == 0:
                     keys_to_remove.add(key)
