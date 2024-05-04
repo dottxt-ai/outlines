@@ -137,7 +137,7 @@ def optimize_schema(instance):
             elif "anyOf" in subinstance and _has_null_type(subinstance["anyOf"]):
                 any_of_list = subinstance.pop("anyOf")
                 filtered_any_of_list = list(
-                    filter(lambda d: _is_null_type(d), any_of_list)
+                    filter(lambda d: not _is_null_type(d), any_of_list)
                 )
                 if len(filtered_any_of_list) == 0:
                     keys_to_remove.add(key)
