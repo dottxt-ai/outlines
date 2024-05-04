@@ -3,7 +3,7 @@ import json
 import re
 import warnings
 from copy import deepcopy
-from typing import Callable, Optional
+from typing import Callable, List, Optional
 
 from jsonschema.protocols import Validator
 from pydantic import create_model
@@ -107,7 +107,7 @@ def _is_null_type(instance: dict):
     return False
 
 
-def _has_null_type(instance_list: list[dict]):
+def _has_null_type(instance_list: List[dict]):
     for instance in instance_list:
         if _is_null_type(instance):
             return True
