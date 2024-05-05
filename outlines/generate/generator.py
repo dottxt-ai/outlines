@@ -86,8 +86,9 @@ def sequence_generator(
         token_ids = update_token_ids(token_ids, next_token_ids, ancestors)
         attention_masks = update_attention_masks(attention_masks, ancestors)
         kv_cache = reorder_kv_cache(kv_cache, ancestors)
-        fsms = reorder_fsms(fsms, ancestors)
-        fsm_states = reorder_fsm_states(fsm_states, ancestors)
+        if len(ancestors) > 1:
+            fsms = reorder_fsms(fsms, ancestors)
+            fsm_states = reorder_fsm_states(fsm_states, ancestors)
 
         fsm_states = get_next_fsm_states(fsms, fsm_states, next_token_ids)
         is_finished = is_generation_finished(fsms, fsm_states)
