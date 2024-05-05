@@ -19,7 +19,7 @@ print(type(model))
 Outlines also supports Azure OpenAI models:
 
 
-```
+```python
 from outlines import models
 
 model = models.azure_openai(
@@ -30,7 +30,7 @@ model = models.azure_openai(
 
 More generally, you can use any API client compatible with the OpenAI interface by passing an instance of the client, a configuration, and optionally the corresponding tokenizer (if you want to be able to use `outlines.generate.choice`):
 
-```
+```python
 from openai import AsyncOpenAI
 import tiktoken
 
