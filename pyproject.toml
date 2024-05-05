@@ -93,7 +93,9 @@ filterwarnings = [
     "ignore::numba.core.errors.NumbaPendingDeprecationWarning",
     "ignore::pydantic.warnings.PydanticDeprecatedSince20",
     "ignore::FutureWarning:transformers.*",
+    "ignore::FutureWarning:huggingface_hub.*",
     "ignore::UserWarning",
+    "ignore::DeprecationWarning:pyairports.*",
 ]
 
 [tool.mypy]
