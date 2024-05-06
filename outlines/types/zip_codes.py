@@ -10,4 +10,4 @@ from typing_extensions import Annotated
 US_ZIP_CODE = r"\d{5}(?:-\d{4})?"
 
 
-ZipCode = Annotated[str, WithJsonSchema({"type": "string", "pattern": US_ZIP_CODE})]
+USZipCode = Annotated[str, WithJsonSchema({"type": "string", "pattern": US_ZIP_CODE})]

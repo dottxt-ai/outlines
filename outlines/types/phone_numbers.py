@@ -10,7 +10,7 @@ from typing_extensions import Annotated
 US_PHONE_NUMBER = r"(\([0-9]{3}\) |[0-9]{3}-)[0-9]{3}-[0-9]{4}"
 
 
-PhoneNumber = Annotated[
+USPhoneNumber = Annotated[
     str,
     WithJsonSchema({"type": "string", "pattern": US_PHONE_NUMBER}),
 ]

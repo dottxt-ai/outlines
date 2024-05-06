@@ -2,11 +2,8 @@
 
 Outlines provides custom Pydantic types so you can focus on your use case rather than on writing regular expressions:
 
-
 | Category | Type | Import | Description |
 |:--------:|:----:|:-------|:------------|
-| Zip code | US | `outlines.types.ZipCode` | Generate US Zip(+4) codes |
-| Phone number  | US | `outlines.types.PhoneNumber` | Generate valid US phone numbers |
 | ISBN | 10 & 13 | `outlines.types.ISBN` | There is no guarantee that the [check digit][wiki-isbn] will be correct |
 | Airport | IATA | `outlines.types.airports.IATA` | Valid [airport IATA codes][wiki-airport-iata] |
 | Country | alpha-2 code | `outlines.types.airports.Alpha2` | Valid [country alpha-2 codes][wiki-country-alpha-2] |
@@ -15,6 +12,23 @@ Outlines provides custom Pydantic types so you can focus on your use case rather
 |  | name | `outlines.types.countries.Name` | Valid country names |
 |  | flag | `outlines.types.countries.Flag` | Valid flag emojis |
 
+Some types require localization. We currently only support US types, but please don't hesitate to create localized versions of the different types and open a Pull Request. Localized types are specified using `types.locale` in the following way:
+
+```python
+from outlines import types
+
+types.locale("us").ZipCode
+types.locale("us").PhoneNumber
+```
+
+Here are the localized types that are currently available:
+
+| Category | Locale | Import | Description |
+|:--------:|:----:|:-------|:------------|
+| Zip code | US | `ZipCode` | Generate US Zip(+4) codes |
+| Phone number  | US | `PhoneNumber` | Generate valid US phone numbers |
+
+
 You can use these types in Pydantic schemas for JSON-structured generation:
 
 ```python
@@ -22,11 +36,13 @@ from pydantic import BaseModel
 
 from outlines import models, generate, types
 
+# Specify the locale for types
+locale = types.locale("us")
 
 class Client(BaseModel):
     name: str
-    phone_number: types.PhoneNumber
-    zip_code: types.ZipCode
+    phone_number: locale.PhoneNumber
+    zip_code: locale.ZipCode
 
 
 model = models.transformers("mistralai/Mistral-7B-v0.1")
@@ -47,7 +63,7 @@ from outlines import models, generate, types
 
 
 model = models.transformers("mistralai/Mistral-7B-v0.1")
-generator = generate.format(model, types.PhoneNumber)
+generator = generate.format(model, types.locale("us").PhoneNumber)
 result = generator(
     "Return a US Phone number: "
 )
