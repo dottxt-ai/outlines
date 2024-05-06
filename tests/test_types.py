@@ -10,12 +10,12 @@ from outlines.fsm.types import python_types_to_regex
 @pytest.mark.parametrize(
     "custom_type,test_string,should_match",
     [
-        (types.PhoneNumber, "12", False),
-        (types.PhoneNumber, "(123) 123-1234", True),
-        (types.PhoneNumber, "123-123-1234", True),
-        (types.ZipCode, "12", False),
-        (types.ZipCode, "12345", True),
-        (types.ZipCode, "12345-1234", True),
+        (types.phone_numbers.USPhoneNumber, "12", False),
+        (types.phone_numbers.USPhoneNumber, "(123) 123-1234", True),
+        (types.phone_numbers.USPhoneNumber, "123-123-1234", True),
+        (types.zip_codes.USZipCode, "12", False),
+        (types.zip_codes.USZipCode, "12345", True),
+        (types.zip_codes.USZipCode, "12345-1234", True),
         (types.ISBN, "ISBN 0-1-2-3-4-5", False),
         (types.ISBN, "ISBN 978-0-596-52068-7", True),
         # (types.ISBN, "ISBN 978-0-596-52068-1", True), wrong check digit
@@ -40,6 +40,27 @@ def test_type_regex(custom_type, test_string, should_match):
     assert isinstance(format_fn(1), str)
     does_match = re.match(regex_str, test_string) is not None
     assert does_match is should_match
+
+
+def test_locale_not_implemented():
+    with pytest.raises(NotImplementedError):
+        types.locale("fr")
+
+
+@pytest.mark.parametrize(
+    "locale_str,base_types,locale_types",
+    [
+        (
+            "us",
+            ["ZipCode", "PhoneNumber"],
+            [types.zip_codes.USZipCode, types.phone_numbers.USPhoneNumber],
+        )
+    ],
+)
+def test_locale(locale_str, base_types, locale_types):
+    for base_type, locale_type in zip(base_types, locale_types):
+        type = getattr(types.locale(locale_str), base_type)
+        assert type == locale_type
 
 
 @pytest.mark.parametrize(
