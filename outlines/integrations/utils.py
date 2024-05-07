@@ -61,7 +61,7 @@ def adapt_tokenizer(tokenizer: PreTrainedTokenizerBase) -> PreTrainedTokenizerBa
         tokenizer.name_or_path = tokenizer.path
     else:
         print("[WARNING]: tokenizer has no name or path. Setting cache key to `unknown`")
-        tokenizer.name_or_path = tokenizer.path = "unknown"
+        tokenizer.name_or_path = "unknown"
 
     def convert_token_to_string(token: Union[str, bytes]) -> str:
         string = tokenizer.convert_tokens_to_string([token])
