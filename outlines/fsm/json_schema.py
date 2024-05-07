@@ -375,6 +375,10 @@ def get_schema_from_signature(fn: Callable) -> str:
         else:
             arguments[name] = (arg.annotation, ...)
 
-    model = create_model("Arguments", **arguments)
+    try:
+        fn_name = fn.__name__
+    except Exception:
+        fn_name = "Arguments"
+    model = create_model(fn_name, **arguments)
 
     return model.model_json_schema()
