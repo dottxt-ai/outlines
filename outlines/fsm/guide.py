@@ -112,7 +112,7 @@ class RegexGuide(Guide):
 
     def __init__(self, regex_string: str, tokenizer):
         @cache()
-        def create_states_mapping(regex_string: str) -> Tuple[dict, set, set]:
+        def create_states_mapping(regex_string: str, tokenizer) -> Tuple[dict, set, set]:
             """Create the variables related to the mapping between states and tokens
             The parameters of the function are used for caching purpose
             """
@@ -142,7 +142,7 @@ class RegexGuide(Guide):
             self.states_to_token_maps,
             self.empty_token_ids,
             fsm_finals,
-        ) = create_states_mapping(regex_string)
+        ) = create_states_mapping(regex_string, tokenizer)
         self.eos_token_id = tokenizer.eos_token_id
         self.final_states = fsm_finals | {-1}
 
