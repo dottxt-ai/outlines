@@ -195,10 +195,6 @@ class RegexGuide(Guide):
         """
         if token_id == self.eos_token_id:
             return -1
-        elif (
-            state in self.final_states
-        ):  # Necessary because we keep generating EOS tokens when finished
-            return state
 
         last_token_to_end_state = self.states_to_token_maps[state]
         next_state = last_token_to_end_state.get(token_id)
