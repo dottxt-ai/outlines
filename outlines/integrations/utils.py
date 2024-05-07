@@ -52,6 +52,17 @@ def adapt_tokenizer(tokenizer: PreTrainedTokenizerBase) -> PreTrainedTokenizerBa
     tokenizer.vocabulary = tokenizer.get_vocab()
     tokenizer.special_tokens = set(tokenizer.all_special_tokens)
 
+    # tokenizer.name_or_path is one of the keys for `create_states_mapping()` cache
+    if hasattr(tokenizer, "name_or_path"):
+        tokenizer.name_or_path = tokenizer.name_or_path
+    elif hasattr(tokenizer, "name"):
+        tokenizer.name_or_path = tokenizer.name
+    elif hasattr(tokenizer, "path"):
+        tokenizer.name_or_path = tokenizer.path
+    else:
+        print("[WARNING]: tokenizer has no name or path. Setting cache key to `unknown`")
+        tokenizer.name_or_path = tokenizer.path = "unknown"
+
     def convert_token_to_string(token: Union[str, bytes]) -> str:
         string = tokenizer.convert_tokens_to_string([token])
 
