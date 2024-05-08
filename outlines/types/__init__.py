@@ -1,4 +1,3 @@
-from . import airports, countries
+from . import Email, airports, countries
 from .isbn import ISBN
 from .locales import locale
-from . import Email
