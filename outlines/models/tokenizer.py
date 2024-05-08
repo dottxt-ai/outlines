@@ -10,6 +10,7 @@ class Tokenizer(Hashable, Protocol):
     pad_token_id: int
     vocabulary: Dict[str, int]
     special_tokens: Set[int]
+    name_or_path: str
 
     def encode(
         self, prompt: Union[str, List[str]]
