@@ -11,6 +11,7 @@ Outlines provides custom Pydantic types so you can focus on your use case rather
 |  | numeric code | `outlines.types.countries.Numeric` | Valid [country numeric codes][wiki-country-numeric] |
 |  | name | `outlines.types.countries.Name` | Valid country names |
 |  | flag | `outlines.types.countries.Flag` | Valid flag emojis |
+| | email | `outlines.types.Email` | Valid email address |
 
 Some types require localization. We currently only support US types, but please don't hesitate to create localized versions of the different types and open a Pull Request. Localized types are specified using `types.locale` in the following way:
 
