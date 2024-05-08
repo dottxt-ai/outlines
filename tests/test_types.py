@@ -24,6 +24,12 @@ from outlines.fsm.types import python_types_to_regex
         (types.ISBN, "9780596520687", True),
         (types.ISBN, "ISBN-10: 0-596-52068-9", True),
         (types.ISBN, "0-596-52068-9", True),
+        (types.Email, "eitan@gmail.com", True),
+        (types.Email, "99@yahoo.com", True),
+        (types.Email, "eitan@.gmail.com", False),
+        (types.Email, "myemail", False),
+        (types.Email, "eitan@gmail", False),
+        (types.Email, "eitan@my.custom.domain", True),
     ],
 )
 def test_type_regex(custom_type, test_string, should_match):
