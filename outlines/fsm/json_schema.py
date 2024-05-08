@@ -1,6 +1,7 @@
 import inspect
 import json
 import re
+import warnings
 from typing import Callable, Optional
 
 from jsonschema.protocols import Validator
@@ -375,6 +376,14 @@ def get_schema_from_signature(fn: Callable) -> str:
         else:
             arguments[name] = (arg.annotation, ...)
 
-    model = create_model("Arguments", **arguments)
+    try:
+        fn_name = fn.__name__
+    except Exception as e:
+        fn_name = "Arguments"
+        warnings.warn(
+            f"The function name could not be determined. Using default name 'Arguments' instead. For debugging, here is exact error:\n{e}",
+            category=UserWarning,
+        )
+    model = create_model(fn_name, **arguments)
 
     return model.model_json_schema()
