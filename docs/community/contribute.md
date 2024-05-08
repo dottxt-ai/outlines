@@ -39,7 +39,7 @@ source .venv/bin/activate
 Then install the dependencies in editable mode, and install the pre-commit hooks:
 
 ```python
-pip install -e .[test]
+pip install -e ".[test]"
 pre-commit install
 ```
 
