@@ -1,6 +1,6 @@
 import json as pyjson
 from functools import singledispatch
-from typing import Callable, Optional, Union
+from typing import Callable, Optional, Union, Dict
 
 from pydantic import BaseModel
 
@@ -58,10 +58,16 @@ def json(
         regex_str = build_regex_from_schema(schema, whitespace_pattern)
         generator = regex(model, regex_str, sampler)
         generator.format_sequence = lambda x: pyjson.loads(x)
+    elif isinstance(schema_object, Dict):
+        schema_str = json.dumps(schema)
+        regex_str = build_regex_from_schema(schema, whitespace_pattern)
+        generator = regex(model, regex_str, sampler)
+        generator.format_sequence = lambda x: pyjson.loads(x)
     else:
         raise ValueError(
             f"Cannot parse schema {schema_object}. The schema must be either "
-            + "a Pydantic object, a function or a string that contains the JSON "
+            + "a Pydantic object, a function, a dictionary that contains the "
+            + "JSON Schema specification, or a string that contains the JSON "
             + "Schema specification"
         )
 
