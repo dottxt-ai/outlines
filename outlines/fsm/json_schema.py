@@ -22,7 +22,7 @@ WHITESPACE = r"[\n ]*"
 type_to_regex = {
     "string": STRING,
     "integer": INTEGER,
-    "float": FLOAT
+    "float": FLOAT,
     "number": NUMBER,
     "boolean": BOOLEAN,
     "null": NULL,
