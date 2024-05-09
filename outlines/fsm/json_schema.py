@@ -13,6 +13,7 @@ from referencing.jsonschema import DRAFT202012
 STRING_INNER = r'([^("\\\x00-\x1f\x7f-\x9f)]|\\\\)'
 STRING = f'"{STRING_INNER}*"'
 INTEGER = r"(-)?(0|[1-9][0-9]*)"
+FLOAT = rf"[-]?[0-9]*\.[0-9]+([eE][-+]?[0-9]+)?"
 NUMBER = rf"({INTEGER})(\.[0-9]+)?([eE][+-][0-9]+)?"
 BOOLEAN = r"(true|false)"
 NULL = r"null"
@@ -21,6 +22,7 @@ WHITESPACE = r"[\n ]*"
 type_to_regex = {
     "string": STRING,
     "integer": INTEGER,
+    "float": FLOAT
     "number": NUMBER,
     "boolean": BOOLEAN,
     "null": NULL,
@@ -277,6 +279,9 @@ def to_regex(
 
         elif instance_type == "integer":
             return type_to_regex["integer"]
+
+        elif instance_type == "float":
+            return type_to_regex["float"]
 
         elif instance_type == "array":
             num_repeats = _get_num_items_pattern(
