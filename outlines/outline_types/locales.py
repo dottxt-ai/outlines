@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-from outlines.types.phone_numbers import USPhoneNumber
-from outlines.types.zip_codes import USZipCode
+from outlines.outline_types.phone_numbers import USPhoneNumber
+from outlines.outline_types.zip_codes import USZipCode
 
 
 @dataclass

@@ -2,24 +2,24 @@
 
 Outlines provides custom Pydantic types so you can focus on your use case rather than on writing regular expressions:
 
-| Category | Type | Import | Description |
-|:--------:|:----:|:-------|:------------|
-| ISBN | 10 & 13 | `outlines.types.ISBN` | There is no guarantee that the [check digit][wiki-isbn] will be correct |
-| Airport | IATA | `outlines.types.airports.IATA` | Valid [airport IATA codes][wiki-airport-iata] |
-| Country | alpha-2 code | `outlines.types.airports.Alpha2` | Valid [country alpha-2 codes][wiki-country-alpha-2] |
-|  | alpha-3 code | `outlines.types.countries.Alpha3` | Valid [country alpha-3 codes][wiki-country-alpha-3] |
-|  | numeric code | `outlines.types.countries.Numeric` | Valid [country numeric codes][wiki-country-numeric] |
-|  | name | `outlines.types.countries.Name` | Valid country names |
-|  | flag | `outlines.types.countries.Flag` | Valid flag emojis |
-| | email | `outlines.types.Email` | Valid email address |
+| Category | Type | Import                             | Description |
+|:--------:|:----:|:-----------------------------------|:------------|
+| ISBN | 10 & 13 | `outlines.outline_types.ISBN`      | There is no guarantee that the [check digit][wiki-isbn] will be correct |
+| Airport | IATA | `outlines.outline_types.airports.IATA`     | Valid [airport IATA codes][wiki-airport-iata] |
+| Country | alpha-2 code | `outlines.outline_types.airports.Alpha2`   | Valid [country alpha-2 codes][wiki-country-alpha-2] |
+|  | alpha-3 code | `outlines.outline_types.countries.Alpha3`  | Valid [country alpha-3 codes][wiki-country-alpha-3] |
+|  | numeric code | `outlines.outline_types.countries.Numeric` | Valid [country numeric codes][wiki-country-numeric] |
+|  | name | `outlines.outline_types.countries.Name`    | Valid country names |
+|  | flag | `outlines.outline_types.countries.Flag`    | Valid flag emojis |
+| | email | `outlines.outline_types.Email` | Valid email address |
 
 Some types require localization. We currently only support US types, but please don't hesitate to create localized versions of the different types and open a Pull Request. Localized types are specified using `types.locale` in the following way:
 
 ```python
-from outlines import types
+from outlines import outline_types
 
-types.locale("us").ZipCode
-types.locale("us").PhoneNumber
+outline_types.locale("us").ZipCode
+outline_types.locale("us").PhoneNumber
 ```
 
 Here are the localized types that are currently available:
@@ -35,10 +35,11 @@ You can use these types in Pydantic schemas for JSON-structured generation:
 ```python
 from pydantic import BaseModel
 
-from outlines import models, generate, types
+from outlines import models, generate, outline_types
 
 # Specify the locale for types
-locale = types.locale("us")
+locale = outline_types.locale("us")
+
 
 class Client(BaseModel):
     name: str
@@ -60,11 +61,10 @@ Or simply with `outlines.generate.format`:
 ```python
 from pydantic import BaseModel
 
-from outlines import models, generate, types
-
+from outlines import models, generate, outline_types
 
 model = models.transformers("mistralai/Mistral-7B-v0.1")
-generator = generate.format(model, types.locale("us").PhoneNumber)
+generator = generate.format(model, outline_types.locale("us").PhoneNumber)
 result = generator(
     "Return a US Phone number: "
 )

@@ -3,33 +3,33 @@ import re
 import pytest
 from pydantic import BaseModel
 
-from outlines import types
+from outlines import outline_types
 from outlines.fsm.types import python_types_to_regex
 
 
 @pytest.mark.parametrize(
     "custom_type,test_string,should_match",
     [
-        (types.phone_numbers.USPhoneNumber, "12", False),
-        (types.phone_numbers.USPhoneNumber, "(123) 123-1234", True),
-        (types.phone_numbers.USPhoneNumber, "123-123-1234", True),
-        (types.zip_codes.USZipCode, "12", False),
-        (types.zip_codes.USZipCode, "12345", True),
-        (types.zip_codes.USZipCode, "12345-1234", True),
-        (types.ISBN, "ISBN 0-1-2-3-4-5", False),
-        (types.ISBN, "ISBN 978-0-596-52068-7", True),
+        (outline_types.phone_numbers.USPhoneNumber, "12", False),
+        (outline_types.phone_numbers.USPhoneNumber, "(123) 123-1234", True),
+        (outline_types.phone_numbers.USPhoneNumber, "123-123-1234", True),
+        (outline_types.zip_codes.USZipCode, "12", False),
+        (outline_types.zip_codes.USZipCode, "12345", True),
+        (outline_types.zip_codes.USZipCode, "12345-1234", True),
+        (outline_types.ISBN, "ISBN 0-1-2-3-4-5", False),
+        (outline_types.ISBN, "ISBN 978-0-596-52068-7", True),
         # (types.ISBN, "ISBN 978-0-596-52068-1", True), wrong check digit
-        (types.ISBN, "ISBN-13: 978-0-596-52068-7", True),
-        (types.ISBN, "978 0 596 52068 7", True),
-        (types.ISBN, "9780596520687", True),
-        (types.ISBN, "ISBN-10: 0-596-52068-9", True),
-        (types.ISBN, "0-596-52068-9", True),
-        (types.Email, "eitan@gmail.com", True),
-        (types.Email, "99@yahoo.com", True),
-        (types.Email, "eitan@.gmail.com", False),
-        (types.Email, "myemail", False),
-        (types.Email, "eitan@gmail", False),
-        (types.Email, "eitan@my.custom.domain", True),
+        (outline_types.ISBN, "ISBN-13: 978-0-596-52068-7", True),
+        (outline_types.ISBN, "978 0 596 52068 7", True),
+        (outline_types.ISBN, "9780596520687", True),
+        (outline_types.ISBN, "ISBN-10: 0-596-52068-9", True),
+        (outline_types.ISBN, "0-596-52068-9", True),
+        (outline_types.Email, "eitan@gmail.com", True),
+        (outline_types.Email, "99@yahoo.com", True),
+        (outline_types.Email, "eitan@.gmail.com", False),
+        (outline_types.Email, "myemail", False),
+        (outline_types.Email, "eitan@gmail", False),
+        (outline_types.Email, "eitan@my.custom.domain", True),
     ],
 )
 def test_type_regex(custom_type, test_string, should_match):
@@ -50,7 +50,7 @@ def test_type_regex(custom_type, test_string, should_match):
 
 def test_locale_not_implemented():
     with pytest.raises(NotImplementedError):
-        types.locale("fr")
+        outline_types.locale("fr")
 
 
 @pytest.mark.parametrize(
@@ -59,31 +59,31 @@ def test_locale_not_implemented():
         (
             "us",
             ["ZipCode", "PhoneNumber"],
-            [types.zip_codes.USZipCode, types.phone_numbers.USPhoneNumber],
+            [outline_types.zip_codes.USZipCode, outline_types.phone_numbers.USPhoneNumber],
         )
     ],
 )
 def test_locale(locale_str, base_types, locale_types):
     for base_type, locale_type in zip(base_types, locale_types):
-        type = getattr(types.locale(locale_str), base_type)
+        type = getattr(outline_types.locale(locale_str), base_type)
         assert type == locale_type
 
 
 @pytest.mark.parametrize(
     "custom_type,test_string,should_match",
     [
-        (types.airports.IATA, "CDG", True),
-        (types.airports.IATA, "XXX", False),
-        (types.countries.Alpha2, "FR", True),
-        (types.countries.Alpha2, "XX", False),
-        (types.countries.Alpha3, "UKR", True),
-        (types.countries.Alpha3, "XXX", False),
-        (types.countries.Numeric, "004", True),
-        (types.countries.Numeric, "900", False),
-        (types.countries.Name, "Ukraine", True),
-        (types.countries.Name, "Wonderland", False),
-        (types.countries.Flag, "🇿🇼", True),
-        (types.countries.Flag, "🤗", False),
+        (outline_types.airports.IATA, "CDG", True),
+        (outline_types.airports.IATA, "XXX", False),
+        (outline_types.countries.Alpha2, "FR", True),
+        (outline_types.countries.Alpha2, "XX", False),
+        (outline_types.countries.Alpha3, "UKR", True),
+        (outline_types.countries.Alpha3, "XXX", False),
+        (outline_types.countries.Numeric, "004", True),
+        (outline_types.countries.Numeric, "900", False),
+        (outline_types.countries.Name, "Ukraine", True),
+        (outline_types.countries.Name, "Wonderland", False),
+        (outline_types.countries.Flag, "🇿🇼", True),
+        (outline_types.countries.Flag, "🤗", False),
     ],
 )
 def test_type_enum(custom_type, test_string, should_match):
