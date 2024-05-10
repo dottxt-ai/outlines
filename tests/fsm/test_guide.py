@@ -1,6 +1,8 @@
 import pytest
+from transformers import AutoTokenizer
 
 from outlines.fsm.guide import CFGGuide, Generate, RegexGuide, StopAtEOSGuide, Write
+from outlines.models.transformers import TransformerTokenizer
 
 
 def test_stop_at_eos():
@@ -481,3 +483,53 @@ def test_cfg_allow_both_extend_and_shift_terminal():
     state = fsm.get_next_state(state=state, token_id=4)
     assert fsm.generation == "(aa)"
     assert fsm.is_final_state(state)
+
+
+# TODO: parameterize
+@pytest.mark.parametrize(
+    "generation_str, is_valid, should_break_early",
+    [
+        ("10.0.0.128255255000", False, True),
+        ("1.1.1", False, False),
+        ("10.0.12", False, False),
+        ("1.1.1.1", True, False),
+        ("10.0.0.12", True, False),
+    ],
+)
+def test_regexfsm_ip(generation_str, is_valid, should_break_early):
+    """
+    Ensure https://github.com/outlines-dev/outlines/issues/856 is resolved
+    This issue results from the FSM having multiple final state candidates
+    """
+    pattern = r"((25|(2|1\d|\d))\.){3}(25|(2|1\d|\d))"
+
+    hf_tokenizer = AutoTokenizer.from_pretrained("HuggingFaceH4/zephyr-7b-beta")
+    tokenizer = TransformerTokenizer(hf_tokenizer)
+    mock_generated_ids = hf_tokenizer.encode(generation_str, add_special_tokens=False)
+
+    # filter zero-length tokens which outlines doesn't allow
+    mock_generated_ids = [
+        tok_id for tok_id in mock_generated_ids if len(hf_tokenizer.decode(tok_id))
+    ]
+
+    guide = RegexGuide(pattern, tokenizer)
+
+    curr_state = 0
+    for token_id in mock_generated_ids:
+        # if invalid token produced, end generation
+        allowed_token_ids = guide.get_next_instruction(state=curr_state).tokens
+        if token_id not in allowed_token_ids:
+            assert should_break_early, "Unexpectedly failed to finish generating"
+            break
+
+        curr_state = guide.get_next_state(state=curr_state, token_id=token_id)
+
+        is_final = guide.is_final_state(state=curr_state)
+
+    else:
+        assert not should_break_early, "Unexpectedly successfully finished generating"
+
+        if is_valid:
+            assert is_final, "Expected success, but automata is NOT at final state"
+        else:
+            assert not is_final, "Expected failure, but automata is at final state"
