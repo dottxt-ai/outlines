@@ -29,10 +29,7 @@ def refresh_environment():
 
 @pytest.fixture
 def test_cache(refresh_environment):
-    """
-    Initialize a temporary cache and delete it after the test has run.
-    Enable cache (unique to these tests, other tests have cache disabled by default)
-    """
+    """Initialize a temporary cache and delete it after the test has run."""
     with tempfile.TemporaryDirectory() as tempdir:
         os.environ["OUTLINES_CACHE_DIR"] = tempdir
         import outlines
