@@ -485,7 +485,6 @@ def test_cfg_allow_both_extend_and_shift_terminal():
     assert fsm.is_final_state(state)
 
 
-# TODO: parameterize
 @pytest.mark.parametrize(
     "generation_str, is_valid, should_break_early",
     [
