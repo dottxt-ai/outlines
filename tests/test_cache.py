@@ -89,23 +89,42 @@ def test_get_cache_custom_key_function(test_cache_custom_key_function):
     memory = outlines.get_cache()
     assert isinstance(memory, diskcache.Cache)
 
+    # GIVEN a cached function with a custom `key_function`
     @test_cache_custom_key_function
     def f(x: dict):
         return len(x)
 
+    # and a particular cache state
+    cached_items = len(list(memory.iterkeys()))
+
+    # WHEN the function is called with a dictionary
     mocked_dict = MagicMock()
     mocked_dict.keys.return_value = ["a", "b", "c"]
-    cached_items = len(list(memory.iterkeys()))
     f(mocked_dict)
+
+    # THEN the cache should have increased
     assert len(list(memory.iterkeys())) > cached_items
+
+    # and the parameter used in the call has been "treated" by the custom `key_function`
     mocked_dict.keys.assert_has_calls([call()])
+
+    # GIVEN the new cache state
     cached_items = len(list(memory.iterkeys()))
 
+    # WHEN the function is called with the same dictionary
     f(mocked_dict)
+
+    # THEN the cache should not have increased
     assert len(list(memory.iterkeys())) == cached_items
+
+    # but the key_function has been called again
     mocked_dict.keys.assert_has_calls([call(), call()])
 
+    # GIVEN the unchanged cache state
+    # WHEN the function is called with a different dictionary
     f({"foo": "bar"})
+
+    # THEN the cache should have increased once again
     assert len(list(memory.iterkeys())) > cached_items
 
 
