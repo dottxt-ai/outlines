@@ -1,5 +1,6 @@
 import os
 import tempfile
+from unittest.mock import MagicMock, call
 
 import diskcache
 import pytest
@@ -41,6 +42,21 @@ def test_cache(refresh_environment):
         memory.clear()
 
 
+@pytest.fixture
+def test_cache_custom_key_function(refresh_environment):
+    """Initialize a temporary cache and delete it after the test has run."""
+    with tempfile.TemporaryDirectory() as tempdir:
+        os.environ["OUTLINES_CACHE_DIR"] = tempdir
+        import outlines
+
+        memory = outlines.get_cache()
+        assert memory.directory == tempdir
+
+        yield outlines.caching.cache(key_function=lambda x: (sorted(x.keys())))
+
+        memory.clear()
+
+
 def test_get_cache(test_cache):
     import outlines
 
@@ -65,6 +81,32 @@ def test_get_cache(test_cache):
 
     f(2)
     assert len(store) == store_size + 1
+
+
+def test_get_cache_custom_key_function(test_cache_custom_key_function):
+    import outlines
+
+    memory = outlines.get_cache()
+    assert isinstance(memory, diskcache.Cache)
+
+    @test_cache_custom_key_function
+    def f(x: dict):
+        return len(x)
+
+    mocked_dict = MagicMock()
+    mocked_dict.keys.return_value = ["a", "b", "c"]
+    cached_items = len(list(memory.iterkeys()))
+    f(mocked_dict)
+    assert len(list(memory.iterkeys())) > cached_items
+    mocked_dict.keys.assert_has_calls([call()])
+    cached_items = len(list(memory.iterkeys()))
+
+    f(mocked_dict)
+    assert len(list(memory.iterkeys())) == cached_items
+    mocked_dict.keys.assert_has_calls([call(), call()])
+
+    f({"foo": "bar"})
+    assert len(list(memory.iterkeys())) > cached_items
 
 
 def test_disable_cache(test_cache):
