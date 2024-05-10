@@ -1,3 +1,4 @@
+import importlib
 import os
 import tempfile
 
@@ -28,7 +29,12 @@ def refresh_environment():
 
 @pytest.fixture
 def test_cache(refresh_environment):
-    """Initialize a temporary cache and delete it after the test has run."""
+    """
+    Initialize a temporary cache and delete it after the test has run.
+    Enable cache (unique to these tests, other tests have cache disabled by default)
+    """
+    os.environ["OUTLINES_DISABLE_CACHE"] = ""
+
     with tempfile.TemporaryDirectory() as tempdir:
         os.environ["OUTLINES_CACHE_DIR"] = tempdir
         import outlines
@@ -157,3 +163,19 @@ def test_version_upgrade_cache_invalidate(test_cache, mocker):
 
     # assert with version upgrade, old cache is invalidated and new cache is used
     a, b = foo()
+
+
+def test_outlines_cache_disabled_env_var():
+    os.environ["OUTLINES_DISABLE_CACHE"] = "1"
+    import outlines.caching
+
+    importlib.reload(outlines.caching)
+    assert not outlines.caching._caching_enabled
+
+
+def test_outlines_cache_enabled_env_var():
+    os.environ["OUTLINES_DISABLE_CACHE"] = ""
+    import outlines.caching
+
+    importlib.reload(outlines.caching)
+    assert outlines.caching._caching_enabled

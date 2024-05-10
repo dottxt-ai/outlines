@@ -7,7 +7,10 @@ from typing import Callable, Optional
 import cloudpickle
 from diskcache import Cache
 
-_caching_enabled = True
+if os.environ.get("OUTLINES_DISABLE_CACHE", "") in ("", "0"):
+    _caching_enabled = True
+else:
+    _caching_enabled = False
 
 
 @functools.lru_cache(1)
