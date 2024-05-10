@@ -111,8 +111,21 @@ class RegexGuide(Guide):
     initial_state = 0
 
     def __init__(self, regex_string: str, tokenizer):
-        @cache()
-        def create_states_mapping(regex_string: str, tokenizer) -> Tuple[dict, set, set]:
+        @cache(
+            key_function=lambda regex_string, tokenizer: hash(
+                (
+                    regex_string,
+                    tokenizer.eos_token,
+                    tokenizer.eos_token_id,
+                    tokenizer.pad_token_id,
+                    tuple(sorted(tokenizer.vocabulary.items())),
+                    tuple(sorted(tokenizer.special_tokens)),
+                ),
+            )
+        )
+        def create_states_mapping(
+            regex_string: str, tokenizer: "Tokenizer"
+        ) -> Tuple[dict, set, set]:
             """Create the variables related to the mapping between states and tokens
             The parameters of the function are used for caching purpose
             """
