@@ -52,7 +52,8 @@ def cache(key_function: Optional[Callable] = None):
     ----------
     key_function
       A callable function used to generate a unique key for each function call. It's
-      called with the arguments of the decorated function as arguments
+      called with the arguments of the decorated function as arguments and returns an
+      iterable of values that are used to create the cache key.
     Returns
     -------
       A decorator function that can be applied to other functions.

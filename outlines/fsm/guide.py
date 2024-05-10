@@ -112,15 +112,13 @@ class RegexGuide(Guide):
 
     def __init__(self, regex_string: str, tokenizer):
         @cache(
-            key_function=lambda regex_string, tokenizer: hash(
-                (
-                    regex_string,
-                    tokenizer.eos_token,
-                    tokenizer.eos_token_id,
-                    tokenizer.pad_token_id,
-                    tuple(sorted(tokenizer.vocabulary.items())),
-                    tuple(sorted(tokenizer.special_tokens)),
-                ),
+            key_function=lambda regex_string, tokenizer: (
+                regex_string,
+                tokenizer.eos_token,
+                tokenizer.eos_token_id,
+                tokenizer.pad_token_id,
+                tuple(sorted(tokenizer.vocabulary.items())),
+                tuple(sorted(tokenizer.special_tokens)),
             )
         )
         def create_states_mapping(
