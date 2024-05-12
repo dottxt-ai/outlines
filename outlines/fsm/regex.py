@@ -727,7 +727,7 @@ re_replacement_seq = re.compile(r"^▁*�+$")
 def gpt2_bytes_to_unicode():
     """
     Returns list of utf-8 byte and a mapping to unicode strings. We specifically avoids mapping to control characters
-    the bpe code barfs on. We added the replacement character � (\ufffd).
+    the bpe code barfs on. We added the replacement character � (\ufffd) and Ń (\u0144).
 
     The reversible bpe codes work on unicode strings. This means you need a large # of unicode characters in your vocab
     if you want to avoid UNKs. When you're at something like a 10B token dataset you end up needing around 5K for
@@ -738,7 +738,7 @@ def gpt2_bytes_to_unicode():
         list(range(ord(" "), ord("~") + 1))
         + list(range(ord("¡"), ord("¬") + 1))
         + list(range(ord("®"), ord("ÿ") + 1))
-        + [ord("�")]
+        + [ord("�"), ord("Ń")]
     )
     cs = bs[:]
     n = 0
