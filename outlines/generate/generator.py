@@ -82,7 +82,6 @@ def sequence_generator(
         next_token_ids, ancestors, sequence_weights = sampler(
             biased_logits, sequence_weights, rng
         )
-
         token_ids = update_token_ids(token_ids, next_token_ids, ancestors)
         attention_masks = update_attention_masks(attention_masks, ancestors)
         kv_cache = reorder_kv_cache(kv_cache, ancestors)

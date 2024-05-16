@@ -293,8 +293,8 @@ class BeamSearchSampler:
         # and find the top-k weights for each batch.
         batch_size = next_token_logits.shape[0] // self.samples
         vocab_size = next_token_logits.shape[-1]
-        weights = weights.view(batch_size, self.samples * vocab_size)
 
+        weights = weights.view(batch_size, self.samples * vocab_size)
         # If the weights are all equal to 0 we are at the beginning of the search
         # and thus only need to sample from one set of token logits for each
         # batch.
@@ -317,7 +317,6 @@ class BeamSearchSampler:
         ancestors = ancestors.view(self.samples * batch_size)
         weights = weights.view(self.samples * batch_size)
         next_token_ids = next_token_ids.view(self.samples * batch_size, 1)
-
         return next_token_ids, ancestors, weights
 
 
