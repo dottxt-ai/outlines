@@ -243,7 +243,14 @@ def test_llamacpp_json_schema(model):
     assert isinstance(result["bar"], str)
 
 
-def test_llamacpp_cfg(model):
+@pytest.mark.parametrize(
+    "grammar",
+    (
+        grammars.arithmetic,
+        grammars.json,
+    ),
+)
+def test_llamacpp_cfg(model, grammar):
     prompt = "<|im_start|>user\nOutput a short and valid JSON object with two keys.<|im_end|>\n><|im_start|>assistant\n"
-    result = generate.cfg(model, grammars.arithmetic)(prompt, seed=11)
+    result = generate.cfg(model, grammar)(prompt, seed=11)
     assert isinstance(result, str)
