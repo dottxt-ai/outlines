@@ -195,13 +195,7 @@ def to_regex(
             to_regex(resolver, t, whitespace_pattern) for t in instance["oneOf"]
         ]
 
-        xor_patterns = []
-        # json schema validation ensured there is no overlapping schemas in oneOf
-        for subregex in subregexes:
-            other_subregexes = filter(lambda r: r != subregex, subregexes)
-            other_subregexes_str = "|".join([f"{s}" for s in other_subregexes])
-            negative_lookahead = f"(?!.*({other_subregexes_str}))"
-            xor_patterns.append(f"({subregex}){negative_lookahead}")
+        xor_patterns = [f"(?:{subregex})" for subregex in subregexes]
 
         return rf"({'|'.join(xor_patterns)})"
 
