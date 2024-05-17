@@ -207,6 +207,7 @@ def render(template: str, **values: Optional[Dict[str, Any]]) -> str:
     env.filters["source"] = get_fn_source
     env.filters["signature"] = get_fn_signature
     env.filters["schema"] = get_schema
+    env.filters["args"] = get_fn_args
 
     jinja_template = env.from_string(cleaned_template)
 
@@ -224,6 +225,23 @@ def get_fn_name(fn: Callable):
         name = fn.__name__
 
     return name
+
+
+def get_fn_args(fn: Callable):
+    """Returns the arguments of a function with annotations and default values if provided."""
+    if not callable(fn):
+        raise TypeError("The `args` filter only applies to callables.")
+
+    arg_str_list = []
+    signature = inspect.signature(fn)
+    for name, param in signature.parameters.items():
+        annotation_str = f":{param.annotation.__name__}" if param.annotation != inspect.Parameter.empty else ""
+        default_str = f"={param.default}" if param.default != inspect.Parameter.empty else ""
+        arg_str = f"{name}{annotation_str}{default_str}"
+        arg_str_list.append(arg_str)
+
+    arg_str = ', '.join(arg_str_list)
+    return arg_str
 
 
 def get_fn_description(fn: Callable):
