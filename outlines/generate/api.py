@@ -352,10 +352,13 @@ class SequenceGenerator:
                     ]
 
                     generated_sequences = [
-                        self.format_sequence(self.strip_stop_sequences(sequence, stop_sequences)) if stop else sequence
+                        self.format_sequence(
+                            self.strip_stop_sequences(sequence, stop_sequences)
+                        )
+                        if stop
+                        else sequence
                         for sequence, stop in zip(
-                            generated_sequences,
-                            is_stop_at_reached
+                            generated_sequences, is_stop_at_reached
                         )
                     ]
                 next_tokens = [
