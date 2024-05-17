@@ -235,7 +235,7 @@ def get_fn_args(fn: Callable):
     arg_str_list = []
     signature = inspect.signature(fn)
     arg_str_list = [str(param) for param in signature.parameters.values()]
-    arg_str = ', '.join(arg_str_list)
+    arg_str = ", ".join(arg_str_list)
     return arg_str
 
 
