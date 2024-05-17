@@ -223,7 +223,7 @@ Several projects (e.g.[Toolformer](https://arxiv.org/abs/2302.04761), [ViperGPT]
     Can you do something?
 
     COMMANDS
-    1. my_tool: Tool description, args: arg1:str, arg2:int
+    1. my_tool: Tool description., args: arg1: str, arg2: int
 
     def my_tool(arg1: str, arg2: int):
         """Tool description.

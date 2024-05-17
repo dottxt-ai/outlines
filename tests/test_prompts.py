@@ -1,4 +1,4 @@
-from typing import List
+from typing import Dict, List
 
 import pytest
 from pydantic import BaseModel, Field
@@ -252,3 +252,63 @@ def test_prompt_dict_response():
 
     prompt = source_ppt(response)
     assert prompt == '{\n  "one": "a description",\n  "two": ""\n}'
+
+
+def test_prompt_args():
+    def no_args():
+        pass
+
+    def with_args(x, y, z):
+        pass
+
+    def with_annotations(x: bool, y: str, z: Dict[int, List[str]]):
+        pass
+
+    def with_defaults(x=True, y="Hi", z={4: ["I", "love", "outlines"]}):
+        pass
+
+    def with_annotations_and_defaults(
+        x: bool = True,
+        y: str = "Hi",
+        z: Dict[int, List[str]] = {4: ["I", "love", "outlines"]},
+    ):
+        pass
+
+    def with_all(
+        x1,
+        y1,
+        z1,
+        x2: bool,
+        y2: str,
+        z2: Dict[int, List[str]],
+        x3=True,
+        y3="Hi",
+        z3={4: ["I", "love", "outlines"]},
+        x4: bool = True,
+        y4: str = "Hi",
+        z4: Dict[int, List[str]] = {4: ["I", "love", "outlines"]},
+    ):
+        pass
+
+    @outlines.prompt
+    def args_prompt(fn):
+        """args: {{ fn | args }}"""
+
+    assert args_prompt(no_args) == "args: "
+    assert args_prompt(with_args) == "args: x, y, z"
+    assert (
+        args_prompt(with_annotations)
+        == "args: x: bool, y: str, z: Dict[int, List[str]]"
+    )
+    assert (
+        args_prompt(with_defaults)
+        == "args: x=True, y='Hi', z={4: ['I', 'love', 'outlines']}"
+    )
+    assert (
+        args_prompt(with_annotations_and_defaults)
+        == "args: x: bool = True, y: str = 'Hi', z: Dict[int, List[str]] = {4: ['I', 'love', 'outlines']}"
+    )
+    assert (
+        args_prompt(with_all)
+        == "args: x1, y1, z1, x2: bool, y2: str, z2: Dict[int, List[str]], x3=True, y3='Hi', z3={4: ['I', 'love', 'outlines']}, x4: bool = True, y4: str = 'Hi', z4: Dict[int, List[str]] = {4: ['I', 'love', 'outlines']}"
+    )
