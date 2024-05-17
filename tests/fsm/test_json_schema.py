@@ -119,6 +119,8 @@ def test_match_number(pattern, does_match):
             STRING,
             [
                 ("unquotedstring", False),
+                ('"(parenthesized_string)"', True),
+                ('"malformed) parenthesis (((() string"', True),
                 ('"quoted_string"', True),
                 (r'"escape_\character"', False),
                 (r'"double_\\escape"', True),
