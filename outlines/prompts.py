@@ -234,12 +234,7 @@ def get_fn_args(fn: Callable):
 
     arg_str_list = []
     signature = inspect.signature(fn)
-    for name, param in signature.parameters.items():
-        annotation_str = f":{param.annotation.__name__}" if param.annotation != inspect.Parameter.empty else ""
-        default_str = f"={param.default}" if param.default != inspect.Parameter.empty else ""
-        arg_str = f"{name}{annotation_str}{default_str}"
-        arg_str_list.append(arg_str)
-
+    arg_str_list = [str(param) for param in signature.parameters.values()]
     arg_str = ', '.join(arg_str_list)
     return arg_str
 
