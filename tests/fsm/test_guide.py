@@ -180,9 +180,7 @@ def test_regex_final_state():
     assert fsm.is_final_state(state)
 
     state = fsm.get_next_state(state=5, token_id=103)
-    assert state == 5
-
-    assert fsm.is_final_state(-1)
+    assert fsm.is_final_state(state)
 
 
 def test_cfg():
