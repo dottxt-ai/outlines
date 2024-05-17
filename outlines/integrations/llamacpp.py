@@ -49,11 +49,19 @@ class LlamaCppTokenizer:
         self.special_tokens: Set[int] = set()
 
         self.vocabulary: Dict[str, int] = dict()
-        for t in range(model.n_vocab()):
-            token_piece = model.tokenizer().decode([t])
-            self.vocabulary[token_piece] = t
 
-        self.decode = model.tokenizer().decode
+        tokenizer = model.tokenizer()
+
+        self.decode = tokenizer.decode
+
+        # TODO: Remove when https://github.com/ggerganov/llama.cpp/pull/5613 is resolved
+        try:
+            self.vocabulary = model.tokenizer_.hf_tokenizer.get_vocab()
+        except AttributeError:
+            # ###
+            for t in range(model.n_vocab()):
+                token_piece = model.tokenizer().decode([t])
+                self.vocabulary[token_piece] = t
 
     def convert_token_to_string(self, token: str) -> str:
         return token

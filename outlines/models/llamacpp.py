@@ -1,4 +1,5 @@
 import dataclasses
+import warnings
 from typing import TYPE_CHECKING, Iterator, List, Optional, TypedDict, Union
 
 from typing_extensions import Unpack
@@ -287,6 +288,16 @@ def llamacpp(
 
     if "verbose" not in llamacpp_model_params:
         llamacpp_model_params["verbose"] = False
+
+    # TODO: Remove when https://github.com/ggerganov/llama.cpp/pull/5613 is resolved
+    if "tokenizer" not in llamacpp_model_params:
+        warnings.warn(
+            "The pre-tokenizer in `llama.cpp` handles unicode improperly "
+            + "(https://github.com/ggerganov/llama.cpp/pull/5613)\n"
+            + "Outlines may raise a `RuntimeError` when building the regex index.\n"
+            + "To circumvent this error when using `models.llamacpp()` you may pass the argument"
+            + "`tokenizer=llama_cpp.llama_tokenizer.LlamaHFTokenizer.from_pretrained(<hf_repo_id>)`\n"
+        )
 
     model = Llama.from_pretrained(repo_id, filename, **llamacpp_model_params)
 
