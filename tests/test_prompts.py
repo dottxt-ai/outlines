@@ -278,3 +278,16 @@ def test_prompt_args():
         x4:bool=True, y4:str="Hi", z4:Dict[int, List[str]]={4:["I", "love", "outlines"]},
         ):
         pass
+
+    @outlines.prompt
+    def args_prompt(fn):
+        """args: {{ fn | args }}"""
+
+
+    args_prompt(no_args)
+    args_prompt(with_args)
+    args_prompt(with_annotations)
+    args_prompt(with_defaults)
+    args_prompt(with_annotations_and_defaults)
+    args_prompt(with_all)
+
