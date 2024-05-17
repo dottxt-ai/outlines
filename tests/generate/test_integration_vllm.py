@@ -1,5 +1,6 @@
 import datetime
 import re
+from unittest.mock import MagicMock, patch
 
 import pytest
 import torch
@@ -10,6 +11,7 @@ import outlines.generate as generate
 import outlines.grammars as grammars
 import outlines.models as models
 import outlines.samplers as samplers
+from outlines.integrations.vllm import RegexLogitsProcessor
 
 pytestmark = pytest.mark.skipif(
     not torch.cuda.is_available(), reason="vLLM models can only be run on GPU."
@@ -237,3 +239,32 @@ def test_vllm_cfg(model):
     prompt = "<|im_start|>user\nOutput a short and valid JSON object with two keys.<|im_end|>\n><|im_start|>assistant\n"
     result = generate.cfg(model, grammars.arithmetic)(prompt, seed=11)
     assert isinstance(result, str)
+
+
+def test_multiple_tokens_fast_forward_regex_logits_processor():
+    """Reproduces https://github.com/outlines-dev/outlines/issues/855"""
+
+    # Create a RegexLogitsProcessor and call it with non-incremental (fast-forward) sequences
+
+    class MockTokenizer:
+        vocabulary = {"1": 1, "a": 2, "eos": 3}
+        special_tokens = {"eos"}
+        eos_token_id = 3
+
+        def convert_token_to_string(self, token):
+            return token
+
+    mock_scores = torch.tensor([0.5, 0.5, 0.5, 0.5])
+
+    with patch(
+        "outlines.integrations.vllm.adapt_tokenizer", return_value=MockTokenizer()
+    ):
+        lp = RegexLogitsProcessor(r".*", MagicMock())
+
+        # patch DefaultDict -> dict, ensure KeyError for unseen non-initial sequences
+        lp._fsm_state = {hash(tuple()): 0}
+
+        lp([], mock_scores)
+        lp([1], mock_scores)
+        lp([1, 2], mock_scores)
+        lp([1, 2, 3, 4], mock_scores)

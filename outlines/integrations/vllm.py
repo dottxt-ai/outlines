@@ -27,7 +27,7 @@ limitations under the License.
 
 import math
 from collections import defaultdict
-from typing import TYPE_CHECKING, DefaultDict, List, Optional, Type, Union
+from typing import TYPE_CHECKING, DefaultDict, List, Optional, Tuple, Type, Union
 
 import torch
 from pydantic import BaseModel
@@ -101,11 +101,30 @@ class RegexLogitsProcessor:
         # Initialize the FSM state dictionary if the input_ids are empty, as this means
         # that the input_ids are the first tokens of the sequence.
         if len(input_ids) > 0:
-            last_token = input_ids[-1]
-            last_seq_id = hash(tuple(input_ids[:-1]))
-            self._fsm_state[seq_id] = self.fsm.get_next_state(
-                state=self._fsm_state[last_seq_id], token_id=last_token
-            )
+            # create stack of sequence offsets to proces
+            # typically (without fast-forward) only the most recent single sequence offset
+            # is processed, and the FSM only advances by one state
+
+            token_seq_transitions: List[Tuple[int, int, int]] = []
+
+            next_seq_id = seq_id
+            for offset in range(1, len(input_ids) + 1):
+                prev_seq = input_ids[:-offset]
+                prev_seq_id = hash(tuple(prev_seq))
+                token_seq_transitions.append(
+                    (input_ids[-offset], prev_seq_id, next_seq_id)
+                )
+                if prev_seq_id in self._fsm_state:
+                    break
+                next_seq_id = prev_seq_id
+            else:
+                raise RuntimeError("Failed to find a prior processed sequence in FSM")
+
+            # apply all unfulfilled fsm state transitions
+            for token, prev_seq_id, next_seq_id in reversed(token_seq_transitions):
+                self._fsm_state[next_seq_id] = self.fsm.get_next_state(
+                    state=self._fsm_state[prev_seq_id], token_id=token
+                )
 
         allowed_tokens = self.fsm.get_next_instruction(
             state=self._fsm_state[seq_id]
