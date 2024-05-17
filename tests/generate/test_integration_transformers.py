@@ -330,10 +330,9 @@ def test_transformers_integration_probabilities():
     sequence, probs = generate.probabilities(
         model, ["test", "choice"], sampler=beam_search(beams=5)
     )(prompt, rng=rng)
-    for prob in probs:
-        assert probs.keys() == {"test", "choice"}
-        assert probs["test"] > 0
-        assert probs["choice"] > 0
+    assert probs.keys() == {"test", "choice"}
+    assert probs["test"] > 0
+    assert probs["choice"] > 0
 
 
 def test_transformers_integration_with_pad_token():

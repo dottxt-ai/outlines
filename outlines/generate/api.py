@@ -252,9 +252,9 @@ class SequenceGenerator:
                                 probs[i * num_samples + output_index]
                             )
             if batch_size == 1 and num_samples == 1:
-                return output[0][0], output_probs
+                return output[0][0], output_probs[0]
             elif batch_size == 1:
-                return output[0], output_probs
+                return output[0], output_probs[0]
             elif num_samples == 1:
                 return [samples[0] for samples in output], output_probs
             else:
