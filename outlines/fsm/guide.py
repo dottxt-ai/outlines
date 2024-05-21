@@ -105,44 +105,44 @@ class StopAtEOSGuide(Guide):
         return self
 
 
+@cache()
+def create_states_mapping(
+    regex_string: str, tokenizer: "Tokenizer"
+) -> Tuple[dict, set, set]:
+    """Create the variables related to the mapping between states and tokens
+    The parameters of the function are used for caching purpose
+    """
+    regex_pattern = interegular.parse_pattern(regex_string)
+    byte_fsm = make_byte_level_fsm(regex_pattern.to_fsm().reduce(), keep_utf8=True)
+    regex_fsm, _ = make_deterministic_fsm(byte_fsm)
+    states_to_token_maps, empty_token_ids = create_fsm_index_tokenizer(
+        regex_fsm, tokenizer
+    )
+
+    # We make sure that it is possible to generate strings in the language
+    # of the regular expression with the tokens present in the model's
+    # vocabulary.
+    if not any(
+        regex_fsm.finals.intersection(v.values()) for v in states_to_token_maps.values()
+    ):
+        raise ValueError(
+            "The vocabulary does not allow us to build a sequence that matches the input regex"
+        )
+
+    return states_to_token_maps, empty_token_ids, regex_fsm.finals
+
+
 class RegexGuide(Guide):
     """Guide to generate text in the language of a regular expression."""
 
     initial_state = 0
 
     def __init__(self, regex_string: str, tokenizer):
-        @cache()
-        def create_states_mapping(regex_string: str) -> Tuple[dict, set, set]:
-            """Create the variables related to the mapping between states and tokens
-            The parameters of the function are used for caching purpose
-            """
-            regex_pattern = interegular.parse_pattern(regex_string)
-            byte_fsm = make_byte_level_fsm(
-                regex_pattern.to_fsm().reduce(), keep_utf8=True
-            )
-            regex_fsm, _ = make_deterministic_fsm(byte_fsm)
-            states_to_token_maps, empty_token_ids = create_fsm_index_tokenizer(
-                regex_fsm, tokenizer
-            )
-
-            # We make sure that it is possible to generate strings in the language
-            # of the regular expression with the tokens present in the model's
-            # vocabulary.
-            if not any(
-                regex_fsm.finals.intersection(v.values())
-                for v in states_to_token_maps.values()
-            ):
-                raise ValueError(
-                    "The vocabulary does not allow us to build a sequence that matches the input regex"
-                )
-
-            return states_to_token_maps, empty_token_ids, regex_fsm.finals
-
         (
             self.states_to_token_maps,
             self.empty_token_ids,
             fsm_finals,
-        ) = create_states_mapping(regex_string)
+        ) = create_states_mapping(regex_string, tokenizer)
         self.eos_token_id = tokenizer.eos_token_id
         self.final_states = fsm_finals | {-1}
 
