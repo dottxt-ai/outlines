@@ -710,6 +710,19 @@ def test_format(schema, regex, examples):
                 ('{"time":20:20:39Z}', False),  # missing quotes for value
             ],
         ),
+        # Unconstrained Object
+        (
+            {
+                "title": "Foo",
+                "type": "object",
+            },
+            [
+                ("{}", True),
+                ('{"a": 1, "b": null}', True),
+                ('{"a": {"z": {"g": 4}}, "b": null}', True),
+                ("1234", False),  # not an object
+            ],
+        ),
     ],
 )
 def test_format_without_regex(schema, examples):
