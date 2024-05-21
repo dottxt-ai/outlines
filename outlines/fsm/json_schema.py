@@ -312,8 +312,30 @@ def to_regex(
 
             allow_empty = "?" if int(instance.get("minProperties", 0)) == 0 else ""
 
+            additional_properties = instance.get("additionalProperties")
+
+            if additional_properties is None or additional_properties is True:
+                # JSON Schema behavior: If the additionalProperties of an object is
+                # unset or True, it is unconstrained object.
+                # We handle this by setting additionalProperties to anyOf: {all types}
+
+                legal_values = [
+                    {"type": "string"},
+                    {"type": "number"},
+                    {"type": "boolean"},
+                    {"type": "null"}
+                    # { "type": "array" },  # TODO: enable arrays within object-types
+                ]
+
+                # We set the object depth to 2 to keep the expression finite, but the "depth"
+                # key is not a true component of the JSON Schema specification.
+                depth = instance.get("depth", 2)
+                if depth > 0:
+                    legal_values.append({"type": "object", "depth": depth - 1})
+                additional_properties = {"anyOf": legal_values}
+
             value_pattern = to_regex(
-                resolver, instance["additionalProperties"], whitespace_pattern
+                resolver, additional_properties, whitespace_pattern
             )
             key_value_pattern = (
                 f"{STRING}{whitespace_pattern}:{whitespace_pattern}{value_pattern}"
