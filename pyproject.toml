@@ -89,6 +89,7 @@ write_to = "outlines/_version.py"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 filterwarnings = [
+    "error",
     "ignore::numba.core.errors.NumbaPendingDeprecationWarning",
     "ignore::pydantic.warnings.PydanticDeprecatedSince20",
     "ignore::FutureWarning:transformers.*",
