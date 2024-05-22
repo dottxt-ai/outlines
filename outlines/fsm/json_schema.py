@@ -199,6 +199,15 @@ def to_regex(
 
         return rf"({'|'.join(xor_patterns)})"
 
+    # Create pattern for Tuples, per JSON Schema spec, `prefixItems` determines types at each idx
+    elif "prefixItems" in instance:
+        element_patterns = [
+            to_regex(resolver, t, whitespace_pattern) for t in instance["prefixItems"]
+        ]
+        comma_split_pattern = rf"{whitespace_pattern},{whitespace_pattern}"
+        tuple_inner = comma_split_pattern.join(element_patterns)
+        return rf"\[{whitespace_pattern}{tuple_inner}{whitespace_pattern}\]"
+
     # The enum keyword is used to restrict a value to a fixed set of values. It
     # must be an array with at least one element, where each element is unique.
     elif "enum" in instance:
