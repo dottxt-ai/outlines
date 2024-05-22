@@ -354,6 +354,15 @@ def test_match_number(pattern, does_match):
             rf"({STRING}{INTEGER})",
             [('"a"1', True), ('"a"', False), ('"1"', False)],
         ),
+        # Tuple / prefixItems
+        (
+            {
+                "title": "Foo",
+                "prefixItems": [{"type": "string"}, {"type": "integer"}],
+            },
+            rf"\[{WHITESPACE}{STRING}{WHITESPACE},{WHITESPACE}{INTEGER}{WHITESPACE}\]",
+            [('["a", 1]', True), ('["a", 1, 1]', False), ("[]", False)],
+        ),
         # Nested schema
         (
             {
