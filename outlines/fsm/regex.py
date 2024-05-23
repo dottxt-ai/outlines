@@ -26,6 +26,7 @@ from interegular.fsm import (
     anything_else,
 )
 from numba.typed.typedobjectutils import _nonoptional
+from tqdm import tqdm
 
 if TYPE_CHECKING:
     from outlines.models.tokenizer import Tokenizer
@@ -692,6 +693,12 @@ def create_fsm_index_end_to_end(
     seen: Set[int] = set()
     next_states = {fsm_info.initial}
 
+    pbar = tqdm(
+        total=len(set(fsm_info.transitions.values()))
+        + 1,  # all transitions plus initial
+        desc="Compiling FSM index for all state transitions",
+    )
+
     while next_states:
         start_state = next_states.pop()
 
@@ -713,7 +720,11 @@ def create_fsm_index_end_to_end(
             if end_state not in seen:
                 next_states.add(end_state)
 
-        seen.add(start_state)
+        if start_state not in seen:
+            pbar.update(1)
+            seen.add(start_state)
+
+    pbar.close()
 
     return states_to_token_subsets
 
