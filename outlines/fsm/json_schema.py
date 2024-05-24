@@ -16,7 +16,7 @@ INTEGER = r"(-)?(0|[1-9][0-9]*)"
 NUMBER = rf"({INTEGER})(\.[0-9]+)?([eE][+-][0-9]+)?"
 BOOLEAN = r"(true|false)"
 NULL = r"null"
-WHITESPACE = r"[\n ]*"
+WHITESPACE = r"[ ]?"
 
 type_to_regex = {
     "string": STRING,
