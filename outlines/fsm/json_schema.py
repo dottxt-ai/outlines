@@ -297,15 +297,22 @@ def to_regex(
                 # Here we need to make the choice to exclude generating list of objects
                 # if the specification of the object is not given, even though a JSON
                 # object that contains an object here would be valid under the specification.
-                types = [
+                legal_types = [
                     {"type": "boolean"},
                     {"type": "null"},
                     {"type": "number"},
                     {"type": "integer"},
                     {"type": "string"},
                 ]
-                regexes = [to_regex(resolver, t, whitespace_pattern) for t in types]
-                return rf"\[{whitespace_pattern}({'|'.join(regexes)})(,{whitespace_pattern}({'|'.join(regexes)})){num_repeats}){allow_empty}{whitespace_pattern}\]"
+                depth = instance.get("depth", 2)
+                if depth > 0:
+                    legal_types.append({"type": "object", "depth": depth - 1})
+                    legal_types.append({"type": "array", "depth": depth - 1})
+
+                regexes = [
+                    to_regex(resolver, t, whitespace_pattern) for t in legal_types
+                ]
+                return rf"\[{whitespace_pattern}({'|'.join(regexes)})(,{whitespace_pattern}({'|'.join(regexes)})){num_repeats}{allow_empty}{whitespace_pattern}\]"
 
         elif instance_type == "object":
             # pattern for json object with values defined by instance["additionalProperties"]
@@ -328,20 +335,20 @@ def to_regex(
                 # unset or True, it is unconstrained object.
                 # We handle this by setting additionalProperties to anyOf: {all types}
 
-                legal_values = [
+                legal_types = [
                     {"type": "string"},
                     {"type": "number"},
                     {"type": "boolean"},
-                    {"type": "null"}
-                    # { "type": "array" },  # TODO: enable arrays within object-types
+                    {"type": "null"},
                 ]
 
                 # We set the object depth to 2 to keep the expression finite, but the "depth"
                 # key is not a true component of the JSON Schema specification.
                 depth = instance.get("depth", 2)
                 if depth > 0:
-                    legal_values.append({"type": "object", "depth": depth - 1})
-                additional_properties = {"anyOf": legal_values}
+                    legal_types.append({"type": "object", "depth": depth - 1})
+                    legal_types.append({"type": "array", "depth": depth - 1})
+                additional_properties = {"anyOf": legal_types}
 
             value_pattern = to_regex(
                 resolver, additional_properties, whitespace_pattern

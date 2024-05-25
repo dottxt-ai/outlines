@@ -719,6 +719,46 @@ def test_format(schema, regex, examples):
                 ('{"time":20:20:39Z}', False),  # missing quotes for value
             ],
         ),
+        # Unconstrained Object
+        (
+            {
+                "title": "Foo",
+                "type": "object",
+            },
+            [
+                ("{}", True),
+                ('{"a": 1, "b": null}', True),
+                ('{"a": {"z": {"g": 4}}, "b": null}', True),
+                ("1234", False),  # not an object
+                ('["a", "a"]', False),  # not an array
+            ],
+        ),
+        # Unconstrained Array
+        (
+            {
+                "type": "array",
+            },
+            [
+                ("[1, {}, false]", True),
+                ("[{}]", True),
+                ('[{"a": {"z": "q"}, "b": null}]', True),
+                ('[{"a": [1, 2, true], "b": null}]', True),
+                ('[{"a": [1, 2, true], "b": {"a": "b"}}, 1, true, [1, [2]]]', True),
+                # too deep, default unconstrained depth limit = 2
+                (
+                    '[{"a": [1, 2, true], "b": {"a": "b"}}, 1, true, [1, [2, [3]]]]',
+                    False,
+                ),
+                ('[{"a": {"z": {"g": 4}}, "b": null}]', False),
+                ("[[[[1]]]]", False),
+                # not an array
+                ("{}", False),
+                ('{"a": 1, "b": null}', False),
+                ('{"a": {"z": {"g": 4}}, "b": null}', False),
+                ("1234", False),  # not an array
+                ('{"a": "a"}', False),  # not an array
+            ],
+        ),
     ],
 )
 def test_format_without_regex(schema, examples):
