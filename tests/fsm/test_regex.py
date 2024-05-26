@@ -25,7 +25,7 @@ def identity(s):
 
 
 def to_bytes(s):
-    return [chr(b) if b < 0x80 else f"{b:02X}" for b in s.encode("utf-8")]
+    return [chr(b) if b < 0x80 else f"\x00{b:02X}" for b in s.encode("utf-8")]
 
 
 def walk_fsm_numba(
@@ -115,19 +115,27 @@ def test_walk_fsm_multi_bytes(function, transform):
     str_regex_fsm, _ = make_deterministic_fsm(regex_pattern.to_fsm().reduce())
     regex_fsm = make_byte_level_better_fsm(str_regex_fsm, keep_utf8=True)
 
-    res = tuple(function(regex_fsm, transform("😂"), regex_fsm.initial, full_match=True))
-    assert res[-1:] == (1,)
-
     res = tuple(
-        function(regex_fsm, transform("😂😂"), regex_fsm.initial, full_match=False)
+        function(regex_fsm, "".join(transform("😂")), regex_fsm.initial, full_match=True)
     )
     assert res[-1:] == (1,)
 
-    res = tuple(function(regex_fsm, transform("!"), regex_fsm.initial, full_match=True))
+    res = tuple(
+        function(
+            regex_fsm, "".join(transform("😂😂")), regex_fsm.initial, full_match=False
+        )
+    )
+    assert res[-1:] == (1,)
+
+    res = tuple(
+        function(regex_fsm, "".join(transform("!")), regex_fsm.initial, full_match=True)
+    )
     assert res == tuple()
 
     res = tuple(
-        function(regex_fsm, transform("😂😂"), regex_fsm.initial, full_match=True)
+        function(
+            regex_fsm, "".join(transform("😂😂")), regex_fsm.initial, full_match=True
+        )
     )
     assert res == tuple()
 
@@ -304,15 +312,15 @@ def test_create_fsm_index_end_to_end():
     vocabulary_nb = numba.typed.List.empty_list(
         numba.types.Tuple(
             (
-                numba.types.UnicodeCharSeq(2)[:],
+                numba.types.unicode_type,
                 numba.int64[:],
             )
         )
     )
     for token_tuple, token_ids in vocabulary.items():
-        token_tuple_np = np.fromiter(token_tuple, dtype=np.dtype("U2"))
+        token = "".join(token_tuple)
         token_ids_np = np.fromiter(token_ids, dtype=np.dtype("int64"))
-        vocabulary_nb.append((token_tuple_np, token_ids_np))
+        vocabulary_nb.append((token, token_ids_np))
 
     res = create_fsm_index_end_to_end(regex_fsm.fsm_info, vocabulary_nb)
 
@@ -326,28 +334,34 @@ def test_create_fsm_index_end_to_end_multi_byte():
     regex_fsm, _ = make_deterministic_fsm(regex_pattern.to_fsm().reduce())
     byte_fsm = make_byte_level_better_fsm(regex_fsm, keep_utf8=True)
 
+    merge_symbols = lambda byte_hexs: "".join(
+        ["" + b if len(b) == 2 else b for b in byte_hexs]
+    )
+
     vocabulary = {
         "blah": numba.typed.List([0]),
         "😈a": numba.typed.List([1]),
         "😇": numba.typed.List([2]),
         "😍": numba.typed.List([3]),
-        ("F0", "9F", "98", "8D"): numba.typed.List([4]),  # '😍'
+        merge_symbols(("F0", "9F", "98", "8D")): numba.typed.List([4]),  # '😍'
         " 😍": numba.typed.List([5]),
-        (" ", "F0", "9F", "98", "8D"): numba.typed.List([6]),  # ' 😍'
-        (" ", "F0", "9F", "98"): numba.typed.List([7]),  # ' 😍' incomplete
+        merge_symbols((" ", "F0", "9F", "98", "8D")): numba.typed.List([6]),  # ' 😍'
+        merge_symbols((" ", "F0", "9F", "98")): numba.typed.List(
+            [7]
+        ),  # ' 😍' incomplete
         "<EOS>": numba.typed.List([8]),
     }
 
     vocabulary_nb = numba.typed.List.empty_list(
         numba.types.Tuple(
             (
-                numba.types.UnicodeCharSeq(2)[:],
+                numba.types.unicode_type,
                 numba.int64[:],
             )
         )
     )
     for token_tuple, token_ids in vocabulary.items():
-        token_tuple_np = np.fromiter(token_tuple, dtype=np.dtype("U2"))
+        token_tuple_np = merge_symbols(token_tuple)
         token_ids_np = np.fromiter(token_ids, dtype=np.dtype("int64"))
         vocabulary_nb.append((token_tuple_np, token_ids_np))
 
@@ -356,7 +370,16 @@ def test_create_fsm_index_end_to_end_multi_byte():
     assert res == {0: {(5, 3), (6, 3), (7, 7), (2, 2)}, 3: {(2, 3), (3, 3), (4, 3)}}
 
 
-def test_create_fsm_index_tokenizer():
+@pytest.mark.parametrize(
+    "hf_tokenizer_uri",
+    [
+        "gpt2",
+        "microsoft/phi-2",
+        "Qwen/Qwen1.5-0.5B-Chat",
+        "NousResearch/Hermes-2-Pro-Llama-3-8B",
+    ],
+)
+def test_create_fsm_index_tokenizer(hf_tokenizer_uri):
     # The combined regular expressions of a lexer state in a Python grammar
     regex_str = "(?:(?:[0-9](?:(?:_)?[0-9])*(?:e|E)(?:(?:\\+|\\-))?[0-9](?:(?:_)?[0-9])*|(?:[0-9](?:(?:_)?[0-9])*\\.(?:[0-9](?:(?:_)?[0-9])*)?|\\.[0-9](?:(?:_)?[0-9])*)(?:(?:e|E)(?:(?:\\+|\\-))?[0-9](?:(?:_)?[0-9])*)?)|[0-9](?:(?:_)?[0-9])*)(?:J|j)|(?:[0-9](?:(?:_)?[0-9])*(?:e|E)(?:(?:\\+|\\-))?[0-9](?:(?:_)?[0-9])*|(?:[0-9](?:(?:_)?[0-9])*\\.(?:[0-9](?:(?:_)?[0-9])*)?|\\.[0-9](?:(?:_)?[0-9])*)(?:(?:e|E)(?:(?:\\+|\\-))?[0-9](?:(?:_)?[0-9])*)?)|0(?:x|X)(?:(?:_)?(?:[0-9]|[a-f]|[A-F]))+|0(?:b|B)(?:(?:_)?[0-1])+|0(?:o|O)(?:(?:_)?[0-7])+|(?:(?i:([ubf]?r?|r[ubf])('([^\\\\']|.)*?'))|(?i:([ubf]?r?|r[ubf])(\"([^\\\"]|.)*?\")))|(?:(?:\r?\n[\t ]*|#[^\n]*))+|[1-9](?:(?:_)?[0-9])*|\\\\[\t \x0c]*\r?\n|continue|nonlocal|assert|global|import|lambda|return|async|await|break|class|False|match|raise|while|yield|case|from|None|pass|True|with|def|del|for|not|try|if|[^\\W\\d]\\w*|#[^\n]*|[\t \x0c]+|\\.\\.\\.|@|\\{|\\(|\\[|\\-|\\+|\\*|\\~"
 
@@ -371,7 +394,7 @@ def test_create_fsm_index_tokenizer():
     num_bytes_fsm_states = len(bytes_fsm.states)
     assert num_bytes_fsm_states == 235
 
-    tokenizer = AutoTokenizer.from_pretrained("gpt2")
+    tokenizer = AutoTokenizer.from_pretrained(hf_tokenizer_uri)
     tokenizer = TransformerTokenizer(tokenizer)
 
     states_to_token_subsets, empty_token_ids = create_fsm_index_tokenizer(
