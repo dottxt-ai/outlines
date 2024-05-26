@@ -196,7 +196,7 @@ def transition_trie_setdefault(
 
 
 def byte_symbol(byte: int) -> str:
-    return f"{byte:02X}" if byte >= 0x80 else chr(byte)
+    return f"\x00{byte:02X}" if byte >= 0x80 else chr(byte)
 
 
 def make_byte_level_fsm(fsm: FSM, keep_utf8=False) -> FSM:
@@ -416,7 +416,7 @@ def _walk_fsm(
     alphabet_anything_value: int,
     fsm_initial: int,
     fsm_finals: Set[int],
-    input_string: Sequence[str],
+    input_string: str,
     start_state: int,
     full_match: bool = True,
 ) -> List[int]:
@@ -424,7 +424,21 @@ def _walk_fsm(
     accepted_states: List[int] = numba.typed.List.empty_list(numba.int64)
     last_final_idx: int = numba.uint64(0)
 
-    for i, symbol in enumerate(input_string):
+    # Iterate over symbols (characters and null-prefixed two-hex-character bytes)
+    # By default, each symbol is a unicode character
+    # Except, if the character, input_string[i] == '\x00', then the next two
+    # in input_string characters are a hex representation of the byte
+    i = 0
+    while i < len(input_string):
+        # if null-byte prefixed its a hex representation
+        # unless its the last character, then its a trailing null byte symbol
+        if input_string[i] == "\x00" and i != len(input_string) - 1:
+            symbol = input_string[i : i + 3]
+            i += 3
+        else:
+            symbol = input_string[i]
+            i += 1
+
         trans_key = alphabet_symbol_mapping.get(symbol, alphabet_anything_value)
 
         new_state = fsm_transitions.get((state, trans_key))
@@ -438,11 +452,11 @@ def _walk_fsm(
         state = new_state
 
         if state in fsm_finals:
-            last_final_idx = numba.uint64(i + 1)
+            last_final_idx = numba.uint64(i)
 
         accepted_states.append(_nonoptional(state))
 
-    if full_match and last_final_idx - 1 != i:
+    if full_match and last_final_idx != i:
         return numba.typed.List.empty_list(numba.int64)
 
     return accepted_states
@@ -450,7 +464,7 @@ def _walk_fsm(
 
 def walk_fsm(
     fsm: BetterFSM,
-    input_string: Sequence[str],
+    input_string: str,
     start_state: int,
     full_match: bool = True,
 ) -> List[int]:
@@ -464,7 +478,17 @@ def walk_fsm(
     alphabet_anything_value = fsm.alphabet.anything_value
     fsm_transitions = fsm.flat_transition_map
 
-    for i, symbol in enumerate(input_string):
+    # See _walk_fsm() explanation of symbol iteration
+    i = 0
+    while i < len(input_string):
+        # if null-byte prefixed its a hex representation
+        # unless the input string itself is a null byte, then symbol is a lone null-byte
+        if input_string[i] == "\x00" and input_string != "\x00":
+            symbol = input_string[i : i + 3]
+            i += 3
+        else:
+            symbol = input_string[i]
+            i += 1
         trans_key = alphabet_symbol_mapping.get(symbol, alphabet_anything_value)
 
         new_state = fsm_transitions.get((state, trans_key))
@@ -478,11 +502,11 @@ def walk_fsm(
         state = new_state
 
         if state in fsm_finals:
-            last_final_idx = i + 1
+            last_final_idx = i
 
         accepted_states.append(state)
 
-    if full_match and last_final_idx - 1 != i:
+    if full_match and last_final_idx != i:
         return []
 
     return accepted_states
@@ -652,7 +676,7 @@ def state_scan_tokens(
     alphabet_anything_value: int,
     fsm_initial: int,
     fsm_finals: Set[int],
-    vocabulary: List[Tuple[Sequence[str], Sequence[int]]],
+    vocabulary: List[Tuple[str, Sequence[int]]],
     start_state: int,
 ) -> Set[Tuple[int, int]]:
     res = set()
@@ -669,7 +693,11 @@ def state_scan_tokens(
             False,
         )
 
-        if state_seq is not None and len(state_seq) < len(token):
+        if token == "\x00":
+            token_length = 1
+        else:
+            token_length = len(token) - 2 * token.count("\x00")
+        if state_seq is not None and len(state_seq) < token_length:
             continue
 
         for token_id in token_ids:
@@ -680,7 +708,7 @@ def state_scan_tokens(
 
 def create_fsm_index_end_to_end(
     fsm_info: FSMInfo,
-    vocabulary: List[Tuple[Sequence[str], Sequence[int]]],
+    vocabulary: List[Tuple[str, Sequence[int]]],
 ) -> Dict[int, Set[Tuple[int, int]]]:
     """Create an FSM state-to-vocabulary map/index through end-to-end token parsing."""
 
@@ -768,7 +796,7 @@ def gpt2_unicode_to_bytes():
 @lru_cache
 def reduced_vocabulary(
     tokenizer: "Tokenizer",
-) -> Tuple[List[Tuple[Sequence[str], Sequence[int]]], Set[int]]:
+) -> Tuple[List[Tuple[str, Sequence[int]]], Set[int]]:
     """Create a map from decoded vocabulary tokens to lists of equivalent token ids."""
     empty_token_ids = set()
     vocabulary: Dict[Union[str, Tuple[str, ...]], List[int]] = {}
