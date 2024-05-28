@@ -1,6 +1,7 @@
 import datetime
 import re
 from enum import Enum
+from importlib import reload
 from typing import List, Union
 
 import pytest
@@ -11,7 +12,28 @@ import outlines.generate as generate
 import outlines.models as models
 from outlines.fsm.regex import reduced_vocabulary
 from outlines.models.transformers import Transformers, TransformerTokenizer
-from outlines.samplers import beam_search, multinomial
+from outlines.samplers import beam_search, greedy, multinomial
+
+
+@pytest.fixture
+def temp_cache_dir():
+    import os
+    import tempfile
+
+    import outlines.caching
+    import outlines.fsm.guide
+
+    with tempfile.TemporaryDirectory() as tempdir:
+        os.environ["OUTLINES_CACHE_DIR"] = tempdir
+        outlines.caching.get_cache.cache_clear()
+        reload(outlines)
+        reload(outlines.fsm.guide)
+        cache_status = outlines.caching._caching_enabled
+        try:
+            outlines.caching._caching_enabled = True
+            yield
+        finally:
+            outlines.caching._caching_enabled = cache_status
 
 
 def test_transformers_integration_text():
@@ -632,3 +654,47 @@ def test_transformers_use_existing_model_and_tokenizer():
     model = Transformers(hf_model, hf_tokenizer)
     sequence = generate.text(model)("Write a short sentence ", rng=rng)
     assert isinstance(sequence, str)
+
+
+def test_RegexGuide_caching(temp_cache_dir):
+    import outlines.caching
+    from outlines.fsm.guide import create_states_mapping
+
+    assert outlines.caching._caching_enabled
+
+    regex = r"((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)"
+    prompt = "What is the IP address of the Google DNS servers? "
+
+    cache = outlines.caching.get_cache()
+
+    # Returns (hits, misses)
+    _ = cache.stats(enable=True)
+    assert cache.statistics
+
+    assert create_states_mapping.__memory__ is cache
+
+    model = models.transformers(
+        "hf-internal-testing/tiny-random-XLMRobertaXLForCausalLM"
+    )
+    generator = generate.regex(model, regex, sampler=greedy())
+    assert cache.stats() == (0, 1)
+
+    model_2 = models.transformers("hf-internal-testing/tiny-random-GPTJForCausalLM")
+    generator_2 = generate.regex(model_2, regex, sampler=greedy())
+    assert cache.stats() == (0, 2)
+
+    # These two different models and tokenizers should not have the same state
+    # mapping results
+    assert generator.fsm.states_to_token_maps != generator_2.fsm.states_to_token_maps
+
+    generator_3 = generate.regex(model_2, regex, sampler=greedy())
+    assert cache.stats() == (1, 2)
+    assert generator_2.fsm.states_to_token_maps == generator_3.fsm.states_to_token_maps
+
+    # Just for fun...
+    structured = generator(prompt, max_tokens=30)
+    structured_2 = generator_2(prompt, max_tokens=30)
+
+    assert re.fullmatch(regex, structured)
+    assert re.fullmatch(regex, structured_2)
+    assert structured != structured_2

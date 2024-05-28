@@ -36,10 +36,10 @@ print(result)
 
 !!! Note "JSON and whitespaces"
 
-    By default Outlines lets model choose the number of linebreaks and white spaces used to structure the JSON. Small models tend to struggle with this, in which case we recommend to set the value of the parameter `whitespace_pattern` to the empty string:
+    By default Outlines prevents the model from generating json with syntactic newlines, tabs, or multiple spaces. The default `whitespace_pattern` is `r"[ ]?"`. Small models tend to enter an infinite repetition loop if the `whitespace_pattern` allows infinite spacing. If you would like to allow the model to generate multiple tabs, newlines, and spaces, you can set the whitespace pattern as follows:
 
     ```python
-    generator = generate.json(model, User, whitespace_pattern="")
+    generator = generate.json(model, User, whitespace_pattern=r"[\n\t ]*")
     ```
 
 !!! Note "Performance"

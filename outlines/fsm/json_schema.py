@@ -10,13 +10,13 @@ from referencing import Registry, Resource
 from referencing._core import Resolver
 from referencing.jsonschema import DRAFT202012
 
-STRING_INNER = r'([^("\\\x00-\x1f\x7f-\x9f)]|\\\\)'
+STRING_INNER = r'([^"\\\x00-\x1f\x7f-\x9f]|\\\\)'
 STRING = f'"{STRING_INNER}*"'
 INTEGER = r"(-)?(0|[1-9][0-9]*)"
 NUMBER = rf"({INTEGER})(\.[0-9]+)?([eE][+-][0-9]+)?"
 BOOLEAN = r"(true|false)"
 NULL = r"null"
-WHITESPACE = r"[\n ]*"
+WHITESPACE = r"[ ]?"
 
 type_to_regex = {
     "string": STRING,
@@ -199,6 +199,15 @@ def to_regex(
 
         return rf"({'|'.join(xor_patterns)})"
 
+    # Create pattern for Tuples, per JSON Schema spec, `prefixItems` determines types at each idx
+    elif "prefixItems" in instance:
+        element_patterns = [
+            to_regex(resolver, t, whitespace_pattern) for t in instance["prefixItems"]
+        ]
+        comma_split_pattern = rf"{whitespace_pattern},{whitespace_pattern}"
+        tuple_inner = comma_split_pattern.join(element_patterns)
+        return rf"\[{whitespace_pattern}{tuple_inner}{whitespace_pattern}\]"
+
     # The enum keyword is used to restrict a value to a fixed set of values. It
     # must be an array with at least one element, where each element is unique.
     elif "enum" in instance:
@@ -288,15 +297,22 @@ def to_regex(
                 # Here we need to make the choice to exclude generating list of objects
                 # if the specification of the object is not given, even though a JSON
                 # object that contains an object here would be valid under the specification.
-                types = [
+                legal_types = [
                     {"type": "boolean"},
                     {"type": "null"},
                     {"type": "number"},
                     {"type": "integer"},
                     {"type": "string"},
                 ]
-                regexes = [to_regex(resolver, t, whitespace_pattern) for t in types]
-                return rf"\[{whitespace_pattern}({'|'.join(regexes)})(,{whitespace_pattern}({'|'.join(regexes)})){num_repeats}){allow_empty}{whitespace_pattern}\]"
+                depth = instance.get("depth", 2)
+                if depth > 0:
+                    legal_types.append({"type": "object", "depth": depth - 1})
+                    legal_types.append({"type": "array", "depth": depth - 1})
+
+                regexes = [
+                    to_regex(resolver, t, whitespace_pattern) for t in legal_types
+                ]
+                return rf"\[{whitespace_pattern}({'|'.join(regexes)})(,{whitespace_pattern}({'|'.join(regexes)})){num_repeats}{allow_empty}{whitespace_pattern}\]"
 
         elif instance_type == "object":
             # pattern for json object with values defined by instance["additionalProperties"]
@@ -312,8 +328,30 @@ def to_regex(
 
             allow_empty = "?" if int(instance.get("minProperties", 0)) == 0 else ""
 
+            additional_properties = instance.get("additionalProperties")
+
+            if additional_properties is None or additional_properties is True:
+                # JSON Schema behavior: If the additionalProperties of an object is
+                # unset or True, it is unconstrained object.
+                # We handle this by setting additionalProperties to anyOf: {all types}
+
+                legal_types = [
+                    {"type": "string"},
+                    {"type": "number"},
+                    {"type": "boolean"},
+                    {"type": "null"},
+                ]
+
+                # We set the object depth to 2 to keep the expression finite, but the "depth"
+                # key is not a true component of the JSON Schema specification.
+                depth = instance.get("depth", 2)
+                if depth > 0:
+                    legal_types.append({"type": "object", "depth": depth - 1})
+                    legal_types.append({"type": "array", "depth": depth - 1})
+                additional_properties = {"anyOf": legal_types}
+
             value_pattern = to_regex(
-                resolver, instance["additionalProperties"], whitespace_pattern
+                resolver, additional_properties, whitespace_pattern
             )
             key_value_pattern = (
                 f"{STRING}{whitespace_pattern}:{whitespace_pattern}{value_pattern}"
