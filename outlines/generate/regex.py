@@ -1,7 +1,7 @@
 from functools import singledispatch
 
-from outlines.fsm.guide import RegexGuide
-from outlines.generate.api import SequenceGenerator, SequenceGeneratorAdapter
+from outlines.generate.api import SequenceGeneratorAdapter
+from outlines.integrations.logits_processors import RegexLogitsProcessor
 from outlines.models import OpenAI
 from outlines.models.llamacpp import LlamaCpp
 from outlines.models.vllm import VLLM
@@ -29,12 +29,11 @@ def regex(model, regex_str: str, sampler: Sampler = multinomial()):
     regular expression.
 
     """
-    fsm = RegexGuide(regex_str, model.tokenizer)
+    # PR TODO: add device argument
+    # device = model.device
 
-    device = model.device
-    generator = SequenceGenerator(fsm, model, sampler, device)
-
-    return generator
+    logits_processor = RegexLogitsProcessor(regex_str, tokenizer=model.tokenizer)
+    return SequenceGeneratorAdapter(model, logits_processor, sampler)
 
 
 @regex.register(LlamaCpp)
@@ -43,9 +42,10 @@ def regex_llamacpp(
     regex_str: str,
     sampler: Sampler = multinomial(),
 ):
-    from outlines.integrations.llamacpp import RegexLogitsProcessor
+    from outlines.models.llamacpp import LlamaCppTokenizer
 
-    logits_processor = RegexLogitsProcessor(regex_str, llm=model.model)
+    tokenizer = LlamaCppTokenizer(model=model.model)
+    logits_processor = RegexLogitsProcessor(regex_str, tokenizer=tokenizer)
     return SequenceGeneratorAdapter(model, logits_processor, sampler)
 
 
@@ -55,9 +55,10 @@ def regex_vllm(
     regex_str: str,
     sampler: Sampler = multinomial(),
 ):
-    from outlines.integrations.vllm import RegexLogitsProcessor
+    from outlines.integrations.utils import get_vllm_tokenizer
 
-    logits_processor = RegexLogitsProcessor(regex_str, model.model)
+    tokenizer = get_vllm_tokenizer(model=model.model)
+    logits_processor = RegexLogitsProcessor(regex_str, tokenizer)
     return SequenceGeneratorAdapter(model, logits_processor, sampler)
 
 

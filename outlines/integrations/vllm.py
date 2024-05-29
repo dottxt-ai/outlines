@@ -40,6 +40,22 @@ if TYPE_CHECKING:
     from vllm import LLM
 
 
+def get_vllm_tokenizer(llm: "LLM"):
+    if hasattr(llm, "get_tokenizer"):
+        tokenizer = llm.get_tokenizer()
+    elif hasattr(llm, "tokenizer"):
+        if hasattr(llm.tokenizer, "tokenizer"):
+            tokenizer = llm.tokenizer.tokenizer
+        else:
+            tokenizer = llm.tokenizer
+    else:
+        raise ValueError(
+            "The provided LLM instance in `RegexLogitsProcessor` neither has a "
+            "`tokenizer` attribute or a `get_tokenizer` method."
+        )
+    return adapt_tokenizer(tokenizer)
+
+
 class RegexLogitsProcessor:
     """Bias vLLM generation based on a regular expression.
 

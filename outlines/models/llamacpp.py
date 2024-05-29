@@ -1,6 +1,6 @@
 import dataclasses
 import warnings
-from typing import TYPE_CHECKING, Iterator, List, Optional, TypedDict, Union
+from typing import TYPE_CHECKING, Iterator, List, Optional, TypedDict, Union, Set, Dict
 
 from typing_extensions import Unpack
 
@@ -8,6 +8,20 @@ from outlines.generate.api import GenerationParameters, SamplingParameters
 
 if TYPE_CHECKING:
     from llama_cpp import Llama, LogitsProcessorList
+
+
+class LlamaCppTokenizer:
+    def __init__(self, model: "Llama"):
+        self.eos_token_id = model.token_eos()
+        self.eos_token = model.tokenizer().decode([self.eos_token_id])
+        self.pad_token_id = self.eos_token_id
+        self.special_tokens: Set[int] = set()
+
+        self.vocabulary: Dict[str, int] = dict()
+
+        tokenizer = model.tokenizer()
+
+        self.decode = tokenizer.decode
 
 
 class LlamaCppParams(TypedDict, total=False):
