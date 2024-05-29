@@ -66,6 +66,16 @@ class LlamaCppTokenizer:
     def convert_token_to_string(self, token: str) -> str:
         return token
 
+    def __getstate__(self):
+        """Allow tokenizer to be used as hash key by excluding self.decode"""
+        return (
+            self.vocabulary.items(),
+            self.eos_token_id,
+            self.eos_token,
+            self.pad_token_id,
+            sorted(self.special_tokens),
+        )
+
 
 class LogitsProcessor:
     """Bias LlamaCpp generation using a finite state machine.

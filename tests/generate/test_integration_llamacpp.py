@@ -279,3 +279,11 @@ def test_llama_cpp_pre_tokenizer_remains_broken():
     model = models.llamacpp(repo, model_path)
     with pytest.raises(RuntimeError):
         generate.choice(model, ["skirt", "dress", "pen", "jacket"])
+
+
+def test_create_states_mapping_llamacpp_tokenizer_regression(model):
+    """Minimal reproducer for #922, error passing llamacpp tokenizer to create_states_mapping"""
+    from outlines.fsm.guide import create_states_mapping
+    from outlines.integrations.llamacpp import LlamaCppTokenizer
+
+    create_states_mapping("a", LlamaCppTokenizer(model.model))
