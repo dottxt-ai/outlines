@@ -78,6 +78,7 @@ class RegexLogitsProcessor:
                 "`tokenizer` attribute or a `get_tokenizer` method."
             )
         tokenizer = adapt_tokenizer(tokenizer=tokenizer)
+        self.mask_cache = {}
         self.fsm = RegexGuide(regex_string, tokenizer)
         self._fsm_state: DefaultDict[int, int] = defaultdict(int)
 
@@ -111,8 +112,13 @@ class RegexLogitsProcessor:
             state=self._fsm_state[seq_id]
         ).tokens
 
-        mask = torch.full((scores.shape[-1],), -math.inf, device=scores.device)
-        mask[allowed_tokens] = 0
+        cache_key = hash(tuple(allowed_tokens[:2048]))
+        if cache_key not in self.mask_cache:
+            mask = torch.full((scores.shape[-1],), -math.inf, device=scores.device)
+            mask[allowed_tokens] = 0
+            self.mask_cache[cache_key] = mask
+        else:
+            mask = self.mask_cache[cache_key]
         biased_scores = scores + mask
 
         return biased_scores
