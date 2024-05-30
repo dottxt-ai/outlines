@@ -1,12 +1,14 @@
 from typing import List
 
 from outlines.generate.api import SequenceGenerator
-from outlines.samplers import BeamSearchSampler, Sampler
+from outlines.samplers import BeamSearchSampler, Sampler, beam_search
 
 from .regex import regex
 
 
-def probabilities(model, choices: List[str], sampler: Sampler) -> SequenceGenerator:
+def probabilities(
+    model, choices: List[str], sampler: Sampler = beam_search()
+) -> SequenceGenerator:
     regex_str = r"(" + r"|".join(choices) + r")"
     assert isinstance(
         sampler, BeamSearchSampler
