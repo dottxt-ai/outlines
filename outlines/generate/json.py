@@ -54,7 +54,7 @@ def json(
         generator = regex(model, regex_str, sampler)
         generator.format_sequence = lambda x: pyjson.loads(x)
     elif isinstance(schema_object, Dict):
-        schema = pyjson.dumps(schema)
+        schema = pyjson.dumps(schema_object)
         regex_str = build_regex_from_schema(schema, whitespace_pattern)
         generator = regex(model, regex_str, sampler)
         generator.format_sequence = lambda x: pyjson.loads(x)
