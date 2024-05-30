@@ -1,5 +1,6 @@
 import datetime
 import re
+from typing import Dict, Optional, Union
 
 import pytest
 from pydantic import BaseModel, constr
@@ -262,6 +263,40 @@ def test_llamacpp_json_dict(model):
     assert isinstance(result, dict)
     assert isinstance(result["foo"], bool)
     assert isinstance(result["bar"], str)
+
+
+def test_json_equivalence(model):
+    """Test that all methods of generating from json create the same fsm."""
+
+    # Different inputs for json generator
+    def user_callable(user_id: Optional[int], name: Dict[str, int], password: Union[str, int]):
+        pass
+
+    class UserPydantic(BaseModel):
+        user_id: Optional[int]
+        name: Dict[str, int]
+        password: Union[str, int]
+
+    user_dict = {'properties': {'user_id': {'anyOf': [{'type': 'integer'}, {'type': 'null'}], 'title': 'User Id'},
+                    'name': {'additionalProperties': {'type': 'integer'}, 'title': 'Name', 'type': 'object'},
+                    'password': {'anyOf': [{'type': 'string'}, {'type': 'integer'}], 'title': 'Password'}},
+    'required': ['user_id', 'name', 'password'],
+    'title': 'User',
+    'type': 'object'}
+
+    user_str = '{"properties": {"user_id": {"anyOf": [{"type": "integer"}, {"type": "null"}], "title": "User Id"}, "name": {"additionalProperties": {"type": "integer"}, "title": "Name", "type": "object"}, "password": {"anyOf": [{"type": "string"}, {"type": "integer"}], "title": "Password"}}, "required": ["user_id", "name", "password"], "title": "User", "type": "object"}'
+
+    # Initialize the generators
+    generator_callable = generate.json(model, user_callable)
+    generator_pydantic = generate.json(model, UserPydantic)
+    generator_dict = generate.json(model, user_dict)
+    generator_str = generate.json(model, user_str)
+
+    # Check finite state machines are the same
+    assert generator_callable.fsm.states_to_token_maps == generator_pydantic.fsm.states_to_token_maps == generator_dict.fsm.states_to_token_maps == generator_str.fsm.states_to_token_maps
+    assert generator_callable.fsm.empty_token_ids == generator_pydantic.fsm.empty_token_ids == generator_dict.fsm.empty_token_ids == generator_str.fsm.empty_token_ids
+    assert generator_callable.fsm.eos_token_id == generator_pydantic.fsm.eos_token_id == generator_dict.fsm.eos_token_id == generator_str.fsm.eos_token_id
+    assert generator_callable.fsm.final_states == generator_pydantic.fsm.final_states == generator_dict.fsm.final_states == generator_str.fsm.final_states
 
 
 def test_llamacpp_cfg(model):
