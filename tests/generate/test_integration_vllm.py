@@ -309,28 +309,28 @@ def test_json_equivalence(model):
 
     # Check finite state machines are the same
     assert (
-        generator_callable.fsm.states_to_token_maps
-        == generator_pydantic.fsm.states_to_token_maps
-        == generator_dict.fsm.states_to_token_maps
-        == generator_str.fsm.states_to_token_maps
+        generator_callable.logits_processor.fsm.states_to_token_maps
+        == generator_pydantic.logits_processor.fsm.states_to_token_maps
+        == generator_dict.logits_processor.fsm.states_to_token_maps
+        == generator_str.logits_processor.fsm.states_to_token_maps
     )
     assert (
-        generator_callable.fsm.empty_token_ids
-        == generator_pydantic.fsm.empty_token_ids
-        == generator_dict.fsm.empty_token_ids
-        == generator_str.fsm.empty_token_ids
+        generator_callable.logits_processor.fsm.empty_token_ids
+        == generator_pydantic.logits_processor.fsm.empty_token_ids
+        == generator_dict.logits_processor.fsm.empty_token_ids
+        == generator_str.logits_processor.fsm.empty_token_ids
     )
     assert (
-        generator_callable.fsm.eos_token_id
-        == generator_pydantic.fsm.eos_token_id
-        == generator_dict.fsm.eos_token_id
-        == generator_str.fsm.eos_token_id
+        generator_callable.logits_processor.fsm.eos_token_id
+        == generator_pydantic.logits_processor.fsm.eos_token_id
+        == generator_dict.logits_processor.fsm.eos_token_id
+        == generator_str.logits_processor.fsm.eos_token_id
     )
     assert (
-        generator_callable.fsm.final_states
-        == generator_pydantic.fsm.final_states
-        == generator_dict.fsm.final_states
-        == generator_str.fsm.final_states
+        generator_callable.logits_processor.fsm.final_states
+        == generator_pydantic.logits_processor.fsm.final_states
+        == generator_dict.logits_processor.fsm.final_states
+        == generator_str.logits_processor.fsm.final_states
     )
 
 
