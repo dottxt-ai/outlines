@@ -248,13 +248,24 @@ def test_llamacpp_json_dict(model):
     prompt = "<|im_start|>user\nOutput some JSON<|im_end|>\n<|im_start|>assistant\n"
 
     schema_dict = {
-        "title": "spam",
-        "type": "object",
         "properties": {
-            "foo": {"type": "boolean"},
-            "bar": {"type": "string", "maxLength": 4},
+            "user_id": {
+                "anyOf": [{"type": "integer"}, {"type": "null"}],
+                "title": "User Id",
+            },
+            "name": {
+                "additionalProperties": {"type": "integer"},
+                "title": "Name",
+                "type": "object",
+            },
+            "password": {
+                "anyOf": [{"type": "string"}, {"type": "integer"}],
+                "title": "Password",
+            },
         },
-        "required": ["foo", "bar"],
+        "required": ["user_id", "name", "password"],
+        "title": "UserPydantic",
+        "type": "object",
     }
 
     result = generate.json(model, schema_dict, whitespace_pattern="")(
