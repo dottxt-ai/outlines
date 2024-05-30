@@ -448,14 +448,14 @@ def test_transformers_json_dict():
     prompt = "Output some JSON "
 
     schema_dict = {
-      "title": "spam",
-      "type": "object",
-      "properties": {
-           "foo" : {"type": "integer"},
-           "bar": {"type": "string", "maxLength": 4}
+        "title": "spam",
+        "type": "object",
+        "properties": {
+            "foo": {"type": "integer"},
+            "bar": {"type": "string", "maxLength": 4},
         },
-      "required": ["foo", "bar"]
-      }
+        "required": ["foo", "bar"],
+    }
 
     rng = torch.Generator()
     rng.manual_seed(0)  # make sure that `bar` is not an int
@@ -572,7 +572,9 @@ def test_json_equivalence():
     """Test that all methods of generating from json create the same fsm."""
 
     # Different inputs for json generator
-    def user_callable(user_id: Optional[int], name: Dict[str, int], password: Union[str, int]):
+    def user_callable(
+        user_id: Optional[int], name: Dict[str, int], password: Union[str, int]
+    ):
         pass
 
     class UserPydantic(BaseModel):
@@ -580,12 +582,26 @@ def test_json_equivalence():
         name: Dict[str, int]
         password: Union[str, int]
 
-    user_dict = {'properties': {'user_id': {'anyOf': [{'type': 'integer'}, {'type': 'null'}], 'title': 'User Id'},
-                    'name': {'additionalProperties': {'type': 'integer'}, 'title': 'Name', 'type': 'object'},
-                    'password': {'anyOf': [{'type': 'string'}, {'type': 'integer'}], 'title': 'Password'}},
-    'required': ['user_id', 'name', 'password'],
-    'title': 'User',
-    'type': 'object'}
+    user_dict = {
+        "properties": {
+            "user_id": {
+                "anyOf": [{"type": "integer"}, {"type": "null"}],
+                "title": "User Id",
+            },
+            "name": {
+                "additionalProperties": {"type": "integer"},
+                "title": "Name",
+                "type": "object",
+            },
+            "password": {
+                "anyOf": [{"type": "string"}, {"type": "integer"}],
+                "title": "Password",
+            },
+        },
+        "required": ["user_id", "name", "password"],
+        "title": "User",
+        "type": "object",
+    }
 
     user_str = '{"properties": {"user_id": {"anyOf": [{"type": "integer"}, {"type": "null"}], "title": "User Id"}, "name": {"additionalProperties": {"type": "integer"}, "title": "Name", "type": "object"}, "password": {"anyOf": [{"type": "string"}, {"type": "integer"}], "title": "Password"}}, "required": ["user_id", "name", "password"], "title": "User", "type": "object"}'
 
@@ -598,10 +614,30 @@ def test_json_equivalence():
     generator_str = generate.json(model, user_str)
 
     # Check finite state machines are the same
-    assert generator_callable.fsm.states_to_token_maps == generator_pydantic.fsm.states_to_token_maps == generator_dict.fsm.states_to_token_maps == generator_str.fsm.states_to_token_maps
-    assert generator_callable.fsm.empty_token_ids == generator_pydantic.fsm.empty_token_ids == generator_dict.fsm.empty_token_ids == generator_str.fsm.empty_token_ids
-    assert generator_callable.fsm.eos_token_id == generator_pydantic.fsm.eos_token_id == generator_dict.fsm.eos_token_id == generator_str.fsm.eos_token_id
-    assert generator_callable.fsm.final_states == generator_pydantic.fsm.final_states == generator_dict.fsm.final_states == generator_str.fsm.final_states
+    assert (
+        generator_callable.fsm.states_to_token_maps
+        == generator_pydantic.fsm.states_to_token_maps
+        == generator_dict.fsm.states_to_token_maps
+        == generator_str.fsm.states_to_token_maps
+    )
+    assert (
+        generator_callable.fsm.empty_token_ids
+        == generator_pydantic.fsm.empty_token_ids
+        == generator_dict.fsm.empty_token_ids
+        == generator_str.fsm.empty_token_ids
+    )
+    assert (
+        generator_callable.fsm.eos_token_id
+        == generator_pydantic.fsm.eos_token_id
+        == generator_dict.fsm.eos_token_id
+        == generator_str.fsm.eos_token_id
+    )
+    assert (
+        generator_callable.fsm.final_states
+        == generator_pydantic.fsm.final_states
+        == generator_dict.fsm.final_states
+        == generator_str.fsm.final_states
+    )
 
 
 def test_transformers_logits_vocab_size():
