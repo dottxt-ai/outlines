@@ -1,6 +1,6 @@
 import json as pyjson
 from functools import singledispatch
-from typing import Callable, Optional, Union, Dict
+from typing import Callable, Dict, Optional, Union
 
 from pydantic import BaseModel
 
@@ -15,7 +15,7 @@ from .regex import regex
 @singledispatch
 def json(
     model,
-    schema_object: Union[str, object, Callable],
+    schema_object: Union[str, object, Callable, Dict],
     sampler: Sampler = multinomial(),
     whitespace_pattern: Optional[str] = None,
 ) -> SequenceGenerator:
@@ -53,13 +53,13 @@ def json(
         regex_str = build_regex_from_schema(schema, whitespace_pattern)
         generator = regex(model, regex_str, sampler)
         generator.format_sequence = lambda x: pyjson.loads(x)
-    elif isinstance(schema_object, str):
-        schema = schema_object
+    elif isinstance(schema_object, Dict):
+        schema = pyjson.dumps(schema)
         regex_str = build_regex_from_schema(schema, whitespace_pattern)
         generator = regex(model, regex_str, sampler)
         generator.format_sequence = lambda x: pyjson.loads(x)
-    elif isinstance(schema_object, Dict):
-        schema_str = json.dumps(schema)
+    elif isinstance(schema_object, str):
+        schema = schema_object
         regex_str = build_regex_from_schema(schema, whitespace_pattern)
         generator = regex(model, regex_str, sampler)
         generator.format_sequence = lambda x: pyjson.loads(x)
