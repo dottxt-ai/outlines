@@ -442,6 +442,30 @@ def test_transformers_json_batch_multiple_samples():
     assert isinstance(result[1][1], BaseModel)
 
 
+def test_transformers_json_dict():
+    model_name = "hf-internal-testing/tiny-random-GPTJForCausalLM"
+    model = models.transformers(model_name, device="cpu")
+    prompt = "Output some JSON "
+
+    schema_dict = {
+      "title": "spam",
+      "type": "object",
+      "properties": {
+           "foo" : {"type": "integer"},
+           "bar": {"type": "string", "maxLength": 4}
+        },
+      "required": ["foo", "bar"]
+      }
+
+    rng = torch.Generator()
+    rng.manual_seed(0)  # make sure that `bar` is not an int
+
+    result = generate.json(model, schema_dict)(prompt, max_tokens=500, rng=rng)
+    assert isinstance(result, dict)
+    assert isinstance(result["foo"], int)
+    assert isinstance(result["bar"], str)
+
+
 def test_transformers_json_str_enum():
     model_name = "hf-internal-testing/tiny-random-GPTJForCausalLM"
     model = models.transformers(model_name, device="cpu")

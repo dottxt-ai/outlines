@@ -230,6 +230,28 @@ def test_vllm_json_schema(model):
     assert isinstance(result["bar"], str)
 
 
+def test_vllm_json_dict(model):
+    prompt = "Output some JSON. "
+
+    schema_dict = {
+      "title": "spam",
+      "type": "object",
+      "properties": {
+           "foo" : {"type": "boolean"},
+           "bar": {"type": "string", "maxLength": 4}
+        },
+      "required": ["foo", "bar"]
+      }
+
+    sampling_params = SamplingParams(temperature=0)
+    result = generate.json(model, schema_dict, whitespace_pattern="")(
+        prompt, max_tokens=100, seed=10, sampling_params=sampling_params
+    )
+    assert isinstance(result, dict)
+    assert isinstance(result["foo"], bool)
+    assert isinstance(result["bar"], str)
+
+
 @pytest.mark.xfail(
     reason="The CFG logits processor for vLLM has not been implemented yet."
 )

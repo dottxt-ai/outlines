@@ -243,6 +243,27 @@ def test_llamacpp_json_schema(model):
     assert isinstance(result["bar"], str)
 
 
+def test_llamacpp_json_dict(model):
+    prompt = "<|im_start|>user\nOutput some JSON<|im_end|>\n<|im_start|>assistant\n"
+
+    schema_dict = {
+      "title": "spam",
+      "type": "object",
+      "properties": {
+           "foo" : {"type": "boolean"},
+           "bar": {"type": "string", "maxLength": 4}
+        },
+      "required": ["foo", "bar"]
+      }
+
+    result = generate.json(model, schema_dict, whitespace_pattern="")(
+        prompt, max_tokens=100, temperature=0, seed=10
+    )
+    assert isinstance(result, dict)
+    assert isinstance(result["foo"], bool)
+    assert isinstance(result["bar"], str)
+
+
 def test_llamacpp_cfg(model):
     prompt = "<|im_start|>user\nOutput a short and valid JSON object with two keys.<|im_end|>\n><|im_start|>assistant\n"
     result = generate.cfg(model, grammars.arithmetic)(prompt, seed=11)
