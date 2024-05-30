@@ -126,7 +126,22 @@ def to_regex(
     if whitespace_pattern is None:
         whitespace_pattern = WHITESPACE
 
-    if "properties" in instance:
+    if instance == {}:
+        # JSON Schema Spec: Empty object means unconstrained, any json type is legal
+        types = [
+            {"type": "boolean"},
+            {"type": "null"},
+            {"type": "number"},
+            {"type": "integer"},
+            {"type": "string"},
+            {"type": "array"},
+            {"type": "object"},
+        ]
+        regexes = [to_regex(resolver, t, whitespace_pattern) for t in types]
+        regexes = [rf"({r})" for r in regexes]
+        return rf"{'|'.join(regexes)}"
+
+    elif "properties" in instance:
         regex = ""
         regex += r"\{"
         properties = instance["properties"]
