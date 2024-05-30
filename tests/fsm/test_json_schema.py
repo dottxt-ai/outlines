@@ -119,6 +119,8 @@ def test_match_number(pattern, does_match):
             STRING,
             [
                 ("unquotedstring", False),
+                ('"(parenthesized_string)"', True),
+                ('"malformed) parenthesis (((() string"', True),
                 ('"quoted_string"', True),
                 (r'"escape_\character"', False),
                 (r'"double_\\escape"', True),
@@ -213,8 +215,8 @@ def test_match_number(pattern, does_match):
                 "properties": {"count": {"title": "Count", "type": "integer"}},
                 "required": ["count"],
             },
-            '\\{[\\n ]*"count"[\\n ]*:[\\n ]*(-)?(0|[1-9][0-9]*)[\\n ]*\\}',
-            [('{\n  "count": 100\n}', True)],
+            '\\{[ ]?"count"[ ]?:[ ]?(-)?(0|[1-9][0-9]*)[ ]?\\}',
+            [('{ "count": 100 }', True)],
         ),
         # array
         (
@@ -275,7 +277,7 @@ def test_match_number(pattern, does_match):
             rf"""\{{{WHITESPACE}"test_dict"{WHITESPACE}:{WHITESPACE}\{{{WHITESPACE}({STRING}{WHITESPACE}:{WHITESPACE}{STRING}({WHITESPACE},{WHITESPACE}{STRING}{WHITESPACE}:{WHITESPACE}{STRING}){{0,}})?{WHITESPACE}\}}{WHITESPACE}\}}""",
             [
                 ("""{ "test_dict":{"foo":"bar","baz": "bif"}}""", True),
-                ("""{ "test_dict":{"foo":"bar"\n}}""", True),
+                ("""{ "test_dict":{"foo":"bar" }}""", True),
                 ("""{ "test_dict":{}}""", True),
                 ("""{ "WRONG_KEY":{}}""", False),
                 ("""{ "test_dict":{"wrong_type" 1}}""", False),
@@ -352,6 +354,15 @@ def test_match_number(pattern, does_match):
             rf"({STRING}{INTEGER})",
             [('"a"1', True), ('"a"', False), ('"1"', False)],
         ),
+        # Tuple / prefixItems
+        (
+            {
+                "title": "Foo",
+                "prefixItems": [{"type": "string"}, {"type": "integer"}],
+            },
+            rf"\[{WHITESPACE}{STRING}{WHITESPACE},{WHITESPACE}{INTEGER}{WHITESPACE}\]",
+            [('["a", 1]', True), ('["a", 1, 1]', False), ("[]", False)],
+        ),
         # Nested schema
         (
             {
@@ -367,8 +378,8 @@ def test_match_number(pattern, does_match):
                 },
                 "required": ["fuzz"],
             },
-            f'\\{{[\\n ]*"fuzz"[\\n ]*:[\\n ]*\\{{[\\n ]*"spam"[\\n ]*:[\\n ]*{INTEGER}[\\n ]*\\}}[\\n ]*\\}}',
-            [('{\n  "fuzz": {\n    "spam": 100\n  }\n}', True)],
+            f'\\{{[ ]?"fuzz"[ ]?:[ ]?\\{{[ ]?"spam"[ ]?:[ ]?{INTEGER}[ ]?\\}}[ ]?\\}}',
+            [('{ "fuzz": { "spam": 100 }}', True)],
         ),
         # Schema with a reference
         (
@@ -382,7 +393,7 @@ def test_match_number(pattern, does_match):
                 },
                 "required": ["user_id", "name", "a"],
             },
-            f'\\{{[\\n ]*"user_id"[\\n ]*:[\\n ]*{INTEGER}[\\n ]*,[\\n ]*"name"[\\n ]*:[\\n ]*{STRING}[\\n ]*,[\\n ]*"a"[\\n ]*:[\\n ]*{STRING}[\\n ]*\\}}',
+            f'\\{{[ ]?"user_id"[ ]?:[ ]?{INTEGER}[ ]?,[ ]?"name"[ ]?:[ ]?{STRING}[ ]?,[ ]?"a"[ ]?:[ ]?{STRING}[ ]?\\}}',
             [('{"user_id": 100, "name": "John", "a": "Marc"}', True)],
         ),
         (
@@ -397,7 +408,7 @@ def test_match_number(pattern, does_match):
                 },
                 "required": ["user_id", "name", "name2"],
             },
-            f'\\{{[\\n ]*"user_id"[\\n ]*:[\\n ]*{INTEGER}[\\n ]*,[\\n ]*"name"[\\n ]*:[\\n ]*{STRING}[\\n ]*,[\\n ]*"name2"[\\n ]*:[\\n ]*{STRING}[\\n ]*\\}}',
+            f'\\{{[ ]?"user_id"[ ]?:[ ]?{INTEGER}[ ]?,[ ]?"name"[ ]?:[ ]?{STRING}[ ]?,[ ]?"name2"[ ]?:[ ]?{STRING}[ ]?\\}}',
             [('{"user_id": 100, "name": "John", "name2": "Marc"}', True)],
         ),
         (
@@ -439,7 +450,7 @@ def test_match_number(pattern, does_match):
                     }
                 },
             },
-            f'\\{{[\\n ]*"name"[\\n ]*:[\\n ]*{STRING}[\\n ]*,[\\n ]*"last_name"[\\n ]*:[\\n ]*{STRING}[\\n ]*,[\\n ]*"address"[\\n ]*:[\\n ]*\\{{[\\n ]*"city"[\\n ]*:[\\n ]*{STRING}[\\n ]*\\}}[\\n ]*\\}}',
+            f'\\{{[ ]?"name"[ ]?:[ ]?{STRING}[ ]?,[ ]?"last_name"[ ]?:[ ]?{STRING}[ ]?,[ ]?"address"[ ]?:[ ]?\\{{[ ]?"city"[ ]?:[ ]?{STRING}[ ]?\\}}[ ]?\\}}',
             [
                 (
                     '{"name": "John", "last_name": "Doe", "address": {"city": "Paris"}}',
@@ -460,7 +471,7 @@ def test_match_number(pattern, does_match):
                 "title": "Character",
                 "type": "object",
             },
-            f'\\{{[\\n ]*"name"[\\n ]*:[\\n ]*{STRING}([\\n ]*,[\\n ]*"age"[\\n ]*:[\\n ]*({INTEGER}|null))?([\\n ]*,[\\n ]*"weapon"[\\n ]*:[\\n ]*({STRING}|null))?[\\n ]*\\}}',
+            f'\\{{[ ]?"name"[ ]?:[ ]?{STRING}([ ]?,[ ]?"age"[ ]?:[ ]?({INTEGER}|null))?([ ]?,[ ]?"weapon"[ ]?:[ ]?({STRING}|null))?[ ]?\\}}',
             [
                 ('{ "name" : "Player" }', True),
                 ('{ "name" : "Player", "weapon" : "sword" }', True),
@@ -480,7 +491,7 @@ def test_match_number(pattern, does_match):
                 "title": "Character",
                 "type": "object",
             },
-            f'\\{{[\\n ]*"name"[\\n ]*:[\\n ]*{STRING}[\\n ]*,([\\n ]*"age"[\\n ]*:[\\n ]*({INTEGER}|null)[\\n ]*,)?[\\n ]*"weapon"[\\n ]*:[\\n ]*{STRING}([\\n ]*,[\\n ]*"strength"[\\n ]*:[\\n ]*({INTEGER}|null))?[\\n ]*\\}}',
+            f'\\{{[ ]?"name"[ ]?:[ ]?{STRING}[ ]?,([ ]?"age"[ ]?:[ ]?({INTEGER}|null)[ ]?,)?[ ]?"weapon"[ ]?:[ ]?{STRING}([ ]?,[ ]?"strength"[ ]?:[ ]?({INTEGER}|null))?[ ]?\\}}',
             [
                 ('{ "name" : "Player" , "weapon" : "sword" }', True),
                 (
@@ -504,7 +515,7 @@ def test_match_number(pattern, does_match):
                 "title": "Character",
                 "type": "object",
             },
-            f'\\{{([\\n ]*"name"[\\n ]*:[\\n ]*({STRING}|null)[\\n ]*,)?[\\n ]*"age"[\\n ]*:[\\n ]*{INTEGER}[\\n ]*,[\\n ]*"armor"[\\n ]*:[\\n ]*{STRING}[\\n ]*,([\\n ]*"strength"[\\n ]*:[\\n ]*({INTEGER}|null)[\\n ]*,)?[\\n ]*"weapon"[\\n ]*:[\\n ]*{STRING}[\\n ]*\\}}',
+            f'\\{{([ ]?"name"[ ]?:[ ]?({STRING}|null)[ ]?,)?[ ]?"age"[ ]?:[ ]?{INTEGER}[ ]?,[ ]?"armor"[ ]?:[ ]?{STRING}[ ]?,([ ]?"strength"[ ]?:[ ]?({INTEGER}|null)[ ]?,)?[ ]?"weapon"[ ]?:[ ]?{STRING}[ ]?\\}}',
             [
                 (
                     '{ "name" : "Player", "age" : 10, "armor" : "plate", "strength" : 11, "weapon" : "sword" }',
@@ -528,7 +539,7 @@ def test_match_number(pattern, does_match):
                 "title": "Character",
                 "type": "object",
             },
-            f'\\{{([\\n ]*"name"[\\n ]*:[\\n ]*({STRING}|null)([\\n ]*,[\\n ]*"age"[\\n ]*:[\\n ]*({INTEGER}|null))?([\\n ]*,[\\n ]*"strength"[\\n ]*:[\\n ]*({INTEGER}|null))?|([\\n ]*"name"[\\n ]*:[\\n ]*({STRING}|null)[\\n ]*,)?[\\n ]*"age"[\\n ]*:[\\n ]*({INTEGER}|null)([\\n ]*,[\\n ]*"strength"[\\n ]*:[\\n ]*({INTEGER}|null))?|([\\n ]*"name"[\\n ]*:[\\n ]*({STRING}|null)[\\n ]*,)?([\\n ]*"age"[\\n ]*:[\\n ]*({INTEGER}|null)[\\n ]*,)?[\\n ]*"strength"[\\n ]*:[\\n ]*({INTEGER}|null))?[\\n ]*\\}}',
+            f'\\{{([ ]?"name"[ ]?:[ ]?({STRING}|null)([ ]?,[ ]?"age"[ ]?:[ ]?({INTEGER}|null))?([ ]?,[ ]?"strength"[ ]?:[ ]?({INTEGER}|null))?|([ ]?"name"[ ]?:[ ]?({STRING}|null)[ ]?,)?[ ]?"age"[ ]?:[ ]?({INTEGER}|null)([ ]?,[ ]?"strength"[ ]?:[ ]?({INTEGER}|null))?|([ ]?"name"[ ]?:[ ]?({STRING}|null)[ ]?,)?([ ]?"age"[ ]?:[ ]?({INTEGER}|null)[ ]?,)?[ ]?"strength"[ ]?:[ ]?({INTEGER}|null))?[ ]?\\}}',
             [
                 ('{ "name" : "Player" }', True),
                 ('{ "name" : "Player", "age" : 10, "strength" : 10 }', True),
@@ -708,6 +719,46 @@ def test_format(schema, regex, examples):
                 ('{"time":20:20:39Z}', False),  # missing quotes for value
             ],
         ),
+        # Unconstrained Object
+        (
+            {
+                "title": "Foo",
+                "type": "object",
+            },
+            [
+                ("{}", True),
+                ('{"a": 1, "b": null}', True),
+                ('{"a": {"z": {"g": 4}}, "b": null}', True),
+                ("1234", False),  # not an object
+                ('["a", "a"]', False),  # not an array
+            ],
+        ),
+        # Unconstrained Array
+        (
+            {
+                "type": "array",
+            },
+            [
+                ("[1, {}, false]", True),
+                ("[{}]", True),
+                ('[{"a": {"z": "q"}, "b": null}]', True),
+                ('[{"a": [1, 2, true], "b": null}]', True),
+                ('[{"a": [1, 2, true], "b": {"a": "b"}}, 1, true, [1, [2]]]', True),
+                # too deep, default unconstrained depth limit = 2
+                (
+                    '[{"a": [1, 2, true], "b": {"a": "b"}}, 1, true, [1, [2, [3]]]]',
+                    False,
+                ),
+                ('[{"a": {"z": {"g": 4}}, "b": null}]', False),
+                ("[[[[1]]]]", False),
+                # not an array
+                ("{}", False),
+                ('{"a": 1, "b": null}', False),
+                ('{"a": {"z": {"g": 4}}, "b": null}', False),
+                ("1234", False),  # not an array
+                ('{"a": "a"}', False),  # not an array
+            ],
+        ),
     ],
 )
 def test_format_without_regex(schema, examples):
@@ -722,7 +773,7 @@ def test_format_without_regex(schema, examples):
             assert match is None
 
 
-@pytest.mark.parametrize("whitespace_pattern", [None, r"[\n ]?", "abc"])
+@pytest.mark.parametrize("whitespace_pattern", [None, r"[\n ]*", "abc"])
 def test_json_schema_custom_whitespace_pattern(whitespace_pattern):
     """assert whitespace_pattern setting respected"""
 
@@ -744,13 +795,11 @@ def test_json_schema_custom_whitespace_pattern(whitespace_pattern):
     )
     mock_result_maybe_ws = """{"foo" : 4 ,"bar":"baz    baz baz bar"}"""
 
-    match_default_ws = re.fullmatch(pattern, mock_result_mult_ws)
+    match_default_ws = re.fullmatch(pattern, mock_result_maybe_ws)
     if whitespace_pattern is None:
         assert match_default_ws
     else:
-        assert match_default_ws is None
-
-    assert re.fullmatch(pattern, mock_result_maybe_ws)
+        assert re.fullmatch(pattern, mock_result_mult_ws)
 
 
 def test_one_of_doesnt_produce_illegal_lookaround():

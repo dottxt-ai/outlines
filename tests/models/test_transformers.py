@@ -107,6 +107,14 @@ def test_tokenizer_eq_hash():
     tokenizer_hf = AutoTokenizer.from_pretrained("gpt2")
 
     tokenizer = TransformerTokenizer(tokenizer_hf)
-    tokenizer2 = TransformerTokenizer(tokenizer_hf)
-    assert tokenizer == tokenizer2
-    assert hash(tokenizer) == hash(tokenizer2)
+    tokenizer_2 = TransformerTokenizer(tokenizer_hf)
+
+    assert tokenizer == tokenizer_2
+    assert hash(tokenizer) == hash(tokenizer_2)
+
+    tokenizer_hf_2 = AutoTokenizer.from_pretrained("gpt2")
+    tokenizer_hf_2.add_tokens(["test_token"])
+
+    tokenizer_3 = TransformerTokenizer(tokenizer_hf_2)
+    assert tokenizer != tokenizer_3
+    assert hash(tokenizer) != hash(tokenizer_3)

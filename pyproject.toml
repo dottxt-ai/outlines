@@ -35,6 +35,8 @@ dependencies = [
    "referencing",
    "jsonschema",
    "requests",
+   "tqdm",
+   "datasets",
 ]
 dynamic = ["version"]
 
@@ -49,7 +51,6 @@ test = [
     "diff-cover",
     "accelerate",
     "beartype<0.16.0",
-    "datasets",
     "responses",
     "llama-cpp-python",
     "huggingface_hub",

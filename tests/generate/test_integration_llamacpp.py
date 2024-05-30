@@ -247,3 +247,35 @@ def test_llamacpp_cfg(model):
     prompt = "<|im_start|>user\nOutput a short and valid JSON object with two keys.<|im_end|>\n><|im_start|>assistant\n"
     result = generate.cfg(model, grammars.arithmetic)(prompt, seed=11)
     assert isinstance(result, str)
+
+
+@pytest.mark.parametrize(
+    "repo,model_path,hf_tokenizer_uri",
+    [
+        ("Qwen/Qwen1.5-0.5B-Chat-GGUF", "*q2*.gguf", "Qwen/Qwen1.5-0.5B-Chat"),
+        ("TheBloke/phi-2-GGUF", "*Q2*.gguf", "microsoft/phi-2"),
+    ],
+)
+def test_byte_tokenizer_regression(repo, model_path, hf_tokenizer_uri):
+    """Reproduce https://github.com/outlines-dev/outlines/issues/820"""
+    import llama_cpp
+
+    model = models.llamacpp(
+        repo,
+        model_path,
+        tokenizer=llama_cpp.llama_tokenizer.LlamaHFTokenizer.from_pretrained(
+            hf_tokenizer_uri
+        ),
+    )
+    generator = generate.choice(model, ["skirt", "dress", "pen", "jacket"])
+    generator("Pick the odd word out: skirt, dress, pen, jacket")
+
+
+def test_llama_cpp_pre_tokenizer_remains_broken():
+    """If fails, llama.cpp pre-tokenizer is fixed -> revert #892, remove `with pytest.raises`"""
+    repo = "Qwen/Qwen1.5-0.5B-Chat-GGUF"
+    model_path = "*q2*.gguf"
+
+    model = models.llamacpp(repo, model_path)
+    with pytest.raises(RuntimeError):
+        generate.choice(model, ["skirt", "dress", "pen", "jacket"])
