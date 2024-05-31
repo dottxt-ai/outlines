@@ -759,6 +759,20 @@ def test_format(schema, regex, examples):
                 ('{"a": "a"}', False),  # not an array
             ],
         ),
+        # No schema / unconstrained value
+        (
+            {},
+            [
+                ('"aaabbuecuh"', True),  # string
+                ("5.554", True),  # number
+                ("true", True),  # boolean
+                ("null", True),  # null
+                ("5999", True),  # integer
+                ('["a", "b"]', True),  # array
+                ('{"key": {"k2": "value"}}', True),  # nested object
+                ("this isnt valid json", False),
+            ],
+        ),
     ],
 )
 def test_format_without_regex(schema, examples):
