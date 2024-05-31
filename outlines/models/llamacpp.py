@@ -1,13 +1,100 @@
 import dataclasses
+import pickle
 import warnings
-from typing import TYPE_CHECKING, Iterator, List, Optional, TypedDict, Union
+from typing import (
+    TYPE_CHECKING,
+    Dict,
+    Iterator,
+    List,
+    Optional,
+    Set,
+    Tuple,
+    TypedDict,
+    Union,
+)
 
 from typing_extensions import Unpack
 
 from outlines.generate.api import GenerationParameters, SamplingParameters
+from outlines.models.tokenizer import Tokenizer
 
 if TYPE_CHECKING:
     from llama_cpp import Llama, LogitsProcessorList
+
+
+class LlamaCppTokenizer(Tokenizer):
+    def __init__(self, model: "Llama"):
+        self.eos_token_id = model.token_eos()
+        self.eos_token = model.tokenizer().decode([self.eos_token_id])
+        self.pad_token_id = self.eos_token_id
+        self.special_tokens: Set[int] = set()
+
+        self.vocabulary: Dict[str, int] = dict()
+
+        self.tokenizer = model.tokenizer()
+
+        # TODO: Remove when https://github.com/ggerganov/llama.cpp/pull/5613 is resolved
+        try:
+            self.vocabulary = model.tokenizer_.hf_tokenizer.get_vocab()
+        except AttributeError:
+            # ###
+            for t in range(model.n_vocab()):
+                token_piece = model.tokenizer().decode([t])
+                self.vocabulary[token_piece] = t
+
+        # ensure stable ordering of vocabulary
+        self.vocabulary = {
+            tok: tok_id
+            for tok, tok_id in sorted(self.vocabulary.items(), key=lambda x: x[1])
+        }
+
+        self._hash = None
+
+    def decode(self, token_ids: List[int]) -> List[str]:
+        decoded_bytes = self.tokenizer.detokenize(token_ids)
+        return [decoded_bytes.decode("utf-8", errors="ignore")]
+
+    def encode(
+        self, prompt: Union[str, List[str]], add_bos: bool = True, special: bool = True
+    ) -> Tuple[List[int], List[int]]:
+        if isinstance(prompt, list):
+            raise NotImplementedError(
+                "llama-cpp-python tokenizer doesn't support batch tokenization"
+            )
+        token_ids = self.tokenizer.tokenize(
+            prompt.encode("utf-8", errors="ignore"), add_bos=add_bos, special=special
+        )
+        # generate attention mask, missing from llama-cpp-python
+        attention_mask = [
+            1 if token_id != self.pad_token_id else 0 for token_id in token_ids
+        ]
+        return token_ids, attention_mask
+
+    def convert_token_to_string(self, token: str) -> str:
+        return token
+
+    def __eq__(self, other):
+        if not isinstance(other, LlamaCppTokenizer):
+            return False
+        return self.__getstate__() == other.__getstate__()
+
+    def __hash__(self):
+        if self._hash is None:
+            self._hash = hash(pickle.dumps(self))
+        return self._hash
+
+    def __getstate__(self):
+        """Create a stable representation for outlines.caching"""
+        return (
+            self.vocabulary,
+            self.eos_token_id,
+            self.eos_token,
+            self.pad_token_id,
+            sorted(self.special_tokens),
+        )
+
+    def __setstate__(self, state):
+        raise NotImplementedError("Cannot load a pickled llamacpp tokenizer")
 
 
 class LlamaCppParams(TypedDict, total=False):
