@@ -6,3 +6,4 @@ docs/build
 .idea/
 *.gguf
 .venv
+benchmarks/results
