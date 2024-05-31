@@ -676,6 +676,32 @@ def state_scan_tokens(
 
 
 @numba.njit(cache=True, nogil=True)
+def get_token_transitions(
+    alphabet_symbol_mapping: Dict[str, int],
+    alphabet_anything_value: int,
+    token_str: str,
+) -> Sequence[int]:
+    trans_key_seq = []
+    i = 0
+    while i < len(token_str):
+        if token_str[i] == "\x00" and i != len(token_str) - 1:
+            symbol = token_str[i : i + 3]
+            i += 3
+        else:
+            symbol = token_str[i]
+            i += 1
+
+        trans_key_seq.append(
+            alphabet_symbol_mapping.get(symbol, alphabet_anything_value)
+        )
+
+    trans_key_seq_array = np.empty(len(trans_key_seq), dtype=np.int64)
+    for j in range(len(trans_key_seq)):
+        trans_key_seq_array[j] = trans_key_seq[j]
+    return trans_key_seq_array
+
+
+@numba.njit(cache=True, nogil=True)
 def get_tokens_trans_keys(
     alphabet_symbol_mapping: Dict[str, int],
     alphabet_anything_value: int,
@@ -683,24 +709,9 @@ def get_tokens_trans_keys(
 ) -> List[Sequence[int]]:
     tokens_trans_keys = numba.typed.List.empty_list(numba.int64[:])
     for token_str, _ in vocabulary:
-        trans_key_seq = []
-        i = 0
-        while i < len(token_str):
-            if token_str[i] == "\x00" and i != len(token_str) - 1:
-                symbol = token_str[i : i + 3]
-                i += 3
-            else:
-                symbol = token_str[i]
-                i += 1
-
-            trans_key_seq.append(
-                alphabet_symbol_mapping.get(symbol, alphabet_anything_value)
-            )
-
-        trans_key_seq_array = np.empty(len(trans_key_seq), dtype=np.int64)
-        for j in range(len(trans_key_seq)):
-            trans_key_seq_array[j] = trans_key_seq[j]
-
+        trans_key_seq_array = get_token_transitions(
+            alphabet_symbol_mapping, alphabet_anything_value, token_str
+        )
         tokens_trans_keys.append(trans_key_seq_array)
 
     return tokens_trans_keys
