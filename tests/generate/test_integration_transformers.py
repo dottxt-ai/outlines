@@ -1,7 +1,6 @@
 import datetime
 import re
 from enum import Enum
-from importlib import reload
 from typing import List, Union
 
 import pytest
@@ -13,27 +12,6 @@ import outlines.models as models
 from outlines.fsm.regex import reduced_vocabulary
 from outlines.models.transformers import Transformers, TransformerTokenizer
 from outlines.samplers import beam_search, greedy, multinomial
-
-
-@pytest.fixture
-def temp_cache_dir():
-    import os
-    import tempfile
-
-    import outlines.caching
-    import outlines.fsm.guide
-
-    with tempfile.TemporaryDirectory() as tempdir:
-        os.environ["OUTLINES_CACHE_DIR"] = tempdir
-        outlines.caching.get_cache.cache_clear()
-        reload(outlines)
-        reload(outlines.fsm.guide)
-        cache_status = outlines.caching._caching_enabled
-        try:
-            outlines.caching._caching_enabled = True
-            yield
-        finally:
-            outlines.caching._caching_enabled = cache_status
 
 
 def test_transformers_integration_text():
