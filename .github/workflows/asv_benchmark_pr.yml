@@ -49,4 +49,9 @@ jobs:
             --no-stats --interleave-rounds -a repeat=3 || true
 
     - name: BENCHMARK RESULTS
-      run: asv compare --factor=1.1 --no-stats --split upstream/main HEAD
+      run: |
+        asv compare --factor=1.1 --no-stats --split upstream/main HEAD | tee ${{ env.BENCHMARKS_OUTPUT }}
+        if grep -q "Benchmarks that have got worse" "${{ env.BENCHMARKS_OUTPUT }}"; then
+          echo "Performance degradation detected!"
+          exit 1
+        fi
