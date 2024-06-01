@@ -11,6 +11,10 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v2
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: "3.10"
     - name: Build SDist and Wheel
       run: ./.github/scripts/build_sdist_and_wheel.sh
     - name: Check that the package version matches the Release name
