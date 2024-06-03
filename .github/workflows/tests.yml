@@ -88,3 +88,11 @@ jobs:
           name: html-report
           path: htmlcov
         if: ${{ failure() }}
+
+  build-wheel:
+    name: Build Wheel and Test SDist
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build SDist and Wheel
+        run: ./.github/scripts/build_sdist_and_wheel.sh

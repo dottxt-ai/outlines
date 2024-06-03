@@ -15,28 +15,11 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: "3.10"
-    - name: Build sdist and wheel
-      run: |
-        python -m pip install -U pip
-        python -m pip install build
-        python -m build
+    - name: Build SDist and Wheel
+      run: ./.github/scripts/build_sdist_and_wheel.sh
     - name: Check that the package version matches the Release name
       run: |
         grep -Rq "^Version: ${GITHUB_REF:10}$" outlines.egg-info/PKG-INFO
-    - name: Check sdist install and imports
-      run: |
-        mkdir -p test-sdist
-        cd test-sdist
-        python -m venv venv-sdist
-        venv-sdist/bin/python -m pip install ../dist/outlines-*.tar.gz
-        venv-sdist/bin/python -c "import outlines"
-    - name: Check wheel install and imports
-      run: |
-        mkdir -p test-wheel
-        cd test-wheel
-        python -m venv venv-wheel
-        venv-wheel/bin/python -m pip install ../dist/outlines-*.whl
-        venv-wheel/bin/python -c "import outlines"
     - name: Publish to PyPi
       uses: pypa/gh-action-pypi-publish@v1.4.2
       with:

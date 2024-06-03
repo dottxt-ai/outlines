@@ -279,3 +279,58 @@ def test_llama_cpp_pre_tokenizer_remains_broken():
     model = models.llamacpp(repo, model_path)
     with pytest.raises(RuntimeError):
         generate.choice(model, ["skirt", "dress", "pen", "jacket"])
+
+
+def test_RegexGuide_caching(model, temp_cache_dir):
+    import llama_cpp
+
+    import outlines.caching
+    from outlines.fsm.guide import create_states_mapping
+
+    assert outlines.caching._caching_enabled
+
+    regex = r"((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)"
+    prompt = "What is the IP address of the Google DNS servers? "
+
+    cache = outlines.caching.get_cache()
+
+    # Returns (hits, misses)
+    _ = cache.stats(enable=True)
+    assert cache.statistics
+
+    assert create_states_mapping.__memory__ is cache
+
+    generator = generate.regex(model, regex, sampler=samplers.greedy())
+    assert cache.stats() == (0, 1)
+
+    model_2 = models.llamacpp(
+        "Qwen/Qwen1.5-0.5B-Chat-GGUF",
+        "*q2*.gguf",
+        tokenizer=llama_cpp.llama_tokenizer.LlamaHFTokenizer.from_pretrained(
+            "Qwen/Qwen1.5-0.5B-Chat"
+        ),
+    )
+    generator_2 = generate.regex(model_2, regex, sampler=samplers.greedy())
+    assert cache.stats() == (0, 2)
+
+    # These two different models and tokenizers should not have the same state
+    # mapping results
+    assert (
+        generator.logits_processor.fsm.states_to_token_maps
+        != generator_2.logits_processor.fsm.states_to_token_maps
+    )
+
+    generator_3 = generate.regex(model_2, regex, sampler=samplers.greedy())
+    assert cache.stats() == (1, 2)
+    assert (
+        generator_2.logits_processor.fsm.states_to_token_maps
+        == generator_3.logits_processor.fsm.states_to_token_maps
+    )
+
+    # Just for fun...
+    structured = generator(prompt, max_tokens=30)
+    structured_2 = generator_2(prompt, max_tokens=30)
+
+    assert re.fullmatch(regex, structured)
+    assert re.fullmatch(regex, structured_2)
+    assert structured != structured_2

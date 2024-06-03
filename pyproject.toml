@@ -37,6 +37,8 @@ dependencies = [
    "requests",
    "tqdm",
    "datasets",
+   "pycountry",
+   "pyairports",
 ]
 dynamic = ["version"]
 
@@ -58,8 +60,6 @@ test = [
     "vllm",
     "torch",
     "transformers",
-    "pycountry",
-    "pyairports",
 ]
 serve = [
     "vllm>=0.3.0",
