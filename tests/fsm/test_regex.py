@@ -658,3 +658,32 @@ def test_token_trans_keys_walk_fsm():
         )
         is_accepted = len(state_seq) >= len(token_trans_key_seq)
         assert should_accept == is_accepted
+
+
+def test_numba_leading_null_byte_UnicodeCharSeq_remains_broken():
+    """Assert numba UnicodeCharSeq w/ leading \x00 is still broken"""
+    # EXPLANATION:
+    # https://github.com/outlines-dev/outlines/pull/930#issuecomment-2143535968
+
+    # from https://github.com/numba/numba/issues/9542
+    d = numba.typed.typeddict.Dict.empty(numba.types.UnicodeCharSeq(1), numba.int64)
+    d["一"] = 10  # \xe4\xb8\x80
+    with pytest.raises(KeyError):
+        str(d)
+
+    # most characters are fine, but "\x00" is converted to ""
+    l = np.fromiter(["\x99", "\x00"], dtype=np.dtype("U2"))
+    assert str(l[0]) == "\x99"  # fine
+    assert str(l[1]) == ""  # 1-byte null converted to 0-bytes
+
+
+@pytest.mark.parametrize("input_key", ["一", "\x00"])
+def test_numba_leading_null_byte_unicode_type_sane(input_key):
+    """Assert numba unicode_type w/ leading \x00 is working"""
+    # EXPLANATION:
+    # https://github.com/outlines-dev/outlines/pull/930#issuecomment-2143535968
+
+    # from https://github.com/numba/numba/issues/9542
+    d = numba.typed.typeddict.Dict.empty(numba.types.unicode_type, numba.int64)
+    d["一"] = 10  # \xe4\xb8\x80
+    str(d)  # assert successfully interprets
