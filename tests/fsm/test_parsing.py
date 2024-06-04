@@ -204,6 +204,3 @@ def test_sequential_parse_example(cleanup_lark_import):
 
         if i + 1 == len(input_tokens):
             assert all(tk in next_vocab for tk in ["\n", "\nde", "  ", " + 1"])
-
-    # Clean up lark.lark.LarkOptions._defaults
-    importlib.reload(lark.lark)
