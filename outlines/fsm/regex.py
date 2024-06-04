@@ -649,24 +649,24 @@ def state_scan_tokens(
     fsm_initial: int,
     fsm_finals: Set[int],
     vocabulary: List[Tuple[str, Sequence[int]]],
-    token_trans_key_seqs: List[Sequence[int]],
+    vocabulary_transition_keys: List[Sequence[int]],
     start_state: int,
 ) -> Set[Tuple[int, int]]:
     res = set()
 
-    for (token, token_ids), token_trans_key_seq in zip(
-        vocabulary, token_trans_key_seqs
+    for (token, token_ids), token_transition_keys in zip(
+        vocabulary, vocabulary_transition_keys
     ):
         state_seq = _walk_fsm(
             fsm_transitions,
             fsm_initial,
             fsm_finals,
-            token_trans_key_seq,
+            token_transition_keys,
             start_state,
             False,
         )
 
-        if state_seq is not None and len(state_seq) < len(token_trans_key_seq):
+        if state_seq is not None and len(state_seq) < len(token_transition_keys):
             continue
 
         for token_id in token_ids:
@@ -676,12 +676,20 @@ def state_scan_tokens(
 
 
 @numba.njit(cache=True, nogil=True)
-def get_token_transitions(
+def get_token_transition_keys(
     alphabet_symbol_mapping: Dict[str, int],
     alphabet_anything_value: int,
     token_str: str,
 ) -> Sequence[int]:
-    trans_key_seq = []
+    """
+    Get the sequence of transition keys for an individual string
+    with respect to an FSMs alphabet symbol mapping
+
+    This requires parsing the null-byte prefix rules of a byte-fsm:
+    - If two characters are prefixed by \x00, they are the grouped as a hex-byte
+    - Otherwise they are a standalone utf-8 character
+    """
+    token_transition_keys = []
     i = 0
     while i < len(token_str):
         if token_str[i] == "\x00" and i != len(token_str) - 1:
@@ -691,25 +699,28 @@ def get_token_transitions(
             symbol = token_str[i]
             i += 1
 
-        trans_key_seq.append(
+        token_transition_keys.append(
             alphabet_symbol_mapping.get(symbol, alphabet_anything_value)
         )
 
-    trans_key_seq_array = np.empty(len(trans_key_seq), dtype=np.int64)
-    for j in range(len(trans_key_seq)):
-        trans_key_seq_array[j] = trans_key_seq[j]
-    return trans_key_seq_array
+    tok_trans_array = np.empty(len(token_transition_keys), dtype=np.int64)
+    for j in range(len(token_transition_keys)):
+        tok_trans_array[j] = token_transition_keys[j]
+    return tok_trans_array
 
 
 @numba.njit(cache=True, nogil=True)
-def get_tokens_trans_keys(
+def get_vocabulary_transition_keys(
     alphabet_symbol_mapping: Dict[str, int],
     alphabet_anything_value: int,
     vocabulary: List[Tuple[str, Sequence[int]]],
 ) -> List[Sequence[int]]:
+    """
+    Calculate the sequence transition keys for each token str within a vocabulary
+    """
     tokens_trans_keys = numba.typed.List.empty_list(numba.int64[:])
     for token_str, _ in vocabulary:
-        trans_key_seq_array = get_token_transitions(
+        trans_key_seq_array = get_token_transition_keys(
             alphabet_symbol_mapping, alphabet_anything_value, token_str
         )
         tokens_trans_keys.append(trans_key_seq_array)
@@ -735,7 +746,7 @@ def create_fsm_index_end_to_end(
         desc="Compiling FSM index for all state transitions",
     )
 
-    tokens_trans_key_seqs = get_tokens_trans_keys(
+    vocabulary_transition_keys = get_vocabulary_transition_keys(
         fsm_info.alphabet_symbol_mapping,
         fsm_info.alphabet_anything_value,
         vocabulary,
@@ -751,7 +762,7 @@ def create_fsm_index_end_to_end(
             fsm_info.initial,
             fsm_info.finals,
             vocabulary,
-            tokens_trans_key_seqs,
+            vocabulary_transition_keys,
             start_state,
         )
 
