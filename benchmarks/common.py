@@ -1,12 +1,7 @@
 from transformers import AutoTokenizer
 
-import outlines.caching
 from outlines.fsm.guide import RegexGuide
 from outlines.models.transformers import TransformerTokenizer
-
-
-def clear_outlines_cache():
-    outlines.caching.clear_cache()
 
 
 def setup_tokenizer():

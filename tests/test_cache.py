@@ -1,5 +1,6 @@
 import os
 import tempfile
+import unittest
 
 import diskcache
 import pytest
@@ -157,3 +158,33 @@ def test_version_upgrade_cache_invalidate(test_cache, mocker):
 
     # assert with version upgrade, old cache is invalidated and new cache is used
     a, b = foo()
+
+
+def test_cache_disabled_decorator(test_cache):
+    """Ensure cache can be disabled in a local scope"""
+
+    from outlines.caching import cache_disabled
+
+    mock = unittest.mock.MagicMock()
+
+    @test_cache
+    def fn():
+        mock()
+        return 1
+
+    # first call isn't cached
+    fn()
+    assert mock.call_count == 1
+
+    # second call doesn't run fn, uses cache
+    fn()
+    assert mock.call_count == 1
+
+    # cache_disabled decorator disables cache within scope
+    with cache_disabled():
+        fn()
+    assert mock.call_count == 2  # called once in cache_disabled scope
+
+    # scope has exited, cache is enabled again
+    fn()
+    assert mock.call_count == 2
