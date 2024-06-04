@@ -1,3 +1,10 @@
+---
+title: Versioning Guide
+---
+
+# Versioning Guide
+
+
 The Outlines project follows a structured versioning scheme designed to provide clarity and minimize risk for downstream dependents.
 
 Each part of the version number (`major.minor.patch`) conveys information about the nature and impact of the changes included in the release.
