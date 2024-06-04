@@ -11,7 +11,7 @@
         "PIP_NO_BUILD_ISOLATION=false python -mpip wheel --no-deps --no-index -w {build_cache_dir} {build_dir}",
     ],
     "environment_type": "virtualenv",
-    "show_commit_url": "https://github.com/lapp0/outlines/commit/",
+    "show_commit_url": "https://github.com/outlines-dev/outlines/commit/",
     "benchmark_dir": ".",
     "env_dir": "env",
     "results_dir": "results",
