@@ -692,6 +692,15 @@ def test_numba_leading_null_byte_unicode_type_sane(input_key):
 @pytest.mark.parametrize(
     "model_id",
     [
+        "meta-llama/Meta-Llama-3-8B",
+        "mistralai/Mistral-7B-v0.3",
+        "google/gemma-2b",
+        "allenai/OLMo-7B",
+        "Qwen/Qwen2-7B",
+        "Qwen/Qwen1.5-0.5B",
+        "microsoft/Phi-3-mini-4k-instruct",
+        "01-ai/Yi-6B-Chat",
+        "openai-community/gpt2",
         "AI-Sweden-Models/gpt-sw3-6.7b-v2",
         "NorwAI/NorwAI-Mistral-7B-instruct",
     ],
