@@ -16,7 +16,7 @@ model = models.mlxlm("mlx-community/mlx-community/Meta-Llama-3-8B-Instruct-8bit"
 
 With the loaded model, you can generate text or perform structured generation, e.g.
 
-```python3
+```python
 from outlines import models, generate
 
 model = models.mlxlm("mlx-community/Meta-Llama-3-8B-Instruct-8bit")
@@ -28,5 +28,3 @@ model_output = generator("What's Jennys Number?\n")
 print(model_output)
 # '8675309'
 ```
-
-For more examples, see the [cookbook](cookbook/index.md).
