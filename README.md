@@ -45,6 +45,7 @@ Outlines 〰 has new releases and features coming every week. Make sure to ⭐ s
 ## Why should I use structured generation?
 
 * It doesn't add any overhead during inference (cost-free)
+* It allows Open Source models to beat closed source models ([Mistral](https://x.com/dottxtai/status/1797692104023363765), [GPT-4](https://x.com/dottxtai/status/1798443290913853770))
 * [It speeds up inference](http://blog.dottxt.co/coalescence.html)
 * [It improves the performance of base models (GSM8K)](http://blog.dottxt.co/performance-gsm8k.html)
 * [It improves the performance of finetuned models (CoNNL)](https://predibase.com/blog/lorax-outlines-better-json-extraction-with-structured-generation-and-lora)
