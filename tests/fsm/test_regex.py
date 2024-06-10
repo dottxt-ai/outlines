@@ -2,7 +2,7 @@ import interegular
 import numba
 import numpy as np
 import pytest
-from transformers import AutoTokenizer, PreTrainedTokenizerBase
+from transformers import AutoTokenizer
 
 from outlines.fsm.regex import (
     _walk_fsm,
