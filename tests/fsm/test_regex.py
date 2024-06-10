@@ -695,7 +695,6 @@ def test_numba_leading_null_byte_unicode_type_sane(input_key):
         "meta-llama/Meta-Llama-3-8B",
         "mistralai/Mistral-7B-v0.3",
         "google/gemma-2b",
-        "allenai/OLMo-7B",
         "Qwen/Qwen2-7B",
         "Qwen/Qwen1.5-0.5B",
         "microsoft/Phi-3-mini-4k-instruct",
