@@ -2,7 +2,7 @@ import interegular
 import numba
 import numpy as np
 import pytest
-from transformers import AutoTokenizer
+from transformers import AutoTokenizer, PreTrainedTokenizerBase
 
 from outlines.fsm.regex import (
     _walk_fsm,
@@ -18,6 +18,7 @@ from outlines.fsm.regex import (
     reduced_vocabulary,
     walk_fsm,
 )
+from outlines.integrations.utils import adapt_tokenizer
 from outlines.models.transformers import TransformerTokenizer
 
 
@@ -686,3 +687,17 @@ def test_numba_leading_null_byte_unicode_type_sane(input_key):
     d = numba.typed.typeddict.Dict.empty(numba.types.unicode_type, numba.int64)
     d["一"] = 10  # \xe4\xb8\x80
     str(d)  # assert successfully interprets
+
+
+@pytest.mark.parametrize(
+    "model_id",
+    [
+        "AI-Sweden-Models/gpt-sw3-6.7b-v2",
+        "NorwAI/NorwAI-Mistral-7B-instruct",
+    ],
+)
+def test_reduced_vocabulary_with_rare_tokens(model_id):
+    """Assert reduced_vocabulary works with rare tokens."""
+    tokenizer = AutoTokenizer.from_pretrained(model_id)
+    tokenizer = adapt_tokenizer(tokenizer=tokenizer)
+    reduced_vocabulary(tokenizer)
