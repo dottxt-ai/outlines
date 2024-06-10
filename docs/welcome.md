@@ -6,7 +6,7 @@ Outlines〰 is a Python library that allows you to use Large Language Model in a
 
 ## What models do you support?
 
-We support [Openai](reference/models/openai.md), but the true power of Outlines〰 is unleashed with Open Source models available via the [transformers](reference/models/transformers.md), [llama.cpp](reference/models/transformers.md), [exllama2](reference/models/exllamav2.md) and [mamba_ssm](reference/models/mamba.md) libraries. If you want to build and maintain an integration with another library, [get in touch][discord].
+We support [Openai](reference/models/openai.md), but the true power of Outlines〰 is unleashed with Open Source models available via the [transformers](reference/models/transformers.md), [llama.cpp](reference/models/llamacpp.md), [exllama2](reference/models/exllamav2.md) and [mamba_ssm](reference/models/mamba.md) libraries. If you want to build and maintain an integration with another library, [get in touch][discord].
 
 ## What are the main features?
 
