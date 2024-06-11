@@ -37,6 +37,7 @@ dependencies = [
    "requests",
    "tqdm",
    "datasets",
+   "typing_extensions",
    "pycountry",
    "pyairports",
 ]
@@ -64,7 +65,6 @@ test = [
 ]
 serve = [
     "vllm>=0.3.0",
-    "ray==2.9.0",
     "uvicorn",
     "fastapi",
     "pydantic>=2.0",
