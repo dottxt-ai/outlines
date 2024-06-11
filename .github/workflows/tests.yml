@@ -36,8 +36,6 @@ jobs:
     - name: Run tests
       run: |
         pytest --cov=outlines
-      env:
-        HUGGINGFACE_API_TOKEN: ${{ secrets.HUGGINGFACE_API_TOKEN }}
     - name: Upload coverage data
       uses: actions/upload-artifact@v3
       with:

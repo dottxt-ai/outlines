@@ -1,5 +1,3 @@
-import os
-
 import interegular
 import numba
 import numpy as np
@@ -692,23 +690,28 @@ def test_numba_leading_null_byte_unicode_type_sane(input_key):
 
 
 @pytest.mark.parametrize(
-    "model_id",
+    "rare_token",
     [
-        "meta-llama/Meta-Llama-3-8B",
-        "mistralai/Mistral-7B-v0.3",
-        "google/gemma-2b",
-        "Qwen/Qwen2-7B",
-        "Qwen/Qwen1.5-0.5B",
-        "microsoft/Phi-3-mini-4k-instruct",
-        "01-ai/Yi-6B-Chat",
-        "openai-community/gpt2",
-        "AI-Sweden-Models/gpt-sw3-6.7b-v2",
-        "NorwAI/NorwAI-Mistral-7B-instruct",
+        "�",
+        "��",
+        "�.",
+        "�..",
+        "▁�",
+        "▁▁�",
+        "▁�.",
+        "▁�.",
+        "▁▁�..",
     ],
 )
-def test_reduced_vocabulary_with_rare_tokens(model_id):
-    """Assert reduced_vocabulary works with rare tokens."""
-    token = os.getenv("HUGGINGFACE_API_TOKEN")
-    tokenizer = AutoTokenizer.from_pretrained(model_id, token=token)
+def test_reduced_vocabulary_with_rare_tokens(rare_token):
+    """Assert reduced_vocabulary works with rare tokens.
+
+    See [1] and [2] for more context.
+
+    [1]: https://github.com/outlines-dev/outlines/pull/763
+    [2]: https://github.com/outlines-dev/outlines/pull/948
+    """
+    tokenizer = AutoTokenizer.from_pretrained("openai-community/gpt2")
     tokenizer = adapt_tokenizer(tokenizer=tokenizer)
+    tokenizer.vocabulary[rare_token] = max(tokenizer.vocabulary.values()) + 1
     reduced_vocabulary(tokenizer)
