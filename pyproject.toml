@@ -36,8 +36,6 @@ dependencies = [
    "jsonschema",
    "requests",
    "tqdm",
-   "pycountry",
-   "pyairports",
    "typing_extensions",
    "torch",
 ]
