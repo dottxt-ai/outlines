@@ -36,9 +36,10 @@ dependencies = [
    "jsonschema",
    "requests",
    "tqdm",
-   "datasets",
    "pycountry",
    "pyairports",
+   "typing_extensions",
+   "torch",
 ]
 dynamic = ["version"]
 
@@ -51,6 +52,7 @@ test = [
     "pytest-mock",
     "coverage[toml]>=5.1",
     "diff-cover",
+    "deptry",
     "accelerate",
     "beartype<0.16.0",
     "responses",
@@ -58,12 +60,10 @@ test = [
     "huggingface_hub",
     "openai>=1.0.0",
     "vllm",
-    "torch",
     "transformers",
 ]
 serve = [
     "vllm>=0.3.0",
-    "ray==2.9.0",
     "uvicorn",
     "fastapi",
     "pydantic>=2.0",
@@ -157,3 +157,7 @@ show_missing = true
 [tool.diff_cover]
 compare_branch = "origin/main"
 diff_range_notation = ".."
+
+[tool.deptry]
+extend_exclude = ["examples", "benchmarks", "outlines/integrations", "outlines/models"]
+pep621_dev_dependency_groups = ["test"]
