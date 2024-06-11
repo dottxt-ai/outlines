@@ -1,9 +1,10 @@
+import os
+
 import interegular
 import numba
 import numpy as np
 import pytest
 from transformers import AutoTokenizer
-import os
 
 from outlines.fsm.regex import (
     _walk_fsm,
