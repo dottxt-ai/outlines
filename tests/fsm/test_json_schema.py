@@ -218,6 +218,162 @@ def test_match_number(pattern, does_match):
             '\\{[ ]?"count"[ ]?:[ ]?(-)?(0|[1-9][0-9]*)[ ]?\\}',
             [('{ "count": 100 }', True)],
         ),
+        # integer with minimum digits
+        (
+            {
+                "title": "Foo",
+                "type": "object",
+                "properties": {
+                    "count": {"title": "Count", "type": "integer", "minDigits": 3}
+                },
+                "required": ["count"],
+            },
+            '\\{[ ]?"count"[ ]?:[ ]?(-)?(0|[1-9][0-9]{2,})[ ]?\\}',
+            [('{ "count": 10 }', False), ('{ "count": 100 }', True)],
+        ),
+        # integer with maximum digits
+        (
+            {
+                "title": "Foo",
+                "type": "object",
+                "properties": {
+                    "count": {"title": "Count", "type": "integer", "maxDigits": 3}
+                },
+                "required": ["count"],
+            },
+            '\\{[ ]?"count"[ ]?:[ ]?(-)?(0|[1-9][0-9]{,2})[ ]?\\}',
+            [('{ "count": 100 }', True), ('{ "count": 1000 }', False)],
+        ),
+        # integer with minimum and maximum digits
+        (
+            {
+                "title": "Foo",
+                "type": "object",
+                "properties": {
+                    "count": {
+                        "title": "Count",
+                        "type": "integer",
+                        "minDigits": 3,
+                        "maxDigits": 5,
+                    }
+                },
+                "required": ["count"],
+            },
+            '\\{[ ]?"count"[ ]?:[ ]?(-)?(0|[1-9][0-9]{2,4})[ ]?\\}',
+            [
+                ('{ "count": 10 }', False),
+                ('{ "count": 100 }', True),
+                ('{ "count": 10000 }', True),
+                ('{ "count": 100000 }', False),
+            ],
+        ),
+        # number
+        (
+            {
+                "title": "Foo",
+                "type": "object",
+                "properties": {"count": {"title": "Count", "type": "number"}},
+                "required": ["count"],
+            },
+            '\\{[ ]?"count"[ ]?:[ ]?((-)?(0|[1-9][0-9]*))(\\.[0-9]+)?([eE][+-][0-9]+)?[ ]?\\}',
+            [('{ "count": 100 }', True), ('{ "count": 100.5 }', True)],
+        ),
+        # number with min and max integer digits
+        (
+            {
+                "title": "Foo",
+                "type": "object",
+                "properties": {
+                    "count": {
+                        "title": "Count",
+                        "type": "number",
+                        "minDigitsInteger": 3,
+                        "maxDigitsInteger": 5,
+                    }
+                },
+                "required": ["count"],
+            },
+            '\\{[ ]?"count"[ ]?:[ ]?((-)?(0|[1-9][0-9]{2,4}))(\\.[0-9]+)?([eE][+-][0-9]+)?[ ]?\\}',
+            [
+                ('{ "count": 10.005 }', False),
+                ('{ "count": 100.005 }', True),
+                ('{ "count": 10000.005 }', True),
+                ('{ "count": 100000.005 }', False),
+            ],
+        ),
+        # number with min and max fraction digits
+        (
+            {
+                "title": "Foo",
+                "type": "object",
+                "properties": {
+                    "count": {
+                        "title": "Count",
+                        "type": "number",
+                        "minDigitsFraction": 3,
+                        "maxDigitsFraction": 5,
+                    }
+                },
+                "required": ["count"],
+            },
+            '\\{[ ]?"count"[ ]?:[ ]?((-)?(0|[1-9][0-9]*))(\\.[0-9]{3,5})?([eE][+-][0-9]+)?[ ]?\\}',
+            [
+                ('{ "count": 1.05 }', False),
+                ('{ "count": 1.005 }', True),
+                ('{ "count": 1.00005 }', True),
+                ('{ "count": 1.000005 }', False),
+            ],
+        ),
+        # number with min and max exponent digits
+        (
+            {
+                "title": "Foo",
+                "type": "object",
+                "properties": {
+                    "count": {
+                        "title": "Count",
+                        "type": "number",
+                        "minDigitsExponent": 3,
+                        "maxDigitsExponent": 5,
+                    }
+                },
+                "required": ["count"],
+            },
+            '\\{[ ]?"count"[ ]?:[ ]?((-)?(0|[1-9][0-9]*))(\\.[0-9]+)?([eE][+-][0-9]{3,5})?[ ]?\\}',
+            [
+                ('{ "count": 1.05e1 }', False),
+                ('{ "count": 1.05e+001 }', True),
+                ('{ "count": 1.05e-00001 }', True),
+                ('{ "count": 1.05e0000001 }', False),
+            ],
+        ),
+        # number with min and max integer, fraction and exponent digits
+        (
+            {
+                "title": "Foo",
+                "type": "object",
+                "properties": {
+                    "count": {
+                        "title": "Count",
+                        "type": "number",
+                        "minDigitsInteger": 3,
+                        "maxDigitsInteger": 5,
+                        "minDigitsFraction": 3,
+                        "maxDigitsFraction": 5,
+                        "minDigitsExponent": 3,
+                        "maxDigitsExponent": 5,
+                    }
+                },
+                "required": ["count"],
+            },
+            '\\{[ ]?"count"[ ]?:[ ]?((-)?(0|[1-9][0-9]{2,4}))(\\.[0-9]{3,5})?([eE][+-][0-9]{3,5})?[ ]?\\}',
+            [
+                ('{ "count": 1.05e1 }', False),
+                ('{ "count": 100.005e+001 }', True),
+                ('{ "count": 10000.00005e-00001 }', True),
+                ('{ "count": 100000.000005e0000001 }', False),
+            ],
+        ),
         # array
         (
             {"title": "Foo", "type": "array", "items": {"type": "number"}},
