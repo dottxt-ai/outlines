@@ -3,6 +3,7 @@ import numba
 import numpy as np
 import pytest
 from transformers import AutoTokenizer
+import os
 
 from outlines.fsm.regex import (
     _walk_fsm,
@@ -706,6 +707,7 @@ def test_numba_leading_null_byte_unicode_type_sane(input_key):
 )
 def test_reduced_vocabulary_with_rare_tokens(model_id):
     """Assert reduced_vocabulary works with rare tokens."""
-    tokenizer = AutoTokenizer.from_pretrained(model_id)
+    token = os.getenv("HUGGINGFACE_API_TOKEN")
+    tokenizer = AutoTokenizer.from_pretrained(model_id, token=token)
     tokenizer = adapt_tokenizer(tokenizer=tokenizer)
     reduced_vocabulary(tokenizer)
