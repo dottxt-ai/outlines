@@ -1,4 +1,4 @@
-# Run Outlines using Modal
+# Run Outlines using Cerebrium
 
 [Cerebrium](https://www.cerebrium.ai/) is a serverless AI infrastructure platform that makes it easier for companies to build and deploy AI based applications. They offer Serverless GPU's with low cold start times with over 12 varieties of GPU chips that auto scale and you only pay for the compute you use.
 
