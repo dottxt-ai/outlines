@@ -1,0 +1,26 @@
+[cerebrium.deployment]
+name = "cerebrium"
+python_version = "3.11"
+cuda_version = "12"
+include = "[./*, main.py, cerebrium.toml]"
+exclude = "[.*]"
+shell_commands = []
+
+[cerebrium.hardware]
+cpu = 2
+memory = 14.0
+gpu = "AMPERE A10"
+gpu_count = 1
+provider = "aws"
+region = "us-east-1"
+
+[cerebrium.scaling]
+min_replicas = 0
+max_replicas = 5
+cooldown = 60
+
+[cerebrium.dependencies.pip]
+outline = "==0.0.37"
+transformers = "==4.38.2"
+datasets = "==2.18.0"
+accelerate = "==0.27.2"
