@@ -7,21 +7,11 @@ schema = {
     "title": "Character",
     "type": "object",
     "properties": {
-        "name": {
-            "title": "Name",
-            "maxLength": 10,
-            "type": "string"
-        },
-        "age": {
-            "title": "Age",
-            "type": "integer"
-        },
+        "name": {"title": "Name", "maxLength": 10, "type": "string"},
+        "age": {"title": "Age", "type": "integer"},
         "armor": {"$ref": "#/definitions/Armor"},
         "weapon": {"$ref": "#/definitions/Weapon"},
-        "strength": {
-            "title": "Strength",
-            "type": "integer"
-        }
+        "strength": {"title": "Strength", "type": "integer"},
     },
     "required": ["name", "age", "armor", "weapon", "strength"],
     "definitions": {
@@ -29,21 +19,21 @@ schema = {
             "title": "Armor",
             "description": "An enumeration.",
             "enum": ["leather", "chainmail", "plate"],
-            "type": "string"
+            "type": "string",
         },
         "Weapon": {
             "title": "Weapon",
             "description": "An enumeration.",
             "enum": ["sword", "axe", "mace", "spear", "bow", "crossbow"],
-            "type": "string"
-        }
-    }
+            "type": "string",
+        },
+    },
 }
+
 
 def generate(
     prompt: str = "Amiri, a 53 year old warrior woman with a sword and leather armor.",
 ):
-
     character = generator(
         f"<s>[INST]Give me a character description. Describe {prompt}.[/INST]"
     )
