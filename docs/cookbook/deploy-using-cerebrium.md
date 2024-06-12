@@ -39,7 +39,7 @@ datasets = "==2.18.0"
 accelerate = "==0.27.2"
 ```
 
-#Setup inference
+## Setup inference
 
 Running code in Cerebrium is like writing normal python with no special syntax. In your main.py specify the following:
 
