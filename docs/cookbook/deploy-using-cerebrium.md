@@ -21,7 +21,7 @@ cerebrium init outlines-project
 
 ## Setup Environment and Hardware
 
-You set up your environment and hardware in the cerebrium.toml file that was created using the init function above. 
+You set up your environment and hardware in the cerebrium.toml file that was created using the init function above.
 
 ```toml
 [cerebrium.hardware]
@@ -113,4 +113,3 @@ cerebrium deploy
 
 You will see your application deploy, install pip packages and download the model. Once completed it will output a CURL request you can use to call your endpoint. Just remember to end
 the url with the function you would like to call - in this case /generate. You should see your response returned!
-
