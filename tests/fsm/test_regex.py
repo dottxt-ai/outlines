@@ -18,6 +18,7 @@ from outlines.fsm.regex import (
     reduced_vocabulary,
     walk_fsm,
 )
+from outlines.integrations.utils import adapt_tokenizer
 from outlines.models.transformers import TransformerTokenizer
 
 
@@ -686,3 +687,31 @@ def test_numba_leading_null_byte_unicode_type_sane(input_key):
     d = numba.typed.typeddict.Dict.empty(numba.types.unicode_type, numba.int64)
     d["一"] = 10  # \xe4\xb8\x80
     str(d)  # assert successfully interprets
+
+
+@pytest.mark.parametrize(
+    "rare_token",
+    [
+        "�",
+        "��",
+        "�.",
+        "�..",
+        "▁�",
+        "▁▁�",
+        "▁�.",
+        "▁�.",
+        "▁▁�..",
+    ],
+)
+def test_reduced_vocabulary_with_rare_tokens(rare_token):
+    """Assert reduced_vocabulary works with rare tokens.
+
+    See [1] and [2] for context.
+
+    [1]: https://github.com/outlines-dev/outlines/pull/763
+    [2]: https://github.com/outlines-dev/outlines/pull/948
+    """
+    tokenizer = AutoTokenizer.from_pretrained("openai-community/gpt2")
+    tokenizer = adapt_tokenizer(tokenizer=tokenizer)
+    tokenizer.vocabulary[rare_token] = max(tokenizer.vocabulary.values()) + 1
+    reduced_vocabulary(tokenizer)
