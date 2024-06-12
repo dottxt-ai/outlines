@@ -103,7 +103,7 @@ def generate(
     return character
 ```
 
-Every function in Cerebrium is callable through and API endpoint. Code at the top most layer (ie: not in a function) is instantiated only when the container is spun up the first time so for subsequent calls, it will simply run the code defined in the function you call.
+Every function in Cerebrium is callable through an API endpoint. Code at the top most layer (ie: not in a function) is instantiated only when the container is spun up the first time so for subsequent calls, it will simply run the code defined in the function you call.
 
 ## Run on the cloud
 
