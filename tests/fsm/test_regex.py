@@ -706,7 +706,7 @@ def test_numba_leading_null_byte_unicode_type_sane(input_key):
 def test_reduced_vocabulary_with_rare_tokens(rare_token):
     """Assert reduced_vocabulary works with rare tokens.
 
-    See [1] and [2] for more context.
+    See [1] and [2] for context.
 
     [1]: https://github.com/outlines-dev/outlines/pull/763
     [2]: https://github.com/outlines-dev/outlines/pull/948
