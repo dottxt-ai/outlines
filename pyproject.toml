@@ -157,5 +157,5 @@ compare_branch = "origin/main"
 diff_range_notation = ".."
 
 [tool.deptry]
-extend_exclude = ["examples", "benchmarks", "outlines/integrations", "outlines/models"]
+extend_exclude = ["examples", "benchmarks", "outlines/integrations", "outlines/models", ".myenv", "build"]
 pep621_dev_dependency_groups = ["test"]
