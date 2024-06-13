@@ -4,6 +4,7 @@ from outlines.fsm.guide import RegexGuide
 from outlines.generate.api import SequenceGenerator, SequenceGeneratorAdapter
 from outlines.models import OpenAI
 from outlines.models.llamacpp import LlamaCpp
+from outlines.models.mlxlm import MLXLM
 from outlines.models.vllm import VLLM
 from outlines.samplers import Sampler, multinomial
 
@@ -35,6 +36,18 @@ def regex(model, regex_str: str, sampler: Sampler = multinomial()):
     generator = SequenceGenerator(fsm, model, sampler, device)
 
     return generator
+
+
+@regex.register(MLXLM)
+def regex_mlxlm(
+    model: MLXLM,
+    regex_str: str,
+    sampler: Sampler = multinomial(),
+):
+    from outlines.processors import RegexLogitsProcessor
+
+    logits_processor = RegexLogitsProcessor(regex_str, tokenizer=model.tokenizer)
+    return SequenceGeneratorAdapter(model, logits_processor, sampler)
 
 
 @regex.register(LlamaCpp)

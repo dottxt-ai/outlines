@@ -124,6 +124,7 @@ nav:
         - vLLM: reference/models/vllm.md
         - Llama.cpp: reference/models/llamacpp.md
         - Transformers: reference/models/transformers.md
+        - MLX: reference/models/mlxlm.md
         - ExllamaV2: reference/models/exllamav2.md
         - Mamba: reference/models/mamba.md
         - OpenAI: reference/models/openai.md
