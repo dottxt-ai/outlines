@@ -38,6 +38,8 @@ dependencies = [
    "tqdm",
    "typing_extensions",
    "torch",
+   "pycountry",
+   "pyairports",
 ]
 dynamic = ["version"]
 
@@ -50,7 +52,7 @@ test = [
     "pytest-mock",
     "coverage[toml]>=5.1",
     "diff-cover",
-    "deptry",
+    "deptry>=0.16.1",
     "accelerate",
     "beartype<0.16.0",
     "responses",
