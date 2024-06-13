@@ -128,6 +128,7 @@ nav:
         - ExllamaV2: reference/models/exllamav2.md
         - Mamba: reference/models/mamba.md
         - OpenAI: reference/models/openai.md
+        - TGI: reference/models/tgi.md
 
   - API Reference:
     - api/index.md
