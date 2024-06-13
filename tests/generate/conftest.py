@@ -3,6 +3,24 @@ from importlib import reload
 import pytest
 
 
+def pytest_collection_modifyitems(config, items):
+    """If mlxlm and Metal aren't available, skip mlxlm tests"""
+    try:
+        import mlx.core as mx
+        import mlx_lm  # noqa: F401
+
+        assert mx.metal.is_available()
+    except (ImportError, AssertionError):
+        skip_marker = pytest.mark.skip(
+            reason="Skipping test because mlx-lm or Metal are not available"
+        )
+        for item in items:
+            if "model_fixture" in item.fixturenames:
+                model_param = item.callspec.params.get("model_fixture", None)
+                if model_param == "model_mlxlm":
+                    item.add_marker(skip_marker)
+
+
 @pytest.fixture
 def temp_cache_dir():
     import os
