@@ -2,7 +2,7 @@ import inspect
 import json
 import re
 import warnings
-from typing import Callable, Optional
+from typing import Callable, Optional, Tuple
 
 from jsonschema.protocols import Validator
 from pydantic import create_model
@@ -94,6 +94,47 @@ def _get_num_items_pattern(min_items, max_items, whitespace_pattern):
         if max_items < 1:
             return None
         return rf"{{{max(min_items - 1, 0)},{max_items - 1}}}"
+
+
+def validate_quantifiers(
+    min_bound: Optional[str], max_bound: Optional[str], start_offset: int = 0
+) -> Tuple[str, str]:
+    """
+    Ensures that the bounds of a number are valid. Bounds are used as quantifiers in the regex.
+
+    Parameters
+    ----------
+    min_bound
+        The minimum value that the number can take.
+    max_bound
+        The maximum value that the number can take.
+    start_offset
+        Number of elements that are already present in the regex but still need to be counted.
+        ex: if the regex is already "(-)?(0|[1-9][0-9])", we will always have at least 1 digit, so the start_offset is 1.
+
+    Returns
+    -------
+    min_bound
+        The minimum value that the number can take.
+    max_bound
+        The maximum value that the number can take.
+
+    Raises
+    ------
+    ValueError
+        If the minimum bound is greater than the maximum bound.
+
+    TypeError or ValueError
+        If the minimum bound is not an integer or None.
+        or
+        If the maximum bound is not an integer or None.
+    """
+    min_bound = "" if min_bound is None else str(int(min_bound) - start_offset)
+    max_bound = "" if max_bound is None else str(int(max_bound) - start_offset)
+    if min_bound and max_bound:
+        if int(max_bound) < int(min_bound):
+            raise ValueError("max bound must be greater than or equal to min bound")
+    return min_bound, max_bound
 
 
 def to_regex(
@@ -263,7 +304,7 @@ def to_regex(
                     if int(max_items) < int(min_items):
                         raise ValueError(
                             "maxLength must be greater than or equal to minLength"
-                        )
+                        )  # FIXME this raises an error but is caught right away by the except (meant for int("") I assume)
                 except ValueError:
                     pass
                 return f'"{STRING_INNER}{{{min_items},{max_items}}}"'
@@ -291,9 +332,50 @@ def to_regex(
                 return type_to_regex["string"]
 
         elif instance_type == "number":
+            bounds = {
+                "minDigitsInteger",
+                "maxDigitsInteger",
+                "minDigitsFraction",
+                "maxDigitsFraction",
+                "minDigitsExponent",
+                "maxDigitsExponent",
+            }
+            if bounds.intersection(set(instance.keys())):
+                min_digits_integer, max_digits_integer = validate_quantifiers(
+                    instance.get("minDigitsInteger"),
+                    instance.get("maxDigitsInteger"),
+                    start_offset=1,
+                )
+                min_digits_fraction, max_digits_fraction = validate_quantifiers(
+                    instance.get("minDigitsFraction"), instance.get("maxDigitsFraction")
+                )
+                min_digits_exponent, max_digits_exponent = validate_quantifiers(
+                    instance.get("minDigitsExponent"), instance.get("maxDigitsExponent")
+                )
+                integers_quantifier = (
+                    f"{{{min_digits_integer},{max_digits_integer}}}"
+                    if min_digits_integer or max_digits_integer
+                    else "*"
+                )
+                fraction_quantifier = (
+                    f"{{{min_digits_fraction},{max_digits_fraction}}}"
+                    if min_digits_fraction or max_digits_fraction
+                    else "+"
+                )
+                exponent_quantifier = (
+                    f"{{{min_digits_exponent},{max_digits_exponent}}}"
+                    if min_digits_exponent or max_digits_exponent
+                    else "+"
+                )
+                return rf"((-)?(0|[1-9][0-9]{integers_quantifier}))(\.[0-9]{fraction_quantifier})?([eE][+-][0-9]{exponent_quantifier})?"
             return type_to_regex["number"]
 
         elif instance_type == "integer":
+            if "minDigits" in instance or "maxDigits" in instance:
+                min_digits, max_digits = validate_quantifiers(
+                    instance.get("minDigits"), instance.get("maxDigits"), start_offset=1
+                )
+                return rf"(-)?(0|[1-9][0-9]{{{min_digits},{max_digits}}})"
             return type_to_regex["integer"]
 
         elif instance_type == "array":
