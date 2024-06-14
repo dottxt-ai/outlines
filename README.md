@@ -72,7 +72,9 @@ You can reduce the completion to a choice between multiple possibilities:
 
 ``` python
 import outlines
-
+# login to access mistral model
+from huggingface_hub import login
+login()
 model = outlines.models.transformers("mistralai/Mistral-7B-Instruct-v0.2")
 
 prompt = """You are a sentiment-labelling assistant.
