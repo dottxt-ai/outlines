@@ -27,7 +27,7 @@ limitations under the License.
 
 import math
 from collections import defaultdict
-from typing import TYPE_CHECKING, DefaultDict, List, Optional, Type, Union
+from typing import TYPE_CHECKING, DefaultDict, Dict, List, Optional, Type, Union
 
 import torch
 from pydantic import BaseModel
@@ -78,7 +78,7 @@ class RegexLogitsProcessor:
                 "`tokenizer` attribute or a `get_tokenizer` method."
             )
         tokenizer = adapt_tokenizer(tokenizer=tokenizer)
-        self.mask_cache = {}
+        self.mask_cache: Dict[int, torch.Tensor] = {}
         self.fsm = RegexGuide(regex_string, tokenizer)
         self._fsm_state: DefaultDict[int, int] = defaultdict(int)
 
