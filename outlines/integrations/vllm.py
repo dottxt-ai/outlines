@@ -119,7 +119,7 @@ class RegexLogitsProcessor:
             self.mask_cache[state_id] = mask
         else:
             mask = self.mask_cache[state_id]
-            mask = mask.to(device=scores.device, non_blocking=True)
+        mask = mask.to(device=scores.device, non_blocking=True)
         biased_scores = scores + mask
 
         return biased_scores
