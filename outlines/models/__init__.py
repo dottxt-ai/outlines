@@ -15,4 +15,4 @@ from .openai import OpenAI, azure_openai, openai
 from .transformers import Transformers, transformers
 from .vllm import VLLM, vllm
 
-LogitsGenerator = Union[Transformers, LlamaCpp, ExLlamaV2Model, Mamba]
+LogitsGenerator = Union[Transformers, LlamaCpp, ExLlamaV2Model, Mamba, MLXLM, VLLM]
