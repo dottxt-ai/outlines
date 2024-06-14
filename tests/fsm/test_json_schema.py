@@ -177,11 +177,17 @@ def test_match_number(pattern, does_match):
             '"Marc"',
             [('"Marc"', True), ('"Jean"', False), ('"John"', False)],
         ),
-        # Make sure strings are escaped
+        # Make sure strings are escaped with regex escaping
         (
             {"title": "Foo", "const": ".*", "type": "string"},
             r'"\.\*"',
             [('".*"', True), (r'"\s*"', False), (r'"\.\*"', False)],
+        ),
+        # Make sure strings are escaped with JSON escaping
+        (
+            {"title": "Foo", "const": '"', "type": "string"},
+            r'"\\""',
+            [('"\\""', True), ('"""', False)],
         ),
         # Const integer
         (
@@ -189,23 +195,56 @@ def test_match_number(pattern, does_match):
             "0",
             [("0", True), ("1", False), ("a", False)],
         ),
+        # Const float
+        (
+            {"title": "Foo", "const": 0.2, "type": "float"},
+            r"0\.2",
+            [("0.2", True), ("032", False)],
+        ),
+        # Const boolean
+        (
+            {"title": "Foo", "const": True, "type": "boolean"},
+            "true",
+            [("true", True), ("True", False)],
+        ),
+        # Const null
+        (
+            {"title": "Foo", "const": None, "type": "null"},
+            "null",
+            [("null", True), ("None", False), ("", False)],
+        ),
         # Enum string
         (
             {"title": "Foo", "enum": ["Marc", "Jean"], "type": "string"},
             '("Marc"|"Jean")',
             [('"Marc"', True), ('"Jean"', True), ('"John"', False)],
         ),
-        # Make sure strings are escaped
+        # Make sure strings are escaped with regex and JSON escaping
         (
             {"title": "Foo", "enum": [".*", r"\s*"], "type": "string"},
-            r'("\.\*"|"\\s\*")',
-            [('".*"', True), (r'"\s*"', True), (r'"\.\*"', False)],
+            r'("\.\*"|"\\\\s\*")',
+            [('".*"', True), (r'"\\s*"', True), (r'"\.\*"', False)],
         ),
         # Enum integer
         (
             {"title": "Foo", "enum": [0, 1], "type": "integer"},
             "(0|1)",
             [("0", True), ("1", True), ("a", False)],
+        ),
+        # Enum mix of types
+        (
+            {"title": "Foo", "enum": [6, 5.3, "potato", True, None]},
+            r'(6|5\.3|"potato"|true|null)',
+            [
+                ("6", True),
+                ("5.3", True),
+                ('"potato"', True),
+                ("true", True),
+                ("null", True),
+                ("523", False),
+                ("True", False),
+                ("None", False),
+            ],
         ),
         # integer
         (
