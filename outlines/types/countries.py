@@ -1,12 +1,7 @@
 """Generate valid country codes and names."""
 from enum import Enum
 
-try:
-    import pycountry
-except ImportError:
-    raise ImportError(
-        'The `countries` module requires "pycountry" to be installed. You can install it with "pip install pycountry"'
-    )
+import pycountry
 
 ALPHA_2_CODE = [(country.alpha_2, country.alpha_2) for country in pycountry.countries]
 Alpha2 = Enum("Alpha_2", ALPHA_2_CODE)  # type:ignore
