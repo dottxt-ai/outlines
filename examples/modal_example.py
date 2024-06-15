@@ -1,6 +1,6 @@
 import modal
 
-stub = modal.Stub(name="outlines-app")
+app = modal.App(name="outlines-app")
 
 
 outlines_image = modal.Image.debian_slim(python_version="3.11").pip_install(
@@ -58,7 +58,7 @@ schema = """{
 }"""
 
 
-@stub.function(image=outlines_image, gpu=modal.gpu.A100(memory=80))
+@app.function(image=outlines_image, gpu=modal.gpu.A100(memory=80))
 def generate(
     prompt: str = "Amiri, a 53 year old warrior woman with a sword and leather armor.",
 ):
@@ -74,7 +74,7 @@ def generate(
     print(character)
 
 
-@stub.local_entrypoint()
+@app.local_entrypoint()
 def main(
     prompt: str = "Amiri, a 53 year old warrior woman with a sword and leather armor.",
 ):
