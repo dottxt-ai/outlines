@@ -66,7 +66,7 @@ is to ensure that there is a well-defined interface between their output and
 user-defined code. **Outlines** provides ways to control the generation of
 language models to make their output more predictable.
 
-Before using mistral models, request access on huggingface [here](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.2). 
+Before using mistral models, request access on huggingface [here](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.2).
 ``` python
 # login to access mistral model
 from huggingface_hub import login
