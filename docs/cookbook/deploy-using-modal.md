@@ -9,9 +9,9 @@ In this guide we will show you how you can use Modal to run programs written wit
 First we need to define our container image. We download the Mistral-7B-v0.1 model from HuggingFace as part of the definition of the image so it only needs to be done once.
 
 ```python
-from modal import Image, Stub, gpu
+from modal import Image, App, gpu
 
-stub = Stub(name="outlines-app")
+app = App(name="outlines-app")
 
 outlines_image = Image.debian_slim(python_version="3.11").pip_install(
     "outlines==0.0.37",
@@ -70,10 +70,10 @@ schema = """{
 }"""
 ```
 
-To make the inference work on Modal we need to wrap the corresponding function in a `@stub.function` decorator. We pass to this decorator the image and GPU on which we want this function to run (here an A100 with 80GB memory):
+To make the inference work on Modal we need to wrap the corresponding function in a `@app.function` decorator. We pass to this decorator the image and GPU on which we want this function to run (here an A100 with 80GB memory):
 
 ```python
-@stub.function(image=outlines_image, gpu=gpu.A100(memory=80))
+@app.function(image=outlines_image, gpu=gpu.A100(memory=80))
 def generate(
     prompt: str = "Amiri, a 53 year old warrior woman with a sword and leather armor.",
 ):
@@ -94,14 +94,14 @@ def generate(
 We then need to define a `local_entrypoint` to call our function `generate` remotely:
 
 ```python
-@stub.local_entrypoint()
+@app.local_entrypoint()
 def main(
     prompt: str = "Amiri, a 53 year old warrior woman with a sword and leather armor.",
 ):
     generate.remote(prompt)
 ```
 
-Here `@stub.local_entrypoin()` decorator defines `main` as the function to start from locally when running the Modal CLI. You can save above code to `example.py` (or use [this implementation](https://github.com/outlines-dev/outlines/blob/main/examples/modal_example.py)). Let's now see how to run the code on the cloud using the Modal CLI.
+Here `@app.local_entrypoint()` decorator defines `main` as the function to start from locally when running the Modal CLI. You can save above code to `example.py` (or use [this implementation](https://github.com/outlines-dev/outlines/blob/main/examples/modal_example.py)). Let's now see how to run the code on the cloud using the Modal CLI.
 
 ## Run on the cloud
 
