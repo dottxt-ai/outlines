@@ -77,7 +77,7 @@ class GreedySampler:
         return next_token_ids, ancestors, weights
 
 
-greedy = GreedySampler()
+greedy = GreedySampler
 
 
 class MultinomialSampler:
@@ -162,7 +162,7 @@ class MultinomialSampler:
         return next_token_ids, ancestors, weights
 
 
-multinomial = MultinomialSampler()
+multinomial = MultinomialSampler
 
 
 def keep_top_k_logits(k: int) -> Callable[["torch.Tensor"], "torch.Tensor"]:
@@ -321,4 +321,4 @@ class BeamSearchSampler:
         return next_token_ids, ancestors, weights
 
 
-beam_search = BeamSearchSampler()
+beam_search = BeamSearchSampler
