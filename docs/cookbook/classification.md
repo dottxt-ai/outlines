@@ -45,7 +45,7 @@ Outlines provides a shortcut to do multi-label classification, using the `outlin
 ```python
 from outlines.samplers import greedy
 
-generator = outlines.generate.choice(model, ["URGENT", "STANDARD"], sampler=greedy)
+generator = outlines.generate.choice(model, ["URGENT", "STANDARD"], sampler=greedy())
 ```
 Outlines supports batched requests, so we will pass two requests to the model:
 
@@ -96,7 +96,7 @@ class Classification(BaseModel):
 and we can use `generate.json` by passing this Pydantic model we just defined, and call the generator:
 
 ```python
-generator = outlines.generate.json(model, Classification, sampler=greedy)
+generator = outlines.generate.json(model, Classification, sampler=greedy())
 labels = generator(prompts)
 print(labels)
 # [Classification(label=<Label.urgent: 'URGENT'>), Classification(label=<Label.standard: 'STANDARD'>)]
