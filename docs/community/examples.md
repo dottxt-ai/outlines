@@ -2,7 +2,7 @@
 
 Publishing examples and articles about Outlines are a meaningful way to contrinute to the community. Here is a list of projects we are aware of. Drop us a line if we forgot yours!
 
-[Multimodal Structured Generation](https://github.com/leloykun/MMFM-Challenge/blob/master/MMFM-SOLUTION-README.md) shows that Structured Generation can outperform finetuning, and maybe even multimodality, in document-image understanding tasks as part of CVPR's 2nd MMFM Challenge.
+[Multimodal Structured Generation: CVPR's 2nd MMFM Challenge Technical Report](https://arxiv.org/abs/2406.11403) shows that Structured Generation can outperform finetuning, and maybe even multimodality, in document-image understanding tasks as part of CVPR's 2nd MMFM Challenge.
 
 [Chess LLM Arena](https://huggingface.co/spaces/mlabonne/chessllm) is a HuggingFace Space where you can make LLMs compete in a chess match.
 
