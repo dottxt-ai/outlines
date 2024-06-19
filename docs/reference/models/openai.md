@@ -26,7 +26,7 @@ from outlines import models
 
 model = models.openai(
     "gpt-3.5-turbo",
-    api_key=os.environ("OPENAI_API_KEY")
+    api_key=os.environ["OPENAI_API_KEY"]
 )
 ```
 
