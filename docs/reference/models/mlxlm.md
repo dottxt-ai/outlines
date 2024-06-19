@@ -11,7 +11,7 @@ In addition to `outlines`, you must install `mlx-lm` and `mlx` libraries. You mu
 ```python
 from outlines import models
 
-model = models.mlxlm("mlx-community/mlx-community/Meta-Llama-3-8B-Instruct-8bit")
+model = models.mlxlm("mlx-community/Meta-Llama-3-8B-Instruct-8bit")
 ```
 
 With the loaded model, you can generate text or perform structured generation, e.g.
