@@ -21,8 +21,10 @@ Check the [OpenAI documentation](https://platform.openai.com/docs/models/gpt-4-t
 
 ```python
 import os
+from dotenv import load_dotenv
 from outlines import models
 
+load_dotenv()
 
 model = models.openai(
     "gpt-3.5-turbo",
