@@ -10,8 +10,10 @@ from referencing import Registry, Resource
 from referencing._core import Resolver
 from referencing.jsonschema import DRAFT202012
 
-STRING_INNER = r'([^"\\\x00-\x1f\x7f-\x9f]|\\\\)'
+# allow `\"`, `\\`, or any character which isn't a control sequence
+STRING_INNER = r'([^"\\\x00-\x1F\x7F-\x9F]|\\["\\])'
 STRING = f'"{STRING_INNER}*"'
+
 INTEGER = r"(-)?(0|[1-9][0-9]*)"
 NUMBER = rf"({INTEGER})(\.[0-9]+)?([eE][+-][0-9]+)?"
 BOOLEAN = r"(true|false)"

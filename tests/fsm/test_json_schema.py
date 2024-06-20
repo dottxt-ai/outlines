@@ -124,6 +124,10 @@ def test_match_number(pattern, does_match):
                 ('"quoted_string"', True),
                 (r'"escape_\character"', False),
                 (r'"double_\\escape"', True),
+                (r'"\n"', False),
+                (r'"\\n"', True),
+                (r'"unescaped " quote"', False),
+                (r'"escaped \" quote"', True),
             ],
         ),
         # String with maximum length
