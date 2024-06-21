@@ -334,3 +334,25 @@ def test_RegexGuide_caching(model, temp_cache_dir):
     assert re.fullmatch(regex, structured)
     assert re.fullmatch(regex, structured_2)
     assert structured != structured_2
+
+
+def test_tokenizer_vocabulary_decode_sanity():
+    """Assert the decoded newline token (198) is the same as the normalized vocab token"""
+    import llama_cpp
+
+    model = models.llamacpp(
+        "bartowski/Meta-Llama-3-8B-Instruct-GGUF",
+        "Meta-Llama-3-8B-Instruct-IQ1_M.gguf",
+        tokenizer=llama_cpp.llama_tokenizer.LlamaHFTokenizer.from_pretrained(
+            "NousResearch/Hermes-2-Pro-Llama-3-8B"
+        ),
+    )
+    tokenizer = generate.regex(model, "a").logits_processor.tokenizer
+
+    decoded_nl_token = tokenizer.decode([198])[0]
+    vocab_nl_token = tokenizer.convert_token_to_string(
+        [token for token, token_id in tokenizer.vocabulary.items() if token_id == 198][
+            0
+        ]
+    )
+    assert decoded_nl_token == vocab_nl_token

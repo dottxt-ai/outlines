@@ -34,8 +34,10 @@ class LlamaCppTokenizer(Tokenizer):
         self.tokenizer = model.tokenizer()
 
         # TODO: Remove when https://github.com/ggerganov/llama.cpp/pull/5613 is resolved
+        self._hf_tokenizer = None
         try:
             self.vocabulary = model.tokenizer_.hf_tokenizer.get_vocab()
+            self._hf_tokenizer = model.tokenizer_.hf_tokenizer
         except AttributeError:
             # ###
             for t in range(model.n_vocab()):
@@ -71,7 +73,15 @@ class LlamaCppTokenizer(Tokenizer):
         return token_ids, attention_mask
 
     def convert_token_to_string(self, token: str) -> str:
-        return token
+        if self._hf_tokenizer is not None:
+            from transformers.file_utils import SPIECE_UNDERLINE
+
+            token_str = self._hf_tokenizer.convert_tokens_to_string([token])
+            if token.startswith(SPIECE_UNDERLINE) or token == "<0x20>":
+                token_str = " " + token_str
+            return token_str
+        else:
+            return token
 
     def __eq__(self, other):
         if not isinstance(other, LlamaCppTokenizer):
