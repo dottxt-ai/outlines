@@ -151,7 +151,7 @@ def test_match_number(pattern, does_match):
         # String defined by a regular expression
         (
             {"title": "Foo", "type": "string", "pattern": r"^[a-z]$"},
-            r'(^"[a-z]"$)',
+            r'("[a-z]")',
             [('"a"', True), ('"1"', False)],
         ),
         # Boolean
@@ -749,6 +749,7 @@ def test_match_number(pattern, does_match):
     ],
 )
 def test_match(schema, regex, examples):
+    interegular.parse_pattern(regex)
     schema = json.dumps(schema)
     test_regex = build_regex_from_schema(schema)
     assert test_regex == regex
@@ -827,6 +828,7 @@ def test_match(schema, regex, examples):
     ],
 )
 def test_format(schema, regex, examples):
+    interegular.parse_pattern(regex)
     schema = json.dumps(schema)
     test_regex = build_regex_from_schema(schema)
     assert test_regex == regex
