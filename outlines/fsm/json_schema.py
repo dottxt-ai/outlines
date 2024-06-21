@@ -312,7 +312,7 @@ def to_regex(
             elif "pattern" in instance:
                 pattern = instance["pattern"]
                 if pattern[0] == "^" and pattern[-1] == "$":
-                    return rf'(^"{pattern[1:-1]}"$)'
+                    return rf'("{pattern[1:-1]}")'
                 else:
                     return rf'("{pattern}")'
             elif "format" in instance:
