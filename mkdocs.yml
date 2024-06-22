@@ -84,6 +84,12 @@ plugins:
   - social:
       cards_layout_options:
         color: #173a58
+  - git-committers:
+      repository: outlines-dev/outlines
+      branch: main
+  - git-revision-date-localized:
+      enable_creation_date: true
+      type: timeago
 
 nav:
   - Home: index.md
