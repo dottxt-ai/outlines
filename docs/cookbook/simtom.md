@@ -126,4 +126,4 @@ print(result.model_dump())
 # {'answer': 'green_bucket'}
 ```
 
-And this is it! SimToM could be useful in agentic workflows, where agents must act based on what they know, not all available information. One caveat of SimToM is that the perspective-taking step can sometimes remove important information, leading to wrong results. As the authors note in their paper, it can still be a simple and effective baseline for evaluating LLMs on Theory of Mind reasoning tasks.
+And this is it! SimToM could be useful in agentic workflows, where agents must act based on what they know, not all available information. One caveat of SimToM is that the perspective-taking step may remove important information, leading to wrong results. As the authors note in their paper, it can feature as a simple and effective baseline for evaluating LLMs on Theory of Mind reasoning tasks.
