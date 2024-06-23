@@ -20,13 +20,18 @@ def model_mlxlm(tmp_path_factory):
 
 
 @pytest.fixture(scope="session")
+def model_mlxlm_phi3(tmp_path_factory):
+    return models.mlxlm("mlx-community/Phi-3-mini-4k-instruct-4bit")
+
+
+@pytest.fixture(scope="session")
 def model_transformers(tmp_path_factory):
     return models.transformers("Locutusque/TinyMistral-248M-v2-Instruct", device="cpu")
 
 
 @pytest.mark.parametrize(
     "model_fixture",
-    ("model_llamacpp", "model_mlxlm", "model_transformers"),
+    ("model_llamacpp", "model_mlxlm", "model_transformers", "model_mlxlm_phi3"),
 )
 def test_generate_text(request, model_fixture):
     model = request.getfixturevalue(model_fixture)
@@ -37,11 +42,12 @@ def test_generate_text(request, model_fixture):
 
 @pytest.mark.parametrize(
     "model_fixture",
-    ("model_llamacpp", "model_mlxlm", "model_transformers"),
+    ("model_llamacpp", "model_mlxlm", "model_transformers", "model_mlxlm_phi3"),
 )
 @pytest.mark.parametrize(
     "pattern",
     (
+        "a b c d e",  # test model tokenizer whitespace prefix handling
         "[0-9]",
         "abc*",
         "\\+?[1-9][0-9]{7,14}",
