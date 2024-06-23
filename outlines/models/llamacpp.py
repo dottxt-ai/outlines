@@ -166,7 +166,9 @@ class LlamaCpp:
 
         # Somehow `llama-cpp-python` generates `max_tokens + 1`  tokens
         if "max_tokens" not in llama_cpp_params:
-            if max_tokens is not None:
+            if max_tokens is None:
+                llama_cpp_params["max_tokens"] = -1  # indicates unlimited tokens
+            else:
                 llama_cpp_params["max_tokens"] = max_tokens - 1
         else:
             llama_cpp_params["max_tokens"] = llama_cpp_params["max_tokens"] - 1
