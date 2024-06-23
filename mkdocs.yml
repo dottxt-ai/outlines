@@ -105,6 +105,7 @@ nav:
       - Generate synthetic data: cookbook/dating_profiles.md
       - Summarize a document: cookbook/chain_of_density.md
       - Playing chess: cookbook/models_playing_chess.md
+      - Perspective-taking prompting: cookbook/simtom.md
       - Run on the cloud:
           - BentoML: cookbook/deploy-using-bentoml.md
           - Cerebrium: cookbook/deploy-using-cerebrium.md
