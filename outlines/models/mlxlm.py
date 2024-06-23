@@ -106,13 +106,20 @@ class MLXLM:
         # https://github.com/ml-explore/mlx-examples/blob/4872727/llms/mlx_lm/utils.py#L267
         prompt_tokens = mx.array(self.mlx_tokenizer.encode(prompts))
 
+        detokenizer = self.mlx_tokenizer.detokenizer
+        detokenizer.reset()
+
         for (token, prob), n in zip(
             self.generate_step(prompt_tokens, **generate_kwargs),
             range(max_tokens),
         ):
             if token == self.tokenizer.eos_token_id:
                 break
-            yield self.tokenizer.decode([token])[0]
+            detokenizer.add_token(token)
+            yield detokenizer.last_segment
+
+        detokenizer.finalize()
+        yield detokenizer.last_segment
 
     def generate_step(
         self,

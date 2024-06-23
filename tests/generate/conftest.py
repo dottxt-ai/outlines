@@ -17,7 +17,7 @@ def pytest_collection_modifyitems(config, items):
         for item in items:
             if "model_fixture" in item.fixturenames:
                 model_param = item.callspec.params.get("model_fixture", None)
-                if model_param == "model_mlxlm":
+                if model_param.startswith("model_mlxlm"):
                     item.add_marker(skip_marker)
 
 
