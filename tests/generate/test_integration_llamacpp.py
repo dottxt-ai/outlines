@@ -356,3 +356,22 @@ def test_tokenizer_vocabulary_decode_sanity():
         ]
     )
     assert decoded_nl_token == vocab_nl_token
+
+
+def test_no_length_constraint_when_unset():
+    """Assert that models.llamacpp doesn't have an implicit max_tokens preventing full sequence generation"""
+    import llama_cpp
+
+    model = models.llamacpp(
+        repo_id="M4-ai/TinyMistral-248M-v2-Instruct-GGUF",
+        filename="TinyMistral-248M-v2-Instruct.Q4_K_M.gguf",
+        tokenizer=llama_cpp.llama_tokenizer.LlamaHFTokenizer.from_pretrained(
+            "Locutusque/TinyMistral-248M-Instruct"
+        ),
+    )
+
+    long_pattern = "abcdefg" * 10
+    generator = generate.regex(model, long_pattern)
+
+    output = generator("a")
+    assert re.match(long_pattern, output)
