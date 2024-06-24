@@ -84,6 +84,12 @@ plugins:
   - social:
       cards_layout_options:
         color: #173a58
+  - git-committers:
+      repository: outlines-dev/outlines
+      branch: main
+  - git-revision-date-localized:
+      enable_creation_date: true
+      type: timeago
 
 nav:
   - Home: index.md
@@ -99,8 +105,10 @@ nav:
       - Generate synthetic data: cookbook/dating_profiles.md
       - Summarize a document: cookbook/chain_of_density.md
       - Playing chess: cookbook/models_playing_chess.md
+      - Perspective-taking prompting: cookbook/simtom.md
       - Run on the cloud:
           - BentoML: cookbook/deploy-using-bentoml.md
+          - Cerebrium: cookbook/deploy-using-cerebrium.md
           - Modal: cookbook/deploy-using-modal.md
   - Docs:
     - reference/index.md
@@ -121,13 +129,16 @@ nav:
         - Prompt templating: reference/prompting.md
         - Outlines functions: reference/functions.md
     - Models:
-        - vLLM: reference/models/vllm.md
-        - Llama.cpp: reference/models/llamacpp.md
-        - Transformers: reference/models/transformers.md
-        - ExllamaV2: reference/models/exllamav2.md
-        - Mamba: reference/models/mamba.md
-        - OpenAI: reference/models/openai.md
-
+        - Open source:
+          - Transformers: reference/models/transformers.md
+          - Llama.cpp: reference/models/llamacpp.md
+          - vLLM: reference/models/vllm.md
+          - TGI: reference/models/tgi.md
+          - ExllamaV2: reference/models/exllamav2.md
+          - MLX: reference/models/mlxlm.md
+          - Mamba: reference/models/mamba.md
+        - API:
+            - OpenAI: reference/models/openai.md
   - API Reference:
     - api/index.md
     - api/models.md
@@ -143,4 +154,5 @@ nav:
     - Chat with us ☕: https://discord.com/invite/R9DSu34mGd
     - How to contribute 🏗️: community/contribute.md
     - Your projects 👏: community/examples.md
+    - Versioning Guide 📌: community/versioning.md
   - Blog: blog/index.md

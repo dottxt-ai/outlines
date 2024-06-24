@@ -87,14 +87,11 @@ class BetterFSM(FSM):
                 ((k, z) for k, v in self.trans_key_to_states.items() for z in v),
                 dtype=np.dtype("int64, int64"),
             )
-            alphabet_symbol_mapping_items = np.fromiter(
-                (
-                    it
-                    for it in self.alphabet._symbol_mapping.items()
-                    if it[0] != anything_else
-                ),
-                dtype=np.dtype("U2, int64"),
-            )
+            alphabet_symbol_mapping_items = [
+                (k, v)
+                for k, v in self.alphabet._symbol_mapping.items()
+                if k != anything_else
+            ]
             nb_finals = np.fromiter(self.finals, dtype=np.dtype("int64"))
             self.__dict__["_fsm_info"] = create_fsm_info(
                 self.initial,
@@ -110,7 +107,7 @@ class BetterFSM(FSM):
 
 nb_int_list_type = numba.types.ListType(numba.int64)
 nb_int_pair_type = numba.types.UniTuple(numba.int64, 2)
-nb_unichar_2_type = numba.types.UnicodeCharSeq(2)
+nb_unicode_type = numba.types.unicode_type
 
 
 @numba.njit(cache=True)
@@ -136,7 +133,7 @@ def create_fsm_info(
 
     # use 2-char strings so that we can represent incomplete utf-8 sequences
     # as 2-hex-digit pairs
-    alphabet_symbol_map = numba.typed.Dict.empty(nb_unichar_2_type, numba.int64)
+    alphabet_symbol_map = numba.typed.Dict.empty(nb_unicode_type, numba.int64)
     for symbol_and_trans_key in alphabet_symbol_mapping_items:
         alphabet_symbol_map[symbol_and_trans_key[0]] = symbol_and_trans_key[1]
 
@@ -199,7 +196,7 @@ def transition_trie_setdefault(
 
 
 def byte_symbol(byte: int) -> str:
-    return f"{byte:02X}" if byte >= 0x80 else chr(byte)
+    return f"\x00{byte:02X}" if byte >= 0x80 else chr(byte)
 
 
 def make_byte_level_fsm(fsm: FSM, keep_utf8=False) -> FSM:
@@ -415,11 +412,9 @@ def make_deterministic_fsm(fsm: FSM) -> Tuple[BetterFSM, Dict[int, int]]:
 @numba.njit(nogil=True, cache=True)
 def _walk_fsm(
     fsm_transitions: Dict[Tuple[int, int], int],
-    alphabet_symbol_mapping: Dict[str, int],
-    alphabet_anything_value: int,
     fsm_initial: int,
     fsm_finals: Set[int],
-    input_string: Sequence[str],
+    token_transition_keys: Sequence[int],
     start_state: int,
     full_match: bool = True,
 ) -> List[int]:
@@ -427,9 +422,9 @@ def _walk_fsm(
     accepted_states: List[int] = numba.typed.List.empty_list(numba.int64)
     last_final_idx: int = numba.uint64(0)
 
-    for i, symbol in enumerate(input_string):
-        trans_key = alphabet_symbol_mapping.get(symbol, alphabet_anything_value)
-
+    # Iterate over token transition key sequence. The transition key
+    # sequence represents the FSM traversal rules of the tokens symbols.
+    for i, trans_key in enumerate(token_transition_keys):
         new_state = fsm_transitions.get((state, trans_key))
 
         if new_state is None:
@@ -453,7 +448,7 @@ def _walk_fsm(
 
 def walk_fsm(
     fsm: BetterFSM,
-    input_string: Sequence[str],
+    token_transition_keys: Sequence[int],
     start_state: int,
     full_match: bool = True,
 ) -> List[int]:
@@ -463,13 +458,11 @@ def walk_fsm(
     accepted_states: List[int] = []
     last_final_idx: int = 0
 
-    alphabet_symbol_mapping = fsm.alphabet._symbol_mapping
-    alphabet_anything_value = fsm.alphabet.anything_value
     fsm_transitions = fsm.flat_transition_map
 
-    for i, symbol in enumerate(input_string):
-        trans_key = alphabet_symbol_mapping.get(symbol, alphabet_anything_value)
-
+    # Iterate over token transition key sequence. The transition key
+    # sequence represents the FSM traversal rules of the tokens symbols.
+    for i, trans_key in enumerate(token_transition_keys):
         new_state = fsm_transitions.get((state, trans_key))
 
         if new_state is None:
@@ -655,24 +648,25 @@ def state_scan_tokens(
     alphabet_anything_value: int,
     fsm_initial: int,
     fsm_finals: Set[int],
-    vocabulary: List[Tuple[Sequence[str], Sequence[int]]],
+    vocabulary: List[Tuple[str, Sequence[int]]],
+    vocabulary_transition_keys: List[Sequence[int]],
     start_state: int,
 ) -> Set[Tuple[int, int]]:
     res = set()
 
-    for token, token_ids in vocabulary:
+    for (token, token_ids), token_transition_keys in zip(
+        vocabulary, vocabulary_transition_keys
+    ):
         state_seq = _walk_fsm(
             fsm_transitions,
-            alphabet_symbol_mapping,
-            alphabet_anything_value,
             fsm_initial,
             fsm_finals,
-            token,
+            token_transition_keys,
             start_state,
             False,
         )
 
-        if state_seq is not None and len(state_seq) < len(token):
+        if state_seq is not None and len(state_seq) < len(token_transition_keys):
             continue
 
         for token_id in token_ids:
@@ -681,9 +675,62 @@ def state_scan_tokens(
     return res
 
 
+@numba.njit(cache=True, nogil=True)
+def get_token_transition_keys(
+    alphabet_symbol_mapping: Dict[str, int],
+    alphabet_anything_value: int,
+    token_str: str,
+) -> Sequence[int]:
+    """
+    Get the sequence of transition keys for an individual string
+    with respect to an FSMs alphabet symbol mapping
+
+    This requires parsing the null-byte prefix rules of a byte-fsm:
+    - If two characters are prefixed by \x00, they are the grouped as a hex-byte
+    - Otherwise they are a standalone utf-8 character
+    """
+    token_transition_keys = []
+    i = 0
+    while i < len(token_str):
+        if token_str[i] == "\x00" and i != len(token_str) - 1:
+            symbol = token_str[i : i + 3]
+            i += 3
+        else:
+            symbol = token_str[i]
+            i += 1
+
+        token_transition_keys.append(
+            alphabet_symbol_mapping.get(symbol, alphabet_anything_value)
+        )
+
+    token_transition_keys_array = np.empty(len(token_transition_keys), dtype=np.int64)
+    for j in range(len(token_transition_keys)):
+        token_transition_keys_array[j] = token_transition_keys[j]
+    return token_transition_keys_array
+
+
+@numba.njit(cache=True, nogil=True)
+def get_vocabulary_transition_keys(
+    alphabet_symbol_mapping: Dict[str, int],
+    alphabet_anything_value: int,
+    vocabulary: List[Tuple[str, Sequence[int]]],
+) -> List[Sequence[int]]:
+    """
+    Calculate the sequence transition keys for each token str within a vocabulary
+    """
+    vocab_transition_keys = numba.typed.List.empty_list(numba.int64[:])
+    for token_str, _ in vocabulary:
+        token_transition_keys = get_token_transition_keys(
+            alphabet_symbol_mapping, alphabet_anything_value, token_str
+        )
+        vocab_transition_keys.append(token_transition_keys)
+
+    return vocab_transition_keys
+
+
 def create_fsm_index_end_to_end(
     fsm_info: FSMInfo,
-    vocabulary: List[Tuple[Sequence[str], Sequence[int]]],
+    vocabulary: List[Tuple[str, Sequence[int]]],
 ) -> Dict[int, Set[Tuple[int, int]]]:
     """Create an FSM state-to-vocabulary map/index through end-to-end token parsing."""
 
@@ -699,6 +746,12 @@ def create_fsm_index_end_to_end(
         desc="Compiling FSM index for all state transitions",
     )
 
+    vocabulary_transition_keys = get_vocabulary_transition_keys(
+        fsm_info.alphabet_symbol_mapping,
+        fsm_info.alphabet_anything_value,
+        vocabulary,
+    )
+
     while next_states:
         start_state = next_states.pop()
 
@@ -709,6 +762,7 @@ def create_fsm_index_end_to_end(
             fsm_info.initial,
             fsm_info.finals,
             vocabulary,
+            vocabulary_transition_keys,
             start_state,
         )
 
@@ -730,7 +784,10 @@ def create_fsm_index_end_to_end(
 
 
 re_llama_byte_token = re.compile(r"^<0x[0-9A-F]{2}>$")
-re_replacement_seq = re.compile(r"^▁*�+$")
+
+# The "▁*" prefix is required to handle Gemma and GPT-SW3 tokenizers, and the "\.*"
+# suffix is required to handle the NorwAI tokenizer.
+re_replacement_seq = re.compile(r"^▁*�+\.*$")
 
 
 # Copied from transformers.models.gpt2.tokenization_gpt2.bytes_to_unicode
@@ -771,7 +828,7 @@ def gpt2_unicode_to_bytes():
 @lru_cache
 def reduced_vocabulary(
     tokenizer: "Tokenizer",
-) -> Tuple[List[Tuple[Sequence[str], Sequence[int]]], Set[int]]:
+) -> Tuple[List[Tuple[str, Sequence[int]]], Set[int]]:
     """Create a map from decoded vocabulary tokens to lists of equivalent token ids."""
     empty_token_ids = set()
     vocabulary: Dict[Union[str, Tuple[str, ...]], List[int]] = {}
@@ -804,7 +861,7 @@ def reduced_vocabulary(
                         raise RuntimeError(
                             f"Cannot convert token `{token}` ({token_idx}) to bytes: {token_str}"
                         )
-                token_str = tuple(byte_symbol(b) for b in token_bytes)
+                token_str = "".join(byte_symbol(b) for b in token_bytes)
 
             vocabulary.setdefault(token_str, []).append(token_idx)
         else:
@@ -813,15 +870,14 @@ def reduced_vocabulary(
     vocabulary_nb = numba.typed.List.empty_list(
         numba.types.Tuple(
             (
-                nb_unichar_2_type[:],
+                nb_unicode_type,
                 numba.int64[:],
             )
         )
     )
-    for token_tuple, token_ids in vocabulary.items():
-        token_tuple_np = np.fromiter(token_tuple, dtype=np.dtype("U2"))
+    for token_str, token_ids in vocabulary.items():
         token_ids_np = np.fromiter(token_ids, dtype=np.dtype("int64"))
-        vocabulary_nb.append((token_tuple_np, token_ids_np))
+        vocabulary_nb.append((token_str, token_ids_np))
 
     return vocabulary_nb, empty_token_ids
 

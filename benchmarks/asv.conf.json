@@ -1,0 +1,20 @@
+{
+    "version": 1,
+    "project": "Outlines",
+    "project_url": "https://outlines-dev.github.io/outlines/",
+    "repo": "..",
+    "branches": [
+	"HEAD"
+    ],
+    "build_command": [
+        "python -mpip install .[test]",
+        "PIP_NO_BUILD_ISOLATION=false python -mpip wheel --no-deps --no-index -w {build_cache_dir} {build_dir}",
+    ],
+    "environment_type": "virtualenv",
+    "show_commit_url": "https://github.com/outlines-dev/outlines/commit/",
+    "benchmark_dir": ".",
+    "env_dir": "env",
+    "results_dir": "results",
+    "html_dir": "html",
+    "build_cache_size": 8
+}

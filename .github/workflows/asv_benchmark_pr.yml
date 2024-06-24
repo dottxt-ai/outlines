@@ -1,0 +1,57 @@
+name: Benchmark PR
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+env:
+  PYTHON_VERSION: "3.10"
+  WORKING_DIR: ${{ github.workspace }}/benchmarks
+  BENCHMARKS_OUTPUT: ${{ github.workspace }}/benchmarks_output
+
+jobs:
+  benchmark-pr:
+    runs-on: ubuntu-latest
+    if: contains(github.event.pull_request.labels.*.name, 'run_benchmarks') || github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_run'
+
+    defaults:
+      run:
+        working-directory: ${{ env.WORKING_DIR }}
+
+    steps:
+
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install asv virtualenv lf-asv-formatter
+
+    - name: Create ASV machine config file
+      run: asv machine --machine gh-runner --yes
+
+    - name: Run Benchmarks - `PR HEAD` vs `main`
+      run: |
+        # prepare main branch for comparison
+        git remote add upstream https://github.com/${{ github.repository }}.git
+        git fetch upstream main
+
+        # Run benchmarks, allow errors, they will be caught in the next step
+        asv continuous upstream/main HEAD \
+            --no-stats --interleave-rounds -a repeat=3 || true
+
+    - name: BENCHMARK RESULTS
+      run: |
+        asv compare --factor=1.1 --no-stats --split upstream/main HEAD | tee ${{ env.BENCHMARKS_OUTPUT }}
+        if grep -q "Benchmarks that have got worse" "${{ env.BENCHMARKS_OUTPUT }}"; then
+          echo "Performance degradation detected!"
+          exit 1
+        fi

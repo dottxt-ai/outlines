@@ -6,7 +6,7 @@ Outlines〰 is a Python library that allows you to use Large Language Model in a
 
 ## What models do you support?
 
-We support [Openai](reference/models/openai.md), but the true power of Outlines〰 is unleashed with Open Source models available via the [transformers](reference/models/transformers.md), [llama.cpp](reference/models/transformers.md), [exllama2](reference/models/exllamav2.md) and [mamba_ssm](reference/models/mamba.md) libraries. If you want to build and maintain an integration with another library, [get in touch][discord].
+We support [Openai](reference/models/openai.md), but the true power of Outlines〰 is unleashed with Open Source models available via the [transformers](reference/models/transformers.md), [llama.cpp](reference/models/llamacpp.md), [exllama2](reference/models/exllamav2.md) and [mamba_ssm](reference/models/mamba.md) libraries. If you want to build and maintain an integration with another library, [get in touch][discord].
 
 ## What are the main features?
 
@@ -140,6 +140,13 @@ functions and calls to other libraries.
 **Outlines** 〰 is *compatible with every auto-regressive model*. It only interfaces with models
 via the next-token logits distribution.
 
+## Outlines people
+
+Outlines would not be what it is today without a community of dedicated developers:
+
+<a href="https://github.com/outlines-dev/outlines/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=outlines-dev/outlines" />
+</a>
 
 ## Acknowledgements
 
@@ -161,6 +168,8 @@ via the next-token logits distribution.
 </div>
 
 Outlines was originally developed at [@NormalComputing](https://twitter.com/NormalComputing) by [@remilouf](https://twitter.com/remilouf) and [@BrandonTWillard](https://twitter.com/BrandonTWillard). It is now maintained by [.txt](https://dottxt.co).
+
+
 
 [discord]: https://discord.gg/R9DSu34mGd
 [aesara]: https://github.com/aesara-devs

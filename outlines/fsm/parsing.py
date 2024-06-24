@@ -38,6 +38,7 @@ from lark.parsers.lalr_parser import LALR_Parser, ParseConf, ParserState, _Parse
 from outlines.fsm.regex import (
     fsm_union,
     get_sub_fsms_from_seq,
+    get_token_transition_keys,
     make_deterministic_fsm,
     walk_fsm,
 )
@@ -569,9 +570,15 @@ class PartialScanner(Scanner):
 
         text_part = text[start_pos:]
 
+        text_transitions = get_token_transition_keys(
+            self.fsm.fsm_info.alphabet_symbol_mapping,
+            self.fsm.fsm_info.alphabet_anything_value,
+            text_part,
+        )
+
         state_seq = walk_fsm(
             self.fsm,
-            text_part,
+            text_transitions,
             start_state,
             full_match=self.match_whole,
         )

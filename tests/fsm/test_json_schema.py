@@ -124,6 +124,10 @@ def test_match_number(pattern, does_match):
                 ('"quoted_string"', True),
                 (r'"escape_\character"', False),
                 (r'"double_\\escape"', True),
+                (r'"\n"', False),
+                (r'"\\n"', True),
+                (r'"unescaped " quote"', False),
+                (r'"escaped \" quote"', True),
             ],
         ),
         # String with maximum length
@@ -147,7 +151,7 @@ def test_match_number(pattern, does_match):
         # String defined by a regular expression
         (
             {"title": "Foo", "type": "string", "pattern": r"^[a-z]$"},
-            r'(^"[a-z]"$)',
+            r'("[a-z]")',
             [('"a"', True), ('"1"', False)],
         ),
         # Boolean
@@ -177,11 +181,17 @@ def test_match_number(pattern, does_match):
             '"Marc"',
             [('"Marc"', True), ('"Jean"', False), ('"John"', False)],
         ),
-        # Make sure strings are escaped
+        # Make sure strings are escaped with regex escaping
         (
             {"title": "Foo", "const": ".*", "type": "string"},
             r'"\.\*"',
             [('".*"', True), (r'"\s*"', False), (r'"\.\*"', False)],
+        ),
+        # Make sure strings are escaped with JSON escaping
+        (
+            {"title": "Foo", "const": '"', "type": "string"},
+            r'"\\""',
+            [('"\\""', True), ('"""', False)],
         ),
         # Const integer
         (
@@ -189,23 +199,56 @@ def test_match_number(pattern, does_match):
             "0",
             [("0", True), ("1", False), ("a", False)],
         ),
+        # Const float
+        (
+            {"title": "Foo", "const": 0.2, "type": "float"},
+            r"0\.2",
+            [("0.2", True), ("032", False)],
+        ),
+        # Const boolean
+        (
+            {"title": "Foo", "const": True, "type": "boolean"},
+            "true",
+            [("true", True), ("True", False)],
+        ),
+        # Const null
+        (
+            {"title": "Foo", "const": None, "type": "null"},
+            "null",
+            [("null", True), ("None", False), ("", False)],
+        ),
         # Enum string
         (
             {"title": "Foo", "enum": ["Marc", "Jean"], "type": "string"},
             '("Marc"|"Jean")',
             [('"Marc"', True), ('"Jean"', True), ('"John"', False)],
         ),
-        # Make sure strings are escaped
+        # Make sure strings are escaped with regex and JSON escaping
         (
             {"title": "Foo", "enum": [".*", r"\s*"], "type": "string"},
-            r'("\.\*"|"\\s\*")',
-            [('".*"', True), (r'"\s*"', True), (r'"\.\*"', False)],
+            r'("\.\*"|"\\\\s\*")',
+            [('".*"', True), (r'"\\s*"', True), (r'"\.\*"', False)],
         ),
         # Enum integer
         (
             {"title": "Foo", "enum": [0, 1], "type": "integer"},
             "(0|1)",
             [("0", True), ("1", True), ("a", False)],
+        ),
+        # Enum mix of types
+        (
+            {"title": "Foo", "enum": [6, 5.3, "potato", True, None]},
+            r'(6|5\.3|"potato"|true|null)',
+            [
+                ("6", True),
+                ("5.3", True),
+                ('"potato"', True),
+                ("true", True),
+                ("null", True),
+                ("523", False),
+                ("True", False),
+                ("None", False),
+            ],
         ),
         # integer
         (
@@ -217,6 +260,162 @@ def test_match_number(pattern, does_match):
             },
             '\\{[ ]?"count"[ ]?:[ ]?(-)?(0|[1-9][0-9]*)[ ]?\\}',
             [('{ "count": 100 }', True)],
+        ),
+        # integer with minimum digits
+        (
+            {
+                "title": "Foo",
+                "type": "object",
+                "properties": {
+                    "count": {"title": "Count", "type": "integer", "minDigits": 3}
+                },
+                "required": ["count"],
+            },
+            '\\{[ ]?"count"[ ]?:[ ]?(-)?(0|[1-9][0-9]{2,})[ ]?\\}',
+            [('{ "count": 10 }', False), ('{ "count": 100 }', True)],
+        ),
+        # integer with maximum digits
+        (
+            {
+                "title": "Foo",
+                "type": "object",
+                "properties": {
+                    "count": {"title": "Count", "type": "integer", "maxDigits": 3}
+                },
+                "required": ["count"],
+            },
+            '\\{[ ]?"count"[ ]?:[ ]?(-)?(0|[1-9][0-9]{,2})[ ]?\\}',
+            [('{ "count": 100 }', True), ('{ "count": 1000 }', False)],
+        ),
+        # integer with minimum and maximum digits
+        (
+            {
+                "title": "Foo",
+                "type": "object",
+                "properties": {
+                    "count": {
+                        "title": "Count",
+                        "type": "integer",
+                        "minDigits": 3,
+                        "maxDigits": 5,
+                    }
+                },
+                "required": ["count"],
+            },
+            '\\{[ ]?"count"[ ]?:[ ]?(-)?(0|[1-9][0-9]{2,4})[ ]?\\}',
+            [
+                ('{ "count": 10 }', False),
+                ('{ "count": 100 }', True),
+                ('{ "count": 10000 }', True),
+                ('{ "count": 100000 }', False),
+            ],
+        ),
+        # number
+        (
+            {
+                "title": "Foo",
+                "type": "object",
+                "properties": {"count": {"title": "Count", "type": "number"}},
+                "required": ["count"],
+            },
+            '\\{[ ]?"count"[ ]?:[ ]?((-)?(0|[1-9][0-9]*))(\\.[0-9]+)?([eE][+-][0-9]+)?[ ]?\\}',
+            [('{ "count": 100 }', True), ('{ "count": 100.5 }', True)],
+        ),
+        # number with min and max integer digits
+        (
+            {
+                "title": "Foo",
+                "type": "object",
+                "properties": {
+                    "count": {
+                        "title": "Count",
+                        "type": "number",
+                        "minDigitsInteger": 3,
+                        "maxDigitsInteger": 5,
+                    }
+                },
+                "required": ["count"],
+            },
+            '\\{[ ]?"count"[ ]?:[ ]?((-)?(0|[1-9][0-9]{2,4}))(\\.[0-9]+)?([eE][+-][0-9]+)?[ ]?\\}',
+            [
+                ('{ "count": 10.005 }', False),
+                ('{ "count": 100.005 }', True),
+                ('{ "count": 10000.005 }', True),
+                ('{ "count": 100000.005 }', False),
+            ],
+        ),
+        # number with min and max fraction digits
+        (
+            {
+                "title": "Foo",
+                "type": "object",
+                "properties": {
+                    "count": {
+                        "title": "Count",
+                        "type": "number",
+                        "minDigitsFraction": 3,
+                        "maxDigitsFraction": 5,
+                    }
+                },
+                "required": ["count"],
+            },
+            '\\{[ ]?"count"[ ]?:[ ]?((-)?(0|[1-9][0-9]*))(\\.[0-9]{3,5})?([eE][+-][0-9]+)?[ ]?\\}',
+            [
+                ('{ "count": 1.05 }', False),
+                ('{ "count": 1.005 }', True),
+                ('{ "count": 1.00005 }', True),
+                ('{ "count": 1.000005 }', False),
+            ],
+        ),
+        # number with min and max exponent digits
+        (
+            {
+                "title": "Foo",
+                "type": "object",
+                "properties": {
+                    "count": {
+                        "title": "Count",
+                        "type": "number",
+                        "minDigitsExponent": 3,
+                        "maxDigitsExponent": 5,
+                    }
+                },
+                "required": ["count"],
+            },
+            '\\{[ ]?"count"[ ]?:[ ]?((-)?(0|[1-9][0-9]*))(\\.[0-9]+)?([eE][+-][0-9]{3,5})?[ ]?\\}',
+            [
+                ('{ "count": 1.05e1 }', False),
+                ('{ "count": 1.05e+001 }', True),
+                ('{ "count": 1.05e-00001 }', True),
+                ('{ "count": 1.05e0000001 }', False),
+            ],
+        ),
+        # number with min and max integer, fraction and exponent digits
+        (
+            {
+                "title": "Foo",
+                "type": "object",
+                "properties": {
+                    "count": {
+                        "title": "Count",
+                        "type": "number",
+                        "minDigitsInteger": 3,
+                        "maxDigitsInteger": 5,
+                        "minDigitsFraction": 3,
+                        "maxDigitsFraction": 5,
+                        "minDigitsExponent": 3,
+                        "maxDigitsExponent": 5,
+                    }
+                },
+                "required": ["count"],
+            },
+            '\\{[ ]?"count"[ ]?:[ ]?((-)?(0|[1-9][0-9]{2,4}))(\\.[0-9]{3,5})?([eE][+-][0-9]{3,5})?[ ]?\\}',
+            [
+                ('{ "count": 1.05e1 }', False),
+                ('{ "count": 100.005e+001 }', True),
+                ('{ "count": 10000.00005e-00001 }', True),
+                ('{ "count": 100000.000005e0000001 }', False),
+            ],
         ),
         # array
         (
@@ -550,6 +749,7 @@ def test_match_number(pattern, does_match):
     ],
 )
 def test_match(schema, regex, examples):
+    interegular.parse_pattern(regex)
     schema = json.dumps(schema)
     test_regex = build_regex_from_schema(schema)
     assert test_regex == regex
@@ -628,6 +828,7 @@ def test_match(schema, regex, examples):
     ],
 )
 def test_format(schema, regex, examples):
+    interegular.parse_pattern(regex)
     schema = json.dumps(schema)
     test_regex = build_regex_from_schema(schema)
     assert test_regex == regex

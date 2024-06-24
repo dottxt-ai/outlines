@@ -27,7 +27,7 @@ limitations under the License.
 
 import math
 from collections import defaultdict
-from typing import TYPE_CHECKING, DefaultDict, List, Optional, Type, Union
+from typing import TYPE_CHECKING, DefaultDict, Dict, List, Optional, Type, Union
 
 import torch
 from pydantic import BaseModel
@@ -78,6 +78,7 @@ class RegexLogitsProcessor:
                 "`tokenizer` attribute or a `get_tokenizer` method."
             )
         tokenizer = adapt_tokenizer(tokenizer=tokenizer)
+        self.mask_cache: Dict[int, torch.Tensor] = {}
         self.fsm = RegexGuide(regex_string, tokenizer)
         self._fsm_state: DefaultDict[int, int] = defaultdict(int)
 
@@ -107,12 +108,18 @@ class RegexLogitsProcessor:
                 state=self._fsm_state[last_seq_id], token_id=last_token
             )
 
-        allowed_tokens = self.fsm.get_next_instruction(
-            state=self._fsm_state[seq_id]
-        ).tokens
-
-        mask = torch.full((scores.shape[-1],), -math.inf, device=scores.device)
-        mask[allowed_tokens] = 0
+        state_id = self._fsm_state[seq_id]
+        if state_id not in self.mask_cache:
+            allowed_tokens = self.fsm.get_next_instruction(
+                state=self._fsm_state[seq_id]
+            ).tokens
+            mask = torch.full((scores.shape[-1],), -math.inf)
+            mask[allowed_tokens] = 0
+            mask = mask.pin_memory()
+            self.mask_cache[state_id] = mask
+        else:
+            mask = self.mask_cache[state_id]
+        mask = mask.to(device=scores.device, non_blocking=True)
         biased_scores = scores + mask
 
         return biased_scores

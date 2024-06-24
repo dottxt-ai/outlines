@@ -4,6 +4,7 @@ from outlines.fsm.guide import CFGGuide
 from outlines.generate.api import SequenceGenerator, SequenceGeneratorAdapter
 from outlines.models import OpenAI
 from outlines.models.llamacpp import LlamaCpp
+from outlines.models.mlxlm import MLXLM
 from outlines.models.vllm import VLLM
 from outlines.samplers import Sampler, multinomial
 
@@ -33,14 +34,15 @@ def cfg(model, cfg_str: str, sampler: Sampler = multinomial()) -> SequenceGenera
     return generator
 
 
+@cfg.register(MLXLM)
 @cfg.register(VLLM)
-def cfg_vllm(
-    model: VLLM,
+def cfg_unimplemented(
+    model,
     cfg_str: str,
     sampler: Sampler = multinomial(),
 ):
     raise NotImplementedError(
-        "The CFG Logits processor is not available for the vLLM integration."
+        f"The CFG Logits processor is not available for {type(model)}."
     )
 
 

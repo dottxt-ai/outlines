@@ -1,10 +1,7 @@
-import pytest
+from outlines.caching import cache_disabled
+from outlines.fsm.guide import RegexGuide
 
-import outlines
-
-outlines.disable_cache()
-
-from outlines.fsm.guide import RegexGuide  # noqa: E402
+from .common import ensure_numba_compiled, setup_tokenizer
 
 regex_samples = {
     "email": r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?",
@@ -19,14 +16,27 @@ regex_samples = {
 }
 
 
-@pytest.mark.parametrize("regex_name", regex_samples.keys())
-def test_benchmark_regex_to_fsm(
-    benchmark, tokenizer, ensure_numba_compiled, regex_name
-):
-    """Benchmark converting regex to FSM"""
-    regex_str = regex_samples[regex_name]
-    benchmark.pedantic(
-        RegexGuide,
-        args=(regex_str, tokenizer),
-        rounds=8,
-    )
+class RegexGuideBenchmark:
+    params = regex_samples.keys()
+
+    def setup(self, pattern_name):
+        self.tokenizer = setup_tokenizer()
+        ensure_numba_compiled(self.tokenizer)
+        self.pattern = regex_samples[pattern_name]
+
+    @cache_disabled()
+    def time_regex_to_guide(self, pattern_name):
+        RegexGuide(self.pattern, self.tokenizer)
+
+
+class MemoryRegexGuideBenchmark:
+    params = ["simple_phone", "complex_span_constrained_relation_extraction"]
+
+    def setup(self, pattern_name):
+        self.tokenizer = setup_tokenizer()
+        ensure_numba_compiled(self.tokenizer)
+        self.pattern = regex_samples[pattern_name]
+
+    @cache_disabled()
+    def peakmem_regex_to_guide(self, pattern_name):
+        RegexGuide(self.pattern, self.tokenizer)

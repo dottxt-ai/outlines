@@ -9,7 +9,14 @@ from lark.lexer import UnexpectedCharacters, UnexpectedToken
 from outlines.fsm.parsing import PartialLark, PartialPythonIndenter
 
 
-def test_partial_parsing():
+@pytest.fixture
+def cleanup_lark_import():
+    yield
+    # Clean up lark.lark.LarkOptions._defaults
+    importlib.reload(lark.lark)
+
+
+def test_partial_parsing(cleanup_lark_import):
     lp = PartialLark.open_from_package(
         "tests",
         "partial_python.lark",
@@ -136,11 +143,8 @@ def test_partial_parsing():
     assert len(parser_state.state_stack) == 4
     assert parser_state.value_stack[-1].type == "LPAR"
 
-    # Clean up lark.lark.LarkOptions._defaults
-    importlib.reload(lark.lark)
 
-
-def test_sequential_parse_example():
+def test_sequential_parse_example(cleanup_lark_import):
     input_tokens = [
         "x ",
         "= ",
@@ -200,6 +204,3 @@ def test_sequential_parse_example():
 
         if i + 1 == len(input_tokens):
             assert all(tk in next_vocab for tk in ["\n", "\nde", "  ", " + 1"])
-
-    # Clean up lark.lark.LarkOptions._defaults
-    importlib.reload(lark.lark)

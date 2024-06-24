@@ -1,4 +1,5 @@
 import asyncio
+import contextlib
 import functools
 import os
 from typing import Callable, Optional
@@ -164,3 +165,15 @@ def clear_cache():
     """Erase the cache completely."""
     memory = get_cache()
     memory.clear()
+
+
+@contextlib.contextmanager
+def cache_disabled():
+    # outlines.caching._caching_enabled
+    global _caching_enabled
+    original_state = _caching_enabled
+    _caching_enabled = False
+    try:
+        yield
+    finally:
+        _caching_enabled = original_state

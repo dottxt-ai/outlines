@@ -45,6 +45,7 @@ Outlines 〰 has new releases and features coming every week. Make sure to ⭐ s
 ## Why should I use structured generation?
 
 * It doesn't add any overhead during inference (cost-free)
+* It allows Open Source models to beat closed source models ([Mistral](https://x.com/dottxtai/status/1797692104023363765), [GPT-4](https://x.com/dottxtai/status/1798443290913853770))
 * [It speeds up inference](http://blog.dottxt.co/coalescence.html)
 * [It improves the performance of base models (GSM8K)](http://blog.dottxt.co/performance-gsm8k.html)
 * [It improves the performance of finetuned models (CoNNL)](https://predibase.com/blog/lorax-outlines-better-json-extraction-with-structured-generation-and-lora)
@@ -65,6 +66,12 @@ is to ensure that there is a well-defined interface between their output and
 user-defined code. **Outlines** provides ways to control the generation of
 language models to make their output more predictable.
 
+Before using mistral models, request access on huggingface [here](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.2).
+``` python
+# login to access mistral model
+from huggingface_hub import login
+login()
+```
 ### Multiple choices
 
 You can reduce the completion to a choice between multiple possibilities:

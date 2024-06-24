@@ -5,3 +5,4 @@
 - [Dating Profile](dating_profiles.md): Build dating profiles from descriptions using prompt templating and JSON-structured generation.
 - [Chain Of Density](chain_of_density.md): Summarize documents using chain of density prompting and JSON-structured generation.
 - [Playing Chess](models_playing_chess.md): Make Mistral-7B play chess against itself using regex-structured generation.
+- [SimToM](simtom.md): Improve LLMs' Theory of Mind capabilities with perspective-taking prompting and JSON-structured generation.
