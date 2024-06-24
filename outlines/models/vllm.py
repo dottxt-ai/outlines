@@ -106,7 +106,10 @@ class VLLM:
             sampling_params.use_beam_search = True
 
         results = self.model.generate(
-            prompts, sampling_params=sampling_params, lora_request=self.lora_request, use_tqdm=use_tqdm,
+            prompts,
+            sampling_params=sampling_params,
+            lora_request=self.lora_request,
+            use_tqdm=use_tqdm,
         )
         results = [[sample.text for sample in batch.outputs] for batch in results]
 
