@@ -13,3 +13,5 @@ Publishing examples and articles about Outlines are a meaningful way to contrinu
 [gigax](https://github.com/GigaxGames/gigax) is an Open-Source library that allows to create real-time LLM-powered NPCs for video games.
 
 [Improving Prompt Consistency with Structured Generations](https://huggingface.co/blog/evaluation-structured-outputs) shows how structured generation can improve consistency of evaluation runs by reducing sensitivity to changes in prompt format.
+
+[AskNews](https://asknews.app) is a news curation service processing 300k news articles per day in a structured way, with Outlines.
