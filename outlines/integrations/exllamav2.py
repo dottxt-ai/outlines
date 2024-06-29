@@ -25,21 +25,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+import copy
 from collections import defaultdict
-from typing import DefaultDict, Iterable, Optional, Type, Union
+from typing import DefaultDict, Optional, Type, Union
 
 import torch
 from pydantic import BaseModel
-from exllamav2 import ExLlamaV2
-from transformers import Pipeline, PreTrainedTokenizerBase
+from transformers import PreTrainedTokenizerBase
 
-
-from outlines.fsm.guide import RegexGuide, StopAtEOSGuide, Guide
+from outlines.fsm.guide import Guide, RegexGuide, StopAtEOSGuide
 from outlines.fsm.json_schema import build_regex_from_schema
-from outlines.integrations.utils import adapt_tokenizer, convert_json_schema_to_str
 from outlines.generate.generator import is_generation_finished
+from outlines.integrations.utils import adapt_tokenizer, convert_json_schema_to_str
 
-import copy
 
 class FSMFilter:
     """Bias transformers generation based on a fsm.
@@ -49,13 +47,11 @@ class FSMFilter:
     fsm
         The finite state machine which is used to bias the logits.
     """
+
     token_sequence: list[int]
     seq_id: int
 
-    def __init__(
-        self,
-        fsm: Guide
-    ):
+    def __init__(self, fsm: Guide):
         """Compile the FSM that drives generation.
 
         Parameters
@@ -70,6 +66,7 @@ class FSMFilter:
     def begin(self, prefix_str: str = "") -> None:
         self._fsm_state = defaultdict(int)
         self.seq_id = hash(tuple([]))
+
     def feed(self, token: torch.Tensor) -> None:
         int_token = int(token[0][0].numpy())
 
@@ -82,10 +79,13 @@ class FSMFilter:
 
     def clone(self):
         return copy.deepcopy(self)
+
     def next(self) -> tuple[set[int], set[int]]:
         allowed_tokens = self.fsm.get_next_instruction(
             state=self._fsm_state[self.seq_id]
         ).tokens
+        if allowed_tokens is None:
+            allowed_tokens = []
         end_tokens = []
         for token in allowed_tokens:
             next_state = self.fsm.get_next_state(
@@ -95,6 +95,7 @@ class FSMFilter:
                 end_tokens.append(token)
         return set(allowed_tokens), set(end_tokens)
 
+
 class RegexFilter(FSMFilter):
     """Bias transformers generation based on a regular expression.
 
@@ -103,6 +104,7 @@ class RegexFilter(FSMFilter):
     fsm
         The finite state machine which is used to bias the logits.
     """
+
     def __init__(
         self,
         regex_string: str,
@@ -125,7 +127,8 @@ class RegexFilter(FSMFilter):
         fsm = RegexGuide(regex_string=regex_string, tokenizer=tokenizer)
         super().__init__(fsm)
 
-class TextFilter:
+
+class TextFilter(FSMFilter):
     """Bias transformers generation based on a stop at eos text expression.
 
     Attributes
@@ -133,6 +136,7 @@ class TextFilter:
     fsm
         The finite state machine which is used to bias the logits.
     """
+
     def __init__(
         self,
         tokenizer: PreTrainedTokenizerBase,
@@ -153,6 +157,7 @@ class TextFilter:
         tokenizer = adapt_tokenizer(tokenizer=tokenizer)
         fsm = StopAtEOSGuide(tokenizer=tokenizer)
         super().__init__(fsm)
+
 
 class JSONFilter(RegexFilter):
     """Bias exllamav2 generation based on a JSON schema.
@@ -186,6 +191,7 @@ class JSONFilter(RegexFilter):
         regex_string = build_regex_from_schema(schema_str, whitespace_pattern)
         super().__init__(regex_string=regex_string, tokenizer=tokenizer)
 
+
 class ChoiceFilter(RegexFilter):
     """Bias exllamav2 generation based on choices.
 
@@ -215,4 +221,3 @@ class ChoiceFilter(RegexFilter):
         """
         regex_string = r"(" + r"|".join(choices) + r")"
         super().__init__(regex_string=regex_string, tokenizer=tokenizer)
-
