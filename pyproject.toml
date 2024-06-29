@@ -64,6 +64,7 @@ test = [
     "torch",
     "transformers",
     "pillow",
+    "exllamav2",
 ]
 serve = [
     "vllm>=0.3.0",

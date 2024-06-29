@@ -1,12 +1,10 @@
 from functools import singledispatch
 
-from outlines.fsm.guide import StopAtEOSGuide
 from outlines.generate.api import (
-    SequenceGenerator,
     SequenceGeneratorAdapter,
     VisionSequenceGeneratorAdapter,
 )
-from outlines.models import ExLlamaV2Model, OpenAI, TransformersVision
+from outlines.models import OpenAI, TransformersVision
 from outlines.samplers import Sampler, multinomial
 
 
@@ -34,13 +32,6 @@ def text(model, sampler: Sampler = multinomial()) -> SequenceGeneratorAdapter:
 
     """
     return SequenceGeneratorAdapter(model, None, sampler)
-
-
-@text.register(ExLlamaV2Model)
-def text_exllamav2(model, sampler: Sampler = multinomial()) -> SequenceGenerator:
-    fsm = StopAtEOSGuide(model.tokenizer)
-    device = model.device
-    return SequenceGenerator(fsm, model, sampler, device)
 
 
 @text.register(TransformersVision)
