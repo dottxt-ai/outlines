@@ -1,4 +1,4 @@
-"""Make Hugging Face transformers compatible with Outlines' structured generation.
+"""Make ExllamaV2 compatible with Outlines' structured generation.
 
  _______________________________
 / Don't want to self-host?       \
