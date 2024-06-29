@@ -21,6 +21,15 @@ def model_llamacpp(tmp_path_factory):
 
 
 @pytest.fixture(scope="session")
+def model_exllamav2(tmp_path_factory):
+    return models.exl2(
+        model_path="blockblockblock/TinyLlama-1.1B-Chat-v1.0-bpw4-exl2",
+        cache_q4=True,
+        paged=False,
+    )
+
+
+@pytest.fixture(scope="session")
 def model_mlxlm(tmp_path_factory):
     return models.mlxlm("mlx-community/TinyLlama-1.1B-Chat-v1.0-4bit")
 
@@ -98,6 +107,7 @@ def model_t5(tmp_path_factory):
 
 ALL_MODEL_FIXTURES = (
     "model_llamacpp",
+    "model_exllamav2",
     "model_mlxlm",
     "model_mlxlm_phi3",
     "model_transformers_random",

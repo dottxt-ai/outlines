@@ -1,12 +1,10 @@
 from functools import singledispatch
 
-from outlines.fsm.guide import RegexGuide
 from outlines.generate.api import (
-    SequenceGenerator,
     SequenceGeneratorAdapter,
     VisionSequenceGeneratorAdapter,
 )
-from outlines.models import ExLlamaV2Model, OpenAI, TransformersVision
+from outlines.models import OpenAI, TransformersVision
 from outlines.samplers import Sampler, multinomial
 
 
@@ -47,20 +45,6 @@ def regex_vision(
 
     logits_processor = RegexLogitsProcessor(regex_str, tokenizer=model.tokenizer)
     return VisionSequenceGeneratorAdapter(model, logits_processor, sampler)
-
-
-@regex.register(ExLlamaV2Model)
-def regex_exllamav2(
-    model,
-    regex_str: str,
-    sampler: Sampler = multinomial(),
-) -> SequenceGenerator:
-    fsm = RegexGuide(regex_str, model.tokenizer)
-
-    device = model.device
-    generator = SequenceGenerator(fsm, model, sampler, device)
-
-    return generator
 
 
 @regex.register(OpenAI)

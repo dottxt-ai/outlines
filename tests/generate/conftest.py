@@ -27,9 +27,11 @@ def pytest_collection_modifyitems(config, items):
         for item in items:
             if "model_fixture" in item.fixturenames:
                 model_param = item.callspec.params.get("model_fixture", None)
-                if model_param.startswith(
-                    "model_transformers_vision"
-                ) or model_param.startswith("model_vllm"):
+                if (
+                    model_param.startswith("model_transformers_vision")
+                    or model_param.startswith("model_vllm")
+                    or model_param.startswith("model_exllamav2")
+                ):
                     item.add_marker(skip_marker)
 
     if not is_metal_available():
