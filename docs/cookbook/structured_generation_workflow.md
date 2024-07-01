@@ -26,7 +26,7 @@ messages_phone = [
             Please generate a realistic phone number for Washington State in the following format
 
             (555) 555-5555
-            
+
             """}
 ]
 
