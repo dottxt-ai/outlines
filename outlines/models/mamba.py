@@ -42,10 +42,8 @@ def mamba(
         import torch
         from mamba_ssm import MambaLMHeadModel
         from transformers import AutoTokenizer
-    except ImportError:
-        raise ImportError(
-            "The `mamba_ssm`, `torch` and `transformer` libraries needs to be installed in order to use Mamba people."
-        )
+    except ImportError as exc:
+        raise ImportError('The `mamba_ssm`, `torch` and `transformer` libraries needs to be installed in order to use Mamba people.') from exc
 
     if not torch.cuda.is_available():
         raise NotImplementedError("Mamba models can only run on GPU.")

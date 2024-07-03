@@ -104,10 +104,8 @@ def extract_function_from_file(content: str, function_name: str) -> Tuple[Callab
 
         try:
             fn = getattr(module, function_name)
-        except AttributeError:
-            raise AttributeError(
-                "Could not find an `outlines.Function` instance in the remote file. Make sure that the path you specified is correct."
-            )
+        except AttributeError as exc:
+            raise AttributeError("Could not find an `outlines.Function` instance in the remote file. Make sure that the path you specified is correct.") from exc
 
         if not isinstance(fn, module.outlines.Function):
             raise TypeError(

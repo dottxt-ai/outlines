@@ -420,11 +420,9 @@ class PartialParserState(ParserState):
             state = state_stack[-1]
             try:
                 action, arg = states[state][token.type]
-            except KeyError:
+            except KeyError as exc:
                 expected = {s for s in states[state].keys() if s.isupper()}
-                raise UnexpectedToken(
-                    token, expected, state=self, interactive_parser=None
-                )
+                raise UnexpectedToken(token, expected, state=self, interactive_parser=None) from exc
 
             assert arg != end_state
 

@@ -89,10 +89,8 @@ class ExLlamaV2Model:
         """
         try:
             from exllamav2 import ExLlamaV2Lora
-        except ImportError:
-            raise ImportError(
-                "The `exllamav2` library needs to be installed in order to use `exllamav2` models."
-            )
+        except ImportError as exc:
+            raise ImportError('The `exllamav2` library needs to be installed in order to use `exllamav2` models.') from exc
         if lora_path is None:
             if self.lora is not None:
                 print(" -- Unloading LoRA...")
@@ -167,10 +165,8 @@ def exl2(
             ExLlamaV2Config,
         )
         from transformers import AutoTokenizer
-    except ImportError:
-        raise ImportError(
-            "The `exllamav2`, `transformers` and `torch` libraries needs to be installed in order to use `exllamav2` models."
-        )
+    except ImportError as exc:
+        raise ImportError('The `exllamav2`, `transformers` and `torch` libraries needs to be installed in order to use `exllamav2` models.') from exc
 
     # Load tokenizer
     if not verbose:

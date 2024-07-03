@@ -230,10 +230,9 @@ def mlxlm(
     try:
         import mlx.core as mx
         import mlx_lm
-    except ImportError:
-        raise ImportError(
-            "The `mlx_lm` library needs to be installed in order to use `mlx_lm` models."
-        )
+    except ImportError as exc:
+        raise ImportError('The `mlx_lm` library needs to be installed in order to use `mlx_lm` models.') from exc
+
     if not mx.metal.is_available():
         raise RuntimeError("You cannot use `mlx_lm` without Apple Silicon (Metal)")
 

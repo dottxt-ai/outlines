@@ -409,7 +409,7 @@ def error_handler(api_call_fn: Callable) -> Callable:
             openai.NotFoundError,
             openai.UnprocessableEntityError,
         ) as e:
-            raise e
+            raise OSError(f"OpenAI API error: {e}")
 
     return call
 
@@ -428,10 +428,8 @@ def openai_model(
     try:
         import tiktoken
         from openai import AsyncOpenAI
-    except ImportError:
-        raise ImportError(
-            "The `openai` and `tiktoken` libraries needs to be installed in order to use Outlines' OpenAI integration."
-        )
+    except ImportError as exc:
+        raise ImportError("The `openai` and `tiktoken` libraries needs to be installed in order to use Outlines' OpenAI integration.") from exc
 
     if config is not None:
         config = replace(config, model=model_name)  # type: ignore
@@ -453,10 +451,8 @@ def azure_openai(
     try:
         import tiktoken
         from openai import AsyncAzureOpenAI
-    except ImportError:
-        raise ImportError(
-            "The `openai` and `tiktoken` libraries needs to be installed in order to use Outlines' Azure OpenAI integration."
-        )
+    except ImportError as exc:
+        raise ImportError("The `openai` and `tiktoken` libraries needs to be installed in order to use Outlines' Azure OpenAI integration.") from exc
 
     if config is not None:
         config = replace(config, model=deployment_name)  # type: ignore
