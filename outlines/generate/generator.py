@@ -72,10 +72,10 @@ def sequence_generator(
     while True:
         try:
             logits, kv_cache = model(token_ids, attention_masks, kv_cache)
-        except IndexError:  # Exceeding the context length
+        except IndexError as exc:  # Exceeding the context length
             raise ContextLengthExceededError(
                 "The input length exceeds the context length of the model."
-            )
+            ) from exc
 
         allowed_tokens = get_allowed_tokens(fsms, fsm_states)
         biased_logits = bias_logits(logits, allowed_tokens)

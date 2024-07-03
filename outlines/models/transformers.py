@@ -220,10 +220,8 @@ def transformers(
     """
     try:
         from transformers import AutoModelForCausalLM, AutoTokenizer
-    except ImportError:
-        raise ImportError(
-            "The `transformers` library needs to be installed in order to use `transformers` models."
-        )
+    except ImportError as exc:
+        raise ImportError('The `transformers` library needs to be installed in order to use `transformers` models.') from exc
 
     if device is not None:
         model_kwargs["device_map"] = device
