@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Dict, List, Optional, Tuple, Union
 
 from datasets.fingerprint import Hasher
 
@@ -76,6 +76,14 @@ class TransformerTokenizer(Tokenizer):
         self.vocabulary = self.tokenizer.get_vocab()
         self.is_llama = isinstance(self.tokenizer, get_llama_tokenizer_types())
 
+        # set to None if no system message
+        self.SYSTEM_MESSAGE = {
+            "role": "system",
+            "content": "You are a helpful assistant.",
+        }
+        self.USER_MESSAGE_TEMPLATE = lambda x: {"role": "user", "content": x}
+        self.ASSISTANT_MESSAGE_TEMPLATE = lambda x: {"role": "assistant", "content": x}
+
     def encode(
         self, prompt: Union[str, List[str]], **kwargs
     ) -> Tuple["torch.LongTensor", "torch.LongTensor"]:
@@ -99,6 +107,24 @@ class TransformerTokenizer(Tokenizer):
                 return " " + string
 
         return string
+
+    def get_messages(self, prompt: str) -> List[Dict[str, str]]:
+        """
+        Template for one-turn chat.
+        """
+        return (
+            [self.SYSTEM_MESSAGE.copy(), self.USER_MESSAGE_TEMPLATE(prompt)]
+            if self.SYSTEM_MESSAGE is not None
+            else [self.USER_MESSAGE_TEMPLATE(prompt)]
+        )
+
+    def apply_chat_template(self, prompt: str) -> str:
+        messages = self.get_messages(prompt)
+        return self.tokenizer.apply_chat_template(
+            messages,
+            tokenize=False,
+            add_generation_prompt=True,
+        )
 
     def __eq__(self, other):
         if isinstance(other, type(self)):

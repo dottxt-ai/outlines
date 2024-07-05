@@ -1,8 +1,10 @@
 import datetime
+import warnings
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Iterator, List, Optional, Union
 
 from outlines.generate.generator import sequence_generator
+from outlines.models.transformers import TransformerTokenizer
 from outlines.samplers import BeamSearchSampler, GreedySampler, MultinomialSampler
 
 if TYPE_CHECKING:
@@ -132,6 +134,7 @@ class SequenceGenerator:
         max_tokens: Optional[int] = None,
         stop_at: Optional[Union[str, List[str]]] = None,
         rng: Optional["torch.Generator"] = None,
+        apply_chat_template: bool = True,
     ) -> Union[FormattedOutput, List[FormattedOutput], List[List[FormattedOutput]]]:
         """Generate the full text sequence.
 
@@ -153,6 +156,9 @@ class SequenceGenerator:
         rng
             The random number generator. Defaults to a non-seeded `torch.Generator`
             instance.
+        apply_chat_template
+            Whether to apply the chat template to the prompts. Defaults to `True`.
+            Only applies to `TransformerTokenizer` for now.
 
         Returns
         -------
@@ -162,6 +168,20 @@ class SequenceGenerator:
 
         if isinstance(prompts, str):
             prompts = [prompts]
+
+        if apply_chat_template:
+            if not isinstance(self.tokenizer, TransformerTokenizer):
+                warnings.warn(
+                    "Chat template is only supported for `Transformer` models for now. The raw prompts will be used instead."
+                )
+            elif getattr(self.tokenizer.tokenizer, "chat_template", None) is None:
+                warnings.warn(
+                    "The model does not have chat template support. The raw prompts will be used instead. To turn this warning off, either explicitly set the `apply_chat_template` argument to 'False' or assign a value to `tokenizer.tokenizer.chat_template`."
+                )
+            else:
+                prompts = [
+                    self.tokenizer.apply_chat_template(prompt) for prompt in prompts
+                ]
 
         if isinstance(stop_at, str):
             stop_at = [stop_at]
