@@ -4,7 +4,6 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Iterator, List, Optional, Union
 
 from outlines.generate.generator import sequence_generator
-from outlines.models.transformers import TransformerTokenizer
 from outlines.samplers import BeamSearchSampler, GreedySampler, MultinomialSampler
 
 if TYPE_CHECKING:
@@ -571,6 +570,8 @@ class SequenceGeneratorAdapter:
 
 
 def apply_chat_template_util(model, prompts: Union[str, List[str]]) -> List[str]:
+    from outlines.models.transformers import TransformerTokenizer
+
     if isinstance(prompts, str):
         prompts = [prompts]
     if not isinstance(model.tokenizer, TransformerTokenizer):
@@ -578,7 +579,7 @@ def apply_chat_template_util(model, prompts: Union[str, List[str]]) -> List[str]
             "Chat template is only supported for `Transformer` models for now. The raw prompts will be used instead."
         )
         return prompts
-    tokenizer: TransformerTokenizer = model.tokenizer
+    tokenizer: "TransformerTokenizer" = model.tokenizer
     if getattr(tokenizer.tokenizer, "chat_template", None) is None:
         warnings.warn(
             "The model does not have chat template support. The raw prompts will be used instead. To turn this warning off, either explicitly set the `apply_chat_template` argument to 'False' or assign a value to `model.tokenizer.tokenizer.chat_template`."
