@@ -372,7 +372,7 @@ class SequenceGenerator:
                 previously_generated_sequences = generated_sequences
                 # We reshape the output to (batch_size, sample_size)
                 output: List[List[str]] = list()
-                for i in range(batch_size):
+                for i in range(0, batch_size * num_samples, num_samples):
                     output.append(next_tokens[i : i + num_samples])
 
                 # We remove leading dimensions for the output
