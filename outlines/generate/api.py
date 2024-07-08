@@ -231,8 +231,8 @@ class SequenceGenerator:
 
         # We reshape the output to (batch_size, sample_size)
         output: List[List[FormattedOutput]] = list()
-        for i in range(batch_size):
-            output.append(formatted[i : i + num_samples])
+        for i in range(0, batch_size * num_samples, num_samples):
+            output.append(formatted[i : i + num_samples]
 
         # We remove leading dimensions for the output
         if batch_size == 1 and num_samples == 1:
