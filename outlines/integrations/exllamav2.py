@@ -33,7 +33,7 @@ import torch
 from pydantic import BaseModel
 from transformers import PreTrainedTokenizerBase
 
-from outlines.fsm.guide import Guide, RegexGuide, StopAtEOSGuide
+from outlines.fsm.guide import Guide, RegexGuide
 from outlines.fsm.json_schema import build_regex_from_schema
 from outlines.generate.generator import is_generation_finished
 from outlines.integrations.utils import adapt_tokenizer, convert_json_schema_to_str
@@ -125,37 +125,6 @@ class RegexFilter(FSMFilter):
         assert isinstance(tokenizer, PreTrainedTokenizerBase)
         tokenizer = adapt_tokenizer(tokenizer=tokenizer)
         fsm = RegexGuide(regex_string=regex_string, tokenizer=tokenizer)
-        super().__init__(fsm)
-
-
-class TextFilter(FSMFilter):
-    """Bias transformers generation based on a stop at eos text expression.
-
-    Attributes
-    ----------
-    fsm
-        The finite state machine which is used to bias the logits.
-    """
-
-    def __init__(
-        self,
-        tokenizer: PreTrainedTokenizerBase,
-    ):
-        """Compile the FSM that drives text generation.
-
-        Parameters
-        ----------
-        tokenizer
-            The tokenizer of the model.
-
-        Raises
-        ------
-        ValueError
-            If the `tokenizer` parameter is not a tokenizer.
-        """
-        assert isinstance(tokenizer, PreTrainedTokenizerBase)
-        tokenizer = adapt_tokenizer(tokenizer=tokenizer)
-        fsm = StopAtEOSGuide(tokenizer=tokenizer)
         super().__init__(fsm)
 
 
