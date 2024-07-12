@@ -1,3 +1,4 @@
+import functools
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, List, Optional, Protocol, Tuple, Union
 
@@ -106,7 +107,7 @@ class StopAtEOSGuide(Guide):
         return self
 
 
-@cache()
+@functools.lru_cache(maxsize=128)
 def create_states_mapping(
     regex_string: str, tokenizer: "Tokenizer"
 ) -> Tuple[dict, set, set]:
