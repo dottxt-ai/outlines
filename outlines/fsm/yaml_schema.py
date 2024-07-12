@@ -220,7 +220,7 @@ def to_regex(
             for i, (name, value) in enumerate(properties.items()):
                 subregex = f"{whitespace_pattern}{re.escape(name)}:"
                 if value.get("type") == "object":
-                    subregex += r"( \{{\}}|\n"
+                    subregex += r"( \{\}|\n"
                 elif value.get("$ref") is not None:
                     # exception, we might refer to an object or something else
                     pass
@@ -319,9 +319,12 @@ def to_regex(
             elif isinstance(choice, type(None)) and choice is None:
                 choices.append(NULL)
             elif type(choice) in [int, float, str]:
-                choices.append(
-                    re.escape(yaml.dump(choice).strip().removesuffix("...").strip())
-                )
+                # HACK: `.removesuffix` not available in python3.8, so we have a more verbose solution
+                c = yaml.dump(choice).strip()
+                suffix = "..."
+                c = c[: -len(suffix)].strip() if c.endswith(suffix) else c
+                c = re.escape(c)
+                choices.append(c)
             else:
                 raise TypeError(f"Unsupported data type in enum: {type(choice)}")
         return f"({'|'.join(choices)})"
@@ -336,7 +339,12 @@ def to_regex(
         elif isinstance(const, type(None)):
             return NULL
         elif type(const) in [int, float, str]:
-            const = re.escape(yaml.dump(const).strip().removesuffix("...").strip())
+            # HACK: `.removesuffix` not available in python3.8, so we have a more verbose solution
+            c = yaml.dump(const).strip()
+            suffix = "..."
+            c = c[: -len(suffix)].strip() if c.endswith(suffix) else c
+            c = re.escape(c)
+            const = c
         else:
             raise TypeError(f"Unsupported data type in const: {type(const)}")
         return const
