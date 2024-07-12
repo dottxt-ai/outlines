@@ -9,9 +9,6 @@
   --md-code-fg-color: #FFFFFF;
   --md-text-font-family: "Inter";
   --md-code-font: "Source Code Pro Custom";
-  --md-default-fg-color--light: #D8DEE9;
-  --md-default-fg-color--lighter: #E5E9F0;
-  --md-default-fg-color--lightest: #ECEFF4;
 }
 
 .index-pre-code {
@@ -23,6 +20,19 @@
   text-align: left;
 }
 
+.md-clipboard::after {
+  color: #FFFFFF;
+  transition: color 0.3s ease-in-out;
+}
+
+.md-clipboard:hover::after {
+  color: #D8DEE9;
+}
+
+.md-source-file {
+  text-align: center;
+  padding: 24px 0;
+}
 
 .md-typeset pre>code {
   border-radius: .2rem;
