@@ -41,5 +41,5 @@ def format(model, python_type, sampler: Sampler = multinomial()) -> SequenceGene
 def format_openai(model, python_type, sampler: Sampler = multinomial()):
     raise NotImplementedError(
         "Cannot use Python type-structured generation with an OpenAI model"
-        + "due to the limitations of the OpenAI API."
+        + " due to the limitations of the OpenAI API."
     )
