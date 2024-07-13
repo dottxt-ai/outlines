@@ -126,26 +126,28 @@ def create_states_mapping(
     """Create the variables related to the mapping between states and tokens
     The parameters of the function are used for caching purpose.
 
-    Args:
-        regex_string: (`str`):
-            The regular expression string to generate a states mapping for.
-        tokenizer: (`Tokenizer`):
-            The model's tokenizer.
-        regex_parser: (`Callable[[str], interegular.Pattern]`, *optional*):
-            A function that parses a regex string into an `interegular` Pattern object.
-        frozen_tokens: (`List[str]`, *optional*):
-            A list of tokens that should be kept as-is when expanding the token-level
-            FSM into a byte-level FSM. Defaults to an empty list.
+    Parameters
+    ----------
+    regex_string: (`str`):
+        The regular expression string to generate a states mapping for.
+    tokenizer: (`Tokenizer`):
+        The model's tokenizer.
+    regex_parser: (`Callable[[str], interegular.Pattern]`, *optional*):
+        A function that parses a regex string into an `interegular` Pattern object.
+    frozen_tokens: (`List[str]`, *optional*):
+        A list of tokens that should be kept as-is when expanding the token-level FSM
+        into a byte-level FSM. Defaults to an empty list.
 
-    Returns:
-        states_to_token_maps: (`Dict[int, Dict[int, int]]`):
-            A mapping from states to a mapping from token ids originating from
-            that state to the next state to transition to.
-            (origin_state -> (token_id -> next_state))
-        empty_token_ids: (`Set[int]`):
-            A set of token ids that correspond to empty strings.
-        final_states: (`set`):
-            A set of final states in the FSM.
+    Returns
+    -------
+    states_to_token_maps: (`Dict[int, Dict[int, int]]`):
+        A mapping from states to a mapping from token ids originating from that state
+        to the next state to transition to given that token. The structure is as follows:
+        (origin_state -> (token_id -> next_state))
+    empty_token_ids: (`Set[int]`):
+        A set of token ids that correspond to empty strings.
+    final_states: (`set`):
+        A set of final states in the FSM.
     """
     regex_pattern = regex_parser(regex_string)
     byte_fsm = make_byte_level_fsm(
@@ -153,7 +155,7 @@ def create_states_mapping(
     )
     regex_fsm, _ = make_deterministic_fsm(byte_fsm)
     states_to_token_maps, empty_token_ids = create_fsm_index_tokenizer(
-        regex_fsm, tokenizer
+        regex_fsm, tokenizer, frozen_tokens=frozen_tokens
     )
 
     # We make sure that it is possible to generate strings in the language
