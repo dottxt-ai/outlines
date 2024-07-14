@@ -256,7 +256,7 @@ class RegexGuide(Guide):
         from_interegular_instance = cls.__new__(cls)
 
         def create_states_mapping_from_interegular_fsm(
-            fsm: interegular.fsm.FSM, tokenizer: "Tokenizer"
+            fsm: interegular.fsm.FSM,
         ) -> Tuple[dict, set]:
             """Create the variables related to the mapping between states and tokens
             The parameters of the function are used for caching purpose
@@ -283,7 +283,7 @@ class RegexGuide(Guide):
         (
             from_interegular_instance.states_to_token_maps,
             from_interegular_instance.empty_token_ids,
-        ) = create_states_mapping_from_interegular_fsm(interegular_fsm, tokenizer)
+        ) = create_states_mapping_from_interegular_fsm(interegular_fsm)
         from_interegular_instance.eos_token_id = tokenizer.eos_token_id
         return from_interegular_instance
 
