@@ -27,7 +27,7 @@ class LlamaCppTokenizer(Tokenizer):
         self.eos_token_id = model.token_eos()
         self.eos_token = model.tokenizer().decode([self.eos_token_id])
         self.pad_token_id = self.eos_token_id
-        self.special_tokens: Set[int] = set()
+        self.special_tokens: Set[str] = set()
 
         self.vocabulary: Dict[str, int] = dict()
 

@@ -600,6 +600,7 @@ def test_token_trans_keys_identical():
         regex_fsm.fsm_info.alphabet_symbol_mapping,
         regex_fsm.fsm_info.alphabet_anything_value,
         vocabulary,
+        numba.typed.List.empty_list(numba.types.unicode_type),
     )
 
     token_str_to_tranition_keys = {
@@ -637,6 +638,7 @@ def test_token_trans_keys_walk_fsm():
         regex_fsm.fsm_info.alphabet_symbol_mapping,
         regex_fsm.fsm_info.alphabet_anything_value,
         vocabulary,
+        numba.typed.List.empty_list(numba.types.unicode_type),
     )
 
     token_str_trans_key_seq = {

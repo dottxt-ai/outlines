@@ -9,7 +9,7 @@ class Tokenizer(Hashable, Protocol):
     eos_token_id: int
     pad_token_id: int
     vocabulary: Dict[str, int]
-    special_tokens: Set[int]
+    special_tokens: Set[str]
 
     def encode(
         self, prompt: Union[str, List[str]]
