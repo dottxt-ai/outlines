@@ -184,13 +184,7 @@ class RegexGuide(Guide):
         ) = create_states_mapping(regex_string, tokenizer)
         self.eos_token_id = tokenizer.eos_token_id
         self.final_states = fsm_finals | {-1}
-
-        # cache returned masks token masks
-        # this increases performance of the mask substantially
-        self.states_to_token_mask = {
-            state: torch.tensor(list(next_tokens_to_end_states.keys()))
-            for state, next_tokens_to_end_states in self.states_to_token_maps.items()
-        }
+        self._cache_state_to_token_tensor()
 
     def get_next_instruction(self, state: int) -> Instruction:
         """Return the next instruction for guided generation.
@@ -285,7 +279,18 @@ class RegexGuide(Guide):
             from_interegular_instance.empty_token_ids,
         ) = create_states_mapping_from_interegular_fsm(interegular_fsm)
         from_interegular_instance.eos_token_id = tokenizer.eos_token_id
+        from_interegular_instance._cache_state_to_token_tensor()
         return from_interegular_instance
+
+    def _cache_state_to_token_tensor(self):
+        """
+        cache state -> token int tensor
+        this increases performance of mask construction substantially
+        """
+        self.states_to_token_mask = {
+            state: torch.tensor(list(next_tokens_to_end_states.keys()))
+            for state, next_tokens_to_end_states in self.states_to_token_maps.items()
+        }
 
     def is_final_state(self, state: int) -> bool:
         """Determine whether the current state of the guide is a final state."""
