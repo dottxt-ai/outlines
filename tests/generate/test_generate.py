@@ -36,17 +36,53 @@ def model_transformers_opt125m(tmp_path_factory):
     return models.transformers("facebook/opt-125m", device="cpu")
 
 
+@pytest.fixture(scope="session")
+def model_mamba(tmp_path_factory):
+    return models.mamba(model_name="state-spaces/mamba-130m-hf", device="cpu")
+
+
+@pytest.fixture(scope="session")
+def model_bart(tmp_path_factory):
+    from transformers import AutoModelForSeq2SeqLM
+
+    return models.transformers(
+        "facebook/bart-base", device="cpu", model_class=AutoModelForSeq2SeqLM
+    )
+
+
+# TODO: exllamav2 failing in main, address in https://github.com/outlines-dev/outlines/issues/808
+# TODO: t5 tokenizer doesn't work with streaming
+"""
+@pytest.fixture(scope="session")
+def model_exllamav2(tmp_path_factory):
+    return models.exllamav2(
+        model_path="blockblockblock/TinyLlama-1.1B-Chat-v1.0-bpw4-exl2",
+        device="cpu"
+    )
+
+@pytest.fixture(scope="session")
+def model_t5(tmp_path_factory):
+    from transformers import AutoModelForSeq2SeqLM
+
+    return models.transformers(
+        "EleutherAI/pile-t5-base", device="cpu", model_class=AutoModelForSeq2SeqLM
+    )
+"""
+
+
 ALL_MODEL_FIXTURES = (
     "model_llamacpp",
     "model_mlxlm",
     "model_mlxlm_phi3",
     "model_transformers_random",
     "model_transformers_opt125m",
+    "model_mamba",
+    "model_bart",
 )
 
 
 NOT_IMPLEMENTED = {
-    "stream": ["model_vllm"],
+    "stream": [],
     "batch": ["model_llamacpp", "model_mlxlm", "model_mlxlm_phi3"],
     "beam_search": ["model_llamacpp", "model_mlxlm", "model_mlxlm_phi3"],
     "multiple_samples": ["model_llamacpp", "model_mlxlm", "model_mlxlm_phi3"],

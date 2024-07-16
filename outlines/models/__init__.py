@@ -9,10 +9,9 @@ from typing import Union
 
 from .exllamav2 import ExLlamaV2Model, exl2
 from .llamacpp import LlamaCpp, llamacpp
-from .mamba import Mamba, mamba
 from .mlxlm import MLXLM, mlxlm
 from .openai import OpenAI, azure_openai, openai
-from .transformers import Transformers, TransformerTokenizer, transformers
+from .transformers import Transformers, TransformerTokenizer, mamba, transformers
 from .vllm import VLLM, vllm
 
-LogitsGenerator = Union[Transformers, LlamaCpp, ExLlamaV2Model, Mamba, MLXLM, VLLM]
+LogitsGenerator = Union[Transformers, LlamaCpp, ExLlamaV2Model, MLXLM, VLLM]

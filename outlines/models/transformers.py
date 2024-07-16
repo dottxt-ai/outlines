@@ -1,4 +1,5 @@
 import dataclasses
+import inspect
 from typing import TYPE_CHECKING, Iterator, List, Optional, Tuple, Union
 
 from datasets.fingerprint import Hasher
@@ -226,10 +227,16 @@ class Transformers:
             input_ids, attention_mask = self.tokenizer.encode([prompts])
         else:
             input_ids, attention_mask = self.tokenizer.encode(prompts)
+
         inputs = {
             "input_ids": input_ids.to(self.model.device),
             "attention_mask": attention_mask.to(self.model.device),
         }
+        if (
+            "attention_mask"
+            not in inspect.signature(self.model.forward).parameters.keys()
+        ):
+            del inputs["attention_mask"]
 
         generation_kwargs = self._get_generation_kwargs(
             prompts,
@@ -267,6 +274,11 @@ class Transformers:
             "input_ids": input_ids.to(self.model.device),
             "attention_mask": attention_mask.to(self.model.device),
         }
+        if (
+            "attention_mask"
+            not in inspect.signature(self.model.forward).parameters.keys()
+        ):
+            del inputs["attention_mask"]
 
         generation_kwargs = self._get_generation_kwargs(
             prompts,
@@ -336,7 +348,7 @@ class Transformers:
     ):
         input_ids = inputs["input_ids"]
         output_ids = self.model.generate(
-            generation_config=generation_config, **inputs, **generation_kwargs
+            **inputs, generation_config=generation_config, **generation_kwargs
         )
 
         # encoder-decoder returns output_ids only, decoder-only returns full seq ids
@@ -376,6 +388,8 @@ def transformers(
     device: Optional[str] = None,
     model_kwargs: dict = {},
     tokenizer_kwargs: dict = {},
+    model_class=None,
+    tokenizer_class=None,
 ):
     """Instantiate a model from the `transformers` library and its tokenizer.
 
@@ -398,19 +412,47 @@ def transformers(
     A `TransformersModel` model instance.
 
     """
-    try:
-        from transformers import AutoModelForCausalLM, AutoTokenizer
-    except ImportError:
-        raise ImportError(
-            "The `transformers` library needs to be installed in order to use `transformers` models."
-        )
+    if model_class is None or tokenizer_class is None:
+        try:
+            from transformers import AutoModelForCausalLM, AutoTokenizer
+        except ImportError:
+            raise ImportError(
+                "The `transformers` library needs to be installed in order to use `transformers` models."
+            )
+    if model_class is None:
+        model_class = AutoModelForCausalLM
+    if tokenizer_class is None:
+        tokenizer_class = AutoTokenizer
 
     if device is not None:
         model_kwargs["device_map"] = device
 
-    model = AutoModelForCausalLM.from_pretrained(model_name, **model_kwargs)
+    model = model_class.from_pretrained(model_name, **model_kwargs)
 
     tokenizer_kwargs.setdefault("padding_side", "left")
-    tokenizer = AutoTokenizer.from_pretrained(model_name, **tokenizer_kwargs)
+    tokenizer = tokenizer_class.from_pretrained(model_name, **tokenizer_kwargs)
 
     return Transformers(model, tokenizer)
+
+
+def mamba(
+    model_name: str,
+    device: Optional[str] = None,
+    model_kwargs: dict = {},
+    tokenizer_kwargs: dict = {},
+):
+    try:
+        from transformers import MambaForCausalLM
+
+    except ImportError:
+        raise ImportError(
+            "The `mamba_ssm`, `torch` and `transformer` libraries needs to be installed in order to use Mamba."
+        )
+
+    return transformers(
+        model_name=model_name,
+        device=device,
+        model_kwargs=model_kwargs,
+        tokenizer_kwargs=tokenizer_kwargs,
+        model_class=MambaForCausalLM,
+    )
