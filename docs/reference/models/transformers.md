@@ -82,3 +82,70 @@ print(output)
 ```
 
 [transformers]: https://github.com/huggingface/transformers
+
+
+# Alternative Model Classes
+
+`outlines.models.transformers` defaults to `transformers.AutoModelForCausalLM`, which is the appropriate class for most standard large language models, including Llama 3, Mistral, Phi-3, etc.
+
+However other variants with unique behavior can be used as well by passing the appropriate class.
+
+### Mamba
+
+[Mamba](https://github.com/state-spaces/mamba) is a transformers alternative which employs memory efficient, linear-time decoding.
+
+To use Mamba with outlines you must first install the necessary requirements:
+```
+pip install causal-conv1d>=1.2.0 mamba-ssm torch transformers
+```
+
+Then you can either create an Mamba-2 Outlines model via
+```python
+import outlines
+
+model = outlines.models.mamba("state-spaces/mamba-2.8b-hf")
+```
+
+or explicitly with
+```python
+import outlines
+from transformers import MambaForCausalLM
+
+model = outlines.models.transformers(
+    "state-spaces/mamba-2.8b-hf",
+    model_class=MambaForCausalLM
+)
+```
+
+Further Reading:
+- https://huggingface.co/docs/transformers/en/model_doc/mamba
+
+### Encoder-Decoder Models
+
+You can use encoder-decoder (seq2seq) models like T5 and BART with Outlines.
+
+Be cautious with model selection though, some models such as `t5-base` don't include certain characters (`{`) and you may get an error when trying to perform structured generation.
+
+T5 Example:
+```python
+import outlines
+from transformers import AutoModelForSeq2SeqLM
+
+model_pile_t5 = models.transformers(
+    model_name="EleutherAI/pile-t5-large",
+    model_class=AutoModelForSeq2SeqLM,
+)
+```
+
+Bart Example:
+```python
+model_bart = models.transformers(
+    model_name="facebook/bart-large",
+    model_class=AutoModelForSeq2SeqLM,
+)
+```
+
+
+### Multi-Modal Models
+
+/Coming soon/
