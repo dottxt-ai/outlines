@@ -106,6 +106,7 @@ nav:
       - Summarize a document: cookbook/chain_of_density.md
       - Playing chess: cookbook/models_playing_chess.md
       - Perspective-taking prompting: cookbook/simtom.md
+      - Question-answering with citations: cookbook/qa-with-citations.md
       - Run on the cloud:
           - BentoML: cookbook/deploy-using-bentoml.md
           - Cerebrium: cookbook/deploy-using-cerebrium.md
