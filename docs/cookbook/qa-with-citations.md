@@ -148,42 +148,42 @@ We can do the same for a list of question-context pairs:
 ```python
 question1 = "Where was John born?"
 context1 = """
-John Doe is a software engineer who was born in New York, USA. 
-He studied Computer Science at the Massachusetts Institute of Technology. 
-During his studies, he interned at Google and Microsoft. 
+John Doe is a software engineer who was born in New York, USA.
+He studied Computer Science at the Massachusetts Institute of Technology.
+During his studies, he interned at Google and Microsoft.
 He also founded the Artificial Intelligence club at his university and served as its president for three years.
 """
 
 question2 = "What did Emily study in university?"
 context2 = """
-Emily Smith is a data scientist from London, England. 
-She attended the University of Cambridge where she studied Statistics and Machine Learning. 
-She interned at IBM and Amazon during her summer breaks. 
+Emily Smith is a data scientist from London, England.
+She attended the University of Cambridge where she studied Statistics and Machine Learning.
+She interned at IBM and Amazon during her summer breaks.
 Emily was also the head of the Women in Tech society at her university.
 """
 
 question3 = "Which companies did Robert intern at?"
 context3 = """
-Robert Johnson, originally from Sydney, Australia, is a renowned cybersecurity expert. 
-He studied Information Systems at the University of Melbourne. 
-Robert interned at several cybersecurity firms including NortonLifeLock and McAfee. 
+Robert Johnson, originally from Sydney, Australia, is a renowned cybersecurity expert.
+He studied Information Systems at the University of Melbourne.
+Robert interned at several cybersecurity firms including NortonLifeLock and McAfee.
 He was also the leader of the Cybersecurity club at his university.
 """
 
 question4 = "What club did Alice start at her university?"
 context4 = """
-Alice Williams, a native of Dublin, Ireland, is a successful web developer. 
-She studied Software Engineering at Trinity College Dublin. 
-Alice interned at several tech companies including Shopify and Squarespace. 
+Alice Williams, a native of Dublin, Ireland, is a successful web developer.
+She studied Software Engineering at Trinity College Dublin.
+Alice interned at several tech companies including Shopify and Squarespace.
 She started the Web Development club at her university and was its president for two years.
 """
 
 question5 = "What did Michael study in high school?"
 context5 = """
-Michael Brown is a game developer from Tokyo, Japan. 
-He attended a specialized high school where he studied Game Design. 
-He later attended the University of Tokyo where he studied Computer Science. 
-Michael interned at Sony and Nintendo during his university years. 
+Michael Brown is a game developer from Tokyo, Japan.
+He attended a specialized high school where he studied Game Design.
+He later attended the University of Tokyo where he studied Computer Science.
+Michael interned at Sony and Nintendo during his university years.
 He also started the Game Developers club at his university.
 """
 
@@ -205,23 +205,23 @@ for question, context in [
 # 'Where was John born?'
 # 'John Doe was born in New York, USA.'
 # ['John Doe is a software engineer who was born in New York, USA.']
-# 
-# 
+#
+#
 # 'What did Emily study in university?'
 # 'Emily studied Statistics and Machine Learning in university.'
 # ['She attended the University of Cambridge where she studied Statistics and Machine Learning.']
-# 
-# 
+#
+#
 # 'Which companies did Robert intern at?'
 # 'Robert interned at NortonLifeLock and McAfee.'
 # ['Robert Johnson, originally from Sydney, Australia, is a renowned cybersecurity expert. He interned at several cybersecurity firms including NortonLifeLock and McAfee.']
-# 
-# 
+#
+#
 # 'What club did Alice start at her university?'
 # 'Alice started the Web Development club at her university.'
 # ['Alice Williams, a native of Dublin, Ireland, is a successful web developer. She started the Web Development club at her university and was its president for two years.']
-# 
-# 
+#
+#
 # 'What did Michael study in high school?'
 # 'Michael studied Game Design in high school.'
 # ['Michael Brown is a game developer from Tokyo, Japan. He attended a specialized high school where he studied Game Design.']
