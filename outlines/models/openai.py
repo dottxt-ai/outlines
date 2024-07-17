@@ -1,6 +1,6 @@
 """Integration with OpenAI's API."""
-import warnings
 import functools
+import warnings
 from dataclasses import asdict, dataclass, field, replace
 from itertools import zip_longest
 from typing import Callable, Dict, List, Optional, Set, Tuple, Union
