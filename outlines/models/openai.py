@@ -444,7 +444,9 @@ def openai_model(
     try:
         tokenizer = tiktoken.encoding_for_model(model_name)
     except KeyError:
-        warnings.warn(f"Could not find a tokenizer for model {model_name}. Using default cl100k_base.")
+        warnings.warn(
+            f"Could not find a tokenizer for model {model_name}. Using default cl100k_base."
+        )
         tokenizer = tiktoken.get_encoding("cl100k_base")
 
     return OpenAI(client, config, tokenizer)
@@ -474,7 +476,9 @@ def azure_openai(
     try:
         tokenizer = tiktoken.encoding_for_model(model_name or deployment_name)
     except KeyError:
-        warnings.warn(f"Could not find a tokenizer for model {model_name or deployment_name}. Using default cl100k_base.")
+        warnings.warn(
+            f"Could not find a tokenizer for model {model_name or deployment_name}. Using default cl100k_base."
+        )
         tokenizer = tiktoken.get_encoding("cl100k_base")
 
     return OpenAI(client, config, tokenizer)
