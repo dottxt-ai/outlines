@@ -439,7 +439,11 @@ def openai_model(
         config = OpenAIConfig(model=model_name)
 
     client = AsyncOpenAI(**openai_client_params)
-    tokenizer = tiktoken.encoding_for_model(model_name)
+
+    try:
+        tokenizer = tiktoken.encoding_for_model(model_name)
+    except KeyError:
+        tokenizer = tiktoken.get_encoding("cl100k_base")
 
     return OpenAI(client, config, tokenizer)
 
@@ -464,6 +468,10 @@ def azure_openai(
         config = OpenAIConfig(model=deployment_name)
 
     client = AsyncAzureOpenAI(**azure_openai_client_params)
-    tokenizer = tiktoken.encoding_for_model(model_name or deployment_name)
+
+    try:
+        tokenizer = tiktoken.encoding_for_model(model_name or deployment_name)
+    except KeyError:
+        tokenizer = tiktoken.get_encoding("cl100k_base")
 
     return OpenAI(client, config, tokenizer)
