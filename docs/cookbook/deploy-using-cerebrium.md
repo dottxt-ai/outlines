@@ -24,6 +24,9 @@ cerebrium init outlines-project
 You set up your environment and hardware in the cerebrium.toml file that was created using the init function above.
 
 ```toml
+[cerebrium.deployment]
+docker_base_image_url = "nvidia/cuda:12.1.1-runtime-ubuntu22.04"
+
 [cerebrium.hardware]
 cpu = 2
 memory = 14.0
