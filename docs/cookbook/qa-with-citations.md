@@ -1,11 +1,17 @@
 # Generate Synthetic Data and Q&A with Citations
 
-This tutorial is adapted from the [instructor-ollama notebook](https://github.com/alonsosilvaallende/Hermes-Function-Calling/blob/main/examples/instructor_ollama.ipynb). We start with a simple example to generate synthetic data and then we approach the problem of question answering by providing citations. We will use [llama.cpp](https://github.com/ggerganov/llama.cpp) using the [llama-cpp-python](library).
+This tutorial is adapted from the [instructor-ollama notebook](https://github.com/alonsosilvaallende/Hermes-Function-Calling/blob/main/examples/instructor_ollama.ipynb). We start with a simple example to generate synthetic data and then we approach the problem of question answering by providing citations.
+
+We will use [llama.cpp](https://github.com/ggerganov/llama.cpp) using the [llama-cpp-python](https://github.com/abetlen/llama-cpp-python) library. Outlines supports llama-cpp-python, but we need to install it ourselves:
+
+```shell
+pip install llama-cpp-python
+```
 
 We pull a quantized GGUF model [Hermes-2-Pro-Llama-3-8B](https://huggingface.co/NousResearch/Hermes-2-Theta-Llama-3-8B-GGUF) by [NousResearch](https://nousresearch.com/) from [HuggingFace](https://huggingface.co/):
 
-```python
-!wget https://hf.co/NousResearch/Hermes-2-Pro-Llama-3-8B-GGUF/resolve/main/Hermes-2-Pro-Llama-3-8B-Q4_K_M.gguf
+```shell
+wget https://hf.co/NousResearch/Hermes-2-Pro-Llama-3-8B-GGUF/resolve/main/Hermes-2-Pro-Llama-3-8B-Q4_K_M.gguf
 ```
 
 We initialize the model:
@@ -16,15 +22,14 @@ from outlines import generate, models
 
 llm = Llama(
     "/path/to/model/Hermes-2-Pro-Llama-3-8B-Q4_K_M.gguf",
-    n_gpu_layers=-1,
     tokenizer=llama_cpp.llama_tokenizer.LlamaHFTokenizer.from_pretrained(
         "NousResearch/Hermes-2-Pro-Llama-3-8B"
     ),
+    n_gpu_layers=-1,
     flash_attn=True,
     n_ctx=8192,
     verbose=False
 )
-model = models.LlamaCpp(llm)
 ```
 
 ## Generate Synthetic Data
@@ -53,6 +58,7 @@ class Users(BaseModel):
 We can use a `generate.json` by passing this Pydantic class we just defined, and call the generator:
 
 ```python
+model = models.LlamaCpp(llm)
 generator = generate.json(model, Users)
 response = generator("Create 5 fake users", max_tokens=1024, temperature=0, seed=42)
 print(response.users)
@@ -140,7 +146,7 @@ generator = generate.json(model, QuestionAnswer)
 prompt = generate_hermes_prompt(question, context)
 response = generator(prompt, max_tokens=1024, temperature=0, seed=42)
 print(response)
-# QuestionAnswer(question='What did Jason Liu do during college?', answer='During college, Jason Liu studied Computational Mathematics and Physics. He also worked at companies such as Stitchfix and Facebook, and started the Data Science club at the University of Waterloo, serving as its president for two years.', citations=['I went to an arts high school but in university I studied Computational Mathematics and physics.', 'As part of coop I worked at many companies including Stitchfix, Facebook.', 'I also started the Data Science club at the University of Waterloo and I was the president of the club for 2 years.'])
+# QuestionAnswer(question='What did the author do during college?', answer='The author studied Computational Mathematics and physics in university and was also involved in starting the Data Science club, serving as its president for 2 years.', citations=['I went to an arts high school but in university I studied Computational Mathematics and physics.', 'I also started the Data Science club at the University of Waterloo and I was the president of the club for 2 years.'])
 ```
 
 We can do the same for a list of question-context pairs:
@@ -226,3 +232,5 @@ for question, context in [
 # 'Michael studied Game Design in high school.'
 # ['Michael Brown is a game developer from Tokyo, Japan. He attended a specialized high school where he studied Game Design.']
 ```
+
+This example was originally contributed by [Alonso Silva](https://github.com/alonsosilvaallende).
