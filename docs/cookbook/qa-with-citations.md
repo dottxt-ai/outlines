@@ -146,7 +146,7 @@ generator = generate.json(model, QuestionAnswer)
 prompt = generate_hermes_prompt(question, context)
 response = generator(prompt, max_tokens=1024, temperature=0, seed=42)
 print(response)
-QuestionAnswer(question='What did the author do during college?', answer='The author studied Computational Mathematics and physics in university and was also involved in starting the Data Science club, serving as its president for 2 years.', citations=['I went to an arts high school but in university I studied Computational Mathematics and physics.', 'I also started the Data Science club at the University of Waterloo and I was the president of the club for 2 years.'])
+# QuestionAnswer(question='What did the author do during college?', answer='The author studied Computational Mathematics and physics in university and was also involved in starting the Data Science club, serving as its president for 2 years.', citations=['I went to an arts high school but in university I studied Computational Mathematics and physics.', 'I also started the Data Science club at the University of Waterloo and I was the president of the club for 2 years.'])
 ```
 
 We can do the same for a list of question-context pairs:
