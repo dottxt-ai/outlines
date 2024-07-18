@@ -1,6 +1,6 @@
 # Generate Synthetic Data and Q&A with Citations
 
-This tutorial is adapted from the [instructor-ollama notebook](https://github.com/alonsosilvaallende/Hermes-Function-Calling/blob/main/examples/instructor_ollama.ipynb). We start with a simple example to generate synthetic data and then we approach the problem of question answering by providing citations. 
+This tutorial is adapted from the [instructor-ollama notebook](https://github.com/alonsosilvaallende/Hermes-Function-Calling/blob/main/examples/instructor_ollama.ipynb). We start with a simple example to generate synthetic data and then we approach the problem of question answering by providing citations.
 
 We will use [llama.cpp](https://github.com/ggerganov/llama.cpp) using the [llama-cpp-python](https://github.com/abetlen/llama-cpp-python) library. Outlines supports llama-cpp-python, but we need to install it ourselves:
 
