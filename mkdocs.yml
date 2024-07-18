@@ -107,6 +107,7 @@ nav:
       - Playing chess: cookbook/models_playing_chess.md
       - Perspective-taking prompting: cookbook/simtom.md
       - Question-answering with citations: cookbook/qa-with-citations.md
+      - Knowledge Graph Extraction: cookbook/knowledge_graph_extraction.md
       - Run on the cloud:
           - BentoML: cookbook/deploy-using-bentoml.md
           - Cerebrium: cookbook/deploy-using-cerebrium.md
