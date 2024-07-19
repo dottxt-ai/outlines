@@ -3,8 +3,12 @@ from functools import singledispatch
 import interegular
 
 from outlines.fsm.guide import RegexGuide
-from outlines.generate.api import SequenceGenerator, SequenceGeneratorAdapter
-from outlines.models import MLXLM, LlamaCpp, Transformers
+from outlines.generate.api import (
+    SequenceGenerator,
+    SequenceGeneratorAdapter,
+    VisionSequenceGeneratorAdapter,
+)
+from outlines.models import MLXLM, LlamaCpp, Transformers, TransformersVision
 from outlines.samplers import Sampler, multinomial
 
 
@@ -29,3 +33,12 @@ def fsm_unified(
     fsm = RegexGuide.from_interegular_fsm(fsm, model.tokenizer)
     logits_processor = FSMLogitsProcessor(tokenizer=model.tokenizer, fsm=fsm)
     return SequenceGeneratorAdapter(model, logits_processor, sampler)
+
+
+@fsm.register(TransformersVision)
+def fsm_vision(model, fsm: interegular.fsm.FSM, sampler: Sampler = multinomial()):
+    from outlines.processors import FSMLogitsProcessor
+
+    fsm = RegexGuide.from_interegular_fsm(fsm, model.tokenizer)
+    logits_processor = FSMLogitsProcessor(tokenizer=model.tokenizer, fsm=fsm)
+    return VisionSequenceGeneratorAdapter(model, logits_processor, sampler)
