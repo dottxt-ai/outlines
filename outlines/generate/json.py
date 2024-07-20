@@ -5,7 +5,7 @@ from typing import Callable, Optional, Union
 from pydantic import BaseModel
 
 from outlines.fsm.json_schema import build_regex_from_schema, get_schema_from_signature
-from outlines.generate.api import SequenceGenerator
+from outlines.generate.api import SequenceGeneratorAdapter
 from outlines.models import OpenAI
 from outlines.samplers import Sampler, multinomial
 
@@ -18,7 +18,7 @@ def json(
     schema_object: Union[str, object, Callable],
     sampler: Sampler = multinomial(),
     whitespace_pattern: Optional[str] = None,
-) -> SequenceGenerator:
+) -> SequenceGeneratorAdapter:
     """
     Generate structured JSON data with a `Transformer` model based on a specified JSON Schema.
 

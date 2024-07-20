@@ -6,14 +6,7 @@ from outlines.generate.api import (
     SequenceGeneratorAdapter,
     VisionSequenceGeneratorAdapter,
 )
-from outlines.models import (
-    MLXLM,
-    VLLM,
-    LlamaCpp,
-    OpenAI,
-    Transformers,
-    TransformersVision,
-)
+from outlines.models import ExLlamaV2Model, OpenAI, TransformersVision
 from outlines.samplers import Sampler, multinomial
 
 
@@ -34,26 +27,10 @@ def regex(model, regex_str: str, sampler: Sampler = multinomial()):
 
     Returns
     -------
-    A `SequenceGenerator` instance that generates text constrained by the
+    A `SequenceGeneratorAdapter` instance that generates text constrained by the
     regular expression.
 
     """
-    fsm = RegexGuide(regex_str, model.tokenizer)
-
-    device = model.device
-    generator = SequenceGenerator(fsm, model, sampler, device)
-
-    return generator
-
-
-@regex.register(MLXLM)
-@regex.register(Transformers)
-@regex.register(LlamaCpp)
-def regex_unified(
-    model,
-    regex_str: str,
-    sampler: Sampler = multinomial(),
-):
     from outlines.processors import RegexLogitsProcessor
 
     logits_processor = RegexLogitsProcessor(regex_str, tokenizer=model.tokenizer)
@@ -72,16 +49,18 @@ def regex_vision(
     return VisionSequenceGeneratorAdapter(model, logits_processor, sampler)
 
 
-@regex.register(VLLM)
-def regex_vllm(
-    model: VLLM,
+@regex.register(ExLlamaV2Model)
+def regex_exllamav2(
+    model,
     regex_str: str,
     sampler: Sampler = multinomial(),
-):
-    from outlines.integrations.vllm import RegexLogitsProcessor
+) -> SequenceGenerator:
+    fsm = RegexGuide(regex_str, model.tokenizer)
 
-    logits_processor = RegexLogitsProcessor(regex_str, model.model)
-    return SequenceGeneratorAdapter(model, logits_processor, sampler)
+    device = model.device
+    generator = SequenceGenerator(fsm, model, sampler, device)
+
+    return generator
 
 
 @regex.register(OpenAI)

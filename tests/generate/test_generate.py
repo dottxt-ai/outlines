@@ -61,8 +61,17 @@ def model_transformers_vision(tmp_path_factory):
     return models.transformers_vision(
         "llava-hf/llava-v1.6-mistral-7b-hf",
         device="cuda",
-        model_kwargs=dict(torch_dtype=torch.bfloat16),
+        model_kwargs=dict(
+            torch_dtype=torch.bfloat16,
+            load_in_4bit=True,
+            low_cpu_mem_usage=True,
+        ),
     )
+
+
+@pytest.fixture(scope="session")
+def model_vllm(tmp_path_factory):
+    return models.vllm("facebook/opt-125m", gpu_memory_utilization=0.1)
 
 
 # TODO: exllamav2 failing in main, address in https://github.com/outlines-dev/outlines/issues/808
@@ -93,7 +102,8 @@ ALL_MODEL_FIXTURES = (
     "model_transformers_opt125m",
     "model_mamba",
     "model_bart",
-    # "model_transformers_vision",  # tests pass, but awaiting a tiny model for CI
+    "model_transformers_vision",
+    "model_vllm",
 )
 
 
@@ -137,7 +147,7 @@ def enforce_not_implemented(model_fixture, *task_names):
     assert an NotImplementedError is raised. Otherwise, run normally
     """
     NOT_IMPLEMENTED = {
-        "stream": ["model_transformers_vision"],
+        "stream": ["model_transformers_vision", "model_vllm"],
         "batch": ["model_llamacpp", "model_mlxlm", "model_mlxlm_phi3"],
         "beam_search": ["model_llamacpp", "model_mlxlm", "model_mlxlm_phi3"],
         "multiple_samples": ["model_llamacpp", "model_mlxlm", "model_mlxlm_phi3"],
