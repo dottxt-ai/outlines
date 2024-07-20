@@ -73,7 +73,7 @@ schema = """{
 To make the inference work on Modal we need to wrap the corresponding function in a `@app.function` decorator. We pass to this decorator the image and GPU on which we want this function to run (here an A100 with 80GB memory):
 
 ```python
-@app.function(image=outlines_image, gpu=gpu.A100(memory=80))
+@app.function(image=outlines_image, gpu=gpu.A100(size='80GB'))
 def generate(
     prompt: str = "Amiri, a 53 year old warrior woman with a sword and leather armor.",
 ):
