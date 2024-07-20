@@ -6,19 +6,12 @@ from outlines.generate.api import (
     SequenceGeneratorAdapter,
     VisionSequenceGeneratorAdapter,
 )
-from outlines.models import (
-    MLXLM,
-    VLLM,
-    LlamaCpp,
-    OpenAI,
-    Transformers,
-    TransformersVision,
-)
+from outlines.models import ExLlamaV2Model, OpenAI, TransformersVision
 from outlines.samplers import Sampler, multinomial
 
 
 @singledispatch
-def text(model, sampler: Sampler = multinomial()) -> SequenceGenerator:
+def text(model, sampler: Sampler = multinomial()) -> SequenceGeneratorAdapter:
     """Generate text with a `Transformer` model.
 
     Note
@@ -37,31 +30,22 @@ def text(model, sampler: Sampler = multinomial()) -> SequenceGenerator:
 
     Returns
     -------
-    A `SequenceGenerator` instance that generates text.
+    A `SequenceGeneratorAdapter` instance that generates text.
 
     """
+    return SequenceGeneratorAdapter(model, None, sampler)
+
+
+@text.register(ExLlamaV2Model)
+def text_exllamav2(model, sampler: Sampler = multinomial()) -> SequenceGenerator:
     fsm = StopAtEOSGuide(model.tokenizer)
     device = model.device
-    generator = SequenceGenerator(fsm, model, sampler, device)
-
-    return generator
-
-
-@text.register(MLXLM)
-@text.register(Transformers)
-@text.register(LlamaCpp)
-def text_unified(model, sampler: Sampler = multinomial()):
-    return SequenceGeneratorAdapter(model, None, sampler)
+    return SequenceGenerator(fsm, model, sampler, device)
 
 
 @text.register(TransformersVision)
 def text_vision(model, sampler: Sampler = multinomial()):
     return VisionSequenceGeneratorAdapter(model, None, sampler)
-
-
-@text.register(VLLM)
-def text_vllm(model: VLLM, sampler: Sampler = multinomial()):
-    return SequenceGeneratorAdapter(model, None, sampler)
 
 
 @text.register(OpenAI)

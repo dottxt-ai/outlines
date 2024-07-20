@@ -61,9 +61,8 @@ class FSMLogitsProcessor(OutlinesLogitsProcessor):
             The finite state machine which is used to bias the logits.
         """
         self.tokenizer = tokenizer
-        self._fsm_states: Dict[int, int] = {}
+        self._fsm_states: Dict[int, int] = {hash(tuple([])): 0}
         self.fsm: Guide = fsm
-        self._is_first_token = True
         self._seq_start_idx: Optional[int] = None
 
     def process_logits(
@@ -83,25 +82,21 @@ class FSMLogitsProcessor(OutlinesLogitsProcessor):
         torch.Tensor
             The biased logits.
         """
-        sequence_states: List[int] = []  # vector of states corresponding to `input_ids`
-
-        if self._is_first_token:
-            self._is_first_token = False
+        if self._seq_start_idx is None:
             self._seq_start_idx = len(input_ids[0])
 
-            self._fsm_states = {hash(tuple([])): 0}
-            sequence_states = [0] * len(input_ids)
+        sequence_states: List[int] = []  # vector of states corresponding to `input_ids`
 
-        else:
-            for seq_ids in input_ids:
-                prev_state_key = hash(tuple(seq_ids[self._seq_start_idx : -1]))
-                prev_state = self._fsm_states[prev_state_key]
+        for seq_ids in input_ids:
+            gen_ids = seq_ids[self._seq_start_idx :]
+            curr_state_key = hash(tuple(gen_ids))
 
-                curr_state_key = hash(tuple(seq_ids[self._seq_start_idx :]))
-                curr_state = self.fsm.get_next_state(prev_state, seq_ids[-1])
-
+            if curr_state_key not in self._fsm_states:
+                prev_state = self._fsm_states[hash(tuple(gen_ids[:-1]))]
+                curr_state = self.fsm.get_next_state(prev_state, gen_ids[-1])
                 self._fsm_states[curr_state_key] = curr_state
-                sequence_states.append(curr_state)
+
+            sequence_states.append(self._fsm_states[curr_state_key])
 
         mask = torch.full_like(logits, -math.inf)
         for i, fsm_state in enumerate(sequence_states):
