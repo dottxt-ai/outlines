@@ -27,4 +27,4 @@ jobs:
       - name: Build documentation
         env:
           GOOGLE_ANALYTICS_KEY: ${{ secrets.GOOGLE_ANALYTICS_KEY }}
-	run: mike deploy --update-aliases --push --rebase ${{ steps.git.outputs.tag }} stable
+        run: mike deploy --update-aliases --push --rebase ${{ steps.git.outputs.tag }} stable
