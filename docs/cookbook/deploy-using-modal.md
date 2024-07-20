@@ -6,7 +6,7 @@ In this guide we will show you how you can use Modal to run programs written wit
 
 ## Build the image
 
-First we need to define our container image. We download the Mistral-7B-v0.1 model from HuggingFace as part of the definition of the image so it only needs to be done once.
+First we need to define our container image. We download the Mistral-7B-v0.1 model from HuggingFace as part of the definition of the image so it only needs to be done once (you need to provide an [access token](https://huggingface.co/settings/tokens))
 
 ```python
 from modal import Image, App, gpu
@@ -21,6 +21,8 @@ outlines_image = Image.debian_slim(python_version="3.11").pip_install(
 )
 
 def import_model():
+    import os
+    os.environ["HF_TOKEN"] = "YOUR_HUGGINGFACE_TOKEN"
     import outlines
     outlines.models.transformers("mistralai/Mistral-7B-Instruct-v0.2")
 
