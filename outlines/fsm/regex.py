@@ -199,11 +199,27 @@ def byte_symbol(byte: int) -> str:
     return f"\x00{byte:02X}" if byte >= 0x80 else chr(byte)
 
 
-def make_byte_level_fsm(fsm: FSM, keep_utf8=False) -> FSM:
+def make_byte_level_fsm(
+    fsm: FSM, keep_utf8: bool = False, frozen_tokens: List[str] = []
+) -> FSM:
     """Convert an FSM to a byte-level FSM, expanding multi-byte characters as
-    sequences of single-byte transitions. If keep_utf8 is set, the original
-    utf-8 characters are kept in the alphabet.
-    NOTE: we're representing bytes as strings to keep it type-compatible.
+    sequences of single-byte transitions.
+
+    Parameters
+    ----------
+    fsm: (`interegular.FSM`):
+        The token-level FSM to convert to a byte-level FSM.
+    keep_utf8: (`bool`, *optional*):
+        If set to True, the original utf-8 characters are kept as-is. Defaults to
+        False. NOTE: we're representing bytes as strings to keep it type-compatible.
+    frozen_tokens: (`List[str]`, *optional*):
+        A list of tokens that should be kept as-is in the byte-level FSM. That is,
+        these tokens will not be expanded into byte-level transitions. Defaults to
+        an empty list.
+
+    Returns
+    -------
+    `interegular.FSM`: A byte-level FSM.
     """
 
     anything_else_key = fsm.alphabet[anything_else]
@@ -218,8 +234,8 @@ def make_byte_level_fsm(fsm: FSM, keep_utf8=False) -> FSM:
     all_bytes: Set[int] = set()
     max_key = max(fsm.alphabet.values())
     for symbol, transition_key in fsm.alphabet.items():
-        assert symbol == anything_else or len(symbol) == 1
-        if symbol == anything_else or ord(symbol) < 0x80:
+        assert symbol == anything_else or symbol in frozen_tokens or len(symbol) == 1
+        if symbol == anything_else or symbol in frozen_tokens or ord(symbol) < 0x80:
             symbol_mapping[symbol] = transition_key
         else:
             if keep_utf8:
@@ -714,15 +730,40 @@ def get_vocabulary_transition_keys(
     alphabet_symbol_mapping: Dict[str, int],
     alphabet_anything_value: int,
     vocabulary: List[Tuple[str, Sequence[int]]],
+    frozen_tokens: List[str] = numba.typed.List.empty_list(numba.types.unicode_type),
 ) -> List[Sequence[int]]:
     """
     Calculate the sequence transition keys for each token str within a vocabulary
+
+    Parameters
+    ----------
+    alphabet_symbol_mapping: (`Dict[str, int]`):
+        A mapping from an alphabet symbol in a FSM to its corresponding transition key.
+    alphabet_anything_value: (`int`):
+        The transition key for the anything_else symbol in the FSM.
+    vocabulary: (`List[Tuple[str, Sequence[int]]]`):
+        A list of tuples, each containing a token and a list of equivalent token ids.
+    frozen_tokens: (`List[str]`, *optional*):
+        A list of tokens that are kept as-is when transforming the FSM.
+        Defaults to an empty list.
+
+    Returns
+    -------
+    `List[Sequence[int]]`:
+        A list of token transition keys for each token in the vocabulary.
     """
     vocab_transition_keys = numba.typed.List.empty_list(numba.int64[:])
     for token_str, _ in vocabulary:
-        token_transition_keys = get_token_transition_keys(
-            alphabet_symbol_mapping, alphabet_anything_value, token_str
-        )
+        # Since these tokens are not expanded into byte-level transitions, we can
+        # simply get their transition keys directly.
+        if token_str in frozen_tokens:
+            token_transition_keys = np.array(
+                [alphabet_symbol_mapping[token_str]], dtype=np.int64
+            )
+        else:
+            token_transition_keys = get_token_transition_keys(
+                alphabet_symbol_mapping, alphabet_anything_value, token_str
+            )
         vocab_transition_keys.append(token_transition_keys)
 
     return vocab_transition_keys
@@ -731,8 +772,26 @@ def get_vocabulary_transition_keys(
 def create_fsm_index_end_to_end(
     fsm_info: FSMInfo,
     vocabulary: List[Tuple[str, Sequence[int]]],
+    frozen_tokens: List[str] = [],
 ) -> Dict[int, Set[Tuple[int, int]]]:
-    """Create an FSM state-to-vocabulary map/index through end-to-end token parsing."""
+    """Create an FSM state-to-vocabulary map/index through end-to-end token parsing.
+
+    Parameters
+    ----------
+    fsm_info: (`interegular.FSMInfo`):
+        The FSM information object containing the FSM's alphabet, transitions, initial
+        and final states, and other relevant information.
+    vocabulary: (`List[Tuple[str, Sequence[int]]]`):
+        A list of tuples, each containing a token and a list of equivalent token ids.
+    frozen_tokens: (`List[str]`, *optional*):
+        A list of tokens that are kept as-is when transforming the FSM.
+
+    Returns
+    -------
+    `Dict[int, Set[Tuple[int, int]]]`:
+        A mapping from FSM states to sets of tuples containing token ids and the end
+        states of the FSM after parsing the token.
+    """
 
     # TODO: Consider using a `List` of `Set`s instead; that way we can JIT this
     # code, too.
@@ -750,6 +809,11 @@ def create_fsm_index_end_to_end(
         fsm_info.alphabet_symbol_mapping,
         fsm_info.alphabet_anything_value,
         vocabulary,
+        frozen_tokens=(
+            numba.typed.List(frozen_tokens)
+            if len(frozen_tokens) > 0
+            else numba.typed.List.empty_list(numba.types.unicode_type)
+        ),
     )
 
     while next_states:
@@ -883,21 +947,41 @@ def reduced_vocabulary(
 
 
 def create_fsm_index_tokenizer(
-    fsm: BetterFSM,
-    tokenizer: "Tokenizer",
+    fsm: BetterFSM, tokenizer: "Tokenizer", frozen_tokens: List[str] = []
 ) -> Tuple[Dict[int, Dict[int, int]], Set[int]]:
     """Construct an FMS index from a tokenizer.
 
     This uses the end-to-end approach of `create_fsm_index_end_to_end`.
 
+    Parameters
+    ----------
+    fsm: (`BetterFSM`):
+        A cache-friendly FSM. Other interegular FSMs can also be used, but caching
+        may not work as expected.
+    tokenizer: (`Tokenizer`):
+        The model's tokenizer.
+    frozen_tokens: (`List[str]`, *optional*):
+        A list of tokens that should be kept as-is when expanding the token-level
+        FSM into a byte-level FSM. Defaults to an empty list.
+
+    Returns
+    -------
+    states_to_token_maps: (`Dict[int, Dict[int, int]]`):
+        A mapping from states to a mapping from token ids originating from that state
+        to the next state to transition to given that token. The structure is as follows:
+        (origin_state -> (token_id -> next_state))
+    empty_token_ids: (`Set[int]`):
+        A set of token ids that correspond to empty strings.
+
     .. warning::
 
         `fsm` needs to be deterministically ordered so that future caching makes sense.
-
     """
     vocabulary, empty_token_ids = reduced_vocabulary(tokenizer)
 
-    states_to_token_subsets = create_fsm_index_end_to_end(fsm.fsm_info, vocabulary)
+    states_to_token_subsets = create_fsm_index_end_to_end(
+        fsm.fsm_info, vocabulary, frozen_tokens
+    )
 
     # Allow transitions to EOS from all terminals FSM states that are
     # reachable

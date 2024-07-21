@@ -37,7 +37,7 @@ First time here? Go to our [setup guide](https://outlines-dev.github.io/outlines
 - [x] 💾 Caching of generations
 - [x] 🗂️ Batch inference
 - [x] 🎲 Sample with the greedy, multinomial and beam search algorithms (and more to come!)
-- [x] 🚀 [Serve with vLLM](https://outlines-dev.github.io/outlines/reference/vllm), with official Docker image, [`outlinesdev/outlines`](https://hub.docker.com/r/outlinesdev/outlines)!
+- [x] 🚀 [Serve with vLLM](https://outlines-dev.github.io/outlines/reference/serve/vllm), with official Docker image, [`outlinesdev/outlines`](https://hub.docker.com/r/outlinesdev/outlines)!
 
 
 Outlines 〰 has new releases and features coming every week. Make sure to ⭐ star and 👀 watch this repository, follow [@dottxtai][dottxt-twitter] to stay up to date!
@@ -191,10 +191,9 @@ model = outlines.models.transformers("mistralai/Mistral-7B-Instruct-v0.2")
 generator = outlines.generate.json(model, Character)
 
 # Draw a sample
-rng = torch.Generator(device="cuda")
-rng.manual_seed(789001)
+seed = 789001
 
-character = generator("Give me a character description", rng=rng)
+character = generator("Give me a character description", seed=seed)
 
 print(repr(character))
 # Character(name='Anderson', age=28, armor=<Armor.chainmail: 'chainmail'>, weapon=<Weapon.sword: 'sword'>, strength=8)

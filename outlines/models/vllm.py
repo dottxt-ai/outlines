@@ -2,6 +2,7 @@ import dataclasses
 from typing import TYPE_CHECKING, List, Optional, Union
 
 from outlines.generate.api import GenerationParameters, SamplingParameters
+from outlines.integrations.utils import adapt_tokenizer
 
 if TYPE_CHECKING:
     from vllm import LLM
@@ -21,6 +22,23 @@ class VLLM:
     def __init__(self, model: "LLM"):
         self.model = model
         self.lora_request = None
+
+        self.tokenizer = self._get_tokenizer()
+
+    def _get_tokenizer(self):
+        if hasattr(self.model, "get_tokenizer"):
+            tokenizer = self.model.get_tokenizer()
+        elif hasattr(self.model, "tokenizer"):
+            if hasattr(self.model.tokenizer, "tokenizer"):
+                tokenizer = self.model.tokenizer.tokenizer
+            else:
+                tokenizer = self.model.tokenizer
+        else:
+            raise ValueError(
+                "The provided LLM instance neither has a "
+                "`tokenizer` attribute or a `get_tokenizer` method."
+            )
+        return adapt_tokenizer(tokenizer=tokenizer)
 
     def generate(
         self,
@@ -100,6 +118,10 @@ class VLLM:
             sampling_params.top_p = top_p
         if top_k is not None and sampling_params.top_k == -1:
             sampling_params.top_k = top_k
+            # TODO: remove this if statement once fixed
+            # https://github.com/vllm-project/vllm/issues/5404#issuecomment-2175972897
+            if top_k == 1:
+                sampling_params.repetition_penalty = 0
         if temperature is not None and sampling_params.temperature == 1.0:
             sampling_params.temperature = temperature
         if sampler == "beam_search":
