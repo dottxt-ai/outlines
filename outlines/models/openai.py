@@ -3,6 +3,7 @@ import functools
 import warnings
 from dataclasses import asdict, dataclass, field, replace
 from itertools import zip_longest
+from textwrap import dedent
 from typing import Callable, Dict, List, Optional, Set, Tuple, Union
 
 import numpy as np
@@ -250,9 +251,36 @@ class OpenAI:
 
         return choice
 
-    def generate_json(self):
+    def generate_json(
+        self,
+        prompt: str,
+        schema: str,
+        max_tokens: Optional[int] = None,
+    ) -> str:
         """Call the OpenAI API to generate a JSON object."""
-        raise NotImplementedError
+        # raise NotImplementedError
+        # We need to massage the prompt a bit in order to get the response we want in a json format
+        config = replace(
+            self.config, max_tokens=max_tokens, response_format={"type": "json_object"}
+        )
+
+        system_prompt = dedent(
+            f"""
+            As a genius expert, your task is to understand the content and provide
+            the parsed objects in json that match the following json_schema:\n
+
+            {schema}
+
+            Make sure to return an instance of the JSON, not the schema itself
+            """
+        )
+
+        response, prompt_tokens, completion_tokens = generate_chat(
+            prompt, system_prompt, self.client, config
+        )
+        self.prompt_tokens += prompt_tokens
+        self.completion_tokens += completion_tokens
+        return "".join(response)
 
     def __str__(self):
         return self.__class__.__name__ + " API"
@@ -309,7 +337,6 @@ async def generate_chat(
         [responses["choices"][i]["message"]["content"] for i in range(config.n)]
     )
     usage = responses["usage"]
-
     return results, usage["prompt_tokens"], usage["completion_tokens"]
 
 
