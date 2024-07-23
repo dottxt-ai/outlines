@@ -24,12 +24,18 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 import math
-from typing import TYPE_CHECKING, Dict, List, Optional, Type, Union
+from typing import TYPE_CHECKING, Dict, List, Optional, Type, TypeGuard, Union
 
 import torch
 from pydantic import BaseModel
 
-from outlines.fsm.guide import CFGGuide, Guide, RegexGuide, StopAtEOSGuide
+from outlines.fsm.guide import (
+    CFGGuide,
+    Guide,
+    RegexGuide,
+    StopAtEOSGuide,
+    TokenHealerMixin,
+)
 from outlines.fsm.json_schema import build_regex_from_schema
 from outlines.integrations.utils import convert_json_schema_to_str
 
@@ -61,8 +67,10 @@ class FSMLogitsProcessor(OutlinesLogitsProcessor):
             The finite state machine which is used to bias the logits.
         """
         self.tokenizer = tokenizer
-        self._fsm_states: Dict[int, int] = {hash(tuple([])): 0}
+        self._fsm_states: List[Dict[int, int]] = []
         self.fsm: Guide = fsm
+        self._seq_fsms: List[Guide] = []
+        self._is_first_token = True
         self._seq_start_idx: Optional[int] = None
 
     def process_logits(
@@ -82,28 +90,78 @@ class FSMLogitsProcessor(OutlinesLogitsProcessor):
         torch.Tensor
             The biased logits.
         """
-        if self._seq_start_idx is None:
-            self._seq_start_idx = len(input_ids[0])
-
+        samples = int(len(input_ids) / len(self._seq_fsms))
         sequence_states: List[int] = []  # vector of states corresponding to `input_ids`
 
-        for seq_ids in input_ids:
-            gen_ids = seq_ids[self._seq_start_idx :]
-            curr_state_key = hash(tuple(gen_ids))
+        if self._is_first_token:
+            self._is_first_token = False
+            self._seq_start_idx = len(input_ids[0])
 
-            if curr_state_key not in self._fsm_states:
-                prev_state = self._fsm_states[hash(tuple(gen_ids[:-1]))]
-                curr_state = self.fsm.get_next_state(prev_state, gen_ids[-1])
-                self._fsm_states[curr_state_key] = curr_state
+            self._fsm_states = [
+                {hash(tuple([])): 0} for _ in range(len(self._seq_fsms))
+            ]
+            sequence_states = [0] * len(input_ids)
 
-            sequence_states.append(self._fsm_states[curr_state_key])
+        else:
+            for i, seq_ids in enumerate(input_ids):
+                try:
+                    prev_state_key = hash(tuple(seq_ids[self._seq_start_idx : -1]))
+                    prev_state = self._fsm_states[i // samples][prev_state_key]
+
+                    curr_state_key = hash(tuple(seq_ids[self._seq_start_idx :]))
+                    curr_state = self._seq_fsms[i // samples].get_next_state(
+                        prev_state, seq_ids[-1]
+                    )
+
+                    self._fsm_states[i // samples][curr_state_key] = curr_state
+                    sequence_states.append(curr_state)
+
+                # This exception happens after the sequence generation is finished with bean search
+                except KeyError:
+                    sequence_states.append(self._seq_fsms[i // samples].final_state)
 
         mask = torch.full_like(logits, -math.inf)
         for i, fsm_state in enumerate(sequence_states):
-            allowed_tokens = self.fsm.get_next_instruction(fsm_state).tokens
+            allowed_tokens = (
+                self._seq_fsms[i // samples].get_next_instruction(fsm_state).tokens
+            )
             mask[i, allowed_tokens] = logits[i, allowed_tokens]
 
         return mask
+
+    def setup_processor(
+        self, prompts: Union[str, List[str]], token_healing_enabled: bool
+    ) -> Union[str, List[str]]:
+        """Prepare the processor to process logits for a specific set of prompts. Create a distinct
+        fsm for each prompt. If selected and available, apply prompt alignment to each fsm.
+
+        Parameters
+        ----------
+        prompts
+            The text prompts previded by the user
+
+        Returns
+        -------
+        The initial prompts after application of prompt alignment if selected and available,
+        the initial prompts unchanged otherwise.
+        """
+        is_input_str = isinstance(prompts, str)
+        if isinstance(prompts, str):
+            prompts = [prompts]
+
+        self._seq_fsms = [self.fsm.copy() for _ in range(len(prompts))]
+
+        if isinstance(self.fsm, TokenHealerMixin) and token_healing_enabled:
+            aligned_prompts = [
+                fsm.align_prompt_tokens(prompt)  # type: ignore
+                for fsm, prompt in zip(self._seq_fsms, prompts)
+            ]
+        else:
+            aligned_prompts = prompts
+
+        if is_input_str:
+            return aligned_prompts[0]
+        return aligned_prompts
 
     def copy(self) -> "FSMLogitsProcessor":
         """Return a copy of the logits processor."""
@@ -112,6 +170,7 @@ class FSMLogitsProcessor(OutlinesLogitsProcessor):
 
 class TextLogitsProcessor(FSMLogitsProcessor):
     """Bias generation for free text (required because of prompt alignment).
+
     Attributes
     ----------
     tokenizer
@@ -122,6 +181,7 @@ class TextLogitsProcessor(FSMLogitsProcessor):
 
     def __init__(self, tokenizer: "Tokenizer"):
         """Compile the FSM that drives the regex-guided generation.
+
         Parameters
         ----------
         tokenizer
