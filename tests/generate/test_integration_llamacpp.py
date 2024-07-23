@@ -352,7 +352,7 @@ def test_tokenizer_vocabulary_decode_sanity():
     )
     tokenizer = generate.regex(model, "a").logits_processor.tokenizer
 
-    decoded_nl_token = tokenizer.decode([198])[0]
+    decoded_nl_token = tokenizer.decode([[198]])[0]
     vocab_nl_token = tokenizer.convert_token_to_string(
         [token for token, token_id in tokenizer.vocabulary.items() if token_id == 198][
             0

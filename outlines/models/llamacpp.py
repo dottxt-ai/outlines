@@ -13,6 +13,7 @@ from typing import (
     Union,
 )
 
+import torch
 from typing_extensions import Unpack
 
 from outlines.generate.api import GenerationParameters, SamplingParameters
@@ -52,13 +53,18 @@ class LlamaCppTokenizer(Tokenizer):
 
         self._hash = None
 
-    def decode(self, token_ids: List[int]) -> List[str]:
+    def decode(self, token_ids: List[List[int]]) -> List[str]:
+        if len(token_ids) > 1:
+            raise NotImplementedError(
+                "llama-cpp-python tokenizer doesn't support batch tokenization"
+            )
+        token_ids = token_ids[0]
         decoded_bytes = self.tokenizer.detokenize(token_ids)
         return [decoded_bytes.decode("utf-8", errors="ignore")]
 
     def encode(
         self, prompt: Union[str, List[str]], add_bos: bool = True, special: bool = True
-    ) -> Tuple[List[int], List[int]]:
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
         if isinstance(prompt, list):
             raise NotImplementedError(
                 "llama-cpp-python tokenizer doesn't support batch tokenization"
@@ -70,7 +76,9 @@ class LlamaCppTokenizer(Tokenizer):
         attention_mask = [
             1 if token_id != self.pad_token_id else 0 for token_id in token_ids
         ]
-        return token_ids, attention_mask
+        return torch.tensor([token_ids], dtype=torch.int64), torch.tensor(
+            [attention_mask], dtype=torch.int64
+        )
 
     def convert_token_to_string(self, token: str) -> str:
         if self._hf_tokenizer is not None:
