@@ -131,6 +131,7 @@ nav:
             - Type constraints: reference/generation/format.md
             - JSON (function calling): reference/generation/json.md
             - Grammar: reference/generation/cfg.md
+            - Creating Grammars: reference/generation/creating_grammars.md
             - Custom FSM operations: reference/generation/custom_fsm_ops.md
     - Utilities:
         - Serve with vLLM: reference/serve/vllm.md
