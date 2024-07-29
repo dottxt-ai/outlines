@@ -52,14 +52,6 @@ class LlamaCppTokenizer(Tokenizer):
 
         self._hash = None
 
-        # set to None if no system message
-        self.SYSTEM_MESSAGE = {
-            "role": "system",
-            "content": "You are a helpful assistant.",
-        }
-        self.USER_MESSAGE_TEMPLATE = lambda x: {"role": "user", "content": x}
-        self.ASSISTANT_MESSAGE_TEMPLATE = lambda x: {"role": "assistant", "content": x}
-
     def decode(self, token_ids: List[int]) -> List[str]:
         decoded_bytes = self.tokenizer.detokenize(token_ids)
         return [decoded_bytes.decode("utf-8", errors="ignore")]
@@ -91,28 +83,11 @@ class LlamaCppTokenizer(Tokenizer):
         else:
             return token
 
-    def format_prompt_into_conversation(self, prompt: str) -> List[Dict[str, str]]:
-        """
-        Template for one-turn chat.
-        """
-        return (
-            [self.SYSTEM_MESSAGE.copy(), self.USER_MESSAGE_TEMPLATE(prompt)]
-            if self.SYSTEM_MESSAGE is not None
-            else [self.USER_MESSAGE_TEMPLATE(prompt)]
-        )
-
     def apply_chat_template(
         self,
         prompt_or_conversation: Union[str, List[Dict[str, str]]],
     ) -> str:
-        if isinstance(prompt_or_conversation, str):
-            prompt_or_conversation = self.format_prompt_into_conversation(
-                prompt_or_conversation
-            )
-
-        return self.tokenizer.apply_chat_template(
-            prompt_or_conversation, tokenize=False, add_generation_prompt=True
-        )
+        raise NotImplementedError("Chat templates are not yet supported by llama-cpp")
 
     def __eq__(self, other):
         if not isinstance(other, LlamaCppTokenizer):
