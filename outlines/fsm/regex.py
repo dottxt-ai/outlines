@@ -887,23 +887,11 @@ def gpt2_unicode_to_bytes():
     return {v: k for k, v in gpt2_bytes_to_unicode().items()}
 
 
-# TODO: Cannot cache typed collections to disk, yet.  See
-# https://github.com/numba/numba/issues/4698
-@lru_cache
-def reduced_vocabulary(
-    tokenizer: "Tokenizer",
-) -> Tuple[List[Tuple[str, Sequence[int]]], Set[int]]:
-    """Create a map from decoded vocabulary tokens to lists of equivalent token ids."""
+def get_normalized_vocab(tokenizer: "Tokenizer") -> Tuple[Dict[int, str], Set[int]]:
+    norm_vocab = {}
     empty_token_ids = set()
-    vocabulary: Dict[Union[str, Tuple[str, ...]], List[int]] = {}
     for token, token_idx in tokenizer.vocabulary.items():
-        if token in tokenizer.special_tokens:
-            continue
-
-        token_str: Union[str, Tuple[str, ...]] = tokenizer.convert_token_to_string(
-            token
-        )
-
+        token_str = tokenizer.convert_token_to_string(token)
         if token_str:
             # invalid utf-8 sequences are replaced with � (\ufffd), but there
             # might also be tokens specifically for �, ��, ���, etc.
@@ -927,22 +915,88 @@ def reduced_vocabulary(
                         )
                 token_str = "".join(byte_symbol(b) for b in token_bytes)
 
-            vocabulary.setdefault(token_str, []).append(token_idx)
+            norm_vocab[token_idx] = token_str
         else:
             empty_token_ids.add(numba.int64(token_idx))
 
-    vocabulary_nb = numba.typed.List.empty_list(
-        numba.types.Tuple(
-            (
-                nb_unicode_type,
-                numba.int64[:],
-            )
-        )
-    )
-    for token_str, token_ids in vocabulary.items():
-        token_ids_np = np.fromiter(token_ids, dtype=np.dtype("int64"))
-        vocabulary_nb.append((token_str, token_ids_np))
+    return norm_vocab, empty_token_ids
 
+
+@numba.njit(cache=True, nogil=True)
+def to_numba_dict(keys: List[int], values: List[str]):
+    """
+    Pure-python numba dict construction is extremely slow.
+    This helper accepts equal length key and value arrays, and constructs a numba dict
+    """
+    # Define the key and value types for the Numba dictionary
+    numba_dict = numba.typed.Dict.empty(
+        key_type=numba.types.int64,
+        value_type=numba.types.unicode_type,
+    )
+
+    # Fill the Numba dictionary with values from the input lists
+    for i in range(len(keys)):
+        numba_dict[keys[i]] = values[i]
+
+    return numba_dict
+
+
+token_id_str_pair = numba.types.Tuple((nb_unicode_type, numba.int64[:]))
+
+
+@numba.njit(
+    numba.types.ListType(token_id_str_pair)(
+        numba.types.DictType(numba.int64, nb_unicode_type)
+    ),
+    cache=True,
+    nogil=True,
+)
+def vocab_dict_to_inverted_vocab_list(
+    vocab_dict_nb: Dict[int, str]
+) -> List[Tuple[str, Sequence[int]]]:
+    """
+    Helper for `reduced_vocabulary`
+
+    Convert
+    - from `vocab_dict_nb`: Dict[token_id, token_str]
+    - to `vocab_nb`: List[token_str, token_id[:]]
+    """
+    inverse_vocab_dict = numba.typed.Dict.empty(
+        key_type=numba.types.unicode_type, value_type=numba.types.int64[:]
+    )
+
+    # Fill the temporary dictionary
+    for key in vocab_dict_nb:
+        value = vocab_dict_nb[key]
+        if value not in inverse_vocab_dict:
+            inverse_vocab_dict[value] = np.zeros(0, dtype=np.int64)
+        inverse_vocab_dict[value] = np.append(inverse_vocab_dict[value], key)
+
+    # Transfer data from the temporary dictionary to the final dictionary
+    vocab_nb = numba.typed.List.empty_list(token_id_str_pair)
+
+    for value in inverse_vocab_dict:
+        vocab_nb.append((value, inverse_vocab_dict[value]))
+
+    return vocab_nb
+
+
+# TODO: Cannot cache typed collections to disk, yet.  See
+# https://github.com/numba/numba/issues/4698
+@lru_cache
+def reduced_vocabulary(
+    tokenizer: "Tokenizer",
+) -> Tuple[List[Tuple[str, Sequence[int]]], Set[int]]:
+    """
+    Provided the tokenizer, calculate the
+    - vocabulary_nb: mapping of (normalized token str -> token_ids[:])
+    - empty token ids
+    """
+    norm_vocab, empty_token_ids = get_normalized_vocab(tokenizer)
+    norm_vocab_dict_nb = to_numba_dict(
+        np.fromiter(norm_vocab.keys(), dtype=np.int64), list(norm_vocab.values())
+    )
+    vocabulary_nb = vocab_dict_to_inverted_vocab_list(norm_vocab_dict_nb)
     return vocabulary_nb, empty_token_ids
 
 
