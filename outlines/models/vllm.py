@@ -4,8 +4,6 @@ from typing import TYPE_CHECKING, List, Optional, Union
 from outlines.generate.api import GenerationParameters, SamplingParameters
 from outlines.integrations.utils import adapt_tokenizer
 
-from .transformers import TransformerTokenizer
-
 if TYPE_CHECKING:
     from vllm import LLM
     from vllm.sampling_params import SamplingParams
@@ -23,7 +21,6 @@ class VLLM:
 
     def __init__(self, model: "LLM"):
         self.model = model
-        self.tokenizer = TransformerTokenizer(self.model.get_tokenizer())
         self.lora_request = None
 
         self.tokenizer = self._get_tokenizer()
