@@ -153,8 +153,8 @@ def disable_cache():
 
     `outlines.cache.disable` should be called right after importing outlines:
 
-    >>> import outlines.cache as cache
-    >>> cache.disable()
+    >>> import outlines.caching as cache
+    >>> cache.disable_cache()
 
     """
     global _caching_enabled

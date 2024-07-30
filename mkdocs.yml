@@ -106,6 +106,8 @@ nav:
       - Summarize a document: cookbook/chain_of_density.md
       - Playing chess: cookbook/models_playing_chess.md
       - Perspective-taking prompting: cookbook/simtom.md
+      - Question-answering with citations: cookbook/qa-with-citations.md
+      - Knowledge Graph Extraction: cookbook/knowledge_graph_extraction.md
       - Run on the cloud:
           - BentoML: cookbook/deploy-using-bentoml.md
           - Cerebrium: cookbook/deploy-using-cerebrium.md
@@ -136,7 +138,7 @@ nav:
           - TGI: reference/models/tgi.md
           - ExllamaV2: reference/models/exllamav2.md
           - MLX: reference/models/mlxlm.md
-          - Mamba: reference/models/mamba.md
+          - Mamba: reference/models/transformers.md
         - API:
             - OpenAI: reference/models/openai.md
   - API Reference:

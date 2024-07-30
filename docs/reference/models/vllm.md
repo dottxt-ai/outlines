@@ -80,7 +80,7 @@ model = models.vllm("https://huggingface.co/squeeze-ai-lab/sq-llama-30b-w4-s5", 
 
 !!! Warning "Dependencies"
 
-    To use AWQ model you need to install the auto-awq library `pip install auto-awq`.
+    To use AWQ model you need to install the autoawq library `pip install autoawq`.
 
     To use GPTQ models you need to install the autoGTPQ and optimum libraries `pip install auto-gptq optimum`.
 

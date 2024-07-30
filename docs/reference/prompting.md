@@ -260,7 +260,8 @@ pretty print a dictionary from within an Outlines prompt function
     def my_prompt(response_model):
         """{{ response_model | schema }}"""
 
-    my_prompt(MyResponse)
+    prompt = my_prompt(MyResponse)
+    print(prompt)
     # {
     #   "field1": "an int",
     #   "field2": "<field2>"
