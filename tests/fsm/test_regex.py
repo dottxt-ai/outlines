@@ -18,6 +18,7 @@ from outlines.fsm.regex import (
     reduced_vocabulary,
     walk_fsm,
 )
+from outlines.fsm.vocab_trie import VocabTrie
 from outlines.integrations.utils import adapt_tokenizer
 from outlines.models.transformers import TransformerTokenizer
 
@@ -717,3 +718,51 @@ def test_reduced_vocabulary_with_rare_tokens(rare_token):
     tokenizer = adapt_tokenizer(tokenizer=tokenizer)
     tokenizer.vocabulary[rare_token] = max(tokenizer.vocabulary.values()) + 1
     reduced_vocabulary(tokenizer)
+
+
+def test_vocab_trie_ordering():
+    class MockTokenizer:
+        vocabulary = {"<eos>": 0, "a": 1, "abc": 2, "def": 3, "abcd": 4, "abce": 5}
+        special_tokens = {"<eos>"}
+        eos_token = "<eos>"
+        eos_token_id = 4
+
+        def convert_token_to_string(self, token):
+            return token
+
+    tokenizer = MockTokenizer()
+
+    pattern = r"abc[de]fghi"
+    regex_pattern = interegular.parse_pattern(pattern)
+    interegular_fsm = regex_pattern.to_fsm().reduce()
+    regex_fsm, _ = make_deterministic_fsm(interegular_fsm)
+    vocabulary, _ = reduced_vocabulary(tokenizer)
+    token_trans_keys = get_vocabulary_transition_keys(
+        regex_fsm.fsm_info.alphabet_symbol_mapping,
+        regex_fsm.fsm_info.alphabet_anything_value,
+        vocabulary,
+        numba.typed.List.empty_list(numba.types.unicode_type),
+    )
+
+    vocab_trie = VocabTrie(token_trans_keys, vocabulary)
+
+    def get_children(parent_id=None):
+        trans_key = token_trans_keys[parent_id] if parent_id is not None else None
+        res = [
+            set(vocab_trie.get_token_ids(child))
+            for child in vocab_trie.get_children(trans_key)
+        ]
+        if not res:
+            return set()
+        return set.union(*res)
+
+    # initial children - tokens with no predecessor tokens: ["eos", "a", "def"]
+    assert get_children() == {0, 1, 3}
+    # children of "a" (1) are ["abc"]
+    assert get_children(1) == {2}
+    # children of "abc" (2) are ["abcd", "abce"]
+    assert get_children(2) == {4, 5}
+    # no children for these
+    assert not get_children(3)
+    assert not get_children(4)
+    assert not get_children(5)

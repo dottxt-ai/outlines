@@ -28,6 +28,8 @@ from interegular.fsm import (
 from numba.typed.typedobjectutils import _nonoptional
 from tqdm import tqdm
 
+from outlines.fsm.vocab_trie import VocabTrie
+
 if TYPE_CHECKING:
     from outlines.models.tokenizer import Tokenizer
 
@@ -664,29 +666,38 @@ def state_scan_tokens(
     alphabet_anything_value: int,
     fsm_initial: int,
     fsm_finals: Set[int],
-    vocabulary: List[Tuple[str, Sequence[int]]],
-    vocabulary_transition_keys: List[Sequence[int]],
+    vocabulary: List[Tuple[Sequence[str], Sequence[int]]],
+    vocab_trie: VocabTrie,
     start_state: int,
 ) -> Set[Tuple[int, int]]:
     res = set()
 
-    for (token, token_ids), token_transition_keys in zip(
-        vocabulary, vocabulary_transition_keys
-    ):
+    # Initialize the stack with tokens having no prefixes
+    stack = numba.typed.List()
+    for token_transitions_seq in vocab_trie.get_children():
+        stack.append(token_transitions_seq)
+
+    # Process the tokens using the stack
+    while stack:
+        token_transitions_seq = stack.pop()
         state_seq = _walk_fsm(
             fsm_transitions,
             fsm_initial,
             fsm_finals,
-            token_transition_keys,
+            token_transitions_seq,
             start_state,
             False,
         )
 
-        if state_seq is not None and len(state_seq) < len(token_transition_keys):
+        if len(state_seq) < len(token_transitions_seq):
             continue
 
-        for token_id in token_ids:
+        for token_id in vocab_trie.get_token_ids(token_transitions_seq):
             res.add((token_id, state_seq[-1]))
+
+        # Add successors to the stack
+        for new_token in vocab_trie.get_children(token_transitions_seq):
+            stack.append(new_token)
 
     return res
 
@@ -805,7 +816,7 @@ def create_fsm_index_end_to_end(
         desc="Compiling FSM index for all state transitions",
     )
 
-    vocabulary_transition_keys = get_vocabulary_transition_keys(
+    vocabulary_transitions = get_vocabulary_transition_keys(
         fsm_info.alphabet_symbol_mapping,
         fsm_info.alphabet_anything_value,
         vocabulary,
@@ -815,9 +826,15 @@ def create_fsm_index_end_to_end(
             else numba.typed.List.empty_list(numba.types.unicode_type)
         ),
     )
+    vocab_trie = VocabTrie(vocabulary_transitions, vocabulary)
 
     while next_states:
         start_state = next_states.pop()
+
+        pbar.update(1)
+
+        if start_state not in seen:
+            seen.add(start_state)
 
         token_ids_end_states = state_scan_tokens(
             fsm_info.transitions,
@@ -826,7 +843,7 @@ def create_fsm_index_end_to_end(
             fsm_info.initial,
             fsm_info.finals,
             vocabulary,
-            vocabulary_transition_keys,
+            vocab_trie,
             start_state,
         )
 
@@ -837,10 +854,6 @@ def create_fsm_index_end_to_end(
             end_state = token_id_and_end_state[1]
             if end_state not in seen:
                 next_states.add(end_state)
-
-        if start_state not in seen:
-            pbar.update(1)
-            seen.add(start_state)
 
     pbar.close()
 
