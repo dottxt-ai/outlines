@@ -1,5 +1,6 @@
 """Integration with OpenAI's API."""
 import functools
+import warnings
 from dataclasses import asdict, dataclass, field, replace
 from itertools import zip_longest
 from typing import Callable, Dict, List, Optional, Set, Tuple, Union
@@ -439,7 +440,14 @@ def openai_model(
         config = OpenAIConfig(model=model_name)
 
     client = AsyncOpenAI(**openai_client_params)
-    tokenizer = tiktoken.encoding_for_model(model_name)
+
+    try:
+        tokenizer = tiktoken.encoding_for_model(model_name)
+    except KeyError:
+        warnings.warn(
+            f"Could not find a tokenizer for model {model_name}. Using default cl100k_base."
+        )
+        tokenizer = tiktoken.get_encoding("cl100k_base")
 
     return OpenAI(client, config, tokenizer)
 
@@ -464,6 +472,13 @@ def azure_openai(
         config = OpenAIConfig(model=deployment_name)
 
     client = AsyncAzureOpenAI(**azure_openai_client_params)
-    tokenizer = tiktoken.encoding_for_model(model_name or deployment_name)
+
+    try:
+        tokenizer = tiktoken.encoding_for_model(model_name or deployment_name)
+    except KeyError:
+        warnings.warn(
+            f"Could not find a tokenizer for model {model_name or deployment_name}. Using default cl100k_base."
+        )
+        tokenizer = tiktoken.get_encoding("cl100k_base")
 
     return OpenAI(client, config, tokenizer)

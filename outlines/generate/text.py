@@ -1,13 +1,17 @@
 from functools import singledispatch
 
 from outlines.fsm.guide import StopAtEOSGuide
-from outlines.generate.api import SequenceGenerator, SequenceGeneratorAdapter
-from outlines.models import MLXLM, VLLM, LlamaCpp, OpenAI
+from outlines.generate.api import (
+    SequenceGenerator,
+    SequenceGeneratorAdapter,
+    VisionSequenceGeneratorAdapter,
+)
+from outlines.models import ExLlamaV2Model, OpenAI, TransformersVision
 from outlines.samplers import Sampler, multinomial
 
 
 @singledispatch
-def text(model, sampler: Sampler = multinomial()) -> SequenceGenerator:
+def text(model, sampler: Sampler = multinomial()) -> SequenceGeneratorAdapter:
     """Generate text with a `Transformer` model.
 
     Note
@@ -26,29 +30,22 @@ def text(model, sampler: Sampler = multinomial()) -> SequenceGenerator:
 
     Returns
     -------
-    A `SequenceGenerator` instance that generates text.
+    A `SequenceGeneratorAdapter` instance that generates text.
 
     """
+    return SequenceGeneratorAdapter(model, None, sampler)
+
+
+@text.register(ExLlamaV2Model)
+def text_exllamav2(model, sampler: Sampler = multinomial()) -> SequenceGenerator:
     fsm = StopAtEOSGuide(model.tokenizer)
     device = model.device
-    generator = SequenceGenerator(fsm, model, sampler, device)
-
-    return generator
+    return SequenceGenerator(fsm, model, sampler, device)
 
 
-@text.register(MLXLM)
-def text_mlxlm(model: MLXLM, sampler: Sampler = multinomial()):
-    return SequenceGeneratorAdapter(model, None, sampler)
-
-
-@text.register(VLLM)
-def text_vllm(model: VLLM, sampler: Sampler = multinomial()):
-    return SequenceGeneratorAdapter(model, None, sampler)
-
-
-@text.register(LlamaCpp)
-def text_llamacpp(model: LlamaCpp, sampler: Sampler = multinomial()):
-    return SequenceGeneratorAdapter(model, None, sampler)
+@text.register(TransformersVision)
+def text_vision(model, sampler: Sampler = multinomial()):
+    return VisionSequenceGeneratorAdapter(model, None, sampler)
 
 
 @text.register(OpenAI)

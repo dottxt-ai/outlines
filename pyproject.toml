@@ -62,6 +62,7 @@ test = [
     "vllm; sys_platform != 'darwin'",
     "torch",
     "transformers",
+    "pillow",
 ]
 serve = [
     "vllm>=0.3.0",
