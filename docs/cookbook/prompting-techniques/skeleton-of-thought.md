@@ -7,12 +7,9 @@ title: Skeleton-of-Thought
 
 Skeleton-of-Thought is a prompting technique that breaks down complex reasoning tasks into a high-level outline or "skeleton" of key steps, before filling in the details. It involves first generating a basic structure or framework for approaching the problem, then expanding on each step to arrive at a full solution. This technique helps guide the language model's reasoning process in a more structured and organized way, especially for multi-step problems.
     
-Read more about this prompting technique [here](https://arxiv.org/abs/2406.06608).
+Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
 
 ## Code Example
-
-
-
 
 
 ```python

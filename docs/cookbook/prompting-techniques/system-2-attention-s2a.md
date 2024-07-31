@@ -7,7 +7,7 @@ title: System 2 Attention (S2A)
 
 System 2 Attention (S2A) is a two-step prompting technique that aims to improve the accuracy and focus of language model responses. In the first step, the model is asked to rewrite the original prompt, removing any information unrelated to the core question or task. This filtered prompt is then used in the second step to generate the final response. The goal is to help the model focus on the most relevant information by explicitly separating the process of understanding the prompt from generating the answer.
     
-Read more about this prompting technique [here](https://arxiv.org/abs/2406.06608).
+Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
 
 ## A worked example
 

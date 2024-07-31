@@ -7,7 +7,7 @@ title: Decomposed Prompting (DECOMP)
 
 Decomposed Prompting (DECOMP) is a technique that breaks down complex problems into simpler sub-problems using predefined functions. It works by first few-shot prompting a language model to demonstrate how to use specific functions (e.g., string splitting, internet searching). Then, given a complex problem, the model decomposes it into sub-problems and uses the appropriate functions to solve each part. This approach allows the model to tackle complex tasks by leveraging specialized functions and breaking down the problem into manageable pieces.
 
-Read more about this prompting technique [here](https://arxiv.org/abs/2406.06608). 
+Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608). 
 
 ## A worked example
 

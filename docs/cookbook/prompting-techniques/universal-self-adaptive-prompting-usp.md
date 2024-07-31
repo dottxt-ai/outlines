@@ -16,7 +16,7 @@ USP works by:
 Unlike COSP, USP does not rely on Self-Consistency for final output generation, making it more efficient for larger language models.
     
 
-Read more about this prompting technique [here](https://arxiv.org/abs/2406.06608).
+Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
 
 ## A worked example
 

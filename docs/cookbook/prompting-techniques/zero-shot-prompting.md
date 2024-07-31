@@ -7,7 +7,7 @@ title: Zero-Shot Prompting
 
 Zero-Shot Prompting is a technique where you provide instructions to a language model without giving it any examples to learn from. The model is expected to complete the task based solely on the instructions and its pre-existing knowledge. This approach relies on the model's ability to understand and execute instructions without specific training examples.
     
-Read more about this prompting technique [here](https://arxiv.org/abs/2406.06608).
+Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
 
 ## A worked example
 

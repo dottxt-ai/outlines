@@ -7,7 +7,7 @@ title: Self-Ask
 
 Self-Ask is a prompting technique that encourages the language model to break down complex questions into simpler sub-questions, answer those sub-questions, and then use that information to answer the original question. This technique involves prompting the model to first determine if it needs to ask follow-up questions, generate those questions if needed, answer them, and finally answer the original question based on the accumulated information.
     
-Read more about this prompting technique [here](https://arxiv.org/abs/2406.06608).
+Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
 
 ## A worked example
 

@@ -14,7 +14,7 @@ DP2O is an advanced prompt engineering technique that uses reinforcement learnin
 5. Updating the prompt using policy gradient reinforcement learning
 6. Iterating this process to optimize the prompt
     
-Read more about this prompting technique [here](https://arxiv.org/abs/2406.06608).
+Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
 
 ## A worked example
 

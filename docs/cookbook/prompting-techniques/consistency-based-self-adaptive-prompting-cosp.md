@@ -7,7 +7,7 @@ title: Consistency-based Self-adaptive Prompting (COSP)
 
 COSP is an advanced prompting technique that automatically constructs few-shot Chain-of-Thought (CoT) prompts by leveraging zero-shot CoT and self-consistency. It works by first applying zero-shot CoT with self-consistency on a set of example problems to generate multiple reasoning paths. It then selects a subset of these examples with high agreement among the generated paths to use as exemplars in the final few-shot CoT prompt. This final prompt is then used with self-consistency again to produce the ultimate output.
     
-Read more about this prompting technique [here](https://arxiv.org/abs/2406.06608).
+Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
 ## A worked example
 
 

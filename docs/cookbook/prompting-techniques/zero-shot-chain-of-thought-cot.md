@@ -7,7 +7,7 @@ title: Zero-Shot Chain-of-Thought (CoT)
 
 Zero-Shot Chain-of-Thought (CoT) is a prompting technique that encourages a language model to break down its reasoning process into steps, without providing any examples. It uses a simple prompt instruction like "Let's approach this step by step:" or "Let's think about this logically:" before presenting the task or question. This prompts the model to generate a series of intermediate reasoning steps before arriving at the final answer, improving performance on complex reasoning tasks without needing labeled examples.
     
-Read more about this prompting technique [here](https://arxiv.org/abs/2406.06608).
+Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
 
 ## A worked example
 

@@ -7,7 +7,7 @@ title: AutoPrompt
 
 AutoPrompt is a prompt engineering technique that uses a frozen language model and a prompt template with "trigger tokens" whose values are updated via backpropagation during training. It is a form of soft prompting that aims to automatically optimize the prompt to improve task performance. The trigger tokens are initialized randomly and then iteratively updated to maximize the model's performance on a given task.
 
-Read more about this prompting technique [here](https://arxiv.org/abs/2406.06608).
+Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
    
 ## A worked example
 

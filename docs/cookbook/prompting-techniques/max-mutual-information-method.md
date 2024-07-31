@@ -14,7 +14,7 @@ The Max Mutual Information Method is an ensembling technique that aims to find t
 
 This method helps identify the most effective prompt by measuring how much information is shared between the prompt and the model's responses, potentially leading to more relevant and consistent outputs.
 
-Read more about this prompting technique [here](https://arxiv.org/abs/2406.06608).
+Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
 
 ## A worked example
 

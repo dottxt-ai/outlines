@@ -7,7 +7,7 @@ title: Self-Generated In-Context Learning (SG-ICL)
 
 Self-Generated In-Context Learning (SG-ICL) is a prompting technique that leverages a large language model to automatically generate exemplars for few-shot learning when actual training data is unavailable. The technique involves using the model itself to create example input-output pairs that can then be used as context for subsequent prompts. While not as effective as using real training data, SG-ICL can improve performance compared to zero-shot scenarios by providing the model with some context, even if that context is synthetic.
     
-Read more about this prompting technique [here](https://arxiv.org/abs/2406.06608).
+Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
 
 ## A worked example
 

@@ -7,7 +7,7 @@ title: Prompt Mining
 
 Prompt Mining is a technique for discovering optimal prompt templates by analyzing large text corpora. The goal is to find "middle words" or phrasings that occur frequently in the corpus and are likely to elicit better performance from language models. Rather than using standard prompting formats like "Q: A:", Prompt Mining seeks to identify more natural phrasings that the model may have encountered more often during pre-training. This technique leverages the insight that prompt formats which appear more frequently in training data tend to yield improved results when used with language models.
     
-Read more about this prompting technique [here](https://arxiv.org/abs/2406.06608).
+Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
 
 ## A worked example
 

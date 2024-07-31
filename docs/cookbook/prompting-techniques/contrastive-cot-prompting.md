@@ -7,7 +7,7 @@ title: Contrastive CoT Prompting
 
 Contrastive CoT Prompting adds both exemplars with incorrect and correct explanations to the Chain-of-Thought prompt in order to show the language model how not to reason, as well as how to reason correctly. This technique aims to improve the model's ability to distinguish between valid and invalid reasoning paths, leading to more accurate responses. By presenting contrasting examples, the model learns to avoid common pitfalls and strengthens its understanding of proper problem-solving approaches.
     
-Read more about this prompting technique [here](https://arxiv.org/abs/2406.06608).
+Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
 
 ## A worked example
 

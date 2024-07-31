@@ -7,7 +7,7 @@ title: SimToM (Simulation Theory of Mind)
 
 SimToM is a prompting technique that leverages a language model's ability to simulate different perspectives or mental states. It involves instructing the model to imagine itself as a specific entity (e.g. a person, character, or even object) and respond from that perspective. This technique aims to generate more nuanced, context-aware responses by encouraging the model to consider the knowledge, biases, and thought processes of the simulated entity.
     
-Read more about this prompting technique [here](https://arxiv.org/abs/2406.06608).
+Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
 
 ## A worked example
 

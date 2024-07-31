@@ -12,7 +12,7 @@ Self-Calibration is a prompting technique that aims to improve the reliability o
 
 This technique allows for gauging the model's confidence level in its responses, which can be useful when deciding whether to accept the original answer or seek further refinement.
     
-Read more about this prompting technique [here](https://arxiv.org/abs/2406.06608).
+Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
 
 ## A worked example
 

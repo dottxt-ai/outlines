@@ -15,7 +15,7 @@ Self-Consistency is an ensemble prompting technique that aims to improve accurac
 
 This technique leverages the idea that multiple valid reasoning paths can lead to the same correct answer, while incorrect reasoning is more likely to produce inconsistent results. By aggregating multiple attempts, Self-Consistency can often achieve higher accuracy than a single CoT prompt, especially on tasks involving arithmetic, commonsense, and symbolic reasoning.
     
-Read more about this prompting technique [here](https://arxiv.org/abs/2406.06608).
+Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
 
 ## A worked example
 

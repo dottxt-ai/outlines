@@ -14,7 +14,7 @@ Analogical Prompting automatically generates exemplars that include chains-of-th
 
 This allows the model to see relevant reasoning patterns before approaching the actual task.
 
-Read more about this prompting technique [here](https://arxiv.org/abs/2406.06608).
+Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
     
 
 ## A worked example

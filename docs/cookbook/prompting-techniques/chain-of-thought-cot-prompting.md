@@ -7,7 +7,7 @@ title: Chain-of-Thought (CoT) Prompting
 
 Chain-of-Thought (CoT) Prompting is a technique that encourages large language models to express their reasoning process step-by-step before providing a final answer. It typically uses few-shot prompting, where the prompt includes examples of questions along with their step-by-step reasoning and final answers. This approach helps the model break down complex problems into smaller, more manageable steps, often improving performance on tasks that require multi-step reasoning, such as math problems or logical deductions.
     
-Read more about this prompting technique [here](https://arxiv.org/abs/2406.06608).
+Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
 
 ## A worked example
 
