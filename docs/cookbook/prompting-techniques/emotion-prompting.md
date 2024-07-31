@@ -1,8 +1,13 @@
+---
+title: Emotion Prompting
+---
+
 # Emotion Prompting
 
 
 Emotion Prompting incorporates phrases or statements with psychological and emotional relevance into the prompt to potentially improve the language model's performance. This technique taps into the model's understanding of human emotions and motivations, which may lead to more thoughtful or nuanced responses. By framing the task or question in a way that emphasizes its personal or emotional importance, the model may engage more deeply with the prompt and produce higher quality outputs.
     
+Read more about this prompting technique [here](https://arxiv.org/abs/2406.06608).
 
 ## A worked example
 

@@ -1,8 +1,13 @@
+---
+title: Cumulative Reasoning
+---
+
 # Cumulative Reasoning
 
 
 Cumulative Reasoning is an advanced prompting technique that builds on the Chain-of-Thought (CoT) approach. It involves breaking down a complex problem into smaller, manageable steps and progressively accumulating knowledge and insights. In this technique, the language model is guided to solve a problem by incrementally building up its understanding, with each step building on the previous ones. This allows for a more structured and thorough problem-solving process, especially for tasks that require multiple levels of reasoning or complex logical deductions.
     
+Read more about this prompting technique [here](https://arxiv.org/abs/2406.06608).
 
 ## A worked example
 

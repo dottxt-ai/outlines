@@ -1,8 +1,13 @@
+---
+title: Re-reading (RE2)
+---
+
 # Re-reading (RE2)
 
 
 The Re-reading (RE2) technique is a simple yet effective prompting method that aims to improve an AI model's reasoning capabilities, especially for complex questions. It involves adding the phrase "Read the question again:" to the prompt, followed by repeating the original question. This approach encourages the model to process the question more thoroughly, potentially leading to more accurate and thoughtful responses.
     
+Read more about this prompting technique [here](https://arxiv.org/abs/2406.06608).
 
 ## A worked example
 

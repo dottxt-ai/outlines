@@ -1,8 +1,13 @@
+---
+title: Meta Prompting
+---
+
 # Meta Prompting
 
 
 Meta prompting is a technique where you prompt a language model to generate or improve prompts for itself or other language models. This involves asking the model to create, refine, or analyze prompts based on given criteria or goals. The technique leverages the model's understanding of effective prompting to generate more sophisticated or targeted prompts.
     
+Read more about this prompting technique [here](https://arxiv.org/abs/2406.06608).
 
 ## A worked example
 

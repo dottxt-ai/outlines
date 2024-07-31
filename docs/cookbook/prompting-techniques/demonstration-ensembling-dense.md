@@ -1,8 +1,13 @@
+---
+title: Demonstration Ensembling (DENSE)
+---
+
 # Demonstration Ensembling (DENSE)
 
 
 Demonstration Ensembling (DENSE) is a prompting technique that improves the performance of few-shot learning by creating multiple prompts, each containing a different subset of examples from the training data. The technique then aggregates the outputs from these multiple prompts to generate a final response. This approach helps reduce variance in the model's outputs and often improves overall accuracy, though at the cost of increased computation due to multiple model calls.
     
+Read more about this prompting technique [here](https://arxiv.org/abs/2406.06608).
 
 ## A worked example
 

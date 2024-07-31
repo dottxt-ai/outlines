@@ -1,8 +1,13 @@
+---
+title: Self-Refine
+---
+
 # Self-Refine
 
 
 Self-Refine is an iterative prompting framework that uses an LLM to generate an initial answer, then repeatedly prompts the same LLM to provide feedback on its own answer and improve it based on that feedback. This process continues for multiple iterations until a stopping condition is met (e.g. a maximum number of iterations or satisfactory quality is achieved). The technique aims to leverage the LLM's ability to critically analyze its own outputs and make incremental improvements.
     
+Read more about this prompting technique [here](https://arxiv.org/abs/2406.06608).
 
 ## A worked example
 

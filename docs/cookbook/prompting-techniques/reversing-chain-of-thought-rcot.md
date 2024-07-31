@@ -1,8 +1,13 @@
+---
+title: Reversing Chain-of-Thought (RCoT)
+---
+
 # Reversing Chain-of-Thought (RCoT)
 
 
 Reversing Chain-of-Thought (RCoT) is a self-criticism technique that aims to improve the accuracy of language model outputs. It works by first generating an answer, then having the model reconstruct the original problem based on that answer. The reconstructed problem is compared to the original to identify inconsistencies, which are then used as feedback for the model to revise its answer. This process helps catch logical errors or misunderstandings in the initial response.
     
+Read more about this prompting technique [here](https://arxiv.org/abs/2406.06608).
 
 ## A worked example
 

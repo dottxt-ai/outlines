@@ -1,3 +1,7 @@
+---
+title: DiVeRSe (Diversity-Focused Self-Consistency)
+---
+
 # DiVeRSe (Diversity-Focused Self-Consistency)
 
 
@@ -7,7 +11,7 @@ DiVeRSe is an ensemble prompting technique that combines multiple prompts with s
 3. Aggregating the results across all prompts and reasoning paths to select the final answer
 This approach aims to increase diversity in the reasoning process and reduce errors by considering multiple perspectives on the problem.
     
-
+Read more about this prompting technique [here](https://arxiv.org/abs/2406.06608).
 ## A worked example
 
 

@@ -1,3 +1,7 @@
+---
+title: Analogical Prompting
+---
+
 # Analogical Prompting
 
 
@@ -9,6 +13,8 @@ Analogical Prompting automatically generates exemplars that include chains-of-th
 4. Including the analogous examples + solutions as part of the prompt
 
 This allows the model to see relevant reasoning patterns before approaching the actual task.
+
+Read more about this prompting technique [here](https://arxiv.org/abs/2406.06608).
     
 
 ## A worked example
