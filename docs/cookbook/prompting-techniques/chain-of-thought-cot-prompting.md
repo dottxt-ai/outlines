@@ -1,7 +1,7 @@
 # Chain-of-Thought (CoT) Prompting
 
 
-Chain-of-Thought (CoT) Prompting is a technique that encourages language models to articulate their reasoning process step-by-step before providing a final answer. It typically uses few-shot prompting, where the prompt includes examples of questions along with detailed reasoning paths and correct answers. This approach helps the model break down complex problems into smaller, more manageable steps, often leading to improved performance on tasks requiring multi-step reasoning, such as mathematical problems or logical deductions.
+Chain-of-Thought (CoT) Prompting is a technique that encourages large language models to express their reasoning process step-by-step before providing a final answer. It typically uses few-shot prompting, where the prompt includes examples of questions along with their step-by-step reasoning and final answers. This approach helps the model break down complex problems into smaller, more manageable steps, often improving performance on tasks that require multi-step reasoning, such as math problems or logical deductions.
     
 
 ## A worked example
@@ -9,72 +9,90 @@ Chain-of-Thought (CoT) Prompting is a technique that encourages language models 
 
 To implement Chain-of-Thought (CoT) Prompting:
 
-1. Prepare your prompt with one or more examples that demonstrate the desired reasoning process. Each example should include:
-   - A question
-   - A step-by-step reasoning path
-   - The correct answer
+1. Prepare your prompt with one or more examples that demonstrate the desired chain of thought. For instance:
 
-2. Add your actual question at the end of the prompt.
-
-3. Submit the entire prompt to the language model.
-
-Here's a specific example:
-
-Prompt:
-"""
-Q: Sarah has 3 apples. She gives 1 apple to her friend and buys 2 more from the store. How many apples does Sarah have now?
+Q: A store has 25 apples. If they sell 12 apples and then receive a shipment of 18 more, how many apples does the store have now?
 A: Let's think through this step-by-step:
-1. Sarah starts with 3 apples.
-2. She gives away 1 apple, so now she has 3 - 1 = 2 apples.
-3. She then buys 2 more apples from the store.
-4. Now she has 2 (from step 2) + 2 (newly bought) = 4 apples.
-Therefore, Sarah now has 4 apples.
+1. The store starts with 25 apples.
+2. They sell 12 apples, so: 25 - 12 = 13 apples left.
+3. They receive 18 more apples, so: 13 + 18 = 31 apples.
+Therefore, the store now has 31 apples.
 
-Q: A train travels 120 miles in 2 hours. What is its average speed in miles per hour?
-A:
-"""
+2. Add your actual question after the example(s):
 
-When you submit this prompt to the language model, it should respond with a step-by-step reasoning process similar to the example, followed by the final answer for the train speed question.
+Q: A bakery sold 45 cakes on Monday, 38 cakes on Tuesday, and 52 cakes on Wednesday. If each cake costs $12, how much money did the bakery make in total over these three days?
+A: Let's approach this step-by-step:
+
+3. Submit this prompt to the language model.
+
+4. The model should now provide a step-by-step reasoning process for your question, followed by the final answer. For example:
+
+1. First, let's calculate the total number of cakes sold:
+   Monday: 45 cakes
+   Tuesday: 38 cakes
+   Wednesday: 52 cakes
+   Total cakes = 45 + 38 + 52 = 135 cakes
+
+2. Now, we know each cake costs $12.
+
+3. To find the total money made, we multiply the number of cakes by the price per cake:
+   Total money = 135 cakes × $12 per cake = $1,620
+
+Therefore, the bakery made $1,620 in total over these three days.
+
+5. Review the model's reasoning and final answer for accuracy and coherence.
     
 ## Code Example
 
 
-```python
-from typing import List
-from pydantic import BaseModel
 
+
+
+```python
+from pydantic import BaseModel
+from typing import List
 import outlines
 
-class MathSolution(BaseModel):
+class ChainOfThoughtResponse(BaseModel):
     steps: List[str]
-    final_answer: float
+    final_answer: str
 
-model = outlines.models.transformers("mistralai/Mistral-7B-Instruct-v0.2")
+model = outlines.models.transformers("mistralai/Mistral-7B-Instruct-v0.1", device="cuda")
 
-prompt = """You are a math tutor who explains solutions step-by-step.
+prompt = """You are a math assistant that provides step-by-step solutions.
 
 Example:
-Q: A train travels 120 miles in 2 hours. What is its average speed in miles per hour?
-A: Let's solve this step-by-step:
-1. We know the train traveled 120 miles.
-2. The journey took 2 hours.
-3. To find the average speed, we divide the distance by the time.
-4. Average speed = 120 miles ÷ 2 hours
-5. 120 ÷ 2 = 60
-Therefore, the train's average speed is 60 miles per hour.
+Q: A store has 25 apples. If they sell 12 apples and then receive a shipment of 18 more, how many apples does the store have now?
+A:
+Steps:
+1. The store starts with 25 apples.
+2. They sell 12 apples, so: 25 - 12 = 13 apples left.
+3. They receive 18 more apples, so: 13 + 18 = 31 apples.
+Final answer: The store now has 31 apples.
 
-Now, solve this problem:
-Q: If a car travels 280 miles in 4 hours, what is its average speed in miles per hour?
+Now, please solve this problem using the same step-by-step approach:
+Q: A bakery sold 45 cakes on Monday, 38 cakes on Tuesday, and 52 cakes on Wednesday. If each cake costs $12, how much money did the bakery make in total over these three days?
 A:
 """
 
-generator = outlines.generate.json(model, MathSolution)
-solution = generator(prompt)
+generator = outlines.generate.json(model, ChainOfThoughtResponse)
+response = generator(prompt)
 
-print("Step-by-step solution:")
-for i, step in enumerate(solution.steps, 1):
-    print(f"{i}. {step}")
-print(f"\nFinal answer: {solution.final_answer} miles per hour")
+print("Steps:")
+for step in response.steps:
+    print(f"- {step}")
+print(f"\nFinal Answer: {response.final_answer}")
 ```
+
+
+    Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]
+
+
+    We detected that you are passing `past_key_values` as a tuple and this is deprecated and will be removed in v4.43. Please use an appropriate `Cache` class (https://huggingface.co/docs/transformers/v4.41.3/en/internal/generation_utils#transformers.Cache)
+
+
+    Steps:
+    - On Monday, the bakery sold 45 cakes. Each day, they sell cakes at a price of $12. So, on Monday, the bakery made 45 x $12 = $540. 
     
+    Final Answer: In total, the bakery made $540 + $38 + $52 = $540. 
 

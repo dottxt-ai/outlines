@@ -1,92 +1,113 @@
 # Analogical Prompting
 
 
-Analogical Prompting automatically generates exemplars that include chains-of-thought (CoT) reasoning for a given task. It aims to improve performance on complex reasoning tasks by providing the language model with relevant analogies that demonstrate the problem-solving process. This technique leverages the model's ability to draw parallels between similar problems and apply analogous reasoning strategies.
+Analogical Prompting automatically generates exemplars that include chains-of-thought (CoT) reasoning for a given task. It aims to improve performance on tasks like mathematical reasoning and code generation by providing the language model with relevant analogous examples to reference. The technique works by:
+
+1. Analyzing the target task/problem
+2. Generating analogous example problems 
+3. Producing CoT solutions for those examples
+4. Including the analogous examples + solutions as part of the prompt
+
+This allows the model to see relevant reasoning patterns before approaching the actual task.
     
 
 ## A worked example
 
 
-1. Define the target task (e.g. solving a complex math word problem)
+Let's say we want to use Analogical Prompting to help solve a complex math word problem. Here are the steps:
 
-2. Generate a pool of similar but simpler problems that use analogous reasoning:
-   - Use the language model to generate variations on the target problem
-   - Retrieve relevant problems from a curated dataset
+1. Analyze target problem: 
+"A store is having a 30% off sale. If an item originally costs $80, how much will it cost after the discount?"
 
-3. For each problem in the pool, generate a chain-of-thought solution:
-   - Prompt the model to solve the problem step-by-step
-   - Review and refine the generated solutions
+2. Generate analogous example:
+"A restaurant offers a 25% discount for early bird diners. If a meal normally costs $60, how much would it cost with the discount?"
 
-4. Select the best analogous problems and solutions to use as exemplars:
-   - Choose examples that demonstrate key reasoning steps
-   - Ensure diversity in the selected analogies
+3. Produce CoT solution for example:
+"Let's approach this step-by-step:
+1) The discount is 25% of $60
+2) 25% = 0.25
+3) 0.25 * $60 = $15 (this is the discount amount)
+4) The discounted price is the original price minus the discount
+5) $60 - $15 = $45
+Therefore, the meal would cost $45 with the early bird discount."
 
-5. Construct the final prompt by combining:
-   - The target problem
-   - 2-3 selected analogous problems with their CoT solutions
-   - An instruction to solve the target problem using similar reasoning
+4. Construct final prompt:
+"Here's an example of calculating a discounted price:
 
-6. Submit the constructed prompt to the language model to solve the target problem
+Q: A restaurant offers a 25% discount for early bird diners. If a meal normally costs $60, how much would it cost with the discount?
 
-Example prompt:
-"Here are some example math word problems with solutions:
+A: Let's approach this step-by-step:
+1) The discount is 25% of $60
+2) 25% = 0.25
+3) 0.25 * $60 = $15 (this is the discount amount)
+4) The discounted price is the original price minus the discount
+5) $60 - $15 = $45
+Therefore, the meal would cost $45 with the early bird discount.
 
-Problem 1: Tom has 3 apples and buys 2 more. How many does he have?
-Solution: Let's approach this step-by-step:
-1. Tom starts with 3 apples
-2. He buys 2 more apples
-3. To find the total, we add: 3 + 2 = 5
-So Tom has 5 apples in total.
+Now, please solve this problem:
 
-Problem 2: A recipe needs 2 cups of flour for 4 servings. How much flour for 6 servings?
-Solution: We can solve this with these steps:
-1. The recipe uses 2 cups for 4 servings
-2. For 6 servings, we need to scale up
-3. 6 servings is 1.5 times 4 servings (6 ÷ 4 = 1.5)
-4. So we need 1.5 times the flour: 2 * 1.5 = 3
-Therefore, we need 3 cups of flour for 6 servings.
+Q: A store is having a 30% off sale. If an item originally costs $80, how much will it cost after the discount?
 
-Now solve this problem using similar reasoning:
-Sarah bakes cookies that require 1.5 cups of sugar to make 3 dozen. How much sugar does she need to make 5 dozen cookies?"
+A: Let's solve this step-by-step:"
+
+By providing this analogous example with detailed reasoning, we give the model a pattern to follow when solving the target problem.
     
 ## Code Example
 
 
+
+
+
 ```python
 from pydantic import BaseModel, Field
+from typing import List
 import outlines
 
-class MathProblem(BaseModel):
-    problem: str
-    solution: str = Field(..., description="Step-by-step solution to the problem")
+class Step(BaseModel):
+    description: str
 
-model = outlines.models.transformers("mistralai/Mistral-7B-Instruct-v0.2")
-generator = outlines.generate.json(model, MathProblem)
+class Problem(BaseModel):
+    question: str
+    steps: List[Step]
+    solution: float
 
-def generate_analogous_problem(topic: str) -> MathProblem:
-    prompt = f"Generate a simple {topic} math problem with a step-by-step solution."
-    return generator(prompt)
+class AnalogicalPromptResponse(BaseModel):
+    example_problem: Problem
+    target_problem: Problem
 
-def solve_problem_with_analogies(target_problem: str, num_analogies: int = 2) -> str:
-    # Generate analogous problems
-    analogies = [generate_analogous_problem("arithmetic") for _ in range(num_analogies)]
-    
-    # Construct the prompt with analogies
-    prompt = "Here are some example math word problems with solutions:\n\n"
-    for i, analogy in enumerate(analogies, 1):
-        prompt += f"Problem {i}: {analogy.problem}\n"
-        prompt += f"Solution: {analogy.solution}\n\n"
-    
-    prompt += f"Now solve this problem using similar reasoning:\n{target_problem}"
-    
-    # Generate the solution for the target problem
-    solution = generator(prompt)
-    return solution.solution
+model = outlines.models.transformers("mistralai/Mistral-7B-Instruct-v0.1", device="cuda")
 
-# Example usage
-target_problem = "Sarah bakes cookies that require 1.5 cups of sugar to make 3 dozen. How much sugar does she need to make 5 dozen cookies?"
-result = solve_problem_with_analogies(target_problem)
-print(result)
+prompt = """
+Use Analogical Prompting to solve a math problem. Here's an example:
+
+Q: A restaurant offers a 25% discount for early bird diners. If a meal normally costs $60, how much would it cost with the discount?
+
+A: Let's approach this step-by-step:
+1) The discount is 25% of $60
+2) 25% = 0.25
+3) 0.25 * $60 = $15 (this is the discount amount)
+4) The discounted price is the original price minus the discount
+5) $60 - $15 = $45
+Therefore, the meal would cost $45 with the early bird discount.
+
+Now, solve this problem using the same step-by-step approach:
+
+Q: A store is having a 30% off sale. If an item originally costs $80, how much will it cost after the discount?
+
+Provide the solution in a structured format.
+"""
+
+generator = outlines.generate.json(model, AnalogicalPromptResponse)
+response = generator(prompt)
+print(response)
 ```
-    
+
+
+    Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]
+
+
+    We detected that you are passing `past_key_values` as a tuple and this is deprecated and will be removed in v4.43. Please use an appropriate `Cache` class (https://huggingface.co/docs/transformers/v4.41.3/en/internal/generation_utils#transformers.Cache)
+
+
+    example_problem=Problem(question='A restaurant offers a 25% discount for early bird diners. If a meal normally costs $60, how much would it cost with the discount?', steps=[Step(description='Step 1: The discount is 25% of $60'), Step(description='Step 2: 25% = 0.25'), Step(description='Step 3: 0.25 * $60 = $15 (this is the discount amount)'), Step(description='Step 4: The discounted price is the original price minus the discount'), Step(description='Step 5: $60 - $15 = $45')], solution=45.0) target_problem=Problem(question='A store is having a 30% off sale. If an item originally costs $80, how much will it cost after the discount?', steps=[Step(description='Step 1: The discount is 30% of $80'), Step(description='Step 2: 30% = 0.3'), Step(description='Step 3: 0.3 * $80 = $24 (this is the discount amount)'), Step(description='Step 4: The discounted price is the original price minus the discount'), Step(description='Step 5: $80 - $24 = $56')], solution=56.0)
 

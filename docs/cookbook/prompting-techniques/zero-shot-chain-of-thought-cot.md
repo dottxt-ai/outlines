@@ -1,7 +1,7 @@
 # Zero-Shot Chain-of-Thought (CoT)
 
 
-Zero-Shot Chain-of-Thought (CoT) is a prompting technique that encourages a language model to break down its reasoning process into steps, without providing any examples. It typically involves adding a simple phrase like "Let's approach this step by step:" or "Let's think about this logically:" before presenting the task or question. This prompts the model to generate a series of intermediate reasoning steps before arriving at the final answer, enhancing its problem-solving capabilities and providing transparency into its thought process.
+Zero-Shot Chain-of-Thought (CoT) is a prompting technique that encourages a language model to break down its reasoning process into steps, without providing any examples. It uses a simple prompt instruction like "Let's approach this step by step:" or "Let's think about this logically:" before presenting the task or question. This prompts the model to generate a series of intermediate reasoning steps before arriving at the final answer, improving performance on complex reasoning tasks without needing labeled examples.
     
 
 ## A worked example
@@ -9,64 +9,69 @@ Zero-Shot Chain-of-Thought (CoT) is a prompting technique that encourages a lang
 
 To implement Zero-Shot CoT:
 
-1. Start with your base task or question.
+1. Start with your task or question.
 2. Prepend a thought-inducing phrase to encourage step-by-step reasoning. Common phrases include:
    - "Let's approach this step by step:"
    - "Let's think about this logically:"
    - "Let's break this down:"
-3. Present the modified prompt to the language model.
-4. Analyze the output, which should now include intermediary reasoning steps.
+3. Optionally, add an instruction to show work or explain reasoning.
+4. Send the prompt to the language model.
+5. Analyze the output, which should now contain a chain of reasoning steps.
 
-For example, if your original question was:
-"How many eggs are left if you have a dozen eggs and use 4 for baking?"
+For example, given a math word problem:
 
-Your Zero-Shot CoT prompt would become:
+Original question: 
+"If a train travels 120 miles in 2 hours, what is its average speed in miles per hour?"
+
+Zero-Shot CoT prompt:
 "Let's approach this step by step:
-How many eggs are left if you have a dozen eggs and use 4 for baking?"
 
-The model's response might then look like:
-"1. Let's start with the given information:
-   - We have a dozen eggs
-   - We use 4 eggs for baking
+If a train travels 120 miles in 2 hours, what is its average speed in miles per hour?
 
-2. First, let's recall how many eggs are in a dozen:
-   - 1 dozen = 12 eggs
+Please show your work and explain your reasoning."
 
-3. Now, we can set up a simple subtraction:
-   - Initial number of eggs: 12
-   - Eggs used for baking: 4
-   - Remaining eggs: 12 - 4
-
-4. Perform the subtraction:
-   12 - 4 = 8
-
-Therefore, there are 8 eggs left."
-
-This technique allows the model to show its reasoning process, making the solution more transparent and potentially more accurate.
+This prompt structure encourages the model to break down its thinking process, potentially leading to more accurate and explainable results.
     
 ## Code Example
 
 
+
+
+
 ```python
-from pydantic import BaseModel, conint
 from typing import List
+from pydantic import BaseModel
+
 import outlines
 
-class MathSolution(BaseModel):
-    steps: List[str]
-    answer: conint(gt=0)
+class ReasoningStep(BaseModel):
+    step_number: int
+    description: str
 
-model = outlines.models.transformers("mistralai/Mistral-7B-Instruct-v0.2")
-generator = outlines.generate.json(model, MathSolution)
+class ChainOfThought(BaseModel):
+    steps: List[ReasoningStep]
+    final_answer: str
+
+model = outlines.models.transformers("mistralai/Mistral-7B-Instruct-v0.1", device="cuda")
+generator = outlines.generate.json(model, ChainOfThought)
 
 prompt = """Let's approach this step by step:
-What is the sum of all even numbers between 1 and 10?"""
 
-solution = generator(prompt)
-print(f"Reasoning steps:")
-for step in solution.steps:
-    print(f"- {step}")
-print(f"\nFinal answer: {solution.answer}")
+If a train travels 120 miles in 2 hours, what is its average speed in miles per hour?
+
+Please show your work and explain your reasoning."""
+
+reasoning = generator(prompt)
+print(reasoning)
 ```
-    
+
+
+    Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]
+
+
+    Compiling FSM index for all state transitions: 100%|█| 97/97 [00:00<00:00, 
+    We detected that you are passing `past_key_values` as a tuple and this is deprecated and will be removed in v4.43. Please use an appropriate `Cache` class (https://huggingface.co/docs/transformers/v4.41.3/en/internal/generation_utils#transformers.Cache)
+
+
+    steps=[ReasoningStep(step_number=1, description='First, we will divide the distance traveled by the time it took to travel that distance.')] final_answer="The train's average speed is 60 miles per hour."
 
