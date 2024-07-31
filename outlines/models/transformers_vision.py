@@ -108,10 +108,7 @@ def transformers_vision(
     """
     if processor_class is None or tokenizer_class is None:
         try:
-            from transformers import (
-                AutoTokenizer,
-                AutoProcessor,
-            )
+            from transformers import AutoProcessor, AutoTokenizer
         except ImportError:
             raise ImportError(
                 "The `transformers` library needs to be installed in order to use `transformers` models."
