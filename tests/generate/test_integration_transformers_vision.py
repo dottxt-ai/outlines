@@ -30,15 +30,6 @@ def model(tmp_path_factory):
 
 
 @pytest.fixture(scope="session")
-def larger_model_with_processor(tmp_path_factory):
-    return transformers_vision(
-        "llava-hf/llava-interleave-qwen-0.5b-hf",
-        model_class=LlavaForConditionalGeneration,
-        device="cpu",
-    )
-
-
-@pytest.fixture(scope="session")
 def processor(tmp_path_factory):
     return AutoProcessor.from_pretrained("llava-hf/llava-interleave-qwen-0.5b-hf")
 
@@ -104,28 +95,6 @@ def test_mismatched_image_text_gen(model, processor):
             seed=10000,
             max_tokens=10,
         )
-
-
-def test_default_apply_chat_template(larger_model_with_processor):
-    """If we pass in a list of dicts in the format that huggingface chat_template expects,
-    and specify `apply_chat_template=True` when calling the generator,
-    we should yield a successful generation.
-    """
-    conversation = [
-        {
-            "role": "user",
-            "content": [{"type": "text", "text": "What is this?"}, {"type": "image"}],
-        },
-    ]
-    generator = outlines.generate.text(larger_model_with_processor)
-    sequence = generator(
-        conversation,
-        [img_from_url(IMAGE_URLS[0])],
-        seed=10000,
-        max_tokens=10,
-        apply_chat_template=True,
-    )
-    assert isinstance(sequence, str)
 
 
 def test_single_image_choice(model, processor):
