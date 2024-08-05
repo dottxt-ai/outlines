@@ -3,7 +3,6 @@ import functools
 import warnings
 from dataclasses import asdict, dataclass, field, replace
 from itertools import zip_longest
-from textwrap import dedent
 from typing import Callable, Dict, List, Optional, Set, Tuple, Union
 
 import numpy as np
@@ -49,6 +48,10 @@ class OpenAIConfig:
         lower values make it more deterministic.
     top_p
         Number between 0 and 1. Parameter for nucleus sampling.
+    tools
+        A list of tools the model may call.
+    tool_choice
+        Specifies which tool the model should use.
     user
         A unique identifier for the end-user.
 
@@ -65,6 +68,8 @@ class OpenAIConfig:
     stop: Optional[Union[str, List[str]]] = None
     temperature: float = 1.0
     top_p: int = 1
+    tools: Optional[List[Dict]] = None
+    tool_choice: Optional[Union[str, Dict]] = None
     user: str = field(default_factory=str)
 
 
@@ -256,23 +261,35 @@ class OpenAI:
         prompt: str,
         schema: str,
         max_tokens: Optional[int] = None,
+        system_prompt: Optional[str] = None,
     ) -> str:
-        """Call the OpenAI API to generate a JSON object."""
-        # raise NotImplementedError
-        # We need to massage the prompt a bit in order to get the response we want in a json format
+        """Call the OpenAI API to generate a JSON object.
+
+        Parameters
+        ----------
+        prompt
+            A string or list of strings that will be used to prompt the model
+        schema
+            The schema we ask the model to response
+        max_tokens
+            The maximum number of tokens to generate
+        system_prompt
+            The content of the system message that precedes the user's prompt.
+
+        """
+        # construct tools to be used in the API call
+        tools = [
+            {
+                "type": "function",
+                "function": {
+                    "name": "model_validate_json",
+                    "description": "Validate the given JSON data against the Pydantic model.",
+                    "parameters": schema,
+                },
+            }
+        ]
         config = replace(
-            self.config, max_tokens=max_tokens, response_format={"type": "json_object"}
-        )
-
-        system_prompt = dedent(
-            f"""
-            As a genius expert, your task is to understand the content and provide
-            the parsed objects in json that match the following json_schema:\n
-
-            {schema}
-
-            Make sure to return an instance of the JSON, not the schema itself
-            """
+            self.config, max_tokens=max_tokens, tools=tools, tool_choice="auto"
         )
 
         response, prompt_tokens, completion_tokens = generate_chat(
@@ -280,7 +297,7 @@ class OpenAI:
         )
         self.prompt_tokens += prompt_tokens
         self.completion_tokens += completion_tokens
-        return "".join(response)
+        return response
 
     def __str__(self):
         return self.__class__.__name__ + " API"
@@ -334,7 +351,14 @@ async def generate_chat(
     responses = await call_api(prompt, system_prompt, config)
 
     results = np.array(
-        [responses["choices"][i]["message"]["content"] for i in range(config.n)]
+        # if tool_calls in message use tool_calls, else use content
+        [
+            responses["choices"][i]["message"]["tool_calls"][0]["function"]["arguments"]
+            if "tool_calls" in responses["choices"][i]["message"]
+            and responses["choices"][i]["message"]["tool_calls"]
+            else responses["choices"][i]["message"]["content"]
+            for i in range(config.n)
+        ]
     )
     usage = responses["usage"]
     return results, usage["prompt_tokens"], usage["completion_tokens"]

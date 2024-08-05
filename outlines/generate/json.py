@@ -2,6 +2,7 @@ import json as pyjson
 from functools import singledispatch
 from typing import Callable, Optional, Union
 
+from jsonschema.protocols import Validator
 from pydantic import BaseModel, create_model
 
 from outlines.fsm.json_schema import build_regex_from_schema, get_schema_from_signature
@@ -80,11 +81,12 @@ def json_openai(
         )
     if isinstance(schema_object, type(BaseModel)):
         response_model = schema_object
-        schema = pyjson.dumps(schema_object.model_json_schema())
+        schema = schema_object.model_json_schema()
     elif callable(schema_object):
-        schema = pyjson.dumps(get_schema_from_signature(schema_object))
+        schema = get_schema_from_signature(schema_object)
     elif isinstance(schema_object, str):
-        schema = schema_object
+        schema = pyjson.loads(schema_object)
+        Validator.check_schema(schema)
     else:
         raise ValueError(
             f"Cannot parse schema {schema_object}. The schema must be either "
