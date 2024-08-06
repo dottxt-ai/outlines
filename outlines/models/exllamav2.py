@@ -1,4 +1,5 @@
-import os
+import dataclasses
+
 from typing import (
     TYPE_CHECKING,
     Iterator,
@@ -9,43 +10,75 @@ from typing import (
 )
 
 from typing_extensions import Unpack
+from outlines.models.transformers import TransformerTokenizer
 
 from outlines.generate.api import GenerationParameters, SamplingParameters
-
 if TYPE_CHECKING:
-    from exllamav2 import ExLlamaV2, ExLlamaV2Lora, ExLlamaV2Tokenizer
-    from exllamav2.generator import ExLlamaV2Sampler
-    from exllamav2.generator import ExLlamaV2DynamicGenerator, ExLlamaV2Sampler, ExLlamaV2DynamicJob
+    from exllamav2 import ExLlamaV2Lora
+    from exllamav2.generator import ExLlamaV2DynamicGenerator, ExLlamaV2Sampler
 
 
 class ExllamaV2Params(TypedDict, total=False):
-    min_new_tokens: int = 0,
-    seed: Union[int, None] = None,
-    encode_special_tokens: bool = False,
-    decode_special_tokens: bool = False,
-    add_bos: bool = False,
+    max_tokens: int
+    stop_conditions: list[int | str] | None = None
+    seed: int | None = None
+    gen_settings: "ExLlamaV2Sampler.Settings"
 
 class ExLlamaV2Model:
     """Represents a `exl2` model."""
     def __init__(
         self,
-        generator: ExLlamaV2DynamicGenerator,
+        generator: "ExLlamaV2DynamicGenerator",
+        tokenizer: TransformerTokenizer,
+        max_seq_len: int
     ):
         self.generator = generator
-    def generate(
+        self.tokenizer = tokenizer
+        self.max_seq_len = max_seq_len
+    def prepare_generation_parameters(
         self,
         prompts: Union[str, List[str]],
         generation_parameters: GenerationParameters,
-        structure_logits_processor,
         sampling_parameters: SamplingParameters,
-        **exllamav2_params: Unpack[ExllamaV2Params]
-    ) -> List[str]:
+        structure_logits_processor,
+        **exllamav2_params: Unpack[ExllamaV2Params],
+    ):
+        """Prepare the generation parameters.
+
+        `exllamav2` uses different default values
+
+        """
+        try:
+            from exllamav2.generator import ExLlamaV2Sampler
+        except ImportError:
+            raise ImportError(
+                "The `exllamav2` and `torch` libraries needs to be installed in order to use `exllamav2` models."
+            )
+        if isinstance(prompts, str):
+            prompts = [prompts]
+        max_tokens, stop_at, seed = dataclasses.astuple(generation_parameters)
+
+
+        if max_tokens is None:
+            max_tokens = []
+            for prompt in prompts:
+                ids = self.generator.tokenizer.encode(prompt, encode_special_tokens = False)
+                prompt_tokens = ids.shape[-1]
+                max_tokens.append(self.max_seq_len - prompt_tokens)
+            exllamav2_params["max_new_tokens"] = max_tokens
+        else:
+            exllamav2_params["max_new_tokens"] = [max_tokens for _ in range(len(prompts))]
+
         stop_conditions = [self.generator.tokenizer.eos_token_id]
         if isinstance(generation_parameters.stop_at, str):
             stop_conditions.append(generation_parameters.stop_at)
         elif isinstance(generation_parameters.stop_at, list):
             for stop_at in generation_parameters.stop_at:
                 stop_conditions.append(stop_at)
+        exllamav2_params["stop_conditions"] = stop_conditions
+        exllamav2_params["seed"] = seed
+
+
         gen_settings = ExLlamaV2Sampler.Settings()
         if sampling_parameters.temperature is not None:
             gen_settings.temperature = sampling_parameters.temperature
@@ -54,15 +87,28 @@ class ExLlamaV2Model:
         if sampling_parameters.top_k is not None:
             gen_settings.top_k = sampling_parameters.top_k
         gen_settings.logits_processor = structure_logits_processor
+        exllamav2_params["gen_settings"] = gen_settings
+
+
+        return exllamav2_params
+    def generate(
+        self,
+        prompts: Union[str, List[str]],
+        generation_parameters: GenerationParameters,
+        structure_logits_processor,
+        sampling_parameters: SamplingParameters,
+        **exllamav2_params: Unpack[ExllamaV2Params]
+    ) -> List[str]:
+        exllamav2_params = self.prepare_generation_parameters(prompts, generation_parameters, sampling_parameters, structure_logits_processor)
         return self.generator.generate(
             prompt=prompts,
-            gen_settings=gen_settings,
-            max_new_tokens=generation_parameters.max_tokens,
+            gen_settings=exllamav2_params["gen_settings"],
+            max_new_tokens=min(exllamav2_params["max_new_tokens"]),
             completion_only=True,
-            encode_special_tokens=exllamav2_params.encode_special_tokens,
-            stop_conditions=stop_conditions,
-            add_bos=exllamav2_params.add_bos,
-            seed=generation_parameters.seed,
+            encode_special_tokens=False,
+            stop_conditions=exllamav2_params["stop_conditions"],
+            add_bos=False,
+            seed=exllamav2_params["seed"],
         )
     def stream(
         self,
@@ -72,38 +118,31 @@ class ExLlamaV2Model:
         sampling_parameters: SamplingParameters,
         **exllamav2_params: Unpack[ExllamaV2Params]
     ) -> List[Iterator[str]]:
-        gen_settings = ExLlamaV2Sampler.Settings()
-        if sampling_parameters.temperature is not None:
-            gen_settings.temperature = sampling_parameters.temperature
-        if sampling_parameters.top_p is not None:
-            gen_settings.top_p = sampling_parameters.top_p
-        if sampling_parameters.top_k is not None:
-            gen_settings.top_k = sampling_parameters.top_k
-        gen_settings.logits_processor = structure_logits_processor
-        stop_conditions = [self.generator.tokenizer.eos_token_id]
-        if isinstance(generation_parameters.stop_at, str):
-            stop_conditions.append(generation_parameters.stop_at)
-        elif isinstance(generation_parameters.stop_at, list):
-            for stop_at in generation_parameters.stop_at:
-                stop_conditions.append(stop_at)
+        try:
+            from exllamav2.generator import ExLlamaV2DynamicJob
+        except ImportError:
+            raise ImportError(
+                "The `exllamav2` and `torch` libraries needs to be installed in order to use `exllamav2` models."
+            )
+        exllamav2_params = self.prepare_generation_parameters(prompts, generation_parameters, sampling_parameters, structure_logits_processor)
         order = {}
         if isinstance(prompts, str):
             prompts = [prompts]
-        seed = generation_parameters.seed
         batch_size = len(prompts)
+        seed = exllamav2_params["seed"]
         for idx, p in enumerate(prompts):
 
-            input_ids = self.generator.tokenizer.encode(p, encode_special_tokens = True, add_bos = False)
+            input_ids = self.generator.tokenizer.encode(p, encode_special_tokens = False, add_bos = False)
 
             job = ExLlamaV2DynamicJob(
                 input_ids = input_ids,
-                max_new_tokens = generation_parameters.max_tokens,
-                min_new_tokens = exllamav2_params.min_new_tokens,
-                seed = exllamav2_params.seed,
-                stop_conditions = stop_conditions,
-                gen_settings = gen_settings,
+                max_new_tokens = exllamav2_params["max_new_tokens"][idx],
+                min_new_tokens = 0,
+                seed = seed,
+                stop_conditions = exllamav2_params["stop_conditions"],
+                gen_settings = exllamav2_params["gen_settings"],
                 token_healing = False,
-                decode_special_tokens = exllamav2_params.decode_special_tokens,
+                decode_special_tokens = False,
             )
 
             if seed is not None: seed += 1
@@ -121,7 +160,6 @@ class ExLlamaV2Model:
                 for r in results:
                     idx = order[r["serial"]]
                     if r["stage"] == "streaming":
-                        all_eos = False
                         text = r.get("text", "")
                         completions[idx] += text
                     if r["eos"]:
@@ -132,6 +170,12 @@ class ExLlamaV2Model:
         return token_generator()
 
     def load_lora(self, adapter_path: str):
+        try:
+            from exllamav2 import ExLlamaV2Lora
+        except ImportError:
+            raise ImportError(
+                "The `exllamav2` and `torch` libraries needs to be installed in order to use `exllamav2` models."
+            )
         loras = [ExLlamaV2Lora.from_directory(self.model, adapter_path)]
         print(" -- Loading LoRA...")
         self.generator.set_loras(loras)
@@ -145,7 +189,7 @@ def exl2(
     cache_q4: bool = False,
     paged: bool = True,
     max_chunk_size: Optional[int] = None,
-    lora: Optional[ExLlamaV2Lora] = None
+    lora: Optional["ExLlamaV2Lora"] = None
 
 ) -> ExLlamaV2Model:
     """
@@ -196,11 +240,15 @@ def exl2(
             ExLlamaV2Cache_8bit,
             ExLlamaV2Cache_Q4,
             ExLlamaV2Config,
+            ExLlamaV2Tokenizer
         )
+        from exllamav2.generator import ExLlamaV2DynamicGenerator
         from transformers import AutoTokenizer
+
+
     except ImportError:
         raise ImportError(
-            "The `exllamav2`, `transformers` and `torch` libraries needs to be installed in order to use `exllamav2` models."
+            "The `exllamav2` and `torch` libraries needs to be installed in order to use `exllamav2` models."
         )
     config = ExLlamaV2Config(model_path)
     if max_chunk_size is not None:
@@ -252,4 +300,8 @@ def exl2(
     )
     if lora is not None:
         generator.set_loras(lora)
-    return ExLlamaV2Model(generator)
+    hf_tokenizer_kwargs = {}
+    hf_tokenizer_kwargs.setdefault("padding_side", "left")
+    hf_tokenizer = AutoTokenizer.from_pretrained(model_path, **hf_tokenizer_kwargs)
+    max_seq_len = cache.max_seq_len
+    return ExLlamaV2Model(generator, TransformerTokenizer(hf_tokenizer), max_seq_len)
