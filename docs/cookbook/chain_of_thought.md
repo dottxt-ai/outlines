@@ -1,7 +1,7 @@
 # Chain of thought
 
 
-Chain of thought is a prompting technique introduced in the paper [``Chain-of-Thought Prompting Elicits Reasoning in Large Language Models''](https://arxiv.org/abs/2201.11903) where throught prompting the authors generate a series of intermediate reasoning steps which improves the ability of LLMs to perform complex reasoning.
+Chain of thought is a prompting technique introduced in the paper ["Chain-of-Thought Prompting Elicits Reasoning in Large Language Models"](https://arxiv.org/abs/2201.11903) where throught prompting the authors generate a series of intermediate reasoning steps which improves the ability of LLMs to perform complex reasoning.
 
 In this guide, we use [outlines](https://outlines-dev.github.io/outlines/) to apply chain of thought through structured output.
 
@@ -52,8 +52,6 @@ We then define the Pydantic class for reasoning which will consist on a list of 
 ```python
 from typing import List
 
-from typing import List
-
 class Reasoning(BaseModel):
     reasoning: List[Reasoning_Step] = Field(..., description="List of reasoning steps")
     conclusion: str = Field(..., description="Conclusion")
@@ -61,13 +59,12 @@ class Reasoning(BaseModel):
 json_schema = Reasoning.model_json_schema()
 ```
 
-We could generate using the json schema but for a change we will use the regex:
+We could generate a response using the json schema but for a change we will use the regex:
 
 ```python
 from outlines.integrations.utils import convert_json_schema_to_str
 from outlines.fsm.json_schema import build_regex_from_schema
 
-json_schema = Reasoning.model_json_schema()
 schema_str = convert_json_schema_to_str(json_schema=json_schema)
 regex_str = build_regex_from_schema(schema_str)
 ```
@@ -88,13 +85,13 @@ def generate_hermes_prompt(user_prompt):
     )
 ```
 
-For a given user prompt, for example:
+For a given user prompt:
 
 ```python
 user_prompt = "9.11 and 9.9 -- which is bigger?"
 ```
 
-We can use `generate.regex` by passing the Pydantic class we previously defined, and call the generator with the Hermes prompt:
+we can use `generate.regex` by passing the Pydantic class we previously defined, and call the generator with the Hermes prompt:
 
 ```python
 generator = generate.regex(model, regex_str)
@@ -102,7 +99,7 @@ prompt = generate_hermes_prompt(user_prompt)
 response = generator(prompt, max_tokens=1024, temperature=0, seed=42)
 ```
 
-We obtain the reasoning steps as well as the conclusion
+We obtain a series of intermediate reasoning steps as well as the conclusion:
 
 ```python
 import json
@@ -118,6 +115,6 @@ print(json_response["conclusion"])
 # '9.11 is bigger.'
 ```
 
-We notice that the 4th reasoning step is wrong ``Since 1 is greater than 9, 9.11 is greater than 9.9.'', so we could probably give the model some examples for this particular task.
+We notice that the 4th reasoning step is wrong ``Since 1 is greater than 9, 9.11 is greater than 9.9.'', so we should probably give the model some examples for this particular task.
 
 This example was originally contributed by [Alonso Silva](https://github.com/alonsosilvaallende).
