@@ -8,3 +8,4 @@
 - [SimToM](simtom.md): Improve LLMs' Theory of Mind capabilities with perspective-taking prompting and JSON-structured generation.
 - [Q&A with Citations](qa-with-citations.md): Answer questions and provide citations using JSON-structured generation.
 - [Knowledge Graph Generation](knowledge_graph_extraction.md): Generate a Knowledge Graph from unstructured text using JSON-structured generation.
+- [Chain Of Thought (CoT)](chain_of_thought.md): Generate a series of intermediate reasoning steps using regex-structured generation.
