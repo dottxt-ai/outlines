@@ -109,6 +109,7 @@ nav:
       - Question-answering with citations: cookbook/qa-with-citations.md
       - Knowledge Graph Extraction: cookbook/knowledge_graph_extraction.md
       - Chain of Thought (CoT): cookbook/chain_of_thought.md
+      - ReAct Agent: cookbook/react_agent.md
       - Run on the cloud:
           - BentoML: cookbook/deploy-using-bentoml.md
           - Cerebrium: cookbook/deploy-using-cerebrium.md
