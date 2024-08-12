@@ -154,7 +154,7 @@ omit = [
 exclude_lines = [
     "pragma: no cover",
     "if TYPE_CHECKING:",
-    "...",
+    "\\.\\.\\.",
 ]
 show_missing = true
 
