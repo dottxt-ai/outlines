@@ -1,8 +1,4 @@
----
-title: Structured Generation Explanation
----
-
-# Structured Generation Explanation
+# How does Outlines work?
 
 
 Language models generate text token by token, using the previous token sequence as input and sampled logits as output. This document explains the structured generation process, where only legal tokens are considered for the next step based on a predefined automata, e.g. a regex-defined [finite-state machine](https://en.wikipedia.org/wiki/Finite-state_machine) (FSM) or [Lark](https://lark-parser.readthedocs.io/en/stable/) grammar.`

@@ -1,5 +1,7 @@
 # Examples
 
+This part of the documentation provides a few cookbooks that you can browse to get acquainted with the library and get some inspiration about what you could do with structured generation. Remember that you can easily change the model that is being used!
+
 - [Classification](classification.md): Classify customer requests.
 - [Named Entity Extraction](extraction.md): Extract information from pizza orders.
 - [Dating Profile](dating_profiles.md): Build dating profiles from descriptions using prompt templating and JSON-structured generation.

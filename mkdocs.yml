@@ -121,24 +121,24 @@ nav:
   - Docs:
     - reference/index.md
     - Generation:
-        - Generation Overview: reference/generation/generation.md
+        - Overview: reference/generation/generation.md
         - Text: reference/text.md
         - Samplers: reference/samplers.md
         - Structured generation:
+            - How does it work?: reference/generation/structured_generation_explanation.md
             - Classification: reference/generation/choices.md
             - Regex: reference/generation/regex.md
             - Type constraints: reference/generation/format.md
             - JSON (function calling): reference/generation/json.md
             - Grammar: reference/generation/cfg.md
             - Custom FSM operations: reference/generation/custom_fsm_ops.md
-            - Structured Generation Technical Explanation: reference/generation/structured_generation_explanation.md
     - Utilities:
         - Serve with vLLM: reference/serve/vllm.md
-        - Custom types: reference/types.md
+        - Custom types: reference/generation/types.md
         - Prompt templating: reference/prompting.md
         - Outlines functions: reference/functions.md
     - Models:
-        - Models Overview: reference/models/models.md
+        - Overview: reference/models/models.md
         - Open source:
           - Transformers: reference/models/transformers.md
           - Transformers Vision: reference/models/transformers_vision.md

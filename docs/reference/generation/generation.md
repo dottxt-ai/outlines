@@ -208,3 +208,9 @@ result = generator("What is 2+2?")
 print(result)
 # 4
 ```
+
+
+[jsonschema]: https://json-schema.org/learn/getting-started-step-by-step
+[pydantic]: https://docs.pydantic.dev/latest
+[cfg]: https://en.wikipedia.org/wiki/Context-free_grammar
+[ebnf]: https://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_form

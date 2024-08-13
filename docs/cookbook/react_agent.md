@@ -8,13 +8,13 @@ Additionally, we give the LLM the possibility of using a scratchpad described in
 
 We use [llama.cpp](https://github.com/ggerganov/llama.cpp) using the [llama-cpp-python](https://github.com/abetlen/llama-cpp-python) library. Outlines supports llama-cpp-python, but we need to install it ourselves:
 
-```shell
+```bash
 pip install llama-cpp-python
 ```
 
 We pull a quantized GGUF model, in this guide we pull [Hermes-2-Pro-Llama-3-8B](https://huggingface.co/NousResearch/Hermes-2-Theta-Llama-3-8B-GGUF) by [NousResearch](https://nousresearch.com/) from [HuggingFace](https://huggingface.co/):
 
-```shell
+```bash
 wget https://hf.co/NousResearch/Hermes-2-Pro-Llama-3-8B-GGUF/resolve/main/Hermes-2-Pro-Llama-3-8B-Q4_K_M.gguf
 ```
 
@@ -55,9 +55,8 @@ def wikipedia(q):
         "srsearch": q,
         "format": "json"
     }).json()["query"]["search"][0]["snippet"]
-```
 
-```python
+
 def calculate(numexp):
     return eval(numexp)
 ```
