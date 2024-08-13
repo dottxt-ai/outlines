@@ -1,18 +1,11 @@
 import dataclasses
-
-from typing import (
-    TYPE_CHECKING,
-    Iterator,
-    List,
-    Optional,
-    TypedDict,
-    Union,
-)
+from typing import TYPE_CHECKING, Iterator, List, Optional, TypedDict, Union
 
 from typing_extensions import Unpack
-from outlines.models.transformers import TransformerTokenizer
 
 from outlines.generate.api import GenerationParameters, SamplingParameters
+from outlines.models.transformers import TransformerTokenizer
+
 if TYPE_CHECKING:
     from exllamav2 import ExLlamaV2Lora
     from exllamav2.generator import ExLlamaV2DynamicGenerator, ExLlamaV2Sampler
@@ -24,17 +17,20 @@ class ExllamaV2Params(TypedDict, total=False):
     seed: int | None = None
     gen_settings: "ExLlamaV2Sampler.Settings"
 
+
 class ExLlamaV2Model:
     """Represents a `exl2` model."""
+
     def __init__(
         self,
         generator: "ExLlamaV2DynamicGenerator",
         tokenizer: TransformerTokenizer,
-        max_seq_len: int
+        max_seq_len: int,
     ):
         self.generator = generator
         self.tokenizer = tokenizer
         self.max_seq_len = max_seq_len
+
     def prepare_generation_parameters(
         self,
         prompts: Union[str, List[str]],
@@ -42,7 +38,7 @@ class ExLlamaV2Model:
         sampling_parameters: SamplingParameters,
         structure_logits_processor,
         **exllamav2_params: Unpack[ExllamaV2Params],
-    ):
+    ) -> tuple[ExllamaV2Params, Union[str, List[str]]]:
         """Prepare the generation parameters.
 
         `exllamav2` uses different default values
@@ -58,16 +54,19 @@ class ExLlamaV2Model:
             prompts = [prompts]
         max_tokens, stop_at, seed = dataclasses.astuple(generation_parameters)
 
-
         if max_tokens is None:
             max_tokens = []
             for prompt in prompts:
-                ids = self.generator.tokenizer.encode(prompt, encode_special_tokens = False)
+                ids = self.generator.tokenizer.encode(
+                    prompt, encode_special_tokens=False
+                )
                 prompt_tokens = ids.shape[-1]
                 max_tokens.append(self.max_seq_len - prompt_tokens)
             exllamav2_params["max_new_tokens"] = max_tokens
         else:
-            exllamav2_params["max_new_tokens"] = [max_tokens for _ in range(len(prompts))]
+            exllamav2_params["max_new_tokens"] = [
+                max_tokens for _ in range(len(prompts))
+            ]
 
         stop_conditions = [self.generator.tokenizer.eos_token_id]
         if isinstance(generation_parameters.stop_at, str):
@@ -78,7 +77,6 @@ class ExLlamaV2Model:
         exllamav2_params["stop_conditions"] = stop_conditions
         exllamav2_params["seed"] = seed
 
-
         gen_settings = ExLlamaV2Sampler.Settings()
         if sampling_parameters.temperature is not None:
             gen_settings.temperature = sampling_parameters.temperature
@@ -88,19 +86,50 @@ class ExLlamaV2Model:
             gen_settings.top_k = sampling_parameters.top_k
         gen_settings.logits_processor = structure_logits_processor
         exllamav2_params["gen_settings"] = gen_settings
+        if sampling_parameters.num_samples > 1:
+            prompts = prompts * sampling_parameters.num_samples
 
+        if len(prompts) == 1:
+            prompts = prompts[0]
 
-        return exllamav2_params
+        return exllamav2_params, prompts
+
+    def reformat_output(
+        self, output: Union[str, List[str]], sampling_parameters: SamplingParameters
+    ):
+        if isinstance(output, str):
+            return output
+        if len(output) == 1:
+            return output[0]
+        if sampling_parameters.num_samples > 1:
+            if len(output) == sampling_parameters.num_samples:
+                return output
+            assert len(output) % sampling_parameters.num_samples == 0
+            num_items_per_sample = len(output) // sampling_parameters.num_samples
+            new_output = []
+            for i in range(sampling_parameters.num_samples):
+                curr_sample = []
+                for j in range(num_items_per_sample):
+                    curr_sample.append(output[i * num_items_per_sample + j])
+                new_output.append(curr_sample)
+            return new_output
+        return output
+
     def generate(
         self,
         prompts: Union[str, List[str]],
         generation_parameters: GenerationParameters,
         structure_logits_processor,
         sampling_parameters: SamplingParameters,
-        **exllamav2_params: Unpack[ExllamaV2Params]
-    ) -> List[str]:
-        exllamav2_params = self.prepare_generation_parameters(prompts, generation_parameters, sampling_parameters, structure_logits_processor)
-        return self.generator.generate(
+        **exllamav2_params: Unpack[ExllamaV2Params],
+    ) -> Union[str, List[str]]:
+        exllamav2_params, prompts = self.prepare_generation_parameters(
+            prompts,
+            generation_parameters,
+            sampling_parameters,
+            structure_logits_processor,
+        )
+        output = self.generator.generate(
             prompt=prompts,
             gen_settings=exllamav2_params["gen_settings"],
             max_new_tokens=min(exllamav2_params["max_new_tokens"]),
@@ -110,49 +139,60 @@ class ExLlamaV2Model:
             add_bos=False,
             seed=exllamav2_params["seed"],
         )
+
+        return self.reformat_output(output, sampling_parameters)
+
     def stream(
         self,
         prompts: Union[str, List[str]],
         generation_parameters: GenerationParameters,
         structure_logits_processor,
         sampling_parameters: SamplingParameters,
-        **exllamav2_params: Unpack[ExllamaV2Params]
-    ) -> List[Iterator[str]]:
+        **exllamav2_params: Unpack[ExllamaV2Params],
+    ) -> Iterator[Union[str, List[str]]]:
         try:
             from exllamav2.generator import ExLlamaV2DynamicJob
         except ImportError:
             raise ImportError(
                 "The `exllamav2` and `torch` libraries needs to be installed in order to use `exllamav2` models."
             )
-        exllamav2_params = self.prepare_generation_parameters(prompts, generation_parameters, sampling_parameters, structure_logits_processor)
+        exllamav2_params, prompts = self.prepare_generation_parameters(
+            prompts,
+            generation_parameters,
+            sampling_parameters,
+            structure_logits_processor,
+        )
+
         order = {}
         if isinstance(prompts, str):
             prompts = [prompts]
         batch_size = len(prompts)
         seed = exllamav2_params["seed"]
         for idx, p in enumerate(prompts):
-
-            input_ids = self.generator.tokenizer.encode(p, encode_special_tokens = False, add_bos = False)
-
-            job = ExLlamaV2DynamicJob(
-                input_ids = input_ids,
-                max_new_tokens = exllamav2_params["max_new_tokens"][idx],
-                min_new_tokens = 0,
-                seed = seed,
-                stop_conditions = exllamav2_params["stop_conditions"],
-                gen_settings = exllamav2_params["gen_settings"],
-                token_healing = False,
-                decode_special_tokens = False,
+            input_ids = self.generator.tokenizer.encode(
+                p, encode_special_tokens=False, add_bos=False
             )
 
-            if seed is not None: seed += 1
+            job = ExLlamaV2DynamicJob(
+                input_ids=input_ids,
+                max_new_tokens=exllamav2_params["max_new_tokens"][idx],
+                min_new_tokens=0,
+                seed=seed,
+                stop_conditions=exllamav2_params["stop_conditions"],
+                gen_settings=exllamav2_params["gen_settings"],
+                token_healing=False,
+                decode_special_tokens=False,
+            )
+
+            if seed is not None:
+                seed += 1
 
             serial = self.generator.enqueue(job)
             order[serial] = idx
 
         # Collect outputs until all jobs finish
 
-        completions = [""] * batch_size
+        next_text = [""] * batch_size
 
         def token_generator() -> Iterator[str]:
             while self.generator.num_remaining_jobs():
@@ -161,10 +201,10 @@ class ExLlamaV2Model:
                     idx = order[r["serial"]]
                     if r["stage"] == "streaming":
                         text = r.get("text", "")
-                        completions[idx] += text
+                        next_text[idx] = text
                     if r["eos"]:
-                        completions[idx] = r
-                yield completions
+                        next_text[idx] = ""
+                yield self.reformat_output(next_text, sampling_parameters)
             return
 
         return token_generator()
@@ -189,8 +229,7 @@ def exl2(
     cache_q4: bool = False,
     paged: bool = True,
     max_chunk_size: Optional[int] = None,
-    lora: Optional["ExLlamaV2Lora"] = None
-
+    lora: Optional["ExLlamaV2Lora"] = None,
 ) -> ExLlamaV2Model:
     """
     Load an ExLlamaV2 model.
@@ -240,11 +279,10 @@ def exl2(
             ExLlamaV2Cache_8bit,
             ExLlamaV2Cache_Q4,
             ExLlamaV2Config,
-            ExLlamaV2Tokenizer
+            ExLlamaV2Tokenizer,
         )
         from exllamav2.generator import ExLlamaV2DynamicGenerator
         from transformers import AutoTokenizer
-
 
     except ImportError:
         raise ImportError(
@@ -253,7 +291,7 @@ def exl2(
     config = ExLlamaV2Config(model_path)
     if max_chunk_size is not None:
         config.max_input_len = max_chunk_size
-        config.max_attention_size = max_chunk_size ** 2
+        config.max_attention_size = max_chunk_size**2
 
     config.arch_compat_overrides()
     model = ExLlamaV2(config)
@@ -279,24 +317,29 @@ def exl2(
         draft_model = ExLlamaV2(draft_config)
 
         if cache_8bit:
-            draft_cache = ExLlamaV2Cache_8bit(draft_model, max_seq_len=max_seq_len, lazy=True)
+            draft_cache = ExLlamaV2Cache_8bit(
+                draft_model, max_seq_len=max_seq_len, lazy=True
+            )
         elif cache_q4:
-            draft_cache = ExLlamaV2Cache_Q4(draft_model, max_seq_len=max_seq_len, lazy=True)
+            draft_cache = ExLlamaV2Cache_Q4(
+                draft_model, max_seq_len=max_seq_len, lazy=True
+            )
         else:
-            draft_cache = ExLlamaV2Cache(draft_model, max_seq_len=max_seq_len, lazy=True)
-
+            draft_cache = ExLlamaV2Cache(
+                draft_model, max_seq_len=max_seq_len, lazy=True
+            )
 
     # Initialize the generator with all default parameters
     generator = ExLlamaV2DynamicGenerator(
-        model = model,
-        cache = cache,
-        draft_model = draft_model,
-        draft_cache = draft_cache,
-        tokenizer = tokenizer,
-        max_batch_size = max_batch_size,
-        use_ngram_draft = False,
-        max_chunk_size = max_chunk_size,
-        paged = paged,
+        model=model,
+        cache=cache,
+        draft_model=draft_model,
+        draft_cache=draft_cache,
+        tokenizer=tokenizer,
+        max_batch_size=max_batch_size,
+        use_ngram_draft=False,
+        max_chunk_size=max_chunk_size,
+        paged=paged,
     )
     if lora is not None:
         generator.set_loras(lora)
