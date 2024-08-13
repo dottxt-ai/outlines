@@ -1,5 +1,5 @@
 import dataclasses
-from typing import TYPE_CHECKING, Any, Iterator, List, Optional, TypedDict, Union
+from typing import TYPE_CHECKING, Any, Iterator, List, Optional, Tuple, TypedDict, Union
 
 from typing_extensions import Unpack
 
@@ -39,7 +39,7 @@ class ExLlamaV2Model:
         sampling_parameters: SamplingParameters,
         structure_logits_processor,
         **exllamav2_params: Unpack[ExllamaV2Params],
-    ) -> tuple[ExllamaV2Params, Union[str, List[str]]]:
+    ) -> Tuple[ExllamaV2Params, Union[str, List[str]]]:
         """Prepare the generation parameters.
 
         `exllamav2` uses different default values
