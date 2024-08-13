@@ -13,10 +13,10 @@ if TYPE_CHECKING:
 
 class ExllamaV2Params(TypedDict, total=False):
     max_tokens: int
-    stop_conditions: Optional[list[Union[int, str]]]
+    stop_conditions: Optional[List[Union[int, str]]]
     seed: Optional[int]
     gen_settings: "ExLlamaV2Sampler.Settings"
-    max_new_tokens: list[int]
+    max_new_tokens: List[int]
 
 
 class ExLlamaV2Model:
