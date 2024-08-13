@@ -1,5 +1,5 @@
 import dataclasses
-from typing import TYPE_CHECKING, Iterator, List, Optional, TypedDict, Union
+from typing import TYPE_CHECKING, Any, Iterator, List, Optional, TypedDict, Union
 
 from typing_extensions import Unpack
 
@@ -13,8 +13,8 @@ if TYPE_CHECKING:
 
 class ExllamaV2Params(TypedDict, total=False):
     max_tokens: int
-    stop_conditions: list[int | str] | None = None
-    seed: int | None = None
+    stop_conditions: Optional[list[int | str]]
+    seed: Optional[int]
     gen_settings: "ExLlamaV2Sampler.Settings"
     max_new_tokens: list[int]
 
@@ -344,7 +344,7 @@ def exl2(
     )
     if lora is not None:
         generator.set_loras(lora)
-    hf_tokenizer_kwargs = {}
+    hf_tokenizer_kwargs: dict[str, Any] = {}
     hf_tokenizer_kwargs.setdefault("padding_side", "left")
     hf_tokenizer = AutoTokenizer.from_pretrained(model_path, **hf_tokenizer_kwargs)
     max_seq_len = cache.max_seq_len
