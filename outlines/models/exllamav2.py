@@ -16,6 +16,7 @@ class ExllamaV2Params(TypedDict, total=False):
     stop_conditions: list[int | str] | None = None
     seed: int | None = None
     gen_settings: "ExLlamaV2Sampler.Settings"
+    max_new_tokens: list[int]
 
 
 class ExLlamaV2Model:
@@ -216,7 +217,7 @@ class ExLlamaV2Model:
             raise ImportError(
                 "The `exllamav2` and `torch` libraries needs to be installed in order to use `exllamav2` models."
             )
-        loras = [ExLlamaV2Lora.from_directory(self.model, adapter_path)]
+        loras = [ExLlamaV2Lora.from_directory(self.generator.model, adapter_path)]
         print(" -- Loading LoRA...")
         self.generator.set_loras(loras)
 
