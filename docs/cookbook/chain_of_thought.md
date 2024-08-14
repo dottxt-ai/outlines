@@ -94,7 +94,7 @@ def generate_hermes_prompt(user_prompt):
     return (
         "<|im_start|>system\n"
         "You are a world class AI model who answers questions in JSON "
-        f"Here's the json schema you must adhere to:\n<schema>\n{schema}\n</schema><|im_end|>\n"
+        f"Here's the json schema you must adhere to:\n<schema>\n{json_schema}\n</schema><|im_end|>\n"
         "<|im_start|>user\n"
         + user_prompt
         + "<|im_end|>"
