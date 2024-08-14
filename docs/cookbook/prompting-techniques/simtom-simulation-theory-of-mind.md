@@ -28,7 +28,8 @@ Example prompt:
 "Imagine you are a 19th century British explorer. You have just returned from a voyage to Africa and are writing in your journal. Describe your thoughts on encountering a giraffe for the first time. Write your journal entry using language and terminology common in the 19th century."
 
 This technique encourages the model to consider the limited knowledge, cultural context, and writing style of a 19th century explorer, potentially resulting in a more authentic and era-appropriate response.
-    
+
+  
 ## Code Example
 
 

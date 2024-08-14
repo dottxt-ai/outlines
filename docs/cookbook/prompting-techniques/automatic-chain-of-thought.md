@@ -1,8 +1,13 @@
+---
+title: Automatic Chain-of-Thought (Auto-CoT) Prompting
+---
+
 # Automatic Chain-of-Thought (Auto-CoT) Prompting
 
 
 Auto-CoT is a technique that automates the process of creating Chain-of-Thought (CoT) examples for prompting. It works by first using a Zero-Shot CoT prompt on a set of questions to generate chains of thought automatically. The best-generated chains are then selected and used to construct a Few-Shot CoT prompt for the target task. This method reduces the need for manual creation of CoT examples and can potentially generate more diverse and task-specific reasoning chains.
 
+Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
 
 ## Step by Step Example
 

@@ -1,9 +1,13 @@
+---
+title: Max Mutual Information Method
+---
+
 # Max Mutual Information Method
 
 
 The Max Mutual Information Method is a prompting technique that aims to find the most effective prompt template by creating multiple variations and selecting the one that maximizes the mutual information between the prompt and the language model's outputs. This approach involves generating diverse prompt templates with different styles and exemplars, using each template to generate outputs from the language model, calculating the mutual information between the prompts and their corresponding outputs, and finally selecting the template that yields the highest mutual information score. By doing so, this method seeks to identify the prompt that elicits the most informative and relevant responses from the language model.
 
-
+Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
 ## Step by Step Example
 
 

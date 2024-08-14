@@ -1,8 +1,13 @@
+---
+title: Contrastive CoT Prompting
+---
+
 # Contrastive CoT Prompting
 
 
 Contrastive CoT (Chain-of-Thought) Prompting is an advanced prompting technique that enhances the standard Chain-of-Thought approach. This method involves providing the language model with both correct and incorrect reasoning examples for solving problems. By showcasing both proper problem-solving steps and common pitfalls or mistakes, the technique aims to improve the model's ability to distinguish between valid and invalid reasoning processes. This approach has shown significant improvements in areas such as Arithmetic Reasoning and Factual QA, as it helps the model to better understand what constitutes good reasoning and what to avoid.
     
+Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
 
 ## A worked example
 
@@ -54,6 +59,8 @@ Problem: Tom has 10 candies and eats 4 of them. How many candies does Tom have l
 
 By using this Contrastive CoT Prompting technique, you provide the LLM with examples of both correct and incorrect reasoning, which helps it to better understand the problem-solving process and avoid common mistakes.
     
+
+
 ## Code Example
 
 

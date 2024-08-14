@@ -1,8 +1,13 @@
+---
+title: Analogical Prompting
+---
+
 # Analogical Prompting
 
 
 Analogical Prompting is an advanced prompting technique that automatically generates exemplars including Chain-of-Thought (CoT) reasoning. It works by creating an analogous problem to the target problem, demonstrating the step-by-step reasoning process for solving that analogous problem, and then presenting the target problem. This allows the language model to apply similar reasoning to solve the new problem.
-    
+
+Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
 
 ## A worked example
 

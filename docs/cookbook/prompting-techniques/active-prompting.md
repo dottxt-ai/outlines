@@ -1,8 +1,13 @@
+---
+title: Active Prompting
+---
+
 # Active Prompting
 
 
 Active Prompting is an iterative technique that involves dynamically refining prompts based on the model's responses. This method aims to improve the quality and relevance of the model's outputs by continuously adjusting the input. The process begins with an initial prompt, followed by an evaluation of the model's response. Based on this evaluation, the prompt is modified to address any shortcomings or to further guide the model towards the desired output. This cycle of prompting, evaluating, and refining continues until the desired quality or specificity of response is achieved.
 
+Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
 
 ## Step by Step Example
 

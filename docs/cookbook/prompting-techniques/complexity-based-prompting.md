@@ -1,3 +1,7 @@
+---
+title: Complexity-based Prompting
+---
+
 # Complexity-based Prompting
 
 
@@ -9,6 +13,7 @@ Complexity-based Prompting is an advanced technique that enhances Chain-of-Thoug
 
 This technique aims to improve performance on challenging tasks by exposing the model to more complex reasoning patterns and aggregating multiple solution attempts.
     
+Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
 
 ## A worked example
 

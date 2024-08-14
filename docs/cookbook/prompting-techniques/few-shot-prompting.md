@@ -1,3 +1,7 @@
+---
+title: Few-Shot Prompting
+---
+
 # Few-Shot Prompting
 
 
@@ -14,7 +18,7 @@ To implement Few-Shot Prompting:
 
 This technique is particularly useful for tasks where the model might struggle with zero-shot performance, or when you need to specify a particular output format or style.
     
-
+Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
 ## A worked example
 
 

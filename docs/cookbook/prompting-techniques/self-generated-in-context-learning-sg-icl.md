@@ -35,7 +35,8 @@ To implement SG-ICL:
 5. Submit this new prompt to the model to get the final output for your actual input.
 
 6. (Optional) Repeat steps 2-5 with different generated examples for each new input to avoid overfitting to specific synthetic examples.
-    
+
+
 ## Code Example
 
 

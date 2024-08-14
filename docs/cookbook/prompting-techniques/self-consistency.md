@@ -61,7 +61,9 @@ Since all responses agree on 60 miles per hour, this is selected as the final an
 Output: The train's average speed is 60 miles per hour.
 
 In this case, all reasoning paths led to the same correct answer, demonstrating high self-consistency. In more complex problems, different paths might lead to different answers, and the most frequent answer would be selected.
-    
+
+
+
 ## Code Example
 
 

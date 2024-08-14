@@ -1,3 +1,7 @@
+---
+title: Uncertainty-Routed CoT Prompting
+---
+
 # Uncertainty-Routed CoT Prompting
 
 
@@ -49,7 +53,9 @@ Step 4: Select the majority answer.
 The system would confidently select 60 miles per hour as the final answer.
 
 In this simple example, all paths led to the same conclusion. In more complex problems, you might see diverging paths, and the system would then either select a majority answer if it exceeds the threshold or fall back to greedy sampling if there's no clear consensus.
-    
+
+Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
+
 ## Code Example
 
 

@@ -9,9 +9,7 @@ Cumulative Reasoning is an advanced prompting technique that builds on the Chain
     
 Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
 
-## A worked example
 
-None    
 ## Code Example
 
 
