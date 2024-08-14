@@ -80,3 +80,64 @@ print(reasoning)
 
     steps=[ReasoningStep(step_number=1, description='First, we will divide the distance traveled by the time it took to travel that distance.')] final_answer="The train's average speed is 60 miles per hour."
 
+
+    
+## Another Example
+
+
+
+
+
+
+```python
+import outlines
+from pydantic import BaseModel, Field
+from typing import List
+from outlines.integrations.utils import convert_json_schema_to_str
+
+model = outlines.models.transformers("google/gemma-2b")
+```
+
+
+    Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]
+
+
+
+```python
+class ChainOfThought(BaseModel):
+    reasoning_steps: List[str] = Field(..., description="List of reasoning steps")
+    final_answer: str = Field(..., description="The final answer to the question")
+
+
+schema_str = convert_json_schema_to_str(json_schema=ChainOfThought.model_json_schema())
+
+prompt = f"""
+Answer in json according to the following schema: {schema_str}
+
+
+John has 5 apples. He gives 2 apples to his friend and then buys 3 more apples from the store. How many apples does John have now? Let's think step by step."""
+
+generator = outlines.generate.json(model, ChainOfThought)
+result = generator(prompt)
+
+print("Reasoning steps:")
+for step in result.reasoning_steps:
+    print(f"- {step}")
+print(f"\nFinal answer: {result.final_answer}")
+```
+
+    Compiling FSM index for all state transitions: 100%|█████████████████| 65/65 [00:02<00:00, 29.68it/s]
+
+
+    Reasoning steps:
+    - John has 5 apples. John gives 2 apples to his friend.
+    - John has 3 apples.
+    - John buys 3 apples from the store.
+    
+    Final answer: John now has 3 apples
+
+
+
+```python
+
+```

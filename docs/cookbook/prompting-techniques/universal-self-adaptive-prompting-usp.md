@@ -131,3 +131,4 @@ print(f"Sentiment: {result}")
     Review: This product is amazing! I couldn't be happier with my purchase.
     Sentiment: neutral
 
+The sentiment result isn't great, however remember that our scoring function is neutral. If we were to spend some time working on the scoring, we could improve the result.

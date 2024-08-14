@@ -1,56 +1,58 @@
----
-title: Contrastive CoT Prompting
----
-
 # Contrastive CoT Prompting
 
 
-Contrastive CoT Prompting adds both exemplars with incorrect and correct explanations to the Chain-of-Thought prompt in order to show the language model how not to reason, as well as how to reason correctly. This technique aims to improve the model's ability to distinguish between valid and invalid reasoning paths, leading to more accurate responses. By presenting contrasting examples, the model learns to avoid common pitfalls and strengthens its understanding of proper problem-solving approaches.
+Contrastive CoT (Chain-of-Thought) Prompting is an advanced prompting technique that enhances the standard Chain-of-Thought approach. This method involves providing the language model with both correct and incorrect reasoning examples for solving problems. By showcasing both proper problem-solving steps and common pitfalls or mistakes, the technique aims to improve the model's ability to distinguish between valid and invalid reasoning processes. This approach has shown significant improvements in areas such as Arithmetic Reasoning and Factual QA, as it helps the model to better understand what constitutes good reasoning and what to avoid.
     
-Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
 
 ## A worked example
 
 
-To implement Contrastive CoT Prompting:
+Here's a step-by-step guide to implement Contrastive CoT Prompting:
 
-1. Identify the task or problem type you want the model to solve.
+1. Choose a problem type: For this example, we'll use a simple arithmetic word problem.
 
-2. Create several example problems with both correct and incorrect reasoning paths:
-   a. Write out the problem statement.
-   b. Provide an incorrect chain of reasoning, clearly labeled as incorrect.
-   c. Explain why the reasoning is flawed.
-   d. Provide the correct chain of reasoning, clearly labeled as correct.
-   e. Explain why this reasoning is valid.
+2. Create a correct chain of thought:
+Problem: If Sarah has 5 apples and gives 2 to her friend, how many apples does she have left?
+Correct reasoning: 
+- Sarah starts with 5 apples
+- She gives away 2 apples
+- To find the remaining apples, we subtract: 5 - 2 = 3
+- Therefore, Sarah has 3 apples left
 
-3. Construct your prompt by combining:
-   a. A clear instruction of the task.
-   b. The contrasting examples you created (2-3 is usually sufficient).
-   c. The new problem you want the model to solve.
+3. Create an incorrect chain of thought:
+Incorrect reasoning:
+- Sarah starts with 5 apples
+- She gives away 2 apples
+- To find the remaining apples, we add: 5 + 2 = 7
+- Therefore, Sarah has 7 apples left
 
-4. Submit the prompt to the language model.
+4. Formulate the prompt with both examples:
+Here's how to solve arithmetic word problems:
 
-Here's a simple example for basic math word problems:
+Correct example:
+Problem: If Sarah has 5 apples and gives 2 to her friend, how many apples does she have left?
+Reasoning: 
+- Sarah starts with 5 apples
+- She gives away 2 apples
+- To find the remaining apples, we subtract: 5 - 2 = 3
+- Therefore, Sarah has 3 apples left
+This reasoning is correct because we subtract the number of apples given away from the initial number.
 
-Instruction: Solve the following math word problem. Avoid common mistakes in reasoning and calculation.
+Incorrect example:
+Problem: If Sarah has 5 apples and gives 2 to her friend, how many apples does she have left?
+Reasoning:
+- Sarah starts with 5 apples
+- She gives away 2 apples
+- To find the remaining apples, we add: 5 + 2 = 7
+- Therefore, Sarah has 7 apples left
+This reasoning is incorrect because it adds the number of apples given away instead of subtracting them.
 
-Example 1:
-Problem: Tom has 5 apples and gives 2 to his friend. How many apples does Tom have left?
+Now, solve this new problem using correct reasoning:
+Problem: Tom has 10 candies and eats 4 of them. How many candies does Tom have left?
 
-Incorrect reasoning (DO NOT FOLLOW):
-Tom starts with 5 apples. He gives away 2, so we add 2 to 5. Tom now has 7 apples.
-This reasoning is wrong because we're adding when we should be subtracting.
+5. Present this prompt to the LLM and analyze its response to ensure it follows the correct reasoning pattern.
 
-Correct reasoning (FOLLOW THIS):
-Tom starts with 5 apples. He gives away 2, so we subtract 2 from 5. 5 - 2 = 3. Tom now has 3 apples.
-This reasoning is correct because we're subtracting the apples Tom gave away.
-
-New Problem:
-Sarah has 10 cookies. She eats 3 and then bakes 5 more. How many cookies does Sarah have now?
-
-Please solve this problem using correct reasoning.
-
-5. Review the model's response and assess if it followed the correct reasoning path while avoiding the pitfalls demonstrated in the incorrect examples.
+By using this Contrastive CoT Prompting technique, you provide the LLM with examples of both correct and incorrect reasoning, which helps it to better understand the problem-solving process and avoid common mistakes.
     
 ## Code Example
 
@@ -58,45 +60,61 @@ Please solve this problem using correct reasoning.
 
 
 
+
 ```python
-from pydantic import BaseModel, conint
 import outlines
+from outlines.integrations.utils import convert_json_schema_to_str
+from pydantic import BaseModel, Field
+from typing import List
 
-class MathSolution(BaseModel):
-    reasoning_steps: list[str]
-    final_answer: conint(gt=0)
+model = outlines.models.transformers("google/gemma-2b")
 
-model = outlines.models.transformers("mistralai/Mistral-7B-Instruct-v0.1", device="cuda")
-generator = outlines.generate.json(model, MathSolution)
+class ReasoningStep(BaseModel):
+    step: str = Field(..., description="A single step in the reasoning process")
 
-prompt = """Solve the following math word problem. Avoid common mistakes in reasoning and calculation.
+class ArithmeticSolution(BaseModel):
+    reasoning: List[ReasoningStep] = Field(..., description="List of reasoning steps")
+    answer: int = Field(..., description="The final numerical answer")
 
-Example 1:
-Problem: Tom has 5 apples and gives 2 to his friend. How many apples does Tom have left?
+schema_str = convert_json_schema_to_str(ArithmeticSolution.schema())
 
-Incorrect reasoning (DO NOT FOLLOW):
-Tom starts with 5 apples. He gives away 2, so we add 2 to 5. Tom now has 7 apples.
-This reasoning is wrong because we're adding when we should be subtracting.
+prompt = f"""Here's how to solve arithmetic word problems:
 
-Correct reasoning (FOLLOW THIS):
-Tom starts with 5 apples. He gives away 2, so we subtract 2 from 5. 5 - 2 = 3. Tom now has 3 apples.
-This reasoning is correct because we're subtracting the apples Tom gave away.
+Correct example:
+Problem: If Sarah has 5 apples and gives 2 to her friend, how many apples does she have left?
+Reasoning: 
+- Sarah starts with 5 apples
+- She gives away 2 apples
+- To find the remaining apples, we subtract: 5 - 2 = 3
+- Therefore, Sarah has 3 apples left
+This reasoning is correct because we subtract the number of apples given away from the initial number.
 
-New Problem:
-Sarah has 10 cookies. She eats 3 and then bakes 5 more. How many cookies does Sarah have now?
+Incorrect example:
+Problem: If Sarah has 5 apples and gives 2 to her friend, how many apples does she have left?
+Reasoning:
+- Sarah starts with 5 apples
+- She gives away 2 apples
+- To find the remaining apples, we add: 5 + 2 = 7
+- Therefore, Sarah has 7 apples left
+This reasoning is incorrect because it adds the number of apples given away instead of subtracting them.
 
-Please solve this problem using correct reasoning. Provide your reasoning steps and the final answer."""
+Now, solve this new problem using correct reasoning:
+Problem: Tom has 10 candies and eats 4 of them. How many candies does Tom have left?
 
-solution = generator(prompt)
-print(solution)
+Provide your reasoning steps and final answer in the following JSON schema: {schema_str}
+
+Write down your reasoning process, step by step, before providing the final answer.
+"""
+
+generator = outlines.generate.json(model, ArithmeticSolution)
+result = generator(prompt)
+print(result)
 ```
 
 
     Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]
 
 
-    We detected that you are passing `past_key_values` as a tuple and this is deprecated and will be removed in v4.43. Please use an appropriate `Cache` class (https://huggingface.co/docs/transformers/v4.41.3/en/internal/generation_utils#transformers.Cache)
+    reasoning=[ReasoningStep(step='x = 10 - 4 = 6')] answer=6
 
-
-    reasoning_steps=['Sarah starts with 10 cookies.', 'She eats 3 cookies, reducing her total to 10 - 3 = 7.', 'Then she bakes 5 more cookies, increasing her total to 7 + 5 = 12.'] final_answer=12
 

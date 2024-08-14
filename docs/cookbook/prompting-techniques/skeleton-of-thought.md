@@ -93,3 +93,4 @@ for i, step in enumerate(expanded_steps, 1):
        The new feature will allow users to create and log into their accounts, providing them with access to premium content and better user experience. The feature will use OAuth for authentication and lead the user to a secure login page on our site.
     
 
+We can see that this model does a relatively good job, but that we might want to combine this technique with another to improve the quality of the output.

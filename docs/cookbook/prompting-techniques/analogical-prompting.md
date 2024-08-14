@@ -1,62 +1,42 @@
----
-title: Analogical Prompting
----
-
 # Analogical Prompting
 
 
-Analogical Prompting automatically generates exemplars that include chains-of-thought (CoT) reasoning for a given task. It aims to improve performance on tasks like mathematical reasoning and code generation by providing the language model with relevant analogous examples to reference. The technique works by:
-
-1. Analyzing the target task/problem
-2. Generating analogous example problems 
-3. Producing CoT solutions for those examples
-4. Including the analogous examples + solutions as part of the prompt
-
-This allows the model to see relevant reasoning patterns before approaching the actual task.
-
-Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
+Analogical Prompting is an advanced prompting technique that automatically generates exemplars including Chain-of-Thought (CoT) reasoning. It works by creating an analogous problem to the target problem, demonstrating the step-by-step reasoning process for solving that analogous problem, and then presenting the target problem. This allows the language model to apply similar reasoning to solve the new problem.
     
 
 ## A worked example
 
 
-Let's say we want to use Analogical Prompting to help solve a complex math word problem. Here are the steps:
+Here's how to implement Analogical Prompting for a simple math word problem:
 
-1. Analyze target problem: 
-"A store is having a 30% off sale. If an item originally costs $80, how much will it cost after the discount?"
+1. Define the target problem:
+   "Sarah has 3 bags of marbles. Each bag contains 12 marbles. How many marbles does Sarah have in total?"
 
-2. Generate analogous example:
-"A restaurant offers a 25% discount for early bird diners. If a meal normally costs $60, how much would it cost with the discount?"
+2. Generate an analogous problem:
+   "John has 4 boxes of chocolates. Each box contains 6 chocolates. How many chocolates does John have in total?"
 
-3. Produce CoT solution for example:
-"Let's approach this step-by-step:
-1) The discount is 25% of $60
-2) 25% = 0.25
-3) 0.25 * $60 = $15 (this is the discount amount)
-4) The discounted price is the original price minus the discount
-5) $60 - $15 = $45
-Therefore, the meal would cost $45 with the early bird discount."
+3. Provide CoT reasoning for the analogous problem:
+   "Let's solve this step by step:
+   1. John has 4 boxes of chocolates
+   2. Each box contains 6 chocolates
+   3. To find the total, we multiply: 4 x 6 = 24
+   Therefore, John has 24 chocolates in total."
 
-4. Construct final prompt:
-"Here's an example of calculating a discounted price:
+4. Present the full prompt:
 
-Q: A restaurant offers a 25% discount for early bird diners. If a meal normally costs $60, how much would it cost with the discount?
+   "Problem: John has 4 boxes of chocolates. Each box contains 6 chocolates. How many chocolates does John have in total?
 
-A: Let's approach this step-by-step:
-1) The discount is 25% of $60
-2) 25% = 0.25
-3) 0.25 * $60 = $15 (this is the discount amount)
-4) The discounted price is the original price minus the discount
-5) $60 - $15 = $45
-Therefore, the meal would cost $45 with the early bird discount.
+   Solution:
+   Let's solve this step by step:
+   1. John has 4 boxes of chocolates
+   2. Each box contains 6 chocolates
+   3. To find the total, we multiply: 4 x 6 = 24
+   Therefore, John has 24 chocolates in total.
 
-Now, please solve this problem:
+   Now, solve this problem:
+   Sarah has 3 bags of marbles. Each bag contains 12 marbles. How many marbles does Sarah have in total?"
 
-Q: A store is having a 30% off sale. If an item originally costs $80, how much will it cost after the discount?
-
-A: Let's solve this step-by-step:"
-
-By providing this analogous example with detailed reasoning, we give the model a pattern to follow when solving the target problem.
+5. The language model should now apply analogous reasoning to solve the target problem.
     
 ## Code Example
 
@@ -64,56 +44,99 @@ By providing this analogous example with detailed reasoning, we give the model a
 
 
 
+
 ```python
+import outlines
 from pydantic import BaseModel, Field
 from typing import List
-import outlines
 
-class Step(BaseModel):
-    description: str
+# Define the model for math word problems
+class MathProblem(BaseModel):
+    subject: str = Field(..., description="The subject of the problem")
+    item: str = Field(..., description="The item being counted")
+    containers: int = Field(..., description="Number of containers")
+    items_per_container: int = Field(..., description="Number of items in each container")
 
-class Problem(BaseModel):
-    question: str
-    steps: List[Step]
-    solution: float
+# Define the model for solution steps
+class Solution(BaseModel):
+    steps: List[str] = Field(..., description="Step-by-step solution")
+    result: int = Field(..., description="Final result")
 
-class AnalogicalPromptResponse(BaseModel):
-    example_problem: Problem
-    target_problem: Problem
+# Initialize the language model
+model = outlines.models.transformers("google/gemma-2b")
 
-model = outlines.models.transformers("mistralai/Mistral-7B-Instruct-v0.1", device="cuda")
-
-prompt = """
-Use Analogical Prompting to solve a math problem. Here's an example:
-
-Q: A restaurant offers a 25% discount for early bird diners. If a meal normally costs $60, how much would it cost with the discount?
-
-A: Let's approach this step-by-step:
-1) The discount is 25% of $60
-2) 25% = 0.25
-3) 0.25 * $60 = $15 (this is the discount amount)
-4) The discounted price is the original price minus the discount
-5) $60 - $15 = $45
-Therefore, the meal would cost $45 with the early bird discount.
-
-Now, solve this problem using the same step-by-step approach:
-
-Q: A store is having a 30% off sale. If an item originally costs $80, how much will it cost after the discount?
-
-Provide the solution in a structured format.
-"""
-
-generator = outlines.generate.json(model, AnalogicalPromptResponse)
-response = generator(prompt)
-print(response)
 ```
+
+    `config.hidden_act` is ignored, you should use `config.hidden_activation` instead.
+    Gemma's activation function will be set to `gelu_pytorch_tanh`. Please, use
+    `config.hidden_activation` if you want to override this behaviour.
+    See https://github.com/huggingface/transformers/pull/29402 for more details.
+
 
 
     Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]
 
 
-    We detected that you are passing `past_key_values` as a tuple and this is deprecated and will be removed in v4.43. Please use an appropriate `Cache` class (https://huggingface.co/docs/transformers/v4.41.3/en/internal/generation_utils#transformers.Cache)
+
+```python
+
+from outlines.integrations.utils import convert_json_schema_to_str
+schema_str = convert_json_schema_to_str(json_schema=Solution.model_json_schema())
+# Create the Analogical Prompting function
+def analogical_prompt(problem: MathProblem) -> str:
+    return f"""
+Analogous Problem: John has 4 boxes of chocolates. Each box contains 6 chocolates. How many chocolates does John have in total?
+
+Analogous Solution:
+Let's solve this step by step:
+1. John has 4 boxes of chocolates
+2. Each box contains 6 chocolates
+3. To find the total, we multiply: 4 x 6 = 24
+Therefore, John has 24 chocolates in total.
+
+Now, solve this problem: {problem.subject} has {problem.containers} {problem.item}s of {problem.item}s. Each {problem.item} contains {problem.items_per_container} {problem.item}s. How many {problem.item}s does {problem.subject} have in total?
+
+Provide a step-by-step solution and the final result in JSON format according to this schema: {schema_str}
+    """
+
+# Generate the solution using Analogical Prompting
+problem = MathProblem(subject="Sarah", item="bag", containers=3, items_per_container=12)
+```
 
 
-    example_problem=Problem(question='A restaurant offers a 25% discount for early bird diners. If a meal normally costs $60, how much would it cost with the discount?', steps=[Step(description='Step 1: The discount is 25% of $60'), Step(description='Step 2: 25% = 0.25'), Step(description='Step 3: 0.25 * $60 = $15 (this is the discount amount)'), Step(description='Step 4: The discounted price is the original price minus the discount'), Step(description='Step 5: $60 - $15 = $45')], solution=45.0) target_problem=Problem(question='A store is having a 30% off sale. If an item originally costs $80, how much will it cost after the discount?', steps=[Step(description='Step 1: The discount is 30% of $80'), Step(description='Step 2: 30% = 0.3'), Step(description='Step 3: 0.3 * $80 = $24 (this is the discount amount)'), Step(description='Step 4: The discounted price is the original price minus the discount'), Step(description='Step 5: $80 - $24 = $56')], solution=56.0)
+```python
+prompt = analogical_prompt(problem)
+print(prompt)
+```
+
+    
+    Analogous Problem: John has 4 boxes of chocolates. Each box contains 6 chocolates. How many chocolates does John have in total?
+    
+    Analogous Solution:
+    Let's solve this step by step:
+    1. John has 4 boxes of chocolates
+    2. Each box contains 6 chocolates
+    3. To find the total, we multiply: 4 x 6 = 24
+    Therefore, John has 24 chocolates in total.
+    
+    Now, solve this problem: Sarah has 3 bags of bags. Each bag contains 12 bags. How many bags does Sarah have in total?
+    
+    Provide a step-by-step solution and the final result in JSON format according to this schema: {"properties": {"steps": {"description": "Step-by-step solution", "items": {"type": "string"}, "title": "Steps", "type": "array"}, "result": {"description": "Final result", "title": "Result", "type": "integer"}}, "required": ["steps", "result"], "title": "Solution", "type": "object"}
+        
+
+
+
+```python
+generator = outlines.generate.json(model, Solution)
+solution = generator(prompt)
+
+print(f"Problem: {problem}")
+print(f"Solution: {solution}")
+```
+
+    Problem: subject='Sarah' item='bag' containers=3 items_per_container=12
+    Solution: steps=['Step 1: Divide the given values', '$({2} x {2}) - {1} = {0}$'] result=3
+
+
+We can see here that the small model struggles to get the right answer. We might want to explore providing more examples.
 
