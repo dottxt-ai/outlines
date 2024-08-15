@@ -5,7 +5,7 @@ title: Universal Self-Adaptive Prompting (USP)
 # Universal Self-Adaptive Prompting (USP)
 
 
-Universal Self-Adaptive Prompting (USP) is an advanced prompting technique that aims to generate high-quality few-shot prompts for any given task without requiring labeled data. It builds upon the Consistency-based Self-adaptive Prompting (COSP) method but is designed to be more generalizable across different tasks. 
+Universal Self-Adaptive Prompting (USP) is an advanced prompting technique that aims to generate high-quality few-shot prompts for any given task without requiring labeled data. It builds upon the Consistency-based Self-adaptive Prompting (COSP) method but is designed to be more generalizable across different tasks.
 
 USP works by:
 1. Using unlabeled data to generate potential exemplars
@@ -14,7 +14,7 @@ USP works by:
 4. Applying the generated prompt to the target task
 
 Unlike COSP, USP does not rely on Self-Consistency for final output generation, making it more efficient for larger language models.
-    
+
 
 Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
 
@@ -63,7 +63,7 @@ Now, classify this review:
 [Insert new review here]"
 
 By using USP, you create a task-specific prompt that can adapt to various inputs without requiring manually labeled training data.
-    
+
 ## Code Example
 
 
@@ -125,7 +125,7 @@ print(f"Sentiment: {result}")
 
     Compiling FSM index for all state transitions: 100%|█| 1250/1250 [00:12<00:
     We detected that you are passing `past_key_values` as a tuple and this is deprecated and will be removed in v4.43. Please use an appropriate `Cache` class (https://huggingface.co/docs/transformers/v4.41.3/en/internal/generation_utils#transformers.Cache)
-    Compiling FSM index for all state transitions: 100%|█| 16/16 [00:00<00:00, 
+    Compiling FSM index for all state transitions: 100%|█| 16/16 [00:00<00:00,
 
 
     Review: This product is amazing! I couldn't be happier with my purchase.

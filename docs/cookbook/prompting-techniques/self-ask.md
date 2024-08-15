@@ -6,7 +6,7 @@ title: Self-Ask
 
 
 Self-Ask is a prompting technique that encourages the language model to break down complex questions into simpler sub-questions, answer those sub-questions, and then use that information to answer the original question. This technique involves prompting the model to first determine if it needs to ask follow-up questions, generate those questions if needed, answer them, and finally answer the original question based on the accumulated information.
-    
+
 Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
 
 ## A worked example
@@ -79,4 +79,3 @@ print(f"Final answer: {response.final_answer}")
     Follow-up Q: What was the population of New York City in that year?
     Follow-up A: According to the United States Census Bureau, the estimated population of New York City in 1931 was 5,633,551.
     Final answer: According to the United States Census Bureau, the estimated population of New York City in 1931, the year the Empire State Building was completed, was 5,633,551.
-

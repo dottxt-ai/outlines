@@ -6,7 +6,7 @@ title: Contrastive CoT Prompting
 
 
 Contrastive CoT (Chain-of-Thought) Prompting is an advanced prompting technique that enhances the standard Chain-of-Thought approach. This method involves providing the language model with both correct and incorrect reasoning examples for solving problems. By showcasing both proper problem-solving steps and common pitfalls or mistakes, the technique aims to improve the model's ability to distinguish between valid and invalid reasoning processes. This approach has shown significant improvements in areas such as Arithmetic Reasoning and Factual QA, as it helps the model to better understand what constitutes good reasoning and what to avoid.
-    
+
 Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
 
 ## A worked example
@@ -18,7 +18,7 @@ Here's a step-by-step guide to implement Contrastive CoT Prompting:
 
 2. Create a correct chain of thought:
 Problem: If Sarah has 5 apples and gives 2 to her friend, how many apples does she have left?
-Correct reasoning: 
+Correct reasoning:
 - Sarah starts with 5 apples
 - She gives away 2 apples
 - To find the remaining apples, we subtract: 5 - 2 = 3
@@ -36,7 +36,7 @@ Here's how to solve arithmetic word problems:
 
 Correct example:
 Problem: If Sarah has 5 apples and gives 2 to her friend, how many apples does she have left?
-Reasoning: 
+Reasoning:
 - Sarah starts with 5 apples
 - She gives away 2 apples
 - To find the remaining apples, we subtract: 5 - 2 = 3
@@ -58,7 +58,7 @@ Problem: Tom has 10 candies and eats 4 of them. How many candies does Tom have l
 5. Present this prompt to the LLM and analyze its response to ensure it follows the correct reasoning pattern.
 
 By using this Contrastive CoT Prompting technique, you provide the LLM with examples of both correct and incorrect reasoning, which helps it to better understand the problem-solving process and avoid common mistakes.
-    
+
 
 
 ## Code Example
@@ -89,7 +89,7 @@ prompt = f"""Here's how to solve arithmetic word problems:
 
 Correct example:
 Problem: If Sarah has 5 apples and gives 2 to her friend, how many apples does she have left?
-Reasoning: 
+Reasoning:
 - Sarah starts with 5 apples
 - She gives away 2 apples
 - To find the remaining apples, we subtract: 5 - 2 = 3
@@ -123,5 +123,3 @@ print(result)
 
 
     reasoning=[ReasoningStep(step='x = 10 - 4 = 6')] answer=6
-
-

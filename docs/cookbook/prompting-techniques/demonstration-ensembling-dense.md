@@ -140,104 +140,103 @@ print(final_output)
     Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]
 
 
-    
+
 Compiling FSM index for all state transitions:   0%|                                                                                                                                  | 0/119 [00:00<?, ?it/s]
 
-    
+
 Compiling FSM index for all state transitions:   1%|█                                                                                                                         | 1/119 [00:00<00:20,  5.82it/s]
 
-    
+
 Compiling FSM index for all state transitions:   4%|█████▏                                                                                                                    | 5/119 [00:00<00:05, 20.21it/s]
 
-    
+
 Compiling FSM index for all state transitions:   8%|█████████▏                                                                                                                | 9/119 [00:00<00:04, 27.04it/s]
 
-    
+
 Compiling FSM index for all state transitions:  11%|█████████████▏                                                                                                           | 13/119 [00:00<00:03, 30.80it/s]
 
-    
+
 Compiling FSM index for all state transitions:  14%|█████████████████▎                                                                                                       | 17/119 [00:00<00:03, 33.53it/s]
 
-    
+
 Compiling FSM index for all state transitions:  18%|█████████████████████▎                                                                                                   | 21/119 [00:00<00:02, 33.73it/s]
 
-    
+
 Compiling FSM index for all state transitions:  21%|█████████████████████████▍                                                                                               | 25/119 [00:00<00:02, 33.25it/s]
 
-    
+
 Compiling FSM index for all state transitions:  24%|█████████████████████████████▍                                                                                           | 29/119 [00:00<00:02, 34.06it/s]
 
-    
+
 Compiling FSM index for all state transitions:  28%|█████████████████████████████████▌                                                                                       | 33/119 [00:01<00:02, 34.82it/s]
 
-    
+
 Compiling FSM index for all state transitions:  31%|█████████████████████████████████████▌                                                                                   | 37/119 [00:01<00:02, 35.70it/s]
 
-    
+
 Compiling FSM index for all state transitions:  34%|█████████████████████████████████████████▋                                                                               | 41/119 [00:01<00:02, 34.98it/s]
 
-    
+
 Compiling FSM index for all state transitions:  38%|█████████████████████████████████████████████▊                                                                           | 45/119 [00:01<00:02, 34.80it/s]
 
-    
+
 Compiling FSM index for all state transitions:  41%|█████████████████████████████████████████████████▊                                                                       | 49/119 [00:01<00:01, 35.38it/s]
 
-    
+
 Compiling FSM index for all state transitions:  45%|█████████████████████████████████████████████████████▉                                                                   | 53/119 [00:01<00:01, 35.64it/s]
 
-    
+
 Compiling FSM index for all state transitions:  48%|█████████████████████████████████████████████████████████▉                                                               | 57/119 [00:01<00:01, 36.37it/s]
 
-    
+
 Compiling FSM index for all state transitions:  51%|██████████████████████████████████████████████████████████████                                                           | 61/119 [00:01<00:01, 36.89it/s]
 
-    
+
 Compiling FSM index for all state transitions:  55%|██████████████████████████████████████████████████████████████████                                                       | 65/119 [00:01<00:01, 36.42it/s]
 
-    
+
 Compiling FSM index for all state transitions:  58%|██████████████████████████████████████████████████████████████████████▏                                                  | 69/119 [00:02<00:01, 36.61it/s]
 
-    
+
 Compiling FSM index for all state transitions:  61%|██████████████████████████████████████████████████████████████████████████▏                                              | 73/119 [00:02<00:01, 36.96it/s]
 
-    
+
 Compiling FSM index for all state transitions:  65%|██████████████████████████████████████████████████████████████████████████████▎                                          | 77/119 [00:02<00:01, 37.43it/s]
 
-    
+
 Compiling FSM index for all state transitions:  68%|██████████████████████████████████████████████████████████████████████████████████▎                                      | 81/119 [00:02<00:01, 36.89it/s]
 
-    
+
 Compiling FSM index for all state transitions:  71%|██████████████████████████████████████████████████████████████████████████████████████▍                                  | 85/119 [00:02<00:01, 33.59it/s]
 
-    
+
 Compiling FSM index for all state transitions:  75%|██████████████████████████████████████████████████████████████████████████████████████████▍                              | 89/119 [00:02<00:00, 34.77it/s]
 
-    
+
 Compiling FSM index for all state transitions:  78%|██████████████████████████████████████████████████████████████████████████████████████████████▌                          | 93/119 [00:02<00:00, 35.50it/s]
 
-    
+
 Compiling FSM index for all state transitions:  82%|██████████████████████████████████████████████████████████████████████████████████████████████████▋                      | 97/119 [00:02<00:00, 35.85it/s]
 
-    
+
 Compiling FSM index for all state transitions:  85%|█████████████████████████████████████████████████████████████████████████████████████████████████████▊                  | 101/119 [00:02<00:00, 35.29it/s]
 
-    
+
 Compiling FSM index for all state transitions:  88%|█████████████████████████████████████████████████████████████████████████████████████████████████████████▉              | 105/119 [00:03<00:00, 35.86it/s]
 
-    
+
 Compiling FSM index for all state transitions:  92%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████▉          | 109/119 [00:03<00:00, 36.10it/s]
 
-    
+
 Compiling FSM index for all state transitions:  95%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████▉      | 113/119 [00:03<00:00, 36.21it/s]
 
-    
+
 Compiling FSM index for all state transitions:  98%|█████████████████████████████████████████████████████████████████████████████████████████████████████████████████████▉  | 117/119 [00:03<00:00, 36.30it/s]
 
-    
+
 Compiling FSM index for all state transitions: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 119/119 [00:03<00:00, 34.51it/s]
 
-    
+
 
 
     prompt_results=[PromptResult(prompt_id=1, result='Positive'), PromptResult(prompt_id=2, result='Positive'), PromptResult(prompt_id=3, result='Negative'), PromptResult(prompt_id=4, result='Negative')] final_result='Neutral'
-

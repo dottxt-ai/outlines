@@ -20,7 +20,7 @@ Let's walk through a simple example of using the Max Mutual Information Method f
 
 2. Generate outputs for each template using a set of sample texts:
    Sample text: "I love this new restaurant!"
-   
+
    Template A output: "The sentiment of the text is positive."
    Template B output: "The statement is positive."
    Template C output: "4 - The emotional tone is quite positive."
@@ -88,4 +88,3 @@ print(f"Output using best template: {outputs[best_template_index]}")
 
     Best template: Is the following statement positive, negative, or neutral? I love this new restaurant!
     Output using best template: Negative
-

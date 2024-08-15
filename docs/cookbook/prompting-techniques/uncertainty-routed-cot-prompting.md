@@ -5,7 +5,7 @@ title: Uncertainty-Routed CoT Prompting
 # Uncertainty-Routed CoT Prompting
 
 
-Uncertainty-Routed CoT Prompting is an advanced technique that enhances the Chain-of-Thought (CoT) approach. It works by generating multiple reasoning paths for a given problem and then selecting the best answer based on a confidence threshold. Here's how it works:
+[Uncertainty-Routed CoT Prompting](https://storage.googleapis.com/deepmind-media/gemini/gemini_1_report.pdf) is an advanced technique that enhances the Chain-of-Thought (CoT) approach. It works by generating multiple reasoning paths for a given problem and then selecting the best answer based on a confidence threshold. Here's how it works:
 
 1. The system generates multiple CoT reasoning paths for a given problem.
 2. It then compares these paths to determine if there's a clear majority answer.
@@ -13,7 +13,7 @@ Uncertainty-Routed CoT Prompting is an advanced technique that enhances the Chai
 4. If there's no clear majority or the confidence is low, the system falls back to a greedy sampling approach, selecting the single most likely answer.
 
 This technique is particularly useful for complex reasoning tasks where multiple valid thought processes might exist. By considering multiple paths and using a confidence-based selection method, it can often produce more reliable and accurate results than standard CoT approaches.
-    
+
 
 ## A worked example
 
@@ -129,20 +129,20 @@ for i, attempt in enumerate(reasoning_attempts, 1):
 
 
     Final answer: 60.0 miles per hour
-    
+
     Reasoning paths:
-    
+
     Attempt 1:
     - a = 120, b = 2, c: 2, x: 0, y: 120: (Result: 60.0)
     - x = bc, x: 60 (Result: 60.0)
     - y = ac, y: 80 (Result: 80.0)
     - v = x/y, v = 60/80 = 0.75 (Result: 0.75)
     Final answer: 0.75
-    
+
     Attempt 2:
     - Step 1 (Result: 120.0)
     Final answer: 60.0
-    
+
     Attempt 3:
     - A 120 mile train could go 240 miles in 2 hours (Result: 60.0)
     - The train goes 60 miles in every 1 hour (Result: 60.0)

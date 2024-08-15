@@ -5,9 +5,8 @@ title: Active Prompting
 # Active Prompting
 
 
-Active Prompting is an iterative technique that involves dynamically refining prompts based on the model's responses. This method aims to improve the quality and relevance of the model's outputs by continuously adjusting the input. The process begins with an initial prompt, followed by an evaluation of the model's response. Based on this evaluation, the prompt is modified to address any shortcomings or to further guide the model towards the desired output. This cycle of prompting, evaluating, and refining continues until the desired quality or specificity of response is achieved.
+[Active Prompting](https://arxiv.org/abs/2302.12246) is an iterative technique that involves dynamically refining prompts based on the model's responses. This method aims to improve the quality and relevance of the model's outputs by continuously adjusting the input. The process begins with an initial prompt, followed by an evaluation of the model's response. Based on this evaluation, the prompt is modified to address any shortcomings or to further guide the model towards the desired output. This cycle of prompting, evaluating, and refining continues until the desired quality or specificity of response is achieved.
 
-Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
 
 ## Step by Step Example
 
@@ -77,7 +76,7 @@ def active_prompting_math():
         MathProblem(operation="multiplication", numbers=[6, 7], difficulty="medium"),
         MathProblem(operation="exponentiation", numbers=[2, 3], difficulty="hard")
     ]
-    
+
     for problem in problems:
         solution = solve_problem(problem)
         print(f"Problem: {solution.problem}")
@@ -121,7 +120,3 @@ This example demonstrates Active Prompting by progressively increasing the diffi
 The `active_prompting_math` function simulates the iterative process by presenting a series of problems with increasing difficulty. In a more advanced implementation, you could add logic to dynamically adjust the difficulty based on the model's performance on previous problems.
 
 This approach showcases how Active Prompting can be used to assess and challenge a model's capabilities, gradually moving from simple tasks to more complex ones based on its demonstrated abilities.
-
-
-
-

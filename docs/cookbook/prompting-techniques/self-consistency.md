@@ -14,7 +14,7 @@ Self-Consistency is an ensemble prompting technique that aims to improve accurac
 3. Use a majority vote over all the generated final answers to select the most consistent response as the output.
 
 This technique leverages the idea that multiple valid reasoning paths can lead to the same correct answer, while incorrect reasoning is more likely to produce inconsistent results. By aggregating multiple attempts, Self-Consistency can often achieve higher accuracy than a single CoT prompt, especially on tasks involving arithmetic, commonsense, and symbolic reasoning.
-    
+
 Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
 
 ## A worked example
@@ -88,10 +88,10 @@ def extract_final_answer(response: str) -> float:
 def self_consistency(question: str, num_samples: int = 3) -> float:
     prompt = f"Solve this step-by-step: {question}"
     responses = [generate_cot_response(prompt) for _ in range(num_samples)]
-    
+
     final_answers = [extract_final_answer(response) for response in responses]
     answer_counts = Counter(final_answers)
-    
+
     most_common_answer, _ = answer_counts.most_common(1)[0]
     return most_common_answer
 
@@ -109,4 +109,3 @@ print(f"The most consistent answer is: {result} mph")
 
 
     The most consistent answer is: 60.0 mph
-

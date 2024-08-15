@@ -11,7 +11,7 @@ Self-Calibration is a prompting technique that aims to improve the reliability o
 2. A new prompt is then constructed that includes the original question, the model's answer, and an additional instruction asking the model to evaluate whether its answer is correct.
 
 This technique allows for gauging the model's confidence level in its responses, which can be useful when deciding whether to accept the original answer or seek further refinement.
-    
+
 Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
 
 ## A worked example
@@ -28,7 +28,7 @@ Here's a step-by-step implementation of the Self-Calibration technique:
 3. Self-Calibration Prompt:
    "Question: What is the capital of France?
     Your answer: The capital of France is Paris.
-    
+
     Is the above answer correct? Please respond with 'Yes' if you are certain the answer is correct, 'No' if you are certain it is incorrect, or 'Uncertain' if you are not sure. Explain your reasoning."
 
 4. Model Self-Calibration Response:
@@ -38,7 +38,7 @@ Here's a step-by-step implementation of the Self-Calibration technique:
    Based on the model's confident affirmation, we can consider the original answer to be highly reliable. If the model had expressed uncertainty or stated the answer was incorrect, it would signal a need for further verification or refinement of the response.
 
 This Self-Calibration step provides valuable insight into the model's confidence level, helping to determine when to trust its outputs and when additional verification might be necessary.
-    
+
 ## Code Example
 
 
@@ -82,9 +82,8 @@ print(response)
     Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]
 
 
-    Compiling FSM index for all state transitions: 100%|█| 89/89 [00:00<00:00, 
+    Compiling FSM index for all state transitions: 100%|█| 89/89 [00:00<00:00,
     We detected that you are passing `past_key_values` as a tuple and this is deprecated and will be removed in v4.43. Please use an appropriate `Cache` class (https://huggingface.co/docs/transformers/v4.41.3/en/internal/generation_utils#transformers.Cache)
 
 
     initial_answer='Yes' confidence=<ConfidenceLevel.UNCERTAIN: 'Uncertain'> explanation="The capital of France is commonly known as Paris, but there is a possibility that it could be any other major city in the country. The best response would be 'Uncertain', as there is a chance that the capital of France could be a city such as Lyon, Marseille, or Toulouse. However, based on common knowledge and the most recent information available, the capital of France most likely is Paris."
-

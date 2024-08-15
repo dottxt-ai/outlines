@@ -10,7 +10,7 @@ DiVeRSe is an ensemble prompting technique that combines multiple prompts with s
 2. Applying self-consistency (generating multiple outputs) for each prompt
 3. Aggregating the results across all prompts and reasoning paths to select the final answer
 This approach aims to increase diversity in the reasoning process and reduce errors by considering multiple perspectives on the problem.
-    
+
 Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
 
 ## A worked example
@@ -28,12 +28,12 @@ To implement DiVeRSe for a math word problem:
      Output 1A: [reasoning path 1]
      Output 1B: [reasoning path 2]
      Output 1C: [reasoning path 3]
-   
+
    For Prompt 2:
      Output 2A: [reasoning path 1]
      Output 2B: [reasoning path 2]
      Output 2C: [reasoning path 3]
-   
+
    For Prompt 3:
      Output 3A: [reasoning path 1]
      Output 3B: [reasoning path 2]
@@ -45,7 +45,7 @@ To implement DiVeRSe for a math word problem:
    - If there's a tie, use a predefined method to break it (e.g., confidence scoring)
 
 4. Return the selected answer as the final output of the DiVeRSe technique
-    
+
 ## Code Example
 
 
@@ -107,7 +107,7 @@ for i, solutions in enumerate(diverse_solutions):
 
 
     Final answer: 60.0 mph
-    
+
     Prompt 1: If a train travels 120 miles in 2 hours, what is its average speed in miles per hour?
       Solution 1:
         Reasoning: Step 1: Determine the speed of the train in miles per hour by dividing the distance traveled by the time taken. This can be done using the formula: Speed = Distance ÷ Time. Plugging in the values, we get: Speed = 120 miles ÷ 2 hours = 60 miles/hour.
@@ -118,7 +118,7 @@ for i, solutions in enumerate(diverse_solutions):
       Solution 3:
         Reasoning: Another way to solve this question is by finding the rate of speed. The formula for rate of speed is: Rate = Distance ÷ Time. Plugging in the values, we get: Rate = 120 miles ÷ 2 hours = 60 miles/hour. Since the train traveled 120 miles and the time taken was 2 hours, the rate of speed is also 60 miles/hour. However, since we are looking for the average speed, we should use the second method.
         Answer: 60.0
-    
+
     Prompt 2: Calculate the average speed of the train
       Solution 1:
         Reasoning: To calculate the average speed of the train, we need to use the formula: speed = distance/time. In this case, the distance traveled is 120 miles, and the time taken is 2 hours. Plugging these values into the formula, we get: speed = 120 miles / 2 hours = 60 miles/hour.
@@ -129,15 +129,14 @@ for i, solutions in enumerate(diverse_solutions):
       Solution 3:
         Reasoning: If we were to divide this problem into smaller parts, we could determine the average speed of the squares within these parts, but then adding up all these distances would not give us the total distance traveled by the train.
         Answer: 60.0
-    
+
     Prompt 3: Solve the given problem. If a train travels 120 miles in 2 hours, what is its average speed in miles per hour?
       Solution 1:
-        Reasoning: To calculate the average speed of the train, we need to divide the total distance traveled by the time it took to travel that distance. ",  
+        Reasoning: To calculate the average speed of the train, we need to divide the total distance traveled by the time it took to travel that distance. ",
         Answer: 60.0
       Solution 2:
-        Reasoning: Average speed is defined as the total distance traveled divided by the time taken to travel that distance. Therefore, the average speed of the train is 120/2 = 60 miles per hour. ",  
+        Reasoning: Average speed is defined as the total distance traveled divided by the time taken to travel that distance. Therefore, the average speed of the train is 120/2 = 60 miles per hour. ",
         Answer: 60.0
       Solution 3:
         Reasoning: We have been given that the train covers a distance of 120 in 2 hours. To find the average speed, we just need to divide the distance by time. Thus the average speed of train is 120 miles divided by 2 hours which is equal to 60 miles per hour.
         Answer: 60.0
-

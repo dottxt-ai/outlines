@@ -6,7 +6,7 @@ title: Zero-Shot Prompting
 
 
 Zero-Shot Prompting is a technique where you provide instructions to a language model without giving it any examples (exemplars) of the task. This approach relies on the model's pre-existing knowledge to interpret and respond to the prompt. The key is to clearly articulate the task, desired output format, and any specific constraints or requirements. Zero-Shot Prompting is particularly useful when you don't have access to relevant examples or when you want to test the model's base capabilities without additional context.
-    
+
 Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
 
 ## A worked example
@@ -38,7 +38,7 @@ Let's say we want to use Zero-Shot Prompting to classify a movie review sentimen
    The model should respond with either "Negative" or "Positive" based on its interpretation of the review.
 
 By following these steps, you've implemented Zero-Shot Prompting for sentiment analysis without providing any examples to the model.
-    
+
 ## Code Example
 
 
@@ -70,4 +70,3 @@ print(f"The sentiment of the movie review is: {sentiment}")
 
 
     The sentiment of the movie review is: Positive
-

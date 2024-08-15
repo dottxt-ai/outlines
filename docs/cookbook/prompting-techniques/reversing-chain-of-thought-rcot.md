@@ -6,7 +6,7 @@ title: Reversing Chain-of-Thought (RCoT)
 
 
 Reversing Chain-of-Thought (RCoT) is a self-criticism technique that aims to improve the accuracy of language model outputs. It works by first generating an answer, then having the model reconstruct the original problem based on that answer. The reconstructed problem is compared to the original to identify inconsistencies, which are then used as feedback for the model to revise its answer. This process helps catch logical errors or misunderstandings in the initial response.
-    
+
 Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
 
 ## A worked example
@@ -25,7 +25,7 @@ Read more about this prompting technique in [The Prompt Report: A Systematic Sur
    Original: "What is the capital of France?"
    Reconstructed: "What is the capital of France?"
 
-5. In this case, there are no inconsistencies, so we would keep the original answer. 
+5. In this case, there are no inconsistencies, so we would keep the original answer.
 
 6. If there were inconsistencies, we would prompt the model to revise its answer:
    "There seems to be an inconsistency between your answer and the original question. Please revise your answer to the question: What is the capital of France?"
@@ -33,7 +33,7 @@ Read more about this prompting technique in [The Prompt Report: A Systematic Sur
 7. Get the revised answer from the model.
 
 8. Repeat steps 3-7 if necessary until the reconstructed question matches the original or a maximum number of iterations is reached.
-    
+
 ## Code Example
 
 
@@ -100,4 +100,3 @@ print(result)
 
 
     original_question='What is the capital of France?' initial_answer='\nAnswer: Paris' reconstructed_question='' is_consistent=False revised_answer='\n\nAnswer: The capital of France is Paris.'
-

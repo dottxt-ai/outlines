@@ -112,39 +112,48 @@ nav:
       - Knowledge Graph Extraction: cookbook/knowledge_graph_extraction.md
       - Chain of Thought (CoT): cookbook/chain_of_thought.md
       - ReAct Agent: cookbook/react_agent.md
+      - Prompting Techniques:
+            - cookbook/prompting-techniques/index.md
+            - Few-shots prompting:
+              - cookbook/prompting-techniques/few-shot-prompting.md
+              - cookbook/prompting-techniques/self-generated-in-context-learning-sg-icl.md
+              - cookbook/prompting-techniques/prompt-mining.md
+            - Zero-shot prompting:
+              - Zero Shot: cookbook/prompting-techniques/zero-shot-prompting.md
+              - cookbook/prompting-techniques/emotion-prompting.md
+              - cookbook/prompting-techniques/simtom-simulation-theory-of-mind.md
+              - cookbook/prompting-techniques/re-reading-re2.md
+              - cookbook/prompting-techniques/self-ask.md
+            - Thought Generation:
+              - cookbook/prompting-techniques/chain-of-thought.md
+              - cookbook/prompting-techniques/zero-shot-chain-of-thought.md
+              - cookbook/prompting-techniques/analogical-prompting.md
+              - cookbook/prompting-techniques/contrastive-cot-prompting.md
+              - cookbook/prompting-techniques/uncertainty-routed-cot-prompting.md
+              - cookbook/prompting-techniques/complexity-based-prompting.md
+              - cookbook/prompting-techniques/active-prompting.md
+              - cookbook/prompting-techniques/automatic-chain-of-thought.md
+            - Decomposition:
+              - cookbook/prompting-techniques/decomposed-prompting-decomp.md
+              - cookbook/prompting-techniques/skeleton-of-thought.md
+            - Ensembling:
+              - cookbook/prompting-techniques/demonstration-ensembling-dense.md
+              - cookbook/prompting-techniques/max-mutual-information-method.md
+              - cookbook/prompting-techniques/self-consistency.md
+              - cookbook/prompting-techniques/diverse-diversity-focused-self-consistency.md
+              - cookbook/prompting-techniques/universal-self-adaptive-prompting-usp.md
+            - Self-Criticism:
+              - cookbook/prompting-techniques/self-calibration.md
+              - cookbook/prompting-techniques/reversing-chain-of-thought-rcot.md
+              - cookbook/prompting-techniques/cumulative-reasoning.md
+            - Prompt Engineering:
+              - cookbook/prompting-techniques/meta-prompting.md
+
+
       - Run on the cloud:
           - BentoML: cookbook/deploy-using-bentoml.md
           - Cerebrium: cookbook/deploy-using-cerebrium.md
           - Modal: cookbook/deploy-using-modal.md
-      - Prompting Techniques:
-          - cookbook/prompting-techniques/index.md
-          - cookbook/prompting-techniques/analogical-prompting.md
-          - cookbook/prompting-techniques/autoprompt.md
-          - cookbook/prompting-techniques/chain-of-thought-cot-prompting.md
-          - cookbook/prompting-techniques/consistency-based-self-adaptive-prompting-cosp.md
-          - cookbook/prompting-techniques/contrastive-cot-prompting.md
-          - cookbook/prompting-techniques/cumulative-reasoning.md
-          - cookbook/prompting-techniques/decomposed-prompting-decomp.md
-          - cookbook/prompting-techniques/demonstration-ensembling-dense.md
-          - cookbook/prompting-techniques/dialogue-comprised-policy-gradient-based-discrete-prompt-optimization-dp2o.md
-          - cookbook/prompting-techniques/diverse-diversity-focused-self-consistency.md
-          - cookbook/prompting-techniques/emotion-prompting.md
-          - cookbook/prompting-techniques/max-mutual-information-method.md
-          - cookbook/prompting-techniques/meta-prompting.md
-          - cookbook/prompting-techniques/prompt-mining.md
-          - cookbook/prompting-techniques/re-reading-re2.md
-          - cookbook/prompting-techniques/reversing-chain-of-thought-rcot.md
-          - cookbook/prompting-techniques/self-ask.md
-          - cookbook/prompting-techniques/self-calibration.md
-          - cookbook/prompting-techniques/self-consistency.md
-          - cookbook/prompting-techniques/self-generated-in-context-learning-sg-icl.md
-          - cookbook/prompting-techniques/self-refine.md
-          - cookbook/prompting-techniques/simtom-simulation-theory-of-mind.md
-          - cookbook/prompting-techniques/skeleton-of-thought.md
-          - cookbook/prompting-techniques/system-2-attention-s2a.md
-          - cookbook/prompting-techniques/universal-self-adaptive-prompting-usp.md
-          - cookbook/prompting-techniques/zero-shot-chain-of-thought-cot.md
-          - cookbook/prompting-techniques/zero-shot-prompting.md
   - Docs:
     - reference/index.md
     - Generation:

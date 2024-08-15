@@ -6,7 +6,7 @@ title: SimToM (Simulation Theory of Mind)
 
 
 SimToM is a prompting technique that leverages a language model's ability to simulate different perspectives or mental states. It involves instructing the model to imagine itself as a specific entity (e.g. a person, character, or even object) and respond from that perspective. This technique aims to generate more nuanced, context-aware responses by encouraging the model to consider the knowledge, biases, and thought processes of the simulated entity.
-    
+
 Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
 
 ## A worked example
@@ -29,7 +29,7 @@ Example prompt:
 
 This technique encourages the model to consider the limited knowledge, cultural context, and writing style of a 19th century explorer, potentially resulting in a more authentic and era-appropriate response.
 
-  
+
 ## Code Example
 
 
@@ -49,9 +49,9 @@ class JournalEntry(BaseModel):
 model = outlines.models.transformers("mistralai/Mistral-7B-Instruct-v0.1", device="cuda")
 generator = outlines.generate.json(model, JournalEntry)
 
-prompt = """Imagine you are a 19th century British explorer. 
-You have just returned from a voyage to Africa and are writing in your journal. 
-Describe your thoughts on encountering a giraffe for the first time. 
+prompt = """Imagine you are a 19th century British explorer.
+You have just returned from a voyage to Africa and are writing in your journal.
+Describe your thoughts on encountering a giraffe for the first time.
 Write your journal entry using language and terminology common in the 19th century."""
 
 entry = generator(prompt)
@@ -71,4 +71,3 @@ print(f"Observation: {entry.observation}")
     Date: 1793-09-05
     Location: Tanzania
     Observation: On my recent expedition through Africa, I was greeted with the most peculiar and remarkable creature I have ever encountered. It was a giraffe, a tall, lanky animal which stands over 6 feet tall when fully grown. Its neck is so long that I could not help but marvel at its peculiar shape and wonder if it could possibly turn its head to look around. Although its coat is not particularly soft to the touch, its curved horns and bright yellow eyes are quite striking. At first, I was quite intimidated
-

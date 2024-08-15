@@ -12,7 +12,7 @@ Complexity-based Prompting is an advanced technique that enhances Chain-of-Thoug
 2. Inference: For each new problem, generate multiple reasoning chains (answers). Then, apply a majority voting system among chains that exceed a certain length threshold. This is based on the assumption that longer reasoning indicates higher answer quality.
 
 This technique aims to improve performance on challenging tasks by exposing the model to more complex reasoning patterns and aggregating multiple solution attempts.
-    
+
 Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
 
 ## A worked example
@@ -40,7 +40,7 @@ Let's apply Complexity-based Prompting to solve math word problems:
    Q: If a train travels 120 miles in 2 hours, what is its average speed in miles per hour?"
 
 3. Generate multiple reasoning chains (e.g., 3):
-   Chain 1: 
+   Chain 1:
    1. We need to find the speed, which is distance divided by time.
    2. Distance = 120 miles
    3. Time = 2 hours
@@ -59,11 +59,11 @@ Let's apply Complexity-based Prompting to solve math word problems:
    4. Speed = 120 / 2 = 60 mph
 
 4. Apply majority voting:
-   All chains exceed our length threshold (e.g., 3 steps) and arrive at the same answer. 
+   All chains exceed our length threshold (e.g., 3 steps) and arrive at the same answer.
    The final answer is 60 miles per hour.
 
 This example demonstrates how Complexity-based Prompting uses a complex example in the prompt and leverages multiple reasoning chains to arrive at a robust solution.
-    
+
 ## Code Example
 
 

@@ -7,7 +7,7 @@ title: Decomposed Prompting (DECOMP)
 
 Decomposed Prompting (DECOMP) is a technique that breaks down complex problems into simpler sub-problems using predefined functions. It works by first few-shot prompting a language model to demonstrate how to use specific functions (e.g., string splitting, internet searching). Then, given a complex problem, the model decomposes it into sub-problems and uses the appropriate functions to solve each part. This approach allows the model to tackle complex tasks by leveraging specialized functions and breaking down the problem into manageable pieces.
 
-Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608). 
+Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
 
 ## A worked example
 
@@ -56,7 +56,7 @@ To implement Decomposed Prompting (DECOMP), follow these steps:
    Therefore, 23,970 days passed between the Wright brothers' first flight and the Apollo 11 moon landing.
 
 5. The model will then execute this plan, using the defined functions to solve each sub-problem and combine the results to answer the original question.
-    
+
 ## Code Example
 
 
@@ -112,4 +112,3 @@ print(solution)
 
 
     steps=[Step(description="Determine the dates of the Wright brothers' first flight and the Apollo 11 moon landing.", function='search_internet', arguments=['Wright brothers first flight date', 'Apollo 11 moon landing date'], result='Dec 17, 1903 & Jul 20, 1969'), Step(description='Parse the dates obtained and convert them into Python datetime objects.', function='parse_dates', arguments=['dates'], result='datetime(2003, 12, 17), datetime(1969, 7, 20)'), Step(description='Calculate the difference between the two dates.', function='calculate_date_difference', arguments=['date1', 'date2'], result='298 days')] final_answer="298 days have passed between the Wright brothers' first flight and the Apollo 11 moon landing."
-

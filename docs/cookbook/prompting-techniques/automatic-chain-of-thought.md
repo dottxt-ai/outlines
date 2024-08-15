@@ -5,9 +5,7 @@ title: Automatic Chain-of-Thought (Auto-CoT) Prompting
 # Automatic Chain-of-Thought (Auto-CoT) Prompting
 
 
-Auto-CoT is a technique that automates the process of creating Chain-of-Thought (CoT) examples for prompting. It works by first using a Zero-Shot CoT prompt on a set of questions to generate chains of thought automatically. The best-generated chains are then selected and used to construct a Few-Shot CoT prompt for the target task. This method reduces the need for manual creation of CoT examples and can potentially generate more diverse and task-specific reasoning chains.
-
-Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
+[Auto-CoT](https://arxiv.org/abs/2210.03493) is a technique that automates the process of creating Chain-of-Thought (CoT) examples for prompting. It works by first using a Zero-Shot CoT prompt on a set of questions to generate chains of thought automatically. The best-generated chains are then selected and used to construct a Few-Shot CoT prompt for the target task. This method reduces the need for manual creation of CoT examples and can potentially generate more diverse and task-specific reasoning chains.
 
 ## Step by Step Example
 
@@ -89,10 +87,10 @@ Problem: {question}
 
 def solve_with_few_shot_cot(examples: List[tuple], new_question: str) -> Reasoning:
     few_shot_prompt = "Here are some examples of solving math problems step-by-step:\n\n"
-    
+
     for q, a in examples:
         few_shot_prompt += f"Q: {q}\nA: {a.steps}\nConclusion: {a.conclusion}\n\n"
-    
+
     few_shot_prompt += f"""Now, solve this new problem using the same step-by-step approach. Provide your answer in the following JSON format:
 {schema_str}
 

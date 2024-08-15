@@ -6,7 +6,7 @@ title: Meta Prompting
 
 
 Meta prompting is a technique where you prompt a language model to generate or improve prompts for itself or other language models. This involves asking the model to create, refine, or analyze prompts based on given criteria or goals. The technique leverages the model's understanding of effective prompting to generate more sophisticated or targeted prompts.
-    
+
 Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
 
 ## A worked example
@@ -29,7 +29,7 @@ To implement meta prompting:
 6. Evaluate the results and repeat the process if necessary, asking the model to further refine the prompt based on the output.
 
 This iterative process allows you to leverage the model's capabilities to create increasingly effective prompts tailored to your specific needs.
-    
+
 ## Code Example
 
 
@@ -61,10 +61,9 @@ print("Final Slogan:", slogan)
     We detected that you are passing `past_key_values` as a tuple and this is deprecated and will be removed in v4.43. Please use an appropriate `Cache` class (https://huggingface.co/docs/transformers/v4.41.3/en/internal/generation_utils#transformers.Cache)
 
 
-    Generated Meta Prompt: 
-    
-    "Think outside the plastic and...go green with our eco-friendly water bottle!"
-    Final Slogan: 
-    
-    We strive to make it easy for our customers to keep hydrated while helping the planet! Our eco-friendly water bottles are made from sustainable materials, BPA and chemical free, and designed to be reused over and over
+    Generated Meta Prompt:
 
+    "Think outside the plastic and...go green with our eco-friendly water bottle!"
+    Final Slogan:
+
+    We strive to make it easy for our customers to keep hydrated while helping the planet! Our eco-friendly water bottles are made from sustainable materials, BPA and chemical free, and designed to be reused over and over

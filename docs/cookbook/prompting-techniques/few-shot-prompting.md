@@ -5,7 +5,7 @@ title: Few-Shot Prompting
 # Few-Shot Prompting
 
 
-Few-Shot Prompting is a technique where you provide the AI model with a small number of examples (typically 2-5) demonstrating the task you want it to perform, followed by the actual task you want completed. This approach helps the model understand the context and format of the desired output without requiring fine-tuning. 
+Few-Shot Prompting is a technique where you provide the AI model with a small number of examples (typically 2-5) demonstrating the task you want it to perform, followed by the actual task you want completed. This approach helps the model understand the context and format of the desired output without requiring fine-tuning.
 
 The key to effective Few-Shot Prompting is selecting relevant examples that closely match the structure and complexity of your target task. These examples act as a form of implicit instruction, guiding the model's behavior and improving its performance on the specific task at hand.
 
@@ -17,7 +17,7 @@ To implement Few-Shot Prompting:
 5. Ensure there's a clear delineation between the examples and your target task.
 
 This technique is particularly useful for tasks where the model might struggle with zero-shot performance, or when you need to specify a particular output format or style.
-    
+
 Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
 ## A worked example
 
@@ -62,7 +62,7 @@ Output:
 Output: Mixed
 
 This example demonstrates how Few-Shot Prompting can guide the model to perform sentiment analysis with nuanced categories (positive, negative, neutral, mixed) based on the provided examples.
-    
+
 ## Code Example
 
 

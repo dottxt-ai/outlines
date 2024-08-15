@@ -6,7 +6,7 @@ title: Prompt Mining
 
 
 Prompt Mining is a technique for discovering optimal prompt templates by analyzing large text corpora. The goal is to find "middle words" or phrasings that occur frequently in the corpus and are likely to elicit better performance from language models. Rather than using standard prompting formats like "Q: A:", Prompt Mining seeks to identify more natural phrasings that the model may have encountered more often during pre-training. This technique leverages the insight that prompt formats which appear more frequently in training data tend to yield improved results when used with language models.
-    
+
 Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
 
 ## A worked example
@@ -29,7 +29,7 @@ To implement Prompt Mining:
 7. Use the best-performing mined prompt template for your task instead of a standard format.
 
 For example, instead of using "Q: What is the capital of France? A:", prompt mining might discover that "Question: What is the capital of France? The answer is:" appears more frequently in the corpus and leads to better model performance.
-    
+
 ## Code Example
 
 
@@ -75,7 +75,7 @@ for template in MinedTemplate:
 
     Template: STANDARD
     Answer: Paris
-    
+
 
 
     Compiling FSM index for all state transitions: 100%|█| 619/619 [00:05<00:00
@@ -83,8 +83,6 @@ for template in MinedTemplate:
 
     Template: MINED_1
     Answer: paris
-    
+
     Template: MINED_2
     Answer: Answer: The capital of France is Paris. Do you think that is correct?
-    
-
