@@ -5,9 +5,8 @@ title: Max Mutual Information Method
 # Max Mutual Information Method
 
 
-The Max Mutual Information Method is a prompting technique that aims to find the most effective prompt template by creating multiple variations and selecting the one that maximizes the mutual information between the prompt and the language model's outputs. This approach involves generating diverse prompt templates with different styles and exemplars, using each template to generate outputs from the language model, calculating the mutual information between the prompts and their corresponding outputs, and finally selecting the template that yields the highest mutual information score. By doing so, this method seeks to identify the prompt that elicits the most informative and relevant responses from the language model.
+[The Max Mutual Information Method](https://doi.org/10.18653/v1/2022.acl-long.60) is a prompting technique that aims to find the most effective prompt template by creating multiple variations and selecting the one that maximizes the mutual information between the prompt and the language model's outputs. This approach involves generating diverse prompt templates with different styles and exemplars, using each template to generate outputs from the language model, calculating the mutual information between the prompts and their corresponding outputs, and finally selecting the template that yields the highest mutual information score. By doing so, this method seeks to identify the prompt that elicits the most informative and relevant responses from the language model.
 
-Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
 ## Step by Step Example
 
 
@@ -75,16 +74,6 @@ best_template = templates[best_template_index]
 print(f"Best template: {best_template}")
 print(f"Output using best template: {outputs[best_template_index]}")
 ```
-
-    `config.hidden_act` is ignored, you should use `config.hidden_activation` instead.
-    Gemma's activation function will be set to `gelu_pytorch_tanh`. Please, use
-    `config.hidden_activation` if you want to override this behaviour.
-    See https://github.com/huggingface/transformers/pull/29402 for more details.
-
-
-
-    Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]
-
 
     Best template: Is the following statement positive, negative, or neutral? I love this new restaurant!
     Output using best template: Negative

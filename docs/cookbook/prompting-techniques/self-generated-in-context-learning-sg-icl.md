@@ -5,9 +5,8 @@ title: Self-Generated In-Context Learning (SG-ICL)
 # Self-Generated In-Context Learning (SG-ICL)
 
 
-Self-Generated In-Context Learning (SG-ICL) is a prompting technique that leverages a large language model to automatically generate exemplars for few-shot learning when actual training data is unavailable. The technique involves using the model itself to create example input-output pairs that can then be used as context for subsequent prompts. While not as effective as using real training data, SG-ICL can improve performance compared to zero-shot scenarios by providing the model with some context, even if that context is synthetic.
+[Self-Generated In-Context Learning (SG-ICL)](http://arxiv.org/abs/2206.08082) is a prompting technique that leverages a large language model to automatically generate exemplars for few-shot learning when actual training data is unavailable. The technique involves using the model itself to create example input-output pairs that can then be used as context for subsequent prompts. While not as effective as using real training data, SG-ICL can improve performance compared to zero-shot scenarios by providing the model with some context, even if that context is synthetic.
 
-Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
 
 ## A worked example
 
@@ -80,14 +79,6 @@ for example in examples:
 
 print(f"Analyzed sentiment: {result}")
 ```
-
-
-    Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]
-
-
-    Compiling FSM index for all state transitions: 100%|█| 47/47 [00:00<00:00,
-    We detected that you are passing `past_key_values` as a tuple and this is deprecated and will be removed in v4.43. Please use an appropriate `Cache` class (https://huggingface.co/docs/transformers/v4.41.3/en/internal/generation_utils#transformers.Cache)
-    Compiling FSM index for all state transitions: 100%|█| 12/12 [00:00<00:00,
 
 
     Generated examples:

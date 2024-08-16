@@ -147,7 +147,7 @@ nav:
               - cookbook/prompting-techniques/reversing-chain-of-thought-rcot.md
               - cookbook/prompting-techniques/cumulative-reasoning.md
             - Prompt Engineering:
-              - cookbook/prompting-techniques/meta-prompting.md
+              - Meta-Prompting: cookbook/prompting-techniques/meta-prompting.md
 
 
       - Run on the cloud:

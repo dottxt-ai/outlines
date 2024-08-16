@@ -5,9 +5,7 @@ title: Re-reading (RE2)
 # Re-reading (RE2)
 
 
-The Re-reading (RE2) technique is a simple yet effective prompting method that aims to improve an AI model's reasoning capabilities, especially for complex questions. It involves adding the phrase "Read the question again:" to the prompt, followed by repeating the original question. This approach encourages the model to process the question more thoroughly, potentially leading to more accurate and thoughtful responses.
-
-Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
+The [Re-reading (RE2)](http://arxiv.org/abs/2309.06275) technique is a simple yet effective prompting method that aims to improve an AI model's reasoning capabilities, especially for complex questions. It involves adding the phrase "Read the question again:" to the prompt, followed by repeating the original question. This approach encourages the model to process the question more thoroughly, potentially leading to more accurate and thoughtful responses.
 
 ## A worked example
 
@@ -59,12 +57,6 @@ answer: str = generator(prompt, max_tokens=300)
 print(f"Question: {question}\n")
 print(f"Answer: {answer}")
 ```
-
-
-    Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]
-
-
-    We detected that you are passing `past_key_values` as a tuple and this is deprecated and will be removed in v4.43. Please use an appropriate `Cache` class (https://huggingface.co/docs/transformers/v4.41.3/en/internal/generation_utils#transformers.Cache)
 
 
     Question: What are the potential environmental impacts of electric vehicles?

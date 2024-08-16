@@ -5,9 +5,7 @@ title: Reversing Chain-of-Thought (RCoT)
 # Reversing Chain-of-Thought (RCoT)
 
 
-Reversing Chain-of-Thought (RCoT) is a self-criticism technique that aims to improve the accuracy of language model outputs. It works by first generating an answer, then having the model reconstruct the original problem based on that answer. The reconstructed problem is compared to the original to identify inconsistencies, which are then used as feedback for the model to revise its answer. This process helps catch logical errors or misunderstandings in the initial response.
-
-Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
+[Reversing Chain-of-Thought (RCoT)](http://arxiv.org/abs/2305.11499) is a self-criticism technique that aims to improve the accuracy of language model outputs. It works by first generating an answer, then having the model reconstruct the original problem based on that answer. The reconstructed problem is compared to the original to identify inconsistencies, which are then used as feedback for the model to revise its answer. This process helps catch logical errors or misunderstandings in the initial response.
 
 ## A worked example
 
@@ -34,10 +32,8 @@ Read more about this prompting technique in [The Prompt Report: A Systematic Sur
 
 8. Repeat steps 3-7 if necessary until the reconstructed question matches the original or a maximum number of iterations is reached.
 
+
 ## Code Example
-
-
-
 
 
 ```python
@@ -91,12 +87,6 @@ def rcot_process(question: str, max_iterations: int = 3) -> RCoTStep:
 result = rcot_process("What is the capital of France?")
 print(result)
 ```
-
-
-    Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]
-
-
-    We detected that you are passing `past_key_values` as a tuple and this is deprecated and will be removed in v4.43. Please use an appropriate `Cache` class (https://huggingface.co/docs/transformers/v4.41.3/en/internal/generation_utils#transformers.Cache)
 
 
     original_question='What is the capital of France?' initial_answer='\nAnswer: Paris' reconstructed_question='' is_consistent=False revised_answer='\n\nAnswer: The capital of France is Paris.'

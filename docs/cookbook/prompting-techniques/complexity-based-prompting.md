@@ -5,7 +5,7 @@ title: Complexity-based Prompting
 # Complexity-based Prompting
 
 
-Complexity-based Prompting is an advanced technique that enhances Chain-of-Thought (CoT) prompting by focusing on complex examples and leveraging multiple reasoning paths. It involves two key steps:
+[Complexity-based Prompting](https://openreview.net/forum?id=yf1icZHC-l9) is an advanced technique that enhances Chain-of-Thought (CoT) prompting by focusing on complex examples and leveraging multiple reasoning paths. It involves two key steps:
 
 1. Prompt Creation: Select and annotate complex examples based on factors like question length or required reasoning steps. These examples are used to build the prompt.
 
@@ -13,7 +13,6 @@ Complexity-based Prompting is an advanced technique that enhances Chain-of-Thoug
 
 This technique aims to improve performance on challenging tasks by exposing the model to more complex reasoning patterns and aggregating multiple solution attempts.
 
-Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
 
 ## A worked example
 
@@ -123,16 +122,8 @@ print(f"The final answer based on majority voting is: {final_answer} miles per h
 ```
 
 
-    Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]
-
-
     [220.4, 14.834, 30.0]
     The final answer based on majority voting is: 220.4 miles per hour
 
 
 The answer is incorrect. We might want to try multiple generations, a larger model with better reasoning, or a different technique.
-
-
-```python
-
-```

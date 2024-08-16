@@ -5,9 +5,7 @@ title: Zero-Shot Chain-of-Thought (CoT)
 # Zero-Shot Chain-of-Thought (CoT)
 
 
-Zero-Shot Chain-of-Thought (CoT) is a prompting technique that encourages a language model to break down its reasoning process into steps, without providing any examples. It uses a simple prompt instruction like "Let's approach this step by step:" or "Let's think about this logically:" before presenting the task or question. This prompts the model to generate a series of intermediate reasoning steps before arriving at the final answer, improving performance on complex reasoning tasks without needing labeled examples.
-
-Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
+[Zero-Shot Chain-of-Thought (CoT)](http://arxiv.org/abs/2205.11916) is a prompting technique that encourages a language model to break down its reasoning process into steps, without providing any examples. It uses a simple prompt instruction like "Let's approach this step by step:" or "Let's think about this logically:" before presenting the task or question. This prompts the model to generate a series of intermediate reasoning steps before arriving at the final answer, improving performance on complex reasoning tasks without needing labeled examples.
 
 ## A worked example
 
@@ -71,13 +69,6 @@ print(reasoning)
 ```
 
 
-    Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]
-
-
-    Compiling FSM index for all state transitions: 100%|█| 97/97 [00:00<00:00,
-    We detected that you are passing `past_key_values` as a tuple and this is deprecated and will be removed in v4.43. Please use an appropriate `Cache` class (https://huggingface.co/docs/transformers/v4.41.3/en/internal/generation_utils#transformers.Cache)
-
-
     steps=[ReasoningStep(step_number=1, description='First, we will divide the distance traveled by the time it took to travel that distance.')] final_answer="The train's average speed is 60 miles per hour."
 
 
@@ -97,9 +88,6 @@ from outlines.integrations.utils import convert_json_schema_to_str
 
 model = outlines.models.transformers("google/gemma-2b")
 ```
-
-
-    Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]
 
 
 
@@ -126,18 +114,9 @@ for step in result.reasoning_steps:
 print(f"\nFinal answer: {result.final_answer}")
 ```
 
-    Compiling FSM index for all state transitions: 100%|█████████████████| 65/65 [00:02<00:00, 29.68it/s]
-
-
     Reasoning steps:
     - John has 5 apples. John gives 2 apples to his friend.
     - John has 3 apples.
     - John buys 3 apples from the store.
 
     Final answer: John now has 3 apples
-
-
-
-```python
-
-```

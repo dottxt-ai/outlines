@@ -5,9 +5,7 @@ title: Self-Ask
 # Self-Ask
 
 
-Self-Ask is a prompting technique that encourages the language model to break down complex questions into simpler sub-questions, answer those sub-questions, and then use that information to answer the original question. This technique involves prompting the model to first determine if it needs to ask follow-up questions, generate those questions if needed, answer them, and finally answer the original question based on the accumulated information.
-
-Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
+[Self-Ask](http://arxiv.org/abs/2210.03350) is a prompting technique that encourages the language model to break down complex questions into simpler sub-questions, answer those sub-questions, and then use that information to answer the original question. This technique involves prompting the model to first determine if it needs to ask follow-up questions, generate those questions if needed, answer them, and finally answer the original question based on the accumulated information.
 
 ## A worked example
 
@@ -63,13 +61,6 @@ if response.needs_followup:
         print(f"Follow-up A: {a}")
 print(f"Final answer: {response.final_answer}")
 ```
-
-
-    Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]
-
-
-    Compiling FSM index for all state transitions: 100%|█| 172/172 [00:01<00:00
-    We detected that you are passing `past_key_values` as a tuple and this is deprecated and will be removed in v4.43. Please use an appropriate `Cache` class (https://huggingface.co/docs/transformers/v4.41.3/en/internal/generation_utils#transformers.Cache)
 
 
     Original question: What was the population of New York City in the year the Empire State Building was completed?

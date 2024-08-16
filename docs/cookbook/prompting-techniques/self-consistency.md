@@ -5,7 +5,7 @@ title: Self-Consistency
 # Self-Consistency
 
 
-Self-Consistency is an ensemble prompting technique that aims to improve accuracy by generating multiple reasoning paths for a given problem and then selecting the most consistent answer. It works as follows:
+[Self-Consistency](http://arxiv.org/abs/2203.11171) is an ensemble prompting technique that aims to improve accuracy by generating multiple reasoning paths for a given problem and then selecting the most consistent answer. It works as follows:
 
 1. Given a problem, prompt the language model multiple times to perform Chain-of-Thought (CoT) reasoning, using a non-zero temperature setting to encourage diverse reasoning paths.
 
@@ -15,7 +15,6 @@ Self-Consistency is an ensemble prompting technique that aims to improve accurac
 
 This technique leverages the idea that multiple valid reasoning paths can lead to the same correct answer, while incorrect reasoning is more likely to produce inconsistent results. By aggregating multiple attempts, Self-Consistency can often achieve higher accuracy than a single CoT prompt, especially on tasks involving arithmetic, commonsense, and symbolic reasoning.
 
-Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
 
 ## A worked example
 
@@ -100,12 +99,6 @@ question = "If a train travels 120 miles in 2 hours, what is its average speed i
 result = self_consistency(question)
 print(f"The most consistent answer is: {result} mph")
 ```
-
-
-    Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]
-
-
-    We detected that you are passing `past_key_values` as a tuple and this is deprecated and will be removed in v4.43. Please use an appropriate `Cache` class (https://huggingface.co/docs/transformers/v4.41.3/en/internal/generation_utils#transformers.Cache)
 
 
     The most consistent answer is: 60.0 mph

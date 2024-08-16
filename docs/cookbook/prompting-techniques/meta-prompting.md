@@ -5,7 +5,7 @@ title: Meta Prompting
 # Meta Prompting
 
 
-Meta prompting is a technique where you prompt a language model to generate or improve prompts for itself or other language models. This involves asking the model to create, refine, or analyze prompts based on given criteria or goals. The technique leverages the model's understanding of effective prompting to generate more sophisticated or targeted prompts.
+[Meta prompting](https://doi.org/10.1145/3411763.3451760) is a technique where you prompt a language model to generate or improve prompts for itself or other language models. This involves asking the model to create, refine, or analyze prompts based on given criteria or goals. The technique leverages the model's understanding of effective prompting to generate more sophisticated or targeted prompts.
 
 Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
 
@@ -32,10 +32,6 @@ This iterative process allows you to leverage the model's capabilities to create
 
 ## Code Example
 
-
-
-
-
 ```python
 import outlines
 
@@ -53,12 +49,6 @@ slogan = slogan_generator(generated_prompt, max_tokens=50)
 print("Generated Meta Prompt:", generated_prompt)
 print("Final Slogan:", slogan)
 ```
-
-
-    Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]
-
-
-    We detected that you are passing `past_key_values` as a tuple and this is deprecated and will be removed in v4.43. Please use an appropriate `Cache` class (https://huggingface.co/docs/transformers/v4.41.3/en/internal/generation_utils#transformers.Cache)
 
 
     Generated Meta Prompt:

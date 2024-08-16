@@ -5,7 +5,7 @@ title: Few-Shot Prompting
 # Few-Shot Prompting
 
 
-Few-Shot Prompting is a technique where you provide the AI model with a small number of examples (typically 2-5) demonstrating the task you want it to perform, followed by the actual task you want completed. This approach helps the model understand the context and format of the desired output without requiring fine-tuning.
+[Few-Shot Prompting](https://arxiv.org/abs/2005.14165) is a technique where you provide the AI model with a small number of examples (typically 2-5) demonstrating the task you want it to perform, followed by the actual task you want completed. This approach helps the model understand the context and format of the desired output without requiring fine-tuning.
 
 The key to effective Few-Shot Prompting is selecting relevant examples that closely match the structure and complexity of your target task. These examples act as a form of implicit instruction, guiding the model's behavior and improving its performance on the specific task at hand.
 
@@ -18,9 +18,8 @@ To implement Few-Shot Prompting:
 
 This technique is particularly useful for tasks where the model might struggle with zero-shot performance, or when you need to specify a particular output format or style.
 
-Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
-## A worked example
 
+## A worked example
 
 Let's implement Few-Shot Prompting for a simple sentiment analysis task:
 
@@ -102,23 +101,4 @@ result = generator(prompt)
 print(result)
 ```
 
-    `config.hidden_act` is ignored, you should use `config.hidden_activation` instead.
-    Gemma's activation function will be set to `gelu_pytorch_tanh`. Please, use
-    `config.hidden_activation` if you want to override this behaviour.
-    See https://github.com/huggingface/transformers/pull/29402 for more details.
-
-
-
-    Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]
-
-
-    Compiling FSM index for all state transitions: 100%|██████████| 90/90 [00:04<00:00, 19.72it/s]
-
-
     sentiment='Negative' rating=2 key_points=['Anyone', 'Statute', 'Immersive sound design']
-
-
-
-```python
-
-```

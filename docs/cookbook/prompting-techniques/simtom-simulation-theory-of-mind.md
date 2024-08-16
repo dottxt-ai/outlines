@@ -5,9 +5,7 @@ title: SimToM (Simulation Theory of Mind)
 # SimToM (Simulation Theory of Mind)
 
 
-SimToM is a prompting technique that leverages a language model's ability to simulate different perspectives or mental states. It involves instructing the model to imagine itself as a specific entity (e.g. a person, character, or even object) and respond from that perspective. This technique aims to generate more nuanced, context-aware responses by encouraging the model to consider the knowledge, biases, and thought processes of the simulated entity.
-
-Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
+[SimToM](http://arxiv.org/abs/2311.10227) is a prompting technique that leverages a language model's ability to simulate different perspectives or mental states. It involves instructing the model to imagine itself as a specific entity (e.g. a person, character, or even object) and respond from that perspective. This technique aims to generate more nuanced, context-aware responses by encouraging the model to consider the knowledge, biases, and thought processes of the simulated entity.
 
 ## A worked example
 
@@ -59,13 +57,6 @@ print(f"Date: {entry.date}")
 print(f"Location: {entry.location}")
 print(f"Observation: {entry.observation}")
 ```
-
-
-    Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]
-
-
-    Compiling FSM index for all state transitions: 100%|█| 3368/3368 [00:35<00:
-    We detected that you are passing `past_key_values` as a tuple and this is deprecated and will be removed in v4.43. Please use an appropriate `Cache` class (https://huggingface.co/docs/transformers/v4.41.3/en/internal/generation_utils#transformers.Cache)
 
 
     Date: 1793-09-05

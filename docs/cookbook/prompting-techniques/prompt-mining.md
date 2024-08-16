@@ -5,7 +5,7 @@ title: Prompt Mining
 # Prompt Mining
 
 
-Prompt Mining is a technique for discovering optimal prompt templates by analyzing large text corpora. The goal is to find "middle words" or phrasings that occur frequently in the corpus and are likely to elicit better performance from language models. Rather than using standard prompting formats like "Q: A:", Prompt Mining seeks to identify more natural phrasings that the model may have encountered more often during pre-training. This technique leverages the insight that prompt formats which appear more frequently in training data tend to yield improved results when used with language models.
+[Prompt Mining](https://doi.org/10.1162/tacl_a_00324) is a technique for discovering optimal prompt templates by analyzing large text corpora. The goal is to find "middle words" or phrasings that occur frequently in the corpus and are likely to elicit better performance from language models. Rather than using standard prompting formats like "Q: A:", Prompt Mining seeks to identify more natural phrasings that the model may have encountered more often during pre-training. This technique leverages the insight that prompt formats which appear more frequently in training data tend to yield improved results when used with language models.
 
 Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
 
@@ -66,19 +66,8 @@ for template in MinedTemplate:
 ```
 
 
-    Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]
-
-
-    Compiling FSM index for all state transitions: 100%|█| 619/619 [00:05<00:00
-    We detected that you are passing `past_key_values` as a tuple and this is deprecated and will be removed in v4.43. Please use an appropriate `Cache` class (https://huggingface.co/docs/transformers/v4.41.3/en/internal/generation_utils#transformers.Cache)
-
-
     Template: STANDARD
     Answer: Paris
-
-
-
-    Compiling FSM index for all state transitions: 100%|█| 619/619 [00:05<00:00
 
 
     Template: MINED_1

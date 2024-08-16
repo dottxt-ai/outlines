@@ -5,9 +5,8 @@ title: Skeleton-of-Thought
 # Skeleton-of-Thought
 
 
-Skeleton-of-Thought is a prompting technique that breaks down complex reasoning tasks into a high-level outline or "skeleton" of key steps, before filling in the details. It involves first generating a basic structure or framework for approaching the problem, then expanding on each step to arrive at a full solution. This technique helps guide the language model's reasoning process in a more structured and organized way, especially for multi-step problems.
+[Skeleton-of-Thought](http://arxiv.org/abs/2307.15337) is a prompting technique that breaks down complex reasoning tasks into a high-level outline or "skeleton" of key steps, before filling in the details. It involves first generating a basic structure or framework for approaching the problem, then expanding on each step to arrive at a full solution. This technique helps guide the language model's reasoning process in a more structured and organized way, especially for multi-step problems.
 
-Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
 
 ## Code Example
 
@@ -52,12 +51,6 @@ for i, step in enumerate(expanded_steps, 1):
     print(f"   {step.description}\n")
 ```
 
-
-    Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]
-
-
-    Compiling FSM index for all state transitions: 100%|█| 68/68 [00:00<00:00,
-    We detected that you are passing `past_key_values` as a tuple and this is deprecated and will be removed in v4.43. Please use an appropriate `Cache` class (https://huggingface.co/docs/transformers/v4.41.3/en/internal/generation_utils#transformers.Cache)
 
 
     Skeleton:

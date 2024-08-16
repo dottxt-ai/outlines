@@ -5,13 +5,12 @@ title: DiVeRSe (Diversity-Focused Self-Consistency)
 # DiVeRSe (Diversity-Focused Self-Consistency)
 
 
-DiVeRSe is an ensemble prompting technique that combines multiple prompts with self-consistency to generate diverse reasoning paths and improve answer quality. It works by:
+[DiVeRSe](https://doi.org/10.18653/v1/2023.acl-long.291) is an ensemble prompting technique that combines multiple prompts with self-consistency to generate diverse reasoning paths and improve answer quality. It works by:
 1. Creating multiple different prompts for a given problem
 2. Applying self-consistency (generating multiple outputs) for each prompt
 3. Aggregating the results across all prompts and reasoning paths to select the final answer
 This approach aims to increase diversity in the reasoning process and reduce errors by considering multiple perspectives on the problem.
 
-Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
 
 ## A worked example
 
@@ -97,13 +96,6 @@ for i, solutions in enumerate(diverse_solutions):
         print(f"    Reasoning: {solution.reasoning}")
         print(f"    Answer: {solution.answer}")
 ```
-
-
-    Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]
-
-
-    Compiling FSM index for all state transitions: 100%|█| 189/189 [00:01<00:00
-    We detected that you are passing `past_key_values` as a tuple and this is deprecated and will be removed in v4.43. Please use an appropriate `Cache` class (https://huggingface.co/docs/transformers/v4.41.3/en/internal/generation_utils#transformers.Cache)
 
 
     Final answer: 60.0 mph

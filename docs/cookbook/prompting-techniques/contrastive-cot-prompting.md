@@ -5,9 +5,7 @@ title: Contrastive CoT Prompting
 # Contrastive CoT Prompting
 
 
-Contrastive CoT (Chain-of-Thought) Prompting is an advanced prompting technique that enhances the standard Chain-of-Thought approach. This method involves providing the language model with both correct and incorrect reasoning examples for solving problems. By showcasing both proper problem-solving steps and common pitfalls or mistakes, the technique aims to improve the model's ability to distinguish between valid and invalid reasoning processes. This approach has shown significant improvements in areas such as Arithmetic Reasoning and Factual QA, as it helps the model to better understand what constitutes good reasoning and what to avoid.
-
-Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
+[Contrastive CoT (Chain-of-Thought) Prompting](http://arxiv.org/abs/2311.09277) is an advanced prompting technique that enhances the standard Chain-of-Thought approach. This method involves providing the language model with both correct and incorrect reasoning examples for solving problems. By showcasing both proper problem-solving steps and common pitfalls or mistakes, the technique aims to improve the model's ability to distinguish between valid and invalid reasoning processes. This approach has shown significant improvements in areas such as Arithmetic Reasoning and Factual QA, as it helps the model to better understand what constitutes good reasoning and what to avoid.
 
 ## A worked example
 
@@ -64,10 +62,6 @@ By using this Contrastive CoT Prompting technique, you provide the LLM with exam
 ## Code Example
 
 
-
-
-
-
 ```python
 import outlines
 from outlines.integrations.utils import convert_json_schema_to_str
@@ -118,8 +112,6 @@ result = generator(prompt)
 print(result)
 ```
 
-
-    Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]
 
 
     reasoning=[ReasoningStep(step='x = 10 - 4 = 6')] answer=6

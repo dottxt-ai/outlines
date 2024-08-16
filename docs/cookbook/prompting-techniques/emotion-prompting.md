@@ -5,9 +5,8 @@ title: Emotion Prompting
 # Emotion Prompting
 
 
-Emotion Prompting incorporates phrases or statements with psychological and emotional relevance into the prompt to potentially improve the language model's performance. This technique taps into the model's understanding of human emotions and motivations, which may lead to more thoughtful or nuanced responses. By framing the task or question in a way that emphasizes its personal or emotional importance, the model may engage more deeply with the prompt and produce higher quality outputs.
+[Emotion Prompting](http://arxiv.org/abs/2307.11760) incorporates phrases or statements with psychological and emotional relevance into the prompt to potentially improve the language model's performance. This technique taps into the model's understanding of human emotions and motivations, which may lead to more thoughtful or nuanced responses. By framing the task or question in a way that emphasizes its personal or emotional importance, the model may engage more deeply with the prompt and produce higher quality outputs.
 
-Read more about this prompting technique in [The Prompt Report: A Systematic Survey of Prompting Techniques](https://arxiv.org/abs/2406.06608).
 
 ## A worked example
 
@@ -74,13 +73,6 @@ character = generator(
 )
 print(character)
 ```
-
-
-    Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]
-
-
-    Compiling FSM index for all state transitions: 100%|█| 143/143 [00:01<00:00
-    We detected that you are passing `past_key_values` as a tuple and this is deprecated and will be removed in v4.43. Please use an appropriate `Cache` class (https://huggingface.co/docs/transformers/v4.41.3/en/internal/generation_utils#transformers.Cache)
 
 
     name='Ren' age=50 armor=<Armor.plate: 'plate'> strength=80
