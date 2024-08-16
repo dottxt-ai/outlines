@@ -8,35 +8,52 @@ Additionally, we give the LLM the possibility of using a scratchpad described in
 
 We use [llama.cpp](https://github.com/ggerganov/llama.cpp) using the [llama-cpp-python](https://github.com/abetlen/llama-cpp-python) library. Outlines supports llama-cpp-python, but we need to install it ourselves:
 
-```shell
+```bash
 pip install llama-cpp-python
 ```
 
-We pull a quantized GGUF model, in this guide we pull [Hermes-2-Pro-Llama-3-8B](https://huggingface.co/NousResearch/Hermes-2-Theta-Llama-3-8B-GGUF) by [NousResearch](https://nousresearch.com/) from [HuggingFace](https://huggingface.co/):
-
-```shell
-wget https://hf.co/NousResearch/Hermes-2-Pro-Llama-3-8B-GGUF/resolve/main/Hermes-2-Pro-Llama-3-8B-Q4_K_M.gguf
-```
-
-We initialize the model:
-
+We download the model weights by passing the name of the repository on the HuggingFace Hub, and the filenames (or glob pattern):
 ```python
 import llama_cpp
-from llama_cpp import Llama
 from outlines import generate, models
 
-llm = Llama(
-    "/path/to/model/Hermes-2-Pro-Llama-3-8B-Q4_K_M.gguf",
-    tokenizer=llama_cpp.llama_tokenizer.LlamaHFTokenizer.from_pretrained(
-        "NousResearch/Hermes-2-Pro-Llama-3-8B"
-    ),
-    n_gpu_layers=-1,
-    flash_attn=True,
-    n_ctx=8192,
-    verbose=False
-)
-model = models.LlamaCpp(llm)
+model = models.llamacpp("NousResearch/Hermes-2-Pro-Llama-3-8B-GGUF",
+            "Hermes-2-Pro-Llama-3-8B-Q4_K_M.gguf",
+            tokenizer=llama_cpp.llama_tokenizer.LlamaHFTokenizer.from_pretrained(
+            "NousResearch/Hermes-2-Pro-Llama-3-8B"
+            ),
+            n_gpu_layers=-1,
+            flash_attn=True,
+            n_ctx=8192,
+            verbose=False)
 ```
+
+??? note "(Optional) Store the model weights in a custom folder"
+
+    By default the model weights are downloaded to the hub cache but if we want so store the weights in a custom folder, we pull a quantized GGUF model [Hermes-2-Pro-Llama-3-8B](https://huggingface.co/NousResearch/Hermes-2-Theta-Llama-3-8B-GGUF) by [NousResearch](https://nousresearch.com/) from [HuggingFace](https://huggingface.co/):
+
+    ```bash
+    wget https://hf.co/NousResearch/Hermes-2-Pro-Llama-3-8B-GGUF/resolve/main/Hermes-2-Pro-Llama-3-8B-Q4_K_M.gguf
+    ```
+
+    We initialize the model:
+
+    ```python
+    import llama_cpp
+    from llama_cpp import Llama
+    from outlines import generate, models
+
+    llm = Llama(
+        "/path/to/model/Hermes-2-Pro-Llama-3-8B-Q4_K_M.gguf",
+        tokenizer=llama_cpp.llama_tokenizer.LlamaHFTokenizer.from_pretrained(
+            "NousResearch/Hermes-2-Pro-Llama-3-8B"
+        ),
+        n_gpu_layers=-1,
+        flash_attn=True,
+        n_ctx=8192,
+        verbose=False
+    )
+    ```
 
 ## Build a ReAct agent
 
@@ -55,9 +72,8 @@ def wikipedia(q):
         "srsearch": q,
         "format": "json"
     }).json()["query"]["search"][0]["snippet"]
-```
 
-```python
+
 def calculate(numexp):
     return eval(numexp)
 ```
