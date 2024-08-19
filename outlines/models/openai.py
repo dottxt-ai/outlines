@@ -3,7 +3,7 @@ import functools
 import warnings
 from dataclasses import asdict, dataclass, field, replace
 from itertools import zip_longest
-from typing import Callable, Dict, List, Optional, Set, Tuple, Union
+from typing import Callable, Dict, List, Optional, Set, Tuple, Type, Union
 
 import numpy as np
 import pydantic
@@ -260,10 +260,10 @@ class OpenAI:
     def generate_json(
         self,
         prompt: str,
-        model: type[pydantic.BaseModel],
+        model: Type[pydantic.BaseModel],
         max_tokens: Optional[int] = None,
         system_prompt: Optional[str] = None,
-    ) -> type[pydantic.BaseModel]:
+    ) -> Type[pydantic.BaseModel]:
         """Call the OpenAI API to generate a JSON object.
 
         Parameters
