@@ -23,7 +23,7 @@ def model_llamacpp(tmp_path_factory):
 @pytest.fixture(scope="session")
 def model_exllamav2(tmp_path_factory):
     return models.exl2(
-        model_path="blockblockblock/TinyLlama-1.1B-Chat-v1.0-bpw4.6-exl2",
+        model_path="blockblockblock/TinyLlama-1.1B-Chat-v1.0-bpw4-exl2",
         cache_q4=True,
         paged=False,
     )
