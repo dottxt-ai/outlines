@@ -55,6 +55,7 @@ test = [
     "accelerate",
     "beartype<0.16.0",
     "responses",
+    "exllamav2",
     "llama-cpp-python",
     "mlx-lm; platform_machine == 'arm64' and sys_platform == 'darwin'",
     "huggingface_hub",
