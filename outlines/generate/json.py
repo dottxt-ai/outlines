@@ -97,12 +97,8 @@ def json_openai(
         response_model = create_model(schema)
 
     def generate_json(prompt: str, max_tokens: int = 1000, max_retries=3):
-        response = model.generate_json(prompt, schema, max_tokens)
-        # parse the  response to pydantic object
-        try:
-            if response_model:
-                return response_model.model_validate_json(response)
-        except Exception as e:
-            raise e
+        response = model.generate_json(prompt, response_model, max_tokens)
+
+        return response
 
     return generate_json

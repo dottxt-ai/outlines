@@ -6,6 +6,7 @@ from itertools import zip_longest
 from typing import Callable, Dict, List, Optional, Set, Tuple, Union
 
 import numpy as np
+import pydantic
 
 from outlines.base import vectorize
 from outlines.caching import cache
@@ -68,7 +69,7 @@ class OpenAIConfig:
     stop: Optional[Union[str, List[str]]] = None
     temperature: float = 1.0
     top_p: int = 1
-    tools: Optional[List[Dict]] = None
+    tools: Optional[Union[List[Dict], List[pydantic.BaseModel]]] = None
     tool_choice: Optional[Union[str, Dict]] = None
     user: str = field(default_factory=str)
 
@@ -259,10 +260,10 @@ class OpenAI:
     def generate_json(
         self,
         prompt: str,
-        schema: str,
+        model: type[pydantic.BaseModel],
         max_tokens: Optional[int] = None,
         system_prompt: Optional[str] = None,
-    ) -> str:
+    ) -> type[pydantic.BaseModel]:
         """Call the OpenAI API to generate a JSON object.
 
         Parameters
@@ -277,24 +278,42 @@ class OpenAI:
             The content of the system message that precedes the user's prompt.
 
         """
+
+        # check if library openai support pydantic_function_tool
+        import openai
+
+        if not hasattr(openai, "pydantic_function_tool"):
+            raise NotImplementedError(
+                "The OpenAI library does not support Native Structured Outputs, please upgrade to the latest version."
+            )
+        # TODO: refactor this code to use the new openai convertion, such as pydantic_function_tool
         # construct tools to be used in the API call
         tools = [
             {
                 "type": "function",
                 "function": {
-                    "name": "model_validate_json",
-                    "description": "Validate the given JSON data against the Pydantic model.",
-                    "parameters": schema,
+                    "name": model.__name__,
+                    "strict": True,
+                    "parameters": openai.lib._pydantic.to_strict_json_schema(model),
                 },
             }
         ]
+        response_format = openai.NOT_GIVEN
         config = replace(
-            self.config, max_tokens=max_tokens, tools=tools, tool_choice="auto"
+            self.config,
+            max_tokens=max_tokens,
+            tools=tools,
+            response_format=response_format,
         )
 
-        response, prompt_tokens, completion_tokens = generate_chat(
+        response, prompt_tokens, completion_tokens = generate_structured_output(
             prompt, system_prompt, self.client, config
         )
+
+        # TODO: refactor this code to use the new openai convertion
+        # convert the response to pydantic object
+        response = openai._compat.model_parse_json(model, response)
+
         self.prompt_tokens += prompt_tokens
         self.completion_tokens += completion_tokens
         return response
@@ -357,6 +376,60 @@ async def generate_chat(
             if "tool_calls" in responses["choices"][i]["message"]
             and responses["choices"][i]["message"]["tool_calls"]
             else responses["choices"][i]["message"]["content"]
+            for i in range(config.n)
+        ]
+    )
+    usage = responses["usage"]
+    return results, usage["prompt_tokens"], usage["completion_tokens"]
+
+
+@functools.partial(vectorize, signature="(),(),(),()->(s),(),()")
+async def generate_structured_output(
+    prompt: str,
+    system_prompt: Union[str, None],
+    client,
+    config: OpenAIConfig,
+) -> Tuple[np.ndarray, int, int]:
+    """Call OpenAI's Chat Completion API.
+
+    Parameters
+    ----------
+    prompt
+        The prompt we use to start the generation. Passed to the model
+        with the "user" role.
+    system_prompt
+        The system prompt, passed to the model with the "system" role
+        before the prompt.
+    client
+        The API client
+    config
+        An `OpenAIConfig` instance.
+
+    Returns
+    -------
+    A tuple that contains the model's response(s) and usage statistics.
+
+    """
+
+    @error_handler
+    @cache()
+    async def call_api(prompt, system_prompt, config):
+        responses = await client.beta.chat.completions.parse(
+            messages=system_message + user_message,
+            **asdict(config),  # type: ignore
+        )
+        return responses.model_dump()
+
+    system_message = (
+        [{"role": "system", "content": system_prompt}] if system_prompt else []
+    )
+    user_message = [{"role": "user", "content": prompt}]
+
+    responses = await call_api(prompt, system_prompt, config)
+    results = np.array(
+        [
+            # responses["choices"][i]["message"]["tool_calls"][0]["function"]["parsed_arguments"]
+            responses["choices"][i]["message"]["tool_calls"][0]["function"]["arguments"]
             for i in range(config.n)
         ]
     )
