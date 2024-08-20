@@ -7,6 +7,7 @@ name = "outlines"
 authors= [{name = "Outlines Developers"}]
 description = "Probabilistic Generative Model Programming"
 requires-python = ">=3.8"
+license = {text = "Apache-2.0"}
 keywords=[
     "machine learning",
     "deep learning",
@@ -155,7 +156,7 @@ omit = [
 exclude_lines = [
     "pragma: no cover",
     "if TYPE_CHECKING:",
-    "...",
+    "\\.\\.\\.",
 ]
 show_missing = true
 

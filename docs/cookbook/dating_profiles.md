@@ -170,7 +170,7 @@ parsed_profile = DatingProfile.model_validate_json(profile)
 
 Here are a couple of results:
 
-```
+```json
 {
     "bio": """I'm an ambitious lawyer with a casual and fashionable style. I love
     games and sports, but my true passion is preparing refreshing cocktails at
@@ -199,7 +199,7 @@ Here are a couple of results:
 }
 ```
 
-```
+```json
 {
     "bio": """I’m a sexy lawyer with time on my hands. I love to game and
     play ping pong, but the real reason you should swipe to the right

@@ -6,7 +6,7 @@ Outlinesã€° is a Python library that allows you to use Large Language Model in a
 
 ## What models do you support?
 
-We support [Openai](reference/models/openai.md), but the true power of Outlinesã€° is unleashed with Open Source models available via the [transformers](reference/models/transformers.md), [llama.cpp](reference/models/llamacpp.md), [exllama2](reference/models/exllamav2.md) and [mamba_ssm](reference/models/mamba.md) libraries. If you want to build and maintain an integration with another library, [get in touch][discord].
+We support [Openai](reference/models/openai.md), but the true power of Outlinesã€° is unleashed with Open Source models available via the [transformers](reference/models/transformers.md), [llama.cpp](reference/models/llamacpp.md), [exllama2](reference/models/exllamav2.md), [mlx-lm](reference/models/mlxlm.md) and [vllm](reference/models/vllm.md) models. If you want to build and maintain an integration with another library, [get in touch][discord].
 
 ## What are the main features?
 
@@ -17,7 +17,7 @@ We support [Openai](reference/models/openai.md), but the true power of Outlinesã
 
     No more invalid JSON outputs, 100% guaranteed
 
-    [:octicons-arrow-right-24: Generate JSON](reference/json.md)
+    [:octicons-arrow-right-24: Generate JSON](reference/generation/json.md)
 
 -   :material-keyboard-outline:{ .lg .middle } __JSON mode for vLLM__
 
@@ -34,7 +34,7 @@ We support [Openai](reference/models/openai.md), but the true power of Outlinesã
 
     Generate text that parses correctly 100% of the time
 
-    [:octicons-arrow-right-24: Guide LLMs](reference/regex.md)
+    [:octicons-arrow-right-24: Guide LLMs](reference/generation/regex.md)
 
 -    :material-chat-processing-outline:{ .lg .middle } __Powerful Prompt Templating__
 
@@ -168,7 +168,6 @@ Outlines would not be what it is today without a community of dedicated develope
 </div>
 
 Outlines was originally developed at [@NormalComputing](https://twitter.com/NormalComputing) by [@remilouf](https://twitter.com/remilouf) and [@BrandonTWillard](https://twitter.com/BrandonTWillard). It is now maintained by [.txt](https://dottxt.co).
-
 
 
 [discord]: https://discord.gg/R9DSu34mGd

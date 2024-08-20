@@ -15,7 +15,7 @@ Outlines provides an integration with the `torch` implementation of causal model
 ```python
 from outlines import models
 
-model = models.transformers("mistralai/Mistral-7B-v0.3", device="cuda")
+model = models.transformers("microsoft/Phi-3-mini-4k-instruct", device="cuda")
 ```
 
 If you need more fine-grained control you can also initialize the model and tokenizer separately:
@@ -33,14 +33,15 @@ model = models.Transformers(llm, tokenizer)
 # Using Logits Processors
 
 There are two ways to use Outlines Structured Generation with HuggingFace Transformers:
-- 1) Use Outlines generation wrapper, `outlines.models.transformers`
-- 2) Use `OutlinesLogitsProcessor` with `transformers.AutoModelForCausalLM`
+
+1. Use Outlines generation wrapper, `outlines.models.transformers`
+2. Use `OutlinesLogitsProcessor` with `transformers.AutoModelForCausalLM`
 
 Outlines supports a myriad of logits processors for structured generation. In these example, we will use the `RegexLogitsProcessor` which guarantees generated text matches the specified pattern.
 
-## Example: `outlines.models.transformers`
+## Using `outlines.models.transformers`
 
-```
+```python
 import outlines
 
 time_regex_pattern = r"(0?[1-9]|1[0-2]):[0-5]\d\s?(am|pm)?"
@@ -53,9 +54,9 @@ print(output)
 # 2:30 pm
 ```
 
-## Example: Direct `transformers` library use
+## Using models initialized via the `transformers`  library
 
-```
+```python
 import outlines
 import transformers
 
@@ -117,8 +118,9 @@ model = outlines.models.transformers(
 )
 ```
 
-Further Reading:
-- https://huggingface.co/docs/transformers/en/model_doc/mamba
+
+
+Read [`transformers`'s documentation](https://huggingface.co/docs/transformers/en/model_doc/mamba) for more information.
 
 ### Encoder-Decoder Models
 
@@ -144,8 +146,3 @@ model_bart = models.transformers(
     model_class=AutoModelForSeq2SeqLM,
 )
 ```
-
-
-### Multi-Modal Models
-
-/Coming soon/
