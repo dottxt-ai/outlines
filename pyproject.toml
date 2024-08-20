@@ -63,7 +63,7 @@ test = [
     "torch",
     "transformers",
     "pillow",
-    "exllamav2@git+https://github.com/lapp0/exllamav2.git#egg=sampler-logits-processor",
+    "exllamav2",
 ]
 serve = [
     "vllm>=0.3.0",
