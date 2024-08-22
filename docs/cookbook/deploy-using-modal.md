@@ -56,6 +56,8 @@ outlines_image = Image.debian_slim(python_version="3.11").pip_install(
 
 When running longer Modal apps, it's recommended to download your language model when the container starts, rather than when the function is called. This is to reduce latency on the first time you send a request to the container.
 
+**NOTE**: Using `mistralai/Mistral-7B-v0.1` requires you to request access on HuggingFace using the account associated with the token you set in the image definition. Please do so [here](https://huggingface.co/mistralai/Mistral-7B-v0.1).
+
 ```python
 # This function imports the model from Hugging Face. The modal container
 # will call this function when it starts up. This is useful for
@@ -113,12 +115,9 @@ schema = """{
 }"""
 ```
 
-To make the inference work on Modal we need to wrap the corresponding function in a `@app.function` decorator. We pass to this decorator the image and GPU on which we want this function to run (here an A100 with 80GB memory):
+To make the inference work on Modal we need to wrap the corresponding function in a `@app.function` decorator. We pass to this decorator the image and GPU on which we want this function to run.
 
-The @app.function decorator tells modal to create a function that can be called.
-The function will run in the container with the image specified above.
-
-We pick an A100 GPU with 80GB. Other valid GPUs can be found [here](https://modal.com/docs/reference/modal.gpu).
+Let's choose an A100 with 80GB memory. Valid GPUs can be found [here](https://modal.com/docs/reference/modal.gpu).
 
 ```python
 # Define a function that uses the image we chose, and specify the GPU
