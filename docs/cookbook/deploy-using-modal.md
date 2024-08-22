@@ -54,7 +54,7 @@ outlines_image = Image.debian_slim(python_version="3.11").pip_install(
 
 ## Setting the container up
 
-When running longer Modal apps, it's recommended to download your language model when the container starts, rather than when the function is called. This is to reduce latency on the first time you send a request to the container.
+When running longer Modal apps, it's recommended to download your language model when the container starts, rather than when the function is called. This will cache the model for future runs.
 
 **NOTE**: Using `mistralai/Mistral-7B-v0.1` requires you to request access on HuggingFace using the account associated with the token you set in the image definition. Please do so [here](https://huggingface.co/mistralai/Mistral-7B-v0.1).
 
