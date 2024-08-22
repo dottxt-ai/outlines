@@ -4,36 +4,77 @@
 
 In this guide we will show you how you can use Modal to run programs written with Outlines on GPU in the cloud.
 
+## Requirements
+
+We recommend installing `modal` and `outlines` in a virtual environment. You can create one with:
+
+```bash
+python -m venv venv
+source venv/bin/activate
+```
+
+Then install the required packages:
+
+```bash
+pip install modal outlines
+```
+
 ## Build the image
 
-First we need to define our container image. We download the Mistral-7B-v0.1 model from HuggingFace as part of the definition of the image so it only needs to be done once (you need to provide an [access token](https://huggingface.co/settings/tokens))
+First we need to define our container image. We download the Mistral-7B-v0.1 model from HuggingFace as part of the definition of the image so it only needs to be done once (you need to provide an [access token](https://huggingface.co/settings/tokens)).
+
+Setting a token is best done by setting an environment variable `HF_TOKEN` with your token. If you do not wish to do this, we provide a commented-out line in the code to set the token directly in the code.
 
 ```python
 from modal import Image, App, gpu
+import os
 
+# This creates a modal App object. Here we set the name to "outlines-app".
+# There are other optional parameters like modal secrets, schedules, etc.
+# See the documentation here: https://modal.com/docs/reference/modal.App
 app = App(name="outlines-app")
 
+# Please set an environment variable HF_TOKEN with your Hugging Face API token.
+# The code below (the .env({...}) part) will copy the token from your local
+# environment to the container.
+# More info on Image here: https://modal.com/docs/reference/modal.Image
 outlines_image = Image.debian_slim(python_version="3.11").pip_install(
-    "outlines==0.0.37",
-    "transformers==4.38.2",
-    "datasets==2.18.0",
-    "accelerate==0.27.2",
-)
+    "outlines",
+    "transformers",
+    "datasets",
+    "accelerate",
+).env({
+    'HF_TOKEN':os.environ['HF_TOKEN']
 
+    # To set the token directly in the code, uncomment the line below and replace
+    # 'YOUR_TOKEN' with the HuggingFace access token.
+    # 'HF_TOKEN':'YOUR_TOKEN'
+})
+```
+
+## Setting the container up
+
+When running longer Modal apps, it's recommended to download your language model when the container starts, rather than when the function is called. This is to reduce latency on the first time you send a request to the container.
+
+```python
+# This function imports the model from Hugging Face. The modal container
+# will call this function when it starts up. This is useful for
+# downloading models, setting up environment variables, etc.
 def import_model():
-    import os
-    os.environ["HF_TOKEN"] = "YOUR_HUGGINGFACE_TOKEN"
     import outlines
-    outlines.models.transformers("mistralai/Mistral-7B-Instruct-v0.2")
+    outlines.models.transformers("mistralai/Mistral-7B-v0.1")
 
+# This line tells the container to run the import_model function when it starts.
 outlines_image = outlines_image.run_function(import_model)
 ```
 
+## Define a schema
+
 We will run the JSON-structured generation example [in the README](https://github.com/outlines-dev/outlines?tab=readme-ov-file#efficient-json-generation-following-a-json-schema), with the following schema:
 
-## Run inference
-
 ```python
+# Specify a schema for the character description. In this case,
+# we want to generate a character with a name, age, armor, weapon, and strength.
 schema = """{
     "title": "Character",
     "type": "object",
@@ -74,46 +115,72 @@ schema = """{
 
 To make the inference work on Modal we need to wrap the corresponding function in a `@app.function` decorator. We pass to this decorator the image and GPU on which we want this function to run (here an A100 with 80GB memory):
 
+The @app.function decorator tells modal to create a function that can be called.
+The function will run in the container with the image specified above.
+
+We pick an A100 GPU with 80GB. Other valid GPUs can be found [here](https://modal.com/docs/reference/modal.gpu).
+
 ```python
+# Define a function that uses the image we chose, and specify the GPU
+# and memory we want to use.
 @app.function(image=outlines_image, gpu=gpu.A100(size='80GB'))
 def generate(
     prompt: str = "Amiri, a 53 year old warrior woman with a sword and leather armor.",
 ):
+    # Remember, this function is being executed in the container,
+    # so we need to import the necessary libraries here. You should
+    # do this with any other libraries you might need.
     import outlines
 
+    # Load the model into memory. The import_model function above
+    # should have already downloaded the model, so this call
+    # only loads the model into GPU memory.
     model = outlines.models.transformers(
         "mistralai/Mistral-7B-v0.1", device="cuda"
     )
 
+    # Generate a character description based on the prompt.
+    # We use the .json generation method -- we provide the
+    # - model: the model we loaded above
+    # - schema: the JSON schema we defined above
     generator = outlines.generate.json(model, schema)
+
+    # Make sure you wrap your prompt in instruction tags ([INST] and [/INST])
+    # to indicate that the prompt is an instruction. Instruction tags can vary
+    # by models, so make sure to check the model's documentation.
     character = generator(
         f"<s>[INST]Give me a character description. Describe {prompt}.[/INST]"
     )
 
+    # Print out the generated character.
     print(character)
 ```
 
-We then need to define a `local_entrypoint` to call our function `generate` remotely:
+We then need to define a `local_entrypoint` to call our function `generate` remotely.
 
 ```python
 @app.local_entrypoint()
 def main(
     prompt: str = "Amiri, a 53 year old warrior woman with a sword and leather armor.",
 ):
+    # We use the "generate" function defined above -- note too that we are calling
+    # .remote() on the function. This tells modal to run the function in our cloud
+    # machine. If you want to run the function locally, you can call .local() instead,
+    # though this will require additional setup.
     generate.remote(prompt)
 ```
 
-Here `@app.local_entrypoint()` decorator defines `main` as the function to start from locally when running the Modal CLI. You can save above code to `example.py` (or use [this implementation](https://github.com/outlines-dev/outlines/blob/main/examples/modal_example.py)). Let's now see how to run the code on the cloud using the Modal CLI.
+Here `@app.local_entrypoint()` decorator defines `main` as the function to start from locally when using the Modal CLI. You can save above code to `example.py` (or use [this implementation](https://github.com/outlines-dev/outlines/blob/main/examples/modal_example.py)). Let's now see how to run the code on the cloud using the Modal CLI.
 
 ## Run on the cloud
 
-First install the Modal client from PyPi:
+First install the Modal client from PyPi, if you have not already:
 
 ```bash
 pip install modal
 ```
 
-You then need to obtain a token from Modal. To do so easily, run the following command:
+You then need to obtain a token from Modal. Run the following command:
 
 ```bash
 modal setup
