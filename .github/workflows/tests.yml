@@ -36,11 +36,13 @@ jobs:
     - name: Run tests
       run: |
         pytest --cov=outlines
+      env:
+        COVERAGE_FILE: .coverage.${{ steps.matrix-id.outputs.id }}
     - name: Upload coverage data
       uses: actions/upload-artifact@v3
       with:
         name: coverage-data
-        path: .coverage*
+        path: .coverage.*
         if-no-files-found: ignore
 
   coverage:
@@ -66,19 +68,14 @@ jobs:
         with:
           name: coverage-data
 
-      - name: Fetch master for coverage diff
+      - name: Fetch main for coverage diff
         run: |
           git fetch --no-tags --prune origin main
 
       - name: Combine coverage & fail if it's <100%.
         run: |
-          # Combine coverage files (not needed now, but maybe later)
-          # python -m coverage combine
-
-          # Produce an html report with absolute coverage information
+          python -m coverage combine
           python -m coverage html --skip-covered --skip-empty
-
-          # Report relative coverage and write to the workflow's summary
           python -m coverage xml
           diff-cover coverage.xml --markdown-report=coverage.md --fail-under=100 || (cat coverage.md >> $GITHUB_STEP_SUMMARY && exit 1)
 
