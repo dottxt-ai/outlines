@@ -34,6 +34,10 @@ import os
 # See the documentation here: https://modal.com/docs/reference/modal.App
 app = App(name="outlines-app")
 
+# Specify a language model to use.
+# Another good model to use is "NousResearch/Hermes-2-Pro-Mistral-7B"
+language_model = "mistral-community/Mistral-7B-v0.2"
+
 # Please set an environment variable HF_TOKEN with your Hugging Face API token.
 # The code below (the .env({...}) part) will copy the token from your local
 # environment to the container.
@@ -43,6 +47,7 @@ outlines_image = Image.debian_slim(python_version="3.11").pip_install(
     "transformers",
     "datasets",
     "accelerate",
+    "sentencepiece",
 ).env({
     'HF_TOKEN':os.environ['HF_TOKEN']
 
@@ -56,15 +61,13 @@ outlines_image = Image.debian_slim(python_version="3.11").pip_install(
 
 When running longer Modal apps, it's recommended to download your language model when the container starts, rather than when the function is called. This will cache the model for future runs.
 
-**NOTE**: Using `mistralai/Mistral-7B-v0.1` requires you to request access on HuggingFace using the account associated with the token you set in the image definition. Please do so [here](https://huggingface.co/mistralai/Mistral-7B-v0.1).
-
 ```python
 # This function imports the model from Hugging Face. The modal container
 # will call this function when it starts up. This is useful for
 # downloading models, setting up environment variables, etc.
 def import_model():
     import outlines
-    outlines.models.transformers("mistralai/Mistral-7B-v0.1")
+    outlines.models.transformers(language_model)
 
 # This line tells the container to run the import_model function when it starts.
 outlines_image = outlines_image.run_function(import_model)
@@ -135,7 +138,7 @@ def generate(
     # should have already downloaded the model, so this call
     # only loads the model into GPU memory.
     model = outlines.models.transformers(
-        "mistralai/Mistral-7B-v0.1", device="cuda"
+        language_model, device="cuda"
     )
 
     # Generate a character description based on the prompt.
