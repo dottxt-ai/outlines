@@ -2,7 +2,7 @@
 
 !!! tip "Would rather not self-host?"
 
-    If you want to get started quickly with JSON-structured generaton you can call instead [.json](https://h1xbpbfsf0w.typeform.com/to/ZgBCvJHF), a [.txt](http://dottxt.co) API that guarantees valid JSON.
+    If you want to get started quickly with JSON-structured generator you can call instead [.json](https://h1xbpbfsf0w.typeform.com/to/ZgBCvJHF), a [.txt](http://dottxt.co) API that guarantees valid JSON.
 
 Outlines can be deployed as an LLM service using the vLLM inference engine and a FastAPI server. vLLM is not installed by default so will need to install Outlines with:
 
