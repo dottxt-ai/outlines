@@ -179,7 +179,6 @@ class SequenceGenerator:
             rng.seed()
 
         prompt_token_ids, attention_masks = self.tokenizer.encode(prompts)
-        rich.print(f"Input: [green]{self.tokenizer.decode(prompt_token_ids)[0]}")
 
         prompt_token_ids = prompt_token_ids.to(self.device)
         attention_masks = attention_masks.to(self.device)
@@ -205,8 +204,6 @@ class SequenceGenerator:
                 assert state == 0, f"Expected state to be 0, got {state}"
                 assert isinstance(state, int), f"Expected state to be an int, got {state}"
                 for token_id, attention_mask in zip(prompt_token_id_seq, attention_mask_seq):
-                    # print(f"{token_id = }, {attention_mask = }, {state = }")
-                    # print(f"\"{self.tokenizer.decode([token_id]) = }\"")
                     state = fsm.get_next_state(state=state, token_id=token_id.item())
                     if state < 0:
                         raise ValueError(f"Invalid state {state}")
@@ -262,7 +259,6 @@ class SequenceGenerator:
             for sequence in generated
         ]
         formatted = [self.format_sequence(sequence) for sequence in stripped]
-        rich.print(f"Output: [green]{formatted[0]}")
 
         # We reshape the output to (batch_size, sample_size)
         output: List[List[FormattedOutput]] = list()
