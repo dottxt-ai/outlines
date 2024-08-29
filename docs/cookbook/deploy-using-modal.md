@@ -21,7 +21,7 @@ pip install modal outlines
 
 ## Build the image
 
-First we need to define our container image. We download the Mistral-7B-v0.1 model from HuggingFace as part of the definition of the image so it only needs to be done once (you need to provide an [access token](https://huggingface.co/settings/tokens)).
+First we need to define our container image. If you need to access a gated model, you will need to provide an [access token](https://huggingface.co/settings/tokens). See the `.env` call below for how to provide a HuggingFace token.
 
 Setting a token is best done by setting an environment variable `HF_TOKEN` with your token. If you do not wish to do this, we provide a commented-out line in the code to set the token directly in the code.
 
@@ -49,6 +49,7 @@ outlines_image = Image.debian_slim(python_version="3.11").pip_install(
     "accelerate",
     "sentencepiece",
 ).env({
+    # This will pull in your HF_TOKEN environment variable if you have one.
     'HF_TOKEN':os.environ['HF_TOKEN']
 
     # To set the token directly in the code, uncomment the line below and replace
