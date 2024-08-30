@@ -18,7 +18,6 @@ from outlines.fsm.regex import (
     reduced_vocabulary,
     walk_fsm,
 )
-from outlines.integrations.utils import adapt_tokenizer
 from outlines.models.transformers import TransformerTokenizer
 
 
@@ -714,6 +713,6 @@ def test_reduced_vocabulary_with_rare_tokens(rare_token):
     [2]: https://github.com/outlines-dev/outlines/pull/948
     """
     tokenizer = AutoTokenizer.from_pretrained("openai-community/gpt2")
-    tokenizer = adapt_tokenizer(tokenizer=tokenizer)
+    tokenizer = TransformerTokenizer(tokenizer=tokenizer)
     tokenizer.vocabulary[rare_token] = max(tokenizer.vocabulary.values()) + 1
     reduced_vocabulary(tokenizer)

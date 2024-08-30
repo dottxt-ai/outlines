@@ -69,7 +69,7 @@ class TransformerTokenizer(Tokenizer):
         self.eos_token_id = self.tokenizer.eos_token_id
         self.eos_token = self.tokenizer.eos_token
 
-        if not self.tokenizer.pad_token_id:
+        if self.tokenizer.pad_token_id is None:
             self.tokenizer.pad_token_id = self.tokenizer.eos_token_id
             self.pad_token_id = self.eos_token_id
         else:

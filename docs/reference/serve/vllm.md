@@ -2,7 +2,7 @@
 
 !!! tip "Would rather not self-host?"
 
-    If you want to get started quickly with JSON-structured generaton you can call instead [.json](https://h1xbpbfsf0w.typeform.com/to/ZgBCvJHF), a [.txt](http://dottxt.co) API that guarantees valid JSON.
+    If you want to get started quickly with JSON-structured generation you can call instead [.json](https://h1xbpbfsf0w.typeform.com/to/ZgBCvJHF), a [.txt](http://dottxt.co) API that guarantees valid JSON.
 
 Outlines can be deployed as an LLM service using the vLLM inference engine and a FastAPI server. vLLM is not installed by default so will need to install Outlines with:
 
@@ -13,7 +13,7 @@ pip install outlines[serve]
 You can then start the server with:
 
 ```bash
-python -m outlines.serve.serve --model="mistralai/Mistral-7B-Instruct-v0.2"
+python -m outlines.serve.serve --model="microsoft/Phi-3-mini-4k-instruct"
 ```
 
 This will by default start a server at `http://127.0.0.1:8000` (check what the console says, though). Without the `--model` argument set, the OPT-125M model is used. The `--model` argument allows you to specify any model of your choosing.
@@ -22,7 +22,7 @@ To run inference on multiple GPUs you must pass the `--tensor-parallel-size` arg
 
 
 ```bash
-python -m outlines.serve.serve --model="mistralai/Mistral-7B-Instruct-v0.2" --tensor-parallel-size 2
+python -m outlines.serve.serve --model="microsoft/Phi-3-mini-4k-instruct" --tensor-parallel-size 2
 ```
 
 
@@ -31,7 +31,7 @@ python -m outlines.serve.serve --model="mistralai/Mistral-7B-Instruct-v0.2" --te
 You can install and run the server with Outlines' official Docker image using the command
 
 ```bash
-docker run -p 8000:8000 outlinesdev/outlines --model="mistralai/Mistral-7B-Instruct-v0.2"
+docker run -p 8000:8000 outlinesdev/outlines --model="microsoft/Phi-3-mini-4k-instruct"
 ```
 
 ## Querying Endpoint
