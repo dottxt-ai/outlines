@@ -251,8 +251,49 @@ def test_model_stream_seed(request, model_fixture):
 
 
 @pytest.mark.parametrize("model_fixture", ["model_exllamav2"])
-def test_exl2_max_chunk_size(request, model_fixture):
+def test_reformat_output(request, model_fixture):
     model = request.getfixturevalue(model_fixture)
+    sampling_params = SamplingParameters(
+        "multinomial",
+        1,
+    )
+    output = "test"
+    reformatted_output = model.reformat_output(output, sampling_params)
+    assert reformatted_output == output
+    output = ["test"]
+    reformatted_output = model.reformat_output(output, sampling_params)
+    assert reformatted_output == output[0]
+    output = ["test", "test"]
+    sampling_params = SamplingParameters(
+        "multinomial",
+        1,
+    )
+    reformatted_output = model.reformat_output(output, sampling_params)
+    assert len(reformatted_output) == 2
+    assert reformatted_output[0] == "test"
+    assert reformatted_output[1] == "test"
+    output = ["test", "test"]
+    sampling_params = SamplingParameters(
+        "multinomial",
+        2,
+    )
+    reformatted_output = model.reformat_output(output, sampling_params)
+    assert len(reformatted_output) == 2
+    assert reformatted_output[0] == "test"
+    assert reformatted_output[1] == "test"
+    output = ["test", "test", "test", "test"]
+    sampling_params = SamplingParameters(
+        "multinomial",
+        2,
+    )
+    reformatted_output = model.reformat_output(output, sampling_params)
+    assert len(reformatted_output) == 2
+    assert reformatted_output[0] == ["test", "test"]
+    assert reformatted_output[1] == ["test", "test"]
+
+
+@pytest.mark.parametrize("model_fixture", ["model_exllamav2"])
+def test_exl2_max_chunk_size(request, model_fixture):
     model = models.exl2(
         model_path="blockblockblock/TinyLlama-1.1B-Chat-v1.0-bpw4-exl2",
         cache_q4=True,
@@ -264,7 +305,6 @@ def test_exl2_max_chunk_size(request, model_fixture):
 
 @pytest.mark.parametrize("model_fixture", ["model_exllamav2"])
 def test_exl2_cache_default(request, model_fixture):
-    model = request.getfixturevalue(model_fixture)
     model = models.exl2(
         model_path="blockblockblock/TinyLlama-1.1B-Chat-v1.0-bpw4-exl2",
         paged=False,
@@ -284,7 +324,6 @@ def is_flash_attn_available():
 @pytest.mark.skipif(not is_flash_attn_available(), reason="flash-attn is not installed")
 @pytest.mark.parametrize("model_fixture", ["model_exllamav2"])
 def test_exl2_paged(request, model_fixture):
-    model = request.getfixturevalue(model_fixture)
     model = models.exl2(
         model_path="blockblockblock/TinyLlama-1.1B-Chat-v1.0-bpw4-exl2",
         cache_q4=True,
@@ -295,7 +334,6 @@ def test_exl2_paged(request, model_fixture):
 
 @pytest.mark.parametrize("model_fixture", ["model_exllamav2"])
 def test_exl2_draft_model(request, model_fixture):
-    model = request.getfixturevalue(model_fixture)
     model = models.exl2(
         model_path="blockblockblock/TinyLlama-1.1B-Chat-v1.0-bpw4-exl2",
         draft_model_path="blockblockblock/TinyLlama-1.1B-Chat-v1.0-bpw4-exl2",
@@ -307,10 +345,20 @@ def test_exl2_draft_model(request, model_fixture):
 
 @pytest.mark.parametrize("model_fixture", ["model_exllamav2"])
 def test_exl2_draft_model_cache_default(request, model_fixture):
-    model = request.getfixturevalue(model_fixture)
     model = models.exl2(
         model_path="blockblockblock/TinyLlama-1.1B-Chat-v1.0-bpw4-exl2",
         draft_model_path="blockblockblock/TinyLlama-1.1B-Chat-v1.0-bpw4-exl2",
         paged=False,
+    )
+    assert isinstance(model, ExLlamaV2Model)
+
+
+@pytest.mark.parametrize("model_fixture", ["model_exllamav2"])
+def test_exl2_set_max_seq_len(request, model_fixture):
+    model = models.exl2(
+        model_path="blockblockblock/TinyLlama-1.1B-Chat-v1.0-bpw4-exl2",
+        max_seq_len=2048,
+        paged=False,
+        cache_q4=True,
     )
     assert isinstance(model, ExLlamaV2Model)
