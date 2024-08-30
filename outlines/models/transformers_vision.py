@@ -43,9 +43,9 @@ class TransformersVision(Transformers):
         -------
         The generated text
         """
-        inputs = self.processor(prompts, media, padding=True, return_tensors="pt").to(
-            self.model.device
-        )
+        inputs = self.processor(
+            text=prompts, images=media, padding=True, return_tensors="pt"
+        ).to(self.model.device)
 
         generation_kwargs = self._get_generation_kwargs(
             prompts,
