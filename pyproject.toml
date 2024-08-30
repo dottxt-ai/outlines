@@ -64,6 +64,7 @@ test = [
     "transformers",
     "pillow",
     "exllamav2",
+    "flash-attn>=2.5.7",
 ]
 serve = [
     "vllm>=0.3.0",

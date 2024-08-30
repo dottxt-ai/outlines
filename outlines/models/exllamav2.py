@@ -45,12 +45,8 @@ class ExLlamaV2Model:
         `exllamav2` uses different default values
 
         """
-        try:
-            from exllamav2.generator import ExLlamaV2Sampler
-        except ImportError:
-            raise ImportError(
-                "The `exllamav2` and `torch` libraries needs to be installed in order to use `exllamav2` models."
-            )
+        from exllamav2.generator import ExLlamaV2Sampler
+
         if isinstance(prompts, str):
             prompts = [prompts]
         max_tokens, stop_at, seed = dataclasses.astuple(generation_parameters)
@@ -89,6 +85,9 @@ class ExLlamaV2Model:
         exllamav2_params["gen_settings"] = gen_settings
         if sampling_parameters.num_samples > 1:
             prompts = prompts * sampling_parameters.num_samples
+            exllamav2_params["max_new_tokens"] = (
+                exllamav2_params["max_new_tokens"] * sampling_parameters.num_samples
+            )
 
         if len(prompts) == 1:
             prompts = prompts[0]
@@ -151,12 +150,8 @@ class ExLlamaV2Model:
         sampling_parameters: SamplingParameters,
         **exllamav2_params: Unpack[ExllamaV2Params],
     ) -> Iterator[Union[str, List[str]]]:
-        try:
-            from exllamav2.generator import ExLlamaV2DynamicJob
-        except ImportError:
-            raise ImportError(
-                "The `exllamav2` and `torch` libraries needs to be installed in order to use `exllamav2` models."
-            )
+        from exllamav2.generator import ExLlamaV2DynamicJob
+
         exllamav2_params, prompts = self.prepare_generation_parameters(
             prompts,
             generation_parameters,
@@ -211,12 +206,8 @@ class ExLlamaV2Model:
         return token_generator()
 
     def load_lora(self, adapter_path: str):
-        try:
-            from exllamav2 import ExLlamaV2Lora
-        except ImportError:
-            raise ImportError(
-                "The `exllamav2` and `torch` libraries needs to be installed in order to use `exllamav2` models."
-            )
+        from exllamav2 import ExLlamaV2Lora
+
         loras = [ExLlamaV2Lora.from_directory(self.generator.model, adapter_path)]
         print(" -- Loading LoRA...")
         self.generator.set_loras(loras)
@@ -226,7 +217,6 @@ def exl2(
     model_path: str,
     draft_model_path: Optional[str] = None,
     max_seq_len: Optional[int] = None,
-    cache_8bit: bool = False,
     cache_q4: bool = False,
     paged: bool = True,
     max_chunk_size: Optional[int] = None,
@@ -251,8 +241,6 @@ def exl2(
         Disable flash attention. Defaults to None.
     num_experts_per_token (Optional[int], optional)
         Number of experts per token. Defaults to None.
-    cache_8bit (bool, optional)
-        Use 8-bit cache. Defaults to False.
     cache_q4 (bool, optional)
         Use Q4 cache. Defaults to False.
     tokenizer_kwargs (dict, optional)
@@ -277,7 +265,6 @@ def exl2(
         from exllamav2 import (
             ExLlamaV2,
             ExLlamaV2Cache,
-            ExLlamaV2Cache_8bit,
             ExLlamaV2Cache_Q4,
             ExLlamaV2Config,
             ExLlamaV2Tokenizer,
@@ -298,9 +285,7 @@ def exl2(
     model = ExLlamaV2(config)
     if max_seq_len is None:
         max_seq_len = -1
-    if cache_8bit:
-        cache = ExLlamaV2Cache_8bit(model, max_seq_len=max_seq_len, lazy=True)
-    elif cache_q4:
+    if cache_q4:
         cache = ExLlamaV2Cache_Q4(model, max_seq_len=max_seq_len, lazy=True)
     else:
         cache = ExLlamaV2Cache(model, max_seq_len=max_seq_len, lazy=True)
@@ -317,11 +302,7 @@ def exl2(
         draft_config = ExLlamaV2Config(draft_model_path)
         draft_model = ExLlamaV2(draft_config)
 
-        if cache_8bit:
-            draft_cache = ExLlamaV2Cache_8bit(
-                draft_model, max_seq_len=max_seq_len, lazy=True
-            )
-        elif cache_q4:
+        if cache_q4:
             draft_cache = ExLlamaV2Cache_Q4(
                 draft_model, max_seq_len=max_seq_len, lazy=True
             )
