@@ -7,7 +7,6 @@ from outlines.generate.api import GenerationParameters, SamplingParameters
 from outlines.models.transformers import TransformerTokenizer
 
 if TYPE_CHECKING:
-    from exllamav2 import ExLlamaV2Lora
     from exllamav2.generator import ExLlamaV2DynamicGenerator, ExLlamaV2Sampler
 
 
