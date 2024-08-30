@@ -205,13 +205,6 @@ class ExLlamaV2Model:
 
         return token_generator()
 
-    def load_lora(self, adapter_path: str):
-        from exllamav2 import ExLlamaV2Lora
-
-        loras = [ExLlamaV2Lora.from_directory(self.generator.model, adapter_path)]
-        print(" -- Loading LoRA...")
-        self.generator.set_loras(loras)
-
 
 def exl2(
     model_path: str,
@@ -220,7 +213,6 @@ def exl2(
     cache_q4: bool = False,
     paged: bool = True,
     max_chunk_size: Optional[int] = None,
-    lora: Optional["ExLlamaV2Lora"] = None,
 ) -> ExLlamaV2Model:
     """
     Load an ExLlamaV2 model.
@@ -323,8 +315,6 @@ def exl2(
         max_chunk_size=max_chunk_size,
         paged=paged,
     )
-    if lora is not None:
-        generator.set_loras(lora)
     hf_tokenizer_kwargs: dict[str, Any] = {}
     hf_tokenizer_kwargs.setdefault("padding_side", "left")
     hf_tokenizer = AutoTokenizer.from_pretrained(model_path, **hf_tokenizer_kwargs)
