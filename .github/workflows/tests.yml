@@ -48,12 +48,14 @@ jobs:
       env:
         COVERAGE_FILE: .coverage.${{ steps.matrix-id.outputs.id }}
     - name: Upload coverage data
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: coverage-data
         path: .coverage.*
         if-no-files-found: ignore
         include-hidden-files: true
+        # TODO FIXME: This is only using the last run
+        overwrite: true
 
   coverage:
     name: Combine & check coverage.
@@ -74,7 +76,7 @@ jobs:
         run: |
           pip install --upgrade "coverage[toml]>=5.1" diff-cover
 
-      - uses: actions/download-artifact@v3
+      - uses: actions/download-artifact@v4
         with:
           name: coverage-data
 
@@ -90,10 +92,12 @@ jobs:
           diff-cover coverage.xml --markdown-report=coverage.md --fail-under=100 || (cat coverage.md >> $GITHUB_STEP_SUMMARY && exit 1)
 
       - name: Upload HTML report if check failed.
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: html-report
           path: htmlcov
+          # TODO FIXME: This is only using the last run
+          overwrite: true
         if: ${{ failure() }}
 
   build-wheel:
