@@ -357,6 +357,7 @@ answer = outlines.generate.text(model)(prompt, max_tokens=100)
 ```
 
 [documentation]: https://outlines-dev.github.io/outlines/welcome/
+[documentation-badge]: https://img.shields.io/readthedocs/outlines
 [contributors]: https://github.com/outlines-dev/outlines/graphs/contributors
 [contributors-badge]: https://img.shields.io/github/contributors/outlines-dev/outlines?style=flat-square&logo=github&logoColor=white&color=ECEFF4
 [dottxt-twitter]: https://twitter.com/dottxtai
