@@ -7,6 +7,7 @@
 [![.txt Twitter][dottxt-twitter-badge]][dottxt-twitter]
 [![Outlines Twitter][outlines-twitter-badge]][outlines-twitter]
 
+[![Documentation][documentation-badge]][documentation]
 [![Contributors][contributors-badge]][contributors]
 [![Downloads][downloads-badge]][pypistats]
 [![Discord][discord-badge]][discord]
@@ -355,6 +356,8 @@ answer = outlines.generate.text(model)(prompt, max_tokens=100)
 }
 ```
 
+[documentation]: https://outlines-dev.github.io/outlines/welcome/
+[documentation-badge]: https://img.shields.io/readthedocs/outlines
 [contributors]: https://github.com/outlines-dev/outlines/graphs/contributors
 [contributors-badge]: https://img.shields.io/github/contributors/outlines-dev/outlines?style=flat-square&logo=github&logoColor=white&color=ECEFF4
 [dottxt-twitter]: https://twitter.com/dottxtai
