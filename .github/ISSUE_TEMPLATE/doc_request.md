@@ -1,6 +1,6 @@
 ---
-name: 📚 Documentation request
-about: Request a new feature.
+name: 📚 Documentation
+about: Help with documentation improvements.
 title: ''
 labels: ''
 assignees: ''
@@ -8,7 +8,7 @@ assignees: ''
 
 ### Documentation request
 
-Documentation is a high priority for us. If you would like to see something added to the documentation, please help us out by:
+Documentation is a high priority for outlines. If you would like to see something added to the documentation, please help us out by:
 
 - Checking to see if the documentation does not already exist.
 - Providing a detailed explanation of what you'd like to understand better.
