@@ -329,6 +329,9 @@ def test_RegexGuide_caching(model, temp_cache_dir):
     assert structured != structured_2
 
 
+@pytest.mark.xfail(
+    reason="Some versions of the Hermes-2-Pro-Llama-3 model have a broken config"
+)
 def test_tokenizer_vocabulary_decode_sanity():
     """Assert the decoded newline token (198) is the same as the normalized vocab token"""
     import llama_cpp
@@ -337,7 +340,7 @@ def test_tokenizer_vocabulary_decode_sanity():
         "bartowski/Meta-Llama-3-8B-Instruct-GGUF",
         "Meta-Llama-3-8B-Instruct-IQ1_M.gguf",
         tokenizer=llama_cpp.llama_tokenizer.LlamaHFTokenizer.from_pretrained(
-            "NousResearch/Hermes-2-Pro-Llama-3-8B"
+            "NousResearch/Hermes-2-Pro-Llama-3-8B",
         ),
     )
     tokenizer = generate.regex(model, "a").logits_processor.tokenizer
