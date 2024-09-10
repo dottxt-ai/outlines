@@ -73,7 +73,7 @@ vLLM supports AWQ, GPTQ and SqueezeLLM quantized models:
 ```python
 from outlines import models
 
-model = models.vllm("TheBloke/Llama-2-7b-Chat-AWQ", quantization="awq")
+model = models.vllm("TheBloke/Llama-2-7B-Chat-AWQ", quantization="awq")
 model = models.vllm("TheBloke/Mistral-7B-Instruct-v0.2-GPTQ", quantization="gptq")
 model = models.vllm("https://huggingface.co/squeeze-ai-lab/sq-llama-30b-w4-s5", quantization="squeezellm")
 ```
