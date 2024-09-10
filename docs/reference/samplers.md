@@ -2,7 +2,7 @@
 
 Outlines offers different sequence sampling algorithms, and we will integrate more in the future. You can read [this blog post](https://huggingface.co/blog/how-to-generate) for an overview of the different sampling algorithm.
 
-Samplers are how you control 
+Samplers provide control over the sampling process, allowing you to influence the output of the model. This can include controlling randomness (temperature), biasing towards certain tokens (top-k, top-p), or sequence generation (beam search).
 
 ## Multinomial sampling
 
@@ -16,6 +16,15 @@ For example, pretend we have a model with only two possible tokens: "A" and "B".
 | B     | 0.25        |
 
 You'd expect to receive "A" 75% of the time and "B" 25% of the time.
+
+### Parameters
+
+- `samples`: Number of samples to generate (default: 1)
+- `top_k`: Only consider the top k tokens (optional)
+- `top_p`: Only consider the top tokens with cumulative probability >= p (optional)
+- `temperature`: Controls randomness of sampling (optional)
+
+### Default behavior
 
 Outlines defaults to the multinomial sampler without top-p or top-k sampling, and temperature equal to 1. 
 
@@ -107,7 +116,9 @@ sampler = samplers.multinomial(3, top_p=0.95)
 
 ## Greedy sampler
 
-You can also use the greedy sampler. For this you need to initialize the generator with the sampler:
+Greedy sampling selects the token with the highest probability at each step. It's deterministic and always produces the same output for a given input.
+
+To use the greedy sampler, initialize the generator with the sampler:
 
 
 ```python
@@ -129,7 +140,9 @@ You cannot ask for multiple samples with the greedy sampler since it does not cl
 
 ## Beam Search
 
-Outlines also comes with the Beam Search sampling algorithm:
+Beam search maintains multiple candidate sequences at each step, potentially finding better overall sequences than greedy or multinomial sampling.
+
+To use Beam Search, initialize the generator with the sampler:
 
 ```python
 from outlines import models, generate, samplers
@@ -144,8 +157,11 @@ answer = generator("What is 2+2?")
 print(answer)
 # 4
 ```
-
-
 !!! Warning "Compatibility"
 
     Only models from the `transformers`  and `exllamav2 ` libraries are compatible with Beam Search.
+
+### Parameters
+
+- `beams`: Number of beams to use (default: 1)
+
