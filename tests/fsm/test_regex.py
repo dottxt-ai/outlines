@@ -402,15 +402,18 @@ def test_create_fsm_index_end_to_end_multi_byte():
 
 
 @pytest.mark.parametrize(
-    "hf_tokenizer_uri",
+    "hf_tokenizer_uri, revision",
     [
-        "gpt2",
-        "microsoft/phi-2",
-        "Qwen/Qwen1.5-0.5B-Chat",
-        "NousResearch/Hermes-2-Pro-Llama-3-8B",
+        ("openai-community/gpt2", "607a30d783dfa663caf39e06633721c8d4cfcd7e"),
+        ("microsoft/phi-2", "ef382358ec9e382308935a992d908de099b64c23"),
+        ("Qwen/Qwen1.5-0.5B-Chat", "4d14e384a4b037942bb3f3016665157c8bcb70ea"),
+        (
+            "NousResearch/Hermes-2-Pro-Llama-3-8B",
+            "783fd50eb82d7f57758de033861f54d62dde234f",
+        ),
     ],
 )
-def test_create_fsm_index_tokenizer(hf_tokenizer_uri):
+def test_create_fsm_index_tokenizer(hf_tokenizer_uri, revision):
     # The combined regular expressions of a lexer state in a Python grammar
     regex_str = "(?:(?:[0-9](?:(?:_)?[0-9])*(?:e|E)(?:(?:\\+|\\-))?[0-9](?:(?:_)?[0-9])*|(?:[0-9](?:(?:_)?[0-9])*\\.(?:[0-9](?:(?:_)?[0-9])*)?|\\.[0-9](?:(?:_)?[0-9])*)(?:(?:e|E)(?:(?:\\+|\\-))?[0-9](?:(?:_)?[0-9])*)?)|[0-9](?:(?:_)?[0-9])*)(?:J|j)|(?:[0-9](?:(?:_)?[0-9])*(?:e|E)(?:(?:\\+|\\-))?[0-9](?:(?:_)?[0-9])*|(?:[0-9](?:(?:_)?[0-9])*\\.(?:[0-9](?:(?:_)?[0-9])*)?|\\.[0-9](?:(?:_)?[0-9])*)(?:(?:e|E)(?:(?:\\+|\\-))?[0-9](?:(?:_)?[0-9])*)?)|0(?:x|X)(?:(?:_)?(?:[0-9]|[a-f]|[A-F]))+|0(?:b|B)(?:(?:_)?[0-1])+|0(?:o|O)(?:(?:_)?[0-7])+|(?:(?i:([ubf]?r?|r[ubf])('([^\\\\']|.)*?'))|(?i:([ubf]?r?|r[ubf])(\"([^\\\"]|.)*?\")))|(?:(?:\r?\n[\t ]*|#[^\n]*))+|[1-9](?:(?:_)?[0-9])*|\\\\[\t \x0c]*\r?\n|continue|nonlocal|assert|global|import|lambda|return|async|await|break|class|False|match|raise|while|yield|case|from|None|pass|True|with|def|del|for|not|try|if|[^\\W\\d]\\w*|#[^\n]*|[\t \x0c]+|\\.\\.\\.|@|\\{|\\(|\\[|\\-|\\+|\\*|\\~"
 
@@ -425,7 +428,7 @@ def test_create_fsm_index_tokenizer(hf_tokenizer_uri):
     num_bytes_fsm_states = len(bytes_fsm.states)
     assert num_bytes_fsm_states == 235
 
-    tokenizer = AutoTokenizer.from_pretrained(hf_tokenizer_uri)
+    tokenizer = AutoTokenizer.from_pretrained(hf_tokenizer_uri, revision=revision)
     tokenizer = TransformerTokenizer(tokenizer)
 
     states_to_token_subsets, empty_token_ids = create_fsm_index_tokenizer(
