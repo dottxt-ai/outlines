@@ -2,9 +2,24 @@
 
 Outlines offers different sequence sampling algorithms, and we will integrate more in the future. You can read [this blog post](https://huggingface.co/blog/how-to-generate) for an overview of the different sampling algorithm.
 
+Samplers are how you control 
+
 ## Multinomial sampling
 
-Outlines defaults to the multinomial sampler without top-p or top-k sampling, and temperature equal to 1. Not specifying a sampler is equivalent to:
+Multinomial sampling is the default sampling algorithm in Outlines. You should think of it as calculating the probability distribution over all tokens and then selecting tokens at random according to that distribution.
+
+For example, pretend we have a model with only two possible tokens: "A" and "B". For a fixed prompt such as "Pick A or B" The language model calculates probability for each token:
+
+| Token | Probability |
+|-------|-------------|
+| A     | 0.75        |
+| B     | 0.25        |
+
+You'd expect to receive "A" 75% of the time and "B" 25% of the time.
+
+Outlines defaults to the multinomial sampler without top-p or top-k sampling, and temperature equal to 1. 
+
+Not specifying a sampler is equivalent to:
 
 ```python
 from outlines import models, generate, samplers
@@ -19,6 +34,8 @@ answer = generator("What is 2+2?")
 print(answer)
 # 4
 ```
+
+### Batching
 
 You can ask the generator to take multiple samples by passing the number of samples when initializing the sampler:
 
@@ -36,7 +53,7 @@ print(answer)
 # [4, 4, 4]
 ```
 
-If you ask multiple samples for a batch of prompt the returned array will be of shape `(num_samples, num_batches)`:
+If you ask multiple samples for a batch of prompts the returned array will be of shape `(num_samples, num_batches)`:
 
 ```python
 from outlines import models, generate, samplers
@@ -51,6 +68,25 @@ answer = generator(["What is 2+2?", "What is 3+3?"])
 print(answer)
 # [[4, 4, 4], [6, 6, 6]]
 ```
+
+### Temperature
+
+You can control the temperature with
+
+```python
+from outlines import models, generate, samplers
+
+
+model = models.transformers("microsoft/Phi-3-mini-4k-instruct")
+sampler = samplers.multinomial(3, temperature=0.5)
+
+generator = generate.text(model, sampler)
+answer = generator(["What is 2+2?", "What is 3+3?"])
+
+print(answer)
+```
+
+If you would like to use `temperature=0.0`, please use `sampler=samplers.greedy()` instead.
 
 ### Top-k sampling
 
@@ -88,7 +124,7 @@ print(answer)
 # 4
 ```
 
-You cannot ask for multiple samples with the greedy sampler since it does not clear what the result should be.
+You cannot ask for multiple samples with the greedy sampler since it does not clear what the result should be. Only the most likely token can be returned.
 
 
 ## Beam Search
