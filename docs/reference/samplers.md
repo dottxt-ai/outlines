@@ -6,16 +6,16 @@ Samplers provide control over the sampling process, allowing you to influence th
 
 ## Multinomial sampling
 
-Multinomial sampling is the default sampling algorithm in Outlines. You should think of it as calculating the probability distribution over all tokens and then selecting tokens at random according to that distribution.
+[Multinomial sampling](https://en.wikipedia.org/wiki/Multinomial_distribution) is the default sampling algorithm in Outlines.
 
-For example, pretend we have a model with only two possible tokens: "A" and "B". For a fixed prompt such as "Pick A or B" The language model calculates probability for each token:
+As an example, suppose we have only two possible tokens: "H" and "T". For a fixed prompt such as "Flip a coin, did you get heads or tails?" The language model calculates probability for each token:
 
 | Token | Probability |
 |-------|-------------|
-| A     | 0.75        |
-| B     | 0.25        |
+| "H"   | 0.5         |
+| "T"   | 0.5         |
 
-You'd expect to receive "A" 75% of the time and "B" 25% of the time.
+You'd expect to receive "H" 50% of the time and "T" 50% of the time.
 
 ### Parameters
 
