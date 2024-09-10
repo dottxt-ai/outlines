@@ -165,3 +165,14 @@ print(answer)
 
 - `beams`: Number of beams to use (default: 1)
 
+## Sampler Comparison
+
+Here's a table comparing the different samplers:
+
+| Sampler | Pros | Cons | Use Cases |
+|---------|------|------|-----------|
+| Greedy | Deterministic, fast | May produce repetitive text | When you need consistent, predictable output |
+| Multinomial | Balances exploration and exploitation | Results may vary between runs | General-purpose text generation, creative tasks |
+| Beam Search | Can find globally better sequences | More computationally expensive | When sequence quality is critical, e.g., translation |
+
+For most use cases, we recommend using the default [multinomial sampler](#multinomial-sampling).
