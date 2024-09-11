@@ -1,7 +1,5 @@
 <div align="center" style="margin-bottom: 1em;">
 
-# Outlines 〰️
-
 <img src="./docs/assets/images/logo.png" alt="Outlines Logo" width=300></img>
 
 [![.txt Twitter][dottxt-twitter-badge]][dottxt-twitter]
