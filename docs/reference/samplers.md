@@ -26,7 +26,7 @@ You'd expect to receive "H" 50% of the time and "T" 50% of the time.
 
 ### Default behavior
 
-Outlines defaults to the multinomial sampler without top-p or top-k sampling, and temperature equal to 1. 
+Outlines defaults to the multinomial sampler without top-p or top-k sampling, and temperature equal to 1.
 
 Not specifying a sampler is equivalent to:
 
