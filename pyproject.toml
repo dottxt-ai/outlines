@@ -73,9 +73,9 @@ serve = [
 ]
 
 [project.urls]
-homepage = "https://github.com/outlines-dev/outlines"
-documentation = "https://outlines-dev.github.io/outlines/"
-repository = "https://github.com/outlines-dev/outlines"
+homepage = "https://github.com/dottxt-ai/outlines"
+documentation = "https://dottxt-ai.github.io/outlines/"
+repository = "https://github.com/dottxt-ai/outlines"
 
 [project.readme]
 file="README.md"

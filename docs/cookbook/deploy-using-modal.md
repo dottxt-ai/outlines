@@ -76,7 +76,7 @@ outlines_image = outlines_image.run_function(import_model)
 
 ## Define a schema
 
-We will run the JSON-structured generation example [in the README](https://github.com/outlines-dev/outlines?tab=readme-ov-file#efficient-json-generation-following-a-json-schema), with the following schema:
+We will run the JSON-structured generation example [in the README](https://github.com/dottxt-ai/outlines?tab=readme-ov-file#efficient-json-generation-following-a-json-schema), with the following schema:
 
 ```python
 # Specify a schema for the character description. In this case,
@@ -173,7 +173,7 @@ def main(
     generate.remote(prompt)
 ```
 
-Here `@app.local_entrypoint()` decorator defines `main` as the function to start from locally when using the Modal CLI. You can save above code to `example.py` (or use [this implementation](https://github.com/outlines-dev/outlines/blob/main/examples/modal_example.py)). Let's now see how to run the code on the cloud using the Modal CLI.
+Here `@app.local_entrypoint()` decorator defines `main` as the function to start from locally when using the Modal CLI. You can save above code to `example.py` (or use [this implementation](https://github.com/dottxt-ai/outlines/blob/main/examples/modal_example.py)). Let's now see how to run the code on the cloud using the Modal CLI.
 
 ## Run on the cloud
 

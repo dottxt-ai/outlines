@@ -13,5 +13,5 @@ COPY outlines ./outlines
 RUN --mount=source=.git,target=.git,type=bind \
     pip install --no-cache-dir .[serve]
 
-# https://outlines-dev.github.io/outlines/reference/vllm/
+# https://dottxt-ai.github.io/outlines/reference/vllm/
 ENTRYPOINT ["python3", "-m", "outlines.serve.serve"]

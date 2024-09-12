@@ -44,7 +44,7 @@ def cfg_vision(model, cfg_str: str, sampler: Sampler = multinomial()):
 @cfg.register(ExLlamaV2Model)
 def cfg_exllamav2(model, cfg_str: str, sampler: Sampler = multinomial()):
     raise NotImplementedError(
-        "Not yet available, track progress in https://github.com/outlines-dev/outlines/pull/1010"
+        "Not yet available, track progress in https://github.com/dottxt-ai/outlines/pull/1010"
     )
 
 

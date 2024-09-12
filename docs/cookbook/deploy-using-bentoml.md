@@ -2,7 +2,7 @@
 
 [BentoML](https://github.com/bentoml/BentoML) is an open-source model serving library for building performant and scalable AI applications with Python. It comes with tools that you need for serving optimization, model packaging, and production deployment.
 
-In this guide, we will show you how to use BentoML to run programs written with Outlines on GPU locally and in [BentoCloud](https://www.bentoml.com/), an AI Inference Platform for enterprise AI teams. The example source code in this guide is also available in the [examples/bentoml/](https://github.com/outlines-dev/outlines/blob/main/examples/bentoml/) directory.
+In this guide, we will show you how to use BentoML to run programs written with Outlines on GPU locally and in [BentoCloud](https://www.bentoml.com/), an AI Inference Platform for enterprise AI teams. The example source code in this guide is also available in the [examples/bentoml/](https://github.com/dottxt-ai/outlines/blob/main/examples/bentoml/) directory.
 
 ## Import a model
 
@@ -56,7 +56,7 @@ mistralai--mistral-7b-v0.1:m7lmf5ac2cmubnnz          13.49 GiB   2024-04-25 06:5
 
 As the model is ready, we can define a [BentoML Service](https://docs.bentoml.com/en/latest/guides/services.html) to wrap the capabilities of the model.
 
-We will run the JSON-structured generation example [in the README](https://github.com/outlines-dev/outlines?tab=readme-ov-file#efficient-json-generation-following-a-json-schema), with the following schema:
+We will run the JSON-structured generation example [in the README](https://github.com/dottxt-ai/outlines?tab=readme-ov-file#efficient-json-generation-following-a-json-schema), with the following schema:
 
 ```python
 DEFAULT_SCHEMA = """{
@@ -153,7 +153,7 @@ We then need to define an HTTP endpoint using `@bentoml.api` to decorate the met
 
 Here `@bentoml.api` decorator defines `generate` as an HTTP endpoint that accepts a JSON request body with two fields: `prompt` and `json_schema` (optional, which allows HTTP clients to provide their own JSON schema). The type hints in the function signature will be used to validate incoming JSON requests. You can define as many HTTP endpoints as you want by using `@bentoml.api` to decorate other methods of `Outlines` class.
 
-Now you can save the above code to `service.py` (or use [this implementation](https://github.com/outlines-dev/outlines/blob/main/examples/bentoml/)), and run the code using the BentoML CLI.
+Now you can save the above code to `service.py` (or use [this implementation](https://github.com/dottxt-ai/outlines/blob/main/examples/bentoml/)), and run the code using the BentoML CLI.
 
 ## Run locally for testing and debugging
 

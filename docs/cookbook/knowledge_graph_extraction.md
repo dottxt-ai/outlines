@@ -1,6 +1,6 @@
 # Knowledge Graph Extraction
 
-In this guide, we use [outlines](https://outlines-dev.github.io/outlines/) to extract a knowledge graph from unstructured text.
+In this guide, we use [outlines](https://dottxt-ai.github.io/outlines/) to extract a knowledge graph from unstructured text.
 
 We will use [llama.cpp](https://github.com/ggerganov/llama.cpp) using the [llama-cpp-python](https://github.com/abetlen/llama-cpp-python) library. Outlines supports llama-cpp-python, but we need to install it ourselves:
 

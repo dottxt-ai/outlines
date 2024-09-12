@@ -1,6 +1,6 @@
 # ReAct Agent
 
-This example shows how to use [outlines](https://outlines-dev.github.io/outlines/) to build your own agent with open weights local models and structured outputs. It is inspired by the blog post [A simple Python implementation of the ReAct pattern for LLMs](https://til.simonwillison.net/llms/python-react-pattern) by [Simon Willison](https://simonwillison.net/).
+This example shows how to use [outlines](https://dottxt-ai.github.io/outlines/) to build your own agent with open weights local models and structured outputs. It is inspired by the blog post [A simple Python implementation of the ReAct pattern for LLMs](https://til.simonwillison.net/llms/python-react-pattern) by [Simon Willison](https://simonwillison.net/).
 
 The ReAct pattern (for Reason+Act) is described in the paper [ReAct: Synergizing Reasoning and Acting in Language Models](https://arxiv.org/abs/2210.03629). It's a pattern where you implement additional actions that an LLM can take - searching Wikipedia or running calculations for example - and then teach it how to request the execution of those actions, and then feed their results back into the LLM.
 

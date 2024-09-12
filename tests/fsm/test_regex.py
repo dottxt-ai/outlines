@@ -667,7 +667,7 @@ def test_token_trans_keys_walk_fsm():
 def test_numba_leading_null_byte_UnicodeCharSeq_remains_broken():
     """Assert numba UnicodeCharSeq w/ leading \x00 is still broken"""
     # EXPLANATION:
-    # https://github.com/outlines-dev/outlines/pull/930#issuecomment-2143535968
+    # https://github.com/dottxt-ai/outlines/pull/930#issuecomment-2143535968
 
     # from https://github.com/numba/numba/issues/9542
     d = numba.typed.typeddict.Dict.empty(numba.types.UnicodeCharSeq(1), numba.int64)
@@ -685,7 +685,7 @@ def test_numba_leading_null_byte_UnicodeCharSeq_remains_broken():
 def test_numba_leading_null_byte_unicode_type_sane(input_key):
     """Assert numba unicode_type w/ leading \x00 is working"""
     # EXPLANATION:
-    # https://github.com/outlines-dev/outlines/pull/930#issuecomment-2143535968
+    # https://github.com/dottxt-ai/outlines/pull/930#issuecomment-2143535968
 
     # from https://github.com/numba/numba/issues/9542
     d = numba.typed.typeddict.Dict.empty(numba.types.unicode_type, numba.int64)
@@ -712,8 +712,8 @@ def test_reduced_vocabulary_with_rare_tokens(rare_token):
 
     See [1] and [2] for context.
 
-    [1]: https://github.com/outlines-dev/outlines/pull/763
-    [2]: https://github.com/outlines-dev/outlines/pull/948
+    [1]: https://github.com/dottxt-ai/outlines/pull/763
+    [2]: https://github.com/dottxt-ai/outlines/pull/948
     """
     tokenizer = AutoTokenizer.from_pretrained("openai-community/gpt2")
     tokenizer = TransformerTokenizer(tokenizer=tokenizer)

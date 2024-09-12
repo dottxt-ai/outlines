@@ -76,7 +76,7 @@ def model_vllm(tmp_path_factory):
     return models.vllm("facebook/opt-125m", gpu_memory_utilization=0.1)
 
 
-# TODO: exllamav2 failing in main, address in https://github.com/outlines-dev/outlines/issues/808
+# TODO: exllamav2 failing in main, address in https://github.com/dottxt-ai/outlines/issues/808
 # TODO: t5 tokenizer doesn't work with streaming
 """
 @pytest.fixture(scope="session")
@@ -235,7 +235,7 @@ def test_generate_fsm(request, model_fixture, pattern):
 
 
 @pytest.mark.skip(
-    "Fix issues with JSON, some models fail this test https://github.com/outlines-dev/outlines/issues/985"
+    "Fix issues with JSON, some models fail this test https://github.com/dottxt-ai/outlines/issues/985"
 )
 @pytest.mark.parametrize("model_fixture", ALL_MODEL_FIXTURES)
 def test_generate_json(request, model_fixture, sample_schema):

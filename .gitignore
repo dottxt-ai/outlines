@@ -7,3 +7,5 @@ docs/build
 *.gguf
 .venv
 benchmarks/results
+
+.cache/
