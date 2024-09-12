@@ -70,10 +70,6 @@ def test_get_cache(test_cache):
 
 
 def test_get_cache_from_class_method(test_cache):
-    import outlines
-    memory = outlines.get_cache()
-    memory.clear()
-
     store = list()
 
     class DummyObject:
