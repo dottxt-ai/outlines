@@ -87,9 +87,7 @@ def test_get_cache_from_class_method(test_cache):
     class DummyArg:
         a: int
 
-
     dummy_object = DummyObject()
-    dummy_object.dummy_function.__dict__["__memory__"] = memory
 
     a_1 = DummyArg(1)
 
