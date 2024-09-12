@@ -3,6 +3,7 @@ name: Build the documentation
 on:
   pull_request:
     branches: [main]
+  workflow_dispatch:
 
 jobs:
   build:
