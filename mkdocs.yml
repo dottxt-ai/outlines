@@ -19,8 +19,8 @@ theme:
   palette:
     - scheme: default
       primary: white
-  logo: assets/images/logo.png
-  favicon: assets/images/logo.png
+  logo: assets/images/logo-simple.png
+  favicon: assets/images/logo-simple.png
   icon:
     repo: fontawesome/brands/github
   features:

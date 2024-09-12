@@ -9,7 +9,7 @@ hide:
 #
 
 <figure markdown>
-  ![Image title](assets/images/logo.png){ width="300" }
+  ![Image title](assets/images/logo.png){ width="600" }
 </figure>
 
 <center>
