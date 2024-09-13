@@ -23,13 +23,13 @@ Thanks to a refactor of the library, it is now possible to use our constrained g
 
 *We would like expand our work to the whole sampling layer*, and add new sampling methods that should make structured generation more accurate. This means we will keep the `transformers` integration as it is today and will expand our text generation logic around this library.
 
-Making workflows re-usable and easy to share is difficult today. That is why *we are big believers in [outlines functions](https://github.com/outlines-dev/functions)*. We will keep improving the interface and adding examples.
+Making workflows re-usable and easy to share is difficult today. That is why *we are big believers in [outlines functions](https://github.com/dottxt-ai/functions)*. We will keep improving the interface and adding examples.
 
 Finally, *we want to add a CLI tool*, `outlines serve`. This will allows you to either serve an API that does general constrained generation, or to serve Outlines function.
 
 ## Detailed roadmap
 
-Here is a more detailed roadmap for the next 12 months. Outlines is a [community](https://discord.gg/ZxBxyWmW5n) effort, and we invite you to pick either topic and [contribute to the library](https://github.com/outlines-dev/outlines). I will progressively add related [issues](https://github.com/outlines-dev/outlines/issues) in the repository.
+Here is a more detailed roadmap for the next 12 months. Outlines is a [community](https://discord.gg/ZxBxyWmW5n) effort, and we invite you to pick either topic and [contribute to the library](https://github.com/dottxt-ai/outlines). I will progressively add related [issues](https://github.com/dottxt-ai/outlines/issues) in the repository.
 
 ### Many more examples and tutorials
 
@@ -44,7 +44,7 @@ Let's be honest, Outlines is lacking clear and thorough examples. We want to cha
 
 We want to keep the current integrations but lower the maintenance cost so we can focus on what we bring to the table.
 
-* Deprecate every obsolete integration: `transformers` has recently integrated `autoawq` and `autogptq` for instance. ([PR](https://github.com/outlines-dev/outlines/pull/527))
+* Deprecate every obsolete integration: `transformers` has recently integrated `autoawq` and `autogptq` for instance. ([PR](https://github.com/dottxt-ai/outlines/pull/527))
 * See if we can integrate to a library that provides state-space models via a logit processing function;
 * Integrate with llama.cpp via a logits processor;
 * Integrate with exllamav2 via a logits processor;
@@ -55,14 +55,14 @@ We're just getting started!
 
 * Improve the performance of existing structured generation algorithms;
 * Improve the correctness of structured generation algorithms;
-* Add ready-to-use grammars in the [grammars](https://github.com/outlines-dev/grammars) repository or in a submodule in Outlines.
+* Add ready-to-use grammars in the [grammars](https://github.com/dottxt-ai/grammars) repository or in a submodule in Outlines.
 
 ### Keep developing Outlines functions
 
 Functions are awesome, use them!
 
 * Implement a CLI `outlines serve` that allows to serve Outlines functions locally;
-* Add more functions to the [functions](https://github.com/outlines-dev/functions) repository.
+* Add more functions to the [functions](https://github.com/dottxt-ai/functions) repository.
 
 ### Serve structured generation
 

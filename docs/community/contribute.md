@@ -16,7 +16,7 @@ Note that the [issue tracker][issues] is only intended for actionable items. In 
 
 ### Setup
 
-First, [fork the repository on GitHub](https://github.com/outlines-dev/outlines/fork) and clone the fork locally:
+First, [fork the repository on GitHub](https://github.com/dottxt-ai/outlines/fork) and clone the fork locally:
 
 ```bash
 git clone git@github.com/YourUserName/outlines.git
@@ -127,6 +127,6 @@ Then you can [open a pull request][pull-requests] on GitHub. It should prompt yo
 Do not hesitate to open a draft PR before your contribution is ready, especially if you have questions and/or need feedback. If you need help, come tell us on [Discord][discord].
 
 [discord]: https://discord.gg/R9DSu34mGd
-[discussions]: https://github.com/outlines-dev/outlines/discussions
-[issues]: https://github.com/outlines-dev/outlines/issues
-[pull-requests]: https://github.com/outlines-dev/outlines/pulls
+[discussions]: https://github.com/dottxt-ai/outlines/discussions
+[issues]: https://github.com/dottxt-ai/outlines/issues
+[pull-requests]: https://github.com/dottxt-ai/outlines/pulls

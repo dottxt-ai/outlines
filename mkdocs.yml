@@ -1,5 +1,5 @@
 # Site information
-site_name: Outlines 〰️
+site_name: Outlines
 site_author: The Outlines developers
 site_description: >-
   Structured text generation with LLMs
@@ -19,7 +19,7 @@ theme:
   palette:
     - scheme: default
       primary: white
-  logo: assets/images/logo-simple.png
+  logo: assets/images/logo-square.svg
   favicon: assets/images/logo-simple.png
   icon:
     repo: fontawesome/brands/github

@@ -1,9 +1,9 @@
 # To use:
 #
 #   $ conda env create -f environment.yml  # `mamba` works too for this command
-#   $ conda activate outlines-dev
+#   $ conda activate dottxt-ai
 #
-name: outlines-dev
+name: dottxt-ai
 channels:
   - conda-forge
   - huggingface

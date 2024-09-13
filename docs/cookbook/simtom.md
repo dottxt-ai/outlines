@@ -17,9 +17,9 @@ SimToM calls an LLM with two consecutive prompts:
 
 To implement SimToM with Outlines, we will need to:
 
-1. Write the prompts with [prompt functions](https://outlines-dev.github.io/outlines/reference/prompting/).
+1. Write the prompts with [prompt functions](https://dottxt-ai.github.io/outlines/reference/prompting/).
 2. Define the JSON object each prompt will return using Pydantic.
-3. Generate responses with a Mistral model using the [transformers integration](https://outlines-dev.github.io/outlines/reference/models/transformers/).
+3. Generate responses with a Mistral model using the [transformers integration](https://dottxt-ai.github.io/outlines/reference/models/transformers/).
 
 Let's dive into it!
 

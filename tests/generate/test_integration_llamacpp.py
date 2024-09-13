@@ -250,7 +250,7 @@ def test_llamacpp_json_schema(model):
     ],
 )
 def test_byte_tokenizer_regression(repo, model_path, hf_tokenizer_uri):
-    """Reproduce https://github.com/outlines-dev/outlines/issues/820"""
+    """Reproduce https://github.com/dottxt-ai/outlines/issues/820"""
     import llama_cpp
 
     model = models.llamacpp(

@@ -174,7 +174,7 @@ print(result)
 # 5+5+5+5+5
 ```
 
-The available grammars are listed [here](https://github.com/outlines-dev/outlines/tree/main/outlines/grammars).
+The available grammars are listed [here](https://github.com/dottxt-ai/outlines/tree/main/outlines/grammars).
 
 
 ### [Regex-structured generation](./regex.md)

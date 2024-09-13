@@ -28,29 +28,29 @@ def test_download_from_github_invalid():
         download_from_github("outlines/program")
 
     with pytest.raises(ValueError, match="Do not append"):
-        download_from_github("outlines-dev/outlines/program.py")
+        download_from_github("dottxt-ai/outlines/program.py")
 
 
 @responses.activate
 def test_download_from_github_success():
     responses.add(
         responses.GET,
-        "https://raw.githubusercontent.com/outlines-dev/outlines/main/program.py",
+        "https://raw.githubusercontent.com/dottxt-ai/outlines/main/program.py",
         body="import outlines\n",
         status=200,
     )
 
-    file = download_from_github("outlines-dev/outlines/program")
+    file = download_from_github("dottxt-ai/outlines/program")
     assert file == "import outlines\n"
 
     responses.add(
         responses.GET,
-        "https://raw.githubusercontent.com/outlines-dev/outlines/main/foo/bar/program.py",
+        "https://raw.githubusercontent.com/dottxt-ai/outlines/main/foo/bar/program.py",
         body="import outlines\n",
         status=200,
     )
 
-    file = download_from_github("outlines-dev/outlines/foo/bar/program")
+    file = download_from_github("dottxt-ai/outlines/foo/bar/program")
     assert file == "import outlines\n"
 
 

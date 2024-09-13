@@ -322,7 +322,7 @@ class CFGGuide(Guide):
         """
         warnings.warn(
             "Outlines' public *community-contributed* CFG structured generation is experimental. "
-            "Please review https://outlines-dev.github.io/outlines/reference/cfg#disclaimer"
+            "Please review https://dottxt-ai.github.io/outlines/reference/cfg#disclaimer"
         )
 
         self.cfg_string = cfg_string
@@ -466,7 +466,7 @@ class CFGGuide(Guide):
 
     def is_final_state(self, state: CFGState) -> bool:
         # TODO: remove this method, use can_terminate_state and must_terminate_state
-        # here and in RegexGuide per https://github.com/outlines-dev/outlines/issues/885
+        # here and in RegexGuide per https://github.com/dottxt-ai/outlines/issues/885
         return self.can_terminate_state(state)
 
     def can_terminate_state(self, state: CFGState) -> bool:

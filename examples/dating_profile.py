@@ -26,7 +26,7 @@ class QuestionAnswer:
 
 class DatingProfile(BaseModel):
     # It is possible put length constraints on these strings using constr- however, this appears to dramatically increase the generation time
-    # This may be resolved in the future with this PR: https://github.com/outlines-dev/outlines/pull/272
+    # This may be resolved in the future with this PR: https://github.com/dottxt-ai/outlines/pull/272
     bio: str
     job: str
     # Ignore mypy checks here because it still doesn't support conlist or constr: https://github.com/pydantic/pydantic/issues/975

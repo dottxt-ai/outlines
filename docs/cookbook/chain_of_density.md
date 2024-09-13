@@ -122,4 +122,4 @@ print(result.model_dump())
 
 Not bad, considering we used a smallish model to generate the summary! Chain of Density seems to be a very effective prompting technique to generate dense summaries, even with small quantized models. Its implementation in Outlines is also very short.
 
-Note that this is the first article I tried and it worked out of the box. Try it out on other articles, and please share the results on Twitter, or by opening [a new discussion](https://github.com/outlines-dev/outlines/discussions/categories/show-and-tell) on the Outlines repository!
+Note that this is the first article I tried and it worked out of the box. Try it out on other articles, and please share the results on Twitter, or by opening [a new discussion](https://github.com/dottxt-ai/outlines/discussions/categories/show-and-tell) on the Outlines repository!

@@ -65,7 +65,7 @@ curl http://127.0.0.1:8000/generate \
 
 Instead of `curl`, you can also use the [requests][requests]{:target="_blank"} library from another python program.
 
-Please consult the [vLLM documentation][vllm]{:target="_blank"} for details on additional request parameters. You can also [read the code](https://github.com/outlines-dev/outlines/blob/main/outlines/serve/serve.py) in case you need to customize the solution to your needs.
+Please consult the [vLLM documentation][vllm]{:target="_blank"} for details on additional request parameters. You can also [read the code](https://github.com/dottxt-ai/outlines/blob/main/outlines/serve/serve.py) in case you need to customize the solution to your needs.
 
 [requests]: https://requests.readthedocs.io/en/latest/
 [vllm]: https://docs.vllm.ai/en/latest/index.html
