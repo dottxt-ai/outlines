@@ -8,4 +8,6 @@ docs/build
 .venv
 benchmarks/results
 
+# Remove doc build folders
 .cache/
+build/
