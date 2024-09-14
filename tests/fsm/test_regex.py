@@ -714,8 +714,29 @@ def test_reduced_vocabulary_with_rare_tokens(rare_token):
 
     [1]: https://github.com/dottxt-ai/outlines/pull/763
     [2]: https://github.com/dottxt-ai/outlines/pull/948
+    [3]: https://github.com/dottxt-ai/outlines/pull/1153
     """
     tokenizer = AutoTokenizer.from_pretrained("openai-community/gpt2")
     tokenizer = TransformerTokenizer(tokenizer=tokenizer)
     tokenizer.vocabulary[rare_token] = max(tokenizer.vocabulary.values()) + 1
     reduced_vocabulary(tokenizer)
+
+
+def test_reduced_vocabulary_with_byte_tokens():
+    class MockTokenizer:
+        vocabulary = {
+            "string": 1,
+            b"\xa1": 2,  # Qwen-Style
+            "eos": 3,
+        }
+        special_tokens = {"eos"}
+        eos_token_id = 3
+
+        def convert_token_to_string(self, token):
+            return b"\xef\xbf\xbd".decode()
+
+    reduced_vocab = reduced_vocabulary(MockTokenizer())
+
+    # See fsm.regex.get_token_transition_keys()
+    # FSM transition keys represents bytes as <null_prefix><hex_byte>
+    assert reduced_vocab[0][1][0] == "\x00A1"

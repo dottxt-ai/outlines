@@ -905,9 +905,15 @@ def reduced_vocabulary(
         )
 
         if token_str:
-            # invalid utf-8 sequences are replaced with � (\ufffd), but there
-            # might also be tokens specifically for �, ��, ���, etc.
-            if "\ufffd" in token_str and not re_replacement_seq.match(token):
+            if isinstance(token, bytes):
+                # Handle BPE tokenizers where the tokens are directly stored as bytes
+                # https://github.com/QwenLM/Qwen/blob/main/tokenization_note.md#regular-tokens
+                token_str = "".join(byte_symbol(b) for b in token)
+
+            elif "\ufffd" in token_str and not re_replacement_seq.match(token):
+                # invalid utf-8 sequences are replaced with � (\ufffd), but there
+                # might also be tokens specifically for �, ��, ���, etc.
+
                 if re_llama_byte_token.match(token):
                     # llama-like tokenizers have <0xXX> tokens for all
                     # bytes >= 0x80 and represent all incomplete utf-8
