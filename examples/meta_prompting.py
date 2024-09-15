@@ -140,7 +140,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--model",
         type=str,
-        default="gpt-3.5-turbo-1106",
+        default="gpt-4o-mini",
         help="The Large Language Model to use to run the examples.",
     )
     args = parser.parse_args()

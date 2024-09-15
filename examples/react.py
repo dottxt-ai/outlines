@@ -13,6 +13,7 @@ References
 import requests  # type: ignore
 
 import outlines
+import outlines.generate as generate
 import outlines.models as models
 
 
@@ -45,25 +46,25 @@ def search_wikipedia(query: str):
 
 
 prompt = build_reAct_prompt("Where is Apple Computers headquarted? ")
-model = models.openai("gpt-3.5-turbo")
-complete = outlines.generate.text(model)
+model = models.openai("gpt-4o-mini")
+
+mode_generator = generate.choice(model, choices=["Tho", "Act"])
+action_generator = generate.choice(model, choices=["Search", "Finish"])
+text_generator = generate.text(model)
 
 for i in range(1, 10):
-    mode = complete.generate_choice(prompt, choices=["Tho", "Act"], max_tokens=128)
+    mode = mode_generator(prompt, max_tokens=128)
     prompt = add_mode(i, mode, "", prompt)
 
     if mode == "Tho":
-        thought = complete(prompt, stop_at="\n", max_tokens=128)
+        thought = text_generator(prompt, stop_at="\n", max_tokens=128)
         prompt += f"{thought}"
     elif mode == "Act":
-        action = complete.generate_choice(
-            prompt, choices=["Search", "Finish"], max_tokens=128
-        )
+        action = action_generator(prompt, max_tokens=128)
         prompt += f"{action} '"
 
-        subject = complete(
-            prompt, stop_at=["'"], max_tokens=128
-        )  # Apple Computers headquartered
+        subject = text_generator(prompt, stop_at=["'"], max_tokens=128)
+        # Apple Computers headquartered
         subject = " ".join(subject.split()[:2])
         prompt += f"{subject}'"
 

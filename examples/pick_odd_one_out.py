@@ -31,7 +31,7 @@ def build_ooo_prompt(options):
 
 options = ["sea", "mountains", "plains", "sock"]
 
-model = models.openai("gpt-3.5-turbo")
+model = models.openai("gpt-4o-mini")
 gen_text = outlines.generate.text(model)
 gen_choice = outlines.generate.choice(model, options)
 
