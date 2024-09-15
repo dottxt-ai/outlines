@@ -1,3 +1,4 @@
+import json as pyjson
 from functools import singledispatch
 from typing import Callable, List
 
@@ -5,6 +6,7 @@ from outlines.generate.api import SequenceGeneratorAdapter
 from outlines.models import OpenAI
 from outlines.samplers import Sampler, multinomial
 
+from .json import json
 from .regex import regex
 
 
@@ -24,13 +26,22 @@ def choice(
 def choice_openai(
     model: OpenAI, choices: List[str], sampler: Sampler = multinomial()
 ) -> Callable:
-    if not isinstance(sampler, multinomial):
-        raise NotImplementedError(
-            r"The OpenAI API does not support any other sampling algorithm "
-            + "that the multinomial sampler."
-        )
+    """
+    Call OpenAI API with response_format of a dict:
+    {"result": <one of choices>}
+    """
 
-    def generate_choice(prompt: str, max_tokens: int = 1):
-        return model.generate_choice(prompt, choices, max_tokens)
+    choices_schema = pyjson.dumps(
+        {
+            "type": "object",
+            "properties": {"result": {"type": "string", "enum": choices}},
+            "additionalProperties": False,
+            "required": ["result"],
+        }
+    )
+    generator = json(model, choices_schema, sampler)
+
+    def generate_choice(*args, **kwargs):
+        return generator(*args, **kwargs)["result"]
 
     return generate_choice

@@ -122,7 +122,6 @@ module = [
     "pydantic.*",
     "pytest",
     "referencing.*",
-    "tiktoken.*",
     "torch.*",
     "transformers.*",
     "llama_cpp",
