@@ -40,7 +40,7 @@ dependencies = [
    "datasets",
    "typing_extensions",
    "pycountry",
-   "pyairports",
+   "airportsdata",
 ]
 dynamic = ["version"]
 
@@ -137,7 +137,7 @@ module = [
     "uvicorn.*",
     "fastapi.*",
     "pycountry.*",
-    "pyairports.*",
+    "airportsdata.*",
 ]
 ignore_missing_imports = true
 
