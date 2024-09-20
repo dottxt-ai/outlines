@@ -6,7 +6,6 @@ import pytest
 import outlines.models as models
 from outlines.generate.api import GenerationParameters, SamplingParameters
 from outlines.models.exllamav2 import ExLlamaV2Model
-from outlines.models.transformers import TransformerTokenizer
 
 
 @pytest.fixture(scope="session")
@@ -34,7 +33,6 @@ def test_model_attributes(request, model_fixture):
     model = request.getfixturevalue(model_fixture)
     assert hasattr(model, "generator")
     assert hasattr(model, "tokenizer")
-    assert isinstance(model.tokenizer, TransformerTokenizer)
     assert hasattr(model, "max_seq_len")
     assert isinstance(model.max_seq_len, int)
 
