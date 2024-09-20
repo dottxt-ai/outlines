@@ -33,6 +33,7 @@ def test_model_attributes(request, model_fixture):
     model = request.getfixturevalue(model_fixture)
     assert hasattr(model, "generator")
     assert hasattr(model, "tokenizer")
+    assert model.tokenizer.convert_token_to_string(1) == 1
     assert hasattr(model, "max_seq_len")
     assert isinstance(model.max_seq_len, int)
 
