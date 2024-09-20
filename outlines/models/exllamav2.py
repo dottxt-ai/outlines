@@ -265,7 +265,7 @@ def exl2(
 
     except ImportError:
         raise ImportError(
-            "The `exllamav2` and `torch` libraries needs to be installed in order to use `exllamav2` models."
+            "The `exllamav2`, `transformers` and `torch` libraries needs to be installed in order to use `exllamav2` models."
         )
     config = ExLlamaV2Config(model_path)
     if max_chunk_size is not None:
