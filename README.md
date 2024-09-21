@@ -5,7 +5,6 @@
 <img src="./docs/assets/images/logo.png" alt="Outlines Logo" width=300></img>
 
 [![.txt Twitter][dottxt-twitter-badge]][dottxt-twitter]
-[![Outlines Twitter][outlines-twitter-badge]][outlines-twitter]
 
 [![Contributors][contributors-badge]][contributors]
 [![Downloads][downloads-badge]][pypistats]
@@ -364,10 +363,8 @@ answer = outlines.generate.text(model)(prompt, max_tokens=100)
 [contributors]: https://github.com/outlines-dev/outlines/graphs/contributors
 [contributors-badge]: https://img.shields.io/github/contributors/outlines-dev/outlines?style=flat-square&logo=github&logoColor=white&color=ECEFF4
 [dottxt-twitter]: https://twitter.com/dottxtai
-[outlines-twitter]: https://twitter.com/OutlinesOSS
 [discord]: https://discord.gg/R9DSu34mGd
 [discord-badge]: https://img.shields.io/discord/1182316225284554793?color=81A1C1&logo=discord&logoColor=white&style=flat-square
 [downloads-badge]: https://img.shields.io/pypi/dm/outlines?color=89AC6B&logo=python&logoColor=white&style=flat-square
 [pypistats]: https://pypistats.org/packages/outlines
 [dottxt-twitter-badge]: https://img.shields.io/twitter/follow/dottxtai?style=social
-[outlines-twitter-badge]: https://img.shields.io/twitter/follow/OutlinesOSS?style=social
