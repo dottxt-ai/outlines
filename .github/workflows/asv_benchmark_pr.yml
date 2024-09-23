@@ -1,18 +1,29 @@
 name: Benchmark PR
 
 on:
+  push:
   pull_request:
-    branches: [main]
+    types: [synchronize, labeled]
   workflow_dispatch:
 env:
   PYTHON_VERSION: "3.10"
   WORKING_DIR: ${{ github.workspace }}/benchmarks
   BENCHMARKS_OUTPUT: ${{ github.workspace }}/benchmarks_output
 
+permissions:
+  contents: read
+
+# Cancels all previous workflow runs for pull requests that have not completed.
+concurrency:
+  # The concurrency group contains the workflow name and the branch name for pull requests
+  # or the commit hash for any other events.
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.head_ref || github.sha }}
+  cancel-in-progress: true
+
 jobs:
   benchmark-pr:
     runs-on: ubuntu-latest
-    if: contains(github.event.pull_request.labels.*.name, 'run_benchmarks') || github.event_name == 'workflow_dispatch' || github.event_name == 'workflow_run'
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'run-benchmarks') || github.ref == 'refs/heads/main' }}
 
     defaults:
       run:
