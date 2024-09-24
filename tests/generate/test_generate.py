@@ -254,6 +254,16 @@ def test_generate_choice(request, model_fixture, sample_choices):
 
 
 @pytest.mark.parametrize("model_fixture", ALL_MODEL_FIXTURES)
+def test_generate_choice_twice(request, model_fixture, sample_choices):
+    model = request.getfixturevalue(model_fixture)
+    generator = generate.choice(model, sample_choices)
+    res = generator(**get_inputs(model_fixture))
+    assert res in sample_choices
+    res = generator(**get_inputs(model_fixture))
+    assert res in sample_choices
+
+
+@pytest.mark.parametrize("model_fixture", ALL_MODEL_FIXTURES)
 def test_generate_format_bool(request, model_fixture):
     model = request.getfixturevalue(model_fixture)
     generator = generate.format(model, bool)
