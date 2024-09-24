@@ -10,6 +10,6 @@ By default, language models stop generating tokens after and <EOS> token was gen
 ```python
 import outlines.models as models
 
-complete = models.openai("gpt-3.5-turbo")
+complete = models.openai("gpt-4o-mini")
 expert = complete("Name an expert in quantum gravity.", stop_at=["\n", "."])
 ```

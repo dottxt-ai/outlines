@@ -35,7 +35,7 @@ def execute_code(code):
 
 
 prompt = answer_with_code_prompt(question, examples)
-model = models.openai("gpt-3.5-turbo")
+model = models.openai("gpt-4o-mini")
 answer = outlines.generate.text(model)(prompt)
 result = execute_code(answer)
 print(f"It takes Carla {result:.0f} minutes to download the file.")

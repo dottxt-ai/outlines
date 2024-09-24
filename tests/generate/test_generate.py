@@ -76,7 +76,7 @@ def model_vllm(tmp_path_factory):
     return models.vllm("facebook/opt-125m", gpu_memory_utilization=0.1)
 
 
-# TODO: exllamav2 failing in main, address in https://github.com/outlines-dev/outlines/issues/808
+# TODO: exllamav2 failing in main, address in https://github.com/dottxt-ai/outlines/issues/808
 # TODO: t5 tokenizer doesn't work with streaming
 """
 @pytest.fixture(scope="session")
@@ -131,6 +131,17 @@ def sample_choices():
     return ["foo", "bar", "baz"]
 
 
+@pytest.fixture()
+def sample_lark_grammar():
+    # from https://github.com/lark-parser/lark/blob/master/docs/grammar.md
+    return """
+    ?start: hello_world "!" number
+    hello_world: ("hello" | "world") ~ 3
+    number: ("0".."9") ~ 5
+    thanks: "Thank"i " for testing!"
+    """
+
+
 REGEX_PATTERNS = [
     "a b c d e",  # ensure proper tokenizer whitespace prefix handling
     "(123456789)|(abcdefghijklmnop)",  # ensure consistent correct sequence handling during batch
@@ -153,6 +164,7 @@ def enforce_not_implemented(model_fixture, *task_names):
         "batch": ["model_llamacpp", "model_mlxlm", "model_mlxlm_phi3"],
         "beam_search": ["model_llamacpp", "model_mlxlm", "model_mlxlm_phi3"],
         "multiple_samples": ["model_llamacpp", "model_mlxlm", "model_mlxlm_phi3"],
+        "cfg": ["model_llamacpp"],  # TODO: fix llama_cpp tokenizer
     }
     for task_name in task_names:
         if model_fixture in NOT_IMPLEMENTED.get(task_name, []):
@@ -223,7 +235,7 @@ def test_generate_fsm(request, model_fixture, pattern):
 
 
 @pytest.mark.skip(
-    "Fix issues with JSON, some models fail this test https://github.com/outlines-dev/outlines/issues/985"
+    "Fix issues with JSON, some models fail this test https://github.com/dottxt-ai/outlines/issues/985"
 )
 @pytest.mark.parametrize("model_fixture", ALL_MODEL_FIXTURES)
 def test_generate_json(request, model_fixture, sample_schema):
@@ -242,11 +254,43 @@ def test_generate_choice(request, model_fixture, sample_choices):
 
 
 @pytest.mark.parametrize("model_fixture", ALL_MODEL_FIXTURES)
+def test_generate_choice_twice(request, model_fixture, sample_choices):
+    model = request.getfixturevalue(model_fixture)
+    generator = generate.choice(model, sample_choices)
+    res = generator(**get_inputs(model_fixture))
+    assert res in sample_choices
+    res = generator(**get_inputs(model_fixture))
+    assert res in sample_choices
+
+
+@pytest.mark.parametrize("model_fixture", ALL_MODEL_FIXTURES)
 def test_generate_format_bool(request, model_fixture):
     model = request.getfixturevalue(model_fixture)
     generator = generate.format(model, bool)
     res = generator(**get_inputs(model_fixture))
     assert isinstance(res, bool)
+
+
+@pytest.mark.parametrize("model_fixture", ALL_MODEL_FIXTURES)
+def test_generate_cfg(request, model_fixture, sample_lark_grammar):
+    from lark import Lark
+
+    from outlines import grammars
+
+    model = request.getfixturevalue(model_fixture)
+    with enforce_not_implemented(model_fixture, "cfg"):
+        generator = generate.cfg(model, sample_lark_grammar)
+        res = generator(**get_inputs(model_fixture))
+        # validate legal with the grammar via lark
+        # TODO: cleanup PartialLark so doesn't modify Lark globally
+        import importlib
+
+        import lark.lark
+
+        importlib.reload(lark.lark)
+        Lark(
+            sample_lark_grammar, parser="lalr", import_paths=[grammars.GRAMMAR_PATH]
+        ).parse(res)
 
 
 @pytest.mark.parametrize("model_fixture", ALL_MODEL_FIXTURES)

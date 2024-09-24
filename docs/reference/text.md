@@ -9,7 +9,7 @@ Outlines provides a unified interface to generate text with many language models
 ```python
 from outlines import models, generate
 
-model = models.openai("gpt-4")
+model = models.openai("gpt-4o-mini")
 generator = generate.text(model)
 answer = generator("What is 2+2?")
 

@@ -53,7 +53,7 @@ If Outlines has been helpful to you, let us know on [Discord][discord] or give u
 
 <blockquote class="twitter-tweet"><p lang="en" dir="ltr">This is amazing - glad to see more outp guidance modules! <br><br>Will try this out soon I&#39;m wondering how they translate from regex automatons to token boundaries<br><br>Also why Open Source will succeed. Even today I don&#39;t see any guided output functionality from the big providers. <a href="https://t.co/Ity2H25Klf">https://t.co/Ity2H25Klf</a></p>&mdash; Hrishi (@hrishioa) <a href="https://twitter.com/hrishioa/status/1691181499671080960?ref_src=twsrc%5Etfw">August 14, 2023</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 
-<blockquote class="twitter-tweet"><p lang="en" dir="ltr">Outlines 〰️- a library to help LLM developers guide text generation in a fast and reliable way.<br><br>&quot;Provides generation methods that guarantee that the output will match a regular expressions, or follow a JSON schema.&quot;<br><br>Need to check this out. Reliable JSON output is a common use… <a href="https://t.co/Bkbh8vKogN">pic.twitter.com/Bkbh8vKogN</a></p>&mdash; elvis (@omarsar0) <a href="https://twitter.com/omarsar0/status/1691179888214966273?ref_src=twsrc%5Etfw">August 14, 2023</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+<blockquote class="twitter-tweet"><p lang="en" dir="ltr">Outlines - a library to help LLM developers guide text generation in a fast and reliable way.<br><br>&quot;Provides generation methods that guarantee that the output will match a regular expressions, or follow a JSON schema.&quot;<br><br>Need to check this out. Reliable JSON output is a common use… <a href="https://t.co/Bkbh8vKogN">pic.twitter.com/Bkbh8vKogN</a></p>&mdash; elvis (@omarsar0) <a href="https://twitter.com/omarsar0/status/1691179888214966273?ref_src=twsrc%5Etfw">August 14, 2023</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 
 <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Woah this is cool! Makes open source models more usable.<br><br>Give any LLM Function Call capability (and more) with Outlines: <a href="https://t.co/PtPykR5ZGR">https://t.co/PtPykR5ZGR</a> <a href="https://t.co/RRQjWHnIxv">https://t.co/RRQjWHnIxv</a> <a href="https://t.co/BwNnH8SMwv">pic.twitter.com/BwNnH8SMwv</a></p>&mdash; Yohei (@yoheinakajima) <a href="https://twitter.com/yoheinakajima/status/1691231912466223104?ref_src=twsrc%5Etfw">August 14, 2023</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 
@@ -75,7 +75,7 @@ We highly value the insights of our users, and we would love to hear from you. I
 - What challenges are you facing?
 - What do you think could be improved?
 
-To schedule an appointment follow [this link](https://cal.com/dottxt/outlines). This is exclusively intended to share your experience, please go on [Discord][discord] or [GitHub](https://github.com/outlines-dev/outlines/discussions) for support.
+To schedule an appointment follow [this link](https://cal.com/dottxt/outlines). This is exclusively intended to share your experience, please go on [Discord][discord] or [GitHub](https://github.com/dottxt-ai/outlines/discussions) for support.
 
 [discord]: https://discord.gg/UppQmhEpe8
 [twitter]: https://twitter.com/dottxtai

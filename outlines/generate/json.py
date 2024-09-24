@@ -70,9 +70,39 @@ def json(
 
 @json.register(OpenAI)
 def json_openai(
-    model, schema_object: Union[str, object, Callable], sampler: Sampler = multinomial()
+    model, schema_object: Union[str, object], sampler: Sampler = multinomial()
 ):
-    raise NotImplementedError(
-        "Cannot use JSON Schema-structure generation with an OpenAI model "
-        + "due to the limitations of the OpenAI API"
+    if not isinstance(sampler, multinomial):
+        raise NotImplementedError(
+            r"The OpenAI API does not support any other sampling algorithm "
+            + "than the multinomial sampler."
+        )
+
+    if isinstance(schema_object, type(BaseModel)):
+        schema = pyjson.dumps(schema_object.model_json_schema())
+        format_sequence = lambda x: schema_object.parse_raw(x)
+    elif isinstance(schema_object, str):
+        schema = schema_object
+        format_sequence = lambda x: pyjson.loads(x)
+    else:
+        raise ValueError(
+            f"Cannot parse schema {schema_object}. The schema must be either "
+            + "a Pydantic object, a function or a string that contains the JSON "
+            + "Schema specification"
+        )
+
+    # create copied, patched model with normalized json schema set
+    generator = model.new_with_replacements(
+        response_format={
+            "type": "json_schema",
+            "json_schema": {
+                "name": "default",
+                "strict": True,
+                "schema": pyjson.loads(schema),
+            },
+        }
     )
+
+    generator.format_sequence = format_sequence
+
+    return generator

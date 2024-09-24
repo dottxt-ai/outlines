@@ -18,6 +18,6 @@ A few important guidelines and requirements before we can merge your PR:
 Consider opening a **Draft PR** if your work is still in progress but you would
 like some feedback from other contributors.
 
-[issues]: https://github.com/outlines-dev/outlines/issues
+[issues]: https://github.com/dottxt-ai/outlines/issues
 [git-guidelines]: https://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html
 [docstring-guidelines]: https://numpydoc.readthedocs.io/en/latest/format.html

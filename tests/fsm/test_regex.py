@@ -402,15 +402,18 @@ def test_create_fsm_index_end_to_end_multi_byte():
 
 
 @pytest.mark.parametrize(
-    "hf_tokenizer_uri",
+    "hf_tokenizer_uri, revision",
     [
-        "gpt2",
-        "microsoft/phi-2",
-        "Qwen/Qwen1.5-0.5B-Chat",
-        "NousResearch/Hermes-2-Pro-Llama-3-8B",
+        ("openai-community/gpt2", "607a30d783dfa663caf39e06633721c8d4cfcd7e"),
+        ("microsoft/phi-2", "ef382358ec9e382308935a992d908de099b64c23"),
+        ("Qwen/Qwen1.5-0.5B-Chat", "4d14e384a4b037942bb3f3016665157c8bcb70ea"),
+        (
+            "NousResearch/Hermes-2-Pro-Llama-3-8B",
+            "783fd50eb82d7f57758de033861f54d62dde234f",
+        ),
     ],
 )
-def test_create_fsm_index_tokenizer(hf_tokenizer_uri):
+def test_create_fsm_index_tokenizer(hf_tokenizer_uri, revision):
     # The combined regular expressions of a lexer state in a Python grammar
     regex_str = "(?:(?:[0-9](?:(?:_)?[0-9])*(?:e|E)(?:(?:\\+|\\-))?[0-9](?:(?:_)?[0-9])*|(?:[0-9](?:(?:_)?[0-9])*\\.(?:[0-9](?:(?:_)?[0-9])*)?|\\.[0-9](?:(?:_)?[0-9])*)(?:(?:e|E)(?:(?:\\+|\\-))?[0-9](?:(?:_)?[0-9])*)?)|[0-9](?:(?:_)?[0-9])*)(?:J|j)|(?:[0-9](?:(?:_)?[0-9])*(?:e|E)(?:(?:\\+|\\-))?[0-9](?:(?:_)?[0-9])*|(?:[0-9](?:(?:_)?[0-9])*\\.(?:[0-9](?:(?:_)?[0-9])*)?|\\.[0-9](?:(?:_)?[0-9])*)(?:(?:e|E)(?:(?:\\+|\\-))?[0-9](?:(?:_)?[0-9])*)?)|0(?:x|X)(?:(?:_)?(?:[0-9]|[a-f]|[A-F]))+|0(?:b|B)(?:(?:_)?[0-1])+|0(?:o|O)(?:(?:_)?[0-7])+|(?:(?i:([ubf]?r?|r[ubf])('([^\\\\']|.)*?'))|(?i:([ubf]?r?|r[ubf])(\"([^\\\"]|.)*?\")))|(?:(?:\r?\n[\t ]*|#[^\n]*))+|[1-9](?:(?:_)?[0-9])*|\\\\[\t \x0c]*\r?\n|continue|nonlocal|assert|global|import|lambda|return|async|await|break|class|False|match|raise|while|yield|case|from|None|pass|True|with|def|del|for|not|try|if|[^\\W\\d]\\w*|#[^\n]*|[\t \x0c]+|\\.\\.\\.|@|\\{|\\(|\\[|\\-|\\+|\\*|\\~"
 
@@ -425,7 +428,7 @@ def test_create_fsm_index_tokenizer(hf_tokenizer_uri):
     num_bytes_fsm_states = len(bytes_fsm.states)
     assert num_bytes_fsm_states == 235
 
-    tokenizer = AutoTokenizer.from_pretrained(hf_tokenizer_uri)
+    tokenizer = AutoTokenizer.from_pretrained(hf_tokenizer_uri, revision=revision)
     tokenizer = TransformerTokenizer(tokenizer)
 
     states_to_token_subsets, empty_token_ids = create_fsm_index_tokenizer(
@@ -664,7 +667,7 @@ def test_token_trans_keys_walk_fsm():
 def test_numba_leading_null_byte_UnicodeCharSeq_remains_broken():
     """Assert numba UnicodeCharSeq w/ leading \x00 is still broken"""
     # EXPLANATION:
-    # https://github.com/outlines-dev/outlines/pull/930#issuecomment-2143535968
+    # https://github.com/dottxt-ai/outlines/pull/930#issuecomment-2143535968
 
     # from https://github.com/numba/numba/issues/9542
     d = numba.typed.typeddict.Dict.empty(numba.types.UnicodeCharSeq(1), numba.int64)
@@ -682,7 +685,7 @@ def test_numba_leading_null_byte_UnicodeCharSeq_remains_broken():
 def test_numba_leading_null_byte_unicode_type_sane(input_key):
     """Assert numba unicode_type w/ leading \x00 is working"""
     # EXPLANATION:
-    # https://github.com/outlines-dev/outlines/pull/930#issuecomment-2143535968
+    # https://github.com/dottxt-ai/outlines/pull/930#issuecomment-2143535968
 
     # from https://github.com/numba/numba/issues/9542
     d = numba.typed.typeddict.Dict.empty(numba.types.unicode_type, numba.int64)
@@ -709,10 +712,31 @@ def test_reduced_vocabulary_with_rare_tokens(rare_token):
 
     See [1] and [2] for context.
 
-    [1]: https://github.com/outlines-dev/outlines/pull/763
-    [2]: https://github.com/outlines-dev/outlines/pull/948
+    [1]: https://github.com/dottxt-ai/outlines/pull/763
+    [2]: https://github.com/dottxt-ai/outlines/pull/948
+    [3]: https://github.com/dottxt-ai/outlines/pull/1153
     """
     tokenizer = AutoTokenizer.from_pretrained("openai-community/gpt2")
     tokenizer = TransformerTokenizer(tokenizer=tokenizer)
     tokenizer.vocabulary[rare_token] = max(tokenizer.vocabulary.values()) + 1
     reduced_vocabulary(tokenizer)
+
+
+def test_reduced_vocabulary_with_byte_tokens():
+    class MockTokenizer:
+        vocabulary = {
+            "string": 1,
+            b"\xa1": 2,  # Qwen-Style
+            "eos": 3,
+        }
+        special_tokens = {"eos"}
+        eos_token_id = 3
+
+        def convert_token_to_string(self, token):
+            return b"\xef\xbf\xbd".decode()
+
+    reduced_vocab = reduced_vocabulary(MockTokenizer())
+
+    # See fsm.regex.get_token_transition_keys()
+    # FSM transition keys represents bytes as <null_prefix><hex_byte>
+    assert reduced_vocab[0][1][0] == "\x00A1"

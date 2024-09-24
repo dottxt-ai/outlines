@@ -2,7 +2,7 @@
 
 !!! tip "Would rather not self-host?"
 
-    If you want to get started quickly with JSON-structured generaton you can call instead [.json](https://h1xbpbfsf0w.typeform.com/to/ZgBCvJHF), a [.txt](http://dottxt.co) API that guarantees valid JSON.
+    If you want to get started quickly with JSON-structured generation you can call instead [.json](https://h1xbpbfsf0w.typeform.com/to/ZgBCvJHF), a [.txt](http://dottxt.co) API that guarantees valid JSON.
 
 Outlines can be deployed as an LLM service using the vLLM inference engine and a FastAPI server. vLLM is not installed by default so will need to install Outlines with:
 
@@ -65,7 +65,7 @@ curl http://127.0.0.1:8000/generate \
 
 Instead of `curl`, you can also use the [requests][requests]{:target="_blank"} library from another python program.
 
-Please consult the [vLLM documentation][vllm]{:target="_blank"} for details on additional request parameters. You can also [read the code](https://github.com/outlines-dev/outlines/blob/main/outlines/serve/serve.py) in case you need to customize the solution to your needs.
+Please consult the [vLLM documentation][vllm]{:target="_blank"} for details on additional request parameters. You can also [read the code](https://github.com/dottxt-ai/outlines/blob/main/outlines/serve/serve.py) in case you need to customize the solution to your needs.
 
 [requests]: https://requests.readthedocs.io/en/latest/
 [vllm]: https://docs.vllm.ai/en/latest/index.html

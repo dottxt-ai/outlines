@@ -1,4 +1,5 @@
 import datetime
+from copy import copy
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Iterator, List, Optional, Union
 
@@ -503,7 +504,7 @@ class SequenceGeneratorAdapter:
         completions = self.model.generate(
             prompts,
             generation_params,
-            self.logits_processor,
+            copy(self.logits_processor),
             self.sampling_params,
             **model_specific_params,
         )
@@ -525,7 +526,7 @@ class SequenceGeneratorAdapter:
         return self.model.stream(
             prompts,
             generation_params,
-            self.logits_processor,
+            copy(self.logits_processor),
             self.sampling_params,
             **model_specific_params,
         )
@@ -556,7 +557,7 @@ class VisionSequenceGeneratorAdapter(SequenceGeneratorAdapter):
             prompts,
             media,
             generation_params,
-            self.logits_processor,
+            copy(self.logits_processor),
             self.sampling_params,
             **model_specific_params,
         )
@@ -581,7 +582,7 @@ class VisionSequenceGeneratorAdapter(SequenceGeneratorAdapter):
             prompts,
             media,
             generation_params,
-            self.logits_processor,
+            copy(self.logits_processor),
             self.sampling_params,
             **model_specific_params,
         )

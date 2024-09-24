@@ -1162,7 +1162,7 @@ def test_json_schema_custom_whitespace_pattern(whitespace_pattern):
 
 
 def test_one_of_doesnt_produce_illegal_lookaround():
-    """Reproduces failure in https://github.com/outlines-dev/outlines/issues/823"""
+    """Reproduces failure in https://github.com/dottxt-ai/outlines/issues/823"""
 
     class Cat(BaseModel):
         pet_type: Literal["cat"]

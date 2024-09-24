@@ -73,7 +73,7 @@ print(result)
 ```
 
 
-We plan on adding many more custom types. If you have found yourself writing regular expressions to generate fields of a given type, or if you could benefit from more specific types don't hesite to [submit a PR](https://github.com/outlines-dev/outlines/pulls) or [open an issue](https://github.com/outlines-dev/outlines/issues/new/choose).
+We plan on adding many more custom types. If you have found yourself writing regular expressions to generate fields of a given type, or if you could benefit from more specific types don't hesite to [submit a PR](https://github.com/dottxt-ai/outlines/pulls) or [open an issue](https://github.com/dottxt-ai/outlines/issues/new/choose).
 
 
 [wiki-isbn]: https://en.wikipedia.org/wiki/ISBN#Check_digits
