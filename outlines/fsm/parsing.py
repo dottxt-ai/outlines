@@ -34,8 +34,7 @@ from lark.parsers.lalr_analysis import (
 )
 from lark.parsers.lalr_interactive_parser import InteractiveParser
 from lark.parsers.lalr_parser import LALR_Parser, ParseConf, ParserState, _Parser
-
-from outlines.fsm.regex import (
+from outlines_core.fsm.regex import (
     fsm_union,
     get_sub_fsms_from_seq,
     get_token_transition_keys,

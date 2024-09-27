@@ -7,8 +7,6 @@ from outlines.caching import cache_disabled
 from outlines.fsm.guide import CFGGuide
 from outlines.models.transformers import TransformerTokenizer
 
-from .common import ensure_numba_compiled
-
 random.seed(42)
 
 
@@ -30,9 +28,6 @@ class CFGGuideBenchmark:
 
     def setup(self, grammar_name):
         self.tokenizer = get_tiny_tokenizer()
-        ensure_numba_compiled(
-            self.tokenizer
-        )  # numba not currently used, but will be in the future
         self.prebuilt_cfg_guide = CFGGuide(
             benched_grammars[grammar_name], self.tokenizer
         )

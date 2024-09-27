@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "outlines"
 authors= [{name = "Outlines Developers"}]
 description = "Probabilistic Generative Model Programming"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 license = {text = "Apache-2.0"}
 keywords=[
     "machine learning",
@@ -32,7 +32,6 @@ dependencies = [
    "cloudpickle",
    "diskcache",
    "pydantic>=2.0",
-   "numba",
    "referencing",
    "jsonschema",
    "requests",
@@ -41,6 +40,7 @@ dependencies = [
    "typing_extensions",
    "pycountry",
    "airportsdata",
+   "outlines_core",
 ]
 dynamic = ["version"]
 
@@ -94,7 +94,6 @@ write_to = "outlines/_version.py"
 testpaths = ["tests"]
 filterwarnings = [
     "error",
-    "ignore::numba.core.errors.NumbaPendingDeprecationWarning",
     "ignore::pydantic.warnings.PydanticDeprecatedSince20",
     "ignore::FutureWarning:transformers.*",
     "ignore::FutureWarning:huggingface_hub.*",
@@ -129,7 +128,6 @@ module = [
     "lark.*",
     "interegular.*",
     "datasets.*",
-    "numba.*",
     "requests.*",
     "responses.*",
     "vllm.*",
@@ -137,6 +135,7 @@ module = [
     "fastapi.*",
     "pycountry.*",
     "airportsdata.*",
+    "outlines_core.*",
 ]
 ignore_missing_imports = true
 
