@@ -116,12 +116,15 @@ ALL_MODEL_FIXTURES = (
 
 @pytest.fixture()
 def sample_schema():
-    from pydantic import BaseModel, conint, conlist, constr
+    from typing import Tuple
+
+    from pydantic import BaseModel, constr
+
+    from outlines.types import countries
 
     class SampleSchema(BaseModel):
         title: constr(max_length=10)
-        numbers: conlist(conint(strict=True), min_length=3, max_length=3)
-        labels: conlist(constr(min_length=1, max_length=5), min_length=3, max_length=3)
+        tup: Tuple[constr(min_length=1, max_length=5), countries.Name, countries.Flag]
 
     return SampleSchema
 
@@ -234,13 +237,13 @@ def test_generate_fsm(request, model_fixture, pattern):
     assert re.fullmatch(pattern, res) is not None, res
 
 
-@pytest.mark.skip(
-    "Fix issues with JSON, some models fail this test https://github.com/dottxt-ai/outlines/issues/985"
-)
 @pytest.mark.parametrize("model_fixture", ALL_MODEL_FIXTURES)
-def test_generate_json(request, model_fixture, sample_schema):
+@pytest.mark.parametrize("mode", ["json", "yaml"])
+def test_generate_json(request, model_fixture, sample_schema, mode):
+    if model_fixture in ("model_transformers_random", "model_bart"):
+        pytest.skip("model vocabulary insufficient for test")
     model = request.getfixturevalue(model_fixture)
-    generator = generate.json(model, sample_schema)
+    generator = generate.json(model, sample_schema, mode=mode)
     # asserts valid within call
     generator(**get_inputs(model_fixture), max_tokens=100)
 

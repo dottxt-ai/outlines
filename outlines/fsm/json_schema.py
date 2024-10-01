@@ -1,9 +1,12 @@
+import dataclasses
 import inspect
+import itertools
 import json
 import re
 import warnings
-from typing import Callable, Optional, Tuple, Type, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Type, Union
 
+import yaml
 from jsonschema.protocols import Validator
 from pydantic import BaseModel, create_model
 from referencing import Registry, Resource
@@ -20,28 +23,23 @@ BOOLEAN = r"(true|false)"
 NULL = r"null"
 WHITESPACE = r"[ ]?"
 
-type_to_regex = {
-    "string": STRING,
-    "integer": INTEGER,
-    "number": NUMBER,
-    "boolean": BOOLEAN,
-    "null": NULL,
-}
-
 DATE_TIME = r'"(-?(?:[1-9][0-9]*)?[0-9]{4})-(1[0-2]|0[1-9])-(3[01]|0[1-9]|[12][0-9])T(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(\.[0-9]{3})?(Z)?"'
 DATE = r'"(?:\d{4})-(?:0[1-9]|1[0-2])-(?:0[1-9]|[1-2][0-9]|3[0-1])"'
 TIME = r'"(2[0-3]|[01][0-9]):([0-5][0-9]):([0-5][0-9])(\\.[0-9]+)?(Z)?"'
 UUID = r'"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"'
 
-format_to_regex = {
-    "uuid": UUID,
-    "date-time": DATE_TIME,
-    "date": DATE,
-    "time": TIME,
-}
+
+def load_yaml(yaml_str: str) -> Any:
+    """Parse a YAML string and return the corresponding Python object."""
+    return yaml.safe_load(yaml_str)
 
 
-def build_regex_from_schema(schema: str, whitespace_pattern: Optional[str] = None):
+def build_regex_from_schema(
+    schema: str,
+    whitespace_pattern: Optional[str] = None,
+    mode: str = "json",
+    strict_json_schema_subset: bool = True,
+):
     """Turn a JSON schema into a regex that matches any JSON object that follows
     this schema.
 
@@ -60,6 +58,12 @@ def build_regex_from_schema(schema: str, whitespace_pattern: Optional[str] = Non
     whitespace_pattern
         Pattern to use for JSON syntactic whitespace (doesn't impact string literals)
         Example: allow only a single space or newline with `whitespace_pattern=r"[\n ]?"`
+    mode
+        Either `json` or `yaml`, determines the structure of the generated output
+    strict_json_schema_subset
+        For `items` and `properties`, the JSON Schema spec by default allows these to be unconstrained
+        if not set. This is usually undesired behavior, so by default strict_json_schema_subset is True.
+
 
     Returns
     -------
@@ -83,7 +87,21 @@ def build_regex_from_schema(schema: str, whitespace_pattern: Optional[str] = Non
     resolver = registry.resolver()
 
     content = schema.contents
-    return to_regex(resolver, content, whitespace_pattern)
+
+    if mode == "json":
+        return JSONSchemaRegexGenerator(
+            resolver,
+            whitespace_pattern,
+            strict_json_schema_subset=strict_json_schema_subset,
+        ).to_regex(content)
+    elif mode == "yaml":
+        return YAMLRegexGenerator(
+            resolver,
+            whitespace_pattern,
+            strict_json_schema_subset=strict_json_schema_subset,
+        ).to_regex(content)
+    else:
+        raise ValueError(f"invalid mode: {mode}")
 
 
 def convert_json_schema_to_str(json_schema: Union[dict, str, Type[BaseModel]]) -> str:
@@ -117,18 +135,6 @@ def convert_json_schema_to_str(json_schema: Union[dict, str, Type[BaseModel]]) -
             + "schema specification"
         )
     return schema_str
-
-
-def _get_num_items_pattern(min_items, max_items, whitespace_pattern):
-    # Helper function for arrays and objects
-    min_items = int(min_items or 0)
-    if max_items is None:
-        return rf"{{{max(min_items - 1, 0)},}}"
-    else:
-        max_items = int(max_items)
-        if max_items < 1:
-            return None
-        return rf"{{{max(min_items - 1, 0)},{max_items - 1}}}"
 
 
 def validate_quantifiers(
@@ -172,358 +178,6 @@ def validate_quantifiers(
     return min_bound, max_bound
 
 
-def to_regex(
-    resolver: Resolver, instance: dict, whitespace_pattern: Optional[str] = None
-):
-    """Translate a JSON Schema instance into a regex that validates the schema.
-
-    Note
-    ----
-    Many features of JSON schema are missing:
-    - Handle `additionalProperties` keyword
-    - Handle types defined as a list
-    - Handle constraints on numbers
-    - Handle special patterns: `date`, `uri`, etc.
-
-    This does not support recursive definitions.
-
-    Parameters
-    ----------
-    resolver
-        An object that resolves references to other instances within a schema
-    instance
-        The instance to translate
-    whitespace_pattern
-        Pattern to use for JSON syntactic whitespace (doesn't impact string literals)
-        Example: allow only a single space or newline with `whitespace_pattern=r"[\n ]?"`
-    """
-
-    # set whitespace pattern
-    if whitespace_pattern is None:
-        whitespace_pattern = WHITESPACE
-
-    if instance == {}:
-        # JSON Schema Spec: Empty object means unconstrained, any json type is legal
-        types = [
-            {"type": "boolean"},
-            {"type": "null"},
-            {"type": "number"},
-            {"type": "integer"},
-            {"type": "string"},
-            {"type": "array"},
-            {"type": "object"},
-        ]
-        regexes = [to_regex(resolver, t, whitespace_pattern) for t in types]
-        regexes = [rf"({r})" for r in regexes]
-        return rf"{'|'.join(regexes)}"
-
-    elif "properties" in instance:
-        regex = ""
-        regex += r"\{"
-        properties = instance["properties"]
-        required_properties = instance.get("required", [])
-        is_required = [item in required_properties for item in properties]
-        # If at least one property is required, we include the one in the lastest position
-        # without any comma.
-        # For each property before it (optional or required), we add with a comma after the property.
-        # For each property after it (optional), we add with a comma before the property.
-        if any(is_required):
-            last_required_pos = max([i for i, value in enumerate(is_required) if value])
-            for i, (name, value) in enumerate(properties.items()):
-                subregex = f'{whitespace_pattern}"{re.escape(name)}"{whitespace_pattern}:{whitespace_pattern}'
-                subregex += to_regex(resolver, value, whitespace_pattern)
-                if i < last_required_pos:
-                    subregex = f"{subregex}{whitespace_pattern},"
-                elif i > last_required_pos:
-                    subregex = f"{whitespace_pattern},{subregex}"
-                regex += subregex if is_required[i] else f"({subregex})?"
-        # If no property is required, we have to create a possible pattern for each property in which
-        # it's the last one necessarilly present. Then, we add the others as optional before and after
-        # following the same strategy as described above.
-        # The whole block is made optional to allow the case in which no property is returned.
-        else:
-            property_subregexes = []
-            for i, (name, value) in enumerate(properties.items()):
-                subregex = f'{whitespace_pattern}"{name}"{whitespace_pattern}:{whitespace_pattern}'
-                subregex += to_regex(resolver, value, whitespace_pattern)
-                property_subregexes.append(subregex)
-            possible_patterns = []
-            for i in range(len(property_subregexes)):
-                pattern = ""
-                for subregex in property_subregexes[:i]:
-                    pattern += f"({subregex}{whitespace_pattern},)?"
-                pattern += property_subregexes[i]
-                for subregex in property_subregexes[i + 1 :]:
-                    pattern += f"({whitespace_pattern},{subregex})?"
-                possible_patterns.append(pattern)
-            regex += f"({'|'.join(possible_patterns)})?"
-
-        regex += f"{whitespace_pattern}" + r"\}"
-
-        return regex
-
-    # To validate against allOf, the given data must be valid against all of the
-    # given subschemas.
-    elif "allOf" in instance:
-        subregexes = [
-            to_regex(resolver, t, whitespace_pattern) for t in instance["allOf"]
-        ]
-        subregexes_str = [f"{subregex}" for subregex in subregexes]
-        return rf"({''.join(subregexes_str)})"
-
-    # To validate against `anyOf`, the given data must be valid against
-    # any (one or more) of the given subschemas.
-    elif "anyOf" in instance:
-        subregexes = [
-            to_regex(resolver, t, whitespace_pattern) for t in instance["anyOf"]
-        ]
-        return rf"({'|'.join(subregexes)})"
-
-    # To validate against oneOf, the given data must be valid against exactly
-    # one of the given subschemas.
-    elif "oneOf" in instance:
-        subregexes = [
-            to_regex(resolver, t, whitespace_pattern) for t in instance["oneOf"]
-        ]
-
-        xor_patterns = [f"(?:{subregex})" for subregex in subregexes]
-
-        return rf"({'|'.join(xor_patterns)})"
-
-    # Create pattern for Tuples, per JSON Schema spec, `prefixItems` determines types at each idx
-    elif "prefixItems" in instance:
-        element_patterns = [
-            to_regex(resolver, t, whitespace_pattern) for t in instance["prefixItems"]
-        ]
-        comma_split_pattern = rf"{whitespace_pattern},{whitespace_pattern}"
-        tuple_inner = comma_split_pattern.join(element_patterns)
-        return rf"\[{whitespace_pattern}{tuple_inner}{whitespace_pattern}\]"
-
-    # The enum keyword is used to restrict a value to a fixed set of values. It
-    # must be an array with at least one element, where each element is unique.
-    elif "enum" in instance:
-        choices = []
-        for choice in instance["enum"]:
-            if type(choice) in [int, float, bool, type(None), str]:
-                choices.append(re.escape(json.dumps(choice)))
-            else:
-                raise TypeError(f"Unsupported data type in enum: {type(choice)}")
-        return f"({'|'.join(choices)})"
-
-    elif "const" in instance:
-        const = instance["const"]
-        if type(const) in [int, float, bool, type(None), str]:
-            const = re.escape(json.dumps(const))
-        else:
-            raise TypeError(f"Unsupported data type in const: {type(const)}")
-        return const
-
-    elif "$ref" in instance:
-        path = f"{instance['$ref']}"
-        instance = resolver.lookup(path).contents
-        return to_regex(resolver, instance, whitespace_pattern)
-
-    # The type keyword may either be a string or an array:
-    # - If it's a string, it is the name of one of the basic types.
-    # - If it is an array, it must be an array of strings, where each string is
-    # the name of one of the basic types, and each element is unique. In this
-    # case, the JSON snippet is valid if it matches any of the given types.
-    elif "type" in instance:
-        instance_type = instance["type"]
-        if instance_type == "string":
-            if "maxLength" in instance or "minLength" in instance:
-                max_items = instance.get("maxLength", "")
-                min_items = instance.get("minLength", "")
-                try:
-                    if int(max_items) < int(min_items):
-                        raise ValueError(
-                            "maxLength must be greater than or equal to minLength"
-                        )  # FIXME this raises an error but is caught right away by the except (meant for int("") I assume)
-                except ValueError:
-                    pass
-                return f'"{STRING_INNER}{{{min_items},{max_items}}}"'
-            elif "pattern" in instance:
-                pattern = instance["pattern"]
-                if pattern[0] == "^" and pattern[-1] == "$":
-                    return rf'("{pattern[1:-1]}")'
-                else:
-                    return rf'("{pattern}")'
-            elif "format" in instance:
-                format = instance["format"]
-                if format == "date-time":
-                    return format_to_regex["date-time"]
-                elif format == "uuid":
-                    return format_to_regex["uuid"]
-                elif format == "date":
-                    return format_to_regex["date"]
-                elif format == "time":
-                    return format_to_regex["time"]
-                else:
-                    raise NotImplementedError(
-                        f"Format {format} is not supported by Outlines"
-                    )
-            else:
-                return type_to_regex["string"]
-
-        elif instance_type == "number":
-            bounds = {
-                "minDigitsInteger",
-                "maxDigitsInteger",
-                "minDigitsFraction",
-                "maxDigitsFraction",
-                "minDigitsExponent",
-                "maxDigitsExponent",
-            }
-            if bounds.intersection(set(instance.keys())):
-                min_digits_integer, max_digits_integer = validate_quantifiers(
-                    instance.get("minDigitsInteger"),
-                    instance.get("maxDigitsInteger"),
-                    start_offset=1,
-                )
-                min_digits_fraction, max_digits_fraction = validate_quantifiers(
-                    instance.get("minDigitsFraction"), instance.get("maxDigitsFraction")
-                )
-                min_digits_exponent, max_digits_exponent = validate_quantifiers(
-                    instance.get("minDigitsExponent"), instance.get("maxDigitsExponent")
-                )
-                integers_quantifier = (
-                    f"{{{min_digits_integer},{max_digits_integer}}}"
-                    if min_digits_integer or max_digits_integer
-                    else "*"
-                )
-                fraction_quantifier = (
-                    f"{{{min_digits_fraction},{max_digits_fraction}}}"
-                    if min_digits_fraction or max_digits_fraction
-                    else "+"
-                )
-                exponent_quantifier = (
-                    f"{{{min_digits_exponent},{max_digits_exponent}}}"
-                    if min_digits_exponent or max_digits_exponent
-                    else "+"
-                )
-                return rf"((-)?(0|[1-9][0-9]{integers_quantifier}))(\.[0-9]{fraction_quantifier})?([eE][+-][0-9]{exponent_quantifier})?"
-            return type_to_regex["number"]
-
-        elif instance_type == "integer":
-            if "minDigits" in instance or "maxDigits" in instance:
-                min_digits, max_digits = validate_quantifiers(
-                    instance.get("minDigits"), instance.get("maxDigits"), start_offset=1
-                )
-                return rf"(-)?(0|[1-9][0-9]{{{min_digits},{max_digits}}})"
-            return type_to_regex["integer"]
-
-        elif instance_type == "array":
-            num_repeats = _get_num_items_pattern(
-                instance.get("minItems"), instance.get("maxItems"), whitespace_pattern
-            )
-            if num_repeats is None:
-                return rf"\[{whitespace_pattern}\]"
-
-            allow_empty = "?" if int(instance.get("minItems", 0)) == 0 else ""
-
-            if "items" in instance:
-                items_regex = to_regex(resolver, instance["items"], whitespace_pattern)
-                return rf"\[{whitespace_pattern}(({items_regex})(,{whitespace_pattern}({items_regex})){num_repeats}){allow_empty}{whitespace_pattern}\]"
-            else:
-                # Here we need to make the choice to exclude generating list of objects
-                # if the specification of the object is not given, even though a JSON
-                # object that contains an object here would be valid under the specification.
-                legal_types = [
-                    {"type": "boolean"},
-                    {"type": "null"},
-                    {"type": "number"},
-                    {"type": "integer"},
-                    {"type": "string"},
-                ]
-                depth = instance.get("depth", 2)
-                if depth > 0:
-                    legal_types.append({"type": "object", "depth": depth - 1})
-                    legal_types.append({"type": "array", "depth": depth - 1})
-
-                regexes = [
-                    to_regex(resolver, t, whitespace_pattern) for t in legal_types
-                ]
-                return rf"\[{whitespace_pattern}({'|'.join(regexes)})(,{whitespace_pattern}({'|'.join(regexes)})){num_repeats}{allow_empty}{whitespace_pattern}\]"
-
-        elif instance_type == "object":
-            # pattern for json object with values defined by instance["additionalProperties"]
-            # enforces value type constraints recursively, "minProperties", and "maxProperties"
-            # doesn't enforce "required", "dependencies", "propertyNames" "any/all/on Of"
-            num_repeats = _get_num_items_pattern(
-                instance.get("minProperties"),
-                instance.get("maxProperties"),
-                whitespace_pattern,
-            )
-            if num_repeats is None:
-                return rf"\{{{whitespace_pattern}\}}"
-
-            allow_empty = "?" if int(instance.get("minProperties", 0)) == 0 else ""
-
-            additional_properties = instance.get("additionalProperties")
-
-            if additional_properties is None or additional_properties is True:
-                # JSON Schema behavior: If the additionalProperties of an object is
-                # unset or True, it is unconstrained object.
-                # We handle this by setting additionalProperties to anyOf: {all types}
-
-                legal_types = [
-                    {"type": "string"},
-                    {"type": "number"},
-                    {"type": "boolean"},
-                    {"type": "null"},
-                ]
-
-                # We set the object depth to 2 to keep the expression finite, but the "depth"
-                # key is not a true component of the JSON Schema specification.
-                depth = instance.get("depth", 2)
-                if depth > 0:
-                    legal_types.append({"type": "object", "depth": depth - 1})
-                    legal_types.append({"type": "array", "depth": depth - 1})
-                additional_properties = {"anyOf": legal_types}
-
-            value_pattern = to_regex(
-                resolver, additional_properties, whitespace_pattern
-            )
-            key_value_pattern = (
-                f"{STRING}{whitespace_pattern}:{whitespace_pattern}{value_pattern}"
-            )
-            key_value_successor_pattern = (
-                f"{whitespace_pattern},{whitespace_pattern}{key_value_pattern}"
-            )
-            multiple_key_value_pattern = f"({key_value_pattern}({key_value_successor_pattern}){num_repeats}){allow_empty}"
-
-            return (
-                r"\{"
-                + whitespace_pattern
-                + multiple_key_value_pattern
-                + whitespace_pattern
-                + r"\}"
-            )
-
-        elif instance_type == "boolean":
-            return type_to_regex["boolean"]
-
-        elif instance_type == "null":
-            return type_to_regex["null"]
-
-        elif isinstance(instance_type, list):
-            # Here we need to make the choice to exclude generating an object
-            # if the specification of the object is not give, even though a JSON
-            # object that contains an object here would be valid under the specification.
-            regexes = [
-                to_regex(resolver, {"type": t}, whitespace_pattern)
-                for t in instance_type
-                if t != "object"
-            ]
-            return rf"({'|'.join(regexes)})"
-
-    raise NotImplementedError(
-        f"""Could not translate the instance {instance} to a
-    regular expression. Make sure it is valid to the JSON Schema specification. If
-    it is, please open an issue on the Outlines repository"""
-    )
-
-
 def get_schema_from_signature(fn: Callable) -> str:
     """Turn a function signature into a JSON schema.
 
@@ -550,3 +204,742 @@ def get_schema_from_signature(fn: Callable) -> str:
     model = create_model(fn_name, **arguments)
 
     return model.model_json_schema()
+
+
+@dataclasses.dataclass
+class Context:
+    """Context for json schema rule application"""
+
+    recursion_depth: int = 0
+    nesting_level: int = 0
+
+    def __init__(self, **kwargs):
+        self.__dict__.update(kwargs)
+
+    def increment(self, attr: str, value: int = 1) -> "Context":
+        """Return a **new** Context with the specified attribute incremented by `value`"""
+        return dataclasses.replace(self, **{attr: getattr(self, attr) + value})
+
+    def __repr__(self):
+        return f"Context({self.__dict__})"
+
+
+class JSONSchemaRegexGenerator:
+    """Translate a JSON Schema instance into a regex that validates the schema.
+
+    Note
+    ----
+    Many features of JSON schema are missing:
+    - Handle constraints on numbers
+    - Handle special patterns: `date`, `uri`, etc.
+
+    This does not support recursive definitions.
+
+    Parameters
+    ----------
+    resolver
+        An object that resolves references to other instances within a schema
+    whitespace_pattern
+        Pattern to use for JSON syntactic whitespace (doesn't impact string literals)
+        Example: allow only a single space or newline with `whitespace_pattern=r"[\n ]?"`
+    recursion_level
+        For unconstrained objects and lists ond many levels deep the pattern should be constructed.
+    strict_json_schema_subset
+        For `items` and `properties`, the JSON Schema spec by default allows these to be unconstrained
+        if not set. This is usually undesired behavior, so by default strict_json_schema_subset is True.
+    """
+
+    # Never impacted by parameters
+    STATIC_PRIMATIVES = {"boolean", "null"}
+    # Default value of primatives (when provided no parameters)
+    FORMAT_PRIMATIVE = {
+        "null": NULL,
+        "boolean": BOOLEAN,
+        "number": NUMBER,
+        "integer": INTEGER,
+        "string": STRING,
+    }
+    FORMAT_STRING = {
+        "uuid": UUID,
+        "date-time": DATE_TIME,
+        "date": DATE,
+        "time": TIME,
+    }
+
+    def __init__(
+        self,
+        resolver: Resolver,
+        whitespace_pattern: Optional[str] = None,
+        max_nesting_level: int = 2,
+        strict_json_schema_subset: bool = True,
+    ):
+        self.resolver = resolver
+        self.ws = WHITESPACE if whitespace_pattern is None else whitespace_pattern
+        self.max_nesting_level = max_nesting_level
+        self.strict_json_schema_subset = strict_json_schema_subset
+
+    def _validate_node(self, node: Any, ctx: Context):
+        """Validate the JSON Schema node for unsupported features and recursion limits."""
+        if ctx.recursion_depth > 256:
+            raise NotImplementedError(
+                "Recursive schemas aren't currently available with Outlines."
+            )
+
+        if node is True:
+            return
+
+        if node is False:
+            # this should be implemented along-side `visit_not(...)`
+            raise NotImplementedError("schema = False isn't available with Outlines.")
+
+        # keys have no handling
+        not_implemented_keys = [
+            "dependentSchemas",
+            "unevaluatedItems",
+            "unevaluatedProperties",
+            "contains",
+            "patternProperties",
+            "maximum",
+            "default",
+            "__proto__",
+        ]
+        # keys coinciding within same object not handled
+        not_implemented_key_pairs = [
+            ("allOf", "anyOf"),
+            ("properties", "anyOf"),
+        ]
+
+        node_invalid_keys = set(node) & set(not_implemented_keys)
+        if node_invalid_keys:
+            raise NotImplementedError(
+                f"Cannot handle the keys: {node_invalid_keys}. Please open an Outlines issue."
+            )
+        for k in not_implemented_key_pairs:
+            if not (set(k) - set(node.keys())):
+                raise NotImplementedError(
+                    f"Cannot simultaneously use the keys: {k}. Please open an Outlines issue."
+                )
+
+    def to_regex(self, node: Any, ctx: Optional[Context] = None):
+        """Convert a JSON Schema node into a regular expression pattern."""
+        ctx = (
+            ctx.increment("recursion_depth")
+            if ctx
+            else Context(nesting_level=0, recursion_depth=0)
+        )
+        self._validate_node(node, ctx)
+
+        # Handle unconstrained nodes
+        if node in ({}, True):
+            return self.visit_unconstrained({}, ctx)
+
+        # Handle multiple types (via anyOf)
+        if isinstance(node.get("type"), list):
+            subpatterns = [self.to_regex({"type": t}, ctx) for t in node["type"]]
+            return self.format_anyOf(subpatterns)
+
+        # Visit based on node attributes
+        node_attr_to_visitor = {
+            "$ref": self.visit_ref,
+            "allOf": self.visit_allOf,
+            "anyOf": self.visit_anyOf,
+            "oneOf": self.visit_oneOf,
+            "enum": self.visit_enum,
+            "prefixItems": self.visit_array,
+            "items": self.visit_array,
+            "properties": self.visit_object,
+            "const": self.visit_string,
+            "pattern": self.visit_string,
+        }
+        for attr, visitor in node_attr_to_visitor.items():
+            if attr in node:
+                return (
+                    f"({visitor(node, ctx)})"
+                    if ctx.nesting_level > 0
+                    else visitor(node, ctx)
+                )
+
+        # Visit based on type
+        type_to_visitor = {
+            "number": self.visit_number,
+            "integer": self.visit_integer,
+            "string": self.visit_string,
+            "object": self.visit_object,
+            "array": self.visit_array,
+        }
+        if node.get("type") in self.STATIC_PRIMATIVES:
+            return self.FORMAT_PRIMATIVE[node["type"]]
+        if node.get("type") in type_to_visitor:
+            return type_to_visitor[node["type"]](node, ctx)
+
+        return self.visit_notimplemented(node, ctx)
+
+    ##########
+    # VISITORS
+    ##########
+    def visit_ref(self, node: Any, ctx: Context):
+        path = node["$ref"]
+        if path == "#":
+            raise NotImplementedError("Recursive schemas aren't supported")
+        new_node = self.resolver.lookup(path).contents
+        return self.to_regex(new_node, ctx)
+
+    def visit_object(self, node: Any, ctx: Context):
+        """
+        Handle JSON Schema `object` rules
+
+        additionalProperties handling:
+            pattern for json object with values defined by instance["additionalProperties"]
+            enforces value type constraints recursively, "minProperties", and "maxProperties"
+            doesn't enforce "required", "dependencies", "propertyNames" "any/all/on Of"
+
+        TODO: the json-schema compliant implementation is as follows:
+        - properties and additionalProperties can both be set simultaneously
+        - min/maxProperties can be specified even if properties has constraints set
+        """
+        value_ctx = ctx.increment("nesting_level")
+
+        # TODO: handling for node["unevaluatedProperties"]
+        properties = node.get("properties", not self.strict_json_schema_subset)
+        properties = {} if properties is True else properties
+        required_properties = node.get("required", [])
+        additional_properties = node.get("additionalProperties")
+
+        if properties and additional_properties:
+            raise NotImplementedError(
+                "`properties` & `additionalProperties != False` not implemented. Please open an Outlines issue."
+            )
+
+        elif properties and "minProperties" in node or "maxProperties" in node:
+            raise NotImplementedError(
+                "properties and minProperties / maxProperties not implemented. Please open an Outlines issue."
+            )
+
+        elif properties:
+            property_details = [
+                {
+                    "key_pattern": self.format_literal(name),
+                    "value_pattern": self.to_regex(value, value_ctx),
+                    "is_required": name in required_properties,
+                }
+                for name, value in properties.items()
+            ]
+            if any(pd["is_required"] for pd in property_details):
+                return self.format_object_with_required_properties(
+                    property_details, ctx
+                )
+            else:
+                return self.format_object_properties_all_optional(property_details, ctx)
+
+        elif additional_properties is False:
+            return self.format_empty_object()
+
+        else:
+            if additional_properties in (True, None):
+                value_pattern = self.visit_unconstrained(node, value_ctx)
+            else:
+                # Object with arbitrary key name, constrained value
+                value_pattern = self.to_regex(additional_properties, value_ctx)
+
+            return self.format_object_with_additional_properties(
+                value_pattern,
+                ctx,
+                min_properties=node.get("minProperties"),
+                max_properties=node.get("maxProperties"),
+            )
+
+    def visit_array(self, node: Any, ctx: Context):
+        """Handle JSON Schema `array` rules with optional item constraints."""
+
+        # TODO: handling for node["unevaluatedItems"]
+        # TODO: handling for node["additionalItems"]
+        # TODO: handling for node["uniqueItems"]
+        if "uniqueItems" in node:
+            raise NotImplementedError(
+                "uniqueItems is not implemented. Please open an Outlines issue."
+            )
+
+        elem_ctx = ctx.increment("nesting_level")
+
+        items = node.get("items", not self.strict_json_schema_subset)
+
+        if node.get("prefixItems") is not None:
+            # `prefixItems` determines types at each idx, which precedes `items` rules
+            if items in (True, None):
+                suffix_elem_pattern = self.visit_unconstrained(node, elem_ctx)
+            elif items is False:
+                suffix_elem_pattern = None
+            else:
+                suffix_elem_pattern = self.to_regex(items, elem_ctx)
+
+            prefix_subpatterns = [
+                self.to_regex(item, elem_ctx) for item in node["prefixItems"]
+            ]
+            return self.format_prefixItems(prefix_subpatterns, ctx, suffix_elem_pattern)
+
+        else:
+            # handle simple case: no prefix items
+            if node.get("items") in (True, None):  # noqa
+                items_regex = self.visit_unconstrained(node, elem_ctx)
+            else:
+                items_regex = self.to_regex(node["items"], elem_ctx)
+            return self.format_array(
+                items_regex, ctx, node.get("minItems"), node.get("maxItems")
+            )
+
+    def visit_number(self, node: Any, ctx: Context):
+        quantifier_keys = [
+            "minDigitsInteger",
+            "maxDigitsInteger",
+            "minDigitsFraction",
+            "maxDigitsFraction",
+            "minDigitsExponent",
+            "maxDigitsExponent",
+        ]
+        if any([qk in node for qk in quantifier_keys]):
+            min_digits_integer, max_digits_integer = validate_quantifiers(
+                node.get("minDigitsInteger"),
+                node.get("maxDigitsInteger"),
+                start_offset=1,
+            )
+            min_digits_fraction, max_digits_fraction = validate_quantifiers(
+                node.get("minDigitsFraction"), node.get("maxDigitsFraction")
+            )
+            min_digits_exponent, max_digits_exponent = validate_quantifiers(
+                node.get("minDigitsExponent"), node.get("maxDigitsExponent")
+            )
+            return self.format_number_range(
+                min_digits_integer,
+                max_digits_integer,
+                min_digits_fraction,
+                max_digits_fraction,
+                min_digits_exponent,
+                max_digits_exponent,
+            )
+        else:
+            return self.FORMAT_PRIMATIVE["number"]
+
+    def visit_integer(self, node: Any, ctx: Context):
+        if "maxDigits" in node or "minDigits" in node:
+            min_digits, max_digits = validate_quantifiers(
+                node.get("minDigits"), node.get("maxDigits"), start_offset=1
+            )
+            return self.format_integer_range(min_digits, max_digits)
+        else:
+            return self.FORMAT_PRIMATIVE["integer"]
+
+    def visit_string(self, node: Any, ctx: Context):
+        if "const" in node:
+            return self.format_literal(node["const"])
+        if "maxLength" in node or "minLength" in node:
+            min_length, max_length = validate_quantifiers(
+                node.get("minLength"), node.get("maxLength")
+            )
+            return self.format_string_length(min_length, max_length)
+        elif "pattern" in node:
+            return self.format_string_pattern(node["pattern"])
+        elif "format" in node:
+            return self.format_string_format(node["format"])
+        return self.FORMAT_PRIMATIVE["string"]
+
+    def visit_enum(self, node: Any, ctx: Context):
+        """
+        The enum keyword is used to restrict a value to a fixed set of values. It
+        must be an array with at least one element, where each element is unique.
+        """
+        choices = [self.format_literal(choice) for choice in node["enum"]]
+        return self.format_anyOf(choices)
+
+    def visit_allOf(self, node: Any, ctx: Context):
+        subpatterns = [self.to_regex(subschema, ctx) for subschema in node["allOf"]]
+        return self.format_allOf(subpatterns)
+
+    def visit_anyOf(self, node: Any, ctx: Context):
+        subpatterns = [self.to_regex(subschema, ctx) for subschema in node["anyOf"]]
+        return self.format_anyOf(subpatterns)
+
+    def visit_oneOf(self, node: Any, ctx: Context):
+        subpatterns = [self.to_regex(subschema, ctx) for subschema in node["oneOf"]]
+        return self.format_oneOf(subpatterns)
+
+    def visit_notimplemented(self, node: Any, ctx: Context):
+        raise NotImplementedError(
+            f"Handler for node `{node}` is not implemented. Please open an Outlines issue."
+        )
+
+    ############
+    # FORMATTERS
+    ############
+    def format_number_range(
+        self,
+        min_digits_integer,
+        max_digits_integer,
+        min_digits_fraction,
+        max_digits_fraction,
+        min_digits_exponent,
+        max_digits_exponent,
+    ):
+        integers_quantifier = (
+            f"{{{min_digits_integer},{max_digits_integer}}}"
+            if min_digits_integer or max_digits_integer
+            else "*"
+        )
+        fraction_quantifier = (
+            f"{{{min_digits_fraction},{max_digits_fraction}}}"
+            if min_digits_fraction or max_digits_fraction
+            else "+"
+        )
+        exponent_quantifier = (
+            f"{{{min_digits_exponent},{max_digits_exponent}}}"
+            if min_digits_exponent or max_digits_exponent
+            else "+"
+        )
+        return rf"((-)?(0|[1-9][0-9]{integers_quantifier}))(\.[0-9]{fraction_quantifier})?([eE][+-][0-9]{exponent_quantifier})?"
+
+    def format_integer_range(self, min_digits=None, max_digits=None):
+        if min_digits or max_digits:
+            num_items_pattern = f"{{{min_digits},{max_digits}}}"
+        else:
+            num_items_pattern = "*"
+
+        return rf"(-)?(0|[1-9][0-9]{num_items_pattern})"
+
+    def format_string_length(self, min_length, max_length):
+        return f'"{STRING_INNER}{{{min_length},{max_length}}}"'
+
+    def format_string_pattern(self, pattern: str):
+        if pattern[0] == "^" and pattern[-1] == "$":
+            pattern_string_inner = pattern[1:-1]
+        else:
+            pattern_string_inner = pattern
+        return f'"{pattern_string_inner}"'
+
+    def format_string_format(self, fmt: str):
+        format_regex = self.FORMAT_STRING.get(fmt)
+        if format_regex:
+            return format_regex
+        raise NotImplementedError(
+            f"Format {fmt} is not supported. Please open an Outlines issue."
+        )
+
+    def format_property_kv(
+        self, key_pattern: str, value_pattern: str, ctx: Context
+    ) -> str:
+        return f"{self.ws}{key_pattern}{self.ws}(:){self.ws}{value_pattern}"
+
+    def format_empty_object(self):
+        return r"\{" + self.ws + r"\}"
+
+    def format_object_properties_all_optional(
+        self, property_details: List[Dict], ctx: Context
+    ):
+        property_subregexes = [
+            self.format_property_kv(pd["key_pattern"], pd["value_pattern"], ctx)
+            for pd in property_details
+        ]
+        possible_patterns = [
+            f"{self.ws},".join(combination)
+            for i in range(1, len(property_subregexes) + 1)
+            for combination in itertools.combinations(property_subregexes, i)
+        ]
+        inner = f"({'|'.join(possible_patterns)})?"
+        return r"\{" + inner + self.ws + r"\}"
+
+    def format_object_with_required_properties(
+        self, property_details: List[Dict], ctx: Context
+    ):
+        is_required = [prop["is_required"] for prop in property_details]
+        last_required_pos = max(i for i, value in enumerate(is_required) if value)
+        inner = ""
+        for i, pd in enumerate(property_details):
+            subregex = self.format_property_kv(
+                pd["key_pattern"], pd["value_pattern"], ctx
+            )
+            if i < last_required_pos:
+                subregex = f"{subregex}{self.ws},"
+            elif i > last_required_pos:
+                subregex = f"{self.ws},{subregex}"
+            inner += subregex if is_required[i] else f"({subregex})?"
+        return r"\{" + inner + self.ws + r"\}"
+
+    def format_object_with_additional_properties(
+        self, value_pattern: str, ctx: Context, min_properties=None, max_properties=None
+    ):
+        inner = self._regex_repeat_elem(
+            elem_pattern=f"({STRING}){self.ws}(:){self.ws}({value_pattern})",
+            separator_pattern=f"{self.ws},{self.ws}",
+            min_elem=min_properties,
+            max_elem=max_properties,
+            pad=self.ws,
+        )
+        return r"\{" + inner + r"\}"
+
+    def format_array(
+        self, elem_pattern: str, ctx: Context, min_items=None, max_items=None
+    ):
+        inner = self._regex_repeat_elem(
+            elem_pattern=elem_pattern,
+            separator_pattern=f"{self.ws},{self.ws}",
+            min_elem=min_items,
+            max_elem=max_items,
+            pad=self.ws,
+        )
+        return rf"\[{inner}\]"
+
+    def format_prefixItems(
+        self,
+        prefix_patterns: List[str],
+        ctx: Context,
+        suffix_elem_pattern: Optional[str] = None,
+    ):
+        comma_split_pattern = rf"{self.ws},{self.ws}"
+        prefix_pattern = f"{self.ws}{comma_split_pattern.join(prefix_patterns)}"
+        if suffix_elem_pattern:
+            suffix_pattern = self._regex_repeat_elem(
+                elem_pattern=suffix_elem_pattern,
+                separator_pattern=f"{self.ws},{self.ws}",
+                min_elem=1,
+                pad=self.ws,
+            )
+            suffix_pattern = f"((,{suffix_pattern})|)"
+            inner = f"{prefix_pattern}{suffix_pattern}"
+        else:
+            inner = prefix_pattern + self.ws
+        return rf"\[{inner}\]"
+
+    def format_literal(self, literal: Any):
+        if isinstance(literal, str):
+            return f"{re.escape(json.dumps(literal))}"
+        if type(literal) in [int, bool, type(None)]:
+            return re.escape(json.dumps(literal))
+        elif isinstance(literal, float):
+            if float(literal) == int(literal):
+                int_literal = re.escape(json.dumps(int(literal)))
+                float_literal = re.escape(json.dumps(float(literal)))
+                return f"({int_literal}|{float_literal})"
+            else:
+                return re.escape(json.dumps(literal))
+        else:
+            raise NotImplementedError(
+                f"Unsupported data type in literal: {type(literal)}. Please open an Outlines issue."
+            )
+
+    def format_allOf(self, patterns: List[str]):
+        return (
+            "(" + "".join([f"(?={pat})" for pat in patterns[:-1]]) + patterns[-1] + ")"
+        )
+
+    def format_anyOf(self, patterns: List[str]):
+        return "(" + "|".join([f"({pat})" for pat in patterns]) + ")"
+
+    def format_oneOf(self, patterns: List[str]):
+        # If you're searching "NotImplementedError", this method also needs to be properly implemented!
+        warnings.warn(
+            "JSON Schema `oneOf` not implemented. Using `anyOf` instead. Please open an Outlines Issue."
+        )
+        return self.format_anyOf(patterns)
+
+    def visit_unconstrained(self, node: Any, ctx: Context):
+        legal_types = [
+            {"type": "boolean"},
+            {"type": "null"},
+            {"type": "number"},
+            {"type": "integer"},
+            {"type": "string"},
+        ]
+        allowed_nesting = node.get(
+            "_allowed_nesting", ctx.nesting_level + self.max_nesting_level
+        )
+        # We limit the object depth to keep the expression finite, but the "depth"
+        # key is not a true component of the JSON Schema specification.
+        if ctx.nesting_level < allowed_nesting:
+            legal_types.append({"type": "object", "_allowed_nesting": allowed_nesting})
+            legal_types.append({"type": "array", "_allowed_nesting": allowed_nesting})
+
+        subpatterns = [self.to_regex(t, ctx) for t in legal_types]
+        return self.format_anyOf(subpatterns)
+
+    def _regex_repeat_elem(
+        self,
+        elem_pattern: str,
+        separator_pattern: str,
+        min_elem=None,
+        max_elem=None,
+        pad="",
+    ):
+        """
+        Creates a pattern allowing between min_elem and max_elem occurrences of elem_pattern
+        Ensures each element pattern is separated by separator_pattern
+        Surrounds result with `pad`
+        """
+        if str(max_elem) == "0":
+            return pad
+
+        base_pattern = f"({elem_pattern})"
+        suffix_pattern = f"(({separator_pattern})({elem_pattern}))"
+
+        min_suffix_repeats = "" if min_elem is None else max(0, int(min_elem) - 1)
+        max_suffix_repeats = "" if max_elem is None else max_elem - 1
+
+        if str(max_suffix_repeats) == "0":
+            pattern = base_pattern
+        else:
+            pattern = f"{base_pattern}({suffix_pattern}){{{min_suffix_repeats},{max_suffix_repeats}}}"
+
+        padded_pattern = f"({pad}{pattern}{pad})"
+
+        if not min_elem:
+            return f"({padded_pattern}|{pad})"
+        else:
+            return padded_pattern
+
+
+class YAMLRegexGenerator(JSONSchemaRegexGenerator):
+    """
+    Core differences between JSON and YAML
+    --------------------------------------
+
+    For most types including `boolean`, `null`, `number`, and `integer`
+    YAML supports a superset of JSON representation. For example, `boolean` can
+    be `true` / `false` like JSON, however it can also be `yes` / `no`. For these
+    types we will limit generation to the valid JSON-representation subset.
+
+    ```
+    string:
+    - Equivalent to JSON, but doesn't use quotes
+
+    array:
+    - In YAML arrays are represented
+    - by newline separated
+    - dash-prefixed array elements
+
+    object:
+    - An object is represented as a newline separated list of key: value pairs
+    ```
+    """
+
+    FORMAT_PRIMATIVE = {
+        # yaml allows for more escape types
+        "string": r'([^"\\\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]|\\["\\])',
+        **JSONSchemaRegexGenerator.FORMAT_PRIMATIVE,
+    }
+
+    @staticmethod
+    def _indentation(nesting_level: int):
+        return r"(\n)" + (f"[ ]{{{nesting_level * 2}}}" if nesting_level else "")
+
+    def format_property_kv(
+        self, key_pattern: str, value_pattern: str, ctx: Context
+    ) -> str:
+        """
+        Similar to JSON property kv, but with changes to accomodate yaml rules:
+        - leading spaces are not allowed as the spaces are syntactic
+        - `foo:bar` isn't a legal kv,
+          - need a single space, e.g. `foo: bar`
+          - or an indented newline, e.g. `foo:\n  bar`
+        """
+        child_indentation = self._indentation(ctx.nesting_level + 1)
+        return f"({key_pattern}{self.ws}(:){child_indentation}{value_pattern})"
+
+    def format_object_properties_all_optional(
+        self, property_details: List[Dict], ctx: Context
+    ):
+        property_subregexes = [
+            self.format_property_kv(pd["key_pattern"], pd["value_pattern"], ctx)
+            for pd in property_details
+        ]
+        indentation = self._indentation(ctx.nesting_level)
+        possible_patterns = [
+            indentation.join(combination)  # first indent is optional
+            for i in range(1, len(property_subregexes) + 1)
+            for combination in itertools.combinations(property_subregexes, i)
+        ]
+        one_or_more_pattern = "|".join(possible_patterns)
+        return f"({one_or_more_pattern}|{self.format_empty_object()})"
+
+    def format_object_with_required_properties(
+        self, property_details: List[Dict], ctx: Context
+    ):
+        is_required = [prop["is_required"] for prop in property_details]
+        last_required_pos = max(i for i, value in enumerate(is_required) if value)
+
+        indentation = self._indentation(ctx.nesting_level)
+
+        inner = ""
+        for i, pd in enumerate(property_details):
+            subregex = self.format_property_kv(
+                pd["key_pattern"], pd["value_pattern"], ctx
+            )
+            if i < last_required_pos:
+                subregex = f"{subregex}{indentation}"
+            elif i > last_required_pos:
+                subregex = f"{indentation}{subregex}"
+            inner += subregex if is_required[i] else f"({subregex})?"
+
+        return inner
+
+    def format_object_with_additional_properties(
+        self, value_pattern: str, ctx: Context, min_properties=None, max_properties=None
+    ):
+        if min_properties in (0, "0", "", None):
+            min_properties = 0
+
+        inner = self._regex_repeat_elem(
+            elem_pattern=self.format_property_kv(STRING, value_pattern, ctx),
+            separator_pattern=self._indentation(ctx.nesting_level),
+            min_elem=max(1, min_properties),
+            max_elem=max_properties,
+        )
+        if min_properties == 0:
+            empty_obj_pattern = self.format_empty_object()
+            return f"({inner})|({empty_obj_pattern})"
+
+        return inner
+
+    def format_array(
+        self, elem_pattern: str, ctx: Context, min_items=None, max_items=None
+    ):
+        self_indentation = self._indentation(ctx.nesting_level)
+
+        child_indentation = self._indentation(ctx.nesting_level + 1)
+        child_separator = f"([ ]|({child_indentation}))"
+
+        if min_items in (0, "0", "", None):
+            min_items = 0
+
+        inner = self._regex_repeat_elem(
+            elem_pattern=f"(-){child_separator}{elem_pattern}",
+            separator_pattern=self_indentation,
+            min_elem=max(1, min_items),
+            max_elem=max_items,
+        )
+        if min_items == 0:
+            empty_list_pattern = r"(\[\])"
+            return f"({inner})|({empty_list_pattern})"
+        return inner
+
+    def format_prefixItems(
+        self,
+        prefix_patterns: List[str],
+        ctx: Context,
+        suffix_elem_pattern: Optional[str] = None,
+    ):
+        self_indentation = self._indentation(ctx.nesting_level)
+
+        child_indentation = self._indentation(ctx.nesting_level + 1)
+        child_separator = f"([ ]|({child_indentation}))"
+
+        prefix_pattern = self_indentation.join(
+            [f"(-){child_separator}{pat}" for pat in prefix_patterns]
+        )
+
+        if suffix_elem_pattern:
+            suffix_pattern = self._regex_repeat_elem(
+                elem_pattern=f"(-){child_separator}{suffix_elem_pattern}",
+                separator_pattern=self_indentation,
+                min_elem=1,
+            )
+            suffix_pattern = f"({self_indentation}{suffix_pattern})?"
+            return f"{prefix_pattern}{suffix_pattern}"
+        else:
+            return prefix_pattern

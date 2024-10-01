@@ -64,6 +64,7 @@ test = [
     "torch",
     "transformers",
     "pillow",
+    "requests_cache",
 ]
 serve = [
     "vllm>=0.3.0",
@@ -136,6 +137,7 @@ module = [
     "pycountry.*",
     "airportsdata.*",
     "outlines_core.*",
+    "requests_cache.*",
 ]
 ignore_missing_imports = true
 
