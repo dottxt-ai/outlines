@@ -22,8 +22,16 @@ def model_llamacpp(tmp_path_factory):
 
 @pytest.fixture(scope="session")
 def model_exllamav2(tmp_path_factory):
+    from huggingface_hub import snapshot_download
+
+    tmp_dir = tmp_path_factory.mktemp("model_download")
+    model_path = snapshot_download(
+        repo_id="blockblockblock/TinyLlama-1.1B-Chat-v1.0-bpw4.6-exl2",
+        cache_dir=tmp_dir,
+    )
+
     return models.exl2(
-        model_path="blockblockblock/TinyLlama-1.1B-Chat-v1.0-bpw4-exl2",
+        model_path=model_path,
         cache_q4=True,
         paged=False,
     )

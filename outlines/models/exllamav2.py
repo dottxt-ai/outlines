@@ -1,12 +1,13 @@
 import dataclasses
 from typing import TYPE_CHECKING, Iterator, List, Optional, Tuple, TypedDict, Union
 
+import torch
 from typing_extensions import Unpack
 
 from outlines.generate.api import GenerationParameters, SamplingParameters
 
 if TYPE_CHECKING:
-    from exllamav2 import ExLlamaV2Tokenizer
+    import torch.LongTensor
     from exllamav2.generator import ExLlamaV2DynamicGenerator, ExLlamaV2Sampler
 
 
@@ -18,13 +19,33 @@ class ExllamaV2Params(TypedDict, total=False):
     max_new_tokens: List[int]
 
 
+class OutlinesExLlamaV2Tokenizer:
+    def __init__(self, tokenizer):
+        self.exl2_tokenizer = tokenizer
+        self.vocabulary = self.exl2_tokenizer.get_piece_to_id_dict()
+        self.special_tokens = set(self.exl2_tokenizer.extended_piece_to_id)
+        self.eos_token_id = self.exl2_tokenizer.eos_token_id
+
+    def convert_token_to_string(self, token):
+        return token
+
+    def decode(self, token_ids: "torch.LongTensor") -> List[str]:
+        decoded = self.exl2_tokenizer.decode(
+            torch.tensor(token_ids),
+            decode_special_tokens=False,
+        )
+        if isinstance(decoded, str):
+            return [decoded]
+        return decoded
+
+
 class ExLlamaV2Model:
     """Represents a `exl2` model."""
 
     def __init__(
         self,
         generator: "ExLlamaV2DynamicGenerator",
-        tokenizer: "ExLlamaV2Tokenizer",
+        tokenizer: "OutlinesExLlamaV2Tokenizer",
         max_seq_len: int,
     ):
         self.generator = generator
@@ -220,14 +241,6 @@ class ExLlamaV2Model:
         return token_generator()
 
 
-# Taken from https://github.com/lapp0/exllamav2/pull/1/files#diff-26f303de07c10aad998e33d3df52581643673a598162cc4b35ef051f52d7c60b
-def patch_tokenizer(tokenizer):
-    tokenizer.vocabulary = tokenizer.piece_to_id
-    tokenizer.special_tokens = set(tokenizer.extended_piece_to_id)
-    tokenizer.convert_token_to_string = lambda t: t
-    return tokenizer
-
-
 def exl2(
     model_path: str,
     draft_model_path: Optional[str] = None,
@@ -306,7 +319,6 @@ def exl2(
 
     print("Loading tokenizer...")
     tokenizer = ExLlamaV2Tokenizer(config)
-    tokenizer = patch_tokenizer(tokenizer)
     max_batch_size = 4 if paged else 1
 
     draft_model = None
@@ -337,4 +349,7 @@ def exl2(
         paged=paged,
     )
     max_seq_len = cache.max_seq_len
-    return ExLlamaV2Model(generator, tokenizer, max_seq_len)
+
+    outlines_tokenizer = OutlinesExLlamaV2Tokenizer(tokenizer)
+    outlines_exl2_model = ExLlamaV2Model(generator, outlines_tokenizer, max_seq_len)
+    return outlines_exl2_model
