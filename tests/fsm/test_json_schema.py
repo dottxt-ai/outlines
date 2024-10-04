@@ -1,9 +1,11 @@
+import collections
 import json
 import re
 from typing import List, Literal, Union
 
 import interegular
 import pytest
+import yaml
 from pydantic import BaseModel, Field, constr
 
 from outlines.fsm.json_schema import (
@@ -20,8 +22,127 @@ from outlines.fsm.json_schema import (
     WHITESPACE,
     build_regex_from_schema,
     get_schema_from_signature,
-    to_regex,
 )
+
+
+def assert_patterns_equivalent(
+    generated_pattern, expected_pattern, n_diff=0, allow_both=False
+):
+    gen_fsm = interegular.parse_pattern(generated_pattern).to_fsm()
+    expect_fsm = interegular.parse_pattern(expected_pattern).to_fsm()
+    if gen_fsm.reduce() != expect_fsm.reduce():
+        if n_diff:
+            to_str = lambda s: "".join([c if isinstance(c, str) else "{*}" for c in s])
+            only_generated = [
+                to_str(s)
+                for _, s in zip(range(n_diff), gen_fsm.difference(expect_fsm).strings())
+            ]
+            only_expected = [
+                to_str(s)
+                for _, s in zip(range(n_diff), expect_fsm.difference(gen_fsm).strings())
+            ]
+            additional_details = (
+                f"Accepted only by generated pattern (max {n_diff}): {only_generated}\n"
+                f"Accepted only by expected pattern (max {n_diff}): {only_expected}\n"
+            )
+            if allow_both:
+                both = [
+                    to_str(s)
+                    for _, s in zip(range(n_diff), (gen_fsm & expect_fsm).strings())
+                ]
+                additional_details += (
+                    f"Accepted by both patterns (max {n_diff}): {both}\n"
+                )
+        else:
+            additional_details = ""
+
+        raise ValueError(
+            "Patterns Not Equivalent:\n"
+            f"generated_pattern = {generated_pattern}\n"
+            f" expected_pattern = {expected_pattern}\n"
+            f"{additional_details}"
+        )
+
+
+def dump_yaml_normalized(data):
+    """
+    yaml can represent the same data in many different ways.
+
+    This function creates a normalized yaml dump which ensures
+    - strings are always represented with quotes
+    - OrderedDict is represented without !!python/object/apply:collections.OrderedDict
+    - End of document signifier "\n...\n" is removed
+    - Standardize Indentation Behavior
+    """
+
+    # handle confusion in yaml dumper
+    if isinstance(data, str):
+        return json.dumps(data)
+
+    class NormalizedDumper(yaml.Dumper):
+        def increase_indent(self, flow=False, indentless=False):
+            return super().increase_indent(flow, False)
+
+    def quoted_str_presenter(dumper, data):
+        return dumper.represent_scalar("tag:yaml.org,2002:str", data, style='"')
+
+    def dict_representer(dumper, data):
+        return dumper.represent_dict(data.items())
+
+    # Ensure strings are always quoted
+    NormalizedDumper.add_representer(str, quoted_str_presenter)
+    # Ensure OrderedDict is represented without !!python/object/apply
+    NormalizedDumper.add_representer(collections.OrderedDict, dict_representer)
+
+    dumped = yaml.dump(
+        data, Dumper=NormalizedDumper, default_flow_style=False, sort_keys=False
+    ).rstrip("\n...\n")
+
+    # hack to normalize formatting to our yaml subset
+    return re.sub(
+        r"^([ \t-]*)([^:\s]+): (\S.*)",
+        lambda m: f"{m.group(1)}{m.group(2)}:\n{' ' * (len(m.group(1)) + 2)}{m.group(3)}",
+        dumped,
+        flags=re.MULTILINE,
+    )
+
+
+def assert_match_expectation(json_sample, pattern, does_match, schema, mode="json"):
+    """
+    Ensure sample conforms to `does_match` expectation
+    - check sample normally if in json mode
+    - convert sample to normalized yaml if in yaml mode
+    """
+    # if yaml mode, convert to yaml if possible, otherwise succeed the test
+    if mode == "yaml":
+        try:
+            if json.dumps(json.loads(json_sample)) != json_sample:
+                return
+        except json.decoder.JSONDecodeError:
+            return
+
+        sample = dump_yaml_normalized(
+            json.loads(json_sample, object_pairs_hook=collections.OrderedDict)
+        )
+
+        # ensure yaml wasn't corrupted by rstrip
+        assert yaml.safe_load(sample) == json.loads(
+            json_sample
+        ), "invalid test, json -> yaml inconsistent"
+
+    else:
+        sample = json_sample
+
+    match = re.fullmatch(pattern, sample)
+    if does_match:
+        if not match:
+            raise ValueError(
+                f"Expected match for sample:\n{sample}\n\n"
+                f"Schema: {json.dumps(json.loads(schema), indent=4)}\n"
+                f"Generated Pattern: {repr(pattern)}\n"
+            )
+    else:
+        assert match is None
 
 
 def test_function_basic():
@@ -71,7 +192,7 @@ def test_from_pydantic():
 )
 def test_match_integer(pattern, does_match):
     step = {"title": "Foo", "type": "integer"}
-    regex = to_regex(None, step)
+    regex = build_regex_from_schema(json.dumps(step))
     assert regex == INTEGER
 
     value = pattern["integer"]
@@ -98,7 +219,7 @@ def test_match_integer(pattern, does_match):
 )
 def test_match_number(pattern, does_match):
     step = {"title": "Foo", "type": "number"}
-    regex = to_regex(None, step)
+    regex = build_regex_from_schema(json.dumps(step))
     assert regex == NUMBER
 
     value = pattern["number"]
@@ -420,7 +541,7 @@ def test_match_number(pattern, does_match):
         # array
         (
             {"title": "Foo", "type": "array", "items": {"type": "number"}},
-            rf"\[{WHITESPACE}(({NUMBER})(,{WHITESPACE}({NUMBER})){{0,}})?{WHITESPACE}\]",
+            rf"\[(({WHITESPACE}({NUMBER})((?:{WHITESPACE},{WHITESPACE}({NUMBER}))){{,}}{WHITESPACE})|{WHITESPACE})\]",
             [("[1e+9,1.3]", True), ("[]", True), ("[1", False)],
         ),
         # array with a set length of 1
@@ -444,7 +565,7 @@ def test_match_number(pattern, does_match):
                 "minItems": 3,
                 "maxItems": 3,
             },
-            rf"\[{WHITESPACE}(({INTEGER})(,{WHITESPACE}({INTEGER})){{2,2}}){WHITESPACE}\]",
+            rf"\[({WHITESPACE}({INTEGER})((?:{WHITESPACE},{WHITESPACE}({INTEGER}))){{2,2}}{WHITESPACE})\]",
             [("[1]", False), ("[]", False), ("[1,2,3]", True), ("[1,2,3,4]", False)],
         ),
         # array with length 0
@@ -473,7 +594,7 @@ def test_match_number(pattern, does_match):
                 },
                 "required": ["test_dict"],
             },
-            rf"""\{{{WHITESPACE}"test_dict"{WHITESPACE}:{WHITESPACE}\{{{WHITESPACE}({STRING}{WHITESPACE}:{WHITESPACE}{STRING}({WHITESPACE},{WHITESPACE}{STRING}{WHITESPACE}:{WHITESPACE}{STRING}){{0,}})?{WHITESPACE}\}}{WHITESPACE}\}}""",
+            rf"""\{{{WHITESPACE}"test_dict"{WHITESPACE}:{WHITESPACE}(\{{({WHITESPACE}{STRING}{WHITESPACE}:{WHITESPACE}({STRING})({WHITESPACE},{WHITESPACE}{STRING}{WHITESPACE}:{WHITESPACE}({STRING})){{0,}})?{WHITESPACE}\}}){WHITESPACE}\}}""",
             [
                 ("""{ "test_dict":{"foo":"bar","baz": "bif"}}""", True),
                 ("""{ "test_dict":{"foo":"bar" }}""", True),
@@ -499,7 +620,7 @@ def test_match_number(pattern, does_match):
                 },
                 "required": ["test_dict"],
             },
-            rf"""\{{{WHITESPACE}"test_dict"{WHITESPACE}:{WHITESPACE}\{{{WHITESPACE}({STRING}{WHITESPACE}:{WHITESPACE}\{{{WHITESPACE}({STRING}{WHITESPACE}:{WHITESPACE}{INTEGER}({WHITESPACE},{WHITESPACE}{STRING}{WHITESPACE}:{WHITESPACE}{INTEGER}){{0,}})?{WHITESPACE}\}}({WHITESPACE},{WHITESPACE}{STRING}{WHITESPACE}:{WHITESPACE}\{{{WHITESPACE}({STRING}{WHITESPACE}:{WHITESPACE}{INTEGER}({WHITESPACE},{WHITESPACE}{STRING}{WHITESPACE}:{WHITESPACE}{INTEGER}){{0,}})?{WHITESPACE}\}}){{0,}})?{WHITESPACE}\}}{WHITESPACE}\}}""",
+            rf"""\{{{WHITESPACE}"test_dict"{WHITESPACE}:{WHITESPACE}(\{{({WHITESPACE}{STRING}{WHITESPACE}:{WHITESPACE}\{{({WHITESPACE}{STRING}{WHITESPACE}:{WHITESPACE}{INTEGER}({WHITESPACE},{WHITESPACE}{STRING}{WHITESPACE}:{WHITESPACE}{INTEGER}){{0,}})?{WHITESPACE}\}}({WHITESPACE},{WHITESPACE}{STRING}{WHITESPACE}:{WHITESPACE}\{{({WHITESPACE}{STRING}{WHITESPACE}:{WHITESPACE}{INTEGER}({WHITESPACE},{WHITESPACE}{STRING}{WHITESPACE}:{WHITESPACE}{INTEGER}){{0,}})?{WHITESPACE}\}}){{0,}})?{WHITESPACE}\}}){WHITESPACE}\}}""",
             [
                 (
                     """{"test_dict": {"foo": {"bar": 123, "apple": 99}, "baz": {"bif": 456}}}""",
@@ -544,14 +665,48 @@ def test_match_number(pattern, does_match):
             rf"({STRING}|{INTEGER})",
             [("12", True), ('"a"', True), ('1"a"', False)],
         ),
+        # oneOf: TODO: currently implemented as anyOf, uncomment when proper oneOf is implemented
+        # (
+        #     {
+        #         "title": "Foo",
+        #         "oneOf": [{"type": "string", "format": "date"}, {"type": "string", "pattern": "2024.*"}],
+        #     },
+        #     rf"TODO",
+        #     [('"2024-01-07"', False), ('"2024-01-01"', True), ('"2024foobar7"', True), ('"2024-neither"', False)],
+        # ),
+        # anyOf
+        (
+            {
+                "title": "Foo",
+                "anyOf": [
+                    {"type": "string", "format": "date"},
+                    {"type": "string", "pattern": "2024.*7"},
+                ],
+            },
+            rf'({DATE})|("2024.*7")',
+            [
+                ('"2024-01-07"', True),
+                ('"2024-01-01"', True),
+                ('"2024foobar7"', True),
+                ('"2024-neither"', False),
+            ],
+        ),
         # allOf
         (
             {
                 "title": "Foo",
-                "allOf": [{"type": "string"}, {"type": "integer"}],
+                "allOf": [
+                    {"type": "string", "format": "date"},
+                    {"type": "string", "pattern": "2024.*7"},
+                ],
             },
-            rf"({STRING}{INTEGER})",
-            [('"a"1', True), ('"a"', False), ('"1"', False)],
+            rf'(?=({DATE}))("2024.*7")',
+            [
+                ('"2024-01-07"', True),
+                ('"2024-01-01"', False),
+                ('"2024foobar7"', False),
+                ('"2024-neither"', False),
+            ],
         ),
         # Tuple / prefixItems
         (
@@ -748,21 +903,24 @@ def test_match_number(pattern, does_match):
         ),
     ],
 )
-def test_match(schema, regex, examples):
-    interegular.parse_pattern(regex)
+@pytest.mark.parametrize("mode", ["json", "yaml"])
+def test_match(schema, regex, examples, mode):
     schema = json.dumps(schema)
-    test_regex = build_regex_from_schema(schema)
-    assert test_regex == regex
+    generated_pattern = build_regex_from_schema(schema, mode=mode)
+
+    if mode == "json":
+        # patterns assert equivalence of pattern behavior to expectation
+        assert_patterns_equivalent(
+            generated_pattern=generated_pattern, expected_pattern=regex
+        )
+
+    # ensure pattern can be parsed by interegular
+    interegular.parse_pattern(regex)
 
     for string, does_match in examples:
-        match = re.fullmatch(test_regex, string)
-        if does_match:
-            if match is None:
-                raise ValueError(f"Expected match for '{string}'")
-            assert match[0] == string
-            assert match.span() == (0, len(string))
-        else:
-            assert match is None
+        assert_match_expectation(
+            string, generated_pattern, does_match, schema, mode=mode
+        )
 
 
 @pytest.mark.parametrize(
@@ -827,19 +985,17 @@ def test_match(schema, regex, examples):
         ),
     ],
 )
-def test_format(schema, regex, examples):
+@pytest.mark.parametrize("mode", ["json", "yaml"])
+def test_format(schema, regex, examples, mode):
     interegular.parse_pattern(regex)
     schema = json.dumps(schema)
-    test_regex = build_regex_from_schema(schema)
-    assert test_regex == regex
+    generated_pattern = build_regex_from_schema(schema, mode=mode)
+    assert generated_pattern == regex
 
     for string, does_match in examples:
-        match = re.fullmatch(test_regex, string)
-        if does_match:
-            assert match[0] == string
-            assert match.span() == (0, len(string))
-        else:
-            assert match is None
+        assert_match_expectation(
+            string, generated_pattern, does_match, schema, mode=mode
+        )
 
 
 @pytest.mark.parametrize(
@@ -976,16 +1132,14 @@ def test_format(schema, regex, examples):
         ),
     ],
 )
-def test_format_without_regex(schema, examples):
+@pytest.mark.parametrize("mode", ["json", "yaml"])
+def test_format_without_regex(schema, examples, mode):
     schema = json.dumps(schema)
-    test_regex = build_regex_from_schema(schema)
+    generated_pattern = build_regex_from_schema(schema, mode=mode)
     for string, does_match in examples:
-        match = re.fullmatch(test_regex, string)
-        if does_match:
-            assert match[0] == string
-            assert match.span() == (0, len(string))
-        else:
-            assert match is None
+        assert_match_expectation(
+            string, generated_pattern, does_match, schema, mode=mode
+        )
 
 
 @pytest.mark.parametrize("whitespace_pattern", [None, r"[\n ]*", "abc"])
@@ -1017,6 +1171,7 @@ def test_json_schema_custom_whitespace_pattern(whitespace_pattern):
         assert re.fullmatch(pattern, mock_result_mult_ws)
 
 
+@pytest.mark.skip("oneOf not implemented")
 def test_one_of_doesnt_produce_illegal_lookaround():
     """Reproduces failure in https://github.com/dottxt-ai/outlines/issues/823"""
 
@@ -1039,3 +1194,28 @@ def test_one_of_doesnt_produce_illegal_lookaround():
 
     # check if the pattern uses lookarounds incompatible with interegular.Pattern.to_fsm()
     interegular.parse_pattern(pattern).to_fsm()
+
+
+def test_all_generations_legal():
+    """
+    # Array of literal {"k": "v"}
+    (
+        {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "k": {"const": "v"}
+                }
+            },
+            "required": ["k"],
+            "additionalProperties": False
+        },
+        [
+            ("1", True),
+        ]
+    ),
+    """
+    # TODO: check all fsm.strings() matches the schema
+    # patch STRING, INTEGER, and NUMBER so they have limited length
+    pass
