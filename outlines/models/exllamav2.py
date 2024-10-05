@@ -300,7 +300,9 @@ def exl2(
 
     except ImportError:
         raise ImportError(
-            "The `exllamav2`, `transformers` and `torch` libraries needs to be installed in order to use `exllamav2` models."
+            "The `exllamav2`, `transformers` and `torch` libraries needs to be installed in order to use `exllamav2` models. "
+            "Please run `pip install transformers torch git+https://github.com/lapp0/exllamav2@sampler-logits-processor` "
+            "Documentation: https://dottxt-ai.github.io/outlines/reference/models/exllamav2/"
         )
     config = ExLlamaV2Config(model_path)
     if max_chunk_size is not None:
