@@ -102,12 +102,13 @@ class GuideLogitsProcessor(OutlinesLogitsProcessor):
 
             sequence_states.append(self._guide_states[curr_state_key])
 
-        mask = torch.full_like(logits, -math.inf)
+        mask = torch.ones_like(logits, dtype=torch.bool)
         for i, guide_state in enumerate(sequence_states):
             allowed_tokens = self.guide.get_next_instruction(guide_state).tokens
-            mask[i, allowed_tokens] = logits[i, allowed_tokens]
+            mask[i, allowed_tokens] = False
+        logits.masked_fill_(mask, float("-inf"))
 
-        return mask
+        return logits
 
     def copy(self) -> "GuideLogitsProcessor":
         """Return a copy of the logits processor."""
