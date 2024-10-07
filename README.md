@@ -21,11 +21,11 @@ Made with ❤👷️ by the team at [.txt](https://dottxt.co).
 pip install outlines
 ```
 
-First time here? Go to our [setup guide](https://dottxt-ai.github.io/outlines/welcome)
+First time here? Go to our [setup guide](https://dottxt-ai.github.io/outlines/latest/welcome/)
 
 ## Features
 
-- [x] 🤖 [Multiple model integrations](https://dottxt-ai.github.io/outlines/installation): OpenAI, transformers, llama.cpp, exllama2, mamba
+- [x] 🤖 [Multiple model integrations](https://dottxt-ai.github.io/outlines/latest/installation): OpenAI, transformers, llama.cpp, exllama2, mamba
 - [x] 🖍️ Simple and powerful prompting primitives based on the [Jinja templating engine](https://jinja.palletsprojects.com/)
 - [x] 🚄 [Multiple choices](#multiple-choices), [type constraints](#type-constraint) and dynamic stopping
 - [x] ⚡ Fast [regex-structured generation](#efficient-regex-structured-generation)
@@ -35,7 +35,7 @@ First time here? Go to our [setup guide](https://dottxt-ai.github.io/outlines/we
 - [x] 💾 Caching of generations
 - [x] 🗂️ Batch inference
 - [x] 🎲 Sample with the greedy, multinomial and beam search algorithms (and more to come!)
-- [x] 🚀 [Serve with vLLM](https://dottxt-ai.github.io/outlines/reference/serve/vllm), with official Docker image, [`outlinesdev/outlines`](https://hub.docker.com/r/outlinesdev/outlines)!
+- [x] 🚀 [Serve with vLLM](https://dottxt-ai.github.io/outlines/latest/reference/serve/vllm), with official Docker image, [`outlinesdev/outlines`](https://hub.docker.com/r/outlinesdev/outlines)!
 
 
 Outlines  has new releases and features coming every week. Make sure to ⭐ star and 👀 watch this repository, follow [@dottxtai][dottxt-twitter] to stay up to date!
@@ -338,7 +338,7 @@ answer = outlines.generate.text(model)(prompt, max_tokens=100)
 ## Join us
 
 - 💡 **Have an idea?** Come chat with us on [Discord][discord]
-- 🔨 **Want to contribute?** Consult our [contribution guide](https://dottxt-ai.github.io/outlines/community/contribute/).
+- 🔨 **Want to contribute?** Consult our [contribution guide](https://dottxt-ai.github.io/outlines/latest/community/contribute/).
 - 🐞 **Found a bug?** Open an [issue](https://github.com/dottxt-ai/outlines/issues)
 
 
@@ -353,7 +353,7 @@ answer = outlines.generate.text(model)(prompt, max_tokens=100)
 }
 ```
 
-[documentation]: https://dottxt-ai.github.io/outlines/welcome/
+[documentation]: https://dottxt-ai.github.io/outlines/latest/welcome/
 [documentation-badge]: https://img.shields.io/readthedocs/outlines
 [contributors]: https://github.com/dottxt-ai/outlines/graphs/contributors
 [contributors-badge]: https://img.shields.io/github/contributors/dottxt-ai/outlines?style=flat-square&logo=github&logoColor=white&color=ECEFF4
