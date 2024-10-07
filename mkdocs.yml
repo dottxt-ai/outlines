@@ -6,8 +6,8 @@ site_description: >-
 
 
 # Repository
-repo_name: outlines-dev/outlines
-repo_url: https://github.com/outlines-dev/outlines
+repo_name: dottxt-ai/outlines
+repo_url: https://github.com/dottxt-ai/outlines
 
 # Copyright
 copyright: Copyright &copy; 2023- The Outlines Developers
@@ -38,7 +38,7 @@ theme:
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/outlines-dev
+      link: https://github.com/dottxt-ai
     - icon: fontawesome/brands/twitter
       link: https://twitter.com/remilouf
   generator: false
@@ -93,7 +93,7 @@ plugins:
       cards_layout_options:
         color: #173a58
   - git-committers:
-      repository: outlines-dev/outlines
+      repository: dottxt-ai/outlines
       branch: main
   - git-revision-date-localized:
       enable_creation_date: true
