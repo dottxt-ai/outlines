@@ -107,7 +107,7 @@ class CFGGuide(Guide):
         """
         warnings.warn(
             "Outlines' public *community-contributed* CFG structured generation is experimental. "
-            "Please review https://dottxt-ai.github.io/outlines/reference/cfg#disclaimer"
+            "Please review https://dottxt-ai.github.io/outlines/latest/reference/generation/cfg#disclaimer"
         )
 
         self.cfg_string = cfg_string
