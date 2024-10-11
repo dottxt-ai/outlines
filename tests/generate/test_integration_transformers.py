@@ -494,7 +494,7 @@ def test_transformers_use_existing_model_and_tokenizer():
 
 def test_RegexGuide_caching(temp_cache_dir):
     import outlines.caching
-    from outlines.fsm.guide import create_states_mapping
+    from outlines.fsm.guide import cached_create_states_mapping
 
     assert outlines.caching._caching_enabled
 
@@ -507,7 +507,7 @@ def test_RegexGuide_caching(temp_cache_dir):
     _ = cache.stats(enable=True)
     assert cache.statistics
 
-    assert create_states_mapping.__memory__ is cache
+    assert cached_create_states_mapping.__memory__ is cache
 
     model = models.transformers(
         "hf-internal-testing/tiny-random-XLMRobertaXLForCausalLM", device="cpu"
