@@ -1,6 +1,8 @@
 from abc import abstractmethod
 from typing import TYPE_CHECKING, List, Protocol, Type, Union
 
+import jax
+import jaxlib
 import numpy as np
 import torch
 from numpy.typing import NDArray
@@ -18,6 +20,12 @@ def is_mlx_array_type(array_type):
     except ImportError:
         return False
     return issubclass(array_type, mx.array)
+
+
+def is_jax_array_type(array_type):
+    return array_type == jaxlib.xla_extension.ArrayImpl or isinstance(
+        array_type, jaxlib.xla_extension.ArrayImpl
+    )
 
 
 class OutlinesLogitsProcessor(Protocol):
@@ -101,6 +109,10 @@ class OutlinesLogitsProcessor(Protocol):
             # https://ml-explore.github.io/mlx/build/html/usage/numpy.html
             return torch.from_dlpack(tensor_like)
 
+        elif is_jax_array_type(type(tensor_like)):
+            torch_tensor = torch.from_dlpack(jax.dlpack.to_dlpack(tensor_like))
+            return torch_tensor.cuda()
+
         else:
             raise TypeError(
                 "LogitsProcessor must be called with either np.NDArray, "
@@ -128,6 +140,9 @@ class OutlinesLogitsProcessor(Protocol):
 
             # numpy doesn't support bfloat16, mlx doesn't support direct conversion from torch
             return mx.array(tensor.float().numpy())
+
+        elif is_jax_array_type(target_type):
+            return jax.numpy.from_dlpack(tensor)
 
         else:
             raise TypeError(
