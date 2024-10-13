@@ -109,6 +109,8 @@ enable_incomplete_feature = ["Unpack"]
 [[tool.mypy.overrides]]
 module = [
     "exllamav2.*",
+    "jax",
+    "jaxlib",
     "jinja2",
     "jsonschema.*",
     "openai.*",
