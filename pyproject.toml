@@ -111,6 +111,7 @@ module = [
     "exllamav2.*",
     "jax",
     "jaxlib",
+    "jax.numpy",
     "jinja2",
     "jsonschema.*",
     "openai.*",
