@@ -5,14 +5,6 @@ import numpy as np
 import pytest
 import torch
 
-# Import mlx and the processor class
-try:
-    import mlx.core as mx
-
-    MLX_AVAILABLE = True
-except ImportError:
-    MLX_AVAILABLE = False
-
 from outlines.processors.base_logits_processor import OutlinesLogitsProcessor
 
 arrays = {
@@ -20,8 +12,21 @@ arrays = {
     "np": np.array([[1, 2], [3, 4]], dtype=np.float32),
     "jax": jnp.array([[1, 2], [3, 4]], dtype=jnp.float32),
     "torch": torch.tensor([[1, 2], [3, 4]], dtype=torch.float32),
-    "mlx": mx.array([[1, 2], [3, 4]], dtype=mx.float32),
 }
+
+try:
+    import mlx.core as mx
+
+    arrays["mlx"] = mx.array([[1, 2], [3, 4]], dtype=mx.float32)
+except ImportError:
+    pass
+
+try:
+    import jax.numpy as jnp
+
+    arrays["jax"] = jnp.array([[1, 2], [3, 4]], dtype=jnp.float32)
+except ImportError:
+    pass
 
 
 # Mock implementation of the abstract class for testing
