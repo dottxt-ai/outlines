@@ -1,8 +1,6 @@
 from abc import abstractmethod
 from typing import TYPE_CHECKING, List, Protocol, Type, Union
 
-import jax
-import jaxlib
 import numpy as np
 import torch
 from numpy.typing import NDArray
@@ -23,7 +21,11 @@ def is_mlx_array_type(array_type):
 
 
 def is_jax_array_type(array_type):
-    return array_type == jaxlib.xla_extension.ArrayImpl or isinstance(
+    try:
+        import jaxlib
+    except ImportError:
+        return False
+    return issubclass(array_type, jaxlib.xla_extension.ArrayImpl) or isinstance(
         array_type, jaxlib.xla_extension.ArrayImpl
     )
 
@@ -110,6 +112,8 @@ class OutlinesLogitsProcessor(Protocol):
             return torch.from_dlpack(tensor_like)
 
         elif is_jax_array_type(type(tensor_like)):
+            import jax
+
             torch_tensor = torch.from_dlpack(jax.dlpack.to_dlpack(tensor_like))
             return torch_tensor.cuda()
 
@@ -142,6 +146,8 @@ class OutlinesLogitsProcessor(Protocol):
             return mx.array(tensor.float().numpy())
 
         elif is_jax_array_type(target_type):
+            import jax
+
             return jax.numpy.from_dlpack(tensor)
 
         else:
