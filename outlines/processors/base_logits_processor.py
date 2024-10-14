@@ -115,7 +115,7 @@ class OutlinesLogitsProcessor(Protocol):
             import jax
 
             torch_tensor = torch.from_dlpack(jax.dlpack.to_dlpack(tensor_like))
-            return torch_tensor.cuda()
+            return torch_tensor
 
         else:
             raise TypeError(
@@ -148,7 +148,7 @@ class OutlinesLogitsProcessor(Protocol):
         elif is_jax_array_type(target_type):
             import jax
 
-            return jax.numpy.from_dlpack(tensor)
+            return jax.dlpack.from_dlpack(tensor)
 
         else:
             raise TypeError(
