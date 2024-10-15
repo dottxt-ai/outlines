@@ -82,7 +82,7 @@ Q4_K_M.gguf',
 )
 ```
 
-You can retrieve your `Testing` object with 
+You can retrieve your `Testing` object with
 
 ```python
 response.choices[0].message.parsed
