@@ -1,0 +1,120 @@
+{#-
+This file overrides the home page to use HTML tooling
+better.
+-#}
+{% extends "main.html" %}
+{% block tabs %}
+{{ super() }}
+
+<style>
+    .md-header {
+        position: initial
+    }
+
+    .md-main__inner {
+        margin: 0
+    }
+
+    .md-content {
+        display: none
+    }
+
+    @media screen and (min-width:60em) {
+        .md-sidebar--secondary {
+            display: none
+        }
+    }
+
+    @media screen and (min-width:76.25em) {
+        .md-sidebar--primary {
+            display: none
+        }
+    }
+
+    .mdx-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: calc(100vh - 300px);
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .mdx-hero {
+        text-align: center;
+    }
+
+    .mdx-hero__image {
+        margin-bottom: 1rem;
+        margin-top: 1rem;
+    }
+
+    .mdx-hero__content {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+
+    .md-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-top: 2rem;
+        flex-direction: row; /* Default to row layout */
+    }
+
+    .md-team {
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+    }
+
+    /* New media query for smaller screens */
+    @media screen and (max-width: 40em) {
+        .md-buttons {
+            flex-direction: column; /* Stack buttons vertically */
+            align-items: center; /* Center-align the stacked buttons */
+        }
+
+        .md-buttons .md-button {
+            width: 100%; /* Make buttons full-width */
+            max-width: 200px; /* Limit maximum width for better appearance */
+        }
+    }
+</style>
+
+<section class="mdx-container">
+    <div class="md-grid md-typeset">
+        <div class="mdx-hero">
+            <div class="mdx-hero__image">
+                <img src="assets/images/logo.png" alt="Outlines Logo" width="600" draggable="false">
+            </div>
+            <div class="mdx-hero__content">
+                <h2 class="subtitle" style="font-weight: 400; padding-top: 1rem;">
+                    Structured text generation and robust prompting for language models
+                </h2>
+
+                    <!-- <div class="index-pre-code">
+                        <pre><code>pip install outlines</code></pre>
+                    </div> -->
+
+                    <div class="md-buttons">
+                        <a href="{{ 'welcome/' | url }}" title="Get started" class="md-button md-button--primary">
+                            Get started
+                        </a>
+                        <a href="https://discord.gg/ZxBxyWmW5n" title="Join the Community" class="md-button">
+                            Join the Community
+                        </a>
+                        <a href="https://twitter.com/dottxtai" title="Follow us on X" class="md-button">
+                            Follow us on X
+                        </a>
+                    </div>
+
+
+                <p class="md-team">Made with ❤️ by the team at <a href="https://dottxt.co">.txt</a></p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+{% block content %}{% endblock %}
+{% block footer %}{% endblock %}
