@@ -21,6 +21,23 @@ def model_llamacpp(tmp_path_factory):
 
 
 @pytest.fixture(scope="session")
+def model_exllamav2(tmp_path_factory):
+    from huggingface_hub import snapshot_download
+
+    tmp_dir = tmp_path_factory.mktemp("model_download")
+    model_path = snapshot_download(
+        repo_id="blockblockblock/TinyLlama-1.1B-Chat-v1.0-bpw4.6-exl2",
+        cache_dir=tmp_dir,
+    )
+
+    return models.exl2(
+        model_path=model_path,
+        cache_q4=True,
+        paged=False,
+    )
+
+
+@pytest.fixture(scope="session")
 def model_mlxlm(tmp_path_factory):
     return models.mlxlm("mlx-community/TinyLlama-1.1B-Chat-v1.0-4bit")
 
@@ -76,7 +93,7 @@ def model_vllm(tmp_path_factory):
     return models.vllm("facebook/opt-125m", gpu_memory_utilization=0.1)
 
 
-# TODO: exllamav2 failing in main, address in https://github.com/outlines-dev/outlines/issues/808
+# TODO: exllamav2 failing in main, address in https://github.com/dottxt-ai/outlines/issues/808
 # TODO: t5 tokenizer doesn't work with streaming
 """
 @pytest.fixture(scope="session")
@@ -98,6 +115,7 @@ def model_t5(tmp_path_factory):
 
 ALL_MODEL_FIXTURES = (
     "model_llamacpp",
+    "model_exllamav2",
     "model_mlxlm",
     "model_mlxlm_phi3",
     "model_transformers_random",
@@ -235,7 +253,7 @@ def test_generate_fsm(request, model_fixture, pattern):
 
 
 @pytest.mark.skip(
-    "Fix issues with JSON, some models fail this test https://github.com/outlines-dev/outlines/issues/985"
+    "Fix issues with JSON, some models fail this test https://github.com/dottxt-ai/outlines/issues/985"
 )
 @pytest.mark.parametrize("model_fixture", ALL_MODEL_FIXTURES)
 def test_generate_json(request, model_fixture, sample_schema):
@@ -249,6 +267,16 @@ def test_generate_json(request, model_fixture, sample_schema):
 def test_generate_choice(request, model_fixture, sample_choices):
     model = request.getfixturevalue(model_fixture)
     generator = generate.choice(model, sample_choices)
+    res = generator(**get_inputs(model_fixture))
+    assert res in sample_choices
+
+
+@pytest.mark.parametrize("model_fixture", ALL_MODEL_FIXTURES)
+def test_generate_choice_twice(request, model_fixture, sample_choices):
+    model = request.getfixturevalue(model_fixture)
+    generator = generate.choice(model, sample_choices)
+    res = generator(**get_inputs(model_fixture))
+    assert res in sample_choices
     res = generator(**get_inputs(model_fixture))
     assert res in sample_choices
 

@@ -250,8 +250,8 @@ class BeamSearchSampler:
     Attributes
     ----------
     samples
-        The number of samples taken for each input sequence.
-
+        The number of samples taken for each input sequence. Equivalent to the
+        number of beams.
     """
 
     def __init__(self, beams: int = 1):

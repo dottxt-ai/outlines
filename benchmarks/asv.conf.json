@@ -1,7 +1,7 @@
 {
     "version": 1,
     "project": "Outlines",
-    "project_url": "https://outlines-dev.github.io/outlines/",
+    "project_url": "https://dottxt-ai.github.io/outlines/",
     "repo": "..",
     "branches": [
 	"HEAD"
@@ -11,7 +11,7 @@
         "PIP_NO_BUILD_ISOLATION=false python -mpip wheel --no-deps --no-index -w {build_cache_dir} {build_dir}",
     ],
     "environment_type": "virtualenv",
-    "show_commit_url": "https://github.com/outlines-dev/outlines/commit/",
+    "show_commit_url": "https://github.com/dottxt-ai/outlines/commit/",
     "benchmark_dir": ".",
     "env_dir": "env",
     "results_dir": "results",

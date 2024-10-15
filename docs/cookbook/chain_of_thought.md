@@ -3,7 +3,7 @@
 
 Chain of thought is a prompting technique introduced in the paper ["Chain-of-Thought Prompting Elicits Reasoning in Large Language Models"](https://arxiv.org/abs/2201.11903) where throught prompting the authors generate a series of intermediate reasoning steps which improves the ability of LLMs to perform complex reasoning.
 
-In this guide, we use [outlines](https://outlines-dev.github.io/outlines/) to apply chain of thought through structured output.
+In this guide, we use [outlines](https://dottxt-ai.github.io/outlines/) to apply chain of thought through structured output.
 
 We use [llama.cpp](https://github.com/ggerganov/llama.cpp) using the [llama-cpp-python](https://github.com/abetlen/llama-cpp-python) library. Outlines supports llama-cpp-python, but we need to install it ourselves:
 

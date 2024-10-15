@@ -4,7 +4,7 @@ from outlines.generate.api import (
     SequenceGeneratorAdapter,
     VisionSequenceGeneratorAdapter,
 )
-from outlines.models import ExLlamaV2Model, LlamaCpp, OpenAI, TransformersVision
+from outlines.models import LlamaCpp, OpenAI, TransformersVision
 from outlines.samplers import Sampler, multinomial
 
 
@@ -39,13 +39,6 @@ def cfg_vision(model, cfg_str: str, sampler: Sampler = multinomial()):
 
     logits_processor = CFGLogitsProcessor(cfg_str, tokenizer=model.tokenizer)
     return VisionSequenceGeneratorAdapter(model, logits_processor, sampler)
-
-
-@cfg.register(ExLlamaV2Model)
-def cfg_exllamav2(model, cfg_str: str, sampler: Sampler = multinomial()):
-    raise NotImplementedError(
-        "Not yet available, track progress in https://github.com/outlines-dev/outlines/pull/1010"
-    )
 
 
 @cfg.register(LlamaCpp)

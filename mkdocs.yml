@@ -1,13 +1,13 @@
 # Site information
-site_name: Outlines 〰️
+site_name: Outlines
 site_author: The Outlines developers
 site_description: >-
   Structured text generation with LLMs
 
 
 # Repository
-repo_name: outlines-dev/outlines
-repo_url: https://github.com/outlines-dev/outlines
+repo_name: dottxt-ai/outlines
+repo_url: https://github.com/dottxt-ai/outlines
 
 # Copyright
 copyright: Copyright &copy; 2023- The Outlines Developers
@@ -19,8 +19,8 @@ theme:
   palette:
     - scheme: default
       primary: white
-  logo: assets/images/logo.png
-  favicon: assets/images/logo.png
+  logo: assets/images/logo-square.svg
+  favicon: assets/images/logo-simple.png
   icon:
     repo: fontawesome/brands/github
   features:
@@ -38,13 +38,17 @@ theme:
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/outlines-dev
+      link: https://github.com/dottxt-ai
     - icon: fontawesome/brands/twitter
       link: https://twitter.com/remilouf
   generator: false
   analytics:
     provider: google
     property: !ENV GOOGLE_ANALYTICS_KEY
+  version:
+    provider: mike
+    default: latest
+    alias: true
 
 # Extensions
 markdown_extensions:
@@ -89,7 +93,7 @@ plugins:
       cards_layout_options:
         color: #173a58
   - git-committers:
-      repository: outlines-dev/outlines
+      repository: dottxt-ai/outlines
       branch: main
   - git-revision-date-localized:
       enable_creation_date: true

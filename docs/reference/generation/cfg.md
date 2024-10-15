@@ -34,7 +34,7 @@ print(sequence)
 
 !!! Note "Experimental"
 
-    Outlines current **community-contributed** implementation of CFG-structured generation is experimental. This does not reflect the performance of [.txt](https://dottxt.co)'s product, where we have optimized grammar-structured generation to be as fast as regex-structured generation. Additionally, it does not fully align with the approach described in our [technical report](https://arxiv.org/pdf/2307.09702), aside from its use of incremental/partial parsing. This feature is still a work in progress, requiring performance enhancements and bug fixes for an ideal implementation. For more details, please see our [grammar-related open issues on GitHub](https://github.com/outlines-dev/outlines/issues?q=is%3Aissue+is%3Aopen+label%3Agrammar).
+    Outlines current **community-contributed** implementation of CFG-structured generation is experimental. This does not reflect the performance of [.txt](https://dottxt.co)'s product, where we have optimized grammar-structured generation to be as fast as regex-structured generation. Additionally, it does not fully align with the approach described in our [technical report](https://arxiv.org/pdf/2307.09702), aside from its use of incremental/partial parsing. This feature is still a work in progress, requiring performance enhancements and bug fixes for an ideal implementation. For more details, please see our [grammar-related open issues on GitHub](https://github.com/dottxt-ai/outlines/issues?q=is%3Aissue+is%3Aopen+label%3Agrammar).
 
 !!! Note "Greedy"
 
@@ -65,7 +65,7 @@ The following grammars are currently available:
 - Arithmetic grammar via `outlines.grammars.arithmetic`
 - JSON grammar via `outlines.grammars.json`
 
-If you would like more grammars to be added to the repository, please open an [issue](https://github.com/outlines-dev/outlines/issues) or a [pull request](https://github.com/outlines-dev/outlines/pulls).
+If you would like more grammars to be added to the repository, please open an [issue](https://github.com/dottxt-ai/outlines/issues) or a [pull request](https://github.com/dottxt-ai/outlines/pulls).
 
 
 ## Grammar guide

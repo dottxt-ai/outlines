@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "outlines"
 authors= [{name = "Outlines Developers"}]
 description = "Probabilistic Generative Model Programming"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 license = {text = "Apache-2.0"}
 keywords=[
     "machine learning",
@@ -32,7 +32,6 @@ dependencies = [
    "cloudpickle",
    "diskcache",
    "pydantic>=2.0",
-   "numba",
    "referencing",
    "jsonschema",
    "requests",
@@ -40,7 +39,8 @@ dependencies = [
    "datasets",
    "typing_extensions",
    "pycountry",
-   "pyairports",
+   "airportsdata",
+   "outlines_core==0.1.0",
 ]
 dynamic = ["version"]
 
@@ -64,6 +64,7 @@ test = [
     "torch",
     "transformers",
     "pillow",
+    "exllamav2",
 ]
 serve = [
     "vllm>=0.3.0",
@@ -73,9 +74,9 @@ serve = [
 ]
 
 [project.urls]
-homepage = "https://github.com/outlines-dev/outlines"
-documentation = "https://outlines-dev.github.io/outlines/"
-repository = "https://github.com/outlines-dev/outlines"
+homepage = "https://github.com/dottxt-ai/outlines"
+documentation = "https://dottxt-ai.github.io/outlines/"
+repository = "https://github.com/dottxt-ai/outlines"
 
 [project.readme]
 file="README.md"
@@ -94,7 +95,6 @@ write_to = "outlines/_version.py"
 testpaths = ["tests"]
 filterwarnings = [
     "error",
-    "ignore::numba.core.errors.NumbaPendingDeprecationWarning",
     "ignore::pydantic.warnings.PydanticDeprecatedSince20",
     "ignore::FutureWarning:transformers.*",
     "ignore::FutureWarning:huggingface_hub.*",
@@ -122,7 +122,6 @@ module = [
     "pydantic.*",
     "pytest",
     "referencing.*",
-    "tiktoken.*",
     "torch.*",
     "transformers.*",
     "llama_cpp",
@@ -130,14 +129,14 @@ module = [
     "lark.*",
     "interegular.*",
     "datasets.*",
-    "numba.*",
     "requests.*",
     "responses.*",
     "vllm.*",
     "uvicorn.*",
     "fastapi.*",
     "pycountry.*",
-    "pyairports.*",
+    "airportsdata.*",
+    "outlines_core.*",
 ]
 ignore_missing_imports = true
 

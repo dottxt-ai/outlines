@@ -67,7 +67,7 @@ from outlines import models
 
 model = models.llamacpp(
     "TheBloke/phi-2-GGUF",
-    "phi-2.Q4_K_M.gguf"
+    "phi-2.Q4_K_M.gguf",
     n_gpu_layers=-1,  # to use GPU acceleration
 )
 ```

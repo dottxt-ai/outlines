@@ -2,11 +2,11 @@
 title: Welcome to Outlines!
 ---
 
-Outlines〰 is a Python library that allows you to use Large Language Model in a simple and robust way (with structured generation). It is built by [.txt][.txt]{:target="_blank"}, and is already used in production by many companies.
+Outlines is a Python library that allows you to use Large Language Model in a simple and robust way (with structured generation). It is built by [.txt][.txt]{:target="_blank"}, and is already used in production by many companies.
 
 ## What models do you support?
 
-We support [Openai](reference/models/openai.md), but the true power of Outlines〰 is unleashed with Open Source models available via the [transformers](reference/models/transformers.md), [llama.cpp](reference/models/llamacpp.md), [exllama2](reference/models/exllamav2.md), [mlx-lm](reference/models/mlxlm.md) and [vllm](reference/models/vllm.md) models. If you want to build and maintain an integration with another library, [get in touch][discord].
+We support [Openai](reference/models/openai.md), but the true power of Outlines is unleashed with Open Source models available via the [transformers](reference/models/transformers.md), [llama.cpp](reference/models/llamacpp.md), [exllama2](reference/models/exllamav2.md), [mlx-lm](reference/models/mlxlm.md) and [vllm](reference/models/vllm.md) models. If you want to build and maintain an integration with another library, [get in touch][discord].
 
 ## What are the main features?
 
@@ -48,7 +48,7 @@ We support [Openai](reference/models/openai.md), but the true power of Outlines�
 ## Why use Outlines?
 
 
-Outlines〰 is built at [.txt][.txt] by engineers with decades of experience in software engineering, machine learning (Bayesian Statistics and NLP), and compilers. [.txt][.txt] is a VC-backed company fully focused on the topic of structured generation and is committed to make the community benefit from its experience.
+Outlines is built at [.txt][.txt] by engineers with decades of experience in software engineering, machine learning (Bayesian Statistics and NLP), and compilers. [.txt][.txt] is a VC-backed company fully focused on the topic of structured generation and is committed to make the community benefit from its experience.
 
 We are also open source veterans and have authored/maintained many libraries over the years: the [Aesara][aesara]{:target="_blank"} and [Pythological][pythological]{:target="_blank"} ecosystems, [Blackjax][blackjax]{:target="_blank"} and [Hy][hy]{:target="_blank"} among many others.
 .
@@ -119,33 +119,33 @@ Still not convinced, read [what people say about us](community/feedback.md). And
 
 ## Philosophy
 
-**Outlines** 〰 is a library for neural text generation. You can think of it as a
+**Outlines**  is a library for neural text generation. You can think of it as a
 more flexible replacement for the `generate` method in the
 [transformers](https://github.com/huggingface/transformers) library.
 
-**Outlines** 〰 helps developers *structure text generation* to build robust
+**Outlines**  helps developers *structure text generation* to build robust
 interfaces with external systems. It provides generation methods that
 guarantee that the output will match a regular expressions, or follow
 a JSON schema.
 
-**Outlines** 〰 provides *robust prompting primitives* that separate the prompting
+**Outlines**  provides *robust prompting primitives* that separate the prompting
 from the execution logic and lead to simple implementations of few-shot
 generations, ReAct, meta-prompting, agents, etc.
 
-**Outlines** 〰 is designed as a *library* that is meant to be compatible the
+**Outlines**  is designed as a *library* that is meant to be compatible the
 broader ecosystem, not to replace it. We use as few abstractions as possible,
 and generation can be interleaved with control flow, conditionals, custom Python
 functions and calls to other libraries.
 
-**Outlines** 〰 is *compatible with every auto-regressive model*. It only interfaces with models
+**Outlines**  is *compatible with every auto-regressive model*. It only interfaces with models
 via the next-token logits distribution.
 
 ## Outlines people
 
 Outlines would not be what it is today without a community of dedicated developers:
 
-<a href="https://github.com/outlines-dev/outlines/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=outlines-dev/outlines" />
+<a href="https://github.com/dottxt-ai/outlines/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=dottxt-ai/outlines" />
 </a>
 
 ## Acknowledgements

@@ -42,7 +42,11 @@ model = outlines.models.openai(
 | Stream            | ✅           | ❌                  | ❌   | ✅        | ?         | ✅    | ❌      |
 | **`outlines.generate`** |        |                     |      |           |           |       |         |
 | Text              | ✅           | ✅                  | ✅   | ✅        | ✅        | ✅    | ✅      |
-| Structured*       | ✅           | ✅                  | ✅   | ✅        | ✅        | ✅    | ❌      |
+| __Structured__    | ✅           | ✅                  | ✅   | ✅        | ✅        | ✅    | ✅      |
+| JSON Schema       | ✅           | ✅                  | ✅   | ✅        | ✅        | ✅    | ✅      |
+| Choice            | ✅           | ✅                  | ✅   | ✅        | ✅        | ✅    | ✅      |
+| Regex             | ✅           | ✅                  | ✅   | ✅        | ✅        | ✅    | ❌      |
+| Grammar           | ✅           | ✅                  | ✅   | ✅        | ✅        | ✅    | ❌      |
 
 
 ## Caveats

@@ -28,7 +28,7 @@ If you encounter any problem using Outlines with these libraries, take a look at
 You can install the latest version of Outlines on the repository's `main` branch:
 
 ```python
-pip install git+https://github.com/outlines-dev/outlines.git@main
+pip install git+https://github.com/dottxt-ai/outlines.git@main
 ```
 
 This can be useful, for instance, when a fix has been merged but not yet released.

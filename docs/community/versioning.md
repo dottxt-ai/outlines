@@ -15,7 +15,7 @@ Each part of the version number (`major.minor.patch`) conveys information about 
 
 ## Releases
 
-Releases along with release notes can be found on the [Outlines Releases GitHub Page](https://github.com/outlines-dev/outlines/releases).
+Releases along with release notes can be found on the [Outlines Releases GitHub Page](https://github.com/dottxt-ai/outlines/releases).
 
 ## Version Pinning Recommendations
 
