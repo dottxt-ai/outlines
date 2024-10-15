@@ -20,7 +20,7 @@
       
       
       <link rel="icon" href="../../assets/images/logo-simple.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.39">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.40">
     
     
       
@@ -2706,6 +2706,11 @@
 
 
 
+
+
+
+
+
   <div class="doc doc-children">
 
 
@@ -2728,10 +2733,15 @@
 
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
-              Bases: <code><a class="autorefs autorefs-internal" title="outlines.fsm.guide.Guide" href="#outlines.fsm.guide.Guide">Guide</a></code></p>
+              Bases: <code>Guide</code></p>
 
 
         <p>Guide to generate text that is in the language of a context-free Lark grammar.</p>
+
+
+
+
+
 
               <details class="quote">
                 <summary>Source code in <code>outlines/fsm/guide.py</code></summary>
@@ -3539,7 +3549,7 @@ token_ids
 
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
-              Bases: <code><span title="outlines_core.fsm.guide.Guide">Guide</span></code></p>
+              Bases: <code>Guide</code></p>
 
 
         <p>Base definition of a generation guide.</p>
@@ -3547,6 +3557,11 @@ token_ids
 a text generation procedure. Unlike the DFAs built from regular expressions
 guides can also emit a <code>Write</code> instructions which tells the model that it can
 append a sequence of tokens (or token word) instead of generating it.</p>
+
+
+
+
+
 
               <details class="quote">
                 <summary>Source code in <code>outlines/fsm/guide.py</code></summary>
@@ -3607,11 +3622,16 @@ append a sequence of tokens (or token word) instead of generating it.</p>
 
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
-              Bases: <code><span title="outlines_core.fsm.guide.RegexGuide">RegexGuide</span></code></p>
+              Bases: <code>RegexGuide</code></p>
 
 
         <p>Guide to generate text in the language of a regular expression.
 CoreRegexGuide with outlines cache</p>
+
+
+
+
+
 
               <details class="quote">
                 <summary>Source code in <code>outlines/fsm/guide.py</code></summary>
@@ -3680,10 +3700,15 @@ CoreRegexGuide with outlines cache</p>
 
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
-              Bases: <code><a class="autorefs autorefs-internal" title="outlines.fsm.guide.Guide" href="#outlines.fsm.guide.Guide">Guide</a></code></p>
+              Bases: <code>Guide</code></p>
 
 
         <p>Guide to generate tokens until the EOS token has been generated.</p>
+
+
+
+
+
 
               <details class="quote">
                 <summary>Source code in <code>outlines/fsm/guide.py</code></summary>
