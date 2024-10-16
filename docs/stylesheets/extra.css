@@ -9,7 +9,7 @@
   --md-code-fg-color: #FFFFFF;
   --md-text-font-family: "Inter";
   --md-code-font: "Source Code Pro Custom";
-  --md-typeset-a-color: #d53135; /*this is the brand color*/
+  --md-typeset-a-color: #d16626; /*this is the brand color*/
 
   /* don't inherit white fg color for mermaid diagrams from --md-code-fg-color */
   --md-mermaid-label-fg-color: #000000;
