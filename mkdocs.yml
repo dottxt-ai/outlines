@@ -116,6 +116,7 @@ nav:
       - Perspective-taking prompting: cookbook/simtom.md
       - Question-answering with citations: cookbook/qa-with-citations.md
       - Knowledge Graph Extraction: cookbook/knowledge_graph_extraction.md
+      - Structured Generation Workflow: cookbook/structured_generation_workflow.md
       - Chain of Thought (CoT): cookbook/chain_of_thought.md
       - ReAct Agent: cookbook/react_agent.md
       - Run on the cloud:
@@ -139,6 +140,7 @@ nav:
             - Custom FSM operations: reference/generation/custom_fsm_ops.md
     - Utilities:
         - Serve with vLLM: reference/serve/vllm.md
+        - Serve with LM Studio: reference/serve/lmstudio.md
         - Custom types: reference/generation/types.md
         - Prompt templating: reference/prompting.md
         - Outlines functions: reference/functions.md
