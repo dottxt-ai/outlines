@@ -12,3 +12,4 @@ This part of the documentation provides a few cookbooks that you can browse to g
 - [Knowledge Graph Generation](knowledge_graph_extraction.md): Generate a Knowledge Graph from unstructured text using JSON-structured generation.
 - [Chain Of Thought (CoT)](chain_of_thought.md): Generate a series of intermediate reasoning steps using regex-structured generation.
 - [ReAct Agent](react_agent.md): Build an agent with open weights models using regex-structured generation.
+- [Vision-Language Models](atomic_caption.md): Use Outlines with vision-language models for tasks like image captioning and visual reasoning.
