@@ -119,6 +119,7 @@ nav:
       - Structured Generation Workflow: cookbook/structured_generation_workflow.md
       - Chain of Thought (CoT): cookbook/chain_of_thought.md
       - ReAct Agent: cookbook/react_agent.md
+      - Vision-Language Models: cookbook/atomic_caption.md
       - Run on the cloud:
           - BentoML: cookbook/deploy-using-bentoml.md
           - Cerebrium: cookbook/deploy-using-cerebrium.md
