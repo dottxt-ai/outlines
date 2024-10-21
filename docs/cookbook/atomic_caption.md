@@ -1,5 +1,5 @@
 # Vision-Language Models with Outlines
-This guide demonstrates how to use Outlines with vision-language models, leveraging the new transformers_vision module. Vision-language models can process both text and images, allowing for tasks like image captioning, visual question answering, and more. 
+This guide demonstrates how to use Outlines with vision-language models, leveraging the new transformers_vision module. Vision-language models can process both text and images, allowing for tasks like image captioning, visual question answering, and more.
 
 We will be using the Pixtral-12B model from Mistral to take advantage of some of its visual reasoning capabilities and a workflow to generate a multistage atomic caption.
 
@@ -11,7 +11,7 @@ pip install outlines transformers torch
 ```
 
 ### Initializing the Model
-We'll use the transformers_vision function to initialize our vision-language model. This function is specifically designed to handle models that can process both text and image inputs. Today we'll be using the Pixtral model with the llama tokenizer. (Currently the mistral tokenizer is pending support). 
+We'll use the transformers_vision function to initialize our vision-language model. This function is specifically designed to handle models that can process both text and image inputs. Today we'll be using the Pixtral model with the llama tokenizer. (Currently the mistral tokenizer is pending support).
 
 ```python
 import torch
@@ -135,7 +135,7 @@ pixtral_instruction = """
 """.strip()
 ```
 
-This prompt provides detailed instructions to the model on how to generate comprehensive tag lists, captions, and dense captions for image analysis. Because of the ordering of the instructions the original tag generation serves as a sort of visual grounding for the captioning task, reducing the amount of manual post processing required. 
+This prompt provides detailed instructions to the model on how to generate comprehensive tag lists, captions, and dense captions for image analysis. Because of the ordering of the instructions the original tag generation serves as a sort of visual grounding for the captioning task, reducing the amount of manual post processing required.
 
 ### Generating Structured Output
 Now we can use our model to generate structured output based on an input image:
