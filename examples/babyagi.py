@@ -10,7 +10,7 @@ from typing import Deque, List
 import outlines
 import outlines.models as models
 
-model = models.openai("gpt-3.5-turbo")
+model = models.openai("gpt-4o-mini")
 complete = outlines.generate.text(model)
 
 

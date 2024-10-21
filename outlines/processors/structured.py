@@ -70,7 +70,7 @@ class GuideLogitsProcessor(OutlinesLogitsProcessor):
         self._seq_start_idx = None
 
     def process_logits(
-        self, input_ids: List[List[int]], logits: torch.Tensor
+        self, input_ids: torch.LongTensor, logits: torch.FloatTensor
     ) -> torch.Tensor:
         """Use the Guide to bias the logits before sampling the next token.
 
@@ -93,21 +93,35 @@ class GuideLogitsProcessor(OutlinesLogitsProcessor):
 
         for seq_ids in input_ids:
             gen_ids = seq_ids[self._seq_start_idx :]
-            curr_state_key = hash(tuple(gen_ids))
+            curr_state_key = hash(tuple(gen_ids.tolist()))
 
             if curr_state_key not in self._guide_states:
-                prev_state = self._guide_states[hash(tuple(gen_ids[:-1]))]
-                curr_state = self.guide.get_next_state(prev_state, gen_ids[-1])
+                prev_state = self._guide_states[hash(tuple(gen_ids[:-1].tolist()))]
+                curr_state = self.guide.get_next_state(prev_state, gen_ids[-1].item())
                 self._guide_states[curr_state_key] = curr_state
 
             sequence_states.append(self._guide_states[curr_state_key])
 
-        mask = torch.full_like(logits, -math.inf)
-        for i, guide_state in enumerate(sequence_states):
-            allowed_tokens = self.guide.get_next_instruction(guide_state).tokens
-            mask[i, allowed_tokens] = logits[i, allowed_tokens]
+        mask = torch.ones_like(logits, dtype=torch.bool)
 
-        return mask
+        allowed_tokens_batch = []
+        batch_indices = []
+        for i, guide_state in enumerate(sequence_states):
+            allowed_tokens = self.guide.get_next_instruction(guide_state).tokens.to(
+                mask.device, non_blocking=True
+            )
+            allowed_tokens_batch.append(allowed_tokens)
+            batch_indices.append(
+                torch.full_like(allowed_tokens, i)
+            )  # Store batch index for each allowed token
+
+        allowed_tokens_concat = torch.cat(allowed_tokens_batch)
+        batch_indices_concat = torch.cat(batch_indices)
+
+        mask[batch_indices_concat, allowed_tokens_concat] = False
+        logits.masked_fill_(mask, float("-inf"))
+
+        return logits
 
     def copy(self) -> "GuideLogitsProcessor":
         """Return a copy of the logits processor."""
@@ -135,7 +149,7 @@ class RegexLogitsProcessor(GuideLogitsProcessor):
         tokenizer
             An Outlines tokenizer
         """
-        guide = RegexGuide(regex_string, tokenizer)
+        guide = RegexGuide.from_regex(regex_string, tokenizer)
         super().__init__(tokenizer=tokenizer, guide=guide)
 
 
@@ -201,7 +215,7 @@ class CFGLogitsProcessor(GuideLogitsProcessor):
         super().__init__(tokenizer=tokenizer, guide=cfg_guide)
 
     def process_logits(
-        self, input_ids: List[List[int]], logits: torch.Tensor
+        self, input_ids: torch.LongTensor, logits: torch.Tensor
     ) -> torch.Tensor:
         """Same behavior as GuideLogitsProcessor, but uses rejection sampling"""
         if self._seq_start_idx is None:
@@ -211,11 +225,11 @@ class CFGLogitsProcessor(GuideLogitsProcessor):
 
         for seq_ids in input_ids:
             gen_ids = seq_ids[self._seq_start_idx :]
-            curr_state_key = hash(tuple(gen_ids))
+            curr_state_key = hash(tuple(gen_ids.tolist()))
 
             if curr_state_key not in self._guide_states:
-                prev_state = self._guide_states[hash(tuple(gen_ids[:-1]))]
-                curr_state = self.guide.get_next_state(prev_state, gen_ids[-1])
+                prev_state = self._guide_states[hash(tuple(gen_ids[:-1].tolist()))]
+                curr_state = self.guide.get_next_state(prev_state, gen_ids[-1].item())
                 self._guide_states[curr_state_key] = curr_state
 
             sequence_states.append(self._guide_states[curr_state_key])

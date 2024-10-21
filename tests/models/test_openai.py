@@ -1,17 +1,14 @@
 import importlib
+import json
+from contextlib import contextmanager
 from unittest import mock
 from unittest.mock import MagicMock
 
 import pytest
 from openai import AsyncOpenAI
 
-from outlines.models.openai import (
-    OpenAI,
-    OpenAIConfig,
-    build_optimistic_mask,
-    find_longest_intersection,
-    find_response_choices_intersection,
-)
+from outlines import generate
+from outlines.models.openai import OpenAI, OpenAIConfig
 
 
 def module_patch(path):
@@ -62,44 +59,67 @@ def test_openai_call():
         assert mocked_generate_chat_arg_config.n == 3
 
 
-@pytest.mark.parametrize(
-    "response,choice,expected_intersection,expected_choices_left",
-    (
-        ([1, 2, 3, 4], [[5, 6]], [], [[5, 6]]),
-        ([1, 2, 3, 4], [[5, 6], [7, 8]], [], [[5, 6], [7, 8]]),
-        ([1, 2, 3, 4], [[1, 2], [7, 8]], [1, 2], [[]]),
-        ([1, 2], [[1, 2, 3, 4], [1, 2]], [1, 2], [[3, 4], []]),
-        ([1, 2, 3], [[1, 2, 3, 4], [1, 2]], [1, 2, 3], [[4]]),
-    ),
-)
-def test_find_response_choices_intersection(
-    response, choice, expected_intersection, expected_choices_left
-):
-    intersection, choices_left = find_response_choices_intersection(response, choice)
-    assert intersection == expected_intersection
-    assert choices_left == expected_choices_left
+@contextmanager
+def patched_openai(completion, **oai_config):
+    """Create a patched openai whose chat completions always returns `completion`"""
+    with module_patch("outlines.models.openai.generate_chat") as mocked_generate_chat:
+        mocked_generate_chat.return_value = completion, 1, 2
+        async_client = MagicMock(spec=AsyncOpenAI, api_key="key")
+        model = OpenAI(
+            async_client,
+            OpenAIConfig(max_tokens=10, temperature=0.5, n=2, stop=["."]),
+        )
+        yield model
 
 
-@pytest.mark.parametrize(
-    "response,choice,expected_prefix",
-    (
-        ([1, 2, 3], [1, 2, 3, 4], [1, 2, 3]),
-        ([1, 2, 3], [1, 2, 3], [1, 2, 3]),
-        ([4, 5], [1, 2, 3], []),
-    ),
-)
-def test_find_longest_common_prefix(response, choice, expected_prefix):
-    prefix = find_longest_intersection(response, choice)
-    assert prefix == expected_prefix
+def test_openai_choice_call():
+    with patched_openai(completion='{"result": "foo"}') as model:
+        generator = generate.choice(model, ["foo", "bar"])
+        assert generator("hi") == "foo"
 
 
-@pytest.mark.parametrize(
-    "transposed,mask_size,expected_mask",
-    (
-        ([{1, 2}, {3, 4}], 3, {1: 100, 2: 100, 3: 100}),
-        ([{1, 2}, {3, 4}], 4, {1: 100, 2: 100, 3: 100, 4: 100}),
-    ),
-)
-def test_build_optimistic_mask(transposed, mask_size, expected_mask):
-    mask = build_optimistic_mask(transposed, mask_size)
-    assert mask == expected_mask
+def test_openai_choice_call_invalid_server_response():
+    with patched_openai(completion="not actual json") as model:
+        generator = generate.choice(model, ["foo", "bar"])
+        with pytest.raises(json.decoder.JSONDecodeError):
+            generator("hi")
+
+
+def test_openai_json_call_pydantic():
+    from pydantic import BaseModel, ConfigDict, ValidationError
+
+    class Person(BaseModel):
+        model_config = ConfigDict(extra="forbid")  # required for openai
+        first_name: str
+        last_name: str
+        age: int
+
+    completion = '{"first_name": "Usain", "last_name": "Bolt", "age": 38}'
+
+    # assert success for valid response
+    with patched_openai(completion=completion) as model:
+        generator = generate.json(model, Person)
+        assert generator("fastest person") == Person.parse_raw(completion)
+
+    # assert fail for non-json response
+    with patched_openai(completion="usain bolt") as model:
+        generator = generate.json(model, Person)
+        with pytest.raises(ValidationError):
+            assert generator("fastest person")
+
+
+def test_openai_json_call_str():
+    person_schema = '{"additionalProperties": false, "properties": {"first_name": {"title": "First Name", "type": "string"}, "last_name": {"title": "Last Name", "type": "string"}, "age": {"title": "Age", "type": "integer"}}, "required": ["first_name", "last_name", "age"], "title": "Person", "type": "object"}'
+
+    output = {"first_name": "Usain", "last_name": "Bolt", "age": 38}
+
+    # assert success for valid response
+    with patched_openai(completion=json.dumps(output)) as model:
+        generator = generate.json(model, person_schema)
+        assert generator("fastest person") == output
+
+    # assert fail for non-json response
+    with patched_openai(completion="usain bolt") as model:
+        generator = generate.json(model, person_schema)
+        with pytest.raises(json.decoder.JSONDecodeError):
+            assert generator("fastest person")

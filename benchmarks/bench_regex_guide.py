@@ -1,7 +1,7 @@
 from outlines.caching import cache_disabled
 from outlines.fsm.guide import RegexGuide
 
-from .common import ensure_numba_compiled, setup_tokenizer
+from .common import setup_tokenizer
 
 regex_samples = {
     "email": r"[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?",
@@ -21,12 +21,11 @@ class RegexGuideBenchmark:
 
     def setup(self, pattern_name):
         self.tokenizer = setup_tokenizer()
-        ensure_numba_compiled(self.tokenizer)
         self.pattern = regex_samples[pattern_name]
 
     @cache_disabled()
     def time_regex_to_guide(self, pattern_name):
-        RegexGuide(self.pattern, self.tokenizer)
+        RegexGuide.from_regex(self.pattern, self.tokenizer)
 
 
 class MemoryRegexGuideBenchmark:
@@ -34,9 +33,8 @@ class MemoryRegexGuideBenchmark:
 
     def setup(self, pattern_name):
         self.tokenizer = setup_tokenizer()
-        ensure_numba_compiled(self.tokenizer)
         self.pattern = regex_samples[pattern_name]
 
     @cache_disabled()
     def peakmem_regex_to_guide(self, pattern_name):
-        RegexGuide(self.pattern, self.tokenizer)
+        RegexGuide.from_regex(self.pattern, self.tokenizer)

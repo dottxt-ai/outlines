@@ -55,7 +55,7 @@ def few_shots(question, examples):
     """
 
 
-model = models.openai("gpt-3.5-turbo")
+model = models.openai("gpt-4o-mini")
 generator = outlines.generate.text(model)
 prompt = few_shots(question, examples)
 answers = generator(prompt, samples=10)
