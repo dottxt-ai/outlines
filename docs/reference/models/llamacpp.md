@@ -47,7 +47,7 @@ model = models.llamacpp(
 | `n_gpu_layers`| `int` | Number of layers to offload to GPU. If -1, all layers are offloaded | `0` |
 | `split_mode` | `int` | How to split the model across GPUs. `1` for layer-wise split, `2` for row-wise split | `1` |
 | `main_gpu` | `int` | Main GPU | `0` |
-| `tensor_split` | `Optional[List[float]]` | How split tensors should be distributed accross GPUs. If `None` the model is not split. | `None` |
+| `tensor_split` | `Optional[List[float]]` | How split tensors should be distributed across GPUs. If `None` the model is not split. | `None` |
 | `n_ctx` | `int` | Text context. Inference from the model if set to `0` | `0` |
 | `n_threads` | `Optional[int]` | Number of threads to use for generation. All available threads if set to `None`.| `None` |
 | `verbose` | `bool` | Print verbose outputs to `stderr` | `False` |
