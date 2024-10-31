@@ -1,8 +1,9 @@
 """Tests for the `vllm` module."""
 
-from outlines.models.vllm import adapt_tokenizer, convert_token_to_string
-from transformers import AutoTokenizer, SPIECE_UNDERLINE
 import pytest
+from transformers import AutoTokenizer, SPIECE_UNDERLINE
+
+from outlines.models.vllm import adapt_tokenizer, convert_token_to_string
 
 TEST_MODEL = "hf-internal-testing/tiny-random-GPTJForCausalLM"
 
