@@ -1,7 +1,7 @@
 """Tests for the `vllm` module."""
 
 import pytest
-from transformers import AutoTokenizer, SPIECE_UNDERLINE
+from transformers import SPIECE_UNDERLINE, AutoTokenizer
 
 from outlines.models.vllm import adapt_tokenizer, convert_token_to_string
 
