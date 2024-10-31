@@ -79,6 +79,10 @@ Table of ContentsNVIDIA Corporation and SubsidiariesConsolidated Statements of I
 
 The markdown tables extracted from the earnings reports can vary widely in row names, column counts, data types, etc. The advantage of LLMs here is that we can define the data we want in terms of the data types, and the LLM will output the data in the desired format.
 
+For comparison, here is how the income statement looks in the original HTML:
+
+![Nvidia income statement](./images/nvidia-income.png)
+
 ## Define the data we want
 
 Outlines is often used for JSON output, but it can also be used for CSV. We know the columns we want to extract, and we know the data types of the columns. Year for example is always a four-digit number, revenue is a number with commas, and so on.
@@ -272,4 +276,3 @@ print(df)
 1  2023    26974              4224        4368
 2  2022    26914             10041        9752
 ```
-
