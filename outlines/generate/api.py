@@ -500,6 +500,8 @@ class SequenceGeneratorAdapter:
             max_tokens, stop_at, seed
         )
 
+        removed_chars_from_prompts = self.logits_processor.get_removed_chars_from_prompts(prompts)
+
         completions = self.model.generate(
             prompts,
             generation_params,
@@ -508,7 +510,13 @@ class SequenceGeneratorAdapter:
             **model_specific_params,
         )
 
-        return format(completions)
+        trimmed_completions = [
+            completion[len(removed_chars):]
+            for completion, removed_chars in zip(completions, removed_chars_from_prompts)
+        ]
+
+        return format(trimmed_completions)
+
 
     def stream(
         self,

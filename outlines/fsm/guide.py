@@ -182,9 +182,37 @@ class RegexGuide(Guide):
             self.empty_token_ids,
             fsm_finals,
         ) = create_states_mapping(regex_string, tokenizer)
+
+        # token alignment
+        crossing_tokens = find_crossing_tokens(self.states_to_token_maps, tokenizer.vocabulary)
+        highest_state = max(
+            max(self.states_to_token_maps.keys()),
+            max(max(items.values()) for items in self.states_to_token_maps.values()),
+        )
+        prefixes_map = create_prefixes_map({x[1] for x in crossing_tokens}, highest_state+1, tokenizer.vocabulary)
+        for item in crossing_tokens:
+            prefix_map = prefixes_map[item[1]]
+            self.states_to_token_maps.update(prefix_map)
+            prefix_map_starting_state = min(prefix_map.keys())
+            self.states_to_token_maps[prefix_map_starting_state][item[0]] = item[3]
+        self.crossing_tokens_prefixes_map = {key: min(value.keys()) for key, value in prefixes_map.items()}
+
         self.eos_token_id = tokenizer.eos_token_id
         self.final_states = fsm_finals | {-1}
         self._cache_state_to_token_tensor()
+
+    def get_starting_states(self, prompts: List[str]) -> List[Tuple[int, str]]:
+        """Get the starting state and the character sequence that should be removed from each prompt"""
+        results = []
+        for prompt in prompts:
+            longest_prefix = ""
+            target_state = self.initial_state
+            for prefix, starting_state in self.crossing_tokens_prefixes_map.items():
+                if prompt.endswith(prefix) and len(prefix) > len(longest_prefix):
+                    longest_prefix = prefix
+                    target_state = starting_state
+            results.append((target_state, longest_prefix))
+        return results
 
     def get_next_instruction(self, state: int) -> Instruction:
         """Return the next instruction for guided generation.
@@ -475,3 +503,78 @@ class CFGGuide(Guide):
     def copy(self) -> "CFGGuide":
         """Create a copy of the FSM."""
         return CFGGuide(self.cfg_string, self.tokenizer)
+
+
+### token alignment functions ###
+
+def find_crossing_tokens(states_to_token_maps: dict, vocabulary: dict) -> List[Tuple[int, str, str, int]]:
+    """Find the crossing tokens for a given states_to_token_maps.
+    Crossing tokens are tokens that can be decomposed into a prefix and a postfix,
+    such that the postfix is a valid sequence of characters for the states_to_token_maps.
+    Returns a list of tuples, where each tuple contains the token id, the prefix, the postfix and the target state.
+    """
+
+    def get_target_state(vocabulary: dict, states_to_token_map: dict, char_seq: str):
+        """Get the target state in the states_to_token_map for a sequence of characters.
+        Return None if the sequence is not valid.
+        """
+        state = 0
+        for char in char_seq:
+            char_token = vocabulary.get(char)
+            try:
+                state = states_to_token_map[state][char_token]
+            except KeyError:
+                return None
+        return state
+
+    crossing_tokens = []
+    invalid_postfixes = set()
+    valid_postfixes = {}
+
+    for char_seq, token_id in vocabulary.items():
+        if len(char_seq) == 1:
+            continue
+        # we want to look at all possible "crossing positions" of the token (between char 1 and 2, 2 and 3, etc)
+        for i in range(1, len(char_seq)):
+            prefix = char_seq[:i]
+            postfix = char_seq[i:]
+            if postfix in invalid_postfixes:
+                continue
+            if postfix in valid_postfixes.keys():
+                crossing_tokens.append([token_id, prefix, postfix, valid_postfixes[postfix]])
+                continue
+            target_state = get_target_state(vocabulary, states_to_token_maps, postfix)
+            if target_state is None:
+                invalid_postfixes.add(postfix)
+            else:
+                valid_postfixes[postfix] = target_state
+                crossing_tokens.append([token_id, prefix, postfix, target_state])
+
+    return crossing_tokens
+
+
+def create_prefixes_map(prefixes: List[str], starting_state: int, vocabulary: dict) -> dict:
+    """Create a state to token map for each prefix.
+    The starting state is the first available state number in the existing FSM.
+    Return a dictionary where each key is a prefix and the value is the associated states_to_token_map.
+    """
+
+    def get_states_to_token_map(char_seq: str, starting_state: int, states_to_token_map: dict, vocabulary: dict):
+        """Create the states_to_token_map representing all ways of generating the sequence of characters."""
+        for i in range(1, len(char_seq) + 1):
+            if char_seq[:i] in vocabulary.keys():
+                if starting_state not in states_to_token_map:
+                    states_to_token_map[starting_state] = {}
+                if i == len(char_seq):
+                    states_to_token_map[starting_state][vocabulary[char_seq[:i]]] = 0
+                else:
+                    states_to_token_map[starting_state][vocabulary[char_seq[:i]]] = starting_state + i
+                    get_states_to_token_map(char_seq[i:], starting_state + i, states_to_token_map, vocabulary)
+        return states_to_token_map
+
+    prefixes_map = {}
+    for prefix in prefixes:
+        prefixes_map[prefix] = get_states_to_token_map(prefix, starting_state, {}, vocabulary)
+        starting_state += len(prefix)
+
+    return prefixes_map

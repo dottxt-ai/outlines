@@ -61,10 +61,20 @@ class FSMLogitsProcessor(OutlinesLogitsProcessor):
             The finite state machine which is used to bias the logits.
         """
         self.tokenizer = tokenizer
-        self._fsm_states: Dict[int, int] = {}
+        self._fsm_states: List[Dict[int, int]] = []
         self.fsm: Guide = fsm
         self._is_first_token = True
         self._seq_start_idx: Optional[int] = None
+        self.default_starting_state = 0
+        self.token_alignment_starting_states = []
+
+    def get_removed_chars_from_prompts(self, prompts: List[str]) -> List[str]:
+        """For each prompt, get the postfix to be removed and the resulting starting state.
+        Update the token_alignment_starting_states attribute and return the postfixes to be removed.
+        """
+        starting_states_and_prefixes = self.fsm.get_starting_states(prompts)
+        self.token_alignment_starting_states = [starting_state for starting_state, _ in starting_states_and_prefixes]
+        return [prefix for _, prefix in starting_states_and_prefixes]
 
     def process_logits(
         self, input_ids: List[List[int]], logits: torch.Tensor
@@ -89,18 +99,18 @@ class FSMLogitsProcessor(OutlinesLogitsProcessor):
             self._is_first_token = False
             self._seq_start_idx = len(input_ids[0])
 
-            self._fsm_states = {hash(tuple([])): 0}
-            sequence_states = [0] * len(input_ids)
+            sequence_states = self.token_alignment_starting_states if self.token_alignment_starting_states else [self.default_starting_state] * len(input_ids)
+            self._fsm_states = [{hash(tuple([])): sequence_states[i]} for i in range(len(input_ids))]
 
         else:
-            for seq_ids in input_ids:
+            for i, seq_ids in enumerate(input_ids):
                 prev_state_key = hash(tuple(seq_ids[self._seq_start_idx : -1]))
-                prev_state = self._fsm_states[prev_state_key]
+                prev_state = self._fsm_states[i][prev_state_key]
 
                 curr_state_key = hash(tuple(seq_ids[self._seq_start_idx :]))
                 curr_state = self.fsm.get_next_state(prev_state, seq_ids[-1])
 
-                self._fsm_states[curr_state_key] = curr_state
+                self._fsm_states[i][curr_state_key] = curr_state
                 sequence_states.append(curr_state)
 
         mask = torch.full_like(logits, -math.inf)
