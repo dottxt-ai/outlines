@@ -1,4 +1,9 @@
+from dataclasses import dataclass
 from enum import Enum
+import json
+from typing import Union
+
+from pydantic import BaseModel
 
 from . import airports, countries, locale
 from outlines.types.dsl import (
@@ -14,6 +19,7 @@ from outlines.types.dsl import (
     one_or_more,
     zero_or_more,
 )
+
 
 # Python types
 integer = Regex(r"[+-]?(0|[1-9][0-9]*)")
@@ -49,3 +55,27 @@ email = Regex(
 isbn = Regex(
     r"(?:ISBN(?:-1[03])?:? )?(?=[0-9X]{10}$|(?=(?:[0-9]+[- ]){3})[- 0-9X]{13}$|97[89][0-9]{10}$|(?=(?:[0-9]+[- ]){4})[- 0-9]{17}$)(?:97[89][- ]?)?[0-9]{1,5}[- ]?[0-9]+[- ]?[0-9]+[- ]?[0-9X]"
 )
+
+
+@dataclass
+class Json:
+    """Represents a JSON object.
+
+    The structure of JSON object can be defined using a JSON Schema
+    specification represented as a string or a dictionary, or a Pydantic
+    BaseModel.
+
+    Attributes
+    ----------
+    definition
+        The object used to define the structure of the JSON object.
+
+    """
+
+    def __init__(self, definition: Union[str, dict, BaseModel]):
+        if isinstance(definition, type(BaseModel)):
+            definition = definition.model_json_schema()
+        if isinstance(definition, str):
+            definition = json.loads(definition)
+
+        self.definition = definition
