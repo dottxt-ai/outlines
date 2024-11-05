@@ -8,7 +8,11 @@ import textwrap
 from dataclasses import dataclass
 from io import BytesIO
 from pathlib import Path
+<<<<<<< HEAD
 from typing import Any, Callable, Dict, Optional, Type, cast
+=======
+from typing import Any, Callable, Dict, List, Optional, Type, cast
+>>>>>>> 8797d19 (Add `Vision` type for prompt + image input to vision models)
 import warnings
 
 import jinja2
