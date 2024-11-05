@@ -35,6 +35,7 @@ dependencies = [
    "referencing",
    "jsonschema",
    "requests",
+   "pillow",
    "tqdm",
    "typing_extensions",
    "pycountry",
