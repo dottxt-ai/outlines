@@ -7,12 +7,12 @@ import re
 import textwrap
 from dataclasses import dataclass
 from io import BytesIO
+from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Type, cast
 import warnings
 
 import jinja2
 from jinja2 import Environment, StrictUndefined
-from pathlib import Path
 from PIL import Image
 import pydantic
 from pydantic import BaseModel
