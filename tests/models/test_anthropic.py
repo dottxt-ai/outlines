@@ -51,7 +51,7 @@ def test_anthropic_simple_call():
 @pytest.mark.api_call
 def test_anthropic_direct_call():
     model = Anthropic(MODEL_NAME)
-    result = model("Respond with one word. Not more.")
+    result = model("Respond with one word. Not more.", max_tokens=1024)
     assert isinstance(result, str)
 
 
