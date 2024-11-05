@@ -73,6 +73,8 @@ class Json:
     """
 
     def __init__(self, definition: Union[str, dict, BaseModel]):
+        self.original_definition = definition
+
         if isinstance(definition, type(BaseModel)):
             definition = definition.model_json_schema()
         if isinstance(definition, str):
