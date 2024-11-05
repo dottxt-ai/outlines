@@ -1,3 +1,4 @@
+import base64
 import functools
 import inspect
 import json
@@ -5,12 +6,38 @@ import os
 import re
 import textwrap
 from dataclasses import dataclass
+from io import BytesIO
 from pathlib import Path
 from typing import Any, Callable, Dict, Optional, Type, cast
 import warnings
 
 import jinja2
+from jinja2 import Environment, StrictUndefined
+from PIL import Image
 import pydantic
+from pydantic import BaseModel
+
+
+@dataclass
+class Vision:
+    """Represents the input for a vision model."""
+
+    prompt: str
+    image: Image.Image
+
+    def __post_init__(self):
+        image = self.image
+        buffer = BytesIO()
+        image.save(buffer, format=image.format)
+        self.image_str = base64.b64encode(buffer.getvalue()).decode("utf-8")
+
+        image_format = image.format
+        if image_format is not None:
+            self.image_format = f"image/{image_format.lower()}"
+        else:
+            raise TypeError(
+                "Could not read the format of the image passed to the model."
+            )
 
 
 @dataclass
