@@ -104,4 +104,4 @@ def test_openai_simple_json_schema():
 
     result = model.generate("foo?", Json(schema))
     assert isinstance(result, str)
-    json.loads(result)
+    assert "bar" in json.loads(result)
