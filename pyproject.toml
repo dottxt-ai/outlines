@@ -35,6 +35,7 @@ dependencies = [
    "referencing",
    "jsonschema",
    "requests",
+   "pillow",
    "tqdm",
    "datasets",
    "typing_extensions",
