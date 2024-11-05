@@ -8,6 +8,7 @@ codebase.
 
 from typing import Union
 
+from .anthropic import Anthropic
 from .exllamav2 import ExLlamaV2Model, exl2
 from .llamacpp import LlamaCpp, llamacpp
 from .mlxlm import MLXLM, mlxlm
