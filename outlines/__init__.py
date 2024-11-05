@@ -16,7 +16,7 @@ __all__ = [
     "get_cache",
     "Function",
     "prompt",
-    "Prompt",
+    "Template",
     "vectorize",
     "grammars",
 ]
