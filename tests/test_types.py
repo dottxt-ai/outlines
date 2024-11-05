@@ -7,6 +7,49 @@ from outlines import types
 from outlines.fsm.types import python_types_to_regex
 
 
+def test_type_json_error():
+    with pytest.raises(TypeError, match="The Json definition"):
+        a = types.Json(0)
+        a.to_json_schema()
+
+    with pytest.raises(SchemaError):
+        a = types.Json({"type": "object", "properties": {"foo": "bar"}})
+        a.to_json_schema()
+
+    with pytest.raises(SchemaError):
+        a = types.Json('{"type": "object", "properties": {"foo": "bar"}}')
+        a.to_json_schema()
+
+
+def test_type_json():
+    class Foo(BaseModel):
+        bar: int
+
+    json_schema_dict = Foo.model_json_schema()
+    json_schema_str = json.dumps(json_schema_dict)
+
+    json_type = types.Json(Foo)
+    assert json_type.to_json_schema() == json_schema_dict
+
+    json_type = types.Json(json_schema_dict)
+    assert json_type.to_json_schema() == json_schema_dict
+
+    json_type = types.Json(json_schema_str)
+    assert json_type.to_json_schema() == json_schema_dict
+
+    class Foo(TypedDict):
+        bar: int
+
+    json_type = types.Json(Foo)
+    assert json_type.to_json_schema() == json_schema_dict
+
+
+def test_type_choice():
+    choices = ["a", "b"]
+    choice_type = types.Choice(choices)
+    assert choice_type.definition.a.value == "a"
+
+
 @pytest.mark.parametrize(
     "custom_type,test_string,should_match",
     [
