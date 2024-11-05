@@ -1,6 +1,6 @@
 from dataclasses import dataclass
-from enum import Enum
 import json
+from enum import Enum, EnumMeta
 from typing import Union
 
 from pydantic import BaseModel
@@ -79,3 +79,14 @@ class Json:
             definition = json.loads(definition)
 
         self.definition = definition
+
+
+@dataclass
+class Choice:
+    """Represents a multiple choice"""
+
+    definition: Union[EnumMeta, list[str]]
+
+    def __post_init__(self):
+        if isinstance(self.definition, list):
+            self.definition = Enum("Definition", [(x, x) for x in self.definition])
