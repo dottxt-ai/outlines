@@ -8,6 +8,7 @@
 [![Contributors][contributors-badge]][contributors]
 [![Downloads][downloads-badge]][pypistats]
 [![Discord][discord-badge]][discord]
+[![Gurubase](https://img.shields.io/badge/Gurubase-Ask%20Outlines%20Guru-006BFF)](https://gurubase.io/g/outlines)
 
 
 *Robust (structured) text generation.*
