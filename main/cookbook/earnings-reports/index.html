@@ -13,10 +13,10 @@
       
       
       
-        <link rel="prev" href="../knowledge_graph_extraction/">
+        <link rel="prev" href="../atomic_caption/">
       
       
-        <link rel="next" href="../chain_of_thought/">
+        <link rel="next" href="../deploy-using-bentoml/">
       
       
       <link rel="icon" href="../../assets/images/logo-simple.png">
@@ -24,7 +24,7 @@
     
     
       
-        <title>Structured Generation Workflow - Outlines</title>
+        <title>Earnings reports to CSV - Outlines</title>
       
     
     
@@ -75,11 +75,11 @@
       
         <meta  property="og:type"  content="website" >
       
-        <meta  property="og:title"  content="Structured Generation Workflow - Outlines" >
+        <meta  property="og:title"  content="Earnings reports to CSV - Outlines" >
       
         <meta  property="og:description"  content="Structured text generation with LLMs" >
       
-        <meta  property="og:image"  content="./assets/images/social/cookbook/structured_generation_workflow.png" >
+        <meta  property="og:image"  content="./assets/images/social/cookbook/earnings-reports.png" >
       
         <meta  property="og:image:type"  content="image/png" >
       
@@ -91,11 +91,11 @@
       
         <meta  name="twitter:card"  content="summary_large_image" >
       
-        <meta  name="twitter:title"  content="Structured Generation Workflow - Outlines" >
+        <meta  name="twitter:title"  content="Earnings reports to CSV - Outlines" >
       
         <meta  name="twitter:description"  content="Structured text generation with LLMs" >
       
-        <meta  name="twitter:image"  content="./assets/images/social/cookbook/structured_generation_workflow.png" >
+        <meta  name="twitter:image"  content="./assets/images/social/cookbook/earnings-reports.png" >
       
     
     
@@ -118,7 +118,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#structured-generation-workflow-generating-synthetic-phone-numbers" class="md-skip">
+        <a href="#extracting-financial-data-from-earnings-reports" class="md-skip">
           Skip to content
         </a>
       
@@ -155,7 +155,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Structured Generation Workflow
+              Earnings reports to CSV
             
           </span>
         </div>
@@ -787,30 +787,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  <span class="md-ellipsis">
-    Structured Generation Workflow
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../structured_generation_workflow/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -819,113 +799,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#unstructured-approach" class="md-nav__link">
-    <span class="md-ellipsis">
-      Unstructured approach
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#the-structured-generation-workflow" class="md-nav__link">
-    <span class="md-ellipsis">
-      The Structured Generation Workflow
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="The Structured Generation Workflow">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#real-example" class="md-nav__link">
-    <span class="md-ellipsis">
-      Real example
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#draft-structure" class="md-nav__link">
-    <span class="md-ellipsis">
-      Draft Structure
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#validate-by-matching-examples" class="md-nav__link">
-    <span class="md-ellipsis">
-      Validate by matching examples
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#generate-structure" class="md-nav__link">
-    <span class="md-ellipsis">
-      Generate Structure
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#inspect-output" class="md-nav__link">
-    <span class="md-ellipsis">
-      Inspect output
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#iteration" class="md-nav__link">
-    <span class="md-ellipsis">
-      Iteration
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#reiteration-with-debugging" class="md-nav__link">
-    <span class="md-ellipsis">
-      Reiteration - with debugging
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -998,10 +871,30 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../earnings-reports/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Earnings reports to CSV
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   <span class="md-ellipsis">
@@ -1010,6 +903,89 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      Setup
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#load-the-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      Load the model
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#set-up-the-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      Set up the data
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#define-the-data-we-want" class="md-nav__link">
+    <span class="md-ellipsis">
+      Define the data we want
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#create-the-regex-describing-the-data-we-want" class="md-nav__link">
+    <span class="md-ellipsis">
+      Create the regex describing the data we want
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prompting-the-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      Prompting the model
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#running-the-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      Running the model
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -2456,87 +2432,63 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#unstructured-approach" class="md-nav__link">
+  <a href="#setup" class="md-nav__link">
     <span class="md-ellipsis">
-      Unstructured approach
+      Setup
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#the-structured-generation-workflow" class="md-nav__link">
+  <a href="#load-the-model" class="md-nav__link">
     <span class="md-ellipsis">
-      The Structured Generation Workflow
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="The Structured Generation Workflow">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#real-example" class="md-nav__link">
-    <span class="md-ellipsis">
-      Real example
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#draft-structure" class="md-nav__link">
-    <span class="md-ellipsis">
-      Draft Structure
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#validate-by-matching-examples" class="md-nav__link">
-    <span class="md-ellipsis">
-      Validate by matching examples
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#generate-structure" class="md-nav__link">
-    <span class="md-ellipsis">
-      Generate Structure
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#inspect-output" class="md-nav__link">
-    <span class="md-ellipsis">
-      Inspect output
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#iteration" class="md-nav__link">
-    <span class="md-ellipsis">
-      Iteration
+      Load the model
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#reiteration-with-debugging" class="md-nav__link">
+  <a href="#set-up-the-data" class="md-nav__link">
     <span class="md-ellipsis">
-      Reiteration - with debugging
+      Set up the data
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#define-the-data-we-want" class="md-nav__link">
+    <span class="md-ellipsis">
+      Define the data we want
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#create-the-regex-describing-the-data-we-want" class="md-nav__link">
+    <span class="md-ellipsis">
+      Create the regex describing the data we want
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#prompting-the-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      Prompting the model
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#running-the-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      Running the model
     </span>
   </a>
   
@@ -2560,163 +2512,224 @@
   
 
 
-<h1 id="structured-generation-workflow-generating-synthetic-phone-numbers">Structured Generation Workflow: Generating Synthetic Phone Numbers</h1>
-<p>This is a condensed version of <a href="https://blog.dottxt.co/coding-for-structured-generation.html">Coding for Structured Generation with LLMs</a>.</p>
-<p>For this example we're going to be building an LLM program to generate <strong>synthetic data</strong> in the form of realistic looking phone numbers for Washington State. Using an LLM for this task <em>is a bit overkill</em> since we could just as easily accomplish this
-with a tool like <a href="https://fakerjs.dev/">Faker</a>, but this example still serves as a useful way to demonstrate a workflow for using structured generation.</p>
-<h2 id="unstructured-approach">Unstructured approach</h2>
-<p>Before diving into how to use structure generation for this task let's start with an unstructured example. We begin by loading our model:</p>
-<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span style="color: #81a1c1; font-weight: bold">import</span> <span style="color: #8fbcbb">outlines</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span style="color: #d8dee9">model_name</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #a3be8c">&#39;microsoft/Phi-3-mini-4k-instruct&#39;</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span style="color: #d8dee9">model</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #d8dee9">outlines</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">models</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">transformers</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">model_name</span><span style="color: #eceff4">)</span>
+<h1 id="extracting-financial-data-from-earnings-reports">Extracting financial data from earnings reports</h1>
+<p>A common task in finance is to extract financial data from earnings reports. Earnings reports are infamously poorly formatted, as the SEC does not have requirements for producing machine-readable documents.</p>
+<p>Earnings reports are often provided as HTML documents, which can be difficult to parse. Investors often use complicated parsing systems or manual review to extract data. Entire companies are built around automating this task.</p>
+<p>This cookbook is a proof of concept about how we can use LLMs to extract financial data directly into CSV. Comma-separated values are well-structured and can be defined by a regular expression, which Outlines can use to guide the LLM's output.</p>
+<p>The example is a smaller subset of a full demo found <a href="https://github.com/dottxt-ai/demos/tree/main/earnings-reports">here</a>. The demo contains the full set of pre-processing steps needed to convert raw HTML into a structured CSV file, and tests the results across three company's 10k reports.</p>
+<h2 id="setup">Setup</h2>
+<p>Install outlines and required dependencies:</p>
+<div class="language-bash highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span style="color: #616e87; font-style: italic"># Later versions of torch can have difficulty with certain CUDA drivers.</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span style="color: #616e87; font-style: italic"># We recommend using 2.4.0 for now, but you may wish to experiment with</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span style="color: #616e87; font-style: italic"># other versions.</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>pip<span style="color: #d8dee9"> </span>install<span style="color: #d8dee9"> </span>outlines<span style="color: #d8dee9"> </span>pandas<span style="color: #d8dee9"> </span>transformers<span style="color: #d8dee9"> torch</span><span style="color: #81a1c1; font-weight: bold">==</span><span style="color: #b48ead">2</span>.4.0<span style="color: #d8dee9"> </span>accelerate
 </span></code></pre></div>
-<p>Next we need a prompt for this model. Since we're focusing on structured generation, we won't be engaging in any form of "prompt hacking" and will be leaving this prompt untouched for the rest of this example.</p>
-<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span style="color: #d8dee9">tokenizer</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #d8dee9">AutoTokenizer</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">from_pretrained</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">model_name</span><span style="color: #eceff4">)</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span style="color: #d8dee9">messages_phone</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #eceff4">[</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>            <span style="color: #eceff4">{</span><span style="color: #a3be8c">&quot;role&quot;</span><span style="color: #eceff4">:</span> <span style="color: #a3be8c">&quot;user&quot;</span><span style="color: #eceff4">,</span> <span style="color: #a3be8c">&quot;content&quot;</span><span style="color: #eceff4">:</span> <span style="color: #a3be8c">&quot;&quot;&quot;</span>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span style="color: #a3be8c">            Please generate a realistic phone number for Washington State in the following format</span>
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span style="color: #a3be8c">            (555) 555-5555</span>
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span style="color: #a3be8c">            &quot;&quot;&quot;</span><span style="color: #eceff4">}</span>
-</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span style="color: #eceff4">]</span>
-</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>
-</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span style="color: #616e87; font-style: italic"># This allows us to properly format our prompt for</span>
-</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span style="color: #616e87; font-style: italic"># Phi-3 Mini&#39;s &#39;Instruct&#39; interface.</span>
-</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span style="color: #d8dee9">prompt_phone</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #d8dee9">tokenizer</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">apply_chat_template</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">messages_phone</span><span style="color: #eceff4">,</span> <span style="color: #d8dee9">tokenize</span><span style="color: #81a1c1; font-weight: bold">=False</span><span style="color: #eceff4">)</span>
+<h2 id="load-the-model">Load the model</h2>
+<p>Choose your language model. We'll use Phi-3 mini, which is small enough to run on reasonably small machines.</p>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span style="color: #81a1c1; font-weight: bold">import</span> <span style="color: #8fbcbb">outlines</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span style="color: #81a1c1; font-weight: bold">import</span> <span style="color: #8fbcbb">torch</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span style="color: #d8dee9">model_name</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #a3be8c">&#39;microsoft/Phi-3-mini-4k-instruct&#39;</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span style="color: #d8dee9">model</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #d8dee9">outlines</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">models</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">transformers</span><span style="color: #eceff4">(</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span style="color: #d8dee9">model_name</span><span style="color: #eceff4">,</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span style="color: #d8dee9">device</span><span style="color: #81a1c1; font-weight: bold">=</span><span style="color: #a3be8c">&#39;auto&#39;</span><span style="color: #eceff4">,</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span style="color: #d8dee9">model_kwargs</span><span style="color: #81a1c1; font-weight: bold">=</span><span style="color: #eceff4">{</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>        <span style="color: #616e87; font-style: italic"># To reduce memory usage, we&#39;ll use bfloat16</span>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>        <span style="color: #a3be8c">&quot;torch_dtype&quot;</span><span style="color: #eceff4">:</span> <span style="color: #d8dee9">torch</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">bfloat16</span><span style="color: #eceff4">,</span>
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    <span style="color: #eceff4">},</span>
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span style="color: #eceff4">)</span>
 </span></code></pre></div>
-<p>With our prompt ready we can now generate 10 example phone numbers</p>
-<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span style="color: #d8dee9">phone_generator_unstruct</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #d8dee9">outlines</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">generate</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">text</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">model</span><span style="color: #eceff4">)</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span style="color: #81a1c1; font-weight: bold">for</span> <span style="color: #d8dee9">_</span> <span style="color: #81a1c1; font-weight: bold">in</span> <span style="color: #81a1c1">range</span><span style="color: #eceff4">(</span><span style="color: #b48ead">10</span><span style="color: #eceff4">):</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span style="color: #81a1c1">print</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">phone_generator_unstruct</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">prompt_phone</span><span style="color: #eceff4">,</span><span style="color: #d8dee9">max_tokens</span><span style="color: #81a1c1; font-weight: bold">=</span><span style="color: #b48ead">12</span><span style="color: #eceff4">))</span>
+<h2 id="set-up-the-data">Set up the data</h2>
+<p>For brevity, we've attached the markdown version of Nvidia's 10k report. The <a href="https://github.com/dottxt-ai/demos/tree/main/earnings-reports">full demonstration</a> processes the raw HTML version of the report to these markdown tables. Pages are filtered by whether they seem to contain income statements, and then compacted into the string you see below.</p>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span style="color: #d8dee9">income_statement</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #a3be8c">&quot;&quot;&quot;</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span style="color: #a3be8c">Table of ContentsNVIDIA Corporation and SubsidiariesConsolidated Statements of Income(In millions, except per share data)</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span style="color: #a3be8c">|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span style="color: #a3be8c">| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span style="color: #a3be8c">|  | | | Year Ended | | | | | | | | | | | | | | |</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span style="color: #a3be8c">|  | | | Jan 28, 2024 | | |  | | | Jan 29, 2023 | | |  | | | Jan 30, 2022 | | |</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span style="color: #a3be8c">| Revenue | | | $ | 60,922 |  |  | | | $ | 26,974 |  |  | | | $ | 26,914 |  |</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span style="color: #a3be8c">| Cost of revenue | | | 16,621 | |  |  | | | 11,618 | |  |  | | | 9,439 | |  |</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span style="color: #a3be8c">| Gross profit | | | 44,301 | |  |  | | | 15,356 | |  |  | | | 17,475 | |  |</span>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span style="color: #a3be8c">| Operating expenses | | |  | | |  | | |  | | |  | | |  | | |</span>
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span style="color: #a3be8c">| Research and development | | | 8,675 | |  |  | | | 7,339 | |  |  | | | 5,268 | |  |</span>
+</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span style="color: #a3be8c">| Sales, general and administrative | | | 2,654 | |  |  | | | 2,440 | |  |  | | | 2,166 | |  |</span>
+</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span style="color: #a3be8c">| Acquisition termination cost | | |  | |  |  | | | 1,353 | |  |  | | |  | |  |</span>
+</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span style="color: #a3be8c">| Total operating expenses | | | 11,329 | |  |  | | | 11,132 | |  |  | | | 7,434 | |  |</span>
+</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span style="color: #a3be8c">| Operating income | | | 32,972 | |  |  | | | 4,224 | |  |  | | | 10,041 | |  |</span>
+</span><span id="__span-2-17"><a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a><span style="color: #a3be8c">| Interest income | | | 866 | |  |  | | | 267 | |  |  | | | 29 | |  |</span>
+</span><span id="__span-2-18"><a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a><span style="color: #a3be8c">| Interest expense | | | (257) | |  |  | | | (262) | |  |  | | | (236) | |  |</span>
+</span><span id="__span-2-19"><a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a><span style="color: #a3be8c">| Other, net | | | 237 | |  |  | | | (48) | |  |  | | | 107 | |  |</span>
+</span><span id="__span-2-20"><a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a><span style="color: #a3be8c">| Other income (expense), net | | | 846 | |  |  | | | (43) | |  |  | | | (100) | |  |</span>
+</span><span id="__span-2-21"><a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a><span style="color: #a3be8c">| Income before income tax | | | 33,818 | |  |  | | | 4,181 | |  |  | | | 9,941 | |  |</span>
+</span><span id="__span-2-22"><a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a><span style="color: #a3be8c">| Income tax expense (benefit) | | | 4,058 | |  |  | | | (187) | |  |  | | | 189 | |  |</span>
+</span><span id="__span-2-23"><a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a><span style="color: #a3be8c">| Net income | | | $ | 29,760 |  |  | | | $ | 4,368 |  |  | | | $ | 9,752 |  |</span>
+</span><span id="__span-2-24"><a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a><span style="color: #a3be8c">|  | | |  | | |  | | |  | | |  | | |  | | |</span>
+</span><span id="__span-2-25"><a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a><span style="color: #a3be8c">| Net income per share: | | |  | | |  | | |  | | |  | | |  | | |</span>
+</span><span id="__span-2-26"><a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a><span style="color: #a3be8c">| Basic | | | $ | 12\.05 |  |  | | | $ | 1\.76 |  |  | | | $ | 3\.91 |  |</span>
+</span><span id="__span-2-27"><a id="__codelineno-2-27" name="__codelineno-2-27" href="#__codelineno-2-27"></a><span style="color: #a3be8c">| Diluted | | | $ | 11\.93 |  |  | | | $ | 1\.74 |  |  | | | $ | 3\.85 |  |</span>
+</span><span id="__span-2-28"><a id="__codelineno-2-28" name="__codelineno-2-28" href="#__codelineno-2-28"></a><span style="color: #a3be8c">|  | | |  | | |  | | |  | | |  | | |  | | |</span>
+</span><span id="__span-2-29"><a id="__codelineno-2-29" name="__codelineno-2-29" href="#__codelineno-2-29"></a><span style="color: #a3be8c">| Weighted average shares used in per share computation: | | |  | | |  | | |  | | |  | | |  | | |</span>
+</span><span id="__span-2-30"><a id="__codelineno-2-30" name="__codelineno-2-30" href="#__codelineno-2-30"></a><span style="color: #a3be8c">| Basic | | | 2,469 | |  |  | | | 2,487 | |  |  | | | 2,496 | |  |</span>
+</span><span id="__span-2-31"><a id="__codelineno-2-31" name="__codelineno-2-31" href="#__codelineno-2-31"></a><span style="color: #a3be8c">| Diluted | | | 2,494 | |  |  | | | 2,507 | |  |  | | | 2,535 | |  |</span>
+</span><span id="__span-2-32"><a id="__codelineno-2-32" name="__codelineno-2-32" href="#__codelineno-2-32"></a><span style="color: #a3be8c">&quot;&quot;&quot;</span>
 </span></code></pre></div>
-<blockquote>
-<p>I'd be happy to help you generate a realistic phone\
-I cannot generate a real phone number as I'm just\
-I'm an AI and don't have the ability\
-Sure! Here is a randomly generated phone number in the format\
-Here's a phone number that fits the format for a\
-In Washington State, phone numbers typically have a three-dig\
-Here are a few examples of phone numbers that could be considered\
-I'd be happy to help generate a realistic phone number\
-I'd be happy to help you generate a random phone\
-Based on the format you provided, a realistic phone number for\</p>
-</blockquote>
-<p>As we can see, none of these outputs are even phone numbers!</p>
-<p>Let's see  if we can improve this using structured generation.</p>
-<h2 id="the-structured-generation-workflow">The Structured Generation Workflow</h2>
-<p>In order to solve this problem we're going to introduce a <em>Structured Generation Workflow</em> outlined in this image:</p>
-<p><img alt="&quot;Visual of Structured Generation Workflow&quot;" src="../images/coding_structure_diagram.png" /></p>
-<p>Let's step through this:</p>
-<h3 id="real-example">Real example</h3>
-<p>We start with a real example phone number, in this case for the Seattle Public Library, that we can use to verify the structure we are creating.</p>
-<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span style="color: #d8dee9">phone_number</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #a3be8c">&quot;(206) 386-4636&quot;</span>
+<p>The markdown tables extracted from the earnings reports can vary widely in row names, column counts, data types, etc. The advantage of LLMs here is that we can define the data we want in terms of the data types, and the LLM will output the data in the desired format.</p>
+<p>For comparison, here is how the income statement looks in the original HTML:</p>
+<p><img alt="Nvidia income statement" src="../images/nvidia-income.png" /></p>
+<h2 id="define-the-data-we-want">Define the data we want</h2>
+<p>Outlines is often used for JSON output, but it can also be used for CSV. We know the columns we want to extract, and we know the data types of the columns. Year for example is always a four-digit number, revenue is a number with commas, and so on.</p>
+<p>We can define a regex pattern for each column type:</p>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span style="color: #616e87; font-style: italic"># Define the column type regex patterns</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span style="color: #d8dee9">column_types</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #eceff4">{</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span style="color: #616e87; font-style: italic"># Year is always a four-digit number</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span style="color: #a3be8c">&quot;year&quot;</span><span style="color: #eceff4">:</span> <span style="color: #a3be8c">r&quot;\d{4}&quot;</span><span style="color: #eceff4">,</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span style="color: #616e87; font-style: italic"># Revenue, operating income, and net income are always numbers with commas.</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span style="color: #616e87; font-style: italic"># This regex permits integers that may begin with a minus sign, and may have</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span style="color: #616e87; font-style: italic"># commas separating the thousands, millions, etc.</span>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>    <span style="color: #a3be8c">&quot;integer_comma&quot;</span><span style="color: #eceff4">:</span> <span style="color: #a3be8c">r&quot;((-?\d+),?\d+|(-?\d+))&quot;</span><span style="color: #eceff4">,</span>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>    <span style="color: #616e87; font-style: italic"># Number is currently not used, but it represents a number with up to two decimal places.</span>
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>    <span style="color: #a3be8c">&quot;number&quot;</span><span style="color: #eceff4">:</span> <span style="color: #a3be8c">r&quot;(-?\d+(?:\.\d{1,2})?)&quot;</span><span style="color: #eceff4">,</span>
+</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span style="color: #eceff4">}</span>
 </span></code></pre></div>
-<p>For a simple example like this, we'll just be using a single phone number, for more complex examples it can be helpful to have more examples.</p>
-<h3 id="draft-structure">Draft Structure</h3>
-<p>The next step in the process is for use to define a simple regex that we feel correctly models our real data.</p>
-<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span style="color: #d8dee9">phone_regex_1</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #a3be8c">r&#39;\([0-9]{3}\) [0-9]{3}-[0-9]{4}&#39;</span>
+<p>Next, let's choose the columns we want to extract. We want</p>
+<ul>
+<li>Year, always a four-digit number</li>
+<li>Revenue, a number with commas</li>
+<li>Operating income, a number with commas</li>
+<li>Net income, a number with commas</li>
+</ul>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span style="color: #616e87; font-style: italic"># Define the columns to extract, and their data types.</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span style="color: #d8dee9">columns_to_extract</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #eceff4">{</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>    <span style="color: #a3be8c">&quot;year&quot;</span><span style="color: #eceff4">:</span> <span style="color: #a3be8c">&quot;year&quot;</span><span style="color: #eceff4">,</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span style="color: #a3be8c">&quot;revenue&quot;</span><span style="color: #eceff4">:</span> <span style="color: #a3be8c">&quot;integer_comma&quot;</span><span style="color: #eceff4">,</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span style="color: #a3be8c">&quot;operating_income&quot;</span><span style="color: #eceff4">:</span> <span style="color: #a3be8c">&quot;integer_comma&quot;</span><span style="color: #eceff4">,</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    <span style="color: #a3be8c">&quot;net_income&quot;</span><span style="color: #eceff4">:</span> <span style="color: #a3be8c">&quot;integer_comma&quot;</span><span style="color: #eceff4">,</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span style="color: #eceff4">}</span>
 </span></code></pre></div>
-<p>Next we need to validate this regex against our real data.</p>
-<h3 id="validate-by-matching-examples">Validate by matching examples</h3>
-<p>Whenever writing non-trivial code with structured generation it is <em>essential</em> that you first validate the code against your real data example(s).</p>
-<p>We'll start with a simple method of validation: just checking that our regex matches the data.</p>
-<div class="language-text highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>import re
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>re.match(phone_regex_1, phone_number)
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a># &lt;re.Match object; span=(0, 14), match=&#39;(206) 386-4636&#39;&gt;
+<p>You can modify <code>column_type_regex</code> to match the data types of the columns you want to extract.  Adding a new financial metric to extract is as simple as adding a new key/value pair to <code>columns_to_extract</code>:</p>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span style="color: #d8dee9">columns_to_extract</span><span style="color: #eceff4">[</span><span style="color: #a3be8c">&quot;diluted_earnings_per_share&quot;</span><span style="color: #eceff4">]</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #a3be8c">&quot;number&quot;</span>
 </span></code></pre></div>
-<p>Now that we have a match, we can move on to generating structured output!</p>
-<h3 id="generate-structure">Generate Structure</h3>
-<p>We're ready to see if structured generation can make an improvement over our initial unstructured approach:</p>
-<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span style="color: #d8dee9">phone_generator_v1</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #d8dee9">outlines</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">generate</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">regex</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">model</span><span style="color: #eceff4">,</span> <span style="color: #d8dee9">phone_regex_1</span><span style="color: #eceff4">)</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span style="color: #81a1c1; font-weight: bold">for</span> <span style="color: #d8dee9">_</span> <span style="color: #81a1c1; font-weight: bold">in</span> <span style="color: #81a1c1">range</span><span style="color: #eceff4">(</span><span style="color: #b48ead">10</span><span style="color: #eceff4">):</span>
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>    <span style="color: #81a1c1">print</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">phone_generator_v1</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">prompt_phone</span><span style="color: #eceff4">))</span>
+<p>Additional columns are not well tested for accuracy, so use with caution.</p>
+<h2 id="create-the-regex-describing-the-data-we-want">Create the regex describing the data we want</h2>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span style="color: #616e87; font-style: italic"># Create the header line. This is the requested column names</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span style="color: #616e87; font-style: italic"># separated by commas, i.e. &quot;year,revenue,...&quot;</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span style="color: #d8dee9">header</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #a3be8c">&quot;,&quot;</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">join</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">columns_to_extract</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">keys</span><span style="color: #eceff4">())</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span style="color: #616e87; font-style: italic"># Create the data capture patterns. These are the regex patterns</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span style="color: #616e87; font-style: italic"># that will be used to capture the data in each column</span>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span style="color: #d8dee9">data_patterns</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #eceff4">[</span><span style="color: #d8dee9">column_types</span><span style="color: #eceff4">[</span><span style="color: #d8dee9">dtype</span><span style="color: #eceff4">]</span> <span style="color: #81a1c1; font-weight: bold">for</span> <span style="color: #d8dee9">dtype</span> <span style="color: #81a1c1; font-weight: bold">in</span> <span style="color: #d8dee9">columns_to_extract</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">values</span><span style="color: #eceff4">()]</span>
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span style="color: #d8dee9">data_line</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #a3be8c">&quot;,&quot;</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">join</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">data_patterns</span><span style="color: #eceff4">)</span>
+</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>
+</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span style="color: #616e87; font-style: italic"># Our final regex pattern.</span>
+</span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span style="color: #d8dee9">max_rows</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #b48ead">3</span> <span style="color: #616e87; font-style: italic"># We expect 3 rows of data, firms usually report 3 years of income statements</span>
+</span><span id="__span-6-12"><a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a><span style="color: #d8dee9">csv_regex</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #a3be8c">f&quot;{</span><span style="color: #d8dee9">header</span><span style="color: #a3be8c">}(</span><span style="color: #ebcb8b">\n</span><span style="color: #a3be8c">{</span><span style="color: #d8dee9">data_line</span><span style="color: #a3be8c">})</span><span style="color: #ebcb8b">{{</span><span style="color: #a3be8c">,{</span><span style="color: #d8dee9">max_rows</span><span style="color: #a3be8c">}</span><span style="color: #ebcb8b">}}\n\n</span><span style="color: #a3be8c">&quot;</span>
+</span><span id="__span-6-13"><a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a>
+</span><span id="__span-6-14"><a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a><span style="color: #81a1c1">print</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">csv_regex</span><span style="color: #eceff4">)</span>
 </span></code></pre></div>
-<blockquote>
-<p>(206) 555-1234\
-(206) 555-1234\
-(206) 555-1234\
-(206) 555-1234\
-(206) 555-1234\
-(206) 555-1234\
-(206) 123-4567\
-(206) 555-1234\
-(206) 555-1234\
-(206) 555-1234</p>
-</blockquote>
-<p>At least we have phone numbers! But I think we can do better!</p>
-<h3 id="inspect-output">Inspect output</h3>
-<p>In this case the model <em>did</em> create phone numbers and, impressively, got the area code correct. So using structured generation did improve things. However these numbers are pretty boring. Let's improve that structure!</p>
-<h2 id="iteration">Iteration</h2>
-<p>We've walked through the loop once, so we can go quickly now through each iteration.</p>
-<p>We start by improving our structure:</p>
-<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span style="color: #d8dee9">phone_regex_2</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #a3be8c">r&#39;\([0-9]{3}\) [2-46-9]{3}-[02-9]{4}&#39;</span>
+<p>which gives us</p>
+<div class="language-text highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>year,revenue,operating_income,net_income,basic_earnings_per_share(
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>\d{4},((-?\d+),?\d+|(-?\d+)),((-?\d+),?\d+|(-?\d+)),((-?\d+),?\d+|(-?\d+)),(-?\d+(?:\.\d{1,2})?)){,3}
 </span></code></pre></div>
-<p>Before rushing to another round of generation, let's validate this new regex. We'll add just a bit more sophistication over our last check:</p>
-<p><div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span style="color: #d8dee9">re</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">match</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">phone_regex_2</span><span style="color: #eceff4">,</span> <span style="color: #d8dee9">phone_number</span><span style="color: #eceff4">)[</span><span style="color: #b48ead">0</span><span style="color: #eceff4">]</span> <span style="color: #81a1c1; font-weight: bold">==</span> <span style="color: #d8dee9">phone_number</span>
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span style="color: #616e87; font-style: italic"># True</span>
+<p>Pretty hairy, right? Thankfully, we have a simple function to construct this regex for you. The regex defines a header line, followed by a data line that repeats for each row of data we want to extract. Passing the regex to <code>outlines.generate.regex</code> will produce a function that will <strong>always</strong> produce a CSV string that is consistent with the regex.</p>
+<h2 id="prompting-the-model">Prompting the model</h2>
+<p>Outlines does not add system or instruction tokens by default, so we need to use <code>transformers.AutoTokenizer</code> to add them for whatever model we're using.</p>
+<p><div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span style="color: #81a1c1; font-weight: bold">from</span> <span style="color: #8fbcbb">transformers</span> <span style="color: #81a1c1; font-weight: bold">import</span> <span style="color: #d8dee9">AutoTokenizer</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span style="color: #d8dee9">tokenizer</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #d8dee9">AutoTokenizer</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">from_pretrained</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">model_name</span><span style="color: #eceff4">)</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span style="color: #81a1c1; font-weight: bold">def</span> <span style="color: #88c0d0">add_instruction</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">prompt</span><span style="color: #eceff4">):</span>
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>    <span style="color: #81a1c1; font-weight: bold">return</span> <span style="color: #d8dee9">tokenizer</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">apply_chat_template</span><span style="color: #eceff4">([{</span><span style="color: #a3be8c">&quot;role&quot;</span><span style="color: #eceff4">:</span> <span style="color: #a3be8c">&quot;user&quot;</span><span style="color: #eceff4">,</span> <span style="color: #a3be8c">&quot;content&quot;</span><span style="color: #eceff4">:</span> <span style="color: #d8dee9">prompt</span><span style="color: #eceff4">}],</span> <span style="color: #d8dee9">tokenize</span><span style="color: #81a1c1; font-weight: bold">=False</span><span style="color: #eceff4">,</span> <span style="color: #d8dee9">add_generation_prompt</span><span style="color: #81a1c1; font-weight: bold">=True</span><span style="color: #eceff4">)</span>
+</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>
+</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span style="color: #81a1c1">print</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">add_instruction</span><span style="color: #eceff4">(</span><span style="color: #a3be8c">&quot;Howdy&quot;</span><span style="color: #eceff4">))</span>
 </span></code></pre></div>
-Now that we've validated, let's generate with this new regex!</p>
-<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span style="color: #d8dee9">phone_generator_v2</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #d8dee9">outlines</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">generate</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">regex</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">model</span><span style="color: #eceff4">,</span>
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>                                             <span style="color: #d8dee9">phone_regex_2</span><span style="color: #eceff4">)</span>
-</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span style="color: #81a1c1; font-weight: bold">for</span> <span style="color: #d8dee9">_</span> <span style="color: #81a1c1; font-weight: bold">in</span> <span style="color: #81a1c1">range</span><span style="color: #eceff4">(</span><span style="color: #b48ead">10</span><span style="color: #eceff4">):</span>
-</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>    <span style="color: #81a1c1">print</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">phone_generator_v2</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">prompt_phone</span><span style="color: #eceff4">))</span>
+<div class="language-text highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>&lt;|user|&gt;
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>Howdy&lt;|end|&gt;
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>&lt;|assistant|&gt;
+</span></code></pre></div></p>
+<p>Our prompt roughly describes the task we want the model to perform, and a few pieces of information it may need to know about income statements.</p>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span style="color: #81a1c1; font-weight: bold">def</span> <span style="color: #88c0d0">extract_financial_data_prompt</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">columns_to_extract</span><span style="color: #eceff4">,</span> <span style="color: #d8dee9">income_statement</span><span style="color: #eceff4">):</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>    <span style="color: #d8dee9">user_prompt</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #a3be8c">f&quot;&quot;&quot;</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span style="color: #a3be8c">    Extract annual financial data from this set of pages. Pages</span>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span style="color: #a3be8c">    are from a 10k filing and were chosen because they may contain</span>
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span style="color: #a3be8c">    a comprehensive income statement. Note that selected pages may</span>
+</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span style="color: #a3be8c">    be incorrectly extracted, so you should verify that you are extracting</span>
+</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span style="color: #a3be8c">    from the comprehensive income statement and not some other financial</span>
+</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span style="color: #a3be8c">    statement.</span>
+</span><span id="__span-10-9"><a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>
+</span><span id="__span-10-10"><a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a><span style="color: #a3be8c">    Create a row for each year available in the income statement with the</span>
+</span><span id="__span-10-11"><a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a><span style="color: #a3be8c">    following columns: {&#39;, &#39;</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">join</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">columns_to_extract</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">keys</span><span style="color: #eceff4">())</span><span style="color: #a3be8c">}. Firms typically report the</span>
+</span><span id="__span-10-12"><a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a><span style="color: #a3be8c">    most recent 3 years of data, but this can vary.</span>
+</span><span id="__span-10-13"><a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a>
+</span><span id="__span-10-14"><a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a><span style="color: #a3be8c">    Each column has types: {&#39;, &#39;</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">join</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">columns_to_extract</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">values</span><span style="color: #eceff4">())</span><span style="color: #a3be8c">}.</span>
+</span><span id="__span-10-15"><a id="__codelineno-10-15" name="__codelineno-10-15" href="#__codelineno-10-15"></a>
+</span><span id="__span-10-16"><a id="__codelineno-10-16" name="__codelineno-10-16" href="#__codelineno-10-16"></a><span style="color: #a3be8c">    # Relevant pages:</span>
+</span><span id="__span-10-17"><a id="__codelineno-10-17" name="__codelineno-10-17" href="#__codelineno-10-17"></a>
+</span><span id="__span-10-18"><a id="__codelineno-10-18" name="__codelineno-10-18" href="#__codelineno-10-18"></a><span style="color: #a3be8c">    {</span><span style="color: #d8dee9">income_statement</span><span style="color: #a3be8c">}</span>
+</span><span id="__span-10-19"><a id="__codelineno-10-19" name="__codelineno-10-19" href="#__codelineno-10-19"></a>
+</span><span id="__span-10-20"><a id="__codelineno-10-20" name="__codelineno-10-20" href="#__codelineno-10-20"></a><span style="color: #a3be8c">    # Key instructions:</span>
+</span><span id="__span-10-21"><a id="__codelineno-10-21" name="__codelineno-10-21" href="#__codelineno-10-21"></a>
+</span><span id="__span-10-22"><a id="__codelineno-10-22" name="__codelineno-10-22" href="#__codelineno-10-22"></a><span style="color: #a3be8c">    1. Look ONLY at the &quot;Consolidated Statements of Income&quot; table</span>
+</span><span id="__span-10-23"><a id="__codelineno-10-23" name="__codelineno-10-23" href="#__codelineno-10-23"></a><span style="color: #a3be8c">    2. For operating income, look for &quot;Income from operations&quot; or &quot;Operating income&quot;</span>
+</span><span id="__span-10-24"><a id="__codelineno-10-24" name="__codelineno-10-24" href="#__codelineno-10-24"></a><span style="color: #a3be8c">    3. For net income, use the TOTAL net income figure, not amounts allocated to specific share classes</span>
+</span><span id="__span-10-25"><a id="__codelineno-10-25" name="__codelineno-10-25" href="#__codelineno-10-25"></a><span style="color: #a3be8c">    4. Use NULL for missing values</span>
+</span><span id="__span-10-26"><a id="__codelineno-10-26" name="__codelineno-10-26" href="#__codelineno-10-26"></a><span style="color: #a3be8c">    5. Operating income must be less than revenue</span>
+</span><span id="__span-10-27"><a id="__codelineno-10-27" name="__codelineno-10-27" href="#__codelineno-10-27"></a><span style="color: #a3be8c">    6. Net income must be less than operating income</span>
+</span><span id="__span-10-28"><a id="__codelineno-10-28" name="__codelineno-10-28" href="#__codelineno-10-28"></a><span style="color: #a3be8c">    7. Ignore segment breakdowns, quarterly data, or per-share amounts</span>
+</span><span id="__span-10-29"><a id="__codelineno-10-29" name="__codelineno-10-29" href="#__codelineno-10-29"></a>
+</span><span id="__span-10-30"><a id="__codelineno-10-30" name="__codelineno-10-30" href="#__codelineno-10-30"></a><span style="color: #a3be8c">    # Output format:</span>
+</span><span id="__span-10-31"><a id="__codelineno-10-31" name="__codelineno-10-31" href="#__codelineno-10-31"></a>
+</span><span id="__span-10-32"><a id="__codelineno-10-32" name="__codelineno-10-32" href="#__codelineno-10-32"></a><span style="color: #a3be8c">    - CSV format with headers: {&#39;,&#39;</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">join</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">columns_to_extract</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">keys</span><span style="color: #eceff4">())</span><span style="color: #a3be8c">}</span>
+</span><span id="__span-10-33"><a id="__codelineno-10-33" name="__codelineno-10-33" href="#__codelineno-10-33"></a><span style="color: #a3be8c">    - Use NULL for missing values</span>
+</span><span id="__span-10-34"><a id="__codelineno-10-34" name="__codelineno-10-34" href="#__codelineno-10-34"></a><span style="color: #a3be8c">    - If no data are found, do not create a row.</span>
+</span><span id="__span-10-35"><a id="__codelineno-10-35" name="__codelineno-10-35" href="#__codelineno-10-35"></a><span style="color: #a3be8c">    - Enter two newline characters to terminate the CSV when no more data are found.</span>
+</span><span id="__span-10-36"><a id="__codelineno-10-36" name="__codelineno-10-36" href="#__codelineno-10-36"></a>
+</span><span id="__span-10-37"><a id="__codelineno-10-37" name="__codelineno-10-37" href="#__codelineno-10-37"></a><span style="color: #a3be8c">    # Definitions:</span>
+</span><span id="__span-10-38"><a id="__codelineno-10-38" name="__codelineno-10-38" href="#__codelineno-10-38"></a><span style="color: #a3be8c">    - Revenue: Total sales of goods and services. Usually this is at the top of the</span>
+</span><span id="__span-10-39"><a id="__codelineno-10-39" name="__codelineno-10-39" href="#__codelineno-10-39"></a><span style="color: #a3be8c">    income statement.</span>
+</span><span id="__span-10-40"><a id="__codelineno-10-40" name="__codelineno-10-40" href="#__codelineno-10-40"></a><span style="color: #a3be8c">    - Operating income: Revenue minus operating expenses for the entire company. This is revenue</span>
+</span><span id="__span-10-41"><a id="__codelineno-10-41" name="__codelineno-10-41" href="#__codelineno-10-41"></a><span style="color: #a3be8c">    minus costs. Operating income is also called operating profit, EBIT, or income from</span>
+</span><span id="__span-10-42"><a id="__codelineno-10-42" name="__codelineno-10-42" href="#__codelineno-10-42"></a><span style="color: #a3be8c">    operations.</span>
+</span><span id="__span-10-43"><a id="__codelineno-10-43" name="__codelineno-10-43" href="#__codelineno-10-43"></a><span style="color: #a3be8c">    - Net income: Operating income minus taxes. This is the bottom line of the</span>
+</span><span id="__span-10-44"><a id="__codelineno-10-44" name="__codelineno-10-44" href="#__codelineno-10-44"></a><span style="color: #a3be8c">    income statement.</span>
+</span><span id="__span-10-45"><a id="__codelineno-10-45" name="__codelineno-10-45" href="#__codelineno-10-45"></a><span style="color: #a3be8c">    &quot;&quot;&quot;</span>
+</span><span id="__span-10-46"><a id="__codelineno-10-46" name="__codelineno-10-46" href="#__codelineno-10-46"></a>
+</span><span id="__span-10-47"><a id="__codelineno-10-47" name="__codelineno-10-47" href="#__codelineno-10-47"></a>    <span style="color: #81a1c1; font-weight: bold">return</span> <span style="color: #d8dee9">add_instruction</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">user_prompt</span><span style="color: #eceff4">)</span>
 </span></code></pre></div>
-<blockquote>
-<p>(206) 867-5309\
-(206) 666-7777\
-(206) 444-3333\
-(206) 444-3333\
-(206) 943-2222\
-(206) 323-6789\
-(206) 444-3333\
-(206) 867-5309\
-(206) 466-2255\
-(206) 222-3333</p>
-</blockquote>
-<p>Better, but I don't like those repeated sequences. Like good software developers, let's iterate again!</p>
-<h2 id="reiteration-with-debugging">Reiteration - with debugging</h2>
-<p>Here's a fancier regex that should give us more interesting results:</p>
-<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span style="color: #d8dee9">phone_regex_3_error</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #a3be8c">r&#39;\([0-9]{3}\) [2-4][7-9][4-6]-[3-6][2-8][1-4]&#39;</span>
+<h2 id="running-the-model">Running the model</h2>
+<p>Now that we have our prompt and regular expression, we can run the model.</p>
+<p>Construct our regex extractor function. We'll use a greedy sampler, which samples the most likely next token at each step. It's a simple sampler that is more reproducible than multinomial sampling.</p>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span style="color: #d8dee9">csv_extractor</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #d8dee9">outlines</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">generate</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">regex</span><span style="color: #eceff4">(</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>    <span style="color: #d8dee9">model</span><span style="color: #eceff4">,</span> <span style="color: #d8dee9">csv_regex</span><span style="color: #eceff4">,</span> <span style="color: #d8dee9">sampler</span><span style="color: #81a1c1; font-weight: bold">=</span><span style="color: #d8dee9">outlines</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">samplers</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">greedy</span><span style="color: #eceff4">()</span>
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span style="color: #eceff4">)</span>
 </span></code></pre></div>
-<p>This looks good to me, but there's a subtle bug, that's why we <em>always</em> need to validate our structure against real data. This time we'll make our validator do a bit more work to verify the correct string is matched:</p>
-<p><div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span style="color: #81a1c1; font-weight: bold">if</span> <span style="color: #81a1c1; font-weight: bold">not</span> <span style="color: #d8dee9">re</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">match</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">phone_regex_3_error</span><span style="color: #eceff4">,</span> <span style="color: #d8dee9">phone_number</span><span style="color: #eceff4">):</span>
-</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>    <span style="color: #81a1c1">print</span><span style="color: #eceff4">(</span><span style="color: #a3be8c">&quot;Regex fails match&quot;</span><span style="color: #eceff4">)</span>
-</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span style="color: #81a1c1; font-weight: bold">else</span><span style="color: #eceff4">:</span>
-</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>    <span style="color: #d8dee9">matched_string</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #d8dee9">re</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">match</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">phone_regex_3_error</span><span style="color: #eceff4">,</span> <span style="color: #d8dee9">phone_number</span><span style="color: #eceff4">)[</span><span style="color: #b48ead">0</span><span style="color: #eceff4">]</span>
-</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>    <span style="color: #81a1c1; font-weight: bold">if</span> <span style="color: #d8dee9">matched_string</span> <span style="color: #81a1c1; font-weight: bold">==</span> <span style="color: #d8dee9">phone_number</span><span style="color: #eceff4">:</span>
-</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>    <span style="color: #81a1c1">print</span><span style="color: #eceff4">(</span><span style="color: #a3be8c">&quot;Successful match&quot;</span><span style="color: #eceff4">)</span>
-</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>    <span style="color: #81a1c1; font-weight: bold">else</span><span style="color: #eceff4">:</span>
-</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>    <span style="color: #81a1c1">print</span><span style="color: #eceff4">(</span><span style="color: #a3be8c">f&quot;Error {</span><span style="color: #d8dee9">matched_string</span><span style="color: #a3be8c">} != {</span><span style="color: #d8dee9">phone_number</span><span style="color: #a3be8c">}&quot;</span><span style="color: #eceff4">)</span>
+<p>Provide the prompt to the model and run it:</p>
+<p><div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span style="color: #d8dee9">csv_data</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #d8dee9">csv_extractor</span><span style="color: #eceff4">(</span>
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>    <span style="color: #d8dee9">extract_financial_data_prompt</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">columns_to_extract</span><span style="color: #eceff4">,</span> <span style="color: #d8dee9">income_statement</span><span style="color: #eceff4">),</span>
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>    <span style="color: #d8dee9">max_tokens</span><span style="color: #81a1c1; font-weight: bold">=</span><span style="color: #b48ead">1024</span><span style="color: #eceff4">,</span>
+</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span style="color: #eceff4">)</span>
+</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>
+</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span style="color: #81a1c1">print</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">csv_data</span><span style="color: #eceff4">)</span>
 </span></code></pre></div>
-This prints out:</p>
-<blockquote>
-<p>Error (206) 386-463 != (206) 386-4636</p>
-</blockquote>
-<p>Ah! We were missing the last digit, let's fix that and regenerate:</p>
-<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span style="color: #d8dee9">phone_regex_3_fixed</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #a3be8c">r&#39;\([0-9]{3}\) [2-4][7-9][4-6]-[3-6][2-8][1-4][6-9]&#39;</span>
-</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span style="color: #d8dee9">phone_generator_v3</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #d8dee9">outlines</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">generate</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">regex</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">model</span><span style="color: #eceff4">,</span>
-</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>                                             <span style="color: #d8dee9">phone_regex_3_fixed</span><span style="color: #eceff4">)</span>
-</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span style="color: #81a1c1; font-weight: bold">for</span> <span style="color: #d8dee9">_</span> <span style="color: #81a1c1; font-weight: bold">in</span> <span style="color: #81a1c1">range</span><span style="color: #eceff4">(</span><span style="color: #b48ead">10</span><span style="color: #eceff4">):</span>
-</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>    <span style="color: #81a1c1">print</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">phone_generator_v3</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">prompt_phone</span><span style="color: #eceff4">))</span>
+<div class="language-text highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>year,revenue,operating_income,net_income
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>2024,60922,32972,29760
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>2023,26974,4224,4368
+</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>2022,26914,10041,9752
+</span></code></pre></div></p>
+<p>Voila! We've extracted the financial data from the income statement, and it's correct upon inspection.</p>
+<p>You can even load this into a <code>pandas</code> DataFrame for further analysis:</p>
+<p><div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span style="color: #81a1c1; font-weight: bold">import</span> <span style="color: #8fbcbb">pandas</span> <span style="color: #81a1c1; font-weight: bold">as</span> <span style="color: #8fbcbb">pd</span>
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span style="color: #81a1c1; font-weight: bold">from</span> <span style="color: #8fbcbb">io</span> <span style="color: #81a1c1; font-weight: bold">import</span> <span style="color: #d8dee9">StringIO</span>
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>
+</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span style="color: #d8dee9">df</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #d8dee9">pd</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">read_csv</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">StringIO</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">csv_data</span><span style="color: #eceff4">))</span>
+</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span style="color: #81a1c1">print</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">df</span><span style="color: #eceff4">)</span>
 </span></code></pre></div>
-<blockquote>
-<p>(206) 494-3216\
-(206) 374-6218\
-(206) 494-3337\
-(206) 476-3216\
-(206) 484-3548\
-(206) 495-3218\
-(206) 494-5517\
-(206) 375-4636\
-(206) 384-6216\
-(206) 385-6218</p>
-</blockquote>
-<p>Much better!</p>
-<p>Now you've seen a quick example of the structured generation workflow that can be used at the basis for building and iteration on much larger structured generation tasks!</p>
+<div class="language-text highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>   year  revenue  operating_income  net_income
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>0  2024    60922             32972       29760
+</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>1  2023    26974              4224        4368
+</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>2  2022    26914             10041        9752
+</span></code></pre></div></p>
 
 
 
@@ -2739,7 +2752,7 @@ This prints out:</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2024-07-27T17:08:57+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2024-07-27</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2024-11-06T08:54:59+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2024-11-06</span>
   </span>
 
     
@@ -2749,49 +2762,11 @@ This prints out:</p>
     <span class="md-icon" title="Created">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2024-07-01T16:00:00+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2024-07-01</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2024-11-06T08:54:59+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2024-11-06</span>
   </span>
 
     
     
-    
-      
-  <span class="md-source-file__fact">
-    
-      
-  <span class="md-icon" title="Contributors">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33s1.71.11 2.5.33c1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2"/></svg>
-  </span>
-  <span>GitHub</span>
-
-    
-    <nav>
-      
-        <a href="https://github.com/lapp0" class="md-author" title="@lapp0">
-          
-          <img src="https://avatars.githubusercontent.com/u/2560255?v=4&size=72" alt="lapp0">
-        </a>
-      
-        <a href="https://github.com/rlouf" class="md-author" title="@rlouf">
-          
-          <img src="https://avatars.githubusercontent.com/u/3885044?v=4&size=72" alt="rlouf">
-        </a>
-      
-        <a href="https://github.com/willkurt" class="md-author" title="@willkurt">
-          
-          <img src="https://avatars.githubusercontent.com/u/57956?v=4&size=72" alt="willkurt">
-        </a>
-      
-        <a href="https://github.com/web-flow" class="md-author" title="@web-flow">
-          
-          <img src="https://avatars.githubusercontent.com/u/19864447?v=4&size=72" alt="web-flow">
-        </a>
-      
-      
-      
-    </nav>
-  </span>
-
     
   </aside>
 
