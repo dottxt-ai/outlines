@@ -4,7 +4,7 @@ A common task with language models is to ask language models questions about a P
 
 Typically, the output is unstructured text, i.e. "talking" to your PDF.
 
-In some cases, you may wish to extract structured information from the PDF, like tables, lists, citations, etc. 
+In some cases, you may wish to extract structured information from the PDF, like tables, lists, citations, etc.
 
 PDFs are difficult to machine read. However, you can simply convert the PDF to images, and then use a vision language model to extract structured information from the images.
 
@@ -26,7 +26,7 @@ pip install rich
 
 ## Import the necessary libraries
 
-```python 
+```python
 from PIL import Image
 import outlines
 import torch
@@ -179,11 +179,11 @@ messages = [
     {
         "role": "user",
         "content": [
-            # The text you're passing to the model -- 
+            # The text you're passing to the model --
             # this is where you do your standard prompting.
             {"type": "text", "text": f"""
                 Describe the page in a way that is easy for a PhD student to understand.
-                
+
                 Return the information in the following JSON schema:
                 {PageSummary.model_json_schema()}
 
@@ -191,7 +191,7 @@ messages = [
                 """
             },
 
-            # Don't need to pass in an image, since we do this 
+            # Don't need to pass in an image, since we do this
             # when we call the generator function down below.
             {"type": "image", "image": ""},
         ],
@@ -292,7 +292,7 @@ categorization_instruction = processor.apply_chat_template(
                 {"type": "text", "text": f"""
                 Please choose one of the following categories
                 that best describes the paper.
-                 
+
                 {categories}
 
                 Here is the paper:
