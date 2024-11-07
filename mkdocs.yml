@@ -121,6 +121,7 @@ nav:
       - ReAct Agent: cookbook/react_agent.md
       - Vision-Language Models: cookbook/atomic_caption.md
       - Earnings reports to CSV: cookbook/earnings-reports.md
+      - Digitizing receipts with vision models: cookbook/receipt-digitization.md
       - Run on the cloud:
           - BentoML: cookbook/deploy-using-bentoml.md
           - Cerebrium: cookbook/deploy-using-cerebrium.md
