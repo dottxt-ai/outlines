@@ -13,3 +13,4 @@ This part of the documentation provides a few cookbooks that you can browse to g
 - [Chain Of Thought (CoT)](chain_of_thought.md): Generate a series of intermediate reasoning steps using regex-structured generation.
 - [ReAct Agent](react_agent.md): Build an agent with open weights models using regex-structured generation.
 - [Vision-Language Models](atomic_caption.md): Use Outlines with vision-language models for tasks like image captioning and visual reasoning.
+- [Structured Generation from PDFs](read-pdfs.md): Use Outlines with vision-language models to read PDFs and produce structured output.
