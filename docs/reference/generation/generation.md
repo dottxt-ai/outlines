@@ -4,7 +4,7 @@ title: Generation
 
 # Generation
 
-Once an [Outlines model](../models) is constructed you can use `outlines.generate` to generate text. Standard LLM generation is possible via `outlines.generate.text`, along with a variety of structured generation methods described below. (For a detailed technical explanation of how structured generation works, you may review the [Structured Generation Explanation](./structured_generation_explanation.md) page)
+Once an [Outlines model](../models/models.md) is constructed you can use `outlines.generate` to generate text. Standard LLM generation is possible via `outlines.generate.text`, along with a variety of structured generation methods described below. (For a detailed technical explanation of how structured generation works, you may review the [Structured Generation Explanation](./structured_generation_explanation.md) page)
 
 Before generating text, you must construct an `outlines.model`. Example:
 
