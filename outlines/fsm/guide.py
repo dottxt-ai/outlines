@@ -116,7 +116,10 @@ class CFGGuide(Guide):
 
         self.cfg_string = cfg_string
         self.tokenizer = tokenizer
+
+        # Set eos_token_id if available
         self.eos_token_id = self.tokenizer.eos_token_id
+
         self.parser = PartialLark(
             cfg_string,
             parser="lalr",
@@ -149,14 +152,20 @@ class CFGGuide(Guide):
         """
 
         if state.parser_state is None:
-            return Write(torch.tensor([self.eos_token_id]))
+            if self.eos_token_id is not None:
+                return Write(torch.tensor([self.eos_token_id]))
+            else:
+                return None  # No instruction if eos_token_id is not set
 
         valid_tokens = list(
-            self.iter_valid_token_ids(state, self.tokenizer.vocabulary.values())
+            self.iter_valid_token_ids(state, list(self.tokenizer.vocabulary.values()))
         )
-        if len(valid_tokens) == 1:
+        if not valid_tokens:
+            return None  # No valid tokens to generate
+        elif len(valid_tokens) == 1:
             return Write(torch.tensor(valid_tokens))
-        return Generate(torch.tensor(valid_tokens))
+        else:
+            return Generate(torch.tensor(valid_tokens))
 
     def iter_valid_token_ids(
         self, state: CFGState, candidate_token_ids: list
@@ -177,11 +186,12 @@ class CFGGuide(Guide):
             Valid token ids.
         """
         if state.parser_state is None:
-            yield self.eos_token_id
+            if self.eos_token_id is not None:
+                yield self.eos_token_id
             return
 
         for token_id in candidate_token_ids:
-            if token_id == self.eos_token_id:
+            if token_id == self.eos_token_id and self.eos_token_id is not None:
                 if self.can_terminate_state(state):
                     yield token_id
             else:
@@ -234,20 +244,14 @@ class CFGGuide(Guide):
         """
         parser_state = copy.copy(state.parser_state)  # prevent side effects
 
-        # normalize
-        if state.prev_token is None:
-            new_token_str = self.tokenizer.decode([token_id])[0]
-        else:
-            prev_token_str = self.tokenizer.decode([[state.prev_token]])[0]
-            combined_token_str = self.tokenizer.decode([[state.prev_token, token_id]])[
-                0
-            ]
-            new_token_str = combined_token_str[len(prev_token_str) :]
-
-        if new_token_str == "":
+        # Decode the token
+        token_str = self.tokenizer.decode([token_id])
+        if not token_str:
             raise ValueError("empty next token")
 
-        # update parser with new token
+        new_token_str = token_str[0]  # Assuming decode returns a list
+
+        # Update parser with new token
         parser_state.lexer.state.text += new_token_str
         self.parser.parse_from_state(parser_state, is_end=False)
 
