@@ -130,7 +130,20 @@ image = load_and_resize_image("receipt.png")
 
 ## Define the output structure
 
-We'll define a Pydantic model to describe the data we want to extract from the image. After processing the image, the LLM will output data in this format -- in this case, we'll have a list of items, a store name, address, and so on.
+We'll define a Pydantic model to describe the data we want to extract from the image.
+
+In our case, we want to extract the following information:
+
+- The store name
+- The store address
+- The store number
+- A list of items, including the name, quantity, price per unit, and total price
+- The tax
+- The total
+- The date
+- The payment method
+
+Most fields are optional, as not all receipts contain all information.
 
 ```python
 class Item(BaseModel):
