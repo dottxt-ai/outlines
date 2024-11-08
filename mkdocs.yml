@@ -120,6 +120,7 @@ nav:
       - Chain of Thought (CoT): cookbook/chain_of_thought.md
       - ReAct Agent: cookbook/react_agent.md
       - Vision-Language Models: cookbook/atomic_caption.md
+      - Structured Generation from PDFs: cookbook/read-pdfs.md
       - Earnings reports to CSV: cookbook/earnings-reports.md
       - Run on the cloud:
           - BentoML: cookbook/deploy-using-bentoml.md
