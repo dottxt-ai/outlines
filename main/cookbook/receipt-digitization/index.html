@@ -13,10 +13,10 @@
       
       
       
-        <link rel="prev" href="../read-pdfs/">
+        <link rel="prev" href="../earnings-reports/">
       
       
-        <link rel="next" href="../receipt-digitization/">
+        <link rel="next" href="../deploy-using-bentoml/">
       
       
       <link rel="icon" href="../../assets/images/logo-simple.png">
@@ -24,7 +24,7 @@
     
     
       
-        <title>Earnings reports to CSV - Outlines</title>
+        <title>Digitizing receipts with vision models - Outlines</title>
       
     
     
@@ -75,11 +75,11 @@
       
         <meta  property="og:type"  content="website" >
       
-        <meta  property="og:title"  content="Earnings reports to CSV - Outlines" >
+        <meta  property="og:title"  content="Digitizing receipts with vision models - Outlines" >
       
         <meta  property="og:description"  content="Structured text generation with LLMs" >
       
-        <meta  property="og:image"  content="./assets/images/social/cookbook/earnings-reports.png" >
+        <meta  property="og:image"  content="./assets/images/social/cookbook/receipt-digitization.png" >
       
         <meta  property="og:image:type"  content="image/png" >
       
@@ -91,11 +91,11 @@
       
         <meta  name="twitter:card"  content="summary_large_image" >
       
-        <meta  name="twitter:title"  content="Earnings reports to CSV - Outlines" >
+        <meta  name="twitter:title"  content="Digitizing receipts with vision models - Outlines" >
       
         <meta  name="twitter:description"  content="Structured text generation with LLMs" >
       
-        <meta  name="twitter:image"  content="./assets/images/social/cookbook/earnings-reports.png" >
+        <meta  name="twitter:image"  content="./assets/images/social/cookbook/receipt-digitization.png" >
       
     
     
@@ -118,7 +118,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#extracting-financial-data-from-earnings-reports" class="md-skip">
+        <a href="#receipt-data-extraction-with-vlms" class="md-skip">
           Skip to content
         </a>
       
@@ -155,7 +155,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Earnings reports to CSV
+              Digitizing receipts with vision models
             
           </span>
         </div>
@@ -892,6 +892,27 @@
                 
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../earnings-reports/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Earnings reports to CSV
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
     
   
   
@@ -908,7 +929,7 @@
           
   
   <span class="md-ellipsis">
-    Earnings reports to CSV
+    Digitizing receipts with vision models
   </span>
   
 
@@ -919,7 +940,7 @@
         
   
   <span class="md-ellipsis">
-    Earnings reports to CSV
+    Digitizing receipts with vision models
   </span>
   
 
@@ -950,6 +971,24 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#import-libraries" class="md-nav__link">
+    <span class="md-ellipsis">
+      Import libraries
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#choose-a-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      Choose a model
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#load-the-model" class="md-nav__link">
     <span class="md-ellipsis">
       Load the model
@@ -959,45 +998,63 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#set-up-the-data" class="md-nav__link">
+  <a href="#image-processing" class="md-nav__link">
     <span class="md-ellipsis">
-      Set up the data
+      Image processing
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#define-the-data-we-want" class="md-nav__link">
+  <a href="#load-an-image" class="md-nav__link">
     <span class="md-ellipsis">
-      Define the data we want
+      Load an image
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#create-the-regex-describing-the-data-we-want" class="md-nav__link">
+  <a href="#define-the-output-structure" class="md-nav__link">
     <span class="md-ellipsis">
-      Create the regex describing the data we want
+      Define the output structure
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#prompting-the-model" class="md-nav__link">
+  <a href="#prepare-the-prompt" class="md-nav__link">
     <span class="md-ellipsis">
-      Prompting the model
+      Prepare the prompt
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#running-the-model" class="md-nav__link">
+  <a href="#run-the-model" class="md-nav__link">
     <span class="md-ellipsis">
-      Running the model
+      Run the model
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#output" class="md-nav__link">
+    <span class="md-ellipsis">
+      Output
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bonus-roasting-the-user-for-their-receipt" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bonus: roasting the user for their receipt
     </span>
   </a>
   
@@ -1007,27 +1064,6 @@
   
 </nav>
       
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../receipt-digitization/" class="md-nav__link">
-        
-  
-  <span class="md-ellipsis">
-    Digitizing receipts with vision models
-  </span>
-  
-
-      </a>
     </li>
   
 
@@ -2483,6 +2519,24 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#import-libraries" class="md-nav__link">
+    <span class="md-ellipsis">
+      Import libraries
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#choose-a-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      Choose a model
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#load-the-model" class="md-nav__link">
     <span class="md-ellipsis">
       Load the model
@@ -2492,45 +2546,63 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#set-up-the-data" class="md-nav__link">
+  <a href="#image-processing" class="md-nav__link">
     <span class="md-ellipsis">
-      Set up the data
+      Image processing
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#define-the-data-we-want" class="md-nav__link">
+  <a href="#load-an-image" class="md-nav__link">
     <span class="md-ellipsis">
-      Define the data we want
+      Load an image
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#create-the-regex-describing-the-data-we-want" class="md-nav__link">
+  <a href="#define-the-output-structure" class="md-nav__link">
     <span class="md-ellipsis">
-      Create the regex describing the data we want
+      Define the output structure
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#prompting-the-model" class="md-nav__link">
+  <a href="#prepare-the-prompt" class="md-nav__link">
     <span class="md-ellipsis">
-      Prompting the model
+      Prepare the prompt
     </span>
   </a>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#running-the-model" class="md-nav__link">
+  <a href="#run-the-model" class="md-nav__link">
     <span class="md-ellipsis">
-      Running the model
+      Run the model
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#output" class="md-nav__link">
+    <span class="md-ellipsis">
+      Output
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#bonus-roasting-the-user-for-their-receipt" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bonus: roasting the user for their receipt
     </span>
   </a>
   
@@ -2554,224 +2626,241 @@
   
 
 
-<h1 id="extracting-financial-data-from-earnings-reports">Extracting financial data from earnings reports</h1>
-<p>A common task in finance is to extract financial data from earnings reports. Earnings reports are infamously poorly formatted, as the SEC does not have requirements for producing machine-readable documents.</p>
-<p>Earnings reports are often provided as HTML documents, which can be difficult to parse. Investors often use complicated parsing systems or manual review to extract data. Entire companies are built around automating this task.</p>
-<p>This cookbook is a proof of concept about how we can use LLMs to extract financial data directly into CSV. Comma-separated values are well-structured and can be defined by a regular expression, which Outlines can use to guide the LLM's output.</p>
-<p>The example is a smaller subset of a full demo found <a href="https://github.com/dottxt-ai/demos/tree/main/earnings-reports">here</a>. The demo contains the full set of pre-processing steps needed to convert raw HTML into a structured CSV file, and tests the results across three company's 10k reports.</p>
+<h1 id="receipt-data-extraction-with-vlms">Receipt Data Extraction with VLMs</h1>
 <h2 id="setup">Setup</h2>
-<p>Install outlines and required dependencies:</p>
-<div class="language-bash highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span style="color: #616e87; font-style: italic"># Later versions of torch can have difficulty with certain CUDA drivers.</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span style="color: #616e87; font-style: italic"># We recommend using 2.4.0 for now, but you may wish to experiment with</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span style="color: #616e87; font-style: italic"># other versions.</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>pip<span style="color: #d8dee9"> </span>install<span style="color: #d8dee9"> </span>outlines<span style="color: #d8dee9"> </span>pandas<span style="color: #d8dee9"> </span>transformers<span style="color: #d8dee9"> torch</span><span style="color: #81a1c1; font-weight: bold">==</span><span style="color: #b48ead">2</span>.4.0<span style="color: #d8dee9"> </span>accelerate
+<p>You'll need to install the dependencies:</p>
+<div class="language-bash highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pip<span style="color: #d8dee9"> </span>install<span style="color: #d8dee9"> </span>outlines<span style="color: #d8dee9"> torch</span><span style="color: #81a1c1; font-weight: bold">==</span><span style="color: #b48ead">2</span>.4.0<span style="color: #d8dee9"> </span>transformers<span style="color: #d8dee9"> </span>accelerate<span style="color: #d8dee9"> </span>pillow<span style="color: #d8dee9"> </span>rich
+</span></code></pre></div>
+<h2 id="import-libraries">Import libraries</h2>
+<p>Load all the necessary libraries:</p>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span style="color: #616e87; font-style: italic"># LLM stuff</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span style="color: #81a1c1; font-weight: bold">import</span> <span style="color: #8fbcbb">outlines</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span style="color: #81a1c1; font-weight: bold">import</span> <span style="color: #8fbcbb">torch</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span style="color: #81a1c1; font-weight: bold">from</span> <span style="color: #8fbcbb">transformers</span> <span style="color: #81a1c1; font-weight: bold">import</span> <span style="color: #d8dee9">AutoProcessor</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span style="color: #81a1c1; font-weight: bold">from</span> <span style="color: #8fbcbb">pydantic</span> <span style="color: #81a1c1; font-weight: bold">import</span> <span style="color: #d8dee9">BaseModel</span><span style="color: #eceff4">,</span> <span style="color: #d8dee9">Field</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span style="color: #81a1c1; font-weight: bold">from</span> <span style="color: #8fbcbb">typing</span> <span style="color: #81a1c1; font-weight: bold">import</span> <span style="color: #d8dee9">Literal</span><span style="color: #eceff4">,</span> <span style="color: #d8dee9">Optional</span><span style="color: #eceff4">,</span> <span style="color: #d8dee9">List</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span style="color: #616e87; font-style: italic"># Image stuff</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span style="color: #81a1c1; font-weight: bold">from</span> <span style="color: #8fbcbb">PIL</span> <span style="color: #81a1c1; font-weight: bold">import</span> <span style="color: #d8dee9">Image</span>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span style="color: #81a1c1; font-weight: bold">import</span> <span style="color: #8fbcbb">requests</span>
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span style="color: #616e87; font-style: italic"># Rich for pretty printing</span>
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span style="color: #81a1c1; font-weight: bold">from</span> <span style="color: #8fbcbb">rich</span> <span style="color: #81a1c1; font-weight: bold">import</span> <span style="color: #81a1c1">print</span>
+</span></code></pre></div>
+<h2 id="choose-a-model">Choose a model</h2>
+<p>This example has been tested with <code>mistral-community/pixtral-12b</code> (<a href="https://huggingface.co/mistral-community/pixtral-12b">HF link</a>) and <code>Qwen/Qwen2-VL-7B-Instruct</code> (<a href="https://huggingface.co/Qwen/Qwen2-VL-7B-Instruct">HF link</a>).</p>
+<p>We recommend Qwen-2-VL as we have found it to be more accurate than Pixtral.</p>
+<p>If you want to use Qwen-2-VL, you can do the following:</p>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span style="color: #616e87; font-style: italic"># To use Qwen-2-VL:</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span style="color: #81a1c1; font-weight: bold">from</span> <span style="color: #8fbcbb">transformers</span> <span style="color: #81a1c1; font-weight: bold">import</span> <span style="color: #d8dee9">Qwen2VLForConditionalGeneration</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span style="color: #d8dee9">model_name</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #a3be8c">&quot;Qwen/Qwen2-VL-7B-Instruct&quot;</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span style="color: #d8dee9">model_class</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #d8dee9">Qwen2VLForConditionalGeneration</span>
+</span></code></pre></div>
+<p>If you want to use Pixtral, you can do the following:</p>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span style="color: #616e87; font-style: italic"># To use Pixtral:</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span style="color: #81a1c1; font-weight: bold">from</span> <span style="color: #8fbcbb">transformers</span> <span style="color: #81a1c1; font-weight: bold">import</span> <span style="color: #d8dee9">LlavaForConditionalGeneration</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span style="color: #d8dee9">model_name</span><span style="color: #81a1c1; font-weight: bold">=</span><span style="color: #a3be8c">&quot;mistral-community/pixtral-12b&quot;</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span style="color: #d8dee9">model_class</span><span style="color: #81a1c1; font-weight: bold">=</span><span style="color: #d8dee9">LlavaForConditionalGeneration</span>
 </span></code></pre></div>
 <h2 id="load-the-model">Load the model</h2>
-<p>Choose your language model. We'll use Phi-3 mini, which is small enough to run on reasonably small machines.</p>
-<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span style="color: #81a1c1; font-weight: bold">import</span> <span style="color: #8fbcbb">outlines</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span style="color: #81a1c1; font-weight: bold">import</span> <span style="color: #8fbcbb">torch</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span style="color: #d8dee9">model_name</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #a3be8c">&#39;microsoft/Phi-3-mini-4k-instruct&#39;</span>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span style="color: #d8dee9">model</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #d8dee9">outlines</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">models</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">transformers</span><span style="color: #eceff4">(</span>
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span style="color: #d8dee9">model_name</span><span style="color: #eceff4">,</span>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span style="color: #d8dee9">device</span><span style="color: #81a1c1; font-weight: bold">=</span><span style="color: #a3be8c">&#39;auto&#39;</span><span style="color: #eceff4">,</span>
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span style="color: #d8dee9">model_kwargs</span><span style="color: #81a1c1; font-weight: bold">=</span><span style="color: #eceff4">{</span>
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>        <span style="color: #616e87; font-style: italic"># To reduce memory usage, we&#39;ll use bfloat16</span>
-</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>        <span style="color: #a3be8c">&quot;torch_dtype&quot;</span><span style="color: #eceff4">:</span> <span style="color: #d8dee9">torch</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">bfloat16</span><span style="color: #eceff4">,</span>
-</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    <span style="color: #eceff4">},</span>
-</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span style="color: #eceff4">)</span>
+<p>Load the model into memory:</p>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span style="color: #d8dee9">model</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #d8dee9">outlines</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">models</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">transformers_vision</span><span style="color: #eceff4">(</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>    <span style="color: #d8dee9">model_name</span><span style="color: #eceff4">,</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>    <span style="color: #d8dee9">model_class</span><span style="color: #81a1c1; font-weight: bold">=</span><span style="color: #d8dee9">model_class</span><span style="color: #eceff4">,</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span style="color: #d8dee9">model_kwargs</span><span style="color: #81a1c1; font-weight: bold">=</span><span style="color: #eceff4">{</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>        <span style="color: #a3be8c">&quot;device_map&quot;</span><span style="color: #eceff4">:</span> <span style="color: #a3be8c">&quot;auto&quot;</span><span style="color: #eceff4">,</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>        <span style="color: #a3be8c">&quot;torch_dtype&quot;</span><span style="color: #eceff4">:</span> <span style="color: #d8dee9">torch</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">bfloat16</span><span style="color: #eceff4">,</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>    <span style="color: #eceff4">},</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>    <span style="color: #d8dee9">processor_kwargs</span><span style="color: #81a1c1; font-weight: bold">=</span><span style="color: #eceff4">{</span>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>        <span style="color: #a3be8c">&quot;device&quot;</span><span style="color: #eceff4">:</span> <span style="color: #a3be8c">&quot;cuda&quot;</span><span style="color: #eceff4">,</span> <span style="color: #616e87; font-style: italic"># set to &quot;cpu&quot; if you don&#39;t have a GPU</span>
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>    <span style="color: #eceff4">},</span>
+</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span style="color: #eceff4">)</span>
 </span></code></pre></div>
-<h2 id="set-up-the-data">Set up the data</h2>
-<p>For brevity, we've attached the markdown version of Nvidia's 10k report. The <a href="https://github.com/dottxt-ai/demos/tree/main/earnings-reports">full demonstration</a> processes the raw HTML version of the report to these markdown tables. Pages are filtered by whether they seem to contain income statements, and then compacted into the string you see below.</p>
-<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span style="color: #d8dee9">income_statement</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #a3be8c">&quot;&quot;&quot;</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span style="color: #a3be8c">Table of ContentsNVIDIA Corporation and SubsidiariesConsolidated Statements of Income(In millions, except per share data)</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span style="color: #a3be8c">|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |</span>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span style="color: #a3be8c">| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |</span>
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span style="color: #a3be8c">|  | | | Year Ended | | | | | | | | | | | | | | |</span>
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span style="color: #a3be8c">|  | | | Jan 28, 2024 | | |  | | | Jan 29, 2023 | | |  | | | Jan 30, 2022 | | |</span>
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span style="color: #a3be8c">| Revenue | | | $ | 60,922 |  |  | | | $ | 26,974 |  |  | | | $ | 26,914 |  |</span>
-</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span style="color: #a3be8c">| Cost of revenue | | | 16,621 | |  |  | | | 11,618 | |  |  | | | 9,439 | |  |</span>
-</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span style="color: #a3be8c">| Gross profit | | | 44,301 | |  |  | | | 15,356 | |  |  | | | 17,475 | |  |</span>
-</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span style="color: #a3be8c">| Operating expenses | | |  | | |  | | |  | | |  | | |  | | |</span>
-</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span style="color: #a3be8c">| Research and development | | | 8,675 | |  |  | | | 7,339 | |  |  | | | 5,268 | |  |</span>
-</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span style="color: #a3be8c">| Sales, general and administrative | | | 2,654 | |  |  | | | 2,440 | |  |  | | | 2,166 | |  |</span>
-</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span style="color: #a3be8c">| Acquisition termination cost | | |  | |  |  | | | 1,353 | |  |  | | |  | |  |</span>
-</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span style="color: #a3be8c">| Total operating expenses | | | 11,329 | |  |  | | | 11,132 | |  |  | | | 7,434 | |  |</span>
-</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span style="color: #a3be8c">| Operating income | | | 32,972 | |  |  | | | 4,224 | |  |  | | | 10,041 | |  |</span>
-</span><span id="__span-2-17"><a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a><span style="color: #a3be8c">| Interest income | | | 866 | |  |  | | | 267 | |  |  | | | 29 | |  |</span>
-</span><span id="__span-2-18"><a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a><span style="color: #a3be8c">| Interest expense | | | (257) | |  |  | | | (262) | |  |  | | | (236) | |  |</span>
-</span><span id="__span-2-19"><a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a><span style="color: #a3be8c">| Other, net | | | 237 | |  |  | | | (48) | |  |  | | | 107 | |  |</span>
-</span><span id="__span-2-20"><a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a><span style="color: #a3be8c">| Other income (expense), net | | | 846 | |  |  | | | (43) | |  |  | | | (100) | |  |</span>
-</span><span id="__span-2-21"><a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a><span style="color: #a3be8c">| Income before income tax | | | 33,818 | |  |  | | | 4,181 | |  |  | | | 9,941 | |  |</span>
-</span><span id="__span-2-22"><a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a><span style="color: #a3be8c">| Income tax expense (benefit) | | | 4,058 | |  |  | | | (187) | |  |  | | | 189 | |  |</span>
-</span><span id="__span-2-23"><a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a><span style="color: #a3be8c">| Net income | | | $ | 29,760 |  |  | | | $ | 4,368 |  |  | | | $ | 9,752 |  |</span>
-</span><span id="__span-2-24"><a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a><span style="color: #a3be8c">|  | | |  | | |  | | |  | | |  | | |  | | |</span>
-</span><span id="__span-2-25"><a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a><span style="color: #a3be8c">| Net income per share: | | |  | | |  | | |  | | |  | | |  | | |</span>
-</span><span id="__span-2-26"><a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a><span style="color: #a3be8c">| Basic | | | $ | 12\.05 |  |  | | | $ | 1\.76 |  |  | | | $ | 3\.91 |  |</span>
-</span><span id="__span-2-27"><a id="__codelineno-2-27" name="__codelineno-2-27" href="#__codelineno-2-27"></a><span style="color: #a3be8c">| Diluted | | | $ | 11\.93 |  |  | | | $ | 1\.74 |  |  | | | $ | 3\.85 |  |</span>
-</span><span id="__span-2-28"><a id="__codelineno-2-28" name="__codelineno-2-28" href="#__codelineno-2-28"></a><span style="color: #a3be8c">|  | | |  | | |  | | |  | | |  | | |  | | |</span>
-</span><span id="__span-2-29"><a id="__codelineno-2-29" name="__codelineno-2-29" href="#__codelineno-2-29"></a><span style="color: #a3be8c">| Weighted average shares used in per share computation: | | |  | | |  | | |  | | |  | | |  | | |</span>
-</span><span id="__span-2-30"><a id="__codelineno-2-30" name="__codelineno-2-30" href="#__codelineno-2-30"></a><span style="color: #a3be8c">| Basic | | | 2,469 | |  |  | | | 2,487 | |  |  | | | 2,496 | |  |</span>
-</span><span id="__span-2-31"><a id="__codelineno-2-31" name="__codelineno-2-31" href="#__codelineno-2-31"></a><span style="color: #a3be8c">| Diluted | | | 2,494 | |  |  | | | 2,507 | |  |  | | | 2,535 | |  |</span>
-</span><span id="__span-2-32"><a id="__codelineno-2-32" name="__codelineno-2-32" href="#__codelineno-2-32"></a><span style="color: #a3be8c">&quot;&quot;&quot;</span>
+<h2 id="image-processing">Image processing</h2>
+<p>Images can be quite large. In GPU-poor environments, you may need to resize the image to a smaller size.</p>
+<p>Here's a helper function to do that:</p>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span style="color: #81a1c1; font-weight: bold">def</span> <span style="color: #88c0d0">load_and_resize_image</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">image_path</span><span style="color: #eceff4">,</span> <span style="color: #d8dee9">max_size</span><span style="color: #81a1c1; font-weight: bold">=</span><span style="color: #b48ead">1024</span><span style="color: #eceff4">):</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span style="color: #d8dee9">    </span><span style="color: #616e87">&quot;&quot;&quot;</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span style="color: #616e87">    Load and resize an image while maintaining aspect ratio</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span style="color: #616e87">    Args:</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span style="color: #616e87">        image_path: Path to the image file</span>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span style="color: #616e87">        max_size: Maximum dimension (width or height) of the output image</span>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span style="color: #616e87">    Returns:</span>
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span style="color: #616e87">        PIL Image: Resized image</span>
+</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span style="color: #616e87">    &quot;&quot;&quot;</span>
+</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>    <span style="color: #d8dee9">image</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #d8dee9">Image</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">open</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">image_path</span><span style="color: #eceff4">)</span>
+</span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>
+</span><span id="__span-5-14"><a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>    <span style="color: #616e87; font-style: italic"># Get current dimensions</span>
+</span><span id="__span-5-15"><a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>    <span style="color: #d8dee9">width</span><span style="color: #eceff4">,</span> <span style="color: #d8dee9">height</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #d8dee9">image</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">size</span>
+</span><span id="__span-5-16"><a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a>
+</span><span id="__span-5-17"><a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a>    <span style="color: #616e87; font-style: italic"># Calculate scaling factor</span>
+</span><span id="__span-5-18"><a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a>    <span style="color: #d8dee9">scale</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #81a1c1">min</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">max_size</span> <span style="color: #81a1c1; font-weight: bold">/</span> <span style="color: #d8dee9">width</span><span style="color: #eceff4">,</span> <span style="color: #d8dee9">max_size</span> <span style="color: #81a1c1; font-weight: bold">/</span> <span style="color: #d8dee9">height</span><span style="color: #eceff4">)</span>
+</span><span id="__span-5-19"><a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a>
+</span><span id="__span-5-20"><a id="__codelineno-5-20" name="__codelineno-5-20" href="#__codelineno-5-20"></a>    <span style="color: #616e87; font-style: italic"># Only resize if image is larger than max_size</span>
+</span><span id="__span-5-21"><a id="__codelineno-5-21" name="__codelineno-5-21" href="#__codelineno-5-21"></a>    <span style="color: #81a1c1; font-weight: bold">if</span> <span style="color: #d8dee9">scale</span> <span style="color: #81a1c1; font-weight: bold">&lt;</span> <span style="color: #b48ead">1</span><span style="color: #eceff4">:</span>
+</span><span id="__span-5-22"><a id="__codelineno-5-22" name="__codelineno-5-22" href="#__codelineno-5-22"></a>        <span style="color: #d8dee9">new_width</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #81a1c1">int</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">width</span> <span style="color: #81a1c1; font-weight: bold">*</span> <span style="color: #d8dee9">scale</span><span style="color: #eceff4">)</span>
+</span><span id="__span-5-23"><a id="__codelineno-5-23" name="__codelineno-5-23" href="#__codelineno-5-23"></a>        <span style="color: #d8dee9">new_height</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #81a1c1">int</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">height</span> <span style="color: #81a1c1; font-weight: bold">*</span> <span style="color: #d8dee9">scale</span><span style="color: #eceff4">)</span>
+</span><span id="__span-5-24"><a id="__codelineno-5-24" name="__codelineno-5-24" href="#__codelineno-5-24"></a>        <span style="color: #d8dee9">image</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #d8dee9">image</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">resize</span><span style="color: #eceff4">((</span><span style="color: #d8dee9">new_width</span><span style="color: #eceff4">,</span> <span style="color: #d8dee9">new_height</span><span style="color: #eceff4">),</span> <span style="color: #d8dee9">Image</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">Resampling</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">LANCZOS</span><span style="color: #eceff4">)</span>
+</span><span id="__span-5-25"><a id="__codelineno-5-25" name="__codelineno-5-25" href="#__codelineno-5-25"></a>
+</span><span id="__span-5-26"><a id="__codelineno-5-26" name="__codelineno-5-26" href="#__codelineno-5-26"></a>    <span style="color: #81a1c1; font-weight: bold">return</span> <span style="color: #d8dee9">image</span>
 </span></code></pre></div>
-<p>The markdown tables extracted from the earnings reports can vary widely in row names, column counts, data types, etc. The advantage of LLMs here is that we can define the data we want in terms of the data types, and the LLM will output the data in the desired format.</p>
-<p>For comparison, here is how the income statement looks in the original HTML:</p>
-<p><img alt="Nvidia income statement" src="../images/nvidia-income.png" /></p>
-<h2 id="define-the-data-we-want">Define the data we want</h2>
-<p>Outlines is often used for JSON output, but it can also be used for CSV. We know the columns we want to extract, and we know the data types of the columns. Year for example is always a four-digit number, revenue is a number with commas, and so on.</p>
-<p>We can define a regex pattern for each column type:</p>
-<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span style="color: #616e87; font-style: italic"># Define the column type regex patterns</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span style="color: #d8dee9">column_types</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #eceff4">{</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span style="color: #616e87; font-style: italic"># Year is always a four-digit number</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span style="color: #a3be8c">&quot;year&quot;</span><span style="color: #eceff4">:</span> <span style="color: #a3be8c">r&quot;\d{4}&quot;</span><span style="color: #eceff4">,</span>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>
-</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span style="color: #616e87; font-style: italic"># Revenue, operating income, and net income are always numbers with commas.</span>
-</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span style="color: #616e87; font-style: italic"># This regex permits integers that may begin with a minus sign, and may have</span>
-</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span style="color: #616e87; font-style: italic"># commas separating the thousands, millions, etc.</span>
-</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>    <span style="color: #a3be8c">&quot;integer_comma&quot;</span><span style="color: #eceff4">:</span> <span style="color: #a3be8c">r&quot;((-?\d+),?\d+|(-?\d+))&quot;</span><span style="color: #eceff4">,</span>
-</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>    <span style="color: #616e87; font-style: italic"># Number is currently not used, but it represents a number with up to two decimal places.</span>
-</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>    <span style="color: #a3be8c">&quot;number&quot;</span><span style="color: #eceff4">:</span> <span style="color: #a3be8c">r&quot;(-?\d+(?:\.\d{1,2})?)&quot;</span><span style="color: #eceff4">,</span>
-</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span style="color: #eceff4">}</span>
+<p>You can change the resolution of the image by changing the <code>max_size</code> argument. Small max sizes will make the image more blurry, but processing will be faster and require less memory.</p>
+<h2 id="load-an-image">Load an image</h2>
+<p>Load an image and resize it. We've provided a sample image of a Trader Joe's receipt, but you can use any image you'd like.</p>
+<p>Here's what the image looks like:</p>
+<p><img alt="Trader Joe's receipt" src="../images/trader-joes-receipt.jpg" /></p>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span style="color: #616e87; font-style: italic"># Path to the image</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span style="color: #d8dee9">image_path</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #a3be8c">&quot;https://dottxt-ai.github.io/outlines/main/cookbook/images/trader-joes-receipt.png&quot;</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span style="color: #616e87; font-style: italic"># Download the image</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span style="color: #d8dee9">response</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #d8dee9">requests</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">get</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">image_path</span><span style="color: #eceff4">)</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span style="color: #81a1c1; font-weight: bold">with</span> <span style="color: #81a1c1">open</span><span style="color: #eceff4">(</span><span style="color: #a3be8c">&quot;receipt.png&quot;</span><span style="color: #eceff4">,</span> <span style="color: #a3be8c">&quot;wb&quot;</span><span style="color: #eceff4">)</span> <span style="color: #81a1c1; font-weight: bold">as</span> <span style="color: #d8dee9">f</span><span style="color: #eceff4">:</span>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>    <span style="color: #d8dee9">f</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">write</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">response</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">content</span><span style="color: #eceff4">)</span>
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>
+</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span style="color: #616e87; font-style: italic"># Load + resize the image</span>
+</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span style="color: #d8dee9">image</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #d8dee9">load_and_resize_image</span><span style="color: #eceff4">(</span><span style="color: #a3be8c">&quot;receipt.png&quot;</span><span style="color: #eceff4">)</span>
 </span></code></pre></div>
-<p>Next, let's choose the columns we want to extract. We want</p>
+<h2 id="define-the-output-structure">Define the output structure</h2>
+<p>We'll define a Pydantic model to describe the data we want to extract from the image.</p>
+<p>In our case, we want to extract the following information:</p>
 <ul>
-<li>Year, always a four-digit number</li>
-<li>Revenue, a number with commas</li>
-<li>Operating income, a number with commas</li>
-<li>Net income, a number with commas</li>
+<li>The store name</li>
+<li>The store address</li>
+<li>The store number</li>
+<li>A list of items, including the name, quantity, price per unit, and total price</li>
+<li>The tax</li>
+<li>The total</li>
+<li>The date</li>
+<li>The payment method</li>
 </ul>
-<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span style="color: #616e87; font-style: italic"># Define the columns to extract, and their data types.</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span style="color: #d8dee9">columns_to_extract</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #eceff4">{</span>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>    <span style="color: #a3be8c">&quot;year&quot;</span><span style="color: #eceff4">:</span> <span style="color: #a3be8c">&quot;year&quot;</span><span style="color: #eceff4">,</span>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span style="color: #a3be8c">&quot;revenue&quot;</span><span style="color: #eceff4">:</span> <span style="color: #a3be8c">&quot;integer_comma&quot;</span><span style="color: #eceff4">,</span>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span style="color: #a3be8c">&quot;operating_income&quot;</span><span style="color: #eceff4">:</span> <span style="color: #a3be8c">&quot;integer_comma&quot;</span><span style="color: #eceff4">,</span>
-</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    <span style="color: #a3be8c">&quot;net_income&quot;</span><span style="color: #eceff4">:</span> <span style="color: #a3be8c">&quot;integer_comma&quot;</span><span style="color: #eceff4">,</span>
-</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span style="color: #eceff4">}</span>
+<p>Most fields are optional, as not all receipts contain all information.</p>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span style="color: #81a1c1; font-weight: bold">class</span> <span style="color: #8fbcbb">Item</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">BaseModel</span><span style="color: #eceff4">):</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>    <span style="color: #d8dee9">name</span><span style="color: #eceff4">:</span> <span style="color: #81a1c1">str</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>    <span style="color: #d8dee9">quantity</span><span style="color: #eceff4">:</span> <span style="color: #d8dee9">Optional</span><span style="color: #eceff4">[</span><span style="color: #81a1c1">int</span><span style="color: #eceff4">]</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>    <span style="color: #d8dee9">price_per_unit</span><span style="color: #eceff4">:</span> <span style="color: #d8dee9">Optional</span><span style="color: #eceff4">[</span><span style="color: #81a1c1">float</span><span style="color: #eceff4">]</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>    <span style="color: #d8dee9">total_price</span><span style="color: #eceff4">:</span> <span style="color: #d8dee9">Optional</span><span style="color: #eceff4">[</span><span style="color: #81a1c1">float</span><span style="color: #eceff4">]</span>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span style="color: #81a1c1; font-weight: bold">class</span> <span style="color: #8fbcbb">ReceiptSummary</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">BaseModel</span><span style="color: #eceff4">):</span>
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>    <span style="color: #d8dee9">store_name</span><span style="color: #eceff4">:</span> <span style="color: #81a1c1">str</span>
+</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>    <span style="color: #d8dee9">store_address</span><span style="color: #eceff4">:</span> <span style="color: #81a1c1">str</span>
+</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>    <span style="color: #d8dee9">store_number</span><span style="color: #eceff4">:</span> <span style="color: #d8dee9">Optional</span><span style="color: #eceff4">[</span><span style="color: #81a1c1">int</span><span style="color: #eceff4">]</span>
+</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>    <span style="color: #d8dee9">items</span><span style="color: #eceff4">:</span> <span style="color: #d8dee9">List</span><span style="color: #eceff4">[</span><span style="color: #d8dee9">Item</span><span style="color: #eceff4">]</span>
+</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>    <span style="color: #d8dee9">tax</span><span style="color: #eceff4">:</span> <span style="color: #d8dee9">Optional</span><span style="color: #eceff4">[</span><span style="color: #81a1c1">float</span><span style="color: #eceff4">]</span>
+</span><span id="__span-7-13"><a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a>    <span style="color: #d8dee9">total</span><span style="color: #eceff4">:</span> <span style="color: #d8dee9">Optional</span><span style="color: #eceff4">[</span><span style="color: #81a1c1">float</span><span style="color: #eceff4">]</span>
+</span><span id="__span-7-14"><a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a>    <span style="color: #616e87; font-style: italic"># Date is in the format YYYY-MM-DD. We can apply a regex pattern to ensure it&#39;s formatted correctly.</span>
+</span><span id="__span-7-15"><a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a>    <span style="color: #d8dee9">date</span><span style="color: #eceff4">:</span> <span style="color: #d8dee9">Optional</span><span style="color: #eceff4">[</span><span style="color: #81a1c1">str</span><span style="color: #eceff4">]</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #d8dee9">Field</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">pattern</span><span style="color: #81a1c1; font-weight: bold">=</span><span style="color: #a3be8c">r&#39;\d{4}-\d{2}-\d{2}&#39;</span><span style="color: #eceff4">,</span> <span style="color: #d8dee9">description</span><span style="color: #81a1c1; font-weight: bold">=</span><span style="color: #a3be8c">&quot;Date in the format YYYY-MM-DD&quot;</span><span style="color: #eceff4">)</span>
+</span><span id="__span-7-16"><a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a>    <span style="color: #d8dee9">payment_method</span><span style="color: #eceff4">:</span> <span style="color: #d8dee9">Literal</span><span style="color: #eceff4">[</span><span style="color: #a3be8c">&quot;cash&quot;</span><span style="color: #eceff4">,</span> <span style="color: #a3be8c">&quot;credit&quot;</span><span style="color: #eceff4">,</span> <span style="color: #a3be8c">&quot;debit&quot;</span><span style="color: #eceff4">,</span> <span style="color: #a3be8c">&quot;check&quot;</span><span style="color: #eceff4">,</span> <span style="color: #a3be8c">&quot;other&quot;</span><span style="color: #eceff4">]</span>
 </span></code></pre></div>
-<p>You can modify <code>column_type_regex</code> to match the data types of the columns you want to extract.  Adding a new financial metric to extract is as simple as adding a new key/value pair to <code>columns_to_extract</code>:</p>
-<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span style="color: #d8dee9">columns_to_extract</span><span style="color: #eceff4">[</span><span style="color: #a3be8c">&quot;diluted_earnings_per_share&quot;</span><span style="color: #eceff4">]</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #a3be8c">&quot;number&quot;</span>
+<h2 id="prepare-the-prompt">Prepare the prompt</h2>
+<p>We'll use the <code>AutoProcessor</code> to convert the image and the text prompt into a format that the model can understand. Practically,
+this is the code that adds user, system, assistant, and image tokens to the prompt.</p>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span style="color: #616e87; font-style: italic"># Set up the content you want to send to the model</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span style="color: #d8dee9">messages</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #eceff4">[</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>    <span style="color: #eceff4">{</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>        <span style="color: #a3be8c">&quot;role&quot;</span><span style="color: #eceff4">:</span> <span style="color: #a3be8c">&quot;user&quot;</span><span style="color: #eceff4">,</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>        <span style="color: #a3be8c">&quot;content&quot;</span><span style="color: #eceff4">:</span> <span style="color: #eceff4">[</span>
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>            <span style="color: #eceff4">{</span>
+</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>                <span style="color: #616e87; font-style: italic"># The image is provided as a PIL Image object</span>
+</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>                <span style="color: #a3be8c">&quot;type&quot;</span><span style="color: #eceff4">:</span> <span style="color: #a3be8c">&quot;image&quot;</span><span style="color: #eceff4">,</span>
+</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>                <span style="color: #a3be8c">&quot;image&quot;</span><span style="color: #eceff4">:</span> <span style="color: #d8dee9">image</span><span style="color: #eceff4">,</span>
+</span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>            <span style="color: #eceff4">},</span>
+</span><span id="__span-8-11"><a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>            <span style="color: #eceff4">{</span>
+</span><span id="__span-8-12"><a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a>                <span style="color: #a3be8c">&quot;type&quot;</span><span style="color: #eceff4">:</span> <span style="color: #a3be8c">&quot;text&quot;</span><span style="color: #eceff4">,</span>
+</span><span id="__span-8-13"><a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a>                <span style="color: #a3be8c">&quot;text&quot;</span><span style="color: #eceff4">:</span> <span style="color: #a3be8c">f&quot;&quot;&quot;You are an expert at extracting information from receipts.</span>
+</span><span id="__span-8-14"><a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a><span style="color: #a3be8c">                Please extract the information from the receipt. Be as detailed as possible --</span>
+</span><span id="__span-8-15"><a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a><span style="color: #a3be8c">                missing or misreporting information is a crime.</span>
+</span><span id="__span-8-16"><a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a>
+</span><span id="__span-8-17"><a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a><span style="color: #a3be8c">                Return the information in the following JSON schema:</span>
+</span><span id="__span-8-18"><a id="__codelineno-8-18" name="__codelineno-8-18" href="#__codelineno-8-18"></a><span style="color: #a3be8c">                {</span><span style="color: #d8dee9">ReceiptSummary</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">model_json_schema</span><span style="color: #eceff4">()</span><span style="color: #a3be8c">}</span>
+</span><span id="__span-8-19"><a id="__codelineno-8-19" name="__codelineno-8-19" href="#__codelineno-8-19"></a><span style="color: #a3be8c">            &quot;&quot;&quot;</span><span style="color: #eceff4">},</span>
+</span><span id="__span-8-20"><a id="__codelineno-8-20" name="__codelineno-8-20" href="#__codelineno-8-20"></a>        <span style="color: #eceff4">],</span>
+</span><span id="__span-8-21"><a id="__codelineno-8-21" name="__codelineno-8-21" href="#__codelineno-8-21"></a>    <span style="color: #eceff4">}</span>
+</span><span id="__span-8-22"><a id="__codelineno-8-22" name="__codelineno-8-22" href="#__codelineno-8-22"></a><span style="color: #eceff4">]</span>
+</span><span id="__span-8-23"><a id="__codelineno-8-23" name="__codelineno-8-23" href="#__codelineno-8-23"></a>
+</span><span id="__span-8-24"><a id="__codelineno-8-24" name="__codelineno-8-24" href="#__codelineno-8-24"></a><span style="color: #616e87; font-style: italic"># Convert the messages to the final prompt</span>
+</span><span id="__span-8-25"><a id="__codelineno-8-25" name="__codelineno-8-25" href="#__codelineno-8-25"></a><span style="color: #d8dee9">processor</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #d8dee9">AutoProcessor</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">from_pretrained</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">model_name</span><span style="color: #eceff4">)</span>
+</span><span id="__span-8-26"><a id="__codelineno-8-26" name="__codelineno-8-26" href="#__codelineno-8-26"></a><span style="color: #d8dee9">prompt</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #d8dee9">processor</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">apply_chat_template</span><span style="color: #eceff4">(</span>
+</span><span id="__span-8-27"><a id="__codelineno-8-27" name="__codelineno-8-27" href="#__codelineno-8-27"></a>    <span style="color: #d8dee9">messages</span><span style="color: #eceff4">,</span> <span style="color: #d8dee9">tokenize</span><span style="color: #81a1c1; font-weight: bold">=False</span><span style="color: #eceff4">,</span> <span style="color: #d8dee9">add_generation_prompt</span><span style="color: #81a1c1; font-weight: bold">=True</span>
+</span><span id="__span-8-28"><a id="__codelineno-8-28" name="__codelineno-8-28" href="#__codelineno-8-28"></a><span style="color: #eceff4">)</span>
 </span></code></pre></div>
-<p>Additional columns are not well tested for accuracy, so use with caution.</p>
-<h2 id="create-the-regex-describing-the-data-we-want">Create the regex describing the data we want</h2>
-<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span style="color: #616e87; font-style: italic"># Create the header line. This is the requested column names</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span style="color: #616e87; font-style: italic"># separated by commas, i.e. &quot;year,revenue,...&quot;</span>
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span style="color: #d8dee9">header</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #a3be8c">&quot;,&quot;</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">join</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">columns_to_extract</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">keys</span><span style="color: #eceff4">())</span>
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>
-</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span style="color: #616e87; font-style: italic"># Create the data capture patterns. These are the regex patterns</span>
-</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span style="color: #616e87; font-style: italic"># that will be used to capture the data in each column</span>
-</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span style="color: #d8dee9">data_patterns</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #eceff4">[</span><span style="color: #d8dee9">column_types</span><span style="color: #eceff4">[</span><span style="color: #d8dee9">dtype</span><span style="color: #eceff4">]</span> <span style="color: #81a1c1; font-weight: bold">for</span> <span style="color: #d8dee9">dtype</span> <span style="color: #81a1c1; font-weight: bold">in</span> <span style="color: #d8dee9">columns_to_extract</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">values</span><span style="color: #eceff4">()]</span>
-</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span style="color: #d8dee9">data_line</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #a3be8c">&quot;,&quot;</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">join</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">data_patterns</span><span style="color: #eceff4">)</span>
-</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>
-</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span style="color: #616e87; font-style: italic"># Our final regex pattern.</span>
-</span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span style="color: #d8dee9">max_rows</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #b48ead">3</span> <span style="color: #616e87; font-style: italic"># We expect 3 rows of data, firms usually report 3 years of income statements</span>
-</span><span id="__span-6-12"><a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a><span style="color: #d8dee9">csv_regex</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #a3be8c">f&quot;{</span><span style="color: #d8dee9">header</span><span style="color: #a3be8c">}(</span><span style="color: #ebcb8b">\n</span><span style="color: #a3be8c">{</span><span style="color: #d8dee9">data_line</span><span style="color: #a3be8c">})</span><span style="color: #ebcb8b">{{</span><span style="color: #a3be8c">,{</span><span style="color: #d8dee9">max_rows</span><span style="color: #a3be8c">}</span><span style="color: #ebcb8b">}}\n\n</span><span style="color: #a3be8c">&quot;</span>
-</span><span id="__span-6-13"><a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a>
-</span><span id="__span-6-14"><a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a><span style="color: #81a1c1">print</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">csv_regex</span><span style="color: #eceff4">)</span>
+<p>If you are curious, the final prompt that is sent to the model looks (roughly) like this:</p>
+<div class="language-text highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>&lt;|im_start|&gt;system
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>You are a helpful assistant.&lt;|im_end|&gt;
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>&lt;|im_start|&gt;user
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>&lt;|vision_start|&gt;&lt;|image_pad|&gt;&lt;|vision_end|&gt;
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>You are an expert at extracting information from receipts.
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>Please extract the information from the receipt. Be as detailed as
+</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>possible -- missing or misreporting information is a crime.
+</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>
+</span><span id="__span-9-9"><a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>Return the information in the following JSON schema:
+</span><span id="__span-9-10"><a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a>
+</span><span id="__span-9-11"><a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a>&lt;JSON SCHEMA OMITTED&gt;
+</span><span id="__span-9-12"><a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a>&lt;|im_end|&gt;
+</span><span id="__span-9-13"><a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a>&lt;|im_start|&gt;assistant
 </span></code></pre></div>
-<p>which gives us</p>
-<div class="language-text highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>year,revenue,operating_income,net_income,basic_earnings_per_share(
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>\d{4},((-?\d+),?\d+|(-?\d+)),((-?\d+),?\d+|(-?\d+)),((-?\d+),?\d+|(-?\d+)),(-?\d+(?:\.\d{1,2})?)){,3}
+<h2 id="run-the-model">Run the model</h2>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span style="color: #616e87; font-style: italic"># Prepare a function to process receipts</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span style="color: #d8dee9">receipt_summary_generator</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #d8dee9">outlines</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">generate</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">json</span><span style="color: #eceff4">(</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>    <span style="color: #d8dee9">model</span><span style="color: #eceff4">,</span>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>    <span style="color: #d8dee9">ReceiptSummary</span><span style="color: #eceff4">,</span>
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>
+</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>    <span style="color: #616e87; font-style: italic"># Greedy sampling is a good idea for numeric</span>
+</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>    <span style="color: #616e87; font-style: italic"># data extraction -- no randomness.</span>
+</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>    <span style="color: #d8dee9">sampler</span><span style="color: #81a1c1; font-weight: bold">=</span><span style="color: #d8dee9">outlines</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">samplers</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">greedy</span><span style="color: #eceff4">()</span>
+</span><span id="__span-10-9"><a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a><span style="color: #eceff4">)</span>
+</span><span id="__span-10-10"><a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a>
+</span><span id="__span-10-11"><a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a><span style="color: #616e87; font-style: italic"># Generate the receipt summary</span>
+</span><span id="__span-10-12"><a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a><span style="color: #d8dee9">result</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #d8dee9">receipt_summary_generator</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">prompt</span><span style="color: #eceff4">,</span> <span style="color: #eceff4">[</span><span style="color: #d8dee9">image</span><span style="color: #eceff4">])</span>
+</span><span id="__span-10-13"><a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a><span style="color: #81a1c1">print</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">result</span><span style="color: #eceff4">)</span>
 </span></code></pre></div>
-<p>Pretty hairy, right? Thankfully, we have a simple function to construct this regex for you. The regex defines a header line, followed by a data line that repeats for each row of data we want to extract. Passing the regex to <code>outlines.generate.regex</code> will produce a function that will <strong>always</strong> produce a CSV string that is consistent with the regex.</p>
-<h2 id="prompting-the-model">Prompting the model</h2>
-<p>Outlines does not add system or instruction tokens by default, so we need to use <code>transformers.AutoTokenizer</code> to add them for whatever model we're using.</p>
-<p><div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span style="color: #81a1c1; font-weight: bold">from</span> <span style="color: #8fbcbb">transformers</span> <span style="color: #81a1c1; font-weight: bold">import</span> <span style="color: #d8dee9">AutoTokenizer</span>
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>
-</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span style="color: #d8dee9">tokenizer</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #d8dee9">AutoTokenizer</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">from_pretrained</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">model_name</span><span style="color: #eceff4">)</span>
-</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>
-</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span style="color: #81a1c1; font-weight: bold">def</span> <span style="color: #88c0d0">add_instruction</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">prompt</span><span style="color: #eceff4">):</span>
-</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>    <span style="color: #81a1c1; font-weight: bold">return</span> <span style="color: #d8dee9">tokenizer</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">apply_chat_template</span><span style="color: #eceff4">([{</span><span style="color: #a3be8c">&quot;role&quot;</span><span style="color: #eceff4">:</span> <span style="color: #a3be8c">&quot;user&quot;</span><span style="color: #eceff4">,</span> <span style="color: #a3be8c">&quot;content&quot;</span><span style="color: #eceff4">:</span> <span style="color: #d8dee9">prompt</span><span style="color: #eceff4">}],</span> <span style="color: #d8dee9">tokenize</span><span style="color: #81a1c1; font-weight: bold">=False</span><span style="color: #eceff4">,</span> <span style="color: #d8dee9">add_generation_prompt</span><span style="color: #81a1c1; font-weight: bold">=True</span><span style="color: #eceff4">)</span>
-</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>
-</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span style="color: #81a1c1">print</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">add_instruction</span><span style="color: #eceff4">(</span><span style="color: #a3be8c">&quot;Howdy&quot;</span><span style="color: #eceff4">))</span>
+<h2 id="output">Output</h2>
+<p>The output should look like this:</p>
+<div class="language-text highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>ReceiptSummary(
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>    store_name=&quot;Trader Joe&#39;s&quot;,
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>    store_address=&#39;401 Bay Street, San Francisco, CA 94133&#39;,
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>    store_number=0,
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>    items=[
+</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>        Item(name=&#39;BANANA EACH&#39;, quantity=7, price_per_unit=0.23, total_price=1.61),
+</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>        Item(name=&#39;BAREBELLS CHOCOLATE DOUG&#39;, quantity=1, price_per_unit=2.29, total_price=2.29),
+</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>        Item(name=&#39;BAREBELLS CREAMY CRISP&#39;, quantity=1, price_per_unit=2.29, total_price=2.29),
+</span><span id="__span-11-9"><a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>        Item(name=&#39;BAREBELLS CHOCOLATE DOUG&#39;, quantity=1, price_per_unit=2.29, total_price=2.29),
+</span><span id="__span-11-10"><a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a>        Item(name=&#39;BAREBELLS CARAMEL CASHEW&#39;, quantity=2, price_per_unit=2.29, total_price=4.58),
+</span><span id="__span-11-11"><a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a>        Item(name=&#39;BAREBELLS CREAMY CRISP&#39;, quantity=1, price_per_unit=2.29, total_price=2.29),
+</span><span id="__span-11-12"><a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a>        Item(name=&#39;SPINDRIFT ORANGE MANGO 8&#39;, quantity=1, price_per_unit=7.49, total_price=7.49),
+</span><span id="__span-11-13"><a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a>        Item(name=&#39;Bottle Deposit&#39;, quantity=8, price_per_unit=0.05, total_price=0.4),
+</span><span id="__span-11-14"><a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a>        Item(name=&#39;MILK ORGANIC GALLON WHOL&#39;, quantity=1, price_per_unit=6.79, total_price=6.79),
+</span><span id="__span-11-15"><a id="__codelineno-11-15" name="__codelineno-11-15" href="#__codelineno-11-15"></a>        Item(name=&#39;CLASSIC GREEK SALAD&#39;, quantity=1, price_per_unit=3.49, total_price=3.49),
+</span><span id="__span-11-16"><a id="__codelineno-11-16" name="__codelineno-11-16" href="#__codelineno-11-16"></a>        Item(name=&#39;COBB SALAD&#39;, quantity=1, price_per_unit=5.99, total_price=5.99),
+</span><span id="__span-11-17"><a id="__codelineno-11-17" name="__codelineno-11-17" href="#__codelineno-11-17"></a>        Item(name=&#39;PEPPER BELL RED XL EACH&#39;, quantity=1, price_per_unit=1.29, total_price=1.29),
+</span><span id="__span-11-18"><a id="__codelineno-11-18" name="__codelineno-11-18" href="#__codelineno-11-18"></a>        Item(name=&#39;BAG FEE.&#39;, quantity=1, price_per_unit=0.25, total_price=0.25),
+</span><span id="__span-11-19"><a id="__codelineno-11-19" name="__codelineno-11-19" href="#__codelineno-11-19"></a>        Item(name=&#39;BAG FEE.&#39;, quantity=1, price_per_unit=0.25, total_price=0.25)
+</span><span id="__span-11-20"><a id="__codelineno-11-20" name="__codelineno-11-20" href="#__codelineno-11-20"></a>    ],
+</span><span id="__span-11-21"><a id="__codelineno-11-21" name="__codelineno-11-21" href="#__codelineno-11-21"></a>    tax=0.68,
+</span><span id="__span-11-22"><a id="__codelineno-11-22" name="__codelineno-11-22" href="#__codelineno-11-22"></a>    total=41.98,
+</span><span id="__span-11-23"><a id="__codelineno-11-23" name="__codelineno-11-23" href="#__codelineno-11-23"></a>    date=&#39;2023-11-04&#39;,
+</span><span id="__span-11-24"><a id="__codelineno-11-24" name="__codelineno-11-24" href="#__codelineno-11-24"></a>    payment_method=&#39;debit&#39;,
+</span><span id="__span-11-25"><a id="__codelineno-11-25" name="__codelineno-11-25" href="#__codelineno-11-25"></a>
+</span><span id="__span-11-26"><a id="__codelineno-11-26" name="__codelineno-11-26" href="#__codelineno-11-26"></a>)
 </span></code></pre></div>
-<div class="language-text highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>&lt;|user|&gt;
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>Howdy&lt;|end|&gt;
-</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>&lt;|assistant|&gt;
-</span></code></pre></div></p>
-<p>Our prompt roughly describes the task we want the model to perform, and a few pieces of information it may need to know about income statements.</p>
-<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span style="color: #81a1c1; font-weight: bold">def</span> <span style="color: #88c0d0">extract_financial_data_prompt</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">columns_to_extract</span><span style="color: #eceff4">,</span> <span style="color: #d8dee9">income_statement</span><span style="color: #eceff4">):</span>
-</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>    <span style="color: #d8dee9">user_prompt</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #a3be8c">f&quot;&quot;&quot;</span>
-</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span style="color: #a3be8c">    Extract annual financial data from this set of pages. Pages</span>
-</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span style="color: #a3be8c">    are from a 10k filing and were chosen because they may contain</span>
-</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span style="color: #a3be8c">    a comprehensive income statement. Note that selected pages may</span>
-</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span style="color: #a3be8c">    be incorrectly extracted, so you should verify that you are extracting</span>
-</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span style="color: #a3be8c">    from the comprehensive income statement and not some other financial</span>
-</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span style="color: #a3be8c">    statement.</span>
-</span><span id="__span-10-9"><a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>
-</span><span id="__span-10-10"><a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a><span style="color: #a3be8c">    Create a row for each year available in the income statement with the</span>
-</span><span id="__span-10-11"><a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a><span style="color: #a3be8c">    following columns: {&#39;, &#39;</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">join</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">columns_to_extract</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">keys</span><span style="color: #eceff4">())</span><span style="color: #a3be8c">}. Firms typically report the</span>
-</span><span id="__span-10-12"><a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a><span style="color: #a3be8c">    most recent 3 years of data, but this can vary.</span>
-</span><span id="__span-10-13"><a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a>
-</span><span id="__span-10-14"><a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a><span style="color: #a3be8c">    Each column has types: {&#39;, &#39;</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">join</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">columns_to_extract</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">values</span><span style="color: #eceff4">())</span><span style="color: #a3be8c">}.</span>
-</span><span id="__span-10-15"><a id="__codelineno-10-15" name="__codelineno-10-15" href="#__codelineno-10-15"></a>
-</span><span id="__span-10-16"><a id="__codelineno-10-16" name="__codelineno-10-16" href="#__codelineno-10-16"></a><span style="color: #a3be8c">    # Relevant pages:</span>
-</span><span id="__span-10-17"><a id="__codelineno-10-17" name="__codelineno-10-17" href="#__codelineno-10-17"></a>
-</span><span id="__span-10-18"><a id="__codelineno-10-18" name="__codelineno-10-18" href="#__codelineno-10-18"></a><span style="color: #a3be8c">    {</span><span style="color: #d8dee9">income_statement</span><span style="color: #a3be8c">}</span>
-</span><span id="__span-10-19"><a id="__codelineno-10-19" name="__codelineno-10-19" href="#__codelineno-10-19"></a>
-</span><span id="__span-10-20"><a id="__codelineno-10-20" name="__codelineno-10-20" href="#__codelineno-10-20"></a><span style="color: #a3be8c">    # Key instructions:</span>
-</span><span id="__span-10-21"><a id="__codelineno-10-21" name="__codelineno-10-21" href="#__codelineno-10-21"></a>
-</span><span id="__span-10-22"><a id="__codelineno-10-22" name="__codelineno-10-22" href="#__codelineno-10-22"></a><span style="color: #a3be8c">    1. Look ONLY at the &quot;Consolidated Statements of Income&quot; table</span>
-</span><span id="__span-10-23"><a id="__codelineno-10-23" name="__codelineno-10-23" href="#__codelineno-10-23"></a><span style="color: #a3be8c">    2. For operating income, look for &quot;Income from operations&quot; or &quot;Operating income&quot;</span>
-</span><span id="__span-10-24"><a id="__codelineno-10-24" name="__codelineno-10-24" href="#__codelineno-10-24"></a><span style="color: #a3be8c">    3. For net income, use the TOTAL net income figure, not amounts allocated to specific share classes</span>
-</span><span id="__span-10-25"><a id="__codelineno-10-25" name="__codelineno-10-25" href="#__codelineno-10-25"></a><span style="color: #a3be8c">    4. Use NULL for missing values</span>
-</span><span id="__span-10-26"><a id="__codelineno-10-26" name="__codelineno-10-26" href="#__codelineno-10-26"></a><span style="color: #a3be8c">    5. Operating income must be less than revenue</span>
-</span><span id="__span-10-27"><a id="__codelineno-10-27" name="__codelineno-10-27" href="#__codelineno-10-27"></a><span style="color: #a3be8c">    6. Net income must be less than operating income</span>
-</span><span id="__span-10-28"><a id="__codelineno-10-28" name="__codelineno-10-28" href="#__codelineno-10-28"></a><span style="color: #a3be8c">    7. Ignore segment breakdowns, quarterly data, or per-share amounts</span>
-</span><span id="__span-10-29"><a id="__codelineno-10-29" name="__codelineno-10-29" href="#__codelineno-10-29"></a>
-</span><span id="__span-10-30"><a id="__codelineno-10-30" name="__codelineno-10-30" href="#__codelineno-10-30"></a><span style="color: #a3be8c">    # Output format:</span>
-</span><span id="__span-10-31"><a id="__codelineno-10-31" name="__codelineno-10-31" href="#__codelineno-10-31"></a>
-</span><span id="__span-10-32"><a id="__codelineno-10-32" name="__codelineno-10-32" href="#__codelineno-10-32"></a><span style="color: #a3be8c">    - CSV format with headers: {&#39;,&#39;</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">join</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">columns_to_extract</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">keys</span><span style="color: #eceff4">())</span><span style="color: #a3be8c">}</span>
-</span><span id="__span-10-33"><a id="__codelineno-10-33" name="__codelineno-10-33" href="#__codelineno-10-33"></a><span style="color: #a3be8c">    - Use NULL for missing values</span>
-</span><span id="__span-10-34"><a id="__codelineno-10-34" name="__codelineno-10-34" href="#__codelineno-10-34"></a><span style="color: #a3be8c">    - If no data are found, do not create a row.</span>
-</span><span id="__span-10-35"><a id="__codelineno-10-35" name="__codelineno-10-35" href="#__codelineno-10-35"></a><span style="color: #a3be8c">    - Enter two newline characters to terminate the CSV when no more data are found.</span>
-</span><span id="__span-10-36"><a id="__codelineno-10-36" name="__codelineno-10-36" href="#__codelineno-10-36"></a>
-</span><span id="__span-10-37"><a id="__codelineno-10-37" name="__codelineno-10-37" href="#__codelineno-10-37"></a><span style="color: #a3be8c">    # Definitions:</span>
-</span><span id="__span-10-38"><a id="__codelineno-10-38" name="__codelineno-10-38" href="#__codelineno-10-38"></a><span style="color: #a3be8c">    - Revenue: Total sales of goods and services. Usually this is at the top of the</span>
-</span><span id="__span-10-39"><a id="__codelineno-10-39" name="__codelineno-10-39" href="#__codelineno-10-39"></a><span style="color: #a3be8c">    income statement.</span>
-</span><span id="__span-10-40"><a id="__codelineno-10-40" name="__codelineno-10-40" href="#__codelineno-10-40"></a><span style="color: #a3be8c">    - Operating income: Revenue minus operating expenses for the entire company. This is revenue</span>
-</span><span id="__span-10-41"><a id="__codelineno-10-41" name="__codelineno-10-41" href="#__codelineno-10-41"></a><span style="color: #a3be8c">    minus costs. Operating income is also called operating profit, EBIT, or income from</span>
-</span><span id="__span-10-42"><a id="__codelineno-10-42" name="__codelineno-10-42" href="#__codelineno-10-42"></a><span style="color: #a3be8c">    operations.</span>
-</span><span id="__span-10-43"><a id="__codelineno-10-43" name="__codelineno-10-43" href="#__codelineno-10-43"></a><span style="color: #a3be8c">    - Net income: Operating income minus taxes. This is the bottom line of the</span>
-</span><span id="__span-10-44"><a id="__codelineno-10-44" name="__codelineno-10-44" href="#__codelineno-10-44"></a><span style="color: #a3be8c">    income statement.</span>
-</span><span id="__span-10-45"><a id="__codelineno-10-45" name="__codelineno-10-45" href="#__codelineno-10-45"></a><span style="color: #a3be8c">    &quot;&quot;&quot;</span>
-</span><span id="__span-10-46"><a id="__codelineno-10-46" name="__codelineno-10-46" href="#__codelineno-10-46"></a>
-</span><span id="__span-10-47"><a id="__codelineno-10-47" name="__codelineno-10-47" href="#__codelineno-10-47"></a>    <span style="color: #81a1c1; font-weight: bold">return</span> <span style="color: #d8dee9">add_instruction</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">user_prompt</span><span style="color: #eceff4">)</span>
+<p>Voila! You've successfully extracted information from a receipt using an LLM.</p>
+<h2 id="bonus-roasting-the-user-for-their-receipt">Bonus: roasting the user for their receipt</h2>
+<p>You can roast the user for their receipt by adding a <code>roast</code> field to the end of the  <code>ReceiptSummary</code> model.</p>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span style="color: #81a1c1; font-weight: bold">class</span> <span style="color: #8fbcbb">ReceiptSummary</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">BaseModel</span><span style="color: #eceff4">):</span>
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>    <span style="color: #81a1c1; font-weight: bold">...</span>
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>    <span style="color: #d8dee9">roast</span><span style="color: #eceff4">:</span> <span style="color: #81a1c1">str</span>
 </span></code></pre></div>
-<h2 id="running-the-model">Running the model</h2>
-<p>Now that we have our prompt and regular expression, we can run the model.</p>
-<p>Construct our regex extractor function. We'll use a greedy sampler, which samples the most likely next token at each step. It's a simple sampler that is more reproducible than multinomial sampling.</p>
-<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span style="color: #d8dee9">csv_extractor</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #d8dee9">outlines</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">generate</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">regex</span><span style="color: #eceff4">(</span>
-</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>    <span style="color: #d8dee9">model</span><span style="color: #eceff4">,</span> <span style="color: #d8dee9">csv_regex</span><span style="color: #eceff4">,</span> <span style="color: #d8dee9">sampler</span><span style="color: #81a1c1; font-weight: bold">=</span><span style="color: #d8dee9">outlines</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">samplers</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">greedy</span><span style="color: #eceff4">()</span>
-</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span style="color: #eceff4">)</span>
+<p>which gives you a result like</p>
+<div class="language-text highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>ReceiptSummary(
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>    ...
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>    roast=&quot;You must be a fan of Trader Joe&#39;s because you bought enough
+</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>    items to fill a small grocery bag and still had to pay for a bag fee.
+</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>    Maybe you should start using reusable bags to save some money and the
+</span><span id="__span-13-6"><a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>    environment.&quot;
+</span><span id="__span-13-7"><a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a>)
 </span></code></pre></div>
-<p>Provide the prompt to the model and run it:</p>
-<p><div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span style="color: #d8dee9">csv_data</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #d8dee9">csv_extractor</span><span style="color: #eceff4">(</span>
-</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>    <span style="color: #d8dee9">extract_financial_data_prompt</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">columns_to_extract</span><span style="color: #eceff4">,</span> <span style="color: #d8dee9">income_statement</span><span style="color: #eceff4">),</span>
-</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>    <span style="color: #d8dee9">max_tokens</span><span style="color: #81a1c1; font-weight: bold">=</span><span style="color: #b48ead">1024</span><span style="color: #eceff4">,</span>
-</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span style="color: #eceff4">)</span>
-</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>
-</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span style="color: #81a1c1">print</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">csv_data</span><span style="color: #eceff4">)</span>
-</span></code></pre></div>
-<div class="language-text highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>year,revenue,operating_income,net_income
-</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>2024,60922,32972,29760
-</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>2023,26974,4224,4368
-</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>2022,26914,10041,9752
-</span></code></pre></div></p>
-<p>Voila! We've extracted the financial data from the income statement, and it's correct upon inspection.</p>
-<p>You can even load this into a <code>pandas</code> DataFrame for further analysis:</p>
-<p><div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span style="color: #81a1c1; font-weight: bold">import</span> <span style="color: #8fbcbb">pandas</span> <span style="color: #81a1c1; font-weight: bold">as</span> <span style="color: #8fbcbb">pd</span>
-</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span style="color: #81a1c1; font-weight: bold">from</span> <span style="color: #8fbcbb">io</span> <span style="color: #81a1c1; font-weight: bold">import</span> <span style="color: #d8dee9">StringIO</span>
-</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>
-</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span style="color: #d8dee9">df</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #d8dee9">pd</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">read_csv</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">StringIO</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">csv_data</span><span style="color: #eceff4">))</span>
-</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span style="color: #81a1c1">print</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">df</span><span style="color: #eceff4">)</span>
-</span></code></pre></div>
-<div class="language-text highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>   year  revenue  operating_income  net_income
-</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>0  2024    60922             32972       29760
-</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>1  2023    26974              4224        4368
-</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>2  2022    26914             10041        9752
-</span></code></pre></div></p>
+<p>Qwen is not particularly funny, but worth a shot.</p>
 
 
 
@@ -2794,7 +2883,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2024-11-06T08:54:59+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2024-11-06</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2024-11-08T20:37:17+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2024-11-08</span>
   </span>
 
     
@@ -2804,7 +2893,7 @@
     <span class="md-icon" title="Created">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2024-11-06T08:54:59+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2024-11-06</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2024-11-08T20:37:17+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2024-11-08</span>
   </span>
 
     
