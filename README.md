@@ -190,7 +190,7 @@ character = generator("Give me a character description", seed=seed)
 print(repr(character))
 # Character(name='Anderson', age=28, armor=<Armor.chainmail: 'chainmail'>, weapon=<Weapon.sword: 'sword'>, strength=8)
 
-character = generator("Give me an interesting character description", rng=rng)
+character = generator("Give me an interesting character description")
 
 print(repr(character))
 # Character(name='Vivian Thr', age=44, armor=<Armor.plate: 'plate'>, weapon=<Weapon.crossbow: 'crossbow'>, strength=125)
