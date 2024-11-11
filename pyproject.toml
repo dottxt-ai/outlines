@@ -58,7 +58,7 @@ test = [
     "beartype<0.16.0",
     "responses",
     "llama-cpp-python",
-    "mlx-lm; platform_machine == 'arm64' and sys_platform == 'darwin'",
+    "mlx-lm>=0.19.2; platform_machine == 'arm64' and sys_platform == 'darwin'",
     "huggingface_hub",
     "openai>=1.0.0",
     "vllm; sys_platform != 'darwin'",
