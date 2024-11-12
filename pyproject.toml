@@ -28,7 +28,7 @@ dependencies = [
    "jinja2",
    "lark",
    "nest_asyncio",
-   "numpy<2.0.0",
+   "numpy",
    "cloudpickle",
    "diskcache",
    "pydantic>=2.0",
