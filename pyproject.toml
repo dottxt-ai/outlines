@@ -41,7 +41,7 @@ dependencies = [
    "pycountry",
    "airportsdata",
    "torch",
-   "outlines_core==0.1.14",
+   "outlines_core==0.1.17",
 ]
 dynamic = ["version"]
 
