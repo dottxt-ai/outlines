@@ -300,6 +300,33 @@ print(add(**result))
 
 A great advantage of passing functions directly to specify the structure is that the structure of the LLM will change with the function's definition. No need to change the code at several places!
 
+You can also embed various functions into an enum to generate params:
+
+```python
+from enum import Enum
+from functools import partial
+
+import outlines
+
+
+def add(a: int, b: int) -> int:
+    return a + b
+
+def mul(c: float, d: float) -> float:
+    return c * d
+
+class Operation(Enum):
+    add = partial(add)
+    mul = partial(mul)
+
+model = outlines.models.transformers("WizardLM/WizardMath-7B-V1.1")
+generator = outlines.generate.json(model, add)
+result = generator("Return json with two float named c and d respectively. c is negative and d greater than 1.0.")
+
+print(result)
+# {'c': -3.14, 'd': 1.5}
+```
+
 ## Prompting
 
 Building prompts can get messy. **Outlines** makes it easier to write and manage
