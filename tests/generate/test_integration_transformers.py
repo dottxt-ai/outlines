@@ -492,6 +492,7 @@ def test_transformers_use_existing_model_and_tokenizer():
     assert isinstance(sequence, str)
 
 
+@pytest.mark.skip("Caching for guide was temporarily turned off")
 def test_RegexGuide_caching(temp_cache_dir):
     import outlines.caching
     from outlines.fsm.guide import cached_create_states_mapping
