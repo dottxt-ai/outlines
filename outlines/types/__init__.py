@@ -88,6 +88,11 @@ class Json:
 
 
 @dataclass
+class List:
+    definition: list
+
+
+@dataclass
 class Choice:
     """Represents a multiple choice"""
 
