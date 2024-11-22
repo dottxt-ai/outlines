@@ -1,7 +1,6 @@
 import io
 import json
 from enum import Enum
-from typing import List
 
 import PIL
 import pytest
@@ -11,7 +10,7 @@ from typing_extensions import TypedDict
 
 from outlines.models.gemini import Gemini
 from outlines.prompts import Vision
-from outlines.types import Choice, Json
+from outlines.types import Choice, Json, List
 
 MODEL_NAME = "gemini-1.5-flash-latest"
 
@@ -169,20 +168,7 @@ def test_gemini_simple_list_pydantic():
     class Foo(BaseModel):
         bar: int
 
-    result = model.generate("foo?", list[Json(Foo)])
-    assert isinstance(json.loads(result), list)
-    assert isinstance(json.loads(result)[0], dict)
-    assert "bar" in json.loads(result)[0]
-
-
-@pytest.mark.api_call
-def test_gemini_simple_list_annotation_pydantic():
-    model = Gemini(MODEL_NAME)
-
-    class Foo(BaseModel):
-        bar: int
-
-    result = model.generate("foo?", List[Json(Foo)])
+    result = model.generate("foo?", List(Json(Foo)))
     assert isinstance(json.loads(result), list)
     assert isinstance(json.loads(result)[0], dict)
     assert "bar" in json.loads(result)[0]
