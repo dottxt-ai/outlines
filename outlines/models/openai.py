@@ -96,9 +96,11 @@ class OpenAIBase:
         specified a `Json` output type.
 
         """
+        schema = output_type.to_json_schema()
+
         # OpenAI requires `additionalProperties` to be set
-        if "additionalProperties" not in output_type.definition:
-            output_type.definition["additionalProperties"] = False
+        if "additionalProperties" not in schema:
+            schema["additionalProperties"] = False
 
         return {
             "response_format": {
@@ -106,7 +108,7 @@ class OpenAIBase:
                 "json_schema": {
                     "name": "default",
                     "strict": True,
-                    "schema": output_type.definition,
+                    "schema": schema,
                 },
             }
         }
