@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from typing_extensions import _TypedDictMeta  # type: ignore
 
 from outlines.prompts import Vision
-from outlines.types import Choice, Json
+from outlines.types import Choice, Json, List
 
 __all__ = ["Gemini"]
 
@@ -54,20 +54,14 @@ class GeminiBase:
 
     @singledispatchmethod
     def format_output_type(self, output_type):
-        if output_type.__origin__ == list:
-            if len(output_type.__args__) == 1 and isinstance(
-                output_type.__args__[0], Json
-            ):
-                return {
-                    "response_mime_type": "application/json",
-                    "response_schema": list[
-                        output_type.__args__[0].original_definition
-                    ],
-                }
-            else:
-                raise TypeError
-        else:
-            raise NotImplementedError
+        raise NotImplementedError
+
+    @format_output_type.register(List)
+    def format_list_output_type(self, output_type):
+        return {
+            "response_mime_type": "application/json",
+            "response_schema": list[output_type.definition.definition],
+        }
 
     @format_output_type.register(NoneType)
     def format_none_output_type(self, output_type):
