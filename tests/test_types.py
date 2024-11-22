@@ -1,7 +1,10 @@
+import json
 import re
 
 import pytest
+from jsonschema.exceptions import SchemaError
 from pydantic import BaseModel
+from typing_extensions import TypedDict
 
 from outlines import types
 from outlines.fsm.types import python_types_to_regex

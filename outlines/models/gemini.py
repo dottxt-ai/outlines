@@ -75,15 +75,16 @@ class GeminiBase:
 
     @format_output_type.register(Json)
     def format_json_output_type(self, output_type):
-        if issubclass(output_type.original_definition, BaseModel):
+        """Gemini only accepts Pydantic models and TypeDicts to define the JSON structure."""
+        if issubclass(output_type.definition, BaseModel):
             return {
                 "response_mime_type": "application/json",
-                "response_schema": output_type.original_definition,
+                "response_schema": output_type.definition,
             }
-        elif isinstance(output_type.original_definition, _TypedDictMeta):
+        elif isinstance(output_type.definition, _TypedDictMeta):
             return {
                 "response_mime_type": "application/json",
-                "response_schema": output_type.original_definition,
+                "response_schema": output_type.definition,
             }
         else:
             raise NotImplementedError
