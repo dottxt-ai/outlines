@@ -1,7 +1,9 @@
 import json as pyjson
+from enum import Enum
 from functools import singledispatch
-from typing import Callable, List
+from typing import Callable, List, Union
 
+from outlines.fsm.json_schema import build_regex_from_schema, get_schema_from_enum
 from outlines.generate.api import SequenceGeneratorAdapter
 from outlines.models import OpenAI
 from outlines.samplers import Sampler, multinomial
@@ -12,12 +14,18 @@ from .regex import regex
 
 @singledispatch
 def choice(
-    model, choices: List[str], sampler: Sampler = multinomial()
+    model, choices: Union[List[str], type[Enum]], sampler: Sampler = multinomial()
 ) -> SequenceGeneratorAdapter:
-    regex_str = r"(" + r"|".join(choices) + r")"
+    if isinstance(choices, type(Enum)):
+        regex_str = build_regex_from_schema(pyjson.dumps(get_schema_from_enum(choices)))
+    else:
+        regex_str = r"(" + r"|".join(choices) + r")"
 
     generator = regex(model, regex_str, sampler)
-    generator.format_sequence = lambda x: x
+    if isinstance(choices, type(Enum)):
+        generator.format_sequence = lambda x: choices(x)
+    else:
+        generator.format_sequence = lambda x: x
 
     return generator
 
