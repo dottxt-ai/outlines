@@ -3,7 +3,10 @@ import json
 from enum import Enum, EnumMeta
 from typing import Union
 
-from pydantic import BaseModel
+from jsonschema import Draft202012Validator as Validator
+from jsonschema.exceptions import SchemaError
+from pydantic import BaseModel, TypeAdapter
+from typing_extensions import _TypedDictMeta  # type: ignore
 
 from . import airports, countries, locale
 from outlines.types.dsl import (
@@ -72,15 +75,28 @@ class Json:
 
     """
 
-    def __init__(self, definition: Union[str, dict, BaseModel]):
-        self.original_definition = definition
+    definition: Union[str, dict]
 
-        if isinstance(definition, type(BaseModel)):
-            definition = definition.model_json_schema()
-        if isinstance(definition, str):
-            definition = json.loads(definition)
+    def to_json_schema(self):
+        if isinstance(self.definition, str):
+            schema = json.loads(self.definition)
+        elif isinstance(self.definition, dict):
+            schema = self.definition
+        elif isinstance(self.definition, type(BaseModel)):
+            schema = self.definition.model_json_schema()
+        elif isinstance(self.definition, _TypedDictMeta):
+            schema = TypeAdapter(self.definition).json_schema()
+        else:
+            raise TypeError(
+                "The Json definition must be a JSON Schema string, dictionary or Pydantic model."
+            )
 
-        self.definition = definition
+        try:
+            Validator.check_schema(schema)
+        except SchemaError as e:
+            raise e
+
+        return schema
 
 
 @dataclass
