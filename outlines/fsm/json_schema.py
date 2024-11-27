@@ -2,6 +2,7 @@ import inspect
 import json
 import re
 import warnings
+from enum import Enum
 from typing import Callable, Optional, Tuple, Type, Union
 
 from jsonschema.protocols import Validator
@@ -306,6 +307,8 @@ def to_regex(
         for choice in instance["enum"]:
             if type(choice) in [int, float, bool, type(None), str]:
                 choices.append(re.escape(json.dumps(choice)))
+            elif isinstance(choice, dict):
+                choices.append(to_regex(resolver, choice, whitespace_pattern))
             else:
                 raise TypeError(f"Unsupported data type in enum: {type(choice)}")
         return f"({'|'.join(choices)})"
@@ -524,7 +527,7 @@ def to_regex(
     )
 
 
-def get_schema_from_signature(fn: Callable) -> str:
+def get_schema_from_signature(fn: Callable) -> dict:
     """Turn a function signature into a JSON schema.
 
     Every JSON object valid to the output JSON Schema can be passed
@@ -550,3 +553,16 @@ def get_schema_from_signature(fn: Callable) -> str:
     model = create_model(fn_name, **arguments)
 
     return model.model_json_schema()
+
+
+def get_schema_from_enum(myenum: type[Enum]) -> dict:
+    if len(myenum) == 0:
+        raise ValueError(
+            f"Your enum class {myenum.__name__} has 0 members. If you are working with an enum of functions, do not forget to register them as callable (using `partial` for instance)"
+        )
+    choices = [
+        get_schema_from_signature(elt.value.func) if callable(elt.value) else elt.value
+        for elt in myenum
+    ]
+    schema = {"title": myenum.__name__, "enum": choices}
+    return schema

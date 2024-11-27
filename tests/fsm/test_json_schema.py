@@ -1,5 +1,8 @@
 import json
 import re
+from contextlib import nullcontext
+from enum import Enum
+from functools import partial
 from typing import List, Literal, Union
 
 import interegular
@@ -19,6 +22,7 @@ from outlines.fsm.json_schema import (
     UUID,
     WHITESPACE,
     build_regex_from_schema,
+    get_schema_from_enum,
     get_schema_from_signature,
     to_regex,
 )
@@ -237,8 +241,26 @@ def test_match_number(pattern, does_match):
         ),
         # Enum mix of types
         (
-            {"title": "Foo", "enum": [6, 5.3, "potato", True, None]},
-            r'(6|5\.3|"potato"|true|null)',
+            {
+                "title": "Foo",
+                "enum": [
+                    6,
+                    5.3,
+                    "potato",
+                    True,
+                    None,
+                    {
+                        "properties": {
+                            "a": {"title": "A", "type": "number"},
+                            "b": {"title": "B", "type": "number"},
+                        },
+                        "required": ["a", "b"],
+                        "title": "add",
+                        "type": "object",
+                    },
+                ],
+            },
+            r'(6|5\.3|"potato"|true|null|\{[ ]?"a"[ ]?:[ ]?((-)?(0|[1-9][0-9]*))(\.[0-9]+)?([eE][+-][0-9]+)?[ ]?,[ ]?"b"[ ]?:[ ]?((-)?(0|[1-9][0-9]*))(\.[0-9]+)?([eE][+-][0-9]+)?[ ]?\})',
             [
                 ("6", True),
                 ("5.3", True),
@@ -248,6 +270,8 @@ def test_match_number(pattern, does_match):
                 ("523", False),
                 ("True", False),
                 ("None", False),
+                ('{"a": -1.0, "b": 1.1}', True),
+                ('{"a": "a", "b": 1.1}', False),
             ],
         ),
         # integer
@@ -1039,3 +1063,34 @@ def test_one_of_doesnt_produce_illegal_lookaround():
 
     # check if the pattern uses lookarounds incompatible with interegular.Pattern.to_fsm()
     interegular.parse_pattern(pattern).to_fsm()
+
+
+def add(a: float, b: float) -> float:
+    return a + b
+
+
+class MyEnum(Enum):
+    add = partial(add)
+    a = "a"
+    b = 2
+
+
+# if you don't register your function as callable, you will get an empty enum
+class EmptyEnum(Enum):
+    add = add
+
+
+@pytest.mark.parametrize(
+    "enum,expectation",
+    [
+        (MyEnum, nullcontext()),
+        (EmptyEnum, pytest.raises(ValueError)),
+    ],
+)
+def test_enum_schema(enum, expectation):
+    with expectation:
+        result = get_schema_from_enum(enum)
+        assert result["title"] == enum.__name__
+        assert len(result["enum"]) == len(enum)
+        for elt in result["enum"]:
+            assert type(elt) in [int, float, bool, type(None), str, dict]
