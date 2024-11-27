@@ -2,17 +2,18 @@
 
 <img src="./docs/assets/images/logo.png" alt="Outlines Logo" width=500></img>
 
-[![.txt Twitter][dottxt-twitter-badge]][dottxt-twitter]
+
+ 🗒️ *Make LLMs speak the language of every application.* 🗒️
+
+Made with ❤👷️ by the team at [.txt](https://dottxt.co).
 
 [![Documentation][documentation-badge]][documentation]
 [![Contributors][contributors-badge]][contributors]
 [![Downloads][downloads-badge]][pypistats]
 [![Discord][discord-badge]][discord]
 
+[Youtube channel][youtube-dottxt] | [.txt blog][blog-dottxt] | [Twitter][dottxt-twitter]
 
-*Robust (structured) text generation.*
-
-Made with ❤👷️ by the team at [.txt](https://dottxt.co).
 
 </div>
 
@@ -363,3 +364,5 @@ answer = outlines.generate.text(model)(prompt, max_tokens=100)
 [downloads-badge]: https://img.shields.io/pypi/dm/outlines?color=89AC6B&logo=python&logoColor=white&style=flat-square
 [pypistats]: https://pypistats.org/packages/outlines
 [dottxt-twitter-badge]: https://img.shields.io/twitter/follow/dottxtai?style=social
+[youtube-dottxt]: https://www.youtube.com/@dottxt-ai
+[blog-dottxt]: https://blog.dottxt.co/
