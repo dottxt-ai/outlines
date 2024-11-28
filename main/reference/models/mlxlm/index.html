@@ -2531,20 +2531,22 @@
 <p>Outlines provides an integration with <a href="https://github.com/ml-explore/mlx-examples/tree/main/llms">mlx-lm</a>, allowing models to be run quickly on Apple Silicon via the <a href="https://ml-explore.github.io/mlx/build/html/index.html">mlx</a> library.</p>
 <div class="admonition note">
 <p class="admonition-title">Installation</p>
-<p>You need to install the <code>mlx</code> and <code>mlx-lm</code> libraries on a device which <a href="https://support.apple.com/en-us/102894">supports Metal</a> to use the mlx-lm integration.</p>
+<p>You need to install the <code>mlx</code> and <code>mlx-lm</code> libraries on a device which <a href="https://support.apple.com/en-us/102894">supports Metal</a> to use the mlx-lm integration. To get started quickly you can also run:</p>
+<div class="language-bash highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pip<span style="color: #d8dee9"> </span>install<span style="color: #d8dee9"> </span><span style="color: #a3be8c">&quot;outlines[mlxlm]&quot;</span>
+</span></code></pre></div>
 </div>
 <h2 id="load-the-model">Load the model</h2>
 <p>You can initialize the model by passing the name of the repository on the HuggingFace Hub. The official repository for mlx-lm supported models is <a href="https://huggingface.co/mlx-community">mlx-community</a>.</p>
-<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span style="color: #81a1c1; font-weight: bold">from</span> <span style="color: #8fbcbb">outlines</span> <span style="color: #81a1c1; font-weight: bold">import</span> <span style="color: #d8dee9">models</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span style="color: #d8dee9">model</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #d8dee9">models</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">mlxlm</span><span style="color: #eceff4">(</span><span style="color: #a3be8c">&quot;mlx-community/Meta-Llama-3.1-8B-Instruct-8bit&quot;</span><span style="color: #eceff4">)</span>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span style="color: #81a1c1; font-weight: bold">from</span> <span style="color: #8fbcbb">outlines</span> <span style="color: #81a1c1; font-weight: bold">import</span> <span style="color: #d8dee9">models</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span style="color: #d8dee9">model</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #d8dee9">models</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">mlxlm</span><span style="color: #eceff4">(</span><span style="color: #a3be8c">&quot;mlx-community/Meta-Llama-3.1-8B-Instruct-8bit&quot;</span><span style="color: #eceff4">)</span>
 </span></code></pre></div>
 <p>This will download the model files to the hub cache folder and load the weights in memory.</p>
 <p>The arguments <code>model_config</code> and <code>tokenizer_config</code> are available to modify loading behavior. For example, per the <code>mlx-lm</code> <a href="https://github.com/ml-explore/mlx-examples/tree/main/llms#supported-models">documentation</a>, you must set an eos_token for <code>qwen/Qwen-7B</code>. In outlines you may do so via</p>
-<div class="language-text highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>model = models.mlxlm(
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    &quot;mlx-community/Meta-Llama-3.1-8B-Instruct-8bit&quot;,
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    tokenizer_config={&quot;eos_token&quot;: &quot;&lt;|endoftext|&gt;&quot;, &quot;trust_remote_code&quot;: True},
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>)
+<div class="language-text highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>model = models.mlxlm(
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    &quot;mlx-community/Meta-Llama-3.1-8B-Instruct-8bit&quot;,
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    tokenizer_config={&quot;eos_token&quot;: &quot;&lt;|endoftext|&gt;&quot;, &quot;trust_remote_code&quot;: True},
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>)
 </span></code></pre></div>
 <p><strong>Main parameters:</strong></p>
 <p>(Subject to change. Table based on <a href="https://github.com/ml-explore/mlx-examples/blob/main/llms/mlx_lm/utils.py#L429">mlx-lm.load docstring</a>)</p>
@@ -2587,36 +2589,36 @@
 <h2 id="generate-text">Generate text</h2>
 <p>You may generate text using the parameters described in the <a href="../../text/">text generation documentation</a>.</p>
 <p>With the loaded model, you can generate text or perform structured generation, e.g.</p>
-<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span style="color: #81a1c1; font-weight: bold">from</span> <span style="color: #8fbcbb">outlines</span> <span style="color: #81a1c1; font-weight: bold">import</span> <span style="color: #d8dee9">models</span><span style="color: #eceff4">,</span> <span style="color: #d8dee9">generate</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span style="color: #d8dee9">model</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #d8dee9">models</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">mlxlm</span><span style="color: #eceff4">(</span><span style="color: #a3be8c">&quot;mlx-community/Meta-Llama-3.1-8B-Instruct-8bit&quot;</span><span style="color: #eceff4">)</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span style="color: #d8dee9">generator</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #d8dee9">generate</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">text</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">model</span><span style="color: #eceff4">)</span>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span style="color: #d8dee9">answer</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #d8dee9">generator</span><span style="color: #eceff4">(</span><span style="color: #a3be8c">&quot;A prompt&quot;</span><span style="color: #eceff4">,</span> <span style="color: #d8dee9">temperature</span><span style="color: #81a1c1; font-weight: bold">=</span><span style="color: #b48ead">2.0</span><span style="color: #eceff4">)</span>
-</span></code></pre></div>
-<h2 id="streaming">Streaming</h2>
-<p>You may creating a streaming iterable with minimal changes</p>
 <div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span style="color: #81a1c1; font-weight: bold">from</span> <span style="color: #8fbcbb">outlines</span> <span style="color: #81a1c1; font-weight: bold">import</span> <span style="color: #d8dee9">models</span><span style="color: #eceff4">,</span> <span style="color: #d8dee9">generate</span>
 </span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
 </span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span style="color: #d8dee9">model</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #d8dee9">models</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">mlxlm</span><span style="color: #eceff4">(</span><span style="color: #a3be8c">&quot;mlx-community/Meta-Llama-3.1-8B-Instruct-8bit&quot;</span><span style="color: #eceff4">)</span>
 </span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span style="color: #d8dee9">generator</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #d8dee9">generate</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">text</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">model</span><span style="color: #eceff4">)</span>
 </span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>
-</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span style="color: #81a1c1; font-weight: bold">for</span> <span style="color: #d8dee9">token_str</span> <span style="color: #81a1c1; font-weight: bold">in</span> <span style="color: #d8dee9">generator</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">text</span><span style="color: #eceff4">(</span><span style="color: #a3be8c">&quot;A prompt&quot;</span><span style="color: #eceff4">,</span> <span style="color: #d8dee9">temperature</span><span style="color: #81a1c1; font-weight: bold">=</span><span style="color: #b48ead">2.0</span><span style="color: #eceff4">):</span>
-</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span style="color: #81a1c1">print</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">token_str</span><span style="color: #eceff4">)</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span style="color: #d8dee9">answer</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #d8dee9">generator</span><span style="color: #eceff4">(</span><span style="color: #a3be8c">&quot;A prompt&quot;</span><span style="color: #eceff4">,</span> <span style="color: #d8dee9">temperature</span><span style="color: #81a1c1; font-weight: bold">=</span><span style="color: #b48ead">2.0</span><span style="color: #eceff4">)</span>
+</span></code></pre></div>
+<h2 id="streaming">Streaming</h2>
+<p>You may creating a streaming iterable with minimal changes</p>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span style="color: #81a1c1; font-weight: bold">from</span> <span style="color: #8fbcbb">outlines</span> <span style="color: #81a1c1; font-weight: bold">import</span> <span style="color: #d8dee9">models</span><span style="color: #eceff4">,</span> <span style="color: #d8dee9">generate</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span style="color: #d8dee9">model</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #d8dee9">models</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">mlxlm</span><span style="color: #eceff4">(</span><span style="color: #a3be8c">&quot;mlx-community/Meta-Llama-3.1-8B-Instruct-8bit&quot;</span><span style="color: #eceff4">)</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span style="color: #d8dee9">generator</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #d8dee9">generate</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">text</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">model</span><span style="color: #eceff4">)</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span style="color: #81a1c1; font-weight: bold">for</span> <span style="color: #d8dee9">token_str</span> <span style="color: #81a1c1; font-weight: bold">in</span> <span style="color: #d8dee9">generator</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">text</span><span style="color: #eceff4">(</span><span style="color: #a3be8c">&quot;A prompt&quot;</span><span style="color: #eceff4">,</span> <span style="color: #d8dee9">temperature</span><span style="color: #81a1c1; font-weight: bold">=</span><span style="color: #b48ead">2.0</span><span style="color: #eceff4">):</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>    <span style="color: #81a1c1">print</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">token_str</span><span style="color: #eceff4">)</span>
 </span></code></pre></div>
 <h2 id="structured">Structured</h2>
 <p>You may perform structured generation with mlxlm to guarantee your output will match a regex pattern, json schema, or lark grammar.</p>
 <p>Example: Phone number generation with pattern <code>"\\+?[1-9][0-9]{7,14}"</code>:</p>
-<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span style="color: #81a1c1; font-weight: bold">from</span> <span style="color: #8fbcbb">outlines</span> <span style="color: #81a1c1; font-weight: bold">import</span> <span style="color: #d8dee9">models</span><span style="color: #eceff4">,</span> <span style="color: #d8dee9">generate</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span style="color: #d8dee9">model</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #d8dee9">models</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">mlxlm</span><span style="color: #eceff4">(</span><span style="color: #a3be8c">&quot;mlx-community/Meta-Llama-3.1-8B-Instruct-8bit&quot;</span><span style="color: #eceff4">)</span>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span style="color: #d8dee9">phone_number_pattern</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #a3be8c">&quot;</span><span style="color: #ebcb8b">\\</span><span style="color: #a3be8c">+?[1-9][0-9]{7,14}&quot;</span>
-</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span style="color: #d8dee9">generator</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #d8dee9">generate</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">regex</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">model</span><span style="color: #eceff4">,</span> <span style="color: #d8dee9">phone_number_pattern</span><span style="color: #eceff4">)</span>
-</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>
-</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span style="color: #d8dee9">model_output</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #d8dee9">generator</span><span style="color: #eceff4">(</span><span style="color: #a3be8c">&quot;What&#39;s Jennys Number?</span><span style="color: #ebcb8b">\n</span><span style="color: #a3be8c">&quot;</span><span style="color: #eceff4">)</span>
-</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span style="color: #81a1c1">print</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">model_output</span><span style="color: #eceff4">)</span>
-</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span style="color: #616e87; font-style: italic"># &#39;8675309&#39;</span>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span style="color: #81a1c1; font-weight: bold">from</span> <span style="color: #8fbcbb">outlines</span> <span style="color: #81a1c1; font-weight: bold">import</span> <span style="color: #d8dee9">models</span><span style="color: #eceff4">,</span> <span style="color: #d8dee9">generate</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span style="color: #d8dee9">model</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #d8dee9">models</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">mlxlm</span><span style="color: #eceff4">(</span><span style="color: #a3be8c">&quot;mlx-community/Meta-Llama-3.1-8B-Instruct-8bit&quot;</span><span style="color: #eceff4">)</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span style="color: #d8dee9">phone_number_pattern</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #a3be8c">&quot;</span><span style="color: #ebcb8b">\\</span><span style="color: #a3be8c">+?[1-9][0-9]{7,14}&quot;</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span style="color: #d8dee9">generator</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #d8dee9">generate</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">regex</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">model</span><span style="color: #eceff4">,</span> <span style="color: #d8dee9">phone_number_pattern</span><span style="color: #eceff4">)</span>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span style="color: #d8dee9">model_output</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #d8dee9">generator</span><span style="color: #eceff4">(</span><span style="color: #a3be8c">&quot;What&#39;s Jennys Number?</span><span style="color: #ebcb8b">\n</span><span style="color: #a3be8c">&quot;</span><span style="color: #eceff4">)</span>
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span style="color: #81a1c1">print</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">model_output</span><span style="color: #eceff4">)</span>
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span style="color: #616e87; font-style: italic"># &#39;8675309&#39;</span>
 </span></code></pre></div>
 
 
@@ -2640,7 +2642,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2024-07-29T22:08:59+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2024-07-29</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2024-11-28T22:15:15+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2024-11-28</span>
   </span>
 
     
@@ -2668,14 +2670,19 @@
     
     <nav>
       
-        <a href="https://github.com/lapp0" class="md-author" title="@lapp0">
-          
-          <img src="https://avatars.githubusercontent.com/u/2560255?v=4&size=72" alt="lapp0">
-        </a>
-      
         <a href="https://github.com/rlouf" class="md-author" title="@rlouf">
           
           <img src="https://avatars.githubusercontent.com/u/3885044?v=4&size=72" alt="rlouf">
+        </a>
+      
+        <a href="https://github.com/web-flow" class="md-author" title="@web-flow">
+          
+          <img src="https://avatars.githubusercontent.com/u/19864447?v=4&size=72" alt="web-flow">
+        </a>
+      
+        <a href="https://github.com/lapp0" class="md-author" title="@lapp0">
+          
+          <img src="https://avatars.githubusercontent.com/u/2560255?v=4&size=72" alt="lapp0">
         </a>
       
         <a href="https://github.com/davanstrien" class="md-author" title="@davanstrien">
