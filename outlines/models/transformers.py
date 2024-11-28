@@ -2,8 +2,6 @@ import dataclasses
 import inspect
 from typing import TYPE_CHECKING, Iterator, List, Optional, Tuple, Union
 
-from datasets.fingerprint import Hasher
-
 from outlines.generate.api import GenerationParameters, SamplingParameters
 from outlines.models.tokenizer import Tokenizer
 
@@ -116,6 +114,8 @@ class TransformerTokenizer(Tokenizer):
         return NotImplemented
 
     def __hash__(self):
+        from datasets.fingerprint import Hasher
+
         return hash(Hasher.hash(self.tokenizer))
 
     def __getstate__(self):

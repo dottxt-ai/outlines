@@ -3,10 +3,10 @@
 
 !!! Installation
 
-    You need to install the `transformer`, `datasets` and `torch` libraries to be able to use these models in Outlines:
+    You need to install the `transformer`, `datasets` and `torch` libraries to be able to use these models in Outlines, or alternatively:
 
     ```bash
-    pip install torch transformers datasets
+    pip install "outlines[transformers]"
     ```
 
 
