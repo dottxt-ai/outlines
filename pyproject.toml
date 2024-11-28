@@ -71,6 +71,7 @@ test = [
     "transformers",
     "pillow",
     "exllamav2",
+    "jax"
 ]
 serve = [
     "vllm>=0.3.0",
