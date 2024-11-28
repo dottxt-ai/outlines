@@ -1,6 +1,5 @@
 from typing import List
 
-import jax.numpy as jnp
 import numpy as np
 import pytest
 import torch
@@ -10,7 +9,6 @@ from outlines.processors.base_logits_processor import OutlinesLogitsProcessor
 arrays = {
     "list": [[1.0, 2.0], [3.0, 4.0]],
     "np": np.array([[1, 2], [3, 4]], dtype=np.float32),
-    "jax": jnp.array([[1, 2], [3, 4]], dtype=jnp.float32),
     "torch": torch.tensor([[1, 2], [3, 4]], dtype=torch.float32),
 }
 
