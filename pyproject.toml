@@ -61,6 +61,7 @@ test = [
     "mlx-lm>=0.19.2; platform_machine == 'arm64' and sys_platform == 'darwin'",
     "huggingface_hub",
     "openai>=1.0.0",
+    "datasets",
     "vllm; sys_platform != 'darwin'",
     "transformers",
     "pillow",
