@@ -36,7 +36,6 @@ dependencies = [
    "jsonschema",
    "requests",
    "tqdm",
-   "datasets",
    "typing_extensions",
    "pycountry",
    "airportsdata",
@@ -46,6 +45,12 @@ dependencies = [
 dynamic = ["version"]
 
 [project.optional-dependencies]
+vllm = ["vllm", "transformers", "numpy2"]
+transformers = ["transformers", "accelerate", "datasets", "numpy<2"]
+mlxlm = ["mlx-lm", "datasets"]
+openai = ["openai"]
+llamacpp = ["llama-cpp-python", "transformers", "datasets", "numpy<2"]
+exllamav2 = ["exllamav2"]
 test = [
     "pre-commit",
     "pytest",
