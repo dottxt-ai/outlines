@@ -108,7 +108,7 @@ class GuideLogitsProcessor(OutlinesLogitsProcessor):
         batch_indices = []
         for i, guide_state in enumerate(sequence_states):
             allowed_tokens = self.guide.get_next_instruction(guide_state).tokens.to(
-                mask.device, non_blocking=True
+                mask.device
             )
             allowed_tokens_batch.append(allowed_tokens)
             batch_indices.append(
