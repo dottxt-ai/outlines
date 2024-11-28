@@ -25,7 +25,7 @@ def choice(
 
     generator = regex(model, regex_str, sampler)
     if isinstance(choices, type(Enum)):
-        generator.format_sequence = lambda x: choices(x)
+        generator.format_sequence = lambda x: pyjson.loads(x)
     else:
         generator.format_sequence = lambda x: x
 
