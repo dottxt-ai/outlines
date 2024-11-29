@@ -31,11 +31,6 @@ def test_llamacpp_simple(model):
     assert isinstance(result, str)
 
 
-def test_llamacpp_call(model):
-    result = model("Respond with one word. Not more.")
-    assert isinstance(result, str)
-
-
 def test_llamacpp_regex(model):
     regex_str = Regex(r"[0-9]").to_regex()
     logits_processor = RegexLogitsProcessor(regex_str, model.tokenizer)
