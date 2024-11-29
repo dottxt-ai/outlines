@@ -5,6 +5,7 @@ from typing import Union
 
 from jsonschema import Draft202012Validator as Validator
 from jsonschema.exceptions import SchemaError
+from outlines_core.json_schema import build_regex_from_schema
 from pydantic import BaseModel, TypeAdapter
 from typing_extensions import _TypedDictMeta  # type: ignore
 
@@ -64,6 +65,7 @@ class Json:
     """
 
     definition: Union[str, dict]
+    whitespace_pattern: str = " "
 
     def to_json_schema(self):
         if isinstance(self.definition, str):
@@ -86,10 +88,20 @@ class Json:
 
         return schema
 
+    def to_regex(self):
+        schema = self.to_json_schema()
+        schema_str = json.dumps(schema)
+        return build_regex_from_schema(schema_str, self.whitespace_pattern)
+
 
 @dataclass
 class List:
     definition: list
+
+    def to_regex(self):
+        raise NotImplementedError(
+            "Structured generation for lists of objects are not implemented yet."
+        )
 
 
 @dataclass
@@ -101,3 +113,14 @@ class Choice:
     def __post_init__(self):
         if isinstance(self.definition, list):
             self.definition = Enum("Definition", [(x, x) for x in self.definition])
+
+    def to_list(self):
+        if isinstance(self.definition, list):
+            return self.definition
+        else:
+            return [x.value for x in self.definition]
+
+    def to_regex(self):
+        choices = self.to_list()
+        regex_str = r"(" + r"|".join(choices) + r")"
+        return regex_str
