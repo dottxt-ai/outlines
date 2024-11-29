@@ -52,6 +52,18 @@ def test_type_choice():
     choice_type = types.Choice(choices)
     assert choice_type.definition.a.value == "a"
 
+    regex_str = choice_type.to_regex()
+    assert regex_str == "(a|b)"
+
+
+def test_type_list():
+    class Foo(BaseModel):
+        bar: int
+
+    list_type = types.List(Foo)
+    with pytest.raises(NotImplementedError, match="Structured"):
+        list_type.to_regex()
+
 
 @pytest.mark.parametrize(
     "custom_type,test_string,should_match",
