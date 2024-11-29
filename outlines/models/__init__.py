@@ -19,3 +19,6 @@ from .transformers_vision import TransformersVision, transformers_vision
 from .vllm import VLLM, vllm
 
 LogitsGenerator = Union[Transformers, LlamaCpp, OpenAI, ExLlamaV2Model, MLXLM, VLLM]
+
+LocalModel = LlamaCpp
+APIModel = Union[AzureOpenAI, OpenAI, Anthropic, Gemini]
