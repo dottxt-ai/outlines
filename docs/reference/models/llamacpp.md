@@ -12,49 +12,37 @@ Outlines provides an integration with [Llama.cpp](https://github.com/ggerganov/l
 
 ## Load the model
 
-You can initialize the model by passing the name of the repository on the HuggingFace Hub, and the filenames (or glob pattern):
+To load a model you can use the same interface as you would using `llamap-cpp-python` directly. The default method is to initialize the model by passing the path to the weights on your machine. Assuming [Phi2's weights](https://huggingface.co/TheBloke/phi-2-GGUF) are in the current directory:
 
 ```python
 from outlines import models
 
-model = models.llamacpp("TheBloke/phi-2-GGUF", "phi-2.Q4_K_M.gguf")
+llm = models.LlamaCpp("./phi-2.Q4_K_M.gguf")
+```
+
+You can initialize the model by passing the name of the repository on the HuggingFace Hub, and the filenames (or glob pattern):
+
+
+```python
+from outlines import models
+
+model = models.LlamaCpp.from_pretrained("TheBloke/phi-2-GGUF", "phi-2.Q4_K_M.gguf")
 ```
 
 This will download the model files to the hub cache folder and load the weights in memory.
 
-You can also initialize the model by passing the path to the weights on your machine. Assuming [Phi2's weights](https://huggingface.co/TheBloke/phi-2-GGUF) are in the current directory:
 
-```python
-from outlines import models
-from llama_cpp import Llama
-
-llm = Llama("./phi-2.Q4_K_M.gguf")
-model = models.LlamaCpp(llm)
-```
-
-If you need more control, you can pass the same keyword arguments to the model as you would pass in the [llama-ccp-library][llamacpp]:
+You can pass the same keyword arguments to the model as you would pass in the [llama-ccp-library][llamacpp]:
 
 ```python
 from outlines import models
 
-model = models.llamacpp(
+model = models.LlamaCpp(
     "TheBloke/phi-2-GGUF",
     "phi-2.Q4_K_M.gguf"
     n_ctx=512,  # to set the context length value
 )
 ```
-
-**Main parameters:**
-
-| Parameters | Type | Description | Default |
-|------------|------|-------------|---------|
-| `n_gpu_layers`| `int` | Number of layers to offload to GPU. If -1, all layers are offloaded | `0` |
-| `split_mode` | `int` | How to split the model across GPUs. `1` for layer-wise split, `2` for row-wise split | `1` |
-| `main_gpu` | `int` | Main GPU | `0` |
-| `tensor_split` | `Optional[List[float]]` | How split tensors should be distributed across GPUs. If `None` the model is not split. | `None` |
-| `n_ctx` | `int` | Text context. Inference from the model if set to `0` | `0` |
-| `n_threads` | `Optional[int]` | Number of threads to use for generation. All available threads if set to `None`.| `None` |
-| `verbose` | `bool` | Print verbose outputs to `stderr` | `False` |
 
 See the [llama-cpp-python documentation](https://llama-cpp-python.readthedocs.io/en/latest/api-reference/#llama_cpp.Llama.__init__) for the full list of parameters.
 
@@ -69,86 +57,38 @@ See the [llama-cpp-python documentation](https://llama-cpp-python.readthedocs.io
 ```python
 from outlines import models
 
-model = models.llamacpp(
+model = models.LlamaCpp(
     "TheBloke/phi-2-GGUF",
     "phi-2.Q4_K_M.gguf",
     n_gpu_layers=-1,  # to use GPU acceleration
 )
 ```
 
-This also works with generators built with `generate.regex`, `generate.json`, `generate.cfg`, `generate.format` and `generate.choice`.
-
-### Load LoRA adapters
-
-You can load LoRA adapters dynamically:
-
-```python
-from outlines import models, generate
-
-model = models.llamacpp("TheBloke/phi-2-GGUF", "phi-2.Q4_K_M.gguf")
-generator = generate.text(model)
-answer_1 = generator("prompt")
-
-model.load_lora("./path/to/adapter.gguf")
-answer_2 = generator("prompt")
-```
-
-To load another adapter you need to re-initialize the model. Otherwise the adapter will be added on top of the previous one:
-
-```python
-from outlines import models
-
-model = models.llamacpp("TheBloke/phi-2-GGUF", "phi-2.Q4_K_M.gguf")
-model.load_lora("./path/to/adapter1.gguf")  # Load first adapter
-
-model = models.llamacpp("TheBloke/phi-2-GGUF", "phi-2.Q4_K_M.gguf")
-model.load_lora("./path/to/adapter2.gguf")  # Load second adapter
-```
 
 ## Generate text
 
-In addition to the parameters described in the [text generation section](../text.md) you can pass extra keyword arguments, for instance to set sampling parameters not exposed in Outlines' public API:
+
+To generate text you must first create a `Generator` object by passing the model instance and, possibley, the expected output type:
 
 ```python
 from outlines import models, generate
 
 
-model = models.llamacpp("TheBloke/phi-2-GGUF", "phi-2.Q4_K_M.gguf")
-generator = generate.text(model)
+model = models.LlamaCpp("TheBloke/phi-2-GGUF", "phi-2.Q4_K_M.gguf")
+generator = Generator(model)
+```
 
+You can pass to the generator the same keyword arguments you would pass in `llama-cpp-python`:
+
+```python
 answer = generator("A prompt", presence_penalty=0.8)
 ```
 
-**Extra keyword arguments:**
+You can also stream the tokens:
 
-The value of the keyword arguments you pass to the generator suspersede the values set when initializing the sampler or generator. All extra sampling methods and repetition penalties are disabled by default.
-
-| Parameters | Type | Description | Default |
-|------------|------|-------------|---------|
-| `suffix` | `Optional[str]` | A suffix to append to the generated text. If `None` no suffix is added. | `None` |
-| `echo` | `bool` | Whether to preprend the prompt to the completion. | `False` |
-| `seed` | `int` | The random seed to use for sampling. | `None` |
-| `max_tokens` | `Optional[int]` | The maximum number of tokens to generate. If `None` the maximum number of tokens depends on `n_ctx`. | `16` |
-| `frequence_penalty` | `float` | The penalty to apply to tokens based on their frequency in the past 64 tokens. | `0.0` |
-| `presence_penalty` | `float` | The penalty to apply to tokens based on their presence in the past 64 tokens. | `0.0` |
-| `repeat_penalty` | `float` | The penalty to apply to repeated tokens in the past 64 tokens. | `1.` |
-| `stopping_criteria` | `Optional[StoppingCriteriaList]` | A list of stopping criteria to use. | `None`
-| `logits_processor` | `Optional[LogitsProcessorList]` | A list of logits processors to use. The logits processor used for structured generation will be added to this list. | `None`
-| `temperature` | `float` | The temperature to use for sampling | `1.0` |
-| `top_p` | `float` | The top-p value to use for [nucleus sampling][degeneration]. | `1.` |
-| `min_p` | `float` | The min-p value to use for [minimum-p sampling][minimum-p]. | `0.` |
-| `typical_p` | `float` | The p value to use for [locally typical sampling][locally-typical]. | `1.0` |
-| `stop` | `Optional[Union[str, List[str]]]` | A list of strings that stop generation when encountered. | `[]` |
-| `top_k` |  `int` | The top-k value used for [top-k sampling][top-k]. Negative value to consider all logit values. | `-1.` |
-| `tfs_z` | `float` | The [tail-free sampling][tail-free] parameter. | `1.0` |
-| `mirostat_mode` | `int` | The [mirostat sampling][mirostat] mode. | `0` |
-| `mirostat_tau` | `float` | The target cross-entropy for [mirostat sampling][mirostat].| `5.0` |
-| `mirostat_eta` | `float` | The learning rate used to update `mu` in [mirostat sampling][mirostat]. | `0.1` |
-
-See the [llama-cpp-python documentation][llama-cpp-python-call] for the full and up-to-date list of parameters and the [llama.cpp code][llama-cpp-sampling-params] for the default values of other
-sampling parameters.
-
-### Streaming
+```python
+tokens = generator.stream("A prompt")
+```
 
 
 ## Installation
@@ -214,8 +154,6 @@ CMAKE_ARGS="-DLLAMA_BLAS=ON -DLLAMA_BLAS_VENDOR=OpenBLAS" pip install llama-cpp-
 - Vulkan
 - Kompute
 - SYCL
-
-
 
 
 [llamacpp]: https://github.com/abetlen/llama-cpp-python
