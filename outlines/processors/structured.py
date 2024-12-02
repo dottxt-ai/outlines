@@ -89,14 +89,17 @@ class GuideLogitsProcessor(OutlinesLogitsProcessor):
         if self._seq_start_idx is None:
             self._seq_start_idx = len(input_ids[0])
 
-        sequence_states: List[int] = []  # vector of states corresponding to `input_ids`
+        sequence_states: List[Any] = []  # vector of states corresponding to `input_ids`
 
         for seq_ids in input_ids:
             gen_ids = seq_ids[self._seq_start_idx :]
             curr_state_key = hash(tuple(gen_ids.tolist()))
 
             if curr_state_key not in self._guide_states:
-                prev_state = self._guide_states[hash(tuple(gen_ids[:-1].tolist()))]
+                prev_state_key = hash(tuple(gen_ids[:-1].tolist()))
+                prev_state = self._guide_states.get(
+                    prev_state_key, self.guide.initial_state
+                )
                 curr_state = self.guide.get_next_state(prev_state, gen_ids[-1].item())
                 self._guide_states[curr_state_key] = curr_state
 
@@ -107,19 +110,26 @@ class GuideLogitsProcessor(OutlinesLogitsProcessor):
         allowed_tokens_batch = []
         batch_indices = []
         for i, guide_state in enumerate(sequence_states):
-            allowed_tokens = self.guide.get_next_instruction(guide_state).tokens.to(
-                mask.device, non_blocking=True
-            )
+            instruction = self.guide.get_next_instruction(guide_state)
+            if instruction is None:
+                continue  # Skip if no instruction is available
+            allowed_tokens = instruction.tokens
+            if allowed_tokens is None:
+                continue  # Skip if no tokens are allowed
+            allowed_tokens = allowed_tokens.to(mask.device, non_blocking=True)
+
+            # Filter out invalid token IDs
+            allowed_tokens = allowed_tokens[allowed_tokens < logits.size(1)]
             allowed_tokens_batch.append(allowed_tokens)
-            batch_indices.append(
-                torch.full_like(allowed_tokens, i)
-            )  # Store batch index for each allowed token
+            batch_indices.append(torch.full_like(allowed_tokens, i))
 
-        allowed_tokens_concat = torch.cat(allowed_tokens_batch)
-        batch_indices_concat = torch.cat(batch_indices)
+        if allowed_tokens_batch:
+            allowed_tokens_concat = torch.cat(allowed_tokens_batch)
+            batch_indices_concat = torch.cat(batch_indices)
 
-        mask[batch_indices_concat, allowed_tokens_concat] = False
-        logits.masked_fill_(mask, float("-inf"))
+            mask[batch_indices_concat, allowed_tokens_concat] = False
+
+        logits = logits.masked_fill(mask, float("-inf"))
 
         return logits
 
@@ -221,14 +231,17 @@ class CFGLogitsProcessor(GuideLogitsProcessor):
         if self._seq_start_idx is None:
             self._seq_start_idx = len(input_ids[0])
 
-        sequence_states: List = []  # vector of states corresponding to `input_ids`
+        sequence_states: List[Any] = []  # vector of states corresponding to `input_ids`
 
         for seq_ids in input_ids:
             gen_ids = seq_ids[self._seq_start_idx :]
             curr_state_key = hash(tuple(gen_ids.tolist()))
 
             if curr_state_key not in self._guide_states:
-                prev_state = self._guide_states[hash(tuple(gen_ids[:-1].tolist()))]
+                prev_state_key = hash(tuple(gen_ids[:-1].tolist()))
+                prev_state = self._guide_states.get(
+                    prev_state_key, self.guide.initial_state
+                )
                 curr_state = self.guide.get_next_state(prev_state, gen_ids[-1].item())
                 self._guide_states[curr_state_key] = curr_state
 
@@ -236,11 +249,16 @@ class CFGLogitsProcessor(GuideLogitsProcessor):
 
         mask = torch.full_like(logits, -math.inf)
         for i, guide_state in enumerate(sequence_states):
-            first_legal_token = next(
+            valid_tokens = list(
                 self.guide.iter_valid_token_ids(
-                    guide_state, torch.argsort(logits[i], descending=True)
+                    guide_state, torch.arange(logits.size(1), device=logits.device)
                 )
             )
-            mask[i, [first_legal_token]] = logits[i, [first_legal_token]]
+            if valid_tokens:
+                # Keep only valid tokens
+                mask[i, valid_tokens] = logits[i, valid_tokens]
+            else:
+                # No valid tokens; generation should stop
+                mask[i] = logits[i]
 
         return mask
