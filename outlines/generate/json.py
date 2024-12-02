@@ -3,13 +3,10 @@ from enum import Enum
 from functools import singledispatch
 from typing import Callable, Optional, Union
 
+from outlines_core.fsm.json_schema import build_regex_from_schema
 from pydantic import BaseModel
 
-from outlines.fsm.json_schema import (
-    build_regex_from_schema,
-    get_schema_from_enum,
-    get_schema_from_signature,
-)
+from outlines.fsm.json_schema import get_schema_from_enum, get_schema_from_signature
 from outlines.generate.api import SequenceGeneratorAdapter
 from outlines.models import OpenAI
 from outlines.samplers import Sampler, multinomial
