@@ -1,5 +1,6 @@
 import json
 import re
+from dataclasses import dataclass
 
 import pytest
 from jsonschema.exceptions import SchemaError
@@ -41,6 +42,13 @@ def test_type_json():
     assert json_type.to_json_schema() == json_schema_dict
 
     class Foo(TypedDict):
+        bar: int
+
+    json_type = types.Json(Foo)
+    assert json_type.to_json_schema() == json_schema_dict
+
+    @dataclass
+    class Foo:
         bar: int
 
     json_type = types.Json(Foo)
