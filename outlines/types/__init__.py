@@ -1,5 +1,5 @@
-from dataclasses import dataclass
 import json
+from dataclasses import dataclass, is_dataclass
 from enum import Enum, EnumMeta
 from typing import Union
 
@@ -87,6 +87,8 @@ class Json:
         elif isinstance(self.definition, type(BaseModel)):
             schema = self.definition.model_json_schema()
         elif isinstance(self.definition, _TypedDictMeta):
+            schema = TypeAdapter(self.definition).json_schema()
+        elif is_dataclass(self.definition):
             schema = TypeAdapter(self.definition).json_schema()
         else:
             raise TypeError(
