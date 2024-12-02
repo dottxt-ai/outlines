@@ -7,9 +7,7 @@ from typing import List, Literal, Union
 
 import interegular
 import pytest
-from pydantic import BaseModel, Field, constr
-
-from outlines.fsm.json_schema import (
+from outlines_core.fsm.json_schema import (
     BOOLEAN,
     DATE,
     DATE_TIME,
@@ -22,10 +20,11 @@ from outlines.fsm.json_schema import (
     UUID,
     WHITESPACE,
     build_regex_from_schema,
-    get_schema_from_enum,
-    get_schema_from_signature,
     to_regex,
 )
+from pydantic import BaseModel, Field, constr
+
+from outlines.fsm.json_schema import get_schema_from_enum, get_schema_from_signature
 
 
 def test_function_basic():
@@ -75,7 +74,7 @@ def test_from_pydantic():
 )
 def test_match_integer(pattern, does_match):
     step = {"title": "Foo", "type": "integer"}
-    regex = to_regex(None, step)
+    regex = to_regex(step)
     assert regex == INTEGER
 
     value = pattern["integer"]
@@ -102,7 +101,7 @@ def test_match_integer(pattern, does_match):
 )
 def test_match_number(pattern, does_match):
     step = {"title": "Foo", "type": "number"}
-    regex = to_regex(None, step)
+    regex = to_regex(step)
     assert regex == NUMBER
 
     value = pattern["number"]
@@ -137,7 +136,7 @@ def test_match_number(pattern, does_match):
         # String with maximum length
         (
             {"title": "Foo", "type": "string", "maxLength": 3},
-            f'"{STRING_INNER}{{,3}}"',
+            f'"{STRING_INNER}{{0,3}}"',
             [('"ab"', True), ('"a""', False), ('"abcd"', False)],
         ),
         # String with minimum length
@@ -240,40 +239,43 @@ def test_match_number(pattern, does_match):
             [("0", True), ("1", True), ("a", False)],
         ),
         # Enum mix of types
-        (
-            {
-                "title": "Foo",
-                "enum": [
-                    6,
-                    5.3,
-                    "potato",
-                    True,
-                    None,
-                    {
-                        "properties": {
-                            "a": {"title": "A", "type": "number"},
-                            "b": {"title": "B", "type": "number"},
-                        },
-                        "required": ["a", "b"],
-                        "title": "add",
-                        "type": "object",
-                    },
-                ],
-            },
-            r'(6|5\.3|"potato"|true|null|\{[ ]?"a"[ ]?:[ ]?((-)?(0|[1-9][0-9]*))(\.[0-9]+)?([eE][+-][0-9]+)?[ ]?,[ ]?"b"[ ]?:[ ]?((-)?(0|[1-9][0-9]*))(\.[0-9]+)?([eE][+-][0-9]+)?[ ]?\})',
-            [
-                ("6", True),
-                ("5.3", True),
-                ('"potato"', True),
-                ("true", True),
-                ("null", True),
-                ("523", False),
-                ("True", False),
-                ("None", False),
-                ('{"a": -1.0, "b": 1.1}', True),
-                ('{"a": "a", "b": 1.1}', False),
-            ],
-        ),
+        #
+        # Enums of objects are not supported by outlines-core yet,
+        # see https://github.com/dottxt-ai/outlines-core/issues/100
+        # (
+        #     {
+        #         "title": "Foo",
+        #         "enum": [
+        #             6,
+        #             5.3,
+        #             "potato",
+        #             True,
+        #             None,
+        #             {
+        #                 "properties": {
+        #                     "a": {"title": "A", "type": "number"},
+        #                     "b": {"title": "B", "type": "number"},
+        #                 },
+        #                 "required": ["a", "b"],
+        #                 "title": "add",
+        #                 "type": "object",
+        #             },
+        #         ],
+        #     },
+        #     r'(6|5\.3|"potato"|true|null|\{[ ]?"a"[ ]?:[ ]?((-)?(0|[1-9][0-9]*))(\.[0-9]+)?([eE][+-][0-9]+)?[ ]?,[ ]?"b"[ ]?:[ ]?((-)?(0|[1-9][0-9]*))(\.[0-9]+)?([eE][+-][0-9]+)?[ ]?\})',
+        #     [
+        #         ("6", True),
+        #         ("5.3", True),
+        #         ('"potato"', True),
+        #         ("true", True),
+        #         ("null", True),
+        #         ("523", False),
+        #         ("True", False),
+        #         ("None", False),
+        #         ('{"a": -1.0, "b": 1.1}', True),
+        #         ('{"a": "a", "b": 1.1}', False),
+        #     ],
+        # ),
         # integer
         (
             {
@@ -308,7 +310,7 @@ def test_match_number(pattern, does_match):
                 },
                 "required": ["count"],
             },
-            '\\{[ ]?"count"[ ]?:[ ]?(-)?(0|[1-9][0-9]{,2})[ ]?\\}',
+            '\\{[ ]?"count"[ ]?:[ ]?(-)?(0|[1-9][0-9]{0,2})[ ]?\\}',
             [('{ "count": 100 }', True), ('{ "count": 1000 }', False)],
         ),
         # integer with minimum and maximum digits
