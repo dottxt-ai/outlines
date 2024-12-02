@@ -110,6 +110,7 @@ class GuideLogitsProcessor(OutlinesLogitsProcessor):
             allowed_tokens = self.guide.get_next_instruction(guide_state).tokens.to(
                 mask.device, non_blocking=True
             )
+            allowed_tokens = allowed_tokens[allowed_tokens < mask.shape[-1]] # filter out input ids exceeding the mask length
             allowed_tokens_batch.append(allowed_tokens)
             batch_indices.append(
                 torch.full_like(allowed_tokens, i)
