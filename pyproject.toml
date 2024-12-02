@@ -50,6 +50,7 @@ vllm = ["vllm", "transformers", "numpy2"]
 transformers = ["transformers", "accelerate", "datasets", "numpy<2"]
 mlxlm = ["mlx-lm", "datasets"]
 openai = ["openai"]
+gemini = ["google-generativeai"]
 llamacpp = ["llama-cpp-python", "transformers", "datasets", "numpy<2"]
 exllamav2 = ["exllamav2"]
 test = [
