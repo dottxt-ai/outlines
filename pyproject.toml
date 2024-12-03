@@ -45,7 +45,7 @@ dependencies = [
 dynamic = ["version"]
 
 [project.optional-dependencies]
-vllm = ["vllm", "transformers", "numpy2"]
+vllm = ["vllm", "transformers", "numpy<2"]
 transformers = ["transformers", "accelerate", "datasets", "numpy<2"]
 mlxlm = ["mlx-lm", "datasets"]
 openai = ["openai"]
