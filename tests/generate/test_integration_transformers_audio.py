@@ -3,7 +3,6 @@ from urllib.request import urlopen
 
 import librosa
 import pytest
-import torch
 from transformers import AutoProcessor, Qwen2AudioForConditionalGeneration
 
 import outlines
@@ -28,12 +27,7 @@ def model(tmp_path_factory):
     return transformers_audio(
         "Qwen/Qwen2-Audio-7B-Instruct",
         model_class=Qwen2AudioForConditionalGeneration,
-        device="cuda",
-        model_kwargs=dict(
-            torch_dtype=torch.bfloat16,
-            load_in_4bit=True,
-            low_cpu_mem_usage=True,
-        ),
+        device="cpu",
     )
 
 
