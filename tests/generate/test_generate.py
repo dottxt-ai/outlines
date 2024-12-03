@@ -75,18 +75,12 @@ def model_bart(tmp_path_factory):
 
 @pytest.fixture(scope="session")
 def model_transformers_audio(tmp_path_factory):
-    import torch
     from transformers import Qwen2AudioForConditionalGeneration
 
     return models.transformers_audio(
         "Qwen/Qwen2-Audio-7B-Instruct",
         model_class=Qwen2AudioForConditionalGeneration,
-        device="cuda",
-        model_kwargs=dict(
-            torch_dtype=torch.bfloat16,
-            load_in_4bit=True,
-            low_cpu_mem_usage=True,
-        ),
+        device="cpu",
     )
 
 
