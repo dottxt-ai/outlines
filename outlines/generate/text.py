@@ -1,10 +1,11 @@
 from functools import singledispatch
 
 from outlines.generate.api import (
+    AudioSequenceGeneratorAdapter,
     SequenceGeneratorAdapter,
     VisionSequenceGeneratorAdapter,
 )
-from outlines.models import OpenAI, TransformersVision
+from outlines.models import OpenAI, TransformersAudio, TransformersVision
 from outlines.samplers import Sampler, multinomial
 
 
@@ -32,6 +33,11 @@ def text(model, sampler: Sampler = multinomial()) -> SequenceGeneratorAdapter:
 
     """
     return SequenceGeneratorAdapter(model, None, sampler)
+
+
+@text.register(TransformersAudio)
+def text_audio(model, sampler: Sampler = multinomial()):
+    return AudioSequenceGeneratorAdapter(model, None, sampler)
 
 
 @text.register(TransformersVision)

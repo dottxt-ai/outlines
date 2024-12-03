@@ -4,10 +4,11 @@ import interegular
 
 from outlines.fsm.guide import RegexGuide
 from outlines.generate.api import (
+    AudioSequenceGeneratorAdapter,
     SequenceGeneratorAdapter,
     VisionSequenceGeneratorAdapter,
 )
-from outlines.models import TransformersVision
+from outlines.models import TransformersAudio, TransformersVision
 from outlines.samplers import Sampler, multinomial
 
 
@@ -20,6 +21,15 @@ def fsm(
     guide = RegexGuide.from_interegular_fsm(fsm, model.tokenizer)
     logits_processor = GuideLogitsProcessor(tokenizer=model.tokenizer, guide=guide)
     return SequenceGeneratorAdapter(model, logits_processor, sampler)
+
+
+@fsm.register(TransformersAudio)
+def fsm_audio(model, fsm: interegular.fsm.FSM, sampler: Sampler = multinomial()):
+    from outlines.processors import GuideLogitsProcessor
+
+    guide = RegexGuide.from_interegular_fsm(fsm, model.tokenizer)
+    logits_processor = GuideLogitsProcessor(tokenizer=model.tokenizer, guide=guide)
+    return AudioSequenceGeneratorAdapter(model, logits_processor, sampler)
 
 
 @fsm.register(TransformersVision)

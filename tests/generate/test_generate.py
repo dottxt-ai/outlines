@@ -2,6 +2,7 @@ import contextlib
 import re
 from enum import Enum
 
+import numpy as np
 import pytest
 
 import outlines.generate as generate
@@ -73,6 +74,23 @@ def model_bart(tmp_path_factory):
 
 
 @pytest.fixture(scope="session")
+def model_transformers_audio(tmp_path_factory):
+    import torch
+    from transformers import Qwen2AudioForConditionalGeneration
+
+    return models.transformers_audio(
+        "Qwen/Qwen2-Audio-7B-Instruct",
+        model_class=Qwen2AudioForConditionalGeneration,
+        device="cuda",
+        model_kwargs=dict(
+            torch_dtype=torch.bfloat16,
+            load_in_4bit=True,
+            low_cpu_mem_usage=True,
+        ),
+    )
+
+
+@pytest.fixture(scope="session")
 def model_transformers_vision(tmp_path_factory):
     import torch
     from transformers import LlavaNextForConditionalGeneration
@@ -125,6 +143,7 @@ ALL_MODEL_FIXTURES = (
     "model_bart",
     "model_transformers_vision",
     "model_vllm",
+    "model_transformers_audio",
 )
 
 
@@ -191,7 +210,11 @@ def enforce_not_implemented(model_fixture, *task_names):
     assert an NotImplementedError is raised. Otherwise, run normally
     """
     NOT_IMPLEMENTED = {
-        "stream": ["model_transformers_vision", "model_vllm"],
+        "stream": [
+            "model_transformers_vision",
+            "model_vllm",
+            "model_transformers_audio",
+        ],
         "batch": ["model_llamacpp", "model_mlxlm", "model_mlxlm_phi3"],
         "beam_search": ["model_llamacpp", "model_mlxlm", "model_mlxlm_phi3"],
         "multiple_samples": ["model_llamacpp", "model_mlxlm", "model_mlxlm_phi3"],
@@ -224,6 +247,18 @@ def get_inputs(fixture_name, batch_size=None):
             return {
                 "prompts": [f"<image> {p}" for p in prompts],
                 "media": [[img] for _ in range(batch_size)],
+            }
+
+    elif fixture_name.endswith("_audio"):
+        instruct_prompt = "<|im_start|>system\nYou are a helpful assistant.<|im_end|>\n<|im_start|>user\nAudio 1: <|audio_bos|><|AUDIO|><|audio_eos|>\n"
+        audio = np.random.random(20000)
+
+        if batch_size is None:
+            return {"prompts": f"{instruct_prompt}{prompts}", "media": [audio]}
+        else:
+            return {
+                "prompts": [f"{instruct_prompt}{p}" for p in prompts],
+                "media": [[audio] for _ in range(batch_size)],
             }
 
     else:

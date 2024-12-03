@@ -621,3 +621,94 @@ class VisionSequenceGeneratorAdapter(SequenceGeneratorAdapter):
             )
 
         return prompts, media
+
+
+class AudioSequenceGeneratorAdapter(SequenceGeneratorAdapter):
+    def __call__(  # type: ignore
+        self,
+        prompts: Union[str, List[str]],
+        media: Union[str, Any],
+        max_tokens: Optional[int] = None,
+        stop_at: Optional[Union[str, List[str]]] = None,
+        seed: Optional[int] = None,
+        **model_specific_params,
+    ):
+        """
+        Generate text from a prompt or list of prompts.
+
+        Media: A URI to construct media or media object itself. Used as AutoProcessor argument.
+        """
+        prompts, media = self._validate_prompt_media_types(prompts, media)
+
+        generation_params = self.prepare_generation_parameters(
+            max_tokens, stop_at, seed
+        )
+
+        completions = self.model.generate(
+            prompts,
+            media,
+            generation_params,
+            copy(self.logits_processor),
+            self.sampling_params,
+            **model_specific_params,
+        )
+
+        return self._format(completions)
+
+    def stream(  # type: ignore
+        self,
+        prompts: Union[str, List[str]],
+        media: List[Union[str, Any, List[Union[str, Any]]]],
+        max_tokens: Optional[int] = None,
+        stop_at: Optional[Union[str, List[str]]] = None,
+        seed: Optional[int] = None,
+        **model_specific_params,
+    ):
+        """Return a text generator from a prompt or a list of prompts."""
+        prompts, media = self._validate_prompt_media_types(prompts, media)
+        generation_params = self.prepare_generation_parameters(
+            max_tokens, stop_at, seed
+        )
+        return self.model.stream(
+            prompts,
+            media,
+            generation_params,
+            copy(self.logits_processor),
+            self.sampling_params,
+            **model_specific_params,
+        )
+
+    @classmethod
+    def _validate_prompt_media_types(
+        cls,
+        prompts: Union[str, List[str]],
+        media: Union[str, Any, List[Union[str, Any]]],
+    ) -> Union[Any, List[Any]]:
+        """
+        Prepare media as np.ndarray and ensure for every prompt str there is one List[PIL.Image]
+        """
+
+        def valid_types(prompts, media):
+            import numpy as np  # type: ignore
+
+            if isinstance(prompts, list):
+                if not isinstance(media, list) or len(prompts) != len(media):
+                    return False
+                for subprompt, submedia in zip(prompts, media):
+                    if not isinstance(subprompt, str) or not all(
+                        isinstance(m, np.ndarray) for m in submedia
+                    ):
+                        return False
+            elif isinstance(prompts, str):
+                if not all(isinstance(m, np.ndarray) for m in media):
+                    return False
+            return True
+
+        if not valid_types(prompts, media):
+            raise TypeError(
+                "Expected (prompts, media) to be of type "
+                "(str, List[np.ndarray])), or (List[str], List[List[np.ndarray]]) "
+                f"instead got prompts={prompts}, media={media}"
+            )
+
+        return prompts, media

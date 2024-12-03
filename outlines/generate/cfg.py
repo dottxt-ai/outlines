@@ -1,10 +1,11 @@
 from functools import singledispatch
 
 from outlines.generate.api import (
+    AudioSequenceGeneratorAdapter,
     SequenceGeneratorAdapter,
     VisionSequenceGeneratorAdapter,
 )
-from outlines.models import LlamaCpp, OpenAI, TransformersVision
+from outlines.models import LlamaCpp, OpenAI, TransformersAudio, TransformersVision
 from outlines.samplers import Sampler, multinomial
 
 
@@ -31,6 +32,14 @@ def cfg(
 
     logits_processor = CFGLogitsProcessor(cfg_str, tokenizer=model.tokenizer)
     return SequenceGeneratorAdapter(model, logits_processor, sampler)
+
+
+@cfg.register(TransformersAudio)
+def cfg_audio(model, cfg_str: str, sampler: Sampler = multinomial()):
+    from outlines.processors import CFGLogitsProcessor
+
+    logits_processor = CFGLogitsProcessor(cfg_str, tokenizer=model.tokenizer)
+    return AudioSequenceGeneratorAdapter(model, logits_processor, sampler)
 
 
 @cfg.register(TransformersVision)
