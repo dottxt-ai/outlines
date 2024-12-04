@@ -23,6 +23,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+
 import math
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Type, Union
 
@@ -110,7 +111,9 @@ class GuideLogitsProcessor(OutlinesLogitsProcessor):
             allowed_tokens = self.guide.get_next_instruction(guide_state).tokens.to(
                 mask.device, non_blocking=True
             )
-            allowed_tokens = allowed_tokens[allowed_tokens < mask.shape[-1]] # filter out input ids exceeding the mask length
+            allowed_tokens = allowed_tokens[
+                allowed_tokens < mask.shape[-1]
+            ]  # filter out input ids exceeding the mask length
             allowed_tokens_batch.append(allowed_tokens)
             batch_indices.append(
                 torch.full_like(allowed_tokens, i)
