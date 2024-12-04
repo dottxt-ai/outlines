@@ -78,7 +78,7 @@ def model_transformers_audio(tmp_path_factory):
     from transformers import Qwen2AudioForConditionalGeneration
 
     return models.transformers_audio(
-        "Qwen/Qwen2-Audio-7B-Instruct",
+        "yujiepan/qwen2-audio-tiny-random",
         model_class=Qwen2AudioForConditionalGeneration,
         device="cpu",
     )
@@ -210,7 +210,12 @@ def enforce_not_implemented(model_fixture, *task_names):
             "model_transformers_audio",
         ],
         "batch": ["model_llamacpp", "model_mlxlm", "model_mlxlm_phi3"],
-        "beam_search": ["model_llamacpp", "model_mlxlm", "model_mlxlm_phi3"],
+        "beam_search": [
+            "model_llamacpp",
+            "model_mlxlm",
+            "model_mlxlm_phi3",
+            "model_transformers_audio",
+        ],
         "multiple_samples": ["model_llamacpp", "model_mlxlm", "model_mlxlm_phi3"],
         "cfg": ["model_llamacpp"],  # TODO: fix llama_cpp tokenizer
     }
@@ -245,14 +250,20 @@ def get_inputs(fixture_name, batch_size=None):
 
     elif fixture_name.endswith("_audio"):
         instruct_prompt = "<|im_start|>system\nYou are a helpful assistant.<|im_end|>\n<|im_start|>user\nAudio 1: <|audio_bos|><|AUDIO|><|audio_eos|>\n"
-        audio = np.random.random(20000)
+        batch_prompt = "<|im_start|>assistant\n"
+        audio = np.random.random(20000).astype(np.float32)
 
         if batch_size is None:
-            return {"prompts": f"{instruct_prompt}{prompts}", "media": [audio]}
+            return {
+                "prompts": f"{instruct_prompt}{prompts}<|im_end|>\n",
+                "media": [audio],
+            }
         else:
             return {
-                "prompts": [f"{instruct_prompt}{p}" for p in prompts],
-                "media": [[audio] for _ in range(batch_size)],
+                "prompts": [
+                    f"{instruct_prompt}{p}<|im_end|>\n{batch_prompt}" for p in prompts
+                ],
+                "media": [audio for _ in range(batch_size)],
             }
 
     else:
@@ -445,7 +456,9 @@ def test_generate_regex_batch_multi_sample(
     generator = generate.regex(
         model, pattern, sampler=getattr(samplers, sampler_name)(4)
     )
-    with enforce_not_implemented(model_fixture, "batch", "multiple_samples"):
+    with enforce_not_implemented(
+        model_fixture, "batch", "multiple_samples", sampler_name
+    ):
         output_batch_groups = generator(**get_inputs(model_fixture, 4), max_tokens=40)
         for output_sample_groups in output_batch_groups:
             for output in output_sample_groups:

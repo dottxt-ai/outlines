@@ -44,7 +44,11 @@ class TransformersAudio(Transformers):
         The generated text
         """
         inputs = self.processor(
-            text=prompts, audios=media, padding=True, return_tensors="pt"
+            text=prompts,
+            audios=media,
+            padding=True,
+            return_tensors="pt",
+            sampling_rate=self.processor.feature_extractor.sampling_rate,
         ).to(self.model.device)
 
         generation_kwargs = self._get_generation_kwargs(
