@@ -25,7 +25,7 @@ def audio_from_url(url):
 @pytest.fixture(scope="session")
 def model(tmp_path_factory):
     return transformers_audio(
-        "Qwen/Qwen2-Audio-7B-Instruct",
+        "yujiepan/qwen2-audio-tiny-random",
         model_class=Qwen2AudioForConditionalGeneration,
         device="cpu",
     )
@@ -33,7 +33,7 @@ def model(tmp_path_factory):
 
 @pytest.fixture(scope="session")
 def processor(tmp_path_factory):
-    return AutoProcessor.from_pretrained("Qwen/Qwen2-Audio-7B-Instruct")
+    return AutoProcessor.from_pretrained("yujiepan/qwen2-audio-tiny-random")
 
 
 def test_single_audio_text_gen(model, processor):
@@ -130,7 +130,7 @@ def test_single_audio_choice(model, processor):
             "role": "user",
             "content": [
                 {"audio"},
-                {"type": "text", "text": "What is this?"},
+                {"type": "text", "text": "What's that sound?"},
             ],
         },
     ]

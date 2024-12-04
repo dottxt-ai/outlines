@@ -691,23 +691,18 @@ class AudioSequenceGeneratorAdapter(SequenceGeneratorAdapter):
         def valid_types(prompts, media):
             import numpy as np  # type: ignore
 
-            if isinstance(prompts, list):
-                if not isinstance(media, list) or len(prompts) != len(media):
-                    return False
-                for subprompt, submedia in zip(prompts, media):
-                    if not isinstance(subprompt, str) or not all(
-                        isinstance(m, np.ndarray) for m in submedia
-                    ):
-                        return False
-            elif isinstance(prompts, str):
-                if not all(isinstance(m, np.ndarray) for m in media):
-                    return False
+            if not isinstance(prompts, (str, list)):
+                return False
+            if not isinstance(media, list):
+                return False
+            if not all(isinstance(m, np.ndarray) for m in media):
+                return False
             return True
 
         if not valid_types(prompts, media):
             raise TypeError(
                 "Expected (prompts, media) to be of type "
-                "(str, List[np.ndarray])), or (List[str], List[List[np.ndarray]]) "
+                "(str, List[np.ndarray])), or (List[str], List[np.ndarray]]) "
                 f"instead got prompts={prompts}, media={media}"
             )
 
