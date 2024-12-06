@@ -1,6 +1,7 @@
 import contextlib
 import re
 
+import numpy as np
 import pytest
 
 import outlines.generate as generate
@@ -72,6 +73,17 @@ def model_bart(tmp_path_factory):
 
 
 @pytest.fixture(scope="session")
+def model_transformers_audio(tmp_path_factory):
+    from transformers import Qwen2AudioForConditionalGeneration
+
+    return models.transformers_audio(
+        "yujiepan/qwen2-audio-tiny-random",
+        model_class=Qwen2AudioForConditionalGeneration,
+        device="cpu",
+    )
+
+
+@pytest.fixture(scope="session")
 def model_transformers_vision(tmp_path_factory):
     import torch
     from transformers import LlavaNextForConditionalGeneration
@@ -124,6 +136,7 @@ ALL_MODEL_FIXTURES = (
     "model_bart",
     "model_transformers_vision",
     "model_vllm",
+    "model_transformers_audio",
 )
 
 
@@ -178,9 +191,18 @@ def enforce_not_implemented(model_fixture, *task_names):
     assert an NotImplementedError is raised. Otherwise, run normally
     """
     NOT_IMPLEMENTED = {
-        "stream": ["model_transformers_vision", "model_vllm"],
+        "stream": [
+            "model_transformers_vision",
+            "model_vllm",
+            "model_transformers_audio",
+        ],
         "batch": ["model_llamacpp", "model_mlxlm", "model_mlxlm_phi3"],
-        "beam_search": ["model_llamacpp", "model_mlxlm", "model_mlxlm_phi3"],
+        "beam_search": [
+            "model_llamacpp",
+            "model_mlxlm",
+            "model_mlxlm_phi3",
+            "model_transformers_audio",
+        ],
         "multiple_samples": ["model_llamacpp", "model_mlxlm", "model_mlxlm_phi3"],
         "cfg": ["model_llamacpp"],  # TODO: fix llama_cpp tokenizer
     }
@@ -211,6 +233,24 @@ def get_inputs(fixture_name, batch_size=None):
             return {
                 "prompts": [f"<image> {p}" for p in prompts],
                 "media": [[img] for _ in range(batch_size)],
+            }
+
+    elif fixture_name.endswith("_audio"):
+        instruct_prompt = "<|im_start|>system\nYou are a helpful assistant.<|im_end|>\n<|im_start|>user\nAudio 1: <|audio_bos|><|AUDIO|><|audio_eos|>\n"
+        batch_prompt = "<|im_start|>assistant\n"
+        audio = np.random.random(20000).astype(np.float32)
+
+        if batch_size is None:
+            return {
+                "prompts": f"{instruct_prompt}{prompts}<|im_end|>\n",
+                "media": [audio],
+            }
+        else:
+            return {
+                "prompts": [
+                    f"{instruct_prompt}{p}<|im_end|>\n{batch_prompt}" for p in prompts
+                ],
+                "media": [audio for _ in range(batch_size)],
             }
 
     else:
@@ -391,7 +431,9 @@ def test_generate_regex_batch_multi_sample(
     generator = generate.regex(
         model, pattern, sampler=getattr(samplers, sampler_name)(4)
     )
-    with enforce_not_implemented(model_fixture, "batch", "multiple_samples"):
+    with enforce_not_implemented(
+        model_fixture, "batch", "multiple_samples", sampler_name
+    ):
         output_batch_groups = generator(**get_inputs(model_fixture, 4), max_tokens=40)
         for output_sample_groups in output_batch_groups:
             for output in output_sample_groups:
