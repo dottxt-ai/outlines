@@ -1,5 +1,6 @@
 import contextlib
 import re
+from enum import Enum
 
 import pytest
 
@@ -124,6 +125,18 @@ ALL_MODEL_FIXTURES = (
     "model_bart",
     "model_transformers_vision",
     "model_vllm",
+)
+
+
+class MyEnum(Enum):
+    foo = "foo"
+    bar = "bar"
+    baz = "baz"
+
+
+ALL_SAMPLE_CHOICES_FIXTURES = (
+    ["foo", "bar", "baz"],
+    MyEnum,
 )
 
 
@@ -264,21 +277,33 @@ def test_generate_json(request, model_fixture, sample_schema):
 
 
 @pytest.mark.parametrize("model_fixture", ALL_MODEL_FIXTURES)
+@pytest.mark.parametrize("sample_choices", ALL_SAMPLE_CHOICES_FIXTURES)
 def test_generate_choice(request, model_fixture, sample_choices):
     model = request.getfixturevalue(model_fixture)
     generator = generate.choice(model, sample_choices)
     res = generator(**get_inputs(model_fixture))
-    assert res in sample_choices
+    if isinstance(sample_choices, type(Enum)):
+        assert res in [elt.value for elt in sample_choices]
+    else:
+        assert res in sample_choices
 
 
 @pytest.mark.parametrize("model_fixture", ALL_MODEL_FIXTURES)
+@pytest.mark.parametrize("sample_choices", ALL_SAMPLE_CHOICES_FIXTURES)
 def test_generate_choice_twice(request, model_fixture, sample_choices):
     model = request.getfixturevalue(model_fixture)
     generator = generate.choice(model, sample_choices)
     res = generator(**get_inputs(model_fixture))
-    assert res in sample_choices
+    if isinstance(sample_choices, type(Enum)):
+        assert res in [elt.value for elt in sample_choices]
+    else:
+        assert res in sample_choices
+
     res = generator(**get_inputs(model_fixture))
-    assert res in sample_choices
+    if isinstance(sample_choices, type(Enum)):
+        assert res in [elt.value for elt in sample_choices]
+    else:
+        assert res in sample_choices
 
 
 @pytest.mark.parametrize("model_fixture", ALL_MODEL_FIXTURES)

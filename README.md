@@ -84,6 +84,29 @@ generator = outlines.generate.choice(model, ["Positive", "Negative"])
 answer = generator(prompt)
 ```
 
+You can also pass these choices through en enum:
+
+````python
+from enum import Enum
+
+import outlines
+
+class Sentiment(str, Enum):
+    positive = "Positive"
+    negative = "Negative"
+
+model = outlines.models.transformers("microsoft/Phi-3-mini-4k-instruct")
+
+prompt = """You are a sentiment-labelling assistant.
+Is the following review positive or negative?
+
+Review: This restaurant is just awesome!
+"""
+
+generator = outlines.generate.choice(model, Sentiment)
+answer = generator(prompt)
+````
+
 ### Type constraint
 
 You can instruct the model to only return integers or floats:
