@@ -1,6 +1,7 @@
+from outlines_core.fsm.json_schema import build_regex_from_schema
+
 from outlines.caching import cache_disabled
 from outlines.fsm.guide import RegexGuide
-from outlines.fsm.json_schema import build_regex_from_schema
 
 from .common import setup_tokenizer  # noqa: E402
 
@@ -69,10 +70,6 @@ class JsonSchemaBenchmark:
     def setup(self, schema_name):
         self.tokenizer = setup_tokenizer()
         self.schema = schemas[schema_name]
-
-    @cache_disabled()
-    def time_json_schema_to_regex(self, schema_name):
-        build_regex_from_schema(self.schema)
 
     @cache_disabled()
     def time_json_schema_to_fsm(self, schema_name):
