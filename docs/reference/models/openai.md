@@ -79,7 +79,6 @@ Outlines supports models that follow the OpenAI standard. You will need to initi
 
 ```python
 import os
-from openai import AsyncOpenAI
 from outlines import models
 from outlines.models.openai import OpenAIConfig
 
