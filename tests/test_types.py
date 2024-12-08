@@ -1,5 +1,6 @@
 import json
 import re
+from dataclasses import dataclass
 
 import pytest
 from jsonschema.exceptions import SchemaError
@@ -46,11 +47,30 @@ def test_type_json():
     json_type = types.Json(Foo)
     assert json_type.to_json_schema() == json_schema_dict
 
+    @dataclass
+    class Foo:
+        bar: int
+
+    json_type = types.Json(Foo)
+    assert json_type.to_json_schema() == json_schema_dict
+
 
 def test_type_choice():
     choices = ["a", "b"]
     choice_type = types.Choice(choices)
     assert choice_type.definition.a.value == "a"
+
+    regex_str = choice_type.to_regex()
+    assert regex_str == "(a|b)"
+
+
+def test_type_list():
+    class Foo(BaseModel):
+        bar: int
+
+    list_type = types.List(Foo)
+    with pytest.raises(NotImplementedError, match="Structured"):
+        list_type.to_regex()
 
 
 @pytest.mark.parametrize(
