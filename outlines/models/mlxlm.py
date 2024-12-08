@@ -93,13 +93,16 @@ class MLXLM:
         if seed is not None:
             raise NotImplementedError("The `mlx-lm` library does not support seed.")
         if stop_at is not None:
-            raise NotImplementedError("The `mlx-lm` library does not support stop_at.")
+            stop_at = stop_at if isinstance(stop_at, list) else [stop_at]
+        else:
+            stop_at = []
 
         generate_kwargs = {
             "temp": temperature,
             "top_p": top_p,
             "sampler": sampler,
             "logits_processor": logits_processor,
+            "stop_at": stop_at,
         }
 
         # Adapted from
@@ -113,8 +116,6 @@ class MLXLM:
             self.generate_step(prompt_tokens, **generate_kwargs),
             range(max_tokens),
         ):
-            if token == self.tokenizer.eos_token_id:
-                break
             detokenizer.add_token(token)
             yield detokenizer.last_segment
 
@@ -128,6 +129,7 @@ class MLXLM:
         top_p: Optional[float],
         sampler: str,
         logits_processor: "OutlinesLogitsProcessor",
+        stop_at: List[List[int]],
     ) -> Generator[Tuple[int, float], None, None]:
         """
         Adapted from
@@ -173,6 +175,10 @@ class MLXLM:
         unprocessed_input_ids = prompt
         generated_ids: List[int] = []
 
+        def should_stop(token):
+            text = self.mlx_tokenizer.decode(generated_ids + [token])
+            return any(s in text for s in stop_at)
+
         while True:
             logits = self.model(unprocessed_input_ids[None], cache=cache)
             logits = logits[:, -1, :]
@@ -186,6 +192,9 @@ class MLXLM:
             new_token_single, prob = sample(logits)
             new_token = new_token_single.item()
             yield new_token, prob
+
+            if new_token == self.tokenizer.eos_token_id or (stop_at and should_stop(new_token)):
+                break
 
             generated_ids.append(new_token)
             unprocessed_input_ids = new_token_single
