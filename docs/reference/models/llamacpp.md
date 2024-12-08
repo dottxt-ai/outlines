@@ -68,7 +68,7 @@ model = models.LlamaCpp(
 ## Generate text
 
 
-To generate text you must first create a `Generator` object by passing the model instance and, possibley, the expected output type:
+To generate text you must first create a `Generator` object by passing the model instance and, possibly, the expected output type:
 
 ```python
 from outlines import models, generate
