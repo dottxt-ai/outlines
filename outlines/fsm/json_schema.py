@@ -74,8 +74,10 @@ def get_schema_from_enum(myenum: type[Enum]) -> dict:
             f"Your enum class {myenum.__name__} has 0 members. If you are working with an enum of functions, do not forget to register them as callable (using `partial` for instance)"
         )
     choices = [
-        get_schema_from_signature(elt.value.func) if callable(elt.value) else elt.value
+        get_schema_from_signature(elt.value.func)
+        if callable(elt.value)
+        else {"const": elt.value}
         for elt in myenum
     ]
-    schema = {"title": myenum.__name__, "enum": choices}
+    schema = {"title": myenum.__name__, "oneOf": choices}
     return schema

@@ -69,8 +69,10 @@ class EmptyEnum(Enum):
 )
 def test_enum_schema(enum, expectation):
     with expectation:
-        result = get_schema_from_enum(enum)
-        assert result["title"] == enum.__name__
-        assert len(result["enum"]) == len(enum)
-        for elt in result["enum"]:
+        schema = get_schema_from_enum(enum)
+        regex_str = build_regex_from_schema(json.dumps(schema))
+        assert isinstance(regex_str, str)
+        assert schema["title"] == enum.__name__
+        assert len(schema["oneOf"]) == len(enum)
+        for elt in schema["oneOf"]:
             assert type(elt) in [int, float, bool, type(None), str, dict]

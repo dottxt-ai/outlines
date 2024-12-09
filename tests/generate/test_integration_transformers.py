@@ -363,7 +363,6 @@ def mul(c: float, d: float) -> float:
     return c * d
 
 
-@pytest.mark.xfail(reason="Enum of objects are not supported in outlines-core")
 def test_transformers_json_function_enum(model):
     prompt = "Output some JSON "
 
