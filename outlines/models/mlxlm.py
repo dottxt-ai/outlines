@@ -193,7 +193,9 @@ class MLXLM:
             new_token = new_token_single.item()
             yield new_token, prob
 
-            if new_token == self.tokenizer.eos_token_id or (stop_at and should_stop(new_token)):
+            if new_token == self.tokenizer.eos_token_id or (
+                stop_at and should_stop(new_token)
+            ):
                 break
 
             generated_ids.append(new_token)
