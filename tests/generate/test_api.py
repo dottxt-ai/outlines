@@ -42,6 +42,8 @@ def test_vision_sequence_generator_validate_types(prompts, media, type_error):
     "prompts,media,type_error",
     [
         ("single prompt", [AUDIO_ARRAY], False),
+        (0, [AUDIO_ARRAY], True),
+        ([AUDIO_ARRAY], "single prompt", True),
         (["single prompt"], [AUDIO_ARRAY], False),
         (["prompt0", "prompt1"], [AUDIO_ARRAY, AUDIO_ARRAY], False),
         ("single prompt", [AUDIO_ARRAY, AUDIO_ARRAY], False),

@@ -691,8 +691,11 @@ class AudioSequenceGeneratorAdapter(SequenceGeneratorAdapter):
         def valid_types(prompts, media):
             import numpy as np  # type: ignore
 
-            if not isinstance(prompts, (str, list)):
-                return False
+            if not isinstance(prompts, str):
+                if not isinstance(prompts, list):
+                    return False
+                if not all(isinstance(p, str) for p in prompts):
+                    return False
             if not isinstance(media, list):
                 return False
             if not all(isinstance(m, np.ndarray) for m in media):
