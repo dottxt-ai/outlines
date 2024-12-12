@@ -1,6 +1,7 @@
 import datetime
 import re
 from enum import Enum
+from functools import partial
 from typing import List, Union
 
 import pytest
@@ -354,6 +355,29 @@ def test_transformers_json_int_enum(model):
     assert result.user_id in [1, 2]
 
 
+def add(a: int, b: int) -> int:
+    return a + b
+
+
+def mul(c: float, d: float) -> float:
+    return c * d
+
+
+def test_transformers_json_function_enum(model):
+    prompt = "Output some JSON "
+
+    class Operation(Enum):
+        add = partial(add)
+        mul = partial(mul)
+
+    result = generate.json(model, Operation)(prompt, seed=0)
+    assert isinstance(result, dict)
+    assert len(result) == 2
+    for k, v in result.items():
+        assert k in ["a", "b", "c", "d"]
+        assert isinstance(v, (int, float))
+
+
 def test_transformers_json_array(model):
     prompt = "Output some JSON "
 
@@ -492,6 +516,7 @@ def test_transformers_use_existing_model_and_tokenizer():
     assert isinstance(sequence, str)
 
 
+@pytest.mark.skip("Caching for guide was temporarily turned off")
 def test_RegexGuide_caching(temp_cache_dir):
     import outlines.caching
     from outlines.fsm.guide import cached_create_states_mapping

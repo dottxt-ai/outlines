@@ -274,6 +274,7 @@ def test_llama_cpp_pre_tokenizer_remains_broken():
         generate.choice(model, ["skirt", "dress", "pen", "jacket"])
 
 
+@pytest.mark.skip("Caching for guide was temporarily turned off")
 def test_RegexGuide_caching(model, temp_cache_dir):
     import llama_cpp
 

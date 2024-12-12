@@ -2,7 +2,11 @@
 
 !!! Installation
 
-    You need to install the `openai` library to be able to use the OpenAI API in Outlines.
+    You need to install the `openai` library to be able to use the OpenAI API in Outlines. Or alternatively:
+
+    ```bash
+    pip install "outlines[openai]"
+    ```
 
 ## OpenAI models
 

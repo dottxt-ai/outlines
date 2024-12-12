@@ -5,12 +5,23 @@ import inspect
 from typing import Callable, Optional
 
 import numpy as np
-from numpy.lib.function_base import (
-    _calculate_shapes,
-    _parse_gufunc_signature,
-    _parse_input_dimensions,
-    _update_dim_sizes,
-)
+
+# Import required functions based on NumPy version
+np_major_version = int(np.__version__.split(".")[0])
+if np_major_version >= 2:
+    from numpy.lib._function_base_impl import (
+        _calculate_shapes,
+        _parse_gufunc_signature,
+        _parse_input_dimensions,
+        _update_dim_sizes,
+    )
+else:
+    from numpy.lib.function_base import (
+        _calculate_shapes,
+        _parse_gufunc_signature,
+        _parse_input_dimensions,
+        _update_dim_sizes,
+    )
 
 # Allow nested loops for running in notebook. We don't enable it globally as it
 # may interfere with other libraries that use asyncio.

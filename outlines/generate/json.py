@@ -1,10 +1,12 @@
 import json as pyjson
+from enum import Enum
 from functools import singledispatch
 from typing import Callable, Optional, Union
 
+from outlines_core.fsm.json_schema import build_regex_from_schema
 from pydantic import BaseModel
 
-from outlines.fsm.json_schema import build_regex_from_schema, get_schema_from_signature
+from outlines.fsm.json_schema import get_schema_from_enum, get_schema_from_signature
 from outlines.generate.api import SequenceGeneratorAdapter
 from outlines.models import OpenAI
 from outlines.samplers import Sampler, multinomial
@@ -48,6 +50,11 @@ def json(
         regex_str = build_regex_from_schema(schema, whitespace_pattern)
         generator = regex(model, regex_str, sampler)
         generator.format_sequence = lambda x: schema_object.parse_raw(x)
+    elif isinstance(schema_object, type(Enum)):
+        schema = pyjson.dumps(get_schema_from_enum(schema_object))
+        regex_str = build_regex_from_schema(schema, whitespace_pattern)
+        generator = regex(model, regex_str, sampler)
+        generator.format_sequence = lambda x: pyjson.loads(x)
     elif callable(schema_object):
         schema = pyjson.dumps(get_schema_from_signature(schema_object))
         regex_str = build_regex_from_schema(schema, whitespace_pattern)

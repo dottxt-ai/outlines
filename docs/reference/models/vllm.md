@@ -3,7 +3,11 @@
 
 !!! Note "Installation"
 
-    You need to install the `vllm` library to use the vLLM integration. See the [installation section](#installation) for instructions to install vLLM for CPU or ROCm.
+    You need to install the `vllm` library to use the vLLM integration. See the [installation section](#installation) for instructions to install vLLM for CPU or ROCm. To get started you can also run:
+
+    ```bash
+    pip install "outlines[vllm]"
+    ```
 
 ## Load the model
 
