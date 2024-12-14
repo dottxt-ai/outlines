@@ -51,7 +51,7 @@ def _template_variable_assigned(fn: Callable) -> Optional[str]:
         and instruction_set[2].argrepr == "_"
     ):
         return instruction_set[1].argval
-    elif tuple(
+    elif any(
         instr
         for instr in instruction_set
         if instr.opname == "STORE_FAST" and instr.argrepr == "_"
