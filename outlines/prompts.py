@@ -115,7 +115,9 @@ def prompt(fn: Callable) -> Prompt:
     template = cast(str, potential_template)
     signature = inspect.signature(fn)
 
-    return Prompt(template, signature)
+    prompt_instance = Prompt(template, signature)
+    prompt_instance.__doc__ = fn.__doc__
+    return prompt_instance
 
 
 def render(template: str, **values: Optional[Dict[str, Any]]) -> str:
