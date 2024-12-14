@@ -163,13 +163,6 @@ def test_prompt_template_keyword():
     assert test_tpl_keyword_single_quotes.template == "{{variable}} test"
     assert test_tpl_keyword_single_quotes.parameters == ["variable"]
 
-    @outlines.prompt
-    def test_tpl_keyword_docstring(variable):
-        """docstring"""
-        _ = "{{variable}} test"
-
-    assert test_tpl_keyword_docstring.__doc__ == "docstring"
-
 
 def test_prompt_bad_template_keyword():
     with pytest.raises(ValueError, match="_"):

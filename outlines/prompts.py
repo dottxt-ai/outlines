@@ -116,7 +116,6 @@ def prompt(fn: Callable) -> Prompt:
     signature = inspect.signature(fn)
 
     prompt_instance = Prompt(template, signature)
-    prompt_instance.__doc__ = fn.__doc__
     return prompt_instance
 
 
