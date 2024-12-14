@@ -148,6 +148,30 @@ def test_prompt_kwargs():
     assert p == "test and test"
 
 
+def test_prompt_template_keyword():
+    @outlines.prompt
+    def test_tpl_keyword(variable):
+        _ = """{{variable}} test"""
+
+    assert test_tpl_keyword.template == "{{variable}} test"
+    assert test_tpl_keyword.parameters == ["variable"]
+
+    @outlines.prompt
+    def test_tpl_keyword_single_quotes(variable):
+        _ = "{{variable}} test"
+
+    assert test_tpl_keyword_single_quotes.template == "{{variable}} test"
+    assert test_tpl_keyword_single_quotes.parameters == ["variable"]
+
+
+def test_prompt_bad_template_keyword():
+    with pytest.raises(ValueError, match="_"):
+
+        @outlines.prompt
+        def test_tpl_keyword(variable):
+            _ = f"{'test'}"
+
+
 def test_no_prompt():
     with pytest.raises(TypeError, match="template"):
 

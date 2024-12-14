@@ -1,3 +1,4 @@
+import dis
 import functools
 import inspect
 import json
@@ -42,6 +43,26 @@ class Prompt:
         return self.template
 
 
+def _template_variable_assigned(fn: Callable) -> Optional[str]:
+    instruction_set = list(dis.Bytecode(fn))
+    if (
+        len(instruction_set) >= 3
+        and instruction_set[2].opname == "STORE_FAST"
+        and instruction_set[2].argrepr == "_"
+    ):
+        return instruction_set[1].argval
+    elif tuple(
+        instr
+        for instr in instruction_set
+        if instr.opname == "STORE_FAST" and instr.argrepr == "_"
+    ):
+        raise ValueError(
+            "Can only use simple string literals to `_` and it must be the only instruction in the function."
+        )
+    else:
+        return None
+
+
 def prompt(fn: Callable) -> Prompt:
     """Decorate a function that contains a prompt template.
 
@@ -79,15 +100,20 @@ def prompt(fn: Callable) -> Prompt:
 
     """
 
+    # Either the docstring or `_` variable contains the template
+    # that will be rendered to be used as a prompt to the language model.
+    potential_template = _template_variable_assigned(fn)
+    if potential_template is None:
+        docstring = fn.__doc__
+        if docstring is None:
+            raise TypeError(
+                "Could not find a template in the function's docstring or assigned to `_`"
+            )
+        else:
+            potential_template = docstring
+
+    template = cast(str, potential_template)
     signature = inspect.signature(fn)
-
-    # The docstring contains the template that will be rendered to be used
-    # as a prompt to the language model.
-    docstring = fn.__doc__
-    if docstring is None:
-        raise TypeError("Could not find a template in the function's docstring.")
-
-    template = cast(str, docstring)
 
     return Prompt(template, signature)
 
