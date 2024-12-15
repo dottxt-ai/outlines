@@ -149,12 +149,21 @@ def test_prompt_kwargs():
 
 
 def test_prompt_template_keyword():
+    import pydoc
+
     @outlines.prompt
     def test_tpl_keyword(variable):
         _ = """{{variable}} test"""
 
     assert test_tpl_keyword.template == "{{variable}} test"
     assert test_tpl_keyword.parameters == ["variable"]
+
+    @outlines.prompt
+    def test_tpl_keyword_w_docstring(variable):
+        """custom docstring"""
+        _ = """{{variable}} test"""
+
+    assert "custom docstring" in pydoc.render_doc(test_tpl_keyword_w_docstring)
 
     @outlines.prompt
     def test_tpl_keyword_single_quotes(variable):
