@@ -67,10 +67,6 @@ def get_cache():
     return memory
 
 
-async def maybe_await_coroutine(maybe_coro):
-    return
-
-
 def cache(expire: Optional[float] = None, typed=False, ignore=()):
     """Caching decorator for memoizing function calls.
 
