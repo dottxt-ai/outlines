@@ -67,6 +67,10 @@ def get_cache():
     return memory
 
 
+async def maybe_await_coroutine(maybe_coro):
+    return await maybe_coro if asyncio.iscoroutine(maybe_coro) else maybe_coro
+
+
 def cache(expire: Optional[float] = None, typed=False, ignore=()):
     """Caching decorator for memoizing function calls.
 
@@ -94,35 +98,34 @@ def cache(expire: Optional[float] = None, typed=False, ignore=()):
 
         base = (full_name(cached_function),)
 
+        def wrapper(*args, **kwargs):
+            if not _caching_enabled:
+                return cached_function(*args, **kwargs), lambda res: res
+
+            cache_key = wrapper.__cache_key__(*args, **kwargs)
+            result = wrapper.__memory__.get(cache_key, default=ENOVAL, retry=True)
+
+            if result is ENOVAL:
+
+                def callback(final_result):
+                    wrapper.__memory__.set(cache_key, result, expire, retry=True)
+                    return final_result
+
+                return cached_function(*args, **kwargs), callback
+            else:
+                return result, lambda res: res
+
         if asyncio.iscoroutinefunction(cached_function):
 
-            async def wrapper(*args, **kwargs):
-                if not _caching_enabled:
-                    return await cached_function(*args, **kwargs)
-
-                cache_key = wrapper.__cache_key__(*args, **kwargs)
-                result = wrapper.__memory__.get(cache_key, default=ENOVAL, retry=True)
-
-                if result is ENOVAL:
-                    result = await cached_function(*args, **kwargs)
-                    wrapper.__memory__.set(cache_key, result, expire, retry=True)
-
-                return result
+            async def new_function(*args, **kwargs):
+                result, callback = wrapper(*args, **kwargs)
+                return callback(await maybe_await_coroutine(result))
 
         else:
 
-            def wrapper(*args, **kwargs):
-                if not _caching_enabled:
-                    return cached_function(*args, **kwargs)
-
-                cache_key = wrapper.__cache_key__(*args, **kwargs)
-                result = wrapper.__memory__.get(cache_key, default=ENOVAL, retry=True)
-
-                if result is ENOVAL:
-                    result = cached_function(*args, **kwargs)
-                    wrapper.__memory__.set(cache_key, result, expire, retry=True)
-
-                return result
+            def new_function(*args, **kwargs):
+                result, callback = wrapper(*args, **kwargs)
+                return callback(result)
 
         def __cache_key__(*args, **kwargs):
             """Make key for cache given function arguments."""
@@ -132,7 +135,7 @@ def cache(expire: Optional[float] = None, typed=False, ignore=()):
         wrapper.__memory__ = memory  # type: ignore
         wrapper.__wrapped__ = cached_function  # type: ignore
 
-        return wrapper
+        return new_function
 
     return decorator
 
