@@ -1,3 +1,4 @@
+import asyncio
 import os
 import tempfile
 import unittest
@@ -42,9 +43,12 @@ def test_cache(refresh_environment):
         memory.clear()
 
 
-@pytest.mark.asyncio
+def maybe_await_coroutine(maybe_coro):
+    return asyncio.run(maybe_coro) if asyncio.iscoroutine(maybe_coro) else maybe_coro
+
+
 @pytest.mark.parametrize("use_async", [True, False])
-async def test_get_cache(test_cache, use_async):
+def test_get_cache(test_cache, use_async):
     import outlines
 
     memory = outlines.get_cache()
@@ -69,19 +73,18 @@ async def test_get_cache(test_cache, use_async):
             store.append(1)
             return x
 
-    await outlines.caching.maybe_await_coroutine(f(1))
+    maybe_await_coroutine(f(1))
     store_size = len(store)
 
-    await outlines.caching.maybe_await_coroutine(f(1))
+    maybe_await_coroutine(f(1))
     assert len(store) == store_size
 
-    await outlines.caching.maybe_await_coroutine(f(2))
+    maybe_await_coroutine(f(2))
     assert len(store) == store_size + 1
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("use_async", [True, False])
-async def test_disable_cache(test_cache, use_async):
+def test_disable_cache(test_cache, use_async):
     """Make sure that we can disable the cache."""
     import outlines
 
@@ -106,15 +109,14 @@ async def test_disable_cache(test_cache, use_async):
             store.append(1)
             return x
 
-    await outlines.caching.maybe_await_coroutine(f(1))
+    maybe_await_coroutine(f(1))
     store_size = len(store)
-    await outlines.caching.maybe_await_coroutine(f(1))
+    maybe_await_coroutine(f(1))
     assert len(store) == store_size + 1
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("use_async", [True, False])
-async def test_clear_cache(test_cache, use_async):
+def test_clear_cache(test_cache, use_async):
     """Make sure that we can clear the cache."""
     import outlines
 
@@ -136,21 +138,20 @@ async def test_clear_cache(test_cache, use_async):
 
     # The size of `store` does not increase since
     # `f` is cached after the first run.
-    await outlines.caching.maybe_await_coroutine(f(1))
+    maybe_await_coroutine(f(1))
     store_size = len(store)
-    await outlines.caching.maybe_await_coroutine(f(1))
+    maybe_await_coroutine(f(1))
     assert len(store) == store_size
 
     # The size of `store` should increase if we call `f`
     # after clearing the cache.
     outlines.clear_cache()
-    await outlines.caching.maybe_await_coroutine(f(1))
+    maybe_await_coroutine(f(1))
     assert len(store) == store_size + 1
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("use_async", [True, False])
-async def test_version_upgrade_cache_invalidate(test_cache, use_async, mocker):
+def test_version_upgrade_cache_invalidate(test_cache, use_async, mocker):
     """Ensure we can change the signature of a cached function if we upgrade the version"""
 
     import outlines.caching
@@ -176,7 +177,7 @@ async def test_version_upgrade_cache_invalidate(test_cache, use_async, mocker):
         def foo():
             return (1, 2, 3)
 
-    a, b, c = await outlines.caching.maybe_await_coroutine(foo())
+    a, b, c = maybe_await_coroutine(foo())
 
     # "restart" outlines without upgrading version
     simulate_restart_outlines()
@@ -196,7 +197,7 @@ async def test_version_upgrade_cache_invalidate(test_cache, use_async, mocker):
 
     # assert without version upgrade, old, bad cache is used
     with pytest.raises(ValueError):
-        a, b = await outlines.caching.maybe_await_coroutine(foo())
+        a, b = maybe_await_coroutine(foo())
 
     # "restart" outlines WITH version upgrade
     mocker.patch("outlines._version.__version__", new="0.0.1")
@@ -216,15 +217,14 @@ async def test_version_upgrade_cache_invalidate(test_cache, use_async, mocker):
             return (1, 2)
 
     # assert with version upgrade, old cache is invalidated and new cache is used
-    a, b = await outlines.caching.maybe_await_coroutine(foo())
+    a, b = maybe_await_coroutine(foo())
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize("use_async", [True, False])
-async def test_cache_disabled_decorator(test_cache, use_async):
+def test_cache_disabled_decorator(test_cache, use_async):
     """Ensure cache can be disabled in a local scope"""
 
-    from outlines.caching import cache_disabled, maybe_await_coroutine
+    from outlines.caching import cache_disabled
 
     mock = unittest.mock.MagicMock()
 
@@ -243,18 +243,18 @@ async def test_cache_disabled_decorator(test_cache, use_async):
             return 1
 
     # first call isn't cached
-    await maybe_await_coroutine(fn())
+    maybe_await_coroutine(fn())
     assert mock.call_count == 1
 
     # second call doesn't run fn, uses cache
-    await maybe_await_coroutine(fn())
+    maybe_await_coroutine(fn())
     assert mock.call_count == 1
 
     # cache_disabled decorator disables cache within scope
     with cache_disabled():
-        await maybe_await_coroutine(fn())
+        maybe_await_coroutine(fn())
     assert mock.call_count == 2  # called once in cache_disabled scope
 
     # scope has exited, cache is enabled again
-    await maybe_await_coroutine(fn())
+    maybe_await_coroutine(fn())
     assert mock.call_count == 2

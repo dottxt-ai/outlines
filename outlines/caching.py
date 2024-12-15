@@ -68,7 +68,7 @@ def get_cache():
 
 
 async def maybe_await_coroutine(maybe_coro):
-    return await maybe_coro if asyncio.iscoroutine(maybe_coro) else maybe_coro
+    return
 
 
 def cache(expire: Optional[float] = None, typed=False, ignore=()):
@@ -119,7 +119,7 @@ def cache(expire: Optional[float] = None, typed=False, ignore=()):
 
             async def new_function(*args, **kwargs):
                 result, callback = wrapper(*args, **kwargs)
-                return callback(await maybe_await_coroutine(result))
+                return callback(await result if asyncio.iscoroutine(result) else result)
 
         else:
 
