@@ -352,11 +352,13 @@ class SequenceGenerator:
                     ]
 
                     generated_sequences = [
-                        self.format_sequence(
-                            self.strip_stop_sequences(sequence, stop_sequences)
+                        (
+                            self.format_sequence(
+                                self.strip_stop_sequences(sequence, stop_sequences)
+                            )
+                            if stop
+                            else sequence
                         )
-                        if stop
-                        else sequence
                         for sequence, stop in zip(
                             generated_sequences, is_stop_at_reached
                         )
@@ -427,7 +429,7 @@ class SequenceGeneratorAdapter:
         self.model = model
         self.logits_processor = logits_processor
 
-        self.sampling_params = sampler.samplig_params
+        self.sampling_params = sampler.sampling_params
 
     def prepare_generation_parameters(
         self,
