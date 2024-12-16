@@ -1,4 +1,5 @@
 import math
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Callable, Optional, Protocol, Tuple
 
 if TYPE_CHECKING:
@@ -15,6 +16,17 @@ class Sampler(Protocol):
         rng: "torch.Generator",
     ) -> "torch.DoubleTensor":
         ...
+
+
+@dataclass(frozen=True)
+class SamplingParameters:
+    """Sampling parameters available in Outlines."""
+
+    sampler: str
+    num_samples: int = 1
+    top_p: Optional[float] = None
+    top_k: Optional[int] = None
+    temperature: Optional[float] = None
 
 
 class GreedySampler:
@@ -75,6 +87,10 @@ class GreedySampler:
         weights = sequence_weights + torch.gather(logprobs, 1, next_token_ids).squeeze()
 
         return next_token_ids, ancestors, weights
+
+    @property
+    def sampling_params(self):
+        return SamplingParameters("greedy", self.samples, None, None, 0.0)
 
 
 greedy = GreedySampler
@@ -160,6 +176,16 @@ class MultinomialSampler:
         weights = sequence_weights + torch.gather(logprobs, 1, next_token_ids).squeeze()
 
         return next_token_ids, ancestors, weights
+
+    @property
+    def sampling_params(self):
+        return SamplingParameters(
+            "multinomial",
+            self.samples,
+            self.top_p,
+            self.top_k,
+            self.temperature,
+        )
 
 
 multinomial = MultinomialSampler
@@ -319,6 +345,10 @@ class BeamSearchSampler:
         next_token_ids = next_token_ids.view(self.samples * batch_size, 1)
 
         return next_token_ids, ancestors, weights
+
+    @property
+    def sampling_params(self):
+        return SamplingParameters("beam_search", self.samples, None, None, 1.0)
 
 
 beam_search = BeamSearchSampler
