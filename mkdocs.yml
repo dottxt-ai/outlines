@@ -87,6 +87,7 @@ plugins:
       handlers:
         python:
           options:
+            docstring_style: numpy
             show_submodules: true
   - search
   - section-index
