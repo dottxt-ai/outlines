@@ -1,10 +1,11 @@
 from functools import singledispatch
 
 from outlines.generate.api import (
+    AudioSequenceGeneratorAdapter,
     SequenceGeneratorAdapter,
     VisionSequenceGeneratorAdapter,
 )
-from outlines.models import OpenAI, TransformersVision
+from outlines.models import OpenAI, TransformersAudio, TransformersVision
 from outlines.samplers import Sampler, multinomial
 
 
@@ -33,6 +34,18 @@ def regex(model, regex_str: str, sampler: Sampler = multinomial()):
 
     logits_processor = RegexLogitsProcessor(regex_str, tokenizer=model.tokenizer)
     return SequenceGeneratorAdapter(model, logits_processor, sampler)
+
+
+@regex.register(TransformersAudio)
+def regex_audio(
+    model,
+    regex_str: str,
+    sampler: Sampler = multinomial(),
+):
+    from outlines.processors import RegexLogitsProcessor
+
+    logits_processor = RegexLogitsProcessor(regex_str, tokenizer=model.tokenizer)
+    return AudioSequenceGeneratorAdapter(model, logits_processor, sampler)
 
 
 @regex.register(TransformersVision)
