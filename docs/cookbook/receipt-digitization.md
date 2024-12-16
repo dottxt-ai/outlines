@@ -117,7 +117,7 @@ Here's what the image looks like:
 
 ```python
 # Path to the image
-image_path = "https://dottxt-ai.github.io/outlines/main/cookbook/images/trader-joes-receipt.png"
+image_path = "https://raw.githubusercontent.com/dottxt-ai/outlines/refs/heads/main/docs/cookbook/images/trader-joes-receipt.jpg"
 
 # Download the image
 response = requests.get(image_path)
