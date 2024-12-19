@@ -133,7 +133,7 @@ T5 Example:
 import outlines
 from transformers import AutoModelForSeq2SeqLM
 
-model_pile_t5 = models.transformers(
+model_pile_t5 = outlines.models.transformers(
     model_name="EleutherAI/pile-t5-large",
     model_class=AutoModelForSeq2SeqLM,
 )
@@ -141,7 +141,7 @@ model_pile_t5 = models.transformers(
 
 Bart Example:
 ```python
-model_bart = models.transformers(
+model_bart = outlines.models.transformers(
     model_name="facebook/bart-large",
     model_class=AutoModelForSeq2SeqLM,
 )
