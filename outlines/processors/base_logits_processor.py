@@ -110,9 +110,9 @@ class OutlinesLogitsProcessor(Protocol):
             import mlx.core as mx
 
             # https://ml-explore.github.io/mlx/build/html/usage/numpy.html#pytorch
-            return torch.from_dlpack(
-                np.array(tensor_like.astype(mx.float32), copy=False)
-            )
+            if tensor_like.dtype == mx.bfloat16:
+                tensor_like = tensor_like.astype(mx.float32)
+            return torch.from_dlpack(np.array(tensor_like, copy=False))
 
         elif is_jax_array_type(type(tensor_like)):
             import jax

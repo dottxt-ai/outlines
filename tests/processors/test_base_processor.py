@@ -17,7 +17,7 @@ arrays = {
 try:
     import mlx.core as mx
 
-    arrays["mlx"] = mx.array([[1, 2], [3, 4]], dtype=mx.float32)
+    arrays["mlx"] = mx.array([[1, 2], [3, 4]], dtype=mx.bfloat16)
 except ImportError:
     pass
 
