@@ -2193,30 +2193,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="regex">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#outlines.generate.regex.regex--parameters" class="md-nav__link">
-    <span class="md-ellipsis">
-      Parameters
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#outlines.generate.regex.regex--returns" class="md-nav__link">
-    <span class="md-ellipsis">
-      Returns
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
     </ul>
@@ -2480,30 +2456,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="regex">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#outlines.generate.regex.regex--parameters" class="md-nav__link">
-    <span class="md-ellipsis">
-      Parameters
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#outlines.generate.regex.regex--returns" class="md-nav__link">
-    <span class="md-ellipsis">
-      Returns
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
     </ul>
@@ -2562,18 +2514,103 @@
     <div class="doc doc-contents ">
 
         <p>Generate structured text in the language of a regular expression.</p>
-<h4 id="outlines.generate.regex.regex--parameters">Parameters</h4>
-<p>model:
-    An instance of <code>Transformer</code> that represents a model from the
-    <code>transformers</code> library.
-regex_str:
-    The regular expression that the output must follow.
-sampler:
-    The sampling algorithm to use to generate token ids from the logits
-    distribution.</p>
-<h4 id="outlines.generate.regex.regex--returns">Returns</h4>
-<p>A <code>SequenceGeneratorAdapter</code> instance that generates text constrained by the
-regular expression.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>model</code>
+            </td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>An instance of <code>Transformer</code> that represents a model from the
+<code>transformers</code> library.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>regex_str</code>
+            </td>
+            <td>
+                  <code>str</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The regular expression that the output must follow.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>sampler</code>
+            </td>
+            <td>
+                  <code><span title="outlines.samplers.Sampler">Sampler</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The sampling algorithm to use to generate token ids from the logits
+distribution.</p>
+              </div>
+            </td>
+            <td>
+                  <code><span title="outlines.samplers.multinomial">multinomial</span>()</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code>A `SequenceGeneratorAdapter` instance that generates text constrained by the</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code>regular expression.</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
             <details class="quote">
               <summary>Source code in <code>outlines/generate/regex.py</code></summary>

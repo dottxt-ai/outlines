@@ -2130,39 +2130,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="convert_json_schema_to_str">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#outlines.fsm.json_schema.convert_json_schema_to_str--parameters" class="md-nav__link">
-    <span class="md-ellipsis">
-      Parameters
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#outlines.fsm.json_schema.convert_json_schema_to_str--returns" class="md-nav__link">
-    <span class="md-ellipsis">
-      Returns
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#outlines.fsm.json_schema.convert_json_schema_to_str--raises" class="md-nav__link">
-    <span class="md-ellipsis">
-      Raises
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
         <li class="md-nav__item">
@@ -2498,39 +2465,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="convert_json_schema_to_str">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#outlines.fsm.json_schema.convert_json_schema_to_str--parameters" class="md-nav__link">
-    <span class="md-ellipsis">
-      Parameters
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#outlines.fsm.json_schema.convert_json_schema_to_str--returns" class="md-nav__link">
-    <span class="md-ellipsis">
-      Returns
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#outlines.fsm.json_schema.convert_json_schema_to_str--raises" class="md-nav__link">
-    <span class="md-ellipsis">
-      Raises
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
         <li class="md-nav__item">
@@ -2598,15 +2532,83 @@
     <div class="doc doc-contents ">
 
         <p>Convert a JSON schema to a string.</p>
-<h4 id="outlines.fsm.json_schema.convert_json_schema_to_str--parameters">Parameters</h4>
-<p>json_schema
-    The JSON schema.</p>
-<h4 id="outlines.fsm.json_schema.convert_json_schema_to_str--returns">Returns</h4>
-<p>str
-    The JSON schema converted to a string.</p>
-<h4 id="outlines.fsm.json_schema.convert_json_schema_to_str--raises">Raises</h4>
-<p>ValueError
-    If the schema is not a dictionary, a string or a Pydantic class.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>json_schema</code>
+            </td>
+            <td>
+                  <code><span title="typing.Union">Union</span>[dict, str, <span title="typing.Type">Type</span>[<span title="pydantic.BaseModel">BaseModel</span>]]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The JSON schema.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code>str</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The JSON schema converted to a string.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code>ValueError</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If the schema is not a dictionary, a string or a Pydantic class.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
             <details class="quote">
               <summary>Source code in <code>outlines/fsm/json_schema.py</code></summary>

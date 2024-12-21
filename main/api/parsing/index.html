@@ -2265,30 +2265,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="get_sub_fsms_from_seq">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#outlines.fsm.parsing.get_sub_fsms_from_seq--parameters" class="md-nav__link">
-    <span class="md-ellipsis">
-      Parameters
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#outlines.fsm.parsing.get_sub_fsms_from_seq--returns" class="md-nav__link">
-    <span class="md-ellipsis">
-      Returns
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
         <li class="md-nav__item">
@@ -2674,30 +2650,6 @@
       get_sub_fsms_from_seq
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="get_sub_fsms_from_seq">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#outlines.fsm.parsing.get_sub_fsms_from_seq--parameters" class="md-nav__link">
-    <span class="md-ellipsis">
-      Parameters
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#outlines.fsm.parsing.get_sub_fsms_from_seq--returns" class="md-nav__link">
-    <span class="md-ellipsis">
-      Returns
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -4315,19 +4267,127 @@ correspond to them in the new FSM.</p>
     <div class="doc doc-contents ">
 
         <p>Get the indices of the sub-FSMs in <code>fsm</code> that could have matched the state sequence <code>state_seq</code>.</p>
-<h4 id="outlines.fsm.parsing.get_sub_fsms_from_seq--parameters">Parameters</h4>
-<p>state_seq
-    A state sequence.
-fsms_to_trans_finals
-    A map from FSM indices to tuples containing sets of their state transitions
-    and sets of the final/accept states.</p>
-<h4 id="outlines.fsm.parsing.get_sub_fsms_from_seq--returns">Returns</h4>
-<p>A generator returning tuples containing each sub-FSM index (in the order
-they were union-ed to construct <code>fsm</code>) and booleans indicating whether or
-not there is another valid transition from the last state in the sequence
-for the associated sub-FSM (i.e. if the FSM can continue
-accepting/matching) and whether or not the sequence ends in a final state
-of the sub-FSM.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>state_seq</code>
+            </td>
+            <td>
+                  <code><span title="typing.Sequence">Sequence</span>[int]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A state sequence.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>fsms_to_trans_finals</code>
+            </td>
+            <td>
+                  <code><span title="typing.Dict">Dict</span>[int, <span title="typing.Tuple">Tuple</span>[<span title="typing.Set">Set</span>[<span title="typing.Tuple">Tuple</span>[int, int]], <span title="typing.Set">Set</span>[int], <span title="typing.Dict">Dict</span>[int, <span title="typing.Set">Set</span>[int]]]]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A map from FSM indices to tuples containing sets of their state transitions
+and sets of the final/accept states.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code>A generator returning tuples containing each sub-FSM index (in the order</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code>they were union-ed to construct `fsm`) and booleans indicating whether or</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code>not there is another valid transition from the last state in the sequence</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code>for the associated sub-FSM (i.e. if the FSM can continue</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code>accepting/matching) and whether or not the sequence ends in a final state</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                  <code>of the sub-FSM.</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
             <details class="quote">
               <summary>Source code in <code>outlines/fsm/parsing.py</code></summary>

@@ -2119,21 +2119,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="__call__">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#outlines.prompts.Prompt.__call__--returns" class="md-nav__link">
-    <span class="md-ellipsis">
-      Returns
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
         
       </ul>
@@ -2220,21 +2205,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="prompt">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#outlines.prompts.prompt--returns" class="md-nav__link">
-    <span class="md-ellipsis">
-      Returns
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
         <li class="md-nav__item">
@@ -2243,39 +2213,6 @@
       render
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="render">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#outlines.prompts.render--examples" class="md-nav__link">
-    <span class="md-ellipsis">
-      Examples
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#outlines.prompts.render--parameters" class="md-nav__link">
-    <span class="md-ellipsis">
-      Parameters
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#outlines.prompts.render--returns" class="md-nav__link">
-    <span class="md-ellipsis">
-      Returns
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -2634,21 +2571,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="__call__">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#outlines.prompts.Prompt.__call__--returns" class="md-nav__link">
-    <span class="md-ellipsis">
-      Returns
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
         
       </ul>
@@ -2735,21 +2657,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="prompt">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#outlines.prompts.prompt--returns" class="md-nav__link">
-    <span class="md-ellipsis">
-      Returns
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
         <li class="md-nav__item">
@@ -2758,39 +2665,6 @@
       render
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="render">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#outlines.prompts.render--examples" class="md-nav__link">
-    <span class="md-ellipsis">
-      Examples
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#outlines.prompts.render--parameters" class="md-nav__link">
-    <span class="md-ellipsis">
-      Parameters
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#outlines.prompts.render--returns" class="md-nav__link">
-    <span class="md-ellipsis">
-      Returns
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -2952,8 +2826,29 @@ template defined in prompt functions can be accessed.</p>
     <div class="doc doc-contents ">
 
         <p>Render and return the template.</p>
-<h5 id="outlines.prompts.Prompt.__call__--returns">Returns</h5>
-<p>The rendered template as a Python <code>str</code>.</p>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code>The rendered template as a Python ``str``.</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
             <details class="quote">
               <summary>Source code in <code>outlines/prompts.py</code></summary>
@@ -3405,8 +3300,29 @@ hal = ft.partial(solve_task, "HAL", "Travel to Jupiter")</p>
 </blockquote>
 </blockquote>
 </blockquote>
-<h4 id="outlines.prompts.prompt--returns">Returns</h4>
-<p>A <code>Prompt</code> callable class which will render the template when called.</p>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code>A `Prompt` callable class which will render the template when called.</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
             <details class="quote">
               <summary>Source code in <code>outlines/prompts.py</code></summary>
@@ -3526,110 +3442,141 @@ hal = ft.partial(solve_task, "HAL", "Travel to Jupiter")</p>
 <p>This function removes extra whitespaces and linebreaks from templates to
 allow users to enter prompts more naturally than if they used Python's
 constructs directly. See the examples for a detailed explanation.</p>
-<h4 id="outlines.prompts.render--examples">Examples</h4>
-<p>Outlines follow Jinja2's syntax</p>
-<blockquote>
-<blockquote>
-<blockquote>
-<p>import outlines
-outline = outlines.render("I like {{food}} and {{sport}}", food="tomatoes", sport="tennis")
-I like tomatoes and tennis</p>
-</blockquote>
-</blockquote>
-</blockquote>
-<p>If the first line of the template is empty, <code>render</code> removes it</p>
-<blockquote>
-<blockquote>
-<blockquote>
-<p>from outlines import render</p>
-<p>tpl = '''
-... A new string'''
-tpl
-... '\nA new string'
-render(tpl)
-... 'a new string'</p>
-</blockquote>
-</blockquote>
-</blockquote>
-<p>Similarly, <code>render</code> ignores linebreaks introduced by placing the closing quotes
+
+
+<p><span class="doc-section-title">Examples:</span></p>
+    <p>Outlines follow Jinja2's syntax</p>
+    <div class="language-pycon highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span style="color: #616e88; font-weight: bold">&gt;&gt;&gt; </span><span style="color: #81a1c1; font-weight: bold">import</span> <span style="color: #8fbcbb">outlines</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span style="color: #616e88; font-weight: bold">&gt;&gt;&gt; </span><span style="color: #d8dee9">outline</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #d8dee9">outlines</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">render</span><span style="color: #eceff4">(</span><span style="color: #a3be8c">&quot;I like {{food}} and {{sport}}&quot;</span><span style="color: #eceff4">,</span> <span style="color: #d8dee9">food</span><span style="color: #81a1c1; font-weight: bold">=</span><span style="color: #a3be8c">&quot;tomatoes&quot;</span><span style="color: #eceff4">,</span> <span style="color: #d8dee9">sport</span><span style="color: #81a1c1; font-weight: bold">=</span><span style="color: #a3be8c">&quot;tennis&quot;</span><span style="color: #eceff4">)</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span style="color: #d8dee9">I like tomatoes and tennis</span>
+</span></code></pre></div>
+    <p>If the first line of the template is empty, <code>render</code> removes it</p>
+    <div class="language-pycon highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span style="color: #616e88; font-weight: bold">&gt;&gt;&gt; </span><span style="color: #81a1c1; font-weight: bold">from</span> <span style="color: #8fbcbb">outlines</span> <span style="color: #81a1c1; font-weight: bold">import</span> <span style="color: #d8dee9">render</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span style="color: #616e88; font-weight: bold">&gt;&gt;&gt;</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span style="color: #616e88; font-weight: bold">&gt;&gt;&gt; </span><span style="color: #d8dee9">tpl</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #a3be8c">&#39;&#39;&#39;</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span style="color: #616e88; font-weight: bold">... </span><span style="color: #a3be8c">A new string&#39;&#39;&#39;</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span style="color: #616e88; font-weight: bold">&gt;&gt;&gt; </span><span style="color: #d8dee9">tpl</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span style="color: #616e88; font-weight: bold">... </span><span style="color: #a3be8c">&#39;</span><span style="color: #ebcb8b">\n</span><span style="color: #a3be8c">A new string&#39;</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span style="color: #616e88; font-weight: bold">&gt;&gt;&gt; </span><span style="color: #d8dee9">render</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">tpl</span><span style="color: #eceff4">)</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span style="color: #616e88; font-weight: bold">... </span><span style="color: #a3be8c">&#39;a new string&#39;</span>
+</span></code></pre></div>
+    <p>Similarly, <code>render</code> ignores linebreaks introduced by placing the closing quotes
 underneath the text:</p>
-<blockquote>
-<blockquote>
-<blockquote>
-<p>tpl = '''
-... A new string
-... '''
-tpl
-... '\nA new string\n'
-render(tpl)
-... 'A new string'</p>
-</blockquote>
-</blockquote>
-</blockquote>
-<p>If you want to insert a linebreak at the end of the rendered template, you will
+    <div class="language-pycon highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span style="color: #616e88; font-weight: bold">&gt;&gt;&gt; </span><span style="color: #d8dee9">tpl</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #a3be8c">&#39;&#39;&#39;</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span style="color: #616e88; font-weight: bold">... </span><span style="color: #a3be8c">A new string</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span style="color: #616e88; font-weight: bold">... </span><span style="color: #a3be8c">&#39;&#39;&#39;</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span style="color: #616e88; font-weight: bold">&gt;&gt;&gt; </span><span style="color: #d8dee9">tpl</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span style="color: #616e88; font-weight: bold">... </span><span style="color: #a3be8c">&#39;</span><span style="color: #ebcb8b">\n</span><span style="color: #a3be8c">A new string</span><span style="color: #ebcb8b">\n</span><span style="color: #a3be8c">&#39;</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span style="color: #616e88; font-weight: bold">&gt;&gt;&gt; </span><span style="color: #d8dee9">render</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">tpl</span><span style="color: #eceff4">)</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span style="color: #616e88; font-weight: bold">... </span><span style="color: #a3be8c">&#39;A new string&#39;</span>
+</span></code></pre></div>
+    <p>If you want to insert a linebreak at the end of the rendered template, you will
 need to leave an empty line at the end of the template:</p>
-<blockquote>
-<blockquote>
-<blockquote>
-<p>tpl = '''
-... A new string
-...
-... '''
-tpl
-... '\nA new string\n\n'
-render(tpl)
-... 'A new string\n'</p>
-</blockquote>
-</blockquote>
-</blockquote>
-<p><code>render</code> removes the identation in docstrings. This is particularly important
+    <div class="language-pycon highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span style="color: #616e88; font-weight: bold">&gt;&gt;&gt; </span><span style="color: #d8dee9">tpl</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #a3be8c">&#39;&#39;&#39;</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span style="color: #616e88; font-weight: bold">... </span><span style="color: #a3be8c">A new string</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span style="color: #616e88; font-weight: bold">...</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span style="color: #616e88; font-weight: bold">... </span><span style="color: #a3be8c">&#39;&#39;&#39;</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span style="color: #616e88; font-weight: bold">&gt;&gt;&gt; </span><span style="color: #d8dee9">tpl</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span style="color: #616e88; font-weight: bold">... </span><span style="color: #a3be8c">&#39;</span><span style="color: #ebcb8b">\n</span><span style="color: #a3be8c">A new string</span><span style="color: #ebcb8b">\n\n</span><span style="color: #a3be8c">&#39;</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span style="color: #616e88; font-weight: bold">&gt;&gt;&gt; </span><span style="color: #d8dee9">render</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">tpl</span><span style="color: #eceff4">)</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span style="color: #616e88; font-weight: bold">... </span><span style="color: #a3be8c">&#39;A new string</span><span style="color: #ebcb8b">\n</span><span style="color: #a3be8c">&#39;</span>
+</span></code></pre></div>
+    <p><code>render</code> removes the identation in docstrings. This is particularly important
 when using prompt functions</p>
-<blockquote>
-<blockquote>
-<blockquote>
-<p>tpl = '''
-...    a string
-...    and another string'''
-tpl
-... '\n   a string\n   and another string'
-render(tpl)
-... 'a string\nand another string'</p>
-</blockquote>
-</blockquote>
-</blockquote>
-<p>The indentation of the first line is assumed to be the same as the second line's</p>
-<blockquote>
-<blockquote>
-<blockquote>
-<p>tpl = '''a string
-...     and another'''
-tpl
-... 'a string\n    and another'
-render(tpl)
-... 'a string\nand another'</p>
-</blockquote>
-</blockquote>
-</blockquote>
-<p>To get a different indentation for the first and the second line, we can start the
+    <div class="language-pycon highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span style="color: #616e88; font-weight: bold">&gt;&gt;&gt; </span><span style="color: #d8dee9">tpl</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #a3be8c">&#39;&#39;&#39;</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span style="color: #616e88; font-weight: bold">... </span><span style="color: #a3be8c">   a string</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span style="color: #616e88; font-weight: bold">... </span><span style="color: #a3be8c">   and another string&#39;&#39;&#39;</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span style="color: #616e88; font-weight: bold">&gt;&gt;&gt; </span><span style="color: #d8dee9">tpl</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span style="color: #616e88; font-weight: bold">... </span><span style="color: #a3be8c">&#39;</span><span style="color: #ebcb8b">\n</span><span style="color: #a3be8c">   a string</span><span style="color: #ebcb8b">\n</span><span style="color: #a3be8c">   and another string&#39;</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span style="color: #616e88; font-weight: bold">&gt;&gt;&gt; </span><span style="color: #d8dee9">render</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">tpl</span><span style="color: #eceff4">)</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span style="color: #616e88; font-weight: bold">... </span><span style="color: #a3be8c">&#39;a string</span><span style="color: #ebcb8b">\n</span><span style="color: #a3be8c">and another string&#39;</span>
+</span></code></pre></div>
+    <p>The indentation of the first line is assumed to be the same as the second line's</p>
+    <div class="language-pycon highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span style="color: #616e88; font-weight: bold">&gt;&gt;&gt; </span><span style="color: #d8dee9">tpl</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #a3be8c">&#39;&#39;&#39;a string</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span style="color: #616e88; font-weight: bold">... </span><span style="color: #a3be8c">    and another&#39;&#39;&#39;</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span style="color: #616e88; font-weight: bold">&gt;&gt;&gt; </span><span style="color: #d8dee9">tpl</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span style="color: #616e88; font-weight: bold">... </span><span style="color: #a3be8c">&#39;a string</span><span style="color: #ebcb8b">\n</span><span style="color: #a3be8c">    and another&#39;</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span style="color: #616e88; font-weight: bold">&gt;&gt;&gt; </span><span style="color: #d8dee9">render</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">tpl</span><span style="color: #eceff4">)</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span style="color: #616e88; font-weight: bold">... </span><span style="color: #a3be8c">&#39;a string</span><span style="color: #ebcb8b">\n</span><span style="color: #a3be8c">and another&#39;</span>
+</span></code></pre></div>
+    <p>To get a different indentation for the first and the second line, we can start the
 prompt on the string's second line:</p>
-<blockquote>
-<blockquote>
-<blockquote>
-<p>tpl = '''
-... First line
-...   Second line'''
-render(tpl)
-... 'First Line\n  Second Line'</p>
-</blockquote>
-</blockquote>
-</blockquote>
-<h4 id="outlines.prompts.render--parameters">Parameters</h4>
-<p>template
-    A string that contains a template written with the Jinja2 syntax.
-**values
-    Map from the variables in the template to their value.</p>
-<h4 id="outlines.prompts.render--returns">Returns</h4>
-<p>A string that contains the rendered template.</p>
+    <div class="language-pycon highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span style="color: #616e88; font-weight: bold">&gt;&gt;&gt; </span><span style="color: #d8dee9">tpl</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #a3be8c">&#39;&#39;&#39;</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span style="color: #616e88; font-weight: bold">... </span><span style="color: #a3be8c">First line</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span style="color: #616e88; font-weight: bold">... </span><span style="color: #a3be8c">  Second line&#39;&#39;&#39;</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span style="color: #616e88; font-weight: bold">&gt;&gt;&gt; </span><span style="color: #d8dee9">render</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">tpl</span><span style="color: #eceff4">)</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span style="color: #616e88; font-weight: bold">... </span><span style="color: #a3be8c">&#39;First Line</span><span style="color: #ebcb8b">\n</span><span style="color: #a3be8c">  Second Line&#39;</span>
+</span></code></pre></div>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>template</code>
+            </td>
+            <td>
+                  <code>str</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A string that contains a template written with the Jinja2 syntax.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>**values</code>
+            </td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<span title="typing.Dict">Dict</span>[str, <span title="typing.Any">Any</span>]]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Map from the variables in the template to their value.</p>
+              </div>
+            </td>
+            <td>
+                  <code>{}</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code>A string that contains the rendered template.</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
 
             <details class="quote">
               <summary>Source code in <code>outlines/prompts.py</code></summary>
