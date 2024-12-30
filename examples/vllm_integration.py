@@ -12,6 +12,7 @@ class Person(BaseModel):
     first_name: str
     surname: str
 
+
 MODEL_ID = "mistralai/Mistral-7B-v0.1"
 llm = vllm.LLM(model=MODEL_ID, max_model_len=512)
 tokenizer = adapt_tokenizer(AutoTokenizer.from_pretrained(MODEL_ID))
