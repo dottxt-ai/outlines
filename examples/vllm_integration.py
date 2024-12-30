@@ -19,8 +19,8 @@ logits_processor = JSONLogitsProcessor(schema=Person, tokenizer=tokenizer)
 result = llm.generate(
     ["He is Tom Jones", "She saw Linda Smith"],
     sampling_params=vllm.SamplingParams(
-        temperature=0.6,
-        max_tokens=1024,
+        temperature=0.,
+        max_tokens=50,
         logits_processors=[logits_processor],
     ),
 )
