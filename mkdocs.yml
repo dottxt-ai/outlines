@@ -161,7 +161,7 @@ nav:
           - TGI: reference/models/tgi.md
           - ExllamaV2: reference/models/exllamav2.md
           - MLX: reference/models/mlxlm.md
-          - Mamba: reference/models/transformers.md
+          - Mamba: reference/models/transformers/#mamba
         - API:
             - OpenAI: reference/models/openai.md
   - API Reference:
