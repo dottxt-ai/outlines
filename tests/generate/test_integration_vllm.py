@@ -4,7 +4,11 @@ import re
 import pytest
 import torch
 from pydantic import BaseModel, constr
-from vllm.sampling_params import SamplingParams
+
+try:
+    from vllm.sampling_params import SamplingParams
+except ImportError:
+    pass
 
 import outlines.generate as generate
 import outlines.grammars as grammars
