@@ -1,12 +1,13 @@
 import functools
 import inspect
 import json
+import os
 import re
 import textwrap
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Optional, Type, cast
 
-from jinja2 import Environment, StrictUndefined
+from jinja2 import Environment, FileSystemLoader, StrictUndefined, meta
 from pydantic import BaseModel
 
 
@@ -40,6 +41,30 @@ class Prompt:
 
     def __str__(self):
         return self.template
+
+    @classmethod
+    def from_file(cls, filename: str):
+        """Create a Prompt instance from a file containing a Jinja template."""
+        with open(filename) as file:
+            template = file.read()
+
+        file_directory = os.path.dirname(os.path.abspath(filename))
+
+        env = Environment(
+            loader=FileSystemLoader(file_directory),
+            trim_blocks=True,
+            lstrip_blocks=True,
+        )
+        parsed_content = env.parse(template)
+        variables = meta.find_undeclared_variables(parsed_content)
+
+        parameters = [
+            inspect.Parameter(var, inspect.Parameter.POSITIONAL_OR_KEYWORD)
+            for var in variables
+        ]
+        signature = inspect.Signature(parameters)
+
+        return cls(template, signature)
 
 
 def prompt(fn: Callable) -> Prompt:
