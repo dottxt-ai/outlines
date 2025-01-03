@@ -318,23 +318,42 @@ def test_prompt_args():
 
 @pytest.fixture
 def temp_prompt_file():
-    with tempfile.TemporaryDirectory() as test_dir:
-        prompt_file_path = os.path.join(test_dir, "prompt.txt")
-        with open(prompt_file_path, "w") as f:
-            f.write(
-                """Here is a prompt with examples:
+    test_dir = tempfile.mkdtemp()
 
-{% for example in examples %}
+    base_template_path = os.path.join(test_dir, "base_template.txt")
+    with open(base_template_path, "w") as f:
+        f.write(
+            """{% block content %}{% endblock %}
+"""
+        )
+
+    include_file_path = os.path.join(test_dir, "include.txt")
+    with open(include_file_path, "w") as f:
+        f.write(
+            """{% for example in examples %}
 - Q: {{ example.question }}
 - A: {{ example.answer }}
 {% endfor %}
+"""
+        )
+
+    prompt_file_path = os.path.join(test_dir, "prompt.txt")
+    with open(prompt_file_path, "w") as f:
+        f.write(
+            """{% extends "base_template.txt" %}
+
+{% block content %}
+Here is a prompt with examples:
+
+{% include "include.txt" %}
 
 Now please answer the following question:
 
 Q: {{ question }}
 A:
+{% endblock %}
 """
-            )
+        )
         yield prompt_file_path
 
 
@@ -363,3 +382,27 @@ A:
 """
 
     assert rendered_prompt.strip() == expected_output.strip()
+
+
+def test_prompt_from_file_signature():
+    template_content = """
+    {% for example in examples %}
+    Example: {{example}}
+    {% endfor %}
+    Question: {{question}}
+    """
+
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".txt") as temp_file:
+        temp_file.write(template_content.encode())
+        temp_file_path = temp_file.name
+
+    try:
+        prompt_instance = Prompt.from_file(temp_file_path)
+        expected_parameters = ["examples", "question"]
+        actual_parameters = list(prompt_instance.signature.parameters.keys())
+
+        assert sorted(actual_parameters) == sorted(
+            expected_parameters
+        ), f"Expected {expected_parameters}, but got {actual_parameters}"
+    finally:
+        os.remove(temp_file_path)
