@@ -2506,7 +2506,7 @@
 
 
 <h2 id="outlines.generate.regex.regex" class="doc doc-heading">
-            <code class="highlight language-python"><span style="color: #d8dee9">regex</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">model</span><span style="color: #eceff4">,</span> <span style="color: #d8dee9">regex_str</span><span style="color: #eceff4">,</span> <span style="color: #d8dee9">sampler</span><span style="color: #81a1c1; font-weight: bold">=</span><span style="color: #d8dee9">multinomial</span><span style="color: #eceff4">())</span></code>
+            <code class="highlight language-python"><span style="color: #D8DEE9">regex</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">regex_str</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">sampler</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #D8DEE9">multinomial</span><span style="color: #ECEFF4">())</span></code>
 
 </h2>
 
@@ -2638,31 +2638,31 @@ distribution.</p>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-32">32</a></span>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-33">33</a></span>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-34">34</a></span>
-<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-35">35</a></span></pre></div></td><td class="code"><div><pre style="line-height: 125%;"><span></span><code><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11"></a><span style="color: #d08770">@singledispatch</span>
-</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12"></a><span style="color: #81a1c1; font-weight: bold">def</span> <span style="color: #88c0d0">regex</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">model</span><span style="color: #eceff4">,</span> <span style="color: #d8dee9">regex_str</span><span style="color: #eceff4">:</span> <span style="color: #81a1c1">str</span><span style="color: #eceff4">,</span> <span style="color: #d8dee9">sampler</span><span style="color: #eceff4">:</span> <span style="color: #d8dee9">Sampler</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #d8dee9">multinomial</span><span style="color: #eceff4">()):</span>
-</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13"></a><span style="color: #d8dee9">    </span><span style="color: #616e87">&quot;&quot;&quot;Generate structured text in the language of a regular expression.</span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-35">35</a></span></pre></div></td><td class="code"><div><pre style="line-height: 125%;"><span></span><code><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11"></a><span style="color: #D08770">@singledispatch</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12"></a><span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">regex</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">regex_str</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">str</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">sampler</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">Sampler</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">multinomial</span><span style="color: #ECEFF4">()):</span>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">&quot;&quot;&quot;Generate structured text in the language of a regular expression.</span>
 </span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14"></a>
-</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15"></a><span style="color: #616e87">    Parameters</span>
-</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16"></a><span style="color: #616e87">    ----------</span>
-</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17"></a><span style="color: #616e87">    model:</span>
-</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18"></a><span style="color: #616e87">        An instance of `Transformer` that represents a model from the</span>
-</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19"></a><span style="color: #616e87">        `transformers` library.</span>
-</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20"></a><span style="color: #616e87">    regex_str:</span>
-</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21"></a><span style="color: #616e87">        The regular expression that the output must follow.</span>
-</span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22"></a><span style="color: #616e87">    sampler:</span>
-</span><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23"></a><span style="color: #616e87">        The sampling algorithm to use to generate token ids from the logits</span>
-</span><span id="__span-0-24"><a id="__codelineno-0-24" name="__codelineno-0-24"></a><span style="color: #616e87">        distribution.</span>
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15"></a><span style="color: #616E87">    Parameters</span>
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16"></a><span style="color: #616E87">    ----------</span>
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17"></a><span style="color: #616E87">    model:</span>
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18"></a><span style="color: #616E87">        An instance of `Transformer` that represents a model from the</span>
+</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19"></a><span style="color: #616E87">        `transformers` library.</span>
+</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20"></a><span style="color: #616E87">    regex_str:</span>
+</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21"></a><span style="color: #616E87">        The regular expression that the output must follow.</span>
+</span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22"></a><span style="color: #616E87">    sampler:</span>
+</span><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23"></a><span style="color: #616E87">        The sampling algorithm to use to generate token ids from the logits</span>
+</span><span id="__span-0-24"><a id="__codelineno-0-24" name="__codelineno-0-24"></a><span style="color: #616E87">        distribution.</span>
 </span><span id="__span-0-25"><a id="__codelineno-0-25" name="__codelineno-0-25"></a>
-</span><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26"></a><span style="color: #616e87">    Returns</span>
-</span><span id="__span-0-27"><a id="__codelineno-0-27" name="__codelineno-0-27"></a><span style="color: #616e87">    -------</span>
-</span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28"></a><span style="color: #616e87">    A `SequenceGeneratorAdapter` instance that generates text constrained by the</span>
-</span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29"></a><span style="color: #616e87">    regular expression.</span>
+</span><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26"></a><span style="color: #616E87">    Returns</span>
+</span><span id="__span-0-27"><a id="__codelineno-0-27" name="__codelineno-0-27"></a><span style="color: #616E87">    -------</span>
+</span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28"></a><span style="color: #616E87">    A `SequenceGeneratorAdapter` instance that generates text constrained by the</span>
+</span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29"></a><span style="color: #616E87">    regular expression.</span>
 </span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30"></a>
-</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31"></a><span style="color: #616e87">    &quot;&quot;&quot;</span>
-</span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32"></a>    <span style="color: #81a1c1; font-weight: bold">from</span> <span style="color: #8fbcbb">outlines.processors</span> <span style="color: #81a1c1; font-weight: bold">import</span> <span style="color: #d8dee9">RegexLogitsProcessor</span>
+</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31"></a><span style="color: #616E87">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32"></a>    <span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines.processors</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">RegexLogitsProcessor</span>
 </span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33"></a>
-</span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34"></a>    <span style="color: #d8dee9">logits_processor</span> <span style="color: #81a1c1; font-weight: bold">=</span> <span style="color: #d8dee9">RegexLogitsProcessor</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">regex_str</span><span style="color: #eceff4">,</span> <span style="color: #d8dee9">tokenizer</span><span style="color: #81a1c1; font-weight: bold">=</span><span style="color: #d8dee9">model</span><span style="color: #81a1c1; font-weight: bold">.</span><span style="color: #d8dee9">tokenizer</span><span style="color: #eceff4">)</span>
-</span><span id="__span-0-35"><a id="__codelineno-0-35" name="__codelineno-0-35"></a>    <span style="color: #81a1c1; font-weight: bold">return</span> <span style="color: #d8dee9">SequenceGeneratorAdapter</span><span style="color: #eceff4">(</span><span style="color: #d8dee9">model</span><span style="color: #eceff4">,</span> <span style="color: #d8dee9">logits_processor</span><span style="color: #eceff4">,</span> <span style="color: #d8dee9">sampler</span><span style="color: #eceff4">)</span>
+</span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34"></a>    <span style="color: #D8DEE9">logits_processor</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">RegexLogitsProcessor</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">regex_str</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">tokenizer</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #D8DEE9">model</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">tokenizer</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-0-35"><a id="__codelineno-0-35" name="__codelineno-0-35"></a>    <span style="color: #81A1C1; font-weight: bold">return</span> <span style="color: #D8DEE9">SequenceGeneratorAdapter</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">logits_processor</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">sampler</span><span style="color: #ECEFF4">)</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
     </div>
