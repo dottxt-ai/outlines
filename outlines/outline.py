@@ -1,5 +1,9 @@
-import ast
+import json
 from dataclasses import dataclass
+
+from pydantic import BaseModel
+
+from outlines import generate
 
 
 @dataclass
@@ -19,34 +23,39 @@ class Outline:
 
     Examples
     --------
-    from outlines import models
+    from pydantic import BaseModel
+    from outlines import models, Outline
+
+    class OutputModel(BaseModel):
+        result: int
 
     model = models.transformers("gpt2")
 
-        def template(a: int) -> str:
-            return f"What is 2 times {a}?"
+    def template(a: int) -> str:
+        return f"What is 2 times {a}?"
 
-        fn = Outline(model, template, int)
+    fn = Outline(model, template, OutputModel)
 
-        result = fn(3)
-        print(result)  # Expected output: 6
+    result = fn(3)
+    print(result)  # Expected output: OutputModel(result=6)
     """
 
     def __init__(self, model, template, output_type):
-        self.model = model
+        if not (isinstance(output_type, str) or issubclass(output_type, BaseModel)):
+            raise TypeError(
+                "output_type must be a Pydantic model or a JSON Schema string"
+            )
         self.template = template
         self.output_type = output_type
+        self.generator = generate.json(model, output_type)
 
     def __call__(self, *args):
         prompt = self.template(*args)
-        response = self.model.generate(prompt)
+        response = self.generator(prompt)
         try:
-            parsed_response = ast.literal_eval(response.strip())
-            if isinstance(parsed_response, self.output_type):
-                return parsed_response
-            else:
-                raise ValueError(
-                    f"Response type {type(parsed_response)} does not match expected type {self.output_type}"
-                )
+            if isinstance(self.output_type, str):
+                return json.loads(response)
+            return self.output_type.model_validate_json(response)
         except (ValueError, SyntaxError):
+            # If `outlines.generate.json` works as intended, this error should never be raised.
             raise ValueError(f"Unable to parse response: {response.strip()}")

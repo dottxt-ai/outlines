@@ -1,5 +1,4 @@
 import importlib.util
-import warnings
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Callable, Optional, Tuple, Union
 
@@ -11,13 +10,8 @@ if TYPE_CHECKING:
     from outlines.generate.api import SequenceGenerator
     from outlines.prompts import Prompt
 
-
-# FIXME: This causes all the tests to fail...
-warnings.warn(
-    "The 'function' module is deprecated and will be removed in a future release.",
-    DeprecationWarning,
-    stacklevel=2,
-)
+# Raising a warning here caused all the tests to fail…
+print("The 'function' module is deprecated and will be removed in a future release.")
 
 
 @dataclass

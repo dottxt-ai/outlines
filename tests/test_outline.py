@@ -1,68 +1,41 @@
-from unittest.mock import MagicMock
+from unittest.mock import Mock, patch
 
-import pytest
+from pydantic import BaseModel
 
-from outlines.outline import Outline
-
-
-def test_outline_int_output():
-    model = MagicMock()
-    model.generate.return_value = "6"
-
-    def template(a: int) -> str:
-        return f"What is 2 times {a}?"
-
-    fn = Outline(model, template, int)
-    result = fn(3)
-    assert result == 6
+from outlines import Outline
 
 
-def test_outline_str_output():
-    model = MagicMock()
-    model.generate.return_value = "'Hello, world!'"
-
-    def template(a: int) -> str:
-        return f"Say 'Hello, world!' {a} times"
-
-    fn = Outline(model, template, str)
-    result = fn(1)
-    assert result == "Hello, world!"
+class OutputModel(BaseModel):
+    result: int
 
 
-def test_outline_str_input():
-    model = MagicMock()
-    model.generate.return_value = "'Hi, Mark!'"
-
-    def template(a: str) -> str:
-        return f"Say hi to {a}"
-
-    fn = Outline(model, template, str)
-    result = fn(1)
-    assert result == "Hi, Mark!"
+def template(a: int) -> str:
+    return f"What is 2 times {a}?"
 
 
-def test_outline_invalid_output():
-    model = MagicMock()
-    model.generate.return_value = "not a number"
+def test_outline():
+    mock_model = Mock()
+    mock_generator = Mock()
+    mock_generator.return_value = '{"result": 6}'
 
-    def template(a: int) -> str:
-        return f"What is 2 times {a}?"
+    with patch("outlines.generate.json", return_value=mock_generator):
+        outline_instance = Outline(mock_model, template, OutputModel)
+        result = outline_instance(3)
 
-    fn = Outline(model, template, int)
-    with pytest.raises(ValueError):
-        fn(3)
+    assert result.result == 6
 
 
-def test_outline_mismatched_output_type():
-    model = MagicMock()
-    model.generate.return_value = "'Hello, world!'"
+def test_outline_with_json_schema():
+    mock_model = Mock()
+    mock_generator = Mock()
+    mock_generator.return_value = '{"result": 6}'
 
-    def template(a: int) -> str:
-        return f"What is 2 times {a}?"
+    with patch("outlines.generate.json", return_value=mock_generator):
+        outline_instance = Outline(
+            mock_model,
+            template,
+            '{"type": "object", "properties": {"result": {"type": "integer"}}}',
+        )
+        result = outline_instance(3)
 
-    fn = Outline(model, template, int)
-    with pytest.raises(
-        ValueError,
-        match="Unable to parse response: 'Hello, world!'",
-    ):
-        fn(3)
+    assert result["result"] == 6
