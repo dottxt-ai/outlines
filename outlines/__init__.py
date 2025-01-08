@@ -8,6 +8,7 @@ import outlines.types
 from outlines.base import vectorize
 from outlines.caching import clear_cache, disable_cache, get_cache
 from outlines.function import Function
+from outlines.outline import Outline
 from outlines.prompts import Prompt, prompt
 
 __all__ = [
@@ -19,4 +20,5 @@ __all__ = [
     "Prompt",
     "vectorize",
     "grammars",
+    "Outline",
 ]

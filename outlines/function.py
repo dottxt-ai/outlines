@@ -1,4 +1,5 @@
 import importlib.util
+import warnings
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Callable, Optional, Tuple, Union
 
@@ -11,6 +12,14 @@ if TYPE_CHECKING:
     from outlines.prompts import Prompt
 
 
+# FIXME: This causes all the tests to fail...
+warnings.warn(
+    "The 'function' module is deprecated and will be removed in a future release.",
+    DeprecationWarning,
+    stacklevel=2,
+)
+
+
 @dataclass
 class Function:
     """Represents an Outlines function.
@@ -19,6 +28,10 @@ class Function:
     model and a Pydantic model that define the output structure. Once defined,
     the function can be called with arguments that will be used to render the
     prompt template.
+
+    Note:
+        This class is part of the deprecated 'function' module and will be removed
+        in a future release.
 
     """
 
