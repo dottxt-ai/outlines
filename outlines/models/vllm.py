@@ -19,6 +19,8 @@ class VLLM:
 
     """
 
+    model_name = "VLLM"
+
     def __init__(self, model: "LLM"):
         self.model = model
         self.lora_request = None

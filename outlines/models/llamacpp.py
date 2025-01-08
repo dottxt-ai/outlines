@@ -138,6 +138,8 @@ class LlamaCpp:
 
     """
 
+    model_name = "LlamaCpp"
+
     def __init__(self, model: "Llama"):
         self.model = model
 

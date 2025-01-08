@@ -129,6 +129,8 @@ class TransformerTokenizer(Tokenizer):
 class Transformers:
     """Represents a `transformers` model."""
 
+    model_name = "Transformers"
+
     def __init__(
         self,
         model: "PreTrainedModel",

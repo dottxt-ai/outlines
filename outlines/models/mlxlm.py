@@ -17,6 +17,8 @@ class MLXLM:
     Represents an `mlx_lm` model
     """
 
+    model_name = "MLXLM"
+
     def __init__(
         self,
         model: "nn.Module",

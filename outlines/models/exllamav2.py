@@ -42,6 +42,8 @@ class OutlinesExLlamaV2Tokenizer:
 class ExLlamaV2Model:
     """Represents a `exl2` model."""
 
+    model_name = "ExLlamaV2"
+
     def __init__(
         self,
         generator: "ExLlamaV2DynamicGenerator",
