@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any, Callable, Dict, Optional, Type, cast
 
 import jinja2
-from pydantic import BaseModel
+import pydantic
 
 
 @dataclass
@@ -253,10 +253,10 @@ def get_schema_dict(model: Dict):
     return json.dumps(model, indent=2)
 
 
-@get_schema.register(type(BaseModel))
-def get_schema_pydantic(model: Type[BaseModel]):
+@get_schema.register(type(pydantic.BaseModel))
+def get_schema_pydantic(model: Type[pydantic.BaseModel]):
     """Return the schema of a Pydantic model."""
-    if not type(model) == type(BaseModel):
+    if not isinstance(model, type(pydantic.BaseModel)):
         raise TypeError("The `schema` filter only applies to Pydantic models.")
 
     if hasattr(model, "model_json_schema"):
