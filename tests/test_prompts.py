@@ -6,7 +6,12 @@ import pytest
 from pydantic import BaseModel, Field
 
 import outlines
-from outlines.prompts import Prompt, render
+from outlines.prompts import Prompt
+
+
+def render(content: str, **kwargs):
+    template = Prompt._template_from_str(content)
+    return template.render(kwargs)
 
 
 def test_render():
