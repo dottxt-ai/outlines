@@ -39,19 +39,19 @@ def python_types_to_regex(python_type: Type) -> Tuple[str, FormatFunction]:
 
         return enum_regex_str, enum_format_fn
 
-    if python_type == float:
+    if python_type is float:
 
         def float_format_fn(sequence: str) -> float:
             return float(sequence)
 
         return FLOAT, float_format_fn
-    elif python_type == int:
+    elif python_type is int:
 
         def int_format_fn(sequence: str) -> int:
             return int(sequence)
 
         return INTEGER, int_format_fn
-    elif python_type == bool:
+    elif python_type is bool:
 
         def bool_format_fn(sequence: str) -> bool:
             return bool(sequence)

@@ -136,10 +136,10 @@ class OutlinesLogitsProcessor(Protocol):
         elif target_type == np.ndarray:
             return tensor.detach().numpy()
 
-        elif target_type == list:
+        elif target_type is list:
             return tensor.detach().tolist()
 
-        elif target_type == tuple:
+        elif target_type is tuple:
             return tuple(tensor.detach().tolist())
 
         elif is_mlx_array_type(target_type):

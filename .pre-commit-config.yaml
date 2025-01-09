@@ -1,33 +1,20 @@
 repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.4.0
+  rev: v5.0.0
   hooks:
     -   id: check-merge-conflict
     -   id: debug-statements
     -   id: end-of-file-fixer
     -   id: trailing-whitespace
-- repo: https://github.com/pycqa/isort
-  rev: 5.12.0
-  hooks:
-    - id: isort
-      args: [--profile, black]
-- repo: https://github.com/asottile/pyupgrade
-  rev: v3.3.1
-  hooks:
-    - id: pyupgrade
-      args: [--py37-plus]
-- repo: https://github.com/pycqa/flake8
-  rev: 6.0.0
-  hooks:
-   - id: flake8
-- repo: https://github.com/psf/black
-  rev: 23.3.0
-  hooks:
-    - id: black
 - repo: https://github.com/pre-commit/mirrors-mypy
-  rev: v1.2.0
+  rev: v1.14.1
   hooks:
     - id: mypy
       args: [--allow-redefinition]
       exclude: ^examples/
       additional_dependencies: [types-tqdm, types-Pillow]
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  rev: v0.9.1
+  hooks:
+    - id: ruff
+      args: ["--config=pyproject.toml"]
