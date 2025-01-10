@@ -337,6 +337,7 @@ def test_prompt_with_additional_filters():
     p = test_tpl(variable="example")
     assert p == "elpmaxe test"
 
+
 @pytest.fixture
 def temp_prompt_file():
     test_dir = tempfile.mkdtemp()

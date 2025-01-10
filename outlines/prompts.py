@@ -6,7 +6,7 @@ import re
 import textwrap
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, List, Dict, Optional, Type, cast, Union
+from typing import Any, Callable, Dict, Optional, Type, cast
 
 import jinja2
 import pydantic
@@ -78,7 +78,9 @@ class Prompt:
         return cls(cls._template_from_file(path, **filters), None)
 
     @classmethod
-    def _template_from_str(_, content: str, **filters: Dict[str, Callable]) -> jinja2.Template:
+    def _template_from_str(
+        _, content: str, **filters: Dict[str, Callable]
+    ) -> jinja2.Template:
         # Dedent, and remove extra linebreak
         cleaned_template = inspect.cleandoc(content)
 
@@ -112,7 +114,9 @@ class Prompt:
         return env.from_string(cleaned_template)
 
     @classmethod
-    def _template_from_file(_, path: Path, **filters: Dict[str, Callable]) -> jinja2.Template:
+    def _template_from_file(
+        _, path: Path, **filters: Dict[str, Callable]
+    ) -> jinja2.Template:
         file_directory = os.path.dirname(os.path.abspath(path))
         env = jinja2.Environment(
             loader=jinja2.FileSystemLoader(file_directory),
