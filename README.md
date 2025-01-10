@@ -167,10 +167,10 @@ prompt = """
 <|im_end|>
 
 <|im_start|>user
-What is an IP address of the Google DNS servers? 
+What is an IP address of the Google DNS servers?
 <|im_end|>
 <|im_start|>assistant
-The IP address of a Google DNS server is 
+The IP address of a Google DNS server is
 
 """
 
@@ -186,7 +186,7 @@ structured = generator(prompt, max_tokens=30)
 
 print(unstructured)
 # 8.8.8.8
-# 
+#
 # <|im_end|>
 
 print(structured)
