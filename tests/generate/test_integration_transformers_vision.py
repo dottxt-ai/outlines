@@ -23,7 +23,7 @@ def img_from_url(url):
 @pytest.fixture(scope="session")
 def model(tmp_path_factory):
     return transformers_vision(
-        "trl-internal-testing/tiny-random-LlavaForConditionalGeneration",
+        "trl-internal-testing/tiny-LlavaForConditionalGeneration",
         model_class=LlavaForConditionalGeneration,
         device="cpu",
     )

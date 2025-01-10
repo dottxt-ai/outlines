@@ -112,6 +112,9 @@ h1.title {
 
 h2.subtitle {
   margin: 5px 0px 25px;
+  font-size: 1rem;
+  max-width: 540px;
+  margin: 0 auto;
 }
 
 .md-typeset {

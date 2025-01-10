@@ -167,12 +167,7 @@ class MLXLM:
             prob = softmax_logits[0, token]
             return token, prob
 
-        kv_heads = (
-            [self.model.n_kv_heads] * len(self.model.layers)
-            if isinstance(self.model.n_kv_heads, int)
-            else self.model.n_kv_heads
-        )
-        cache = [mlx_lm.models.base.KVCache(self.model.head_dim, n) for n in kv_heads]
+        cache = mlx_lm.models.cache.make_prompt_cache(self.model)
 
         # kv cache contains processed input IDs, we pass the unprocessed inputs and cache to model()
         unprocessed_input_ids = prompt

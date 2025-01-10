@@ -2,17 +2,18 @@
 
 <img src="./docs/assets/images/logo.png" alt="Outlines Logo" width=500></img>
 
-[![.txt Twitter][dottxt-twitter-badge]][dottxt-twitter]
+
+ 🗒️ *Make LLMs speak the language of every application.* 🗒️
+
+Made with ❤👷️ by the team at [.txt](https://dottxt.co).
 
 [![Documentation][documentation-badge]][documentation]
 [![Contributors][contributors-badge]][contributors]
 [![Downloads][downloads-badge]][pypistats]
 [![Discord][discord-badge]][discord]
 
+[Youtube channel][youtube-dottxt] | [.txt blog][blog-dottxt] | [Twitter][dottxt-twitter]
 
-*Robust (structured) text generation.*
-
-Made with ❤👷️ by the team at [.txt](https://dottxt.co).
 
 </div>
 
@@ -104,6 +105,29 @@ print(f'{answer=}')
 
 # answer=Pizza
 ```
+
+You can also pass these choices through en enum:
+
+````python
+from enum import Enum
+
+import outlines
+
+class Sentiment(str, Enum):
+    positive = "Positive"
+    negative = "Negative"
+
+model = outlines.models.transformers("microsoft/Phi-3-mini-4k-instruct")
+
+prompt = """You are a sentiment-labelling assistant.
+Is the following review positive or negative?
+
+Review: This restaurant is just awesome!
+"""
+
+generator = outlines.generate.choice(model, Sentiment)
+answer = generator(prompt)
+````
 
 ### Type constraints
 
@@ -327,6 +351,33 @@ print(add(**result))
 
 A great advantage of passing functions directly to specify the structure is that the structure of the LLM will change with the function's definition. No need to change the code at several places!
 
+You can also embed various functions into an enum to generate params:
+
+```python
+from enum import Enum
+from functools import partial
+
+import outlines
+
+
+def add(a: int, b: int) -> int:
+    return a + b
+
+def mul(c: float, d: float) -> float:
+    return c * d
+
+class Operation(Enum):
+    add = partial(add)
+    mul = partial(mul)
+
+model = outlines.models.transformers("WizardLM/WizardMath-7B-V1.1")
+generator = outlines.generate.json(model, add)
+result = generator("Return json with two float named c and d respectively. c is negative and d greater than 1.0.")
+
+print(result)
+# {'c': -3.14, 'd': 1.5}
+```
+
 ## Prompting
 
 Building prompts can get messy. **Outlines** makes it easier to write and manage
@@ -424,3 +475,5 @@ What food does the following text describe?<|im_end|>
 [downloads-badge]: https://img.shields.io/pypi/dm/outlines?color=89AC6B&logo=python&logoColor=white&style=flat-square
 [pypistats]: https://pypistats.org/packages/outlines
 [dottxt-twitter-badge]: https://img.shields.io/twitter/follow/dottxtai?style=social
+[youtube-dottxt]: https://www.youtube.com/@dottxt-ai
+[blog-dottxt]: https://blog.dottxt.co/

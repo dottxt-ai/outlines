@@ -20,6 +20,16 @@ def is_mlx_array_type(array_type):
     return issubclass(array_type, mx.array)
 
 
+def is_jax_array_type(array_type):
+    try:
+        import jaxlib
+    except ImportError:
+        return False
+    return issubclass(array_type, jaxlib.xla_extension.ArrayImpl) or isinstance(
+        array_type, jaxlib.xla_extension.ArrayImpl
+    )
+
+
 class OutlinesLogitsProcessor(Protocol):
     """
     Base class for logits processors which normalizes types of logits:
@@ -97,9 +107,18 @@ class OutlinesLogitsProcessor(Protocol):
             return torch.tensor(tensor_like)
 
         elif is_mlx_array_type(type(tensor_like)):
-            # mlx -> torch -> mlx conversion docs:
-            # https://ml-explore.github.io/mlx/build/html/usage/numpy.html
-            return torch.from_dlpack(tensor_like)
+            import mlx.core as mx
+
+            # https://ml-explore.github.io/mlx/build/html/usage/numpy.html#pytorch
+            return torch.from_dlpack(
+                np.array(tensor_like.astype(mx.float32), copy=False)
+            )
+
+        elif is_jax_array_type(type(tensor_like)):
+            import jax
+
+            torch_tensor = torch.from_dlpack(jax.dlpack.to_dlpack(tensor_like))
+            return torch_tensor
 
         else:
             raise TypeError(
@@ -128,6 +147,11 @@ class OutlinesLogitsProcessor(Protocol):
 
             # numpy doesn't support bfloat16, mlx doesn't support direct conversion from torch
             return mx.array(tensor.float().numpy())
+
+        elif is_jax_array_type(target_type):
+            import jax
+
+            return jax.dlpack.from_dlpack(tensor)
 
         else:
             raise TypeError(

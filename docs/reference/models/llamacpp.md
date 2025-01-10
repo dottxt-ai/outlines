@@ -4,7 +4,11 @@ Outlines provides an integration with [Llama.cpp](https://github.com/ggerganov/l
 
 !!! Note "Installation"
 
-    You need to install the `llama-cpp-python` library to use the llama.cpp integration. See the [installation section](#installation) for instructions to install `llama-cpp-python` with CUDA, Metal, ROCm and other backends.
+    You need to install the `llama-cpp-python` library to use the llama.cpp integration. See the [installation section](#installation) for instructions to install `llama-cpp-python` with CUDA, Metal, ROCm and other backends. To get started quickly you can also run:
+
+    ```bash
+    pip install "outlines[llamacpp]"
+    ```
 
 ## Load the model
 

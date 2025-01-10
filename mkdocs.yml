@@ -74,6 +74,7 @@ markdown_extensions:
   - pymdownx.emoji:
       emoji_index: !!python/name:material.extensions.emoji.twemoji
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.snippets:
 
 
 extra_css:
@@ -86,6 +87,7 @@ plugins:
       handlers:
         python:
           options:
+            docstring_style: numpy
             show_submodules: true
   - search
   - section-index
@@ -123,6 +125,7 @@ nav:
       - Structured Generation from PDFs: cookbook/read-pdfs.md
       - Earnings reports to CSV: cookbook/earnings-reports.md
       - Digitizing receipts with vision models: cookbook/receipt-digitization.md
+      - Extract events details from text: cookbook/extract_event_details.md
       - Run on the cloud:
           - BentoML: cookbook/deploy-using-bentoml.md
           - Cerebrium: cookbook/deploy-using-cerebrium.md
@@ -158,7 +161,7 @@ nav:
           - TGI: reference/models/tgi.md
           - ExllamaV2: reference/models/exllamav2.md
           - MLX: reference/models/mlxlm.md
-          - Mamba: reference/models/transformers.md
+          - Mamba: reference/models/transformers/#mamba
         - API:
             - OpenAI: reference/models/openai.md
   - API Reference:

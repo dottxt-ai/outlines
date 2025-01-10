@@ -9,6 +9,12 @@ try:
 except ImportError:
     pass
 
+try:
+    import jax
+    import jax.numpy as jnp
+except ImportError:
+    pass
+
 
 def is_mlx_lm_allowed():
     try:
@@ -18,20 +24,25 @@ def is_mlx_lm_allowed():
     return mx.metal.is_available()
 
 
+def is_jax_allowed():
+    try:
+        import jax  # noqa: F401
+    except ImportError:
+        return False
+    return True
+
+
 def get_mock_processor_inputs(array_library, num_tokens=30000):
     """
     logits: (4, 30,000 ) dtype=float
     input_ids shape: (4, 2048) dtype=int
     """
-    if array_library == "torch":
-        logits = torch.rand((4, num_tokens), dtype=torch.float)
+    if array_library.startswith("torch"):
+        device = array_library.split("_")[1] if "_" in array_library else "cpu"
+
+        logits = torch.rand((4, num_tokens), dtype=torch.float, device=device)
         input_ids = torch.randint(
-            low=0, high=num_tokens, size=(4, 2048), dtype=torch.int
-        )
-    elif array_library == "torch_cuda":
-        logits = torch.rand((4, num_tokens), dtype=torch.float, device="cuda")
-        input_ids = torch.randint(
-            low=0, high=num_tokens, size=(4, 2048), dtype=torch.int, device="cuda"
+            low=0, high=num_tokens, size=(4, 2048), dtype=torch.int, device=device
         )
     elif array_library == "numpy":
         logits = np.random.rand(4, num_tokens).astype(np.float32)
@@ -42,6 +53,13 @@ def get_mock_processor_inputs(array_library, num_tokens=30000):
         )
         input_ids = mx.random.randint(
             low=0, high=num_tokens, shape=(4, 2048), dtype=mx.int32
+        )
+    elif array_library == "jax":
+        logits = jnp.random.uniform(
+            key=jax.random.PRNGKey(0), shape=(4, num_tokens), dtype=jnp.float32
+        )
+        input_ids = jnp.random.randint(
+            key=jax.random.PRNGKey(0), low=0, high=num_tokens, shape=(4, 2048)
         )
     else:
         raise ValueError
@@ -67,6 +85,10 @@ class LogitsProcessorPassthroughBenchmark:
         params += ["mlx"]
     if torch.cuda.is_available():
         params += ["torch_cuda"]
+    if torch.mps.is_available():
+        params += ["torch_mps"]
+    if is_jax_allowed():
+        params += ["jax"]
 
     def setup(self, array_library):
         self.logits_processor = HalvingLogitsProcessor()
@@ -85,9 +107,10 @@ class LogitsProcessorStructuredBenchmark:
     array_libraries = ["torch", "numpy"]
     if is_mlx_lm_allowed():
         array_libraries += ["mlx"]
-    # PR TODO
     if torch.cuda.is_available():
         array_libraries += ["torch_cuda"]
+    if torch.mps.is_available():
+        array_libraries += ["torch_mps"]
 
     # accept very many or very few tokens, respectively
     patterns = [r"[^Z]*", "Z*"]

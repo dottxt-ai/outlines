@@ -1,10 +1,17 @@
+import os
+import tempfile
 from typing import Dict, List
 
 import pytest
 from pydantic import BaseModel, Field
 
 import outlines
-from outlines.prompts import render
+from outlines.prompts import Prompt
+
+
+def render(content: str, **kwargs):
+    template = Prompt._template_from_str(content)
+    return template.render(kwargs)
 
 
 def test_render():
@@ -110,8 +117,7 @@ def test_prompt_basic():
     def test_tpl(variable):
         """{{variable}} test"""
 
-    assert test_tpl.template == "{{variable}} test"
-    assert test_tpl.parameters == ["variable"]
+    assert list(test_tpl.signature.parameters) == ["variable"]
 
     with pytest.raises(TypeError):
         test_tpl(v="test")
@@ -126,6 +132,8 @@ def test_prompt_basic():
     def test_single_quote_tpl(variable):
         "${variable} test"
 
+    assert list(test_single_quote_tpl.signature.parameters) == ["variable"]
+
     p = test_tpl("test")
     assert p == "test test"
 
@@ -135,8 +143,7 @@ def test_prompt_kwargs():
     def test_kwarg_tpl(var, other_var="other"):
         """{{var}} and {{other_var}}"""
 
-    assert test_kwarg_tpl.template == "{{var}} and {{other_var}}"
-    assert test_kwarg_tpl.parameters == ["var", "other_var"]
+    assert list(test_kwarg_tpl.signature.parameters) == ["var", "other_var"]
 
     p = test_kwarg_tpl("test")
     assert p == "test and other"
@@ -312,3 +319,87 @@ def test_prompt_args():
         args_prompt(with_all)
         == "args: x1, y1, z1, x2: bool, y2: str, z2: Dict[int, List[str]], x3=True, y3='Hi', z3={4: ['I', 'love', 'outlines']}, x4: bool = True, y4: str = 'Hi', z4: Dict[int, List[str]] = {4: ['I', 'love', 'outlines']}"
     )
+
+
+@pytest.fixture
+def temp_prompt_file():
+    test_dir = tempfile.mkdtemp()
+
+    base_template_path = os.path.join(test_dir, "base_template.txt")
+    with open(base_template_path, "w") as f:
+        f.write(
+            """{% block content %}{% endblock %}
+"""
+        )
+
+    include_file_path = os.path.join(test_dir, "include.txt")
+    with open(include_file_path, "w") as f:
+        f.write(
+            """{% for example in examples %}
+- Q: {{ example.question }}
+- A: {{ example.answer }}
+{% endfor %}
+"""
+        )
+
+    prompt_file_path = os.path.join(test_dir, "prompt.txt")
+    with open(prompt_file_path, "w") as f:
+        f.write(
+            """{% extends "base_template.txt" %}
+
+{% block content %}
+Here is a prompt with examples:
+
+{% include "include.txt" %}
+
+Now please answer the following question:
+
+Q: {{ question }}
+A:
+{% endblock %}
+"""
+        )
+    yield prompt_file_path
+
+
+def test_prompt_from_file(temp_prompt_file):
+    prompt = Prompt.from_file(temp_prompt_file)
+    assert prompt.signature is None
+    examples = [
+        {"question": "What is the capital of France?", "answer": "Paris"},
+        {"question": "What is 2 + 2?", "answer": "4"},
+    ]
+    question = "What is the Earth's diameter?"
+    rendered = prompt(examples=examples, question=question)
+    expected = """Here is a prompt with examples:
+
+- Q: What is the capital of France?
+- A: Paris
+- Q: What is 2 + 2?
+- A: 4
+
+Now please answer the following question:
+
+Q: What is the Earth's diameter?
+A:
+"""
+    assert rendered.strip() == expected.strip()
+
+
+def test_prompt_from_str():
+    content = """
+    Hello, {{ name }}!
+    """
+    prompt = Prompt.from_str(content)
+    assert prompt.signature is None
+    assert prompt(name="World") == "Hello, World!"
+
+
+def test_template_from_str_with_extra_linebreaks():
+    content = """
+    Hello, {{ name }}!
+
+
+    """
+    template = Prompt._template_from_str(content)
+    assert template.render(name="World") == "Hello, World!\n"

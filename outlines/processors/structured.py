@@ -27,10 +27,11 @@ import math
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Type, Union
 
 import torch
+from outlines_core.fsm.json_schema import build_regex_from_schema
 from pydantic import BaseModel
 
 from outlines.fsm.guide import CFGGuide, Guide, RegexGuide
-from outlines.fsm.json_schema import build_regex_from_schema, convert_json_schema_to_str
+from outlines.fsm.json_schema import convert_json_schema_to_str
 
 from .base_logits_processor import OutlinesLogitsProcessor
 
@@ -102,22 +103,19 @@ class GuideLogitsProcessor(OutlinesLogitsProcessor):
 
             sequence_states.append(self._guide_states[curr_state_key])
 
-        mask = torch.ones_like(logits, dtype=torch.bool)
-
         allowed_tokens_batch = []
         batch_indices = []
         for i, guide_state in enumerate(sequence_states):
-            allowed_tokens = self.guide.get_next_instruction(guide_state).tokens.to(
-                mask.device, non_blocking=True
-            )
+            allowed_tokens = self.guide.get_next_instruction(guide_state).tokens
             allowed_tokens_batch.append(allowed_tokens)
             batch_indices.append(
                 torch.full_like(allowed_tokens, i)
             )  # Store batch index for each allowed token
 
-        allowed_tokens_concat = torch.cat(allowed_tokens_batch)
-        batch_indices_concat = torch.cat(batch_indices)
+        allowed_tokens_concat = torch.cat(allowed_tokens_batch).to(logits.device)
+        batch_indices_concat = torch.cat(batch_indices).to(logits.device)
 
+        mask = torch.ones_like(logits, dtype=torch.bool)
         mask[batch_indices_concat, allowed_tokens_concat] = False
         logits.masked_fill_(mask, float("-inf"))
 

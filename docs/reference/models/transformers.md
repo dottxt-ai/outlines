@@ -3,10 +3,10 @@
 
 !!! Installation
 
-    You need to install the `transformer`, `datasets` and `torch` libraries to be able to use these models in Outlines:
+    You need to install the `transformer`, `datasets` and `torch` libraries to be able to use these models in Outlines, or alternatively:
 
     ```bash
-    pip install torch transformers datasets
+    pip install "outlines[transformers]"
     ```
 
 
@@ -30,7 +30,7 @@ tokenizer = AutoTokenizer.from_pretrained("gpt2")
 model = models.Transformers(llm, tokenizer)
 ```
 
-# Using Logits Processors
+## Using Logits Processors
 
 There are two ways to use Outlines Structured Generation with HuggingFace Transformers:
 
@@ -39,7 +39,7 @@ There are two ways to use Outlines Structured Generation with HuggingFace Transf
 
 Outlines supports a myriad of logits processors for structured generation. In these example, we will use the `RegexLogitsProcessor` which guarantees generated text matches the specified pattern.
 
-## Using `outlines.models.transformers`
+### Using `outlines.models.transformers`
 
 ```python
 import outlines
@@ -54,7 +54,7 @@ print(output)
 # 2:30 pm
 ```
 
-## Using models initialized via the `transformers`  library
+### Using models initialized via the `transformers`  library
 
 ```python
 import outlines
@@ -85,7 +85,7 @@ print(output)
 [transformers]: https://github.com/huggingface/transformers
 
 
-# Alternative Model Classes
+## Alternative Model Classes
 
 `outlines.models.transformers` defaults to `transformers.AutoModelForCausalLM`, which is the appropriate class for most standard large language models, including Llama 3, Mistral, Phi-3, etc.
 
@@ -133,7 +133,7 @@ T5 Example:
 import outlines
 from transformers import AutoModelForSeq2SeqLM
 
-model_pile_t5 = models.transformers(
+model_pile_t5 = outlines.models.transformers(
     model_name="EleutherAI/pile-t5-large",
     model_class=AutoModelForSeq2SeqLM,
 )
@@ -141,7 +141,7 @@ model_pile_t5 = models.transformers(
 
 Bart Example:
 ```python
-model_bart = models.transformers(
+model_bart = outlines.models.transformers(
     model_name="facebook/bart-large",
     model_class=AutoModelForSeq2SeqLM,
 )

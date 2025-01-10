@@ -3,7 +3,7 @@
 import vllm
 from pydantic import BaseModel
 
-from outlines.integrations.vllm import JSONLogitsProcessor
+from outlines.processors.structured import JSONLogitsProcessor
 
 
 class Person(BaseModel):
