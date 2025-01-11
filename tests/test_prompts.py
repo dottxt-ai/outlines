@@ -321,11 +321,28 @@ def test_prompt_args():
     )
 
 
-def test_prompt_with_additional_filters():
-    def reverse_string(s: str) -> str:
+def test_prompt_with_additional_filters_as_dict():
+    def reverse(s: str) -> str:
         return s[::-1]
 
-    @outlines.prompt(reverse=reverse_string)
+    @outlines.prompt(dict(reverse=reverse))
+    def test_tpl(variable):
+        """{{ variable | reverse }} test"""
+
+    assert list(test_tpl.signature.parameters) == ["variable"]
+
+    p = test_tpl("test")
+    assert p == "tset test"
+
+    p = test_tpl(variable="example")
+    assert p == "elpmaxe test"
+
+
+def test_prompt_with_additional_filters_as_list():
+    def reverse(s: str) -> str:
+        return s[::-1]
+
+    @outlines.prompt([reverse])
     def test_tpl(variable):
         """{{ variable | reverse }} test"""
 
