@@ -135,9 +135,7 @@ class Prompt:
 
 
 def prompt(
-    fn_or_filters: Optional[
-        Union[Callable, List[Callable], Dict[str, Callable]]
-    ] = None,
+    fn: Optional[Callable] = None,
     filters: Union[List[Callable], Dict[str, Callable]] = [],
 ) -> Callable:
     """Decorate a function that contains a prompt template.
@@ -175,7 +173,7 @@ def prompt(
     >>> def reverse(s: str) -> str:
     ...     return s[::-1]
     ...
-    >>> @outlines.prompt([reverse])
+    >>> @outlines.prompt(filters=[reverse])
     ... def reverse_prompt(text):
     ...     '''{{ text | reverse }}'''
     ...
@@ -188,16 +186,16 @@ def prompt(
     A `Prompt` callable class which will render the template when called.
 
     """
-    if not callable(fn_or_filters):
+    if fn is None:
         return lambda fn: prompt(
-            fn, cast(Union[List[Callable], Dict[str, Callable]], fn_or_filters)
+            fn, cast(Union[List[Callable], Dict[str, Callable]], filters)
         )
 
-    signature = inspect.signature(fn_or_filters)
+    signature = inspect.signature(fn)
 
     # The docstring contains the template that will be rendered to be used
     # as a prompt to the language model.
-    docstring = fn_or_filters.__doc__
+    docstring = fn.__doc__
     if docstring is None:
         raise TypeError("Could not find a template in the function's docstring.")
 

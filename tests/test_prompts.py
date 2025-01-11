@@ -325,7 +325,7 @@ def test_prompt_with_additional_filters_as_dict():
     def reverse(s: str) -> str:
         return s[::-1]
 
-    @outlines.prompt(dict(reverse=reverse))
+    @outlines.prompt(filters=dict(reverse=reverse))
     def test_tpl(variable):
         """{{ variable | reverse }} test"""
 
@@ -342,7 +342,7 @@ def test_prompt_with_additional_filters_as_list():
     def reverse(s: str) -> str:
         return s[::-1]
 
-    @outlines.prompt([reverse])
+    @outlines.prompt(filters=[reverse])
     def test_tpl(variable):
         """{{ variable | reverse }} test"""
 
