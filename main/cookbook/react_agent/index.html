@@ -2558,8 +2558,8 @@
 </span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>    <span style="color: #D8DEE9">Decision</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">Union</span><span style="color: #ECEFF4">[</span><span style="color: #D8DEE9">Reason_and_Act</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">Final_Answer</span><span style="color: #ECEFF4">]</span>
 </span></code></pre></div>
 <p>We could generate a response using the json schema but we will use the regex and check that everything is working as expected:</p>
-<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines.integrations.utils</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">convert_json_schema_to_str</span>
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines.fsm.json_schema</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">build_regex_from_schema</span>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines.fsm.json_schema</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">convert_json_schema_to_str</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines_core.fsm.json_schema</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">build_regex_from_schema</span>
 </span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>
 </span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span style="color: #D8DEE9">json_schema</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">Decision</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">model_json_schema</span><span style="color: #ECEFF4">()</span>
 </span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span style="color: #D8DEE9">schema_str</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">convert_json_schema_to_str</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">json_schema</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #D8DEE9">json_schema</span><span style="color: #ECEFF4">)</span>
@@ -2715,7 +2715,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2024-09-13T18:44:14+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2024-09-13</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2025-01-11T15:23:18+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2025-01-11</span>
   </span>
 
     
@@ -2743,6 +2743,16 @@
     
     <nav>
       
+        <a href="https://github.com/pervrosen" class="md-author" title="@pervrosen">
+          
+          <img src="https://avatars.githubusercontent.com/u/46034369?v=4&size=72" alt="pervrosen">
+        </a>
+      
+        <a href="https://github.com/rlouf" class="md-author" title="@rlouf">
+          
+          <img src="https://avatars.githubusercontent.com/u/3885044?v=4&size=72" alt="rlouf">
+        </a>
+      
         <a href="https://github.com/cpfiffer" class="md-author" title="@cpfiffer">
           
           <img src="https://avatars.githubusercontent.com/u/422990?v=4&size=72" alt="cpfiffer">
@@ -2753,17 +2763,13 @@
           <img src="https://avatars.githubusercontent.com/u/19864447?v=4&size=72" alt="web-flow">
         </a>
       
-        <a href="https://github.com/alonsosilvaallende" class="md-author" title="@alonsosilvaallende">
-          
-          <img src="https://avatars.githubusercontent.com/u/30263736?v=4&size=72" alt="alonsosilvaallende">
-        </a>
-      
-        <a href="https://github.com/rlouf" class="md-author" title="@rlouf">
-          
-          <img src="https://avatars.githubusercontent.com/u/3885044?v=4&size=72" alt="rlouf">
-        </a>
       
       
+        
+          <a href="https://github.com/dottxt-ai/outlines/blob/master/docs/cookbook/react_agent.md" class="md-author md-author--more">
+            +1
+          </a>
+        
       
     </nav>
   </span>
