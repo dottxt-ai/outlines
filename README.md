@@ -101,9 +101,8 @@ Text: I really really really want pizza.
 
 generator = outlines.generate.choice(model, ["Pizza", "Pasta", "Salad", "Dessert"])
 answer = generator(prompt)
-print(f'{answer=}')
 
-# answer=Pizza
+# Likely answer: Pizza
 ```
 
 You can also pass these choices through en enum:
