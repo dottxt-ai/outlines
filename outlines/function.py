@@ -1,4 +1,5 @@
 import importlib.util
+import warnings
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Callable, Optional, Tuple, Union
 
@@ -9,9 +10,6 @@ from outlines import generate, models
 if TYPE_CHECKING:
     from outlines.generate.api import SequenceGenerator
     from outlines.prompts import Prompt
-
-# Raising a warning here caused all the tests to fail…
-print("The 'function' module is deprecated and will be removed in a future release.")
 
 
 @dataclass
@@ -25,7 +23,8 @@ class Function:
 
     Note:
         This class is part of the deprecated 'function' module and will be removed
-        in a future release.
+        in a future release (1.0.0).
+        Please pin your version to <1.0.0 if you need to continue using it.
 
     """
 
@@ -33,6 +32,12 @@ class Function:
     schema: Union[str, Callable, object]
     model_name: str
     generator: Optional["SequenceGenerator"] = None
+
+    def __post_init__(self):
+        warnings.warn(
+            "The 'function' module is deprecated and will be removed in a future release (1.0.0).",
+            DeprecationWarning,
+        )
 
     @classmethod
     def from_github(cls, program_path: str, function_name: str = "fn"):

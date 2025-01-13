@@ -1,6 +1,7 @@
 import json
 from dataclasses import dataclass
 
+import jsonschema
 from pydantic import BaseModel
 
 from outlines import generate
@@ -41,21 +42,27 @@ class Outline:
     """
 
     def __init__(self, model, template, output_type):
-        if not (isinstance(output_type, str) or issubclass(output_type, BaseModel)):
+        if isinstance(output_type, str):
+            try:
+                jsonschema.Draft7Validator.check_schema(json.loads(output_type))
+            except jsonschema.exceptions.SchemaError as e:
+                raise TypeError(f"Invalid JSON Schema: {e.message}")
+        elif not issubclass(output_type, BaseModel):
             raise TypeError(
-                "output_type must be a Pydantic model or a JSON Schema string"
+                "output_type must be a Pydantic model or a valid JSON Schema string"
             )
+
         self.template = template
         self.output_type = output_type
         self.generator = generate.json(model, output_type)
 
-    def __call__(self, *args):
-        prompt = self.template(*args)
+    def __call__(self, *args, **kwargs):
+        prompt = self.template(*args, **kwargs)
         response = self.generator(prompt)
         try:
             if isinstance(self.output_type, str):
                 return json.loads(response)
-            return self.output_type.model_validate_json(response)
+            return self.output_type.parse_raw(response)
         except (ValueError, SyntaxError):
             # If `outlines.generate.json` works as intended, this error should never be raised.
             raise ValueError(f"Unable to parse response: {response.strip()}")
