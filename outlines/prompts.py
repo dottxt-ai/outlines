@@ -6,7 +6,7 @@ import re
 import textwrap
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional, Type, Union, cast
+from typing import Any, Callable, Dict, Optional, Type, cast
 
 import jinja2
 import pydantic
@@ -40,9 +40,7 @@ class Prompt:
             return self.template.render(**kwargs)
 
     @classmethod
-    def from_str(
-        cls, content: str, filters: Union[List[Callable], Dict[str, Callable]] = []
-    ):
+    def from_str(cls, content: str, filters: Dict[str, Callable] = {}):
         """
         Create an instance of the class from a string.
 
@@ -58,9 +56,7 @@ class Prompt:
         return cls(cls._template_from_str(content, filters), None)
 
     @classmethod
-    def from_file(
-        cls, path: Path, filters: Union[List[Callable], Dict[str, Callable]] = []
-    ):
+    def from_file(cls, path: Path, filters: Dict[str, Callable] = {}):
         """
         Create a Prompt instance from a file containing a Jinja template.
 
@@ -83,7 +79,7 @@ class Prompt:
 
     @classmethod
     def _template_from_str(
-        _, content: str, filters: Union[List[Callable], Dict[str, Callable]] = []
+        _, content: str, filters: Dict[str, Callable] = {}
     ) -> jinja2.Template:
         # Dedent, and remove extra linebreak
         cleaned_template = inspect.cleandoc(content)
@@ -99,12 +95,7 @@ class Prompt:
         # used to continue to the next line without linebreak.
         cleaned_template = re.sub(r"(?![\r\n])(\b\s+)", " ", cleaned_template)
 
-        env = jinja2.Environment(
-            trim_blocks=True,
-            lstrip_blocks=True,
-            keep_trailing_newline=True,
-            undefined=jinja2.StrictUndefined,
-        )
+        env = create_jinja_env(None, filters)
         env.filters["name"] = get_fn_name
         env.filters["description"] = get_fn_description
         env.filters["source"] = get_fn_source
@@ -112,31 +103,21 @@ class Prompt:
         env.filters["schema"] = get_schema
         env.filters["args"] = get_fn_args
 
-        _add_filters(env, filters)
-
         return env.from_string(cleaned_template)
 
     @classmethod
     def _template_from_file(
-        _, path: Path, filters: Union[List[Callable], Dict[str, Callable]] = []
+        _, path: Path, filters: Dict[str, Callable] = {}
     ) -> jinja2.Template:
         file_directory = os.path.dirname(os.path.abspath(path))
-        env = jinja2.Environment(
-            loader=jinja2.FileSystemLoader(file_directory),
-            trim_blocks=True,
-            lstrip_blocks=True,
-            keep_trailing_newline=True,
-            undefined=jinja2.StrictUndefined,
-        )
-
-        _add_filters(env, filters)
+        env = create_jinja_env(jinja2.FileSystemLoader(file_directory), filters)
 
         return env.get_template(os.path.basename(path))
 
 
 def prompt(
     fn: Optional[Callable] = None,
-    filters: Union[List[Callable], Dict[str, Callable]] = [],
+    filters: Dict[str, Callable] = {},
 ) -> Callable:
     """Decorate a function that contains a prompt template.
 
@@ -173,7 +154,7 @@ def prompt(
     >>> def reverse(s: str) -> str:
     ...     return s[::-1]
     ...
-    >>> @outlines.prompt(filters=[reverse])
+    >>> @outlines.prompt(filters={ 'reverse': reverse })
     ... def reverse_prompt(text):
     ...     '''{{ text | reverse }}'''
     ...
@@ -187,9 +168,7 @@ def prompt(
 
     """
     if fn is None:
-        return lambda fn: prompt(
-            fn, cast(Union[List[Callable], Dict[str, Callable]], filters)
-        )
+        return lambda fn: prompt(fn, cast(Dict[str, Callable], filters))
 
     signature = inspect.signature(fn)
 
@@ -204,15 +183,21 @@ def prompt(
     return Prompt(template, signature)
 
 
-def _add_filters(
-    env: jinja2.Environment, filters: Union[List[Callable], Dict[str, Callable]]
-):
-    if isinstance(filters, list):
-        for filter_fn in filters:
-            env.filters[filter_fn.__name__] = filter_fn
-    elif isinstance(filters, dict):
-        for name, filter_fn in filters.items():
-            env.filters[name] = filter_fn
+def create_jinja_env(
+    loader: Optional[jinja2.BaseLoader], filters: Dict[str, Callable]
+) -> jinja2.Environment:
+    env = jinja2.Environment(
+        loader=loader,
+        trim_blocks=True,
+        lstrip_blocks=True,
+        keep_trailing_newline=True,
+        undefined=jinja2.StrictUndefined,
+    )
+
+    for name, filter_fn in filters.items():
+        env.filters[name] = filter_fn
+
+    return env
 
 
 def get_fn_name(fn: Callable):
