@@ -321,6 +321,23 @@ def test_prompt_args():
     )
 
 
+def test_prompt_with_additional_filters():
+    def reverse(s: str) -> str:
+        return s[::-1]
+
+    @outlines.prompt(filters=dict(reverse=reverse))
+    def test_tpl(variable):
+        """{{ variable | reverse }} test"""
+
+    assert list(test_tpl.signature.parameters) == ["variable"]
+
+    p = test_tpl("test")
+    assert p == "tset test"
+
+    p = test_tpl(variable="example")
+    assert p == "elpmaxe test"
+
+
 @pytest.fixture
 def temp_prompt_file():
     test_dir = tempfile.mkdtemp()
