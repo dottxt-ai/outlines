@@ -40,9 +40,8 @@ model = outlines.models.openai(
 | **Generation**    |              |                     |      |           |           |       |         |
 | Batch             | ✅           | ✅                  | ✅   | ❌        | ?         | ❌    | ❌      |
 | Stream            | ✅           | ❌                  | ❌   | ✅        | ?         | ✅    | ❌      |
-| **`outlines.generate`** |        |                     |      |           |           |       |         |
 | Text              | ✅           | ✅                  | ✅   | ✅        | ✅        | ✅    | ✅      |
-| __Structured__    | ✅           | ✅                  | ✅   | ✅        | ✅        | ✅    | ✅      |
+| **Structured**    | ✅           | ✅                  | ✅   | ✅        | ✅        | ✅    | ✅      |
 | JSON Schema       | ✅           | ✅                  | ✅   | ✅        | ✅        | ✅    | ✅      |
 | Choice            | ✅           | ✅                  | ✅   | ✅        | ✅        | ✅    | ✅      |
 | Regex             | ✅           | ✅                  | ✅   | ✅        | ✅        | ✅    | ❌      |
