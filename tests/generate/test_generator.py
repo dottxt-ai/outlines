@@ -495,3 +495,91 @@ def test_expand_attention_masks(attention_masks, ancestors, expected_result):
 def test_bias_logits(logits, indices_to_mask, expected):
     masked_logits = bias_logits(logits, indices_to_mask)
     assert torch.equal(masked_logits, expected)
+
+
+def test_generator_max_words():
+    class MockFSM:
+        first_state = 0
+
+        def get_next_state(self, state, next_token_ids):
+            return 4
+
+        def get_next_instruction(self, *_):
+            return Generate([4])
+
+        def is_final_state(self, _):
+            return False  # let's generate tokens for ever
+
+        def copy(self):
+            return self
+
+    class MockTokenizer:
+        def encode(self, _):
+            # Input: "test"
+            return torch.tensor([[0, 1, 2, 3]]), torch.tensor([[1, 1, 1, 1]])
+
+        def decode(self, tokens):
+            return [" ".join(["test" for _ in tokens[0]])]
+
+    class MockModel:
+        def __init__(self):
+            self.tokenizer = MockTokenizer()
+
+        def __call__(*_):
+            return torch.tensor([[0, 1, 2, 3, 4]], dtype=torch.float), None
+
+    class sampler:
+        def __init__(self):
+            self.samples = 1
+
+        def __call__(self, biased_logits, *_):
+            return torch.argmax(biased_logits, keepdims=True), torch.tensor([0]), None
+
+    generator = SequenceGenerator(MockFSM(), MockModel(), sampler(), "cpu")
+    result = generator("test", max_words=5)
+    assert result == "test test test test test"
+
+
+def test_generator_max_tokens_from_max_words():
+    class MockFSM:
+        first_state = 0
+
+        def get_next_state(self, state, next_token_ids):
+            return 4
+
+        def get_next_instruction(self, *_):
+            return Generate([4])
+
+        def is_final_state(self, _):
+            return False  # let's generate tokens for ever
+
+        def copy(self):
+            return self
+
+    class MockTokenizer:
+        def encode(self, _):
+            # Input: "test"
+            return torch.tensor([[0, 1, 2, 3]]), torch.tensor([[1, 1, 1, 1]])
+
+        def decode(self, tokens):
+            return [
+                "123456789"[: len(tokens[0])]
+            ]  # not generating any word seperated by white space
+
+    class MockModel:
+        def __init__(self):
+            self.tokenizer = MockTokenizer()
+
+        def __call__(*_):
+            return torch.tensor([[0, 1, 2, 3, 4]], dtype=torch.float), None
+
+    class sampler:
+        def __init__(self):
+            self.samples = 1
+
+        def __call__(self, biased_logits, *_):
+            return torch.argmax(biased_logits, keepdims=True), torch.tensor([0]), None
+
+    generator = SequenceGenerator(MockFSM(), MockModel(), sampler(), "cpu")
+    result = generator("test", max_words=2)  # should generate max_words * 3 tokens
+    assert result == "123456"

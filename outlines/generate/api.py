@@ -1,4 +1,5 @@
 import datetime
+import re
 from copy import copy
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Iterator, List, Optional, Union
@@ -81,9 +82,18 @@ class SequenceGenerator:
             ]
         )
 
-    def strip_stop_sequences(
-        self, sequence: str, stop_sequences: Optional[List[str]]
-    ) -> str:
+    @staticmethod
+    def strip_max_words_sequences(sequence: str, max_words: Optional[int]) -> str:
+        if max_words is not None:
+            splits = sequence.split()
+            if len(splits) > max_words:
+                last_word = splits[-1]
+                sequence = sequence.rstrip(last_word).rstrip()
+
+        return sequence
+
+    @staticmethod
+    def strip_stop_sequences(sequence: str, stop_sequences: Optional[List[str]]) -> str:
         """Remove the stop sequences from the generated sequences.
 
         Parameters
@@ -130,6 +140,7 @@ class SequenceGenerator:
         self,
         prompts: Union[str, List[str]],
         max_tokens: Optional[int] = None,
+        max_words: Optional[int] = None,
         stop_at: Optional[Union[str, List[str]]] = None,
         rng: Optional["torch.Generator"] = None,
     ) -> Union[FormattedOutput, List[FormattedOutput], List[List[FormattedOutput]]]:
@@ -147,7 +158,12 @@ class SequenceGenerator:
             generating the first token.
         max_tokens
             An integer representing maximum number of tokens that will be generated
-            (per prompt)
+            (per prompt). If both `max_tokens` and `max_words` are passed, it will
+            stop when the first one is reached
+        max_words
+            An integer representing maximum number of words that will be generated
+            (per prompt). If both `max_tokens` and `max_words` are passed, it will
+            stop when the first one is reached
         stop_at
             A string or list of strings at which the text generated will stop
         rng
@@ -202,15 +218,28 @@ class SequenceGenerator:
             rng=rng,
         )
 
+        # If we have max_words but no max_tokens, let's put a limit on the number of tokens
+        # so that we reduce the generation time and do not exceed context length if
+        # no stop token is met.
+        # A high estimation of average number of tokens per word in a multilanguage
+        # context is 2, let's take some precaution and increase it a bit to 3
+        if max_words and max_tokens is None:
+            max_tokens = 3 * max_words
+
         while True:
             try:
                 last_state = next(states)
-                if max_tokens or stop_sequences:
+                if max_tokens or max_words or stop_sequences:
                     token_ids = last_state.token_ids
                     generated_token_ids = self.get_generated_token_ids(
                         prompt_token_ids, token_ids
                     )
                     if max_tokens and len(generated_token_ids[0]) >= max_tokens:
+                        break
+                    if max_words and all(
+                        len(sentence.split()) > max_words
+                        for sentence in self.tokenizer.decode(generated_token_ids)
+                    ):
                         break
                     if stop_sequences and self.is_stop_sequence_found(
                         self.tokenizer.decode(generated_token_ids), stop_sequences
@@ -223,9 +252,13 @@ class SequenceGenerator:
         generated_token_ids = self.get_generated_token_ids(prompt_token_ids, token_ids)
 
         generated = self.tokenizer.decode(generated_token_ids)
+        max_words_stripped = [
+            self.strip_max_words_sequences(sequence, max_words)
+            for sequence in generated
+        ]
         stripped = [
             self.strip_stop_sequences(sequence, stop_sequences)
-            for sequence in generated
+            for sequence in max_words_stripped
         ]
         formatted = [self.format_sequence(sequence) for sequence in stripped]
 
@@ -248,6 +281,7 @@ class SequenceGenerator:
         self,
         prompts: Union[str, List[str]],
         max_tokens: Optional[int] = None,
+        max_words: Optional[int] = None,
         stop_at: Optional[Union[str, List[str]]] = None,
         rng: Optional["torch.Generator"] = None,
     ) -> Iterator[Union[List[str], str, List[List[str]]]]:
@@ -328,9 +362,12 @@ class SequenceGenerator:
             ] * num_samples
             num_generated = 0
             is_stop_at_reached = [False for _ in range(batch_size)] * num_samples
+            is_max_words_at_reached = [False for _ in range(batch_size)] * num_samples
             while True:
-                if (max_tokens and num_generated >= max_tokens) or all(
-                    is_stop_at_reached
+                if (
+                    (max_tokens and num_generated >= max_tokens)
+                    or all(is_stop_at_reached)
+                    or all(is_max_words_at_reached)
                 ):
                     return
                 try:
@@ -340,6 +377,21 @@ class SequenceGenerator:
                     return
                 generated_token_ids = sequence.token_ids[:, -num_generated:]
                 generated_sequences = self.tokenizer.decode(generated_token_ids)
+                if max_words is not None:
+                    is_max_words_at_reached = [
+                        stop or len(generated_sequence.split()) > max_words
+                        for generated_sequence, stop in zip(
+                            generated_sequences, is_max_words_at_reached
+                        )
+                    ]
+                    generated_sequences = [
+                        self.strip_max_words_sequences(sequence, max_words)
+                        if stop
+                        else sequence
+                        for sequence, stop in zip(
+                            generated_sequences, is_max_words_at_reached
+                        )
+                    ]
                 if stop_sequences:
                     is_stop_at_reached = [
                         stop
@@ -473,15 +525,35 @@ class SequenceGeneratorAdapter:
         else:
             return self.format_sequence(sequences)
 
+    @staticmethod
+    def reconstruct_till_max_words(sequence: str, max_words: Optional[int]) -> str:
+        if max_words is not None:
+            if len(sequence.split()) > max_words:
+                matches = re.findall(r"(\s*\S+)(\s*)", sequence)
+                return "".join(
+                    word + whitespace for word, whitespace in matches[:max_words]
+                ).rstrip()
+
+        return sequence
+
     def __call__(
         self,
         prompts: Union[str, List[str]],
         max_tokens: Optional[int] = None,
+        max_words: Optional[int] = None,
         stop_at: Optional[Union[str, List[str]]] = None,
         seed: Optional[int] = None,
         **model_specific_params,
     ):
         """Generate text from a prompt of list of prompts."""
+
+        # If we have max_words but no max_tokens, let's put a limit on the number of tokens
+        # so that we reduce the generation time and do not exceed context length if
+        # no stop token is met.
+        # A high estimation of average number of tokens per word in a multilanguage
+        # context is 2, let's take some precaution and increase it a bit to 3
+        if max_words and max_tokens is None:
+            max_tokens = 3 * max_words
 
         generation_params = self.prepare_generation_parameters(
             max_tokens, stop_at, seed
@@ -494,6 +566,13 @@ class SequenceGeneratorAdapter:
             self.sampling_params,
             **model_specific_params,
         )
+
+        if isinstance(completions, str):
+            completions = self.reconstruct_till_max_words(completions, max_words)
+        else:
+            completions = [
+                self.reconstruct_till_max_words(seq, max_words) for seq in completions
+            ]
 
         return self._format(completions)
 
