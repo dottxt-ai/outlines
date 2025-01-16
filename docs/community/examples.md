@@ -1,6 +1,6 @@
 # Community projects and articles
 
-Publishing examples and articles about Outlines are a meaningful way to contrinute to the community. Here is a list of projects we are aware of. Drop us a line if we forgot yours!
+Publishing examples and articles about Outlines are a meaningful way to contribute to the community. Here is a list of projects we are aware of. Drop us a line if we forgot yours!
 
 [MMSG](https://github.com/leloykun/mmsg) is a Python library for generating interleaved text and image content in a structured format you can directly pass to downstream APIs.
 
