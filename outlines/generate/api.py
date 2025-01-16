@@ -318,6 +318,9 @@ class SequenceGenerator:
         if isinstance(stop_at, str):
             stop_at = [stop_at]
 
+        if max_words and max_tokens is None:
+            max_tokens = 3 * max_words
+
         stop_sequences = stop_at
         num_samples = self.num_samples
 

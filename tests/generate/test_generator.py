@@ -536,8 +536,11 @@ def test_generator_max_words():
             return torch.argmax(biased_logits, keepdims=True), torch.tensor([0]), None
 
     generator = SequenceGenerator(MockFSM(), MockModel(), sampler(), "cpu")
-    result = generator("test", max_words=5)
-    assert result == "test test test test test"
+    result = generator("test", max_words=3)
+    assert result == "test test test"
+
+    sequence = generator.stream("test", max_words=3)
+    assert "".join(sequence) == "test test test"
 
 
 def test_generator_max_tokens_from_max_words():
@@ -583,3 +586,6 @@ def test_generator_max_tokens_from_max_words():
     generator = SequenceGenerator(MockFSM(), MockModel(), sampler(), "cpu")
     result = generator("test", max_words=2)  # should generate max_words * 3 tokens
     assert result == "123456"
+
+    sequence = generator.stream("test", max_words=2)
+    assert "".join(sequence) == "123456"
