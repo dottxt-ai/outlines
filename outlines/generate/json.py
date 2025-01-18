@@ -71,6 +71,12 @@ def json(
         regex_str = build_regex_from_schema(schema, whitespace_pattern)
         generator = regex(model, regex_str, sampler)
         generator.format_sequence = lambda x: pyjson.loads(x)
+    elif isinstance(schema_object, dict) and schema_object.get("type") == "function":
+        # Handle OpenAI function call format
+        schema = pyjson.dumps(schema_object["function"]["parameters"])
+        regex_str = build_regex_from_schema(schema, whitespace_pattern)
+        generator = regex(model, regex_str, sampler)
+        generator.format_sequence = lambda x: pyjson.loads(x)
     else:
         raise ValueError(
             f"Cannot parse schema {schema_object}. The schema must be either "
