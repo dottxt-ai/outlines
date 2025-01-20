@@ -3,7 +3,13 @@ from urllib.request import urlopen
 
 import librosa
 import pytest
-from transformers import AutoProcessor, Qwen2AudioForConditionalGeneration
+from transformers import (
+    AutoProcessor,
+    AutoTokenizer,
+    Qwen2AudioForConditionalGeneration,
+    Qwen2TokenizerFast,
+    ViTModel,
+)
 
 import outlines
 from outlines.models.transformers_audio import transformers_audio
@@ -144,3 +150,22 @@ def test_single_audio_choice(model, processor):
     )
     assert isinstance(sequence, str)
     assert sequence in choices
+
+
+def test_tokenizer_class():
+    model = transformers_audio(
+        "yujiepan/qwen2-audio-tiny-random",
+        model_class=Qwen2AudioForConditionalGeneration,
+        tokenizer_class=AutoTokenizer,
+        device="cpu",
+    )
+    assert isinstance(model.processor.tokenizer, Qwen2TokenizerFast)
+
+
+def test_no_tokenizer_in_processor():
+    with pytest.raises(KeyError):
+        transformers_audio(
+            "google/vit-base-patch16-224",  # only way to have a processor with no tokenizer is loading a non-text model
+            model_class=ViTModel,
+            device="cpu",
+        )
