@@ -2,6 +2,7 @@ import pickle
 import warnings
 from typing import TYPE_CHECKING, Dict, Iterator, List, Set, Tuple, Union
 
+from outlines.models import Model
 from outlines.models.tokenizer import Tokenizer
 
 if TYPE_CHECKING:
@@ -93,7 +94,7 @@ class LlamaCppTokenizer(Tokenizer):
         raise NotImplementedError("Cannot load a pickled llamacpp tokenizer")
 
 
-class LlamaCpp:
+class LlamaCpp(Model):
     """Wraps a model provided by the `llama-cpp-python` library."""
 
     def __init__(self, model_path: Union[str, "Llama"], **kwargs):

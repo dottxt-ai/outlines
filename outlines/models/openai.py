@@ -5,6 +5,7 @@ from typing import Optional, Union
 
 from pydantic import BaseModel
 
+from outlines.models import Model
 from outlines.prompts import Vision
 from outlines.types import Json
 
@@ -114,7 +115,7 @@ class OpenAIBase:
         }
 
 
-class OpenAI(OpenAIBase):
+class OpenAI(Model, OpenAIBase):
     """Thin wrapper around the `openai.OpenAI` client.
 
     This wrapper is used to convert the input and output types specified by the
