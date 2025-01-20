@@ -214,7 +214,6 @@ def enforce_not_implemented(model_fixture, *task_names):
             "model_llamacpp",
             "model_mlxlm",
             "model_mlxlm_phi3",
-            "model_transformers_audio",
         ],
         "multiple_samples": ["model_llamacpp", "model_mlxlm", "model_mlxlm_phi3"],
         "cfg": ["model_llamacpp"],  # TODO: fix llama_cpp tokenizer

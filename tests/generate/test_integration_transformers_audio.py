@@ -97,7 +97,7 @@ def test_mismatched_audio_text_gen(model, processor):
             ],
         },
     ]
-    with pytest.raises(RuntimeError):
+    with pytest.raises(ValueError):
         _ = generator(
             processor.apply_chat_template(conversation),
             [audio_from_url(i) for i in AUDIO_URLS],
