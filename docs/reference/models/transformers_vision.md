@@ -2,7 +2,7 @@
 
 Outlines allows seamless use of [vision models](https://huggingface.co/learn/computer-vision-course/en/unit4/multimodal-models/tasks-models-part1).
 
-`outlines.models.transformers_vision` has shares interfaces with, and is based on [outlines.models.transformers](./transformers.md).
+`outlines.models.transformers_vision` shares interfaces with, and is based on [outlines.models.transformers](./transformers.md).
 
 Tasks supported include
 
@@ -62,7 +62,7 @@ image_urls = [
 ]
 description_generator = outlines.generate.text(model)
 description_generator(
-    "<image><image><image>What shapes are present?",
+    "<image><image>What shapes are present?",
     list(map(img_from_url, image_urls)),
 )
 ```
@@ -110,6 +110,6 @@ image_data_generator(
 
 ## Resources
 
-### Chosing a model
+### Choosing a model
 - https://mmbench.opencompass.org.cn/leaderboard
 - https://huggingface.co/spaces/WildVision/vision-arena

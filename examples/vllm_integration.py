@@ -2,8 +2,10 @@
 
 import vllm
 from pydantic import BaseModel
+from transformers import AutoTokenizer
 
-from outlines.integrations.vllm import JSONLogitsProcessor
+from outlines.models.vllm import adapt_tokenizer
+from outlines.processors import JSONLogitsProcessor
 
 
 class Person(BaseModel):
@@ -11,8 +13,12 @@ class Person(BaseModel):
     surname: str
 
 
-llm = vllm.LLM(model="mistralai/Mistral-7B-v0.1", max_model_len=512)
-logits_processor = JSONLogitsProcessor(schema=Person, llm=llm, whitespace_pattern=r" ?")
+MODEL_ID = "mistralai/Mistral-7B-v0.1"
+llm = vllm.LLM(model=MODEL_ID, max_model_len=512)
+tokenizer = adapt_tokenizer(AutoTokenizer.from_pretrained(MODEL_ID))
+logits_processor = JSONLogitsProcessor(
+    schema=Person, tokenizer=tokenizer, whitespace_pattern=r" ?"
+)
 result = llm.generate(
     ["He is Tom Jones", "She saw Linda Smith"],
     sampling_params=vllm.SamplingParams(

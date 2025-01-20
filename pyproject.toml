@@ -40,7 +40,7 @@ dependencies = [
    "pycountry",
    "airportsdata",
    "torch",
-   "outlines_core==0.1.24",
+   "outlines_core==0.1.26",
 ]
 dynamic = ["version"]
 
@@ -67,7 +67,7 @@ test = [
     "huggingface_hub",
     "openai>=1.0.0",
     "datasets",
-    "vllm; sys_platform != 'darwin'",
+    "vllm; sys_platform == 'linux'",
     "transformers",
     "pillow",
     "exllamav2",

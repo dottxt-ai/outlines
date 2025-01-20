@@ -343,7 +343,7 @@ class Operation(Enum):
     mul = partial(mul)
 
 model = outlines.models.transformers("WizardLM/WizardMath-7B-V1.1")
-generator = outlines.generate.json(model, add)
+generator = outlines.generate.json(model, Operation)
 result = generator("Return json with two float named c and d respectively. c is negative and d greater than 1.0.")
 
 print(result)
