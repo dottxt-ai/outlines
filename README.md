@@ -74,6 +74,12 @@ The following methods of structured generation are supported:
 - [Using context-free grammars to guide generation](#using-context-free-grammars-to-guide-generation)
 - [Open functions](#open-functions)
 
+### Chat template tokens
+
+Outlines does not manage chat templating tokens when using instruct models. You must apply the chat template tokens to the prompt yourself. Chat template tokens are not needed for base models.
+
+Please see [the documentation](https://dottxt-ai.github.io/outlines/latest/reference/chat_templating) on chat templating for more.
+
 ### Multiple choices
 
 You can reduce the completion to a choice between multiple possibilities:
@@ -411,39 +417,6 @@ def labelling(to_label, examples):
 model = outlines.models.transformers("microsoft/Phi-3-mini-4k-instruct")
 prompt = labelling("Just awesome", examples)
 answer = outlines.generate.text(model)(prompt, max_tokens=100)
-```
-
-### Chat template tokens
-
-Outlines does not manage chat templating tokens when using instruct models. You must apply the chat template tokens to the prompt yourself. Chat template tokens are not needed for base models.
-
-You can find the chat template tokens in the model's HuggingFace repo or documentation. As an example, the SmolLM2-360M-Instruct special tokens can be found [here](https://huggingface.co/HuggingFaceTB/SmolLM2-360M-Instruct/blob/main/special_tokens_map.json).
-
-A convenient way to do this is to use the `tokenizer` from the `transformers` library:
-
-```python
-from transformers import AutoTokenizer
-
-tokenizer = AutoTokenizer.from_pretrained("HuggingFaceTB/SmolLM2-360M-Instruct")
-prompt = tokenizer.apply_chat_template(
-    [
-        {"role": "system", "content": "You extract information from text."},
-        {"role": "user", "content": "What food does the following text describe?"},
-    ],
-    tokenize=False,
-    add_bos=True,
-    add_generation_prompt=True,
-)
-```
-
-yields
-
-```
-<|im_start|>system
-You extract information from text.<|im_end|>
-<|im_start|>user
-What food does the following text describe?<|im_end|>
-<|im_start|>assistant
 ```
 
 ## Join us
