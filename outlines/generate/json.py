@@ -3,6 +3,7 @@ from enum import Enum
 from functools import singledispatch
 from typing import Callable, Optional, Union
 
+from genson import SchemaBuilder
 from outlines_core.fsm.json_schema import build_regex_from_schema
 from pydantic import BaseModel
 
@@ -52,6 +53,11 @@ def json(
         generator.format_sequence = lambda x: schema_object.parse_raw(x)
     elif isinstance(schema_object, type(Enum)):
         schema = pyjson.dumps(get_schema_from_enum(schema_object))
+        regex_str = build_regex_from_schema(schema, whitespace_pattern)
+        generator = regex(model, regex_str, sampler)
+        generator.format_sequence = lambda x: pyjson.loads(x)
+    elif isinstance(schema_object, SchemaBuilder):
+        schema = schema_object.to_json()
         regex_str = build_regex_from_schema(schema, whitespace_pattern)
         generator = regex(model, regex_str, sampler)
         generator.format_sequence = lambda x: pyjson.loads(x)
