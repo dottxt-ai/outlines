@@ -111,27 +111,20 @@ answer = generator(prompt)
 # Likely answer: Pizza
 ```
 
-You can also pass these choices through en enum:
+You can also pass in choices with an `Enum`:
 
 ````python
 from enum import Enum
 
-import outlines
+class Food(str, Enum):
+    pizza = "Pizza"
+    pasta = "Pasta"
+    salad = "Salad"
+    dessert = "Dessert"
 
-class Sentiment(str, Enum):
-    positive = "Positive"
-    negative = "Negative"
-
-model = outlines.models.transformers("microsoft/Phi-3-mini-4k-instruct")
-
-prompt = """You are a sentiment-labelling assistant.
-Is the following review positive or negative?
-
-Review: This restaurant is just awesome!
-"""
-
-generator = outlines.generate.choice(model, Sentiment)
+generator = outlines.generate.choice(model, Food)
 answer = generator(prompt)
+# Likely answer: Pizza
 ````
 
 ### Type constraints
