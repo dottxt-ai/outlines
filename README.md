@@ -65,6 +65,21 @@ is to ensure that there is a well-defined interface between their output and
 user-defined code. **Outlines** provides ways to control the generation of
 language models to make their output more predictable.
 
+The following methods of structured generation are supported:
+
+- [Multiple choices](#multiple-choices)
+- [Type constraints](#type-constraint)
+- [Efficient regex-structured generation](#efficient-regex-structured-generation)
+- [Efficient JSON generation following a Pydantic model](#efficient-json-generation-following-a-pydantic-model)
+- [Using context-free grammars to guide generation](#using-context-free-grammars-to-guide-generation)
+- [Open functions](#open-functions)
+
+### Chat template tokens
+
+Outlines does not manage chat templating tokens when using instruct models. You must apply the chat template tokens to the prompt yourself. Chat template tokens are not needed for base models.
+
+Please see [the documentation](https://dottxt-ai.github.io/outlines/latest/reference/chat_templating) on chat templating for more.
+
 ### Multiple choices
 
 You can reduce the completion to a choice between multiple possibilities:
@@ -72,42 +87,47 @@ You can reduce the completion to a choice between multiple possibilities:
 ``` python
 import outlines
 
-model = outlines.models.transformers("microsoft/Phi-3-mini-4k-instruct")
+model_name = "HuggingFaceTB/SmolLM2-360M-Instruct"
+model = outlines.models.transformers(model_name)
 
-prompt = """You are a sentiment-labelling assistant.
-Is the following review positive or negative?
+# You must apply the chat template tokens to the prompt!
+# See below for an example.
+prompt = """
+<|im_start|>system
+You extract information from text.
+<|im_end|>
 
-Review: This restaurant is just awesome!
+<|im_start|>user
+What food does the following text describe?
+
+Text: I really really really want pizza.
+<|im_end|>
+<|im_start|>assistant
 """
 
-generator = outlines.generate.choice(model, ["Positive", "Negative"])
+generator = outlines.generate.choice(model, ["Pizza", "Pasta", "Salad", "Dessert"])
 answer = generator(prompt)
+
+# Likely answer: Pizza
 ```
 
-You can also pass these choices through en enum:
+You can also pass in choices with an `Enum`:
 
 ````python
 from enum import Enum
 
-import outlines
+class Food(str, Enum):
+    pizza = "Pizza"
+    pasta = "Pasta"
+    salad = "Salad"
+    dessert = "Dessert"
 
-class Sentiment(str, Enum):
-    positive = "Positive"
-    negative = "Negative"
-
-model = outlines.models.transformers("microsoft/Phi-3-mini-4k-instruct")
-
-prompt = """You are a sentiment-labelling assistant.
-Is the following review positive or negative?
-
-Review: This restaurant is just awesome!
-"""
-
-generator = outlines.generate.choice(model, Sentiment)
+generator = outlines.generate.choice(model, Food)
 answer = generator(prompt)
+# Likely answer: Pizza
 ````
 
-### Type constraint
+### Type constraints
 
 You can instruct the model to only return integers or floats:
 
@@ -140,7 +160,17 @@ import outlines
 
 model = outlines.models.transformers("microsoft/Phi-3-mini-4k-instruct")
 
-prompt = "What is the IP address of the Google DNS servers? "
+prompt = """
+<|im_start|>system You are a helpful assistant.
+<|im_end|>
+
+<|im_start|>user
+What is an IP address of the Google DNS servers?
+<|im_end|>
+<|im_start|>assistant
+The IP address of a Google DNS server is
+
+"""
 
 generator = outlines.generate.text(model)
 unstructured = generator(prompt, max_tokens=30)
@@ -148,19 +178,17 @@ unstructured = generator(prompt, max_tokens=30)
 generator = outlines.generate.regex(
     model,
     r"((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)",
+    sampler=outlines.samplers.greedy(),
 )
 structured = generator(prompt, max_tokens=30)
 
 print(unstructured)
-# What is the IP address of the Google DNS servers?
+# 8.8.8.8
 #
-# Passive DNS servers are at DNS servers that are private.
-# In other words, both IP servers are private. The database
-# does not contain Chelsea Manning
+# <|im_end|>
 
 print(structured)
-# What is the IP address of the Google DNS servers?
-# 2.2.6.1
+# 8.8.8.8
 ```
 
 Unlike other libraries, regex-structured generation in Outlines is almost as fast
@@ -168,15 +196,13 @@ as non-structured generation.
 
 ### Efficient JSON generation following a Pydantic model
 
-Outlines  allows to guide the generation process so the output is *guaranteed* to follow a [JSON schema](https://json-schema.org/) or [Pydantic model](https://docs.pydantic.dev/latest/):
+Outlines users can guide the generation process so the output is *guaranteed* to follow a [JSON schema](https://json-schema.org/) or [Pydantic model](https://docs.pydantic.dev/latest/):
 
 ```python
 from enum import Enum
 from pydantic import BaseModel, constr
 
 import outlines
-import torch
-
 
 class Weapon(str, Enum):
     sword = "sword"

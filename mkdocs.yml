@@ -4,7 +4,6 @@ site_author: The Outlines developers
 site_description: >-
   Structured text generation with LLMs
 
-
 # Repository
 repo_name: dottxt-ai/outlines
 repo_url: https://github.com/dottxt-ai/outlines
@@ -76,7 +75,6 @@ markdown_extensions:
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
   - pymdownx.snippets:
 
-
 extra_css:
   - stylesheets/extra.css
 
@@ -131,53 +129,54 @@ nav:
           - Cerebrium: cookbook/deploy-using-cerebrium.md
           - Modal: cookbook/deploy-using-modal.md
   - Docs:
-    - reference/index.md
-    - Generation:
-        - Overview: reference/generation/generation.md
-        - Text: reference/text.md
-        - Samplers: reference/samplers.md
-        - Structured generation:
-            - How does it work?: reference/generation/structured_generation_explanation.md
-            - Classification: reference/generation/choices.md
-            - Regex: reference/generation/regex.md
-            - Type constraints: reference/generation/format.md
-            - JSON (function calling): reference/generation/json.md
-            - Grammar: reference/generation/cfg.md
-            - Creating Grammars: reference/generation/creating_grammars.md
-            - Custom FSM operations: reference/generation/custom_fsm_ops.md
-    - Utilities:
-        - Serve with vLLM: reference/serve/vllm.md
-        - Serve with LM Studio: reference/serve/lmstudio.md
-        - Custom types: reference/generation/types.md
-        - Prompt templating: reference/prompting.md
-        - Outlines functions: reference/functions.md
-    - Models:
-        - Overview: reference/models/models.md
-        - Open source:
-          - Transformers: reference/models/transformers.md
-          - Transformers Vision: reference/models/transformers_vision.md
-          - Llama.cpp: reference/models/llamacpp.md
-          - vLLM: reference/models/vllm.md
-          - TGI: reference/models/tgi.md
-          - ExllamaV2: reference/models/exllamav2.md
-          - MLX: reference/models/mlxlm.md
-          - Mamba: reference/models/transformers/#mamba
-        - API:
-            - OpenAI: reference/models/openai.md
+      - reference/index.md
+      - Generation:
+          - Overview: reference/generation/generation.md
+          - Chat templating: reference/chat_templating.md
+          - Text: reference/text.md
+          - Samplers: reference/samplers.md
+          - Structured generation:
+              - How does it work?: reference/generation/structured_generation_explanation.md
+              - Classification: reference/generation/choices.md
+              - Regex: reference/generation/regex.md
+              - Type constraints: reference/generation/format.md
+              - JSON (function calling): reference/generation/json.md
+              - Grammar: reference/generation/cfg.md
+              - Creating Grammars: reference/generation/creating_grammars.md
+              - Custom FSM operations: reference/generation/custom_fsm_ops.md
+      - Utilities:
+          - Serve with vLLM: reference/serve/vllm.md
+          - Serve with LM Studio: reference/serve/lmstudio.md
+          - Custom types: reference/generation/types.md
+          - Prompt templating: reference/prompting.md
+          - Outlines functions: reference/functions.md
+      - Models:
+          - Overview: reference/models/models.md
+          - Open source:
+              - Transformers: reference/models/transformers.md
+              - Transformers Vision: reference/models/transformers_vision.md
+              - Llama.cpp: reference/models/llamacpp.md
+              - vLLM: reference/models/vllm.md
+              - TGI: reference/models/tgi.md
+              - ExllamaV2: reference/models/exllamav2.md
+              - MLX: reference/models/mlxlm.md
+              - Mamba: reference/models/transformers/#mamba
+          - API:
+              - OpenAI: reference/models/openai.md
   - API Reference:
-    - api/index.md
-    - api/models.md
-    - api/prompts.md
-    - api/json_schema.md
-    - api/guide.md
-    - api/parsing.md
-    - api/regex.md
-    - api/samplers.md
+      - api/index.md
+      - api/models.md
+      - api/prompts.md
+      - api/json_schema.md
+      - api/guide.md
+      - api/parsing.md
+      - api/regex.md
+      - api/samplers.md
   - Community:
-    - community/index.md
-    - Feedback 🫶: community/feedback.md
-    - Chat with us ☕: https://discord.com/invite/R9DSu34mGd
-    - How to contribute 🏗️: community/contribute.md
-    - Your projects 👏: community/examples.md
-    - Versioning Guide 📌: community/versioning.md
+      - community/index.md
+      - Feedback 🫶: community/feedback.md
+      - Chat with us ☕: https://discord.com/invite/R9DSu34mGd
+      - How to contribute 🏗️: community/contribute.md
+      - Your projects 👏: community/examples.md
+      - Versioning Guide 📌: community/versioning.md
   - Blog: blog/index.md
