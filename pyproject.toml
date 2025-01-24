@@ -71,7 +71,8 @@ test = [
     "transformers",
     "pillow",
     "exllamav2",
-    "jax"
+    "jax",
+    "librosa",
 ]
 serve = [
     "vllm>=0.3.0",
@@ -147,6 +148,7 @@ module = [
     "pycountry.*",
     "airportsdata.*",
     "outlines_core.*",
+    "librosa",
 ]
 ignore_missing_imports = true
 
