@@ -1,18 +1,18 @@
 """Integration with OpenAI's API."""
 from functools import singledispatchmethod
-from types import NoneType
 from typing import Optional, Union
 
 from pydantic import BaseModel
 
 from outlines.models import Model
+from outlines.models.base import ModelFormatter
 from outlines.prompts import Vision
 from outlines.types import Json
 
 __all__ = ["OpenAI"]
 
 
-class OpenAIBase:
+class OpenAIFormatter(ModelFormatter):
     """Base class for the OpenAI clients.
 
     `OpenAI` base is responsible for preparing the arguments to OpenAI's
@@ -83,7 +83,7 @@ class OpenAIBase:
             f"The type {output_type} is not available with OpenAI. The only output type available is `Json`."
         )
 
-    @format_output_type.register(NoneType)
+    @format_output_type.register(type(None))
     def format_none_output_type(self, _: None):
         """Generate the `response_format` argument to the client when no
         output type is specified by the user.
@@ -115,7 +115,7 @@ class OpenAIBase:
         }
 
 
-class OpenAI(Model, OpenAIBase):
+class OpenAI(Model):
     """Thin wrapper around the `openai.OpenAI` client.
 
     This wrapper is used to convert the input and output types specified by the
@@ -128,6 +128,7 @@ class OpenAI(Model, OpenAIBase):
 
         self.client = OpenAI(*args, **kwargs)
         self.model_name = model_name
+        self.formatter = OpenAIFormatter()
 
     def generate(
         self,
@@ -135,8 +136,8 @@ class OpenAI(Model, OpenAIBase):
         output_type: Optional[Union[type[BaseModel], str]] = None,
         **inference_kwargs,
     ):
-        messages = self.format_input(model_input)
-        response_format = self.format_output_type(output_type)
+        messages = self.formatter.format_input(model_input)
+        response_format = self.formatter.format_output_type(output_type)
         result = self.client.chat.completions.create(
             model=self.model_name, **messages, **response_format, **inference_kwargs
         )
