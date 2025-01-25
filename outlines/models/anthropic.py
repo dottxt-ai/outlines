@@ -2,6 +2,7 @@
 from functools import singledispatchmethod
 from typing import Union
 
+from outlines.models import Model
 from outlines.prompts import Vision
 
 __all__ = ["Anthropic"]
@@ -63,7 +64,7 @@ class AnthropicBase:
         }
 
 
-class Anthropic(AnthropicBase):
+class Anthropic(Model, AnthropicBase):
     def __init__(self, model_name: str, *args, **kwargs):
         from anthropic import Anthropic
 

@@ -7,6 +7,7 @@ from typing import Optional, Union
 from pydantic import BaseModel
 from typing_extensions import _TypedDictMeta  # type: ignore
 
+from outlines.models import Model
 from outlines.prompts import Vision
 from outlines.types import Choice, Json, List
 
@@ -91,7 +92,7 @@ class GeminiBase:
         }
 
 
-class Gemini(GeminiBase):
+class Gemini(Model, GeminiBase):
     def __init__(self, model_name: str, *args, **kwargs):
         import google.generativeai as genai
 
