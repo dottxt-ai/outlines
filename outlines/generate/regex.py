@@ -6,10 +6,11 @@ from outlines.generate.api import (
 )
 from outlines.models import OpenAI, TransformersVision
 from outlines.samplers import Sampler, multinomial
+from outlines.types import Regex
 
 
 @singledispatch
-def regex(model, regex_str: str, sampler: Sampler = multinomial()):
+def regex(model, regex_str: str | Regex, sampler: Sampler = multinomial()):
     """Generate structured text in the language of a regular expression.
 
     Parameters
@@ -31,6 +32,9 @@ def regex(model, regex_str: str, sampler: Sampler = multinomial()):
     """
     from outlines.processors import RegexLogitsProcessor
 
+    if isinstance(regex_str, Regex):
+        regex_str = regex_str.pattern
+
     logits_processor = RegexLogitsProcessor(regex_str, tokenizer=model.tokenizer)
     return SequenceGeneratorAdapter(model, logits_processor, sampler)
 
@@ -38,10 +42,13 @@ def regex(model, regex_str: str, sampler: Sampler = multinomial()):
 @regex.register(TransformersVision)
 def regex_vision(
     model,
-    regex_str: str,
+    regex_str: str | Regex,
     sampler: Sampler = multinomial(),
 ):
     from outlines.processors import RegexLogitsProcessor
+
+    if isinstance(regex_str, Regex):
+        regex_str = regex_str.pattern
 
     logits_processor = RegexLogitsProcessor(regex_str, tokenizer=model.tokenizer)
     return VisionSequenceGeneratorAdapter(model, logits_processor, sampler)
