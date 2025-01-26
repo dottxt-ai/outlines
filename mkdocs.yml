@@ -133,6 +133,7 @@ nav:
       - Generation:
           - Overview: reference/generation/generation.md
           - Chat templating: reference/chat_templating.md
+          - Regex DSL: reference/regex_dsl.md
           - Text: reference/text.md
           - Samplers: reference/samplers.md
           - Structured generation:

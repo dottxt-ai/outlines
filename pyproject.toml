@@ -131,6 +131,7 @@ module = [
     "cloudpickle.*",
     "diskcache.*",
     "pydantic.*",
+    "pydantic_core.*",
     "pytest",
     "referencing.*",
     "torch.*",

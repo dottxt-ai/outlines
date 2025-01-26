@@ -1,1 +1,0 @@
-# Outlines functions
