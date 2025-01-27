@@ -1455,6 +1455,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#from-a-dynamic-json-schema-builder-genson" class="md-nav__link">
+    <span class="md-ellipsis">
+      From a dynamic JSON schema builder - GenSON
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -2512,6 +2521,15 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#from-a-dynamic-json-schema-builder-genson" class="md-nav__link">
+    <span class="md-ellipsis">
+      From a dynamic JSON schema builder - GenSON
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -2618,6 +2636,69 @@
 </span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span style="color: #616E87; font-style: italic"># 3</span>
 </span></code></pre></div>
 <p>A great advantage of passing functions directly to specify the structure is that the structure of the LLM will change with the function's definition. No need to change the code at several places!</p>
+<h2 id="from-a-dynamic-json-schema-builder-genson">From a dynamic JSON schema builder - GenSON</h2>
+<p>Outlines integrated <a href="https://github.com/wolverdude/GenSON">GenSON</a> builders to be able to dynamicly declare JSON schemas. It can be used as follow:</p>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">genson</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">SchemaBuilder</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">models</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">generate</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span style="color: #D8DEE9">builder</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">SchemaBuilder</span><span style="color: #ECEFF4">()</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span style="color: #D8DEE9">builder</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">add_schema</span><span style="color: #ECEFF4">({</span><span style="color: #A3BE8C">&quot;type&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;object&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;properties&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #ECEFF4">{}})</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span style="color: #D8DEE9">builder</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">add_object</span><span style="color: #ECEFF4">({</span><span style="color: #A3BE8C">&quot;name&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;Toto&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;age&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #B48EAD">5</span><span style="color: #ECEFF4">})</span>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span style="color: #D8DEE9">model</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">models</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">transformers</span><span style="color: #ECEFF4">(</span>
+</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>    <span style="color: #A3BE8C">&quot;HuggingFaceTB/SmolLM2-135M&quot;</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>    <span style="color: #D8DEE9">device</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #A3BE8C">&quot;auto&quot;</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span style="color: #ECEFF4">)</span>
+</span><span id="__span-4-14"><a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span style="color: #D8DEE9">generator</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">generate</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">json</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">builder</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-4-15"><a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a>
+</span><span id="__span-4-16"><a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a><span style="color: #D8DEE9">res</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">generator</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;Return a json of a young boy&quot;</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-4-17"><a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">res</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-4-18"><a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a><span style="color: #616E87; font-style: italic"># {&quot;name&quot;: &quot;Ben&quot;, &quot;age&quot;: 10}</span>
+</span></code></pre></div>
+<p>Anytime you are updating the schema through the builder, you need to redifine the outline generator to include these changes. From the the previous example:</p>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">genson</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">SchemaBuilder</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">models</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">generate</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span style="color: #D8DEE9">builder</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">SchemaBuilder</span><span style="color: #ECEFF4">()</span>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span style="color: #D8DEE9">builder</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">add_schema</span><span style="color: #ECEFF4">({</span><span style="color: #A3BE8C">&quot;type&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;object&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;properties&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #ECEFF4">{}})</span>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span style="color: #D8DEE9">builder</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">add_object</span><span style="color: #ECEFF4">({</span><span style="color: #A3BE8C">&quot;name&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;Toto&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;age&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #B48EAD">5</span><span style="color: #ECEFF4">})</span>
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span style="color: #D8DEE9">model</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">models</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">transformers</span><span style="color: #ECEFF4">(</span>
+</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>    <span style="color: #A3BE8C">&quot;HuggingFaceTB/SmolLM2-135M&quot;</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>    <span style="color: #D8DEE9">device</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #A3BE8C">&quot;auto&quot;</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span style="color: #ECEFF4">)</span>
+</span><span id="__span-5-14"><a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a><span style="color: #D8DEE9">generator</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">generate</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">json</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">builder</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-5-15"><a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>
+</span><span id="__span-5-16"><a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a><span style="color: #D8DEE9">res</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">generator</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;Return a json of a young boy&quot;</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-5-17"><a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">res</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-5-18"><a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a><span style="color: #616E87; font-style: italic"># {&quot;name&quot;: &quot;Ben&quot;, &quot;age&quot;: 10}</span>
+</span><span id="__span-5-19"><a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a>
+</span><span id="__span-5-20"><a id="__codelineno-5-20" name="__codelineno-5-20" href="#__codelineno-5-20"></a><span style="color: #D8DEE9">builder</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">add_object</span><span style="color: #ECEFF4">({</span><span style="color: #A3BE8C">&quot;hobby&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;sports&quot;</span><span style="color: #ECEFF4">})</span>
+</span><span id="__span-5-21"><a id="__codelineno-5-21" name="__codelineno-5-21" href="#__codelineno-5-21"></a><span style="color: #D8DEE9">generator</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">generate</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">json</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">builder</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-5-22"><a id="__codelineno-5-22" name="__codelineno-5-22" href="#__codelineno-5-22"></a>
+</span><span id="__span-5-23"><a id="__codelineno-5-23" name="__codelineno-5-23" href="#__codelineno-5-23"></a><span style="color: #D8DEE9">res</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">generator</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;Return a json of a youg boy whose hobby is coding&quot;</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-5-24"><a id="__codelineno-5-24" name="__codelineno-5-24" href="#__codelineno-5-24"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">res</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-5-25"><a id="__codelineno-5-25" name="__codelineno-5-25" href="#__codelineno-5-25"></a><span style="color: #616E87; font-style: italic"># {&quot;name&quot;: &quot;Ben&quot;, &quot;age&quot;: 10, &quot;hobby&quot;: &quot;coding&quot;}</span>
+</span></code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Beware of <a href="https://github.com/wolverdude/GenSON">GenSON</a>'s behavior regarding dynamic amending of schemas through their builder. Here is an example of how you could lose <code>required</code> informations and generate json with missing fields:</p>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span style="color: #D8DEE9">builder</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">SchemaBuilder</span><span style="color: #ECEFF4">()</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span style="color: #D8DEE9">builder</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">add_schema</span><span style="color: #ECEFF4">({</span><span style="color: #A3BE8C">&quot;type&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;object&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;properties&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #ECEFF4">{}})</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span style="color: #D8DEE9">builder</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">add_object</span><span style="color: #ECEFF4">({</span><span style="color: #A3BE8C">&quot;name&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;Toto&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;age&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #B48EAD">5</span><span style="color: #ECEFF4">})</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">builder</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">to_schema</span><span style="color: #ECEFF4">())</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span style="color: #616E87; font-style: italic"># {&#39;$schema&#39;: &#39;http://json-schema.org/schema#&#39;, &#39;type&#39;: &#39;object&#39;, &#39;properties&#39;: {&#39;name&#39;: {&#39;type&#39;: &#39;string&#39;}, &#39;age&#39;: {&#39;type&#39;: &#39;integer&#39;}}, &#39;required&#39;: [&#39;age&#39;, &#39;name&#39;]}</span>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span style="color: #D8DEE9">builder</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">add_object</span><span style="color: #ECEFF4">({</span><span style="color: #A3BE8C">&quot;hobby&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;sport&quot;</span><span style="color: #ECEFF4">})</span>
+</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">builder</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">to_schema</span><span style="color: #ECEFF4">())</span>
+</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span style="color: #616E87; font-style: italic"># {&#39;name&#39;: {&#39;type&#39;: &#39;string&#39;}, &#39;age&#39;: {&#39;type&#39;: &#39;integer&#39;}, &#39;hobby&#39;: {&#39;type&#39;: &#39;string&#39;}}}</span>
+</span></code></pre></div>
+</div>
 
 
 
@@ -2640,7 +2721,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2024-07-27T17:08:57+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2024-07-27</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2025-01-27T15:22:08+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2025-01-27</span>
   </span>
 
     
@@ -2667,6 +2748,16 @@
 
     
     <nav>
+      
+        <a href="https://github.com/g-prz" class="md-author" title="@g-prz">
+          
+          <img src="https://avatars.githubusercontent.com/u/158364710?v=4&size=72" alt="g-prz">
+        </a>
+      
+        <a href="https://github.com/web-flow" class="md-author" title="@web-flow">
+          
+          <img src="https://avatars.githubusercontent.com/u/19864447?v=4&size=72" alt="web-flow">
+        </a>
       
         <a href="https://github.com/lapp0" class="md-author" title="@lapp0">
           
