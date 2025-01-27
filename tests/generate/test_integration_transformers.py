@@ -6,11 +6,11 @@ from typing import List, Union
 
 import pytest
 import torch
-from outlines_core.fsm.regex import reduced_vocabulary
 from pydantic import BaseModel, constr
 
 import outlines.generate as generate
 import outlines.models as models
+from outlines.fsm.guide import reduced_vocabulary
 from outlines.models.transformers import Transformers, TransformerTokenizer
 from outlines.samplers import beam_search, greedy, multinomial
 

@@ -27,7 +27,7 @@ import math
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Type, Union
 
 import torch
-from outlines_core.fsm.json_schema import build_regex_from_schema
+from outlines_core.json_schema import build_regex_from_schema
 from pydantic import BaseModel
 
 from outlines.fsm.guide import CFGGuide, Guide, RegexGuide
