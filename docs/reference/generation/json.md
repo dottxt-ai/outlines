@@ -103,3 +103,76 @@ print(add(**result))
 ```
 
 A great advantage of passing functions directly to specify the structure is that the structure of the LLM will change with the function's definition. No need to change the code at several places!
+
+
+## From a dynamic JSON schema builder - GenSON
+
+Outlines integrated [GenSON](https://github.com/wolverdude/GenSON) builders to be able to dynamicly declare JSON schemas. It can be used as follow:
+
+```python
+from genson import SchemaBuilder
+
+from outlines import models
+from outlines import generate
+
+builder = SchemaBuilder()
+builder.add_schema({"type": "object", "properties": {}})
+builder.add_object({"name": "Toto", "age": 5})
+
+model = models.transformers(
+    "HuggingFaceTB/SmolLM2-135M",
+    device="auto",
+)
+generator = generate.json(model, builder)
+
+res = generator("Return a json of a young boy")
+print(res)
+# {"name": "Ben", "age": 10}
+```
+
+Anytime you are updating the schema through the builder, you need to redifine the outline generator to include these changes. From the the previous example:
+
+```python
+from genson import SchemaBuilder
+
+from outlines import models
+from outlines import generate
+
+builder = SchemaBuilder()
+builder.add_schema({"type": "object", "properties": {}})
+builder.add_object({"name": "Toto", "age": 5})
+
+model = models.transformers(
+    "HuggingFaceTB/SmolLM2-135M",
+    device="auto",
+)
+generator = generate.json(model, builder)
+
+res = generator("Return a json of a young boy")
+print(res)
+# {"name": "Ben", "age": 10}
+
+builder.add_object({"hobby": "sports"})
+generator = generate.json(model, builder)
+
+res = generator("Return a json of a youg boy whose hobby is coding")
+print(res)
+# {"name": "Ben", "age": 10, "hobby": "coding"}
+```
+
+!!! Note
+
+    Beware of [GenSON](https://github.com/wolverdude/GenSON)'s behavior regarding dynamic amending of schemas through their builder. Here is an example of how you could lose `required` informations and generate json with missing fields:
+
+    ```python
+    builder = SchemaBuilder()
+    builder.add_schema({"type": "object", "properties": {}})
+    builder.add_object({"name": "Toto", "age": 5})
+
+    print(builder.to_schema())
+    # {'$schema': 'http://json-schema.org/schema#', 'type': 'object', 'properties': {'name': {'type': 'string'}, 'age': {'type': 'integer'}}, 'required': ['age', 'name']}
+
+    builder.add_object({"hobby": "sport"})
+    print(builder.to_schema())
+    # {'name': {'type': 'string'}, 'age': {'type': 'integer'}, 'hobby': {'type': 'string'}}}
+    ```

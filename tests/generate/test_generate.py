@@ -276,6 +276,22 @@ def test_generate_json(request, model_fixture, sample_schema):
     generator(**get_inputs(model_fixture), max_tokens=100)
 
 
+def test_integrate_genson_generate_json(request):
+    from genson import SchemaBuilder
+
+    builder = SchemaBuilder()
+    builder.add_schema({"type": "object", "properties": {}})
+    builder.add_object({"name": "Toto", "age": 5})
+
+    model = request.getfixturevalue("model_transformers_opt125m")
+
+    generator = generate.json(model, builder)
+    res = generator("Return a json of a young boy")
+
+    assert "name" in res
+    assert "age" in res
+
+
 @pytest.mark.parametrize("model_fixture", ALL_MODEL_FIXTURES)
 @pytest.mark.parametrize("sample_choices", ALL_SAMPLE_CHOICES_FIXTURES)
 def test_generate_choice(request, model_fixture, sample_choices):

@@ -41,6 +41,7 @@ dependencies = [
    "airportsdata",
    "torch",
    "outlines_core==0.1.26",
+   "genson",
 ]
 dynamic = ["version"]
 
@@ -71,7 +72,7 @@ test = [
     "transformers",
     "pillow",
     "exllamav2",
-    "jax"
+    "jax",
 ]
 serve = [
     "vllm>=0.3.0",
@@ -147,6 +148,7 @@ module = [
     "pycountry.*",
     "airportsdata.*",
     "outlines_core.*",
+    "genson",
 ]
 ignore_missing_imports = true
 
