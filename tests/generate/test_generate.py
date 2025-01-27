@@ -245,6 +245,17 @@ def test_generate_text(request, model_fixture, sampler_name):
         assert isinstance(res, str)
 
 
+@pytest.mark.parametrize("sampler_name", ("greedy", "multinomial", "beam_search"))
+@pytest.mark.parametrize("model_fixture", ALL_MODEL_FIXTURES)
+def test_generate_text_max_words(request, model_fixture, sampler_name):
+    max_words = 5
+    model = request.getfixturevalue(model_fixture)
+    generator = generate.text(model, getattr(samplers, sampler_name)())
+    with enforce_not_implemented(model_fixture, sampler_name):
+        res = generator("Write a long sentence", max_words=max_words)
+        assert len(res.split()) <= max_words
+
+
 @pytest.mark.parametrize("pattern", REGEX_PATTERNS)
 @pytest.mark.parametrize("model_fixture", ALL_MODEL_FIXTURES)
 def test_generate_regex(request, model_fixture, pattern):
