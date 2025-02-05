@@ -15,5 +15,3 @@ benchmarks/results
 build
 docs/build
 logs
-logs/
-__pycache__/
