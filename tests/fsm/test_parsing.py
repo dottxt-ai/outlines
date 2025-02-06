@@ -209,7 +209,7 @@ def test_sequential_parse_example(cleanup_lark_import):
 # TODO: Remove once fsm_union and walk_fsm are implemented in Outlines-Core
 import interegular  # noqa
 
-from outlines.fsm.parsing import fsm_union, walk_fsm  # noqa
+from outlines.fsm.parsing import fsm_union  # noqa
 
 
 def test_outlines_interegular_union_consistency():
@@ -281,27 +281,3 @@ def test_fsm_to_trans_finals_reconstruction():
     assert list(fsm0.strings()) == list(reconstructed[0].strings())
     assert list(fsm1.strings()) == list(reconstructed[1].strings())
     assert list(fsm2.strings()) == list(reconstructed[2].strings())
-
-
-def test_walk_fsm():
-    fsm = interegular.parse_pattern(r"abc*d").to_fsm()
-    # convert to BetterFSM
-    fsm = fsm_union([fsm])[0]
-
-    # if match, produce equivalent number of states, assert state can terminate
-    transitions = [fsm.alphabet[letter] for letter in "abcccd"]
-    accepted_states = walk_fsm(fsm, transitions, fsm.initial, full_match=True)
-    assert len(accepted_states) == len(transitions)
-    assert accepted_states[-1] in fsm.finals
-
-    # if no match, assert empty
-    accepted_states = walk_fsm(
-        fsm, [fsm.alphabet[letter] for letter in "b"], fsm.initial, full_match=True
-    )
-    assert accepted_states == []
-
-    # if full_match, but last state not present, assert empty
-    accepted_states = walk_fsm(
-        fsm, [fsm.alphabet[letter] for letter in "abc"], fsm.initial, full_match=True
-    )
-    assert accepted_states == []

@@ -7,7 +7,6 @@ from typing import (
     FrozenSet,
     Generator,
     Iterator,
-    List,
     Optional,
     Sequence,
     Set,
@@ -46,11 +45,8 @@ from lark.parsers.lalr_analysis import (
 )
 from lark.parsers.lalr_interactive_parser import InteractiveParser
 from lark.parsers.lalr_parser import LALR_Parser, ParseConf, ParserState, _Parser
-from outlines_core.fsm.regex import (
-    BetterFSM,
-    get_token_transition_keys,
-    make_deterministic_fsm,
-)
+
+from outlines.fsm.guide import get_token_transition_keys, make_deterministic_fsm
 
 PartialParseState = Tuple[str, int]
 ParseStateType = Union[int, FrozenSet]
@@ -623,7 +619,7 @@ class PartialScanner(Scanner):
             text_part,
         )
 
-        state_seq = walk_fsm(
+        state_seq = walk_fsm(  # type: ignore  # noqa: F821
             self.fsm,
             text_transitions,
             start_state,
@@ -1087,41 +1083,3 @@ def get_sub_fsms_from_seq(
         for fsm_idx, (transitions, finals, _) in fsms_to_trans_finals.items()
         if state_seq_transitions.issubset(transitions)
     )
-
-
-def walk_fsm(
-    fsm: BetterFSM,
-    token_transition_keys: Sequence[int],
-    start_state: int,
-    full_match: bool = True,
-) -> List[int]:
-    fsm_finals = fsm.finals
-
-    state = start_state
-    accepted_states: List[int] = []
-    last_final_idx: int = 0
-
-    fsm_transitions = fsm.flat_transition_map
-
-    # Iterate over token transition key sequence. The transition key
-    # sequence represents the FSM traversal rules of the tokens symbols.
-    for i, trans_key in enumerate(token_transition_keys):
-        new_state = fsm_transitions.get((state, trans_key))
-
-        if new_state is None:
-            if not full_match and last_final_idx > 0:
-                return accepted_states[:last_final_idx]
-
-            return []
-
-        state = new_state
-
-        if state in fsm_finals:
-            last_final_idx = i + 1
-
-        accepted_states.append(state)
-
-    if full_match and last_final_idx - 1 != i:
-        return []
-
-    return accepted_states

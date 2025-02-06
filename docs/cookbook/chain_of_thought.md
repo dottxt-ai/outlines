@@ -81,7 +81,7 @@ We could generate a response using the json schema but for a change we will use 
 
 ```python
 from outlines.fsm.json_schema import convert_json_schema_to_str
-from outlines_core.fsm.json_schema import build_regex_from_schema
+from outlines_core.json_schema import build_regex_from_schema
 
 schema_str = convert_json_schema_to_str(json_schema=json_schema)
 regex_str = build_regex_from_schema(schema_str)
