@@ -163,56 +163,46 @@ print(prompt)
 # A:
 ```
 
-### Outlines functions
+### `Outline`s
 
-Once you are done experimenting with a prompt and an output structure, it is useful to be able to encapsulate all of these in a single function that can be called from other parts of the program. This is what `outlines.Function` allows you to do:
+The `Outline` class allows you to encapsulate a model, a prompt template, and an expected output type into a single callable object. This can be useful for generating structured responses based on a given prompt.
 
-=== "function.py"
+#### Example
 
-    ```python
-    from pydantic import BaseModel
+First, define a Pydantic model for the expected output:
 
-    import outlines
+```python
+from pydantic import BaseModel
 
+class OutputModel(BaseModel):
+    result: int
+```
 
-    @outlines.prompt
-    def tell_a_joke(topic):
-        """Tell me a joke about {{ topic }}."""
+Next, initialize a model and define a template function:
 
-    class Joke(BaseModel):
-        setup: str
-        punchline: str
+```python
+from outlines import models
 
-    generate_joke = outlines.Function(
-        tell_a_joke,
-        Joke,
-        "microsoft/Phi-3-mini-4k-instruct"
-    )
-    ```
+model = models.transformers("gpt2")
 
-=== "Call a function"
+def template(a: int) -> str:
+    return f"What is 2 times {a}?"
+```
 
-    ```python
-    from .function import generate_joke
+Now, create an `Outline` instance:
 
-    response = generate_joke("baseball")
+```python
+from outlines.outline import Outline
 
-    # haha
-    # Joke(setup='Why was the baseball in a bad mood?', punchline='Because it got hit around a lot.')
-    ```
+fn = Outline(model, template, OutputModel)
+```
 
-=== "Call a function stored on GitHub"
+You can then call the `Outline` instance with the required arguments:
 
-    You can load a function that is stored on a repository on GitHub directly from Outlines. Say `Someone` stores a function in `joke.py` at the root of the `TheirRepo` repository:
-
-    ```python
-    import outlines
-
-    joke = outlines.Function.from_github("Someone/TheirRepo/joke")
-    response = joke("baseball")
-    ```
-    It make it easier for the community to collaborate on the infinite number of use cases enabled by these models!
-
+```python
+result = fn(3)
+print(result)  # Expected output: OutputModel(result=6)
+```
 
 ## Going further
 
