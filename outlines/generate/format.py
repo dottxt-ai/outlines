@@ -33,6 +33,7 @@ def format(
 
     """
     regex_str, format_fn = python_types_to_regex(python_type)
+    regex_str = regex_str.pattern
     generator = regex(model, regex_str, sampler)
     generator.format_sequence = format_fn
 
