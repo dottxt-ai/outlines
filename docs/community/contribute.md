@@ -53,6 +53,14 @@ pip install -e ".[test]"
 pre-commit install
 ```
 
+Outlines provides optional dependencies for different supported backends, which you can install with
+
+```bash
+pip install ".[vllm]"
+```
+
+A list of supported optional dependencies can be found in the [installation guide](/installation).
+
 ### Using VSCode DevContainer / GitHub Codespaces
 
 If you want a fully pre-configured development environment, you can use VSCode DevContainers or GitHub Codespaces.
