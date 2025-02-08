@@ -115,9 +115,8 @@ generator.logits_processor = LogitTrackingProcessor(generator.logits_processor, 
 
 Once tracking is enabled, you can analyze the generation process by calling these methods on the generator:
 
-- `get_statistics(pos)`: Get basic statistics about the logits at a position
-- `get_top_tokens(pos, k=5)`: View the most likely tokens at a position
-- `get_sequence(end_pos, use_processed=True)`: Reconstruct the generated string from tracked logits
+- `get_statistics(pos)`: Get basic statistics about the logits at a position (mean, std, min, max)
+- `get_top_tokens(pos, k=5)`: View the most likely tokens and their probabilities at a position
 
 ```python
 # Generate response
@@ -125,11 +124,18 @@ response = generator("What's the weather like?")
 
 # Check token probabilities at each step
 for pos in range(3):
+    # Get statistics about the logits
     stats = generator.logits_processor.get_statistics(pos)
-    tokens = generator.logits_processor.get_top_tokens(pos, k=5)
     print(f"\nPosition {pos}:")
-    print(f"Valid tokens: {stats['processed']['valid_tokens']}")
-    print("Top tokens:", [t['token'] for t in tokens['processed']])
+    print(f"Original mean: {stats['original']['mean']:.2f}")
+    print(f"Valid tokens after processing: {stats['processed']['valid_tokens']}")
+    
+    # View top token candidates
+    tokens = generator.logits_processor.get_top_tokens(pos, k=5)
+    print("\nTop tokens before processing:", 
+          [f"{t['token']} ({t['prob']:.1%})" for t in tokens['original']])
+    print("Top tokens after processing:", 
+          [f"{t['token']} ({t['prob']:.1%})" for t in tokens['processed']])
 ```
 
 ### Memory management

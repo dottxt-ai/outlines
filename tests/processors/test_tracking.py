@@ -1,30 +1,3 @@
-"""Tests for the LogitTrackingProcessor functionality.
-
-This test suite verifies the behavior of the LogitTrackingProcessor, which wraps other
-logit processors to track and analyze their behavior. The tests cover:
-
-1. Basic functionality:
-   - Initialization with different parameters
-   - Logit processing and tracking
-   - Statistics calculation
-   - Token retrieval and sequence reconstruction
-
-2. Error handling:
-   - Invalid inputs
-   - Missing tokenizer
-   - Shape mismatches
-   - Invalid positions
-
-3. Memory management:
-   - Sliding window tracking
-   - Position limits
-   - Clearing tracking data
-
-4. Edge cases:
-   - Empty sequences
-   - All invalid logits
-   - Large token requests
-"""
 import pytest
 import torch
 from typing import List
@@ -153,23 +126,6 @@ def test_top_tokens(processor):
     assert tokens['original'][0]['prob'] > tokens['original'][1]['prob']
 
 
-def test_sequence_reconstruction(processor):
-    """Test sequence reconstruction from tracked logits."""
-    # Generate a sequence
-    for i in range(3):
-        logits = torch.zeros(1, 10)
-        logits[0, i] = 2.0  # Make token i most likely
-        processor.process_logits([[j for j in range(i + 1)]], logits)
-    
-    # Test reconstruction
-    seq = processor.get_sequence(2)
-    assert len(seq) == 3
-    
-    # Test with original logits
-    seq_orig = processor.get_sequence(2, use_processed=False)
-    assert len(seq_orig) == 3
-
-
 def test_clear_tracking(processor):
     """Test clearing tracked data."""
     processor.process_logits([[0]], torch.randn(1, 10))
@@ -286,8 +242,8 @@ def test_sliding_window_contents():
     assert torch.all(processor.original_logits[3][0] == 3.0)
 
 
-def test_sequence_reconstruction_all_invalid():
-    """Test sequence reconstruction when all logits are invalid."""
+def test_all_invalid_logits():
+    """Test behavior when all logits are invalid."""
     base = MockProcessor()
     processor = LogitTrackingProcessor(base)
     
@@ -296,9 +252,12 @@ def test_sequence_reconstruction_all_invalid():
     processor.process_logits([[0]], logits)
     processor.processed_logits[0].fill_(float('-inf'))
     
-    # Should skip invalid positions
-    seq = processor.get_sequence(0)
-    assert seq == ""
+    # Check that statistics and top tokens handle this case
+    stats = processor.get_statistics(0)
+    assert stats['processed']['valid_tokens'] == 0
+    
+    tokens = processor.get_top_tokens(0)
+    assert len(tokens['processed']) == 0
 
 
 def test_top_tokens_large_k():
@@ -322,8 +281,11 @@ def test_negative_position_access(pos):
     base = MockProcessor()
     processor = LogitTrackingProcessor(base)
     
-    with pytest.raises(ValueError, match="must be non-negative"):
-        processor.get_sequence(pos)
+    with pytest.raises(KeyError):
+        processor.get_statistics(pos)
+    
+    with pytest.raises(KeyError):
+        processor.get_top_tokens(pos)
 
 
 @pytest.mark.parametrize("pos", [100, 1000])
@@ -336,7 +298,4 @@ def test_nonexistent_position_access(pos):
         processor.get_statistics(pos)
     
     with pytest.raises(KeyError):
-        processor.get_top_tokens(pos)
-    
-    with pytest.raises(KeyError):
-        processor.get_sequence(pos) 
+        processor.get_top_tokens(pos) 

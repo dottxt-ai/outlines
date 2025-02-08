@@ -15,7 +15,6 @@ allowing for both real-time analysis and post-generation investigation. It can b
 - Track all positions or maintain a sliding window of recent positions
 - Track original logits, processed logits, or both
 - Provide statistics and token-level analysis at any tracked position
-- Reconstruct the generated sequence from tracked logits
 
 Examples
 --------
@@ -29,7 +28,6 @@ Basic regex tracking:
 >>> # After generation, analyze the results
 >>> tokens = tracking_processor.get_top_tokens(0)  # Get top token candidates at first position with original logits
 >>> stats = tracking_processor.get_statistics(0)  # Get stats for first token
->>> seq = tracking_processor.get_sequence(3)  # Reconstruct sequence up to position 3
 
 Analyzing structured output generation:
 >>> from pydantic import BaseModel
@@ -105,11 +103,10 @@ class LogitTrackingProcessor(OutlinesLogitsProcessor):
     >>> processor = LogitTrackingProcessor(base_processor)
     >>> # Track only the 5 most recent positions
     >>> processor = LogitTrackingProcessor(base_processor, max_positions=5)
-    >>> # After generating "2023":
-    >>> # - Position 0 contains logits that generated "2"
-    >>> # - Position 1 contains logits that generated "0"
-    >>> # - Position 2 contains logits that generated "2"
-    >>> # - Position 3 contains logits that generated "3"
+    >>> # Each position contains logits for that generation step:
+    >>> # - Position 0 contains logits for the first token
+    >>> # - Position 1 contains logits for the second token
+    >>> # And so on...
 
     Accessing tracked logits:
     >>> # Get original logits for first token (position 0)
@@ -117,7 +114,7 @@ class LogitTrackingProcessor(OutlinesLogitsProcessor):
     >>> # Get processed logits for second token (position 1)
     >>> processed_logits = processor.processed_logits[1]  # shape: (vocab_size,)
     >>> # Get all tracked positions
-    >>> positions = sorted(processor.original_logits.keys())  # [0, 1, 2, 3]
+    >>> positions = sorted(processor.original_logits.keys())  # [0, 1, 2, ...]
 
     Analyzing logits:
     >>> # Get statistics for a position
@@ -128,10 +125,6 @@ class LogitTrackingProcessor(OutlinesLogitsProcessor):
     >>> tokens = processor.get_top_tokens(0, k=5)  # Get top 5 tokens
     >>> print(tokens['original'])  # [{'token': '2', 'prob': 0.8}, ...]
     >>> print(tokens['processed'])  # [{'token': '2', 'prob': 1.0}, ...]
-    >>> # Reconstruct sequence from tracked logits
-    >>> seq = processor.get_sequence(3)  # Get sequence up to position 3
-    >>> print(seq)  # "2023"
-    >>> seq_orig = processor.get_sequence(3, use_processed=False)  # Using original logits
     >>> # Clear tracking data
     >>> processor.clear_tracking()
     """
@@ -345,7 +338,7 @@ class LogitTrackingProcessor(OutlinesLogitsProcessor):
 
             result['original'] = [
                 {
-                    'token': self.processor.tokenizer.decode([token_id.item()]),
+                    'token': self.processor.tokenizer.decode([token_id.item()])[0],
                     'prob': prob.item()
                 }
                 for token_id, prob in zip(top_k.indices, top_k.values)
@@ -366,7 +359,7 @@ class LogitTrackingProcessor(OutlinesLogitsProcessor):
 
                 result['processed'] = [
                     {
-                        'token': self.processor.tokenizer.decode([token_id.item()]),
+                        'token': self.processor.tokenizer.decode([token_id.item()])[0],
                         'prob': prob.item()
                     }
                     for token_id, prob in zip(top_k.indices, top_k.values)
@@ -379,72 +372,6 @@ class LogitTrackingProcessor(OutlinesLogitsProcessor):
             raise KeyError(f"Position {pos} has not been tracked")
 
         return result
-
-    def get_sequence(self, end_pos: int, use_processed: bool = True) -> str:
-        """Reconstruct the sequence up to a given position by taking the most likely token at each position.
-
-        Parameters
-        ----------
-        end_pos : int
-            The position to reconstruct up to (inclusive)
-        use_processed : bool, optional
-            Whether to use processed logits (True) or original logits (False), by default True
-
-        Returns
-        -------
-        str
-            The reconstructed sequence
-
-        Examples
-        --------
-        >>> # Get sequence up to position 3 using processed logits
-        >>> seq = processor.get_sequence(3)
-        >>> print(seq)  # "2023"
-        >>> # Compare with sequence from original logits
-        >>> seq_orig = processor.get_sequence(3, use_processed=False)
-        >>> print(seq_orig)  # Might be different if processor constrained choices
-        >>> # Get partial sequence
-        >>> seq_partial = processor.get_sequence(1)
-        >>> print(seq_partial)  # "20"
-
-        Raises
-        ------
-        KeyError
-            If any position up to end_pos has not been tracked
-        AttributeError
-            If the processor's tokenizer is not accessible
-        ValueError
-            If end_pos is negative
-        """
-        if not hasattr(self.processor, 'tokenizer'):
-            raise AttributeError("Cannot get sequence: processor has no tokenizer attribute")
-
-        if end_pos < 0:
-            raise ValueError("end_pos must be non-negative")
-
-        # Check if we have all positions up to end_pos
-        logits_dict = self.processed_logits if use_processed else self.original_logits
-        for pos in range(end_pos + 1):
-            if pos not in logits_dict:
-                raise KeyError(f"Position {pos} has not been tracked")
-
-        # Get the most likely token at each position
-        tokens = []
-        for pos in range(end_pos + 1):
-            logits = logits_dict[pos]
-            if use_processed:
-                # Handle -inf values for processed logits
-                valid_mask = logits != float('-inf')
-                if not valid_mask.any():
-                    continue  # Skip positions with no valid tokens
-                logits = logits.masked_fill(~valid_mask, -1e9)
-
-            # Get the most likely token
-            token_id = torch.argmax(logits).item()
-            token = self.processor.tokenizer.decode([token_id])
-            tokens.append(token)
-
-        return ''.join(tokens)
 
 
 def add_tracking(generator, max_positions: Optional[int] = None) -> "Generator":
