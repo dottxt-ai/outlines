@@ -144,6 +144,7 @@ nav:
               - Grammar: reference/generation/cfg.md
               - Creating Grammars: reference/generation/creating_grammars.md
               - Custom FSM operations: reference/generation/custom_fsm_ops.md
+          - Processors: reference/processors.md
       - Utilities:
           - Serve with vLLM: reference/serve/vllm.md
           - Serve with LM Studio: reference/serve/lmstudio.md
