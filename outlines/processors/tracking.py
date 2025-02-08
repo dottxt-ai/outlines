@@ -210,8 +210,13 @@ class LogitTrackingProcessor(OutlinesLogitsProcessor):
         Array
             The processed logits, shape (batch_size, vocab_size)
         """
-        # Ensure shapes match
-        assert logits.shape[:-1] == torch.tensor(input_ids).shape[:-1], "batch dimensions must match"
+        # Convert input_ids to tensor and ensure shapes match
+        if isinstance(logits, torch.Tensor):
+            input_tensor = torch.as_tensor(input_ids).to(logits.device)
+            assert logits.shape[:-1] == input_tensor.shape[:-1], "batch dimensions must match"
+        else:
+            input_tensor = torch.as_tensor(input_ids)
+            assert logits.shape[:-1] == input_tensor.shape[:-1], "batch dimensions must match"
 
         # Save original logits if tracking is enabled
         if self.track_original:
