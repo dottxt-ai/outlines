@@ -69,7 +69,6 @@ class Term:
     def __get_pydantic_json_schema__(
         self, core_schema: cs.CoreSchema, handler: GetJsonSchemaHandler
     ) -> JsonSchemaValue:
-
         return {"type": "string", "pattern": to_regex(self)}
 
     def validate(self, value: str) -> str:

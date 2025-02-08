@@ -78,7 +78,8 @@ async def generate(request: Request) -> Response:
         logits_processors = []
 
     sampling_params = SamplingParams(
-        **request_dict, logits_processors=logits_processors  # type: ignore
+        **request_dict,
+        logits_processors=logits_processors,  # type: ignore
     )
     request_id = random_uuid()
 
