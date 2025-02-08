@@ -21,11 +21,11 @@ Examples
 --------
 Basic regex tracking:
 >>> from outlines.processors import RegexLogitsProcessor, LogitTrackingProcessor
->>> 
+>>>
 >>> # Create a regex processor and wrap it with tracking
 >>> base_processor = RegexLogitsProcessor(r"[0-9]{4}", tokenizer)
 >>> tracking_processor = LogitTrackingProcessor(base_processor)
->>> 
+>>>
 >>> # After generation, analyze the results
 >>> tokens = tracking_processor.get_top_tokens(0)  # Get top token candidates at first position with original logits
 >>> stats = tracking_processor.get_statistics(0)  # Get stats for first token
@@ -34,15 +34,15 @@ Basic regex tracking:
 Analyzing structured output generation:
 >>> from pydantic import BaseModel
 >>> from outlines.processors import JSONLogitsProcessor
->>> 
+>>>
 >>> # Define a schema and create a tracking processor
 >>> class WeatherResponse(BaseModel):
 ...     temperature: float
 ...     conditions: str
->>> 
+>>>
 >>> base_processor = JSONLogitsProcessor(WeatherResponse, tokenizer)
 >>> tracking_processor = LogitTrackingProcessor(base_processor)
->>> 
+>>>
 >>> # After generation, analyze how the processor constrained the output
 >>> stats = tracking_processor.get_statistics(0)
 >>> print(f"Valid tokens after processing: {stats['processed']['valid_tokens']}")
@@ -62,6 +62,7 @@ from typing import Dict, List, Optional, Union
 import warnings
 import torch
 
+from outlines.generate.base import Generator
 from .base_logits_processor import OutlinesLogitsProcessor, Array
 
 
@@ -131,7 +132,7 @@ class LogitTrackingProcessor(OutlinesLogitsProcessor):
     """
 
     def __init__(
-        self, 
+        self,
         processor: OutlinesLogitsProcessor,
         max_positions: Optional[int] = None,
         track_original: bool = True,
@@ -151,20 +152,15 @@ class LogitTrackingProcessor(OutlinesLogitsProcessor):
             Whether to track original logits
         track_processed : bool
             Whether to track processed logits
-        
+
         Raises
         ------
-        TypeError
-            If processor is not an instance of OutlinesLogitsProcessor
         ValueError
             If max_positions is not None and <= 0
         """
-        if not isinstance(processor, OutlinesLogitsProcessor):
-            raise TypeError("processor must be an instance of OutlinesLogitsProcessor")
-        
         if max_positions is not None and max_positions <= 0:
             raise ValueError("max_positions must be None or a positive integer")
-        
+
         self.processor = processor
         self.max_positions = max_positions
         self.track_original = track_original
@@ -174,7 +170,7 @@ class LogitTrackingProcessor(OutlinesLogitsProcessor):
 
     def _update_tracking_dict(self, tracking_dict: Dict[int, torch.Tensor], pos: int, logits: torch.Tensor) -> None:
         """Update a tracking dictionary, maintaining the max_positions limit if set.
-        
+
         Parameters
         ----------
         tracking_dict : Dict[int, torch.Tensor]
@@ -191,7 +187,7 @@ class LogitTrackingProcessor(OutlinesLogitsProcessor):
             del tracking_dict[oldest_pos]
 
     def process_logits(
-        self, 
+        self,
         input_ids: Array,
         logits: Array,
     ) -> Array:
@@ -250,14 +246,14 @@ class LogitTrackingProcessor(OutlinesLogitsProcessor):
                 'original': {'mean': float, 'std': float, 'min': float, 'max': float},
                 'processed': {'mean': float, 'std': float, 'min': float, 'max': float}
             }
-        
+
         Raises
         ------
         KeyError
             If the position has not been tracked
         """
         stats = {}
-        
+
         if pos in self.original_logits and self.track_original:
             orig = self.original_logits[pos]
             stats['original'] = {
@@ -266,7 +262,7 @@ class LogitTrackingProcessor(OutlinesLogitsProcessor):
                 'min': orig.min().item(),
                 'max': orig.max().item()
             }
-            
+
         if pos in self.processed_logits and self.track_processed:
             proc = self.processed_logits[pos]
             valid_mask = proc != float('-inf')
@@ -283,10 +279,10 @@ class LogitTrackingProcessor(OutlinesLogitsProcessor):
                 stats['processed'] = {
                     'valid_tokens': 0
                 }
-        
+
         if not stats:
             raise KeyError(f"Position {pos} has not been tracked")
-            
+
         return stats
 
     def get_top_tokens(self, pos: int, k: int = 10) -> Dict[str, List[Dict[str, Union[str, float]]]]:
@@ -308,7 +304,7 @@ class LogitTrackingProcessor(OutlinesLogitsProcessor):
                 'processed': [{'token': str, 'prob': float}, ...]
             }
             For processed logits, only tokens with non-inf logits are included.
-        
+
         Examples
         --------
         >>> # Get top 5 tokens at position 0
@@ -319,7 +315,7 @@ class LogitTrackingProcessor(OutlinesLogitsProcessor):
         >>> # Processed logits may have fewer valid tokens due to constraints
         >>> print(tokens['processed'])
         [{'token': '2', 'prob': 1.0}]
-        
+
         Raises
         ------
         KeyError
@@ -331,12 +327,12 @@ class LogitTrackingProcessor(OutlinesLogitsProcessor):
             raise AttributeError("Cannot get tokens: processor has no tokenizer attribute")
 
         result = {}
-        
+
         if pos in self.original_logits and self.track_original:
             orig = self.original_logits[pos]
             probs = torch.softmax(orig, dim=-1)
             top_k = torch.topk(probs, min(k, len(probs)))
-            
+
             result['original'] = [
                 {
                     'token': self.processor.tokenizer.decode([token_id.item()]),
@@ -344,7 +340,7 @@ class LogitTrackingProcessor(OutlinesLogitsProcessor):
                 }
                 for token_id, prob in zip(top_k.indices, top_k.values)
             ]
-            
+
         if pos in self.processed_logits and self.track_processed:
             proc = self.processed_logits[pos]
             valid_mask = proc != float('-inf')
@@ -355,9 +351,9 @@ class LogitTrackingProcessor(OutlinesLogitsProcessor):
                 probs = torch.softmax(proc_valid, dim=-1)
                 # Zero out invalid token probabilities
                 probs[~valid_mask] = 0
-                
+
                 top_k = torch.topk(probs, min(k, valid_mask.sum().item()))
-                
+
                 result['processed'] = [
                     {
                         'token': self.processor.tokenizer.decode([token_id.item()]),
@@ -368,10 +364,10 @@ class LogitTrackingProcessor(OutlinesLogitsProcessor):
                 ]
             else:
                 result['processed'] = []  # No valid tokens
-        
+
         if not result:
             raise KeyError(f"Position {pos} has not been tracked")
-            
+
         return result
 
     def get_sequence(self, end_pos: int, use_processed: bool = True) -> str:
@@ -412,7 +408,7 @@ class LogitTrackingProcessor(OutlinesLogitsProcessor):
         """
         if not hasattr(self.processor, 'tokenizer'):
             raise AttributeError("Cannot get sequence: processor has no tokenizer attribute")
-        
+
         if end_pos < 0:
             raise ValueError("end_pos must be non-negative")
 
@@ -438,12 +434,12 @@ class LogitTrackingProcessor(OutlinesLogitsProcessor):
             token = self.processor.tokenizer.decode([token_id])
             tokens.append(token)
 
-        return ''.join(tokens) 
+        return ''.join(tokens)
 
 
 def add_tracking(generator, max_positions: Optional[int] = None) -> "Generator":
     """Add logit tracking to an existing generator.
-    
+
     This is a convenience function that wraps a generator's logits processor with
     a LogitTrackingProcessor, enabling analysis of token probabilities during generation.
 
@@ -454,7 +450,7 @@ def add_tracking(generator, max_positions: Optional[int] = None) -> "Generator":
     max_positions : Optional[int]
         Maximum number of positions to track. If None, tracks all positions.
         For long sequences, consider setting this to limit memory usage.
-    
+
     Returns
     -------
     Generator
@@ -464,10 +460,10 @@ def add_tracking(generator, max_positions: Optional[int] = None) -> "Generator":
     --------
     >>> from outlines.generate import json
     >>> from outlines.processors import add_tracking
-    >>> 
+    >>>
     >>> generator = json(model, schema)
     >>> generator = add_tracking(generator)  # Enable tracking
-    >>> 
+    >>>
     >>> # For long sequences, limit tracking to recent positions
     >>> generator = add_tracking(generator, max_positions=5)
     """
@@ -475,4 +471,4 @@ def add_tracking(generator, max_positions: Optional[int] = None) -> "Generator":
         generator.logits_processor,
         max_positions=max_positions
     )
-    return generator 
+    return generator
