@@ -58,12 +58,17 @@ Notes
 - Memory usage grows linearly with sequence length when max_positions is not set
 - The processor can be used with any OutlinesLogitsProcessor implementation
 """
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union, TYPE_CHECKING
 import warnings
 import torch
 
-from outlines.generate.base import Generator
 from .base_logits_processor import OutlinesLogitsProcessor, Array
+
+# TYPE_CHECKING is False at runtime but True during type checking, allowing us to avoid
+# circular imports between outlines.processors.tracking and outlines.generate while
+# maintaining proper type hints.
+if TYPE_CHECKING:
+    from outlines.generate import Generator
 
 
 class LogitTrackingProcessor(OutlinesLogitsProcessor):
