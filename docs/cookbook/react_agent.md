@@ -120,11 +120,10 @@ class Decision(BaseModel):
 We could generate a response using the json schema but we will use the regex and check that everything is working as expected:
 
 ```python
-from outlines.fsm.json_schema import convert_json_schema_to_str
-from outlines_core.fsm.json_schema import build_regex_from_schema
+from outlines_core.json_schema import build_regex_from_schema
 
 json_schema = Decision.model_json_schema()
-schema_str = convert_json_schema_to_str(json_schema=json_schema)
+schema_str = convert_json_schema_to_str(json_schema=json_schema)  # FIXME: update that usage example...
 regex_str = build_regex_from_schema(schema_str)
 print(regex_str)
 # '\\{[ ]?"Decision"[ ]?:[ ]?(\\{[ ]?"Scratchpad"[ ]?:[ ]?"([^"\\\\\\x00-\\x1F\\x7F-\\x9F]|\\\\["\\\\])*"[ ]?,[ ]?"Thought"[ ]?:[ ]?"([^"\\\\\\x00-\\x1F\\x7F-\\x9F]|\\\\["\\\\])*"[ ]?,[ ]?"Action"[ ]?:[ ]?("wikipedia"|"calculate")[ ]?,[ ]?"Action_Input"[ ]?:[ ]?"([^"\\\\\\x00-\\x1F\\x7F-\\x9F]|\\\\["\\\\])*"[ ]?\\}|\\{[ ]?"Scratchpad"[ ]?:[ ]?"([^"\\\\\\x00-\\x1F\\x7F-\\x9F]|\\\\["\\\\])*"[ ]?,[ ]?"Final_Answer"[ ]?:[ ]?"([^"\\\\\\x00-\\x1F\\x7F-\\x9F]|\\\\["\\\\])*"[ ]?\\})[ ]?\\}'

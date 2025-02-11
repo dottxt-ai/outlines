@@ -5,7 +5,8 @@ from functools import partial
 from typing import List
 
 import pytest
-from outlines_core.fsm.json_schema import build_regex_from_schema
+from outlines_core import Guide as CoreGuide, Index, Vocabulary
+from outlines_core.json_schema import build_regex_from_schema
 from pydantic import BaseModel, constr
 
 from outlines.fsm.json_schema import get_schema_from_enum, get_schema_from_signature
