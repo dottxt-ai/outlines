@@ -6,8 +6,13 @@ from iso3166 import countries
 
 def get_country_flags():
     """Generate Unicode flags for all ISO 3166-1 alpha-2 country codes in Alpha2 Enum."""
-    base = ord('🇦')
-    return {code.name: chr(base + ord(code.name[0]) - ord('A')) + chr(base + ord(code.name[1]) - ord('A')) for code in Alpha2}
+    base = ord("🇦")
+    return {
+        code.name: chr(base + ord(code.name[0]) - ord("A"))
+        + chr(base + ord(code.name[1]) - ord("A"))
+        for code in Alpha2
+    }
+
 
 ALPHA_2_CODE = [(country.alpha2, country.alpha2) for country in countries]
 Alpha2 = Enum("Alpha_2", ALPHA_2_CODE)  # type:ignore
@@ -23,4 +28,4 @@ Name = Enum("Name", NAME)  # type:ignore
 
 flag_mapping = get_country_flags()
 FLAG = [(flag, flag) for code, flag in flag_mapping.items()]
-Flag = Enum("Flag", FLAG)   # type:ignore
+Flag = Enum("Flag", FLAG)  # type:ignore
