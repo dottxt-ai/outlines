@@ -16,7 +16,13 @@ from typing import (
 )
 
 import interegular
-from interegular.fsm import FSM, Alphabet, OblivionError
+from interegular.fsm import (
+    FSM,
+    Alphabet,
+    OblivionError,
+    _AnythingElseCls,
+    anything_else,
+)
 from interegular.patterns import Unsupported
 from lark import Lark, Token
 from lark.common import LexerConf, ParserConf
@@ -46,11 +52,8 @@ from lark.parsers.lalr_analysis import (
 )
 from lark.parsers.lalr_interactive_parser import InteractiveParser
 from lark.parsers.lalr_parser import LALR_Parser, ParseConf, ParserState, _Parser
-from outlines_core.fsm.regex import (
-    BetterFSM,
-    get_token_transition_keys,
-    make_deterministic_fsm,
-)
+from outlines_core import Guide as CoreGuide, Index, Vocabulary
+from outlines_core.json_schema import build_regex_from_schema
 
 PartialParseState = Tuple[str, int]
 ParseStateType = Union[int, FrozenSet]
@@ -554,6 +557,146 @@ class PartialParser(_Parser):
                 print("")
 
             raise
+
+
+def get_token_transition_keys(
+    alphabet_symbol_mapping, alphabet_anything_value, text_part
+):
+    pass  # FIXME: was implement as Rust code in outlines_core==0.1.26
+
+
+class BetterAlphabet(Alphabet):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        assert anything_else in self._symbol_mapping
+        self.anything_value = self._symbol_mapping[anything_else]
+
+    def __getitem__(self, item):
+        return self._symbol_mapping.get(item, self.anything_value)
+
+    def copy(self):
+        return BetterAlphabet(self._symbol_mapping.copy())
+
+
+class BetterFSM(FSM):
+    flat_transition_map: Dict[Tuple[int, int], int]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if not isinstance(self.alphabet, BetterAlphabet):
+            self.__dict__["alphabet"] = BetterAlphabet(self.alphabet._symbol_mapping)
+
+        flat_transition_map = {}
+        for from_state, trans_map in self.map.items():
+            for trans_key, to_state in trans_map.items():
+                flat_transition_map[(from_state, trans_key)] = to_state
+
+        self.__dict__["flat_transition_map"] = flat_transition_map
+        self.__dict__["_fsm_info"] = None
+
+    def copy(self):
+        return BetterFSM(
+            alphabet=self.alphabet.copy(),
+            states=self.states.copy(),
+            initial=self.initial,
+            finals=self.finals.copy(),
+            map=self.map.copy(),
+            __no_validation__=True,
+        )
+
+    @property
+    def fsm_info(self):
+        if self._fsm_info is None:
+            anything_value = self.alphabet.anything_value
+            self.__dict__["_fsm_info"] = FSMInfo(
+                self.initial,
+                self.finals,
+                self.flat_transition_map,
+                anything_value,
+                # TODO FIXME: Perform this conversion in Rust?
+                {
+                    k: v
+                    for k, v in self.alphabet._symbol_mapping.items()
+                    if not isinstance(k, _AnythingElseCls)
+                },
+            )
+
+        return self._fsm_info
+
+
+def make_deterministic_fsm(fsm: FSM) -> Tuple[BetterFSM, Dict[int, int]]:
+    """Construct an equivalent FSM with deterministic state labels."""
+    old_to_new_trans_keys = {
+        trans_key: i
+        for i, (trans_key, _) in enumerate(
+            sorted(fsm.alphabet.by_transition.items(), key=lambda x: sorted(x[1]))
+        )
+    }
+
+    new_symbol_mapping = {
+        symbol: old_to_new_trans_keys[trans_key]
+        for symbol, trans_key in fsm.alphabet._symbol_mapping.items()
+    }
+
+    new_alphabet = BetterAlphabet(new_symbol_mapping)
+
+    new_map = {
+        from_state: {
+            old_to_new_trans_keys[trans_key]: to_state
+            for trans_key, to_state in trans_map.items()
+        }
+        for from_state, trans_map in fsm.map.items()
+    }
+
+    old_to_new_states = {}
+    old_to_new_states[fsm.initial] = 0
+
+    i = 0
+    seen = {fsm.initial}
+    old_state_queue = [fsm.initial]
+    while old_state_queue:
+        old_state = old_state_queue.pop(-1)
+        transitions = new_map[old_state]
+        sorted_transitions = sorted(transitions.items(), key=lambda v: v[0])
+        for _, old_state in sorted_transitions:
+            if old_state not in seen:
+                old_state_queue.append(old_state)
+                seen.add(old_state)
+            if old_state not in old_to_new_states:
+                i += 1
+                old_to_new_states[old_state] = i
+
+    new_map = dict(
+        sorted(
+            (
+                (
+                    old_to_new_states[from_state],
+                    dict(
+                        sorted(
+                            (
+                                (trans_key, old_to_new_states[to_state])
+                                for trans_key, to_state in trans_map.items()
+                            ),
+                            key=lambda v: v[0],
+                        )
+                    ),
+                )
+                for from_state, trans_map in new_map.items()
+            ),
+            key=lambda v: v[0],
+        )
+    )
+
+    new_initial = 0
+    new_finals = frozenset(
+        sorted(old_to_new_states[old_state] for old_state in fsm.finals)
+    )
+    new_states = frozenset(sorted(new_map.keys()))
+
+    new_fsm = BetterFSM(new_alphabet, new_states, new_initial, new_finals, new_map)
+
+    return new_fsm, old_to_new_states
 
 
 class PartialScanner(Scanner):
@@ -1087,6 +1230,10 @@ def get_sub_fsms_from_seq(
         for fsm_idx, (transitions, finals, _) in fsms_to_trans_finals.items()
         if state_seq_transitions.issubset(transitions)
     )
+
+
+class FSMInfo:
+    pass  # FIXME: was implement as Rust code in outlines_core==0.1.26
 
 
 def walk_fsm(
