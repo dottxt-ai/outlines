@@ -32,7 +32,9 @@ jobs:
     - name: Set up test environment
       run: |
         python -m pip install --upgrade pip
-        pip install -e .[test]
+        pip install uv
+        uv venv
+        uv pip install -e .[test]
     - name: Create matrix id
       id: matrix-id
       env:
@@ -44,7 +46,7 @@ jobs:
         echo "::set-output name=id::$MATRIX_ID"
     - name: Run tests
       run: |
-        pytest -x --cov=outlines
+        uv run pytest -x --cov=outlines
       env:
         COVERAGE_FILE: .coverage.${{ steps.matrix-id.outputs.id }}
     - name: Upload coverage data
