@@ -42,6 +42,7 @@ dependencies = [
    "airportsdata",
    "torch",
    "outlines_core==0.1.17",
+   "datasets",
 ]
 dynamic = ["version"]
 
