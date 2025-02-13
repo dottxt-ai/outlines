@@ -3,6 +3,7 @@ import warnings
 from typing import TYPE_CHECKING, Dict, Iterator, List, Set, Tuple, Union
 
 from outlines.models.tokenizer import Tokenizer
+from outlines.processors import CFGLogitsProcessor
 
 if TYPE_CHECKING:
     from llama_cpp import Llama
@@ -159,6 +160,11 @@ class LlamaCpp:
                 "The `llama-cpp-python` library does not support batch inference."
             )
 
+        if isinstance(logits_processor, CFGLogitsProcessor):
+            raise NotImplementedError(
+                "CFG generation is not supported for LlamaCpp due to bug in the llama_cpp tokenizer"
+            )
+
         completion = self.model(
             prompt,
             logits_processor=LogitsProcessorList([logits_processor]),
@@ -195,6 +201,11 @@ class LlamaCpp:
         if not isinstance(prompt, str):
             raise NotImplementedError(
                 "The `llama-cpp-python` library does not support batch inference."
+            )
+
+        if isinstance(logits_processor, CFGLogitsProcessor):
+            raise NotImplementedError(
+                "CFG generation is not supported for LlamaCpp due to bug in the llama_cpp tokenizer"
             )
 
         generator = self.model(
