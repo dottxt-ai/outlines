@@ -138,3 +138,10 @@ class Choice:
         choices = self.to_list()
         regex_str = r"(" + r"|".join(choices) + r")"
         return regex_str
+
+
+@dataclass
+class CFG:
+    """Represents a Context-Free Grammar as a string."""
+
+    definition: str
