@@ -1,5 +1,6 @@
 import io
 import json
+import os
 
 import PIL
 import pytest
@@ -13,34 +14,48 @@ from outlines.types import Json
 MODEL_NAME = "gpt-4o-mini-2024-07-18"
 
 
-def test_openai_wrong_init_parameters():
-    with pytest.raises(TypeError, match="got an unexpected"):
-        OpenAI(MODEL_NAME, foo=10)
+@pytest.fixture
+def api_key():
+    """Get the OpenAI API key from the environment, providing a default value if not found.
+
+    This fixture should be used for tests that do not make actual api calls,
+    but still require to initialize the OpenAI client.
+
+    """
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        return "MOCK_VALUE"
+    return api_key
 
 
-def test_openai_wrong_inference_parameters():
+def test_openai_wrong_init_parameters(api_key):
     with pytest.raises(TypeError, match="got an unexpected"):
-        model = OpenAI(MODEL_NAME)
+        OpenAI(MODEL_NAME, api_key=api_key, foo=10)
+
+
+def test_openai_wrong_inference_parameters(api_key):
+    with pytest.raises(TypeError, match="got an unexpected"):
+        model = OpenAI(MODEL_NAME, api_key=api_key)
         model.generate("prompt", foo=10)
 
 
-def test_openai_wrong_input_type():
+def test_openai_wrong_input_type(api_key):
     class Foo:
         def __init__(self, foo):
             self.foo = foo
 
     with pytest.raises(NotImplementedError, match="is not available"):
-        model = OpenAI(MODEL_NAME)
+        model = OpenAI(MODEL_NAME, api_key=api_key)
         model.generate(Foo("prompt"))
 
 
-def test_openai_wrong_output_type():
+def test_openai_wrong_output_type(api_key):
     class Foo:
         def __init__(self, foo):
             self.foo = foo
 
     with pytest.raises(NotImplementedError, match="is not available"):
-        model = OpenAI(MODEL_NAME)
+        model = OpenAI(MODEL_NAME, api_key=api_key)
         model.generate("prompt", Foo(1))
 
 

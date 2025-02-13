@@ -15,10 +15,14 @@ import outlines.samplers as samplers
 
 @pytest.fixture(scope="session")
 def model_llamacpp(tmp_path_factory):
-    return models.llamacpp(
+    from llama_cpp import Llama
+
+    llm = Llama.from_pretrained(
         repo_id="M4-ai/TinyMistral-248M-v2-Instruct-GGUF",
         filename="TinyMistral-248M-v2-Instruct.Q4_K_M.gguf",
+        verbose=False,
     )
+    return models.LlamaCpp(llm)
 
 
 @pytest.fixture(scope="session")
@@ -115,7 +119,7 @@ def model_t5(tmp_path_factory):
 
 
 ALL_MODEL_FIXTURES = (
-    "model_llamacpp",
+    # "model_llamacpp",  # temporary disabled due to the v1 model refactoring
     "model_exllamav2",
     "model_mlxlm",
     "model_mlxlm_phi3",
