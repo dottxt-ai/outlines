@@ -7,17 +7,18 @@ from typing import Optional, Union
 from pydantic import BaseModel
 from typing_extensions import _TypedDictMeta  # type: ignore
 
+from outlines.models.base import Model, ModelTypeAdapter
 from outlines.prompts import Vision
 from outlines.types import Choice, Json, List
 
 __all__ = ["Gemini"]
 
 
-class GeminiBase:
-    """Base class for the Gemini clients.
+class GeminiTypeAdapter(ModelTypeAdapter):
+    """Type adapter for the Gemini clients.
 
-    `GeminiBase` is responsible for preparing the arguments to Gemini's
-    `generate_contents` methods: the input (prompt and possibly image), as well
+    `GeminiTypeAdapter` is responsible for preparing the arguments to Gemini's
+    `generate_content` methods: the input (prompt and possibly image), as well
     as the output type (only JSON).
 
     """
@@ -91,11 +92,13 @@ class GeminiBase:
         }
 
 
-class Gemini(GeminiBase):
+class Gemini(Model):
     def __init__(self, model_name: str, *args, **kwargs):
         import google.generativeai as genai
 
         self.client = genai.GenerativeModel(model_name, *args, **kwargs)
+        self.model_type = "api"
+        self.type_adapter = GeminiTypeAdapter()
 
     def generate(
         self,
@@ -105,9 +108,9 @@ class Gemini(GeminiBase):
     ):
         import google.generativeai as genai
 
-        contents = self.format_input(model_input)
+        contents = self.type_adapter.format_input(model_input)
         generation_config = genai.GenerationConfig(
-            **self.format_output_type(output_type)
+            **self.type_adapter.format_output_type(output_type)
         )
         completion = self.client.generate_content(
             generation_config=generation_config, **contents, **inference_kwargs

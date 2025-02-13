@@ -67,6 +67,13 @@ def test_openai_simple_call():
 
 
 @pytest.mark.api_call
+def test_openai_direct_call():
+    model = OpenAI(MODEL_NAME)
+    result = model("Respond with one word. Not more.")
+    assert isinstance(result, str)
+
+
+@pytest.mark.api_call
 def test_openai_simple_vision():
     model = OpenAI(MODEL_NAME)
 

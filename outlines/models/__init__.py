@@ -9,6 +9,7 @@ codebase.
 from typing import Union
 
 from .anthropic import Anthropic
+from .base import Model, ModelTypeAdapter
 from .exllamav2 import ExLlamaV2Model, exl2
 from .gemini import Gemini
 from .llamacpp import LlamaCpp

@@ -2,12 +2,23 @@
 from functools import singledispatchmethod
 from typing import Union
 
+from outlines.models.base import Model, ModelTypeAdapter
 from outlines.prompts import Vision
 
 __all__ = ["Anthropic"]
 
 
-class AnthropicBase:
+class AnthropicTypeAdapter(ModelTypeAdapter):
+    """Type adapter for the Anthropic clients.
+
+    `AnthropicTypeAdapter` is responsible for preparing the arguments to
+    Anthropic's `messages.create` methods: the input (prompt and possibly
+    image).
+    Anthropic does not support defining the output type, so
+    `format_output_type` is not implemented.
+
+    """
+
     @singledispatchmethod
     def format_input(self, model_input):
         """Generate the `messages` argument to pass to the client.
@@ -62,18 +73,26 @@ class AnthropicBase:
             ]
         }
 
+    def format_output_type(self, output_type):
+        """Not implemented for Anthropic."""
+        raise NotImplementedError(
+            f"The output type {output_type} is not available with Anthropic."
+        )
 
-class Anthropic(AnthropicBase):
+
+class Anthropic(Model):
     def __init__(self, model_name: str, *args, **kwargs):
         from anthropic import Anthropic
 
         self.client = Anthropic(*args, **kwargs)
         self.model_name = model_name
+        self.model_type = "api"
+        self.type_adapter = AnthropicTypeAdapter()
 
     def generate(
         self, model_input: Union[str, Vision], output_type=None, **inference_kwargs
     ):
-        messages = self.format_input(model_input)
+        messages = self.type_adapter.format_input(model_input)
 
         if output_type is not None:
             raise NotImplementedError(

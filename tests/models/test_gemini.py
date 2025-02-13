@@ -34,6 +34,13 @@ def test_gemini_simple_call():
 
 
 @pytest.mark.api_call
+def test_gemini_direct_call():
+    model = Gemini(MODEL_NAME)
+    result = model("Respond with one word. Not more.")
+    assert isinstance(result, str)
+
+
+@pytest.mark.api_call
 def test_gemini_simple_vision():
     model = Gemini(MODEL_NAME)
 

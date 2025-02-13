@@ -49,6 +49,13 @@ def test_anthropic_simple_call():
 
 
 @pytest.mark.api_call
+def test_anthropic_direct_call():
+    model = Anthropic(MODEL_NAME)
+    result = model("Respond with one word. Not more.")
+    assert isinstance(result, str)
+
+
+@pytest.mark.api_call
 def test_anthropic_simple_vision():
     model = Anthropic(MODEL_NAME)
 
