@@ -103,3 +103,10 @@ class Regex:
 
     def to_regex(self):
         return self.definition
+
+
+@dataclass
+class CFG:
+    """Represents a Context-Free Grammar as a string."""
+
+    definition: str

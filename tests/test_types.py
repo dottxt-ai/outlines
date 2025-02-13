@@ -167,3 +167,9 @@ def test_type_enum(custom_type, test_string, should_match):
     assert isinstance(format_fn(1), str)
     does_match = re.match(regex_str, test_string) is not None
     assert does_match is should_match
+
+
+def test_type_cfg():
+    cfg_str = "?start: expression"
+    cfg_type = types.CFG(cfg_str)
+    assert cfg_type.definition == cfg_str
