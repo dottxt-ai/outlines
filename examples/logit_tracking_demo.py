@@ -18,9 +18,6 @@ import outlines.generate as generate
 from outlines.processors import LogitTrackingProcessor
 from outlines.processors.tracking import add_tracking
 from utils import plot_token_distributions, template, plot_heatmap
-
-import matplotlib.pyplot as plt
-import numpy as np
 from outlines.processors.tracking import LogitTrackingProcessor
 
 def plot_token_distributions(tracking_processor, k=10, positions=None, prefix=""):
