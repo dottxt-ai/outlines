@@ -2442,6 +2442,39 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#using-vscode-devcontainer-github-codespaces" class="md-nav__link">
+    <span class="md-ellipsis">
+      Using VSCode DevContainer / GitHub Codespaces
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Using VSCode DevContainer / GitHub Codespaces">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#vscode-devcontainer" class="md-nav__link">
+    <span class="md-ellipsis">
+      VSCode DevContainer
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#github-codespaces" class="md-nav__link">
+    <span class="md-ellipsis">
+      GitHub Codespaces
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#before-pushing-your-code" class="md-nav__link">
     <span class="md-ellipsis">
       Before pushing your code
@@ -2660,6 +2693,39 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#using-vscode-devcontainer-github-codespaces" class="md-nav__link">
+    <span class="md-ellipsis">
+      Using VSCode DevContainer / GitHub Codespaces
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Using VSCode DevContainer / GitHub Codespaces">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#vscode-devcontainer" class="md-nav__link">
+    <span class="md-ellipsis">
+      VSCode DevContainer
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#github-codespaces" class="md-nav__link">
+    <span class="md-ellipsis">
+      GitHub Codespaces
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#before-pushing-your-code" class="md-nav__link">
     <span class="md-ellipsis">
       Before pushing your code
@@ -2778,64 +2844,93 @@
 <div class="language-bash highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>git<span style="color: #D8DEE9"> </span>clone<span style="color: #D8DEE9"> </span>git@github.com/YourUserName/outlines.git
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span style="color: #81A1C1">cd</span><span style="color: #D8DEE9"> </span>outlines
 </span></code></pre></div>
-<p>Create a new virtual environment. <em>If you are using conda</em>:</p>
-<div class="language-bash highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>conda<span style="color: #D8DEE9"> </span>env<span style="color: #D8DEE9"> </span>create<span style="color: #D8DEE9"> </span>-f<span style="color: #D8DEE9"> </span>environment.yml
+<p>Create a new virtual environment:</p>
+<p><em>If you are using <code>uv</code></em>:</p>
+<div class="language-bash highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>uv<span style="color: #D8DEE9"> </span>venv
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span style="color: #81A1C1">source</span><span style="color: #D8DEE9"> </span>.venv/bin/activate
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span style="color: #81A1C1">alias</span><span style="color: #D8DEE9"> pip</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #A3BE8C">&quot;uv pip&quot;</span><span style="color: #D8DEE9"> </span><span style="color: #616E87; font-style: italic"># ... or just remember to prepend any pip command with uv in the rest of this guide</span>
 </span></code></pre></div>
-<p><em>If you are using venv</em>:</p>
-<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span style="color: #D8DEE9">python</span> <span style="color: #81A1C1; font-weight: bold">-</span><span style="color: #D8DEE9">m</span> <span style="color: #D8DEE9">venv</span> <span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">venv</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span style="color: #D8DEE9">source</span> <span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">venv</span><span style="color: #81A1C1; font-weight: bold">/</span><span style="color: #81A1C1">bin</span><span style="color: #81A1C1; font-weight: bold">/</span><span style="color: #D8DEE9">activate</span>
+<p><em>If you are using <code>venv</code></em>:</p>
+<div class="language-bash highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>python<span style="color: #D8DEE9"> </span>-m<span style="color: #D8DEE9"> </span>venv<span style="color: #D8DEE9"> </span>.venv
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span style="color: #81A1C1">source</span><span style="color: #D8DEE9"> </span>.venv/bin/activate
 </span></code></pre></div>
-<p>Then install the dependencies in editable mode, and install the pre-commit hooks:</p>
-<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span style="color: #D8DEE9">pip</span> <span style="color: #D8DEE9">install</span> <span style="color: #81A1C1; font-weight: bold">-</span><span style="color: #D8DEE9">e</span> <span style="color: #A3BE8C">&quot;.[test]&quot;</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span style="color: #D8DEE9">pre</span><span style="color: #81A1C1; font-weight: bold">-</span><span style="color: #D8DEE9">commit</span> <span style="color: #D8DEE9">install</span>
+<p><em>If you are using <code>conda</code></em>:</p>
+<div class="language-bash highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>conda<span style="color: #D8DEE9"> </span>env<span style="color: #D8DEE9"> </span>create<span style="color: #D8DEE9"> </span>-f<span style="color: #D8DEE9"> </span>environment.yml
 </span></code></pre></div>
+<p>Then install the dependencies in editable mode, and install the <code>pre-commit</code> hooks:</p>
+<div class="language-bash highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>pip<span style="color: #D8DEE9"> </span>install<span style="color: #D8DEE9"> </span>-e<span style="color: #D8DEE9"> </span><span style="color: #A3BE8C">&quot;.[test]&quot;</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>pre-commit<span style="color: #D8DEE9"> </span>install
+</span></code></pre></div>
+<p>Outlines provides optional dependencies for different supported backends, which you can install with</p>
+<div class="language-bash highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>pip<span style="color: #D8DEE9"> </span>install<span style="color: #D8DEE9"> </span><span style="color: #A3BE8C">&quot;.[vllm]&quot;</span>
+</span></code></pre></div>
+<p>A list of supported optional dependencies can be found in the <a href="/installation">installation guide</a>.</p>
+<h3 id="using-vscode-devcontainer-github-codespaces">Using VSCode DevContainer / GitHub Codespaces</h3>
+<p>If you want a fully pre-configured development environment, you can use VSCode DevContainers or GitHub Codespaces.</p>
+<h4 id="vscode-devcontainer">VSCode DevContainer</h4>
+<ol>
+<li>Ensure that the <a href="https://www.docker.com/get-started/">Docker</a> daemon is running on your machine.</li>
+<li>Install the <a href="https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers">Dev Containers</a> extension in VSCode.</li>
+<li>Open the Outlines repository in VSCode. When prompted, <strong>Reopen in Container</strong> (or press <code>F1</code> and select "Remote-Containers: Reopen in Container").</li>
+<li>Run the normal setup steps. Your environment will not complain about missing system dependencies!</li>
+</ol>
+<h4 id="github-codespaces">GitHub Codespaces</h4>
+<ol>
+<li>Navigate to the Outlines repository on GitHub.</li>
+<li>Click on the <strong>Code</strong> button and select the <strong>Codespaces</strong> tab.</li>
+<li>Click <strong>Create codespace on main</strong> (or another branch you are working on).</li>
+<li>GitHub will launch a pre-configured cloud development environment.</li>
+</ol>
+<p>You will not have access to a GPU, but you'll be able to make basic contributions to the project on the go while using a fully featured web-based IDE.</p>
 <h3 id="before-pushing-your-code">Before pushing your code</h3>
 <p>Run the tests:</p>
-<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span style="color: #D8DEE9">pytest</span>
+<div class="language-bash highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>pytest
 </span></code></pre></div>
 <p>And run the code style checks:</p>
-<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span style="color: #D8DEE9">pre</span><span style="color: #81A1C1; font-weight: bold">-</span><span style="color: #D8DEE9">commit</span> <span style="color: #D8DEE9">run</span> <span style="color: #81A1C1; font-weight: bold">--</span><span style="color: #81A1C1">all</span><span style="color: #81A1C1; font-weight: bold">-</span><span style="color: #D8DEE9">files</span>
+<div class="language-bash highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>pre-commit<span style="color: #D8DEE9"> </span>run<span style="color: #D8DEE9"> </span>--all-files
 </span></code></pre></div>
 <h3 id="benchmarking">Benchmarking</h3>
-<p>Outlines uses <a href="https://asv.readthedocs.io">asv</a> for automated benchmark testing. Benchmarks are run automatically before pull requests are merged to prevent performance degredation.</p>
-<p>You can run the benchmark test suite locally with the following command:
-<div class="language-text highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>asv run --config benchmarks/asv.conf.json
-</span></code></pre></div></p>
-<p>Caveats:
-- If you're on a device with CUDA, you must add the argument <code>--launch-method spawn</code>
-- Uncommitted code will not be benchmarked, you must first commit your changes.</p>
+<p>Outlines uses <a href="https://asv.readthedocs.io">asv</a> for automated benchmark testing. Benchmarks are run automatically before pull requests are merged to prevent performance degradation.</p>
+<p>You can run the benchmark test suite locally with the following command:</p>
+<div class="language-bash highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>asv<span style="color: #D8DEE9"> </span>run<span style="color: #D8DEE9"> </span>--config<span style="color: #D8DEE9"> </span>benchmarks/asv.conf.json
+</span></code></pre></div>
+<p>Caveats:</p>
+<ul>
+<li>If you're on a device with CUDA, you must add the argument <code>--launch-method spawn</code></li>
+<li>Uncommitted code will not be benchmarked, you must first commit your changes.</li>
+</ul>
 <h4 id="run-a-specific-test">Run a specific test:</h4>
-<div class="language-text highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>asv run --config benchmarks/asv.conf.json -b bench_json_schema.JsonSchemaBenchmark.time_json_schema_to_fsm
+<div class="language-bash highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>asv<span style="color: #D8DEE9"> </span>run<span style="color: #D8DEE9"> </span>--config<span style="color: #D8DEE9"> </span>benchmarks/asv.conf.json<span style="color: #D8DEE9"> </span>-b<span style="color: #D8DEE9"> </span>bench_json_schema.JsonSchemaBenchmark.time_json_schema_to_fsm
 </span></code></pre></div>
 <h4 id="profile-a-specific-test">Profile a specific test:</h4>
-<div class="language-text highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>asv run --config benchmarks/asv.conf.json --profile -b bench_json_schema.JsonSchemaBenchmark.time_json_schema_to_fsm
+<div class="language-bash highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>asv<span style="color: #D8DEE9"> </span>run<span style="color: #D8DEE9"> </span>--config<span style="color: #D8DEE9"> </span>benchmarks/asv.conf.json<span style="color: #D8DEE9"> </span>--profile<span style="color: #D8DEE9"> </span>-b<span style="color: #D8DEE9"> </span>bench_json_schema.JsonSchemaBenchmark.time_json_schema_to_fsm
 </span></code></pre></div>
 <h4 id="compare-to-originmain">Compare to <code>origin/main</code></h4>
-<div class="language-text highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>get fetch origin
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>asv continuous origin/main HEAD --config benchmarks/asv.conf.json
+<div class="language-bash highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>get<span style="color: #D8DEE9"> </span>fetch<span style="color: #D8DEE9"> </span>origin
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>asv<span style="color: #D8DEE9"> </span>continuous<span style="color: #D8DEE9"> </span>origin/main<span style="color: #D8DEE9"> </span>HEAD<span style="color: #D8DEE9"> </span>--config<span style="color: #D8DEE9"> </span>benchmarks/asv.conf.json
 </span></code></pre></div>
 <h4 id="asv-pr-behavior">ASV PR Behavior</h4>
 <ul>
 <li><strong>View ASV Benchmark Results:</strong> Open the workflow, view <code>BENCHMARK RESULTS</code> section.</li>
 <li>Merging is blocked unless benchmarks are run for the latest commit.</li>
 <li>Benchmarks fail if performance degrades by more than 10% for any individual benchmark.</li>
-<li>The "Benchmark PR" workflow runs when its manually dispatched, or if the <code>run_benchmarks</code> label is added to the PR they run for every commit.</li>
+<li>The "Benchmark PR" workflow runs when it is manually dispatched, or if the <code>run_benchmarks</code> label is added to the PR they run for every commit.</li>
 </ul>
 <h3 id="contribute-to-the-documentation">Contribute to the documentation</h3>
 <p>To work on the <em>documentation</em> you will need to install the related dependencies:</p>
-<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span style="color: #D8DEE9">pip</span> <span style="color: #D8DEE9">install</span> <span style="color: #81A1C1; font-weight: bold">-</span><span style="color: #D8DEE9">r</span> <span style="color: #D8DEE9">requirements</span><span style="color: #81A1C1; font-weight: bold">-</span><span style="color: #D8DEE9">doc</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">txt</span>
+<div class="language-bash highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>pip<span style="color: #D8DEE9"> </span>install<span style="color: #D8DEE9"> </span>-r<span style="color: #D8DEE9"> </span>requirements-doc.txt
 </span></code></pre></div>
 <p>To build the documentation and serve it locally, run the following command in the repository's root folder:</p>
-<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span style="color: #D8DEE9">mkdocs</span> <span style="color: #D8DEE9">serve</span>
+<div class="language-bash highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>mkdocs<span style="color: #D8DEE9"> </span>serve
 </span></code></pre></div>
 <p>By following the instruction you will be able to view the documentation locally.
 It will be updated every time you make a change.</p>
 <h2 id="open-a-pull-request">Open a Pull Request</h2>
 <p>Create a new branch on your fork, commit and push the changes:</p>
-<div class="language-bash highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>git<span style="color: #D8DEE9"> </span>checkout<span style="color: #D8DEE9"> </span>-b<span style="color: #D8DEE9"> </span>new-branch
-</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>git<span style="color: #D8DEE9"> </span>add<span style="color: #D8DEE9"> </span>.
-</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>git<span style="color: #D8DEE9"> </span>commit<span style="color: #D8DEE9"> </span>-m<span style="color: #D8DEE9"> </span><span style="color: #A3BE8C">&quot;Changes I made&quot;</span>
-</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>git<span style="color: #D8DEE9"> </span>push<span style="color: #D8DEE9"> </span>origin<span style="color: #D8DEE9"> </span>new-branch
+<div class="language-bash highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>git<span style="color: #D8DEE9"> </span>checkout<span style="color: #D8DEE9"> </span>-b<span style="color: #D8DEE9"> </span>new-branch
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>git<span style="color: #D8DEE9"> </span>add<span style="color: #D8DEE9"> </span>.
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>git<span style="color: #D8DEE9"> </span>commit<span style="color: #D8DEE9"> </span>-m<span style="color: #D8DEE9"> </span><span style="color: #A3BE8C">&quot;Changes I made&quot;</span>
+</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>git<span style="color: #D8DEE9"> </span>push<span style="color: #D8DEE9"> </span>origin<span style="color: #D8DEE9"> </span>new-branch
 </span></code></pre></div>
 <p>Then you can <a href="https://github.com/dottxt-ai/outlines/pulls">open a pull request</a> on GitHub. It should prompt you to do so. Every subsequent change that you make on your branch will update the pull request.</p>
 <p>Do not hesitate to open a draft PR before your contribution is ready, especially if you have questions and/or need feedback. If you need help, come tell us on <a href="https://discord.gg/R9DSu34mGd">Discord</a>.</p>
@@ -2861,7 +2956,7 @@ It will be updated every time you make a change.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2024-09-13T18:44:14+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2024-09-13</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2025-02-14T13:31:17+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2025-02-14</span>
   </span>
 
     
@@ -2889,9 +2984,9 @@ It will be updated every time you make a change.</p>
     
     <nav>
       
-        <a href="https://github.com/cpfiffer" class="md-author" title="@cpfiffer">
+        <a href="https://github.com/yvan-sraka" class="md-author" title="@yvan-sraka">
           
-          <img src="https://avatars.githubusercontent.com/u/422990?v=4&size=72" alt="cpfiffer">
+          <img src="https://avatars.githubusercontent.com/u/705213?v=4&size=72" alt="yvan-sraka">
         </a>
       
         <a href="https://github.com/web-flow" class="md-author" title="@web-flow">
@@ -2899,21 +2994,21 @@ It will be updated every time you make a change.</p>
           <img src="https://avatars.githubusercontent.com/u/19864447?v=4&size=72" alt="web-flow">
         </a>
       
+        <a href="https://github.com/cpfiffer" class="md-author" title="@cpfiffer">
+          
+          <img src="https://avatars.githubusercontent.com/u/422990?v=4&size=72" alt="cpfiffer">
+        </a>
+      
         <a href="https://github.com/lapp0" class="md-author" title="@lapp0">
           
           <img src="https://avatars.githubusercontent.com/u/2560255?v=4&size=72" alt="lapp0">
-        </a>
-      
-        <a href="https://github.com/rlouf" class="md-author" title="@rlouf">
-          
-          <img src="https://avatars.githubusercontent.com/u/3885044?v=4&size=72" alt="rlouf">
         </a>
       
       
       
         
           <a href="https://github.com/dottxt-ai/outlines/blob/master/docs/community/contribute.md" class="md-author md-author--more">
-            +2
+            +3
           </a>
         
       
