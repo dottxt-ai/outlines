@@ -1,6 +1,8 @@
-# Logit Processors
+# Logit processors
 
 Logit processors modify token probabilities during text generation to enforce constraints or analyze the generation process. While processors can be used directly, most users will interact with them through the high-level generation APIs (see [Generating JSON](generation/json.md), [Regex Generation](generation/regex.md), and [CFG Generation](generation/cfg.md)).
+
+Users can track the token probabilities and logits at each step of the generation process using the `LogitTrackingProcessor`. This is useful for debugging and understanding the generation process.
 
 ## Available Processors
 
@@ -86,123 +88,109 @@ The `LogitTrackingProcessor` wraps any processor to track logit scores and token
 
 ### Adding tracking to a generator
 
-There are two ways to add tracking to a generator:
+The simplest way to add tracking is using the convenience function `add_tracking`:
 
 ```python
-from outlines.generate import json
-from outlines.processors import add_tracking, LogitTrackingProcessor
+from outlines import generate, models
+from outlines.processors import add_tracking
 from pydantic import BaseModel
 
-# Create a generator
-class WeatherResponse(BaseModel):
-    temperature: float
-    conditions: str
+# Define your schema
+class Person(BaseModel):
+    name: str
+    age: int
 
-generator = json(model, WeatherResponse)
-
-# Method 1: Using the convenience function (recommended)
+# Create generator with tracking
+model = models.transformers("HuggingFaceTB/SmolLM2-135M-Instruct")
+generator = generate.json(model, Person)
 generator = add_tracking(generator)  # Enable tracking
-# Or with a sliding window:
-generator = add_tracking(generator, max_positions=5)  # Only track last 5 positions
 
-# Method 2: Using the processor directly
-generator.logits_processor = LogitTrackingProcessor(generator.logits_processor)
-# Or with a sliding window:
-generator.logits_processor = LogitTrackingProcessor(generator.logits_processor, max_positions=5)
+# Apply templating if needed
+prompt = model.tokenizer.tokenizer.apply_chat_template(
+    [{"role": "system", "content": "You are a helpful assistant, responding in JSON."},
+     {"role": "user", "content": "Make me a person with a name and age. Return the JSON only."}],
+    tokenize=False,
+    add_bos=True,
+    add_generation_prompt=True,
+)
+
+# Generate the response
+response = generator(prompt)
 ```
+
+**NOTE**: You __must__ use `generator.logits_processor.clear()` between generations, otherwise the processor will use the logits from the previous generation. You may also construct a new generator and call `add_tracking` again to start tracking from scratch.
 
 ### Analyzing generation results
 
-Once tracking is enabled, you can analyze the generation process by calling these methods on the generator:
+Once tracking is enabled, you can analyze the generation process in several ways:
 
-- `get_statistics(pos)`: Get basic statistics about the logits at a position (mean, std, min, max)
-- `get_top_tokens(pos, k=5)`: View the most likely tokens and their probabilities at a position
+1. Get the top tokens at each position:
 
 ```python
-# Generate response
-response = generator("What's the weather like?")
+# Get top 5 tokens at each position
+top_k = generator.logits_processor.get_top_tokens(k=5)
 
-# Check token probabilities at each step
-for pos in range(3):
-    # Get statistics about the logits
-    stats = generator.logits_processor.get_statistics(pos)
-    print(f"\nPosition {pos}:")
-    print(f"Original mean: {stats['original']['mean']:.2f}")
-    print(f"Valid tokens after processing: {stats['processed']['valid_tokens']}")
-    
-    # View top token candidates
-    tokens = generator.logits_processor.get_top_tokens(pos, k=5)
-    print("\nTop tokens before processing:", 
-          [f"{t['token']} ({t['prob']:.1%})" for t in tokens['original']])
-    print("Top tokens after processing:", 
-          [f"{t['token']} ({t['prob']:.1%})" for t in tokens['processed']])
+# Analyze each position
+for position_dict in top_k:
+    print(f"\nPosition {position_dict['position']}:")
+    print(f"Text so far: {position_dict['text_so_far']}")
+
+    for token in position_dict['tokens']:
+        print(f"\nToken: {token['token']}")
+        print(f"Unstructured probability: {token['unstructured_prob']:.3f}")
+        print(f"Structured probability: {token['structured_prob']:.3f}")
+        print(f"Unstructured logit: {token['unstructured_logit']:.3f}")
+        print(f"Structured logit: {token['structured_logit']:.3f}")
+        print(f"Was chosen: {token['is_chosen']}")
+```
+
+2. Convert to a pandas DataFrame for analysis:
+
+```python
+import pandas as pd
+
+# Get all tokens with probability > 1%
+df = generator.logits_processor.to_dataframe(show="probs", min_value=0.01)
+print(df)
+#    position token   natural  constrained  chosen
+# 0         0   You  0.021324          0.0   False
+# 1         0   The  0.021959          0.0   False
+# 2         0  Sure  0.025492          0.0   False
+# 3         0  JSON  0.031045          0.0   False
+# 4         0    To  0.031047          0.0   False
+```
+
+3. Get the generated sequence up to a position:
+
+```python
+# Get text generated up to position 5
+text = generator.logits_processor.sequence(5)
 ```
 
 ### Memory management
 
-The tracking processor stores logits in memory for analysis. For long sequences, you have two options:
+The tracking processor stores logits in memory for analysis, and offloads logits to main memory if you use a GPU. For long sequences, you have several options:
 
-1. Use a sliding window to limit memory usage:
+1. Clear tracking data when no longer needed:
 ```python
-# Only track the 5 most recent positions
-generator = add_tracking(generator, max_positions=5)
+generator.logits_processor.clear()
 ```
 
-2. Clear tracking data when no longer needed:
+2. Filter data when analyzing:
 ```python
-generator.logits_processor.clear_tracking()
+# Only analyze specific positions
+results = generator.logits_processor.get_top_tokens(positions=[0, 1, 2])
+
+# Only look at high probability tokens
+df = generator.logits_processor.to_dataframe(show="probs", min_value=0.01)
 ```
 
-### Important notes
+### Important notes about logit tracking
 
 - Tracking logits is a slow operation, so do not use it in production environments
-- The processor stores logits in memory, so consider using `max_positions` for long sequences
+- The processor will accumulate logits if you call `generator(prompt)` multiple times, meaning that the tokens stored can be aggregated across generations. You can use `generator.logits_processor.clear()` to reset the processor, or construct a new generator and call `add_tracking` again to start tracking from scratch.
 - Processed logits will contain `-inf` values when structured outputs are used
 - Token decoding requires the wrapped processor to have a tokenizer attribute
-- Memory usage grows linearly with sequence length when `max_positions` is not set
-
-## Advanced Usage
-
-### Custom Processors
-
-To create a custom processor, inherit from `OutlinesLogitsProcessor`:
-
-```python
-from outlines.processors import OutlinesLogitsProcessor
-
-class MyProcessor(OutlinesLogitsProcessor):
-    def process_logits(self, input_ids, logits):
-        # Modify logits here
-        return logits
-```
-
-### GuideLogitsProcessor
-
-The `GuideLogitsProcessor` is a base class for processors that use a guide (like regex or CFG) to constrain generation:
-
-```python
-from outlines.processors import GuideLogitsProcessor
-from outlines.fsm.guide import RegexGuide
-
-# Create a guide
-guide = RegexGuide.from_regex(r"[0-9]{4}", tokenizer)
-
-# Create processor with guide
-processor = GuideLogitsProcessor(tokenizer=tokenizer, guide=guide)
-```
-
-### Troubleshooting
-
-Common issues when using processors:
-
-1. Memory usage with tracking:
-   - Use `max_positions` to limit memory usage
-   - Clear tracking data regularly with `clear_tracking()`
-
-2. Performance issues:
-   - Avoid using tracking in production
-   - Consider using simpler constraints when possible
-
-3. Invalid outputs:
-   - Check that the processor's constraints are correct
-   - Use tracking to analyze where generation goes wrong
+- Memory usage grows linearly with sequence length
+- The tracking processor only supports single-batch processing
+- Tracking logits can incur significant overhead -- do not use it in production environments
