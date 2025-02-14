@@ -5,7 +5,7 @@ from .structured import (
     OutlinesLogitsProcessor,
     RegexLogitsProcessor,
 )
-from .tracking import LogitTrackingProcessor
+from .tracking import LogitTrackingProcessor, add_tracking
 
 __all__ = [
     "CFGLogitsProcessor",
@@ -13,5 +13,8 @@ __all__ = [
     "JSONLogitsProcessor",
     "OutlinesLogitsProcessor",
     "RegexLogitsProcessor",
+
+    # Logit tracking
     "LogitTrackingProcessor",
+    "add_tracking",
 ]
