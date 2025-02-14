@@ -15,18 +15,15 @@ from pydantic import BaseModel, Field
 
 import outlines.models as models
 import outlines.generate as generate
-from outlines.processors import LogitTrackingProcessor
 from outlines.processors.tracking import add_tracking
-from utils import plot_token_distributions, template, plot_heatmap
-from outlines.processors.tracking import LogitTrackingProcessor
 
 def plot_token_distributions(tracking_processor, k=10, positions=None, prefix=""):
     """Plot token probability distributions before and after applying constraints.
-    
+
     Creates a horizontal bar chart showing:
     - Blue bars: What tokens the model would naturally choose
     - Orange bars: What tokens are allowed by structural constraints
-    
+
     Parameters
     ----------
     tracking_processor : LogitTrackingProcessor
@@ -37,7 +34,7 @@ def plot_token_distributions(tracking_processor, k=10, positions=None, prefix=""
         Which positions to plot. If None, plots all positions.
     prefix : str, optional
         Prefix for the output filename
-        
+
     Notes
     -----
     - Bar height indicates probability (how likely the model thinks each token is)
@@ -48,52 +45,52 @@ def plot_token_distributions(tracking_processor, k=10, positions=None, prefix=""
     # Get probability matrices and vocab mapping
     probs = tracking_processor.get_probabilities(as_matrix=True)
     vocab = tracking_processor.get_vocab_mapping()
-    
+
     # Determine positions to plot
     if positions is None:
         positions = list(range(probs['unstructured'].shape[1]))
     n_positions = len(positions)
-    
+
     # Create plot
     fig, axes = plt.subplots(1, n_positions, figsize=(7 * n_positions, 10))
     if n_positions == 1:
         axes = [axes]
-    
+
     for idx, pos in enumerate(positions):
         # Get probabilities for this position
         unstructured = probs['unstructured'][:, pos]
         structured = probs['structured'][:, pos]
-        
+
         # Get top k tokens by maximum probability
         top_indices = np.argsort(np.maximum(unstructured, structured))[-k:]
-        
+
         # Create bar positions
         y = np.arange(len(top_indices))
         height = 0.35
-        
+
         # Plot bars
-        axes[idx].barh(y - height/2, unstructured[top_indices], height, 
+        axes[idx].barh(y - height/2, unstructured[top_indices], height,
                       label='Natural Choice', alpha=0.7, color='skyblue')
         axes[idx].barh(y + height/2, structured[top_indices], height,
                       label='After Constraints', alpha=0.7, color='orange')
-        
+
         # Customize plot
         axes[idx].set_title(f'Token {pos+1} in Sequence')
         axes[idx].set_yticks(y)
         axes[idx].set_yticklabels([vocab[i] for i in top_indices])
         axes[idx].set_xlabel('Probability')
-        
+
         # Add legend
         axes[idx].legend(loc='upper right', bbox_to_anchor=(1, 1.1))
         axes[idx].grid(True, alpha=0.3)
-        
+
         # Add probability values
         for i, (v1, v2) in enumerate(zip(unstructured[top_indices], structured[top_indices])):
             if v1 > 0.01:  # Only show probabilities > 1%
                 axes[idx].text(v1 + 0.01, i - height/2, f'{v1:.1%}', va='center')
             if v2 > 0.01:
                 axes[idx].text(v2 + 0.01, i + height/2, f'{v2:.1%}', va='center')
-    
+
     plt.tight_layout()
     plt.savefig(f"{prefix}token_distributions.png", dpi=300, bbox_inches='tight')
     plt.close()
@@ -101,11 +98,11 @@ def plot_token_distributions(tracking_processor, k=10, positions=None, prefix=""
 
 def plot_heatmap(tracking_processor, k=50, positions=None, prefix="", show_both=True, kind="logits", show_tokens=True):
     """Plot a heatmap of token probabilities across sequence positions.
-    
+
     Creates a heatmap visualization showing how token probabilities evolve
     across different positions in the sequence. Optionally shows both
     natural and constrained probabilities side by side.
-    
+
     Parameters
     ----------
     tracking_processor : LogitTrackingProcessor
@@ -123,7 +120,7 @@ def plot_heatmap(tracking_processor, k=50, positions=None, prefix="", show_both=
         Whether to plot logits or probabilities, by default "logits"
     show_tokens : bool, optional
         Whether to show the token strings on the y-axis, by default True
-        
+
     Notes
     -----
     - Brighter colors indicate higher probabilities
@@ -141,37 +138,37 @@ def plot_heatmap(tracking_processor, k=50, positions=None, prefix="", show_both=
         things = tracking_processor.get_probabilities(as_matrix=True)
         # For probabilities, mask out near-zero values
         threshold = 0.001  # Probabilities below 0.1% are masked
-    
+
     vocab = tracking_processor.get_vocab_mapping()
-    
+
     # Determine positions to plot
     if positions is None:
         positions = list(range(things['unstructured'].shape[1]))
-    
+
     # Get indices of top k tokens (by maximum probability across all positions)
     max_probs = np.maximum(
         things['unstructured'].max(axis=1),
         things['structured'].max(axis=1)
     )
     top_indices = np.argsort(max_probs)[-k:]
-    
+
     # Create masked arrays for better visualization
     def mask_array(arr):
         if kind == "logits":
             return np.ma.masked_where(arr < threshold, arr)
         else:
             return np.ma.masked_where(arr < threshold, arr)
-    
+
     unstructured_masked = mask_array(things['unstructured'][top_indices][:, positions])
     structured_masked = mask_array(things['structured'][top_indices][:, positions])
-    
+
     # Create figure
     if show_both:
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 10))
         fig.suptitle(f'Token {kind.capitalize()} Evolution', fontsize=16, y=1.05)
     else:
         fig, ax1 = plt.subplots(1, 1, figsize=(8, 10))
-    
+
     # Plot natural probabilities with masked array
     im1 = ax1.imshow(
         unstructured_masked,
@@ -185,7 +182,7 @@ def plot_heatmap(tracking_processor, k=50, positions=None, prefix="", show_both=
         ax1.set_yticks(range(len(top_indices)))
         ax1.set_yticklabels([vocab[i][0] for i in top_indices])
     plt.colorbar(im1, ax=ax1, label=f'{kind.capitalize()}')
-    
+
     # Plot constrained probabilities if requested
     if show_both:
         im2 = ax2.imshow(
@@ -197,7 +194,7 @@ def plot_heatmap(tracking_processor, k=50, positions=None, prefix="", show_both=
         ax2.set_xlabel('Position in Sequence')
         ax2.set_yticks([])  # Hide y-ticks since they're the same as ax1
         plt.colorbar(im2, ax=ax2, label=f'{kind.capitalize()}')
-    
+
     plt.tight_layout()
     plt.savefig(f"{prefix}{kind}_heatmap.png", dpi=300, bbox_inches='tight')
     plt.close()
@@ -215,36 +212,36 @@ def template(tokenizer, prompt: str, system_prompt: str = "You are a helpful ass
 def display_token_analysis(results, show_logits=True):
     """Helper to display token analysis results in a readable format."""
     for position_data in results:
-        pos = position_data['position']
+        position_data['position']
         text = position_data['text_so_far']
         print(text)
         print("-" * 80)
-        
+
         # Print header
         header = f"{'Token':<20} {'Natural Prob':<15} {'Constrained Prob':<15}"
         if show_logits:
             header += f"{'Natural Logit':<15} {'Constrained Logit':<15}"
         print(header)
         print("-" * 80)
-        
+
         # Print each token's info
         for token_info in position_data['tokens']:
             # Add arrow for chosen token
             prefix = "→" if token_info['is_chosen'] else " "
-            
+
             # Format probabilities as percentages (format first, then pad)
             unstructured_prob = f"{token_info['unstructured_prob']:.1%}"
             structured_prob = f"{token_info['structured_prob']:.1%}"
-            
+
             # Build the line piece by piece
             line = f"{prefix} {repr(token_info['token']):<20} {unstructured_prob:<15} {structured_prob:<15}"
-            
+
             # Add logits if requested
             if show_logits:
                 unstructured_logit = f"{token_info['unstructured_logit']:.2f}"
                 structured_logit = f"{token_info['structured_logit']:.2f}"
                 line += f"{unstructured_logit:<15} {structured_logit:<15}"
-            
+
             print(line)
 
 def analyze_json_generation(model, tokenizer):
@@ -257,11 +254,11 @@ def analyze_json_generation(model, tokenizer):
         age: int
         zip_code: str = Field(pattern=r"^\d{5}$")
         state: str = Field(pattern=r"^[A-Z]{2}$")
-    
+
     # Create generator with tracking
     generator = generate.json(model, Person)
     generator = add_tracking(generator)
-    
+
     # Generate JSON
     prompt = template(tokenizer.tokenizer, "Make me a person with a name, age, zip code, and state. Return the JSON only.")
     print(f"\nPrompt: {prompt}")
@@ -280,17 +277,17 @@ def analyze_json_generation(model, tokenizer):
     # Retrieve only the tokens that were chosen
     chosen = df[df.selected]
     print(chosen)
-    
+
     # Show sequence at different points
     print("\n2. Generation sequence at different points:")
     for pos in [5, 10, 15, 20]:
         print(f"\nFirst {pos} tokens: {repr(generator.logits_processor.sequence(pos))}")
-    
+
     # Visualize how JSON structure affects probabilities
     print("\nCreating visualizations:")
     print("1. Bar plot comparing natural vs constrained probabilities")
     plot_token_distributions(generator.logits_processor, k=30, positions=[0, 1, 2], prefix="structured_")
-    
+
     print("2. Heatmap showing probability evolution with/without constraints")
     plot_heatmap(
         generator.logits_processor,
@@ -305,10 +302,9 @@ def main():
     print("Loading model and tokenizer...")
     model = models.transformers("HuggingFaceTB/SmolLM2-135M-Instruct", device="cuda")
     tokenizer = model.tokenizer
-    
     # Run examples
     analyze_json_generation(model, tokenizer)
 
 
 if __name__ == "__main__":
-    main() 
+    main()
