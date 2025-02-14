@@ -15,7 +15,7 @@ from numpy.typing import NDArray
 from .base_logits_processor import OutlinesLogitsProcessor, Array
 
 if TYPE_CHECKING:
-    from outlines.generate import Generator
+    from outlines.generate import SequenceGenerator
 
 # Try importing pandas, but don't fail if not available
 try:
@@ -473,7 +473,7 @@ class LogitTrackingProcessor(OutlinesLogitsProcessor):
         return "".join(tokenizer.decode(tokens_to_decode))
 
 
-def add_tracking(generator: "Generator") -> "Generator":
+def add_tracking(generator: "SequenceGenerator") -> "SequenceGenerator":
     """Add probability tracking to any generator.
 
     This is a convenience function that wraps a generator's logits processor
@@ -485,12 +485,12 @@ def add_tracking(generator: "Generator") -> "Generator":
 
     Parameters
     ----------
-    generator : Generator
+    generator : SequenceGenerator
         The generator to add tracking to
 
     Returns
     -------
-    Generator
+    SequenceGenerator
         The same generator with tracking enabled
 
     Examples
