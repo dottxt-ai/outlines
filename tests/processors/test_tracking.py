@@ -333,7 +333,7 @@ def test_shape_mismatch():
     input_ids = [[0]]  # batch_size=1
     logits = torch.ones(2, 10)  # batch_size=2
 
-    print(f"\nShape mismatch test:")
+    print("\nShape mismatch test:")
     print(f"input_ids shape: {len(input_ids)}x{len(input_ids[0])}")
     print(f"logits shape: {logits.shape}")
     print(f"logits[0]: {logits[0]}")  # Print first batch
