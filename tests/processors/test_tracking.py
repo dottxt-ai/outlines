@@ -341,5 +341,5 @@ def test_shape_mismatch():
     
     # We need to ensure the processor validates batch sizes
     # This should fail because logits has batch_size=2 but input_ids has batch_size=1
-    with pytest.raises(ValueError, match=r"Batch size mismatch"):
+    with pytest.raises(ValueError, match=r"only supports single-batch processing"):
         processor.process_logits(input_ids, logits) 
