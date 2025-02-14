@@ -1,411 +1,521 @@
 """
-A logit processor that enables analysis and debugging of logit biasing by tracking logits before and after processing.
+A simple logit processor that tracks probabilities for both structured and unstructured generation.
 
-This module provides the LogitTrackingProcessor class which wraps any other logit processor and tracks
-both the original and processed logits during text generation. This is particularly useful for:
-
-- Debugging logit processors by analyzing how they modify token probabilities
-- Visualizing the effects of logit biasing on token distributions
-- Understanding how constraints affect the generation process
-- Validating that processors are working as intended
-
-The tracking processor maintains a history of logits at each position in the generated sequence,
-allowing for both real-time analysis and post-generation investigation. It can be configured to:
-
-- Track all positions or maintain a sliding window of recent positions
-- Track original logits, processed logits, or both
-- Provide statistics and token-level analysis at any tracked position
-
-Examples
---------
-Basic regex tracking:
->>> from outlines.processors import RegexLogitsProcessor, LogitTrackingProcessor
->>>
->>> # Create a regex processor and wrap it with tracking
->>> base_processor = RegexLogitsProcessor(r"[0-9]{4}", tokenizer)
->>> tracking_processor = LogitTrackingProcessor(base_processor)
->>>
->>> # After generation, analyze the results
->>> tokens = tracking_processor.get_top_tokens(0)  # Get top token candidates at first position with original logits
->>> stats = tracking_processor.get_statistics(0)  # Get stats for first token
-
-Analyzing structured output generation:
->>> from pydantic import BaseModel
->>> from outlines.processors import JSONLogitsProcessor
->>>
->>> # Define a schema and create a tracking processor
->>> class WeatherResponse(BaseModel):
-...     temperature: float
-...     conditions: str
->>>
->>> base_processor = JSONLogitsProcessor(WeatherResponse, tokenizer)
->>> tracking_processor = LogitTrackingProcessor(base_processor)
->>>
->>> # After generation, analyze how the processor constrained the output
->>> stats = tracking_processor.get_statistics(0)
->>> print(f"Valid tokens after processing: {stats['processed']['valid_tokens']}")
->>> tokens = tracking_processor.get_top_tokens(0, k=5)
->>> print("Top 5 allowed tokens:", [t['token'] for t in tokens['processed']])
-
-Notes
------
-- The processor stores logits in memory, so consider using max_positions for long sequences
-- Original logits are stored before any processing is applied
-- Processed logits will contain -inf values when structured outputs are used
-- Token decoding requires the wrapped processor to have a tokenizer attribute
-- Memory usage grows linearly with sequence length when max_positions is not set
-- The processor can be used with any OutlinesLogitsProcessor implementation
+For each token generated, we store:
+- The raw logits the model would assign naturally
+- The filtered logits after applying structural constraints
+- A mapping from vocabulary indices to token strings
 """
-from typing import Dict, List, Optional, Union, TYPE_CHECKING
-import warnings
+from typing import TYPE_CHECKING, Optional, Union, List, Literal, Dict, Any
+
+import numpy as np
 import torch
+from numpy.typing import NDArray
 
 from .base_logits_processor import OutlinesLogitsProcessor, Array
 
-# TYPE_CHECKING is False at runtime but True during type checking, allowing us to avoid
-# circular imports between outlines.processors.tracking and outlines.generate while
-# maintaining proper type hints.
 if TYPE_CHECKING:
     from outlines.generate import Generator
 
+# Try importing pandas, but don't fail if not available
+try:
+    import pandas as pd
+    PANDAS_AVAILABLE = True
+except ImportError:
+    PANDAS_AVAILABLE = False
+    pd = Any  # For type hints when pandas is not available
 
 class LogitTrackingProcessor(OutlinesLogitsProcessor):
-    """A logit processor that wraps any other logit processor and tracks logits before and after processing.
+    """Tracks logits for both structured and unstructured token generation.
 
-    This processor saves both the original logits (before any bias is applied) and the processed logits
-    (after bias is applied) for analysis. The logits are stored in dictionaries keyed by token position,
-    where position 0 is the first generated token, position 1 is the second generated token, and so on.
-    When max_positions is set, it maintains a sliding window of the most recent token positions.
+    For each position in the sequence, stores:
+    - unstructured_logits: Raw logits from the model
+    - structured_logits: Logits after applying constraints
+    - vocab_tokens: Mapping from vocab indices to token strings
+    - chosen_tokens: Track actual sampled token IDs during generation
 
+    Each logit matrix has:
+    - Columns: One for each position in the generated sequence
+    - Rows: One for each token in the vocabulary
+    
     Attributes
     ----------
-    processor : OutlinesLogitsProcessor
-        The underlying logit processor to wrap
-    original_logits : Dict[int, torch.Tensor]
-        Dictionary mapping token position to original logits before processing.
-        When max_positions is set, only the most recent positions are kept.
-    processed_logits : Dict[int, torch.Tensor]
-        Dictionary mapping token position to logits after processing.
-        When max_positions is set, only the most recent positions are kept.
-    max_positions : Optional[int]
-        Maximum number of recent token positions to track. If None, tracks all positions.
-        When set, maintains a sliding window of the most recent positions, removing
-        older positions when the limit is reached.
-    track_original : bool
-        Whether to track original logits before processing
-    track_processed : bool
-        Whether to track processed logits after processing
-
-    Examples
-    --------
-    Basic usage:
-    >>> # Track all positions
-    >>> processor = LogitTrackingProcessor(base_processor)
-    >>> # Track only the 5 most recent positions
-    >>> processor = LogitTrackingProcessor(base_processor, max_positions=5)
-    >>> # Each position contains logits for that generation step:
-    >>> # - Position 0 contains logits for the first token
-    >>> # - Position 1 contains logits for the second token
-    >>> # And so on...
-
-    Accessing tracked logits:
-    >>> # Get original logits for first token (position 0)
-    >>> original_logits = processor.original_logits[0]  # shape: (vocab_size,)
-    >>> # Get processed logits for second token (position 1)
-    >>> processed_logits = processor.processed_logits[1]  # shape: (vocab_size,)
-    >>> # Get all tracked positions
-    >>> positions = sorted(processor.original_logits.keys())  # [0, 1, 2, ...]
-
-    Analyzing logits:
-    >>> # Get statistics for a position
-    >>> stats = processor.get_statistics(0)
-    >>> print(stats['original']['mean'])  # Mean of original logits
-    >>> print(stats['processed']['valid_tokens'])  # Number of valid tokens after processing
-    >>> # Get most likely tokens at a position
-    >>> tokens = processor.get_top_tokens(0, k=5)  # Get top 5 tokens
-    >>> print(tokens['original'])  # [{'token': '2', 'prob': 0.8}, ...]
-    >>> print(tokens['processed'])  # [{'token': '2', 'prob': 1.0}, ...]
-    >>> # Clear tracking data
-    >>> processor.clear_tracking()
+    processor : Optional[OutlinesLogitsProcessor]
+        The processor that applies structural constraints
+    unstructured_logits : List[NDArray]
+        Raw logits from the model for each position
+    structured_logits : List[NDArray]
+        Logits after applying constraints for each position
+    vocab_tokens : Optional[List[str]]
+        Mapping from vocabulary indices to token strings
+    chosen_tokens : List[int]
+        Track actual chosen token IDs during generation. This is used 
+        to ensure a log of the tokens the model generates, and is
+        used internally for various convenience functions.
+    _started : bool
+        Tracks whether to start appending chosen tokens. This is set to True
+        on the first call to process_logits, and remains True thereafter.
+        
     """
-
-    def __init__(
-        self,
-        processor: OutlinesLogitsProcessor,
-        max_positions: Optional[int] = None,
-        track_original: bool = True,
-        track_processed: bool = True,
-    ):
+    
+    def __init__(self, processor=None):
         """Initialize the tracking processor.
-
+        
         Parameters
         ----------
-        processor : OutlinesLogitsProcessor
-            The logit processor to wrap and track
-        max_positions : Optional[int]
-            Maximum number of recent positions to track. If None, tracks all positions.
-            For example, if max_positions=5, only the 5 most recent positions will be
-            kept in memory, with older positions being removed as new ones are added.
-        track_original : bool
-            Whether to track original logits
-        track_processed : bool
-            Whether to track processed logits
-
-        Raises
-        ------
-        ValueError
-            If max_positions is not None and <= 0
+        processor : Optional[OutlinesLogitsProcessor]
+            The processor that applies structural constraints.
+            If None, only tracks raw logits.
         """
-        if max_positions is not None and max_positions <= 0:
-            raise ValueError("max_positions must be None or a positive integer")
-
         self.processor = processor
-        self.max_positions = max_positions
-        self.track_original = track_original
-        self.track_processed = track_processed
-        self.original_logits: Dict[int, torch.Tensor] = {}
-        self.processed_logits: Dict[int, torch.Tensor] = {}
-
-    def _update_tracking_dict(self, tracking_dict: Dict[int, torch.Tensor], pos: int, logits: torch.Tensor) -> None:
-        """Update a tracking dictionary, maintaining the max_positions limit if set.
-
-        Parameters
-        ----------
-        tracking_dict : Dict[int, torch.Tensor]
-            The dictionary to update
-        pos : int
-            The position to add
-        logits : torch.Tensor
-            The logits to store
-        """
-        tracking_dict[pos] = logits.detach().clone()
-        if self.max_positions is not None and len(tracking_dict) > self.max_positions:
-            # Remove oldest position when limit is reached
-            oldest_pos = min(tracking_dict.keys())
-            del tracking_dict[oldest_pos]
-
-    def process_logits(
-        self,
-        input_ids: Array,
-        logits: Array,
-    ) -> Array:
-        """Process logits and save both original and processed versions.
-
+        self.unstructured_logits = []  # List of logit arrays, one per position
+        self.structured_logits = []    # List of logit arrays, one per position
+        self.vocab_tokens = None      # Will store the vocabulary mapping
+        self.chosen_tokens = []       # Track actual chosen tokens during generation
+        self._started = False         # Tracks whether to start appending chosen tokens
+        
+    def process_logits(self, input_ids: Array, logits: Array) -> Array:
+        """Process logits and store them.
+        
+        This method:
+        1. Stores the raw logits from the model
+        2. Applies any structural constraints if a processor exists
+        3. Stores the constrained logits
+        4. Tracks the chosen token ID
+        
         Parameters
         ----------
         input_ids : Array
-            The input token ids for each sequence in the batch
+            The input token ids for the sequence. Must be single batch.
         logits : Array
-            The original logits to process, shape (batch_size, vocab_size)
-
+            The original logits to process, shape (1, vocab_size)
+            
         Returns
         -------
         Array
-            The processed logits, shape (batch_size, vocab_size)
-        """
-        # Convert input_ids to tensor and ensure shapes match
-        if isinstance(logits, torch.Tensor):
-            input_tensor = torch.as_tensor(input_ids).to(logits.device)
-            assert logits.shape[:-1] == input_tensor.shape[:-1], "batch dimensions must match"
-        else:
-            input_tensor = torch.as_tensor(input_ids)
-            assert logits.shape[:-1] == input_tensor.shape[:-1], "batch dimensions must match"
-
-        # Save original logits if tracking is enabled
-        if self.track_original:
-            for i, seq_ids in enumerate(input_ids):
-                pos = len(seq_ids) - 1
-                self._update_tracking_dict(self.original_logits, pos, logits[i])
-
-        # Process logits using wrapped processor
-        processed = self.processor.process_logits(input_ids, logits)
-
-        # Save processed logits if tracking is enabled
-        if self.track_processed:
-            for i, seq_ids in enumerate(input_ids):
-                pos = len(seq_ids) - 1
-                self._update_tracking_dict(self.processed_logits, pos, processed[i])
-
-        return processed
-
-    def clear_tracking(self) -> None:
-        """Clear all tracked logits to free memory."""
-        self.original_logits.clear()
-        self.processed_logits.clear()
-
-    def get_statistics(self, pos: int) -> Dict[str, Dict[str, float]]:
-        """Get basic statistics for the logits at a given position.
-
-        Parameters
-        ----------
-        pos : int
-            The position to get statistics for
-
-        Returns
-        -------
-        Dict[str, Dict[str, float]]
-            Dictionary containing statistics for both original and processed logits:
-            {
-                'original': {'mean': float, 'std': float, 'min': float, 'max': float},
-                'processed': {'mean': float, 'std': float, 'min': float, 'max': float}
-            }
-
+            The processed logits, shape (1, vocab_size)
+            
         Raises
         ------
-        KeyError
-            If the position has not been tracked
+        ValueError
+            If batch size > 1 is provided. The tracking processor currently
+            only supports single-batch processing.
         """
-        stats = {}
+        # Enforce single batch processing
+        if logits.shape[0] > 1:
+            raise ValueError(
+                "LogitTrackingProcessor only supports single-batch processing. "
+                f"Got batch size {logits.shape[0]}"
+            )
+        if len(input_ids) > 1:
+            raise ValueError(
+                "LogitTrackingProcessor only supports single-batch processing. "
+                f"Got {len(input_ids)} sequences"
+            )
 
-        if pos in self.original_logits and self.track_original:
-            orig = self.original_logits[pos]
-            stats['original'] = {
-                'mean': orig.mean().item(),
-                'std': orig.std().item(),
-                'min': orig.min().item(),
-                'max': orig.max().item()
-            }
+        # Always store the raw logits as unstructured
+        self.unstructured_logits.append(logits[0].detach().cpu().numpy().copy())
+        
+        # Store the actual chosen token ID if available
+        if self._started and len(input_ids[0]) > 1:
+            # Get the last token from the current sequence
+            self.chosen_tokens.append(input_ids[0][-1])
 
-        if pos in self.processed_logits and self.track_processed:
-            proc = self.processed_logits[pos]
-            valid_mask = proc != float('-inf')
-            if valid_mask.any():
-                valid_logits = proc[valid_mask]
-                stats['processed'] = {
-                    'mean': valid_logits.mean().item(),
-                    'std': valid_logits.std().item(),
-                    'min': valid_logits.min().item(),
-                    'max': valid_logits.max().item(),
-                    'valid_tokens': valid_mask.sum().item()
-                }
-            else:
-                stats['processed'] = {
-                    'valid_tokens': 0
-                }
+        # If we haven't started tracking yet, do so now.
+        # this will only happen on the first call to process_logits.
+        else:
+            self._started = True
 
-        if not stats:
-            raise KeyError(f"Position {pos} has not been tracked")
-
-        return stats
-
-    def get_top_tokens(self, pos: int, k: int = 10) -> Dict[str, List[Dict[str, Union[str, float]]]]:
-        """Get the top-k most likely tokens at a given position.
-
+        # Apply structural constraints if we have a processor
+        if self.processor is not None:
+            processed = self.processor.process_logits(input_ids, logits)
+            self.structured_logits.append(processed[0].detach().cpu().numpy().copy())
+            return processed
+            
+        # For unconstrained generation, structured = unstructured
+        self.structured_logits.append(logits[0].detach().cpu().numpy().copy())
+        return logits
+            
+    def get_probabilities(self, as_matrix: bool = False) -> Dict[str, Union[List[NDArray], NDArray]]:
+        """Get probability distributions computed from stored logits.
+        
         Parameters
         ----------
-        pos : int
-            The position to get tokens for
-        k : int, optional
-            Number of top tokens to return, by default 10
+        as_matrix : bool
+            If True, convert probability lists to matrices.
+            Each matrix will have shape (vocab_size, n_positions), i.e. 
+            return_value['unstructured'] is a vocab_size x n_positions matrix.
 
+            If False, return a list of n_positions arrays, each array having
+            shape (vocab_size,).
+        
         Returns
         -------
-        Dict[str, List[Dict[str, Union[str, float]]]]
-            Dictionary containing top tokens for both original and processed logits:
-            {
-                'original': [{'token': str, 'prob': float}, ...],
-                'processed': [{'token': str, 'prob': float}, ...]
-            }
-            For processed logits, only tokens with non-inf logits are included.
+        Dict[str, Union[List[NDArray], NDArray]]
+            Contains a dictionary with two keys:
+            - unstructured: Raw probability distributions
+            - structured: Probability distributions after constraints
+            Each can be either a list of arrays or a single matrix
+        """
+        # Convert logits to probabilities
+        unstructured_probs = [
+            torch.softmax(torch.tensor(logits), dim=-1).numpy()
+            for logits in self.unstructured_logits
+        ]
+        structured_probs = [
+            torch.softmax(torch.tensor(logits), dim=-1).numpy()
+            for logits in self.structured_logits
+        ]
+        
+        if as_matrix:
+            # Stack arrays into matrices
+            unstructured = np.column_stack(unstructured_probs)
+            structured = np.column_stack(structured_probs)
+        else:
+            # Return as lists
+            unstructured = unstructured_probs
+            structured = structured_probs
+            
+        return {
+            'unstructured': unstructured,
+            'structured': structured
+        }
+
+    def get_logits(self, as_matrix: bool = False) -> Dict[str, Union[List[NDArray], NDArray]]:
+        """Get the stored logit values.
+        
+        Parameters
+        ----------
+        as_matrix : bool
+            If True, convert logit lists to matrices.
+            Each matrix will have shape (vocab_size, n_positions), i.e.
+            return_value['unstructured'] is a vocab_size x n_positions matrix.
+
+            If False, return a list of n_positions arrays, each array having
+            shape (vocab_size,).
+        
+        Returns
+        -------
+        Dict[str, Union[List[NDArray], NDArray]]
+            Contains a dictionary with two keys:
+            - unstructured: Raw logit values
+            - structured: Logit values after constraints
+            Each can be either a list of arrays or a single matrix
+        """
+        if as_matrix:
+            unstructured = np.column_stack(self.unstructured_logits)
+            structured = np.column_stack(self.structured_logits)
+        else:
+            unstructured = self.unstructured_logits
+            structured = self.structured_logits
+            
+        return {
+            'unstructured': unstructured,
+            'structured': structured
+        }
+        
+    def get_top_tokens(
+        self,
+        k: int = 10,
+        positions: Optional[Union[int, List[int]]] = None,
+        include_logits: bool = True
+    ) -> List[Dict[str, Any]]:
+        """Get the top k tokens at specified positions with their probabilities and logits.
+        
+        Parameters
+        ----------
+        k : int, optional
+            Number of top tokens to return, by default 10
+        positions : Union[int, List[int]], optional
+            Position(s) to analyze. Can be a single position or list of positions.
+            By default analyzes all positions.
+        include_logits : bool, optional
+            Whether to include raw logit values in addition to probabilities
+            
+        Returns
+        -------
+        List[Dict[str, Any]]
+            List of dictionaries, one per position, containing:
+            - position: Position in sequence
+            - text_so_far: Text generated up to this position
+            - tokens: List of top k token dictionaries, each containing:
+                - token: The token string
+                - natural_prob: Unconstrained probability
+                - constrained_prob: Probability after constraints
+                - natural_logit: Raw logit value (if include_logits=True)
+                - constrained_logit: Constrained logit value (if include_logits=True)
+                - is_chosen: Whether this token was actually chosen
+        """
+        # Convert single position to list
+        if positions is None:
+            positions = list(range(len(self.structured_logits)))
+        elif isinstance(positions, int):
+            positions = [positions]
+            
+        # Get probabilities and logits
+        probs = self.get_probabilities()
+        logits = self.get_logits() if include_logits else None
+        
+        # Get vocab mapping
+        vocab = self.get_vocab_mapping()
+        
+        results = []
+        for pos in positions:
+            if pos >= len(self.unstructured_logits):
+                continue
+                
+            # Get text generated so far
+            text_so_far = self.sequence(pos)
+            
+            # Get values for this position
+            u_probs = probs['unstructured'][pos]
+            s_probs = probs['structured'][pos]
+            
+            if include_logits:
+                u_logits = logits['unstructured'][pos]
+                s_logits = logits['structured'][pos]
+            
+            # Get top k indices by maximum probability
+            top_indices = np.argsort(np.maximum(u_probs, s_probs))[-k:][::-1]
+            
+            # Get the actual next token for comparison
+            next_token = self.sequence(pos + 1)[len(text_so_far):] if pos < len(self.structured_logits)-1 else ""
+            
+            # Build token info list
+            tokens = []
+            for idx in top_indices:
+                token = vocab[idx]
+                token_info = {
+                    'token': token,
+                    'unstructured_prob': float(u_probs[idx]),
+                    'structured_prob': float(s_probs[idx]),
+                    'is_chosen': token == next_token
+                }
+                
+                if include_logits:
+                    token_info.update({
+                        'unstructured_logit': float(u_logits[idx]),
+                        'structured_logit': float(s_logits[idx])
+                    })
+                    
+                tokens.append(token_info)
+            
+            results.append({
+                'position': pos,
+                'text_so_far': text_so_far,
+                'tokens': tokens
+            })
+            
+        return results
+
+    def get_vocab_mapping(self) -> List[str]:
+        """Get the mapping from vocabulary indices to token strings. Each token
+        matches 
+        
+        Returns
+        -------
+        List[str]
+            List of token strings, where index matches vocabulary index
+        
+        Raises
+        ------
+        AttributeError
+            If no tokenizer is available
+        """
+        if not hasattr(self, 'tokenizer'):
+            raise AttributeError("No tokenizer available for mapping tokens")
+            
+        if self.vocab_tokens is None:
+            # Create the mapping if we haven't yet
+            self.vocab_tokens = [
+                self.processor.tokenizer.decode([i])[0]
+                for i in range(len(self.unstructured_logits[0]))
+            ]
+            
+        return self.vocab_tokens
+        
+    def clear(self):
+        """Clear all stored logits."""
+        self.unstructured_logits = []
+        self.structured_logits = []
+        self.chosen_tokens = []
+
+    def to_dataframe(
+        self,
+        show: Literal["probs", "logits"] = "probs",
+        min_value: Optional[float] = None
+    ) -> "pd.DataFrame":
+        """Convert tracking data to a pandas DataFrame for analysis.
+        
+        Parameters
+        ----------
+        show : Literal["probs", "logits"], optional
+            Whether to show probabilities or logit values, by default "probs"
+        min_value : Optional[float], optional
+            If provided, only include tokens with values >= min_value
+            in either structured or unstructured distribution
+            
+        Returns
+        -------
+        pd.DataFrame
+            DataFrame with columns:
+            - position: Token position in sequence
+            - token: String representation of token
+            - natural: Raw model values (probs/logits)
+            - constrained: Values after constraints
+            - chosen: Whether this token was chosen (True/False)
 
         Examples
         --------
-        >>> # Get top 5 tokens at position 0
-        >>> tokens = processor.get_top_tokens(0, k=5)
-        >>> # Original logits show multiple possibilities
-        >>> print(tokens['original'])
-        [{'token': '2', 'prob': 0.8}, {'token': '1', 'prob': 0.1}, ...]
-        >>> # Processed logits may have fewer valid tokens due to constraints
-        >>> print(tokens['processed'])
-        [{'token': '2', 'prob': 1.0}]
-
+        >>> # Get probability data for top 10 tokens
+        >>> df = processor.to_dataframe(show="probs")
+        >>> df.sort_values("natural", ascending=False).head()
+        >>>
+        >>> # Get logit data above threshold
+        >>> df = processor.to_dataframe(show="logits", min_value=-5)
+        >>> df.query("position == 0").nlargest(5, "natural")
+        >>>
+        >>> # Get all tokens with probability > 1%
+        >>> df = processor.to_dataframe(show="probs", min_value=0.01)
+            
         Raises
         ------
-        KeyError
-            If the position has not been tracked
-        AttributeError
-            If the processor's tokenizer is not accessible
+        ImportError
+            If pandas is not installed
         """
-        if not hasattr(self.processor, 'tokenizer'):
-            raise AttributeError("Cannot get tokens: processor has no tokenizer attribute")
-
-        result = {}
-
-        if pos in self.original_logits and self.track_original:
-            orig = self.original_logits[pos]
-            probs = torch.softmax(orig, dim=-1)
-            top_k = torch.topk(probs, min(k, len(probs)))
-
-            result['original'] = [
-                {
-                    'token': self.processor.tokenizer.decode([token_id.item()])[0],
-                    'prob': prob.item()
-                }
-                for token_id, prob in zip(top_k.indices, top_k.values)
-            ]
-
-        if pos in self.processed_logits and self.track_processed:
-            proc = self.processed_logits[pos]
-            valid_mask = proc != float('-inf')
-            if valid_mask.any():
-                # Create a copy and zero out -inf values for softmax
-                proc_valid = proc.clone()
-                proc_valid[~valid_mask] = -1e9  # Very negative but not -inf
-                probs = torch.softmax(proc_valid, dim=-1)
-                # Zero out invalid token probabilities
-                probs[~valid_mask] = 0
-
-                top_k = torch.topk(probs, min(k, valid_mask.sum().item()))
-
-                result['processed'] = [
-                    {
-                        'token': self.processor.tokenizer.decode([token_id.item()])[0],
-                        'prob': prob.item()
-                    }
-                    for token_id, prob in zip(top_k.indices, top_k.values)
-                    if prob > 0  # Only include tokens with non-zero probability
-                ]
+        if not PANDAS_AVAILABLE:
+            raise ImportError(
+                "pandas is required for DataFrame support. "
+                "Please install it with: pip install pandas"
+            )
+            
+        # Get values based on show parameter
+        if show == "probs":
+            values = self.get_probabilities()
+        else:
+            values = self.get_logits()
+            
+        # Get vocab mapping
+        vocab = self.get_vocab_mapping()
+        
+        # Create lists to store data
+        rows = []
+        
+        # Process each position
+        for pos in range(len(self.unstructured_logits)):
+            u_vals = values['unstructured'][pos]
+            s_vals = values['structured'][pos]
+            
+            # Get the chosen token at this position if available
+            chosen_token = vocab[self.chosen_tokens[pos]] if pos < len(self.chosen_tokens) else None
+            
+            # Get indices to include based on filters
+            if min_value is not None:
+                # Get maximum value between structured/unstructured for sorting
+                max_vals = np.maximum(u_vals, s_vals)
+                
+                # Both filters: get top k among values >= min_value
+                valid_indices = np.where(max_vals >= min_value)[0]
+                valid_indices = valid_indices[np.argsort(max_vals[valid_indices])[-10:]]
             else:
-                result['processed'] = []  # No valid tokens
+                # No filters: include all tokens
+                valid_indices = range(len(vocab))
+            
+            # Add rows for valid indices
+            for idx in valid_indices:
+                token = vocab[idx]
+                rows.append({
+                    'position': pos,
+                    'token': token,
+                    'natural': u_vals[idx],
+                    'constrained': s_vals[idx],
+                    'chosen': token == chosen_token
+                })
+        
+        return pd.DataFrame(rows)
 
-        if not result:
-            raise KeyError(f"Position {pos} has not been tracked")
+    def sequence(self, pos: Optional[int] = None) -> str:
+        """Get the sequence of tokens generated up to a position.
+        
+        Parameters
+        ----------
+        pos : Optional[int], optional
+            Position to reconstruct up to (exclusive).
+            If None, returns the entire sequence.
+            
+        Returns
+        -------
+        str
+            The concatenated string of chosen tokens
+            
+        Raises
+        ------
+        AttributeError
+            If no tokenizer is available for decoding
+        """
+        if not self.chosen_tokens:
+            return ""
+            
+        if not hasattr(self, 'tokenizer'):
+            raise AttributeError("No tokenizer available for decoding sequence")
+            
+        # Get the tokenizer
+        if hasattr(self.processor, 'tokenizer'):
+            tokenizer = self.processor.tokenizer
+        else:
+            tokenizer = self.tokenizer
+            
+        # Get tokens up to the specified position
+        end_pos = len(self.chosen_tokens) if pos is None else pos
+        tokens_to_decode = self.chosen_tokens[:end_pos]
+        
+        # Decode the sequence
+        return "".join(tokenizer.decode(tokens_to_decode))
 
-        return result
 
+def add_tracking(generator: "Generator") -> "Generator":
+    """Add probability tracking to any generator.
+    
+    This is a convenience function that wraps a generator's logits processor
+    with a LogitTrackingProcessor, enabling analysis of token probabilities
+    and logits during generation.
 
-def add_tracking(generator, max_positions: Optional[int] = None) -> "Generator":
-    """Add logit tracking to an existing generator.
-
-    This is a convenience function that wraps a generator's logits processor with
-    a LogitTrackingProcessor, enabling analysis of token probabilities during generation.
-
+    Currently only works with structured generators, outlines.generate.text
+    is not supported.
+    
     Parameters
     ----------
     generator : Generator
         The generator to add tracking to
-    max_positions : Optional[int]
-        Maximum number of positions to track. If None, tracks all positions.
-        For long sequences, consider setting this to limit memory usage.
-
+        
     Returns
     -------
     Generator
         The same generator with tracking enabled
-
+        
     Examples
     --------
-    >>> from outlines.generate import json
-    >>> from outlines.processors import add_tracking
+    >>> # Track probabilities for unconstrained text generation
+    >>> generator = generate.text(model)
+    >>> generator = add_tracking(generator)
     >>>
-    >>> generator = json(model, schema)
-    >>> generator = add_tracking(generator)  # Enable tracking
-    >>>
-    >>> # For long sequences, limit tracking to recent positions
-    >>> generator = add_tracking(generator, max_positions=5)
+    >>> # Track probabilities for JSON generation
+    >>> generator = generate.json(model, schema)
+    >>> generator = add_tracking(generator)
     """
-    generator.logits_processor = LogitTrackingProcessor(
-        generator.logits_processor,
-        max_positions=max_positions
-    )
+    # If there's no logits_processor, throw an error. Logit tracking
+    # is currently only supported for structured generators.
+    if generator.logits_processor is None:
+        raise ValueError("Logit tracking is not supported for this generator")
+
+    # Create tracking processor, wrapping any existing processor
+    tracking = LogitTrackingProcessor(generator.logits_processor)
+
+    # Add tokenizer for token mapping
+    if hasattr(generator.logits_processor, 'tokenizer'):
+        tracking.tokenizer = generator.logits_processor.tokenizer
+    
+    # Set as the generator's processor
+    generator.logits_processor = tracking
+    
     return generator

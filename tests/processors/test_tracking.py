@@ -58,11 +58,11 @@ def test_initialization():
     assert processor.processor is None
 
 
-@pytest.mark.parametrize("batch_size,vocab_size", [(1, 10), (2, 100)])
-def test_logit_processing(processor, batch_size, vocab_size):
-    """Test logit processing with different batch and vocab sizes."""
-    input_ids = [[0] for _ in range(batch_size)]
-    logits = torch.ones(batch_size, vocab_size)
+@pytest.mark.parametrize("vocab_size", [10, 100])
+def test_logit_processing(processor, vocab_size):
+    """Test logit processing with different vocab sizes."""
+    input_ids = [[0]]  # Single batch
+    logits = torch.ones(1, vocab_size)  # Single batch
     
     processed = processor.process_logits(input_ids, logits)
     
@@ -82,6 +82,17 @@ def test_logit_processing(processor, batch_size, vocab_size):
     # Check chosen token tracking
     assert processor._started
     assert len(processor.chosen_tokens) == 0  # First call doesn't add token
+
+
+def test_batch_size_validation(processor):
+    """Test that multi-batch processing raises an error."""
+    # Test with multiple sequences in input_ids
+    with pytest.raises(ValueError, match="only supports single-batch processing"):
+        processor.process_logits([[0], [0]], torch.ones(2, 10))
+        
+    # Test with multiple batches in logits
+    with pytest.raises(ValueError, match="only supports single-batch processing"):
+        processor.process_logits([[0]], torch.ones(2, 10))
 
 
 def test_chosen_token_tracking(processor):
@@ -236,7 +247,7 @@ def test_to_dataframe(processor):
     # Test probabilities
     df = processor.to_dataframe(show="probs")
     assert isinstance(df, pd.DataFrame)
-    assert set(df.columns) == {'position', 'token', 'natural', 'constrained', 'selected', 'chosen'}
+    assert set(df.columns) == {'position', 'token', 'natural', 'constrained', 'chosen'}
     assert df['position'].nunique() == 1
     assert (df['natural'] >= 0).all() and (df['natural'] <= 1).all()
     
