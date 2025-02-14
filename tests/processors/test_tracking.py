@@ -1,5 +1,7 @@
 import pytest
 import torch
+import numpy as np
+import pandas as pd
 from typing import List
 
 from outlines.processors.tracking import LogitTrackingProcessor, add_tracking
@@ -23,14 +25,19 @@ class MockProcessor(OutlinesLogitsProcessor):
 class MockTokenizer:
     """Mock tokenizer for testing."""
     def decode(self, token_ids):
-        return str(token_ids[0])
+        if not token_ids:  # Handle empty list case
+            return ""
+        # Concatenate all tokens
+        return "".join(f"token_{tid}" for tid in token_ids)
 
 
 @pytest.fixture
 def processor():
     """Fixture for creating a tracking processor with a mock base processor."""
     base = MockProcessor()
-    return LogitTrackingProcessor(base)
+    processor = LogitTrackingProcessor(base)
+    processor.tokenizer = base.tokenizer  # Ensure tokenizer is available
+    return processor
 
 
 def test_initialization():
@@ -40,100 +47,227 @@ def test_initialization():
     # Basic initialization
     processor = LogitTrackingProcessor(base)
     assert processor.processor == base
-    assert processor.max_positions is None
+    assert len(processor.unstructured_logits) == 0
+    assert len(processor.structured_logits) == 0
+    assert processor.vocab_tokens is None
+    assert len(processor.chosen_tokens) == 0
+    assert not processor._started
     
-    # With max positions
-    processor = LogitTrackingProcessor(base, max_positions=5)
-    assert processor.max_positions == 5
-    
-    # With tracking options
-    processor = LogitTrackingProcessor(base, track_original=False)
-    assert not processor.track_original
-    assert processor.track_processed
-    
-    processor = LogitTrackingProcessor(base, track_processed=False)
-    assert processor.track_original
-    assert not processor.track_processed
-
-
-@pytest.mark.parametrize("max_positions", [None, 1, 3, 5])
-def test_position_tracking(processor, max_positions):
-    """Test tracking with different max_positions values."""
-    if max_positions is not None:
-        processor.max_positions = max_positions
-    
-    # Process 5 positions
-    for i in range(5):
-        logits = torch.randn(1, 10)
-        input_ids = [[j for j in range(i + 1)]]
-        processor.process_logits(input_ids, logits)
-    
-    expected_positions = range(max(0, 5 - (max_positions or 5)), 5)
-    assert all(pos in processor.original_logits for pos in expected_positions)
-    assert all(pos in processor.processed_logits for pos in expected_positions)
+    # Without processor
+    processor = LogitTrackingProcessor(None)
+    assert processor.processor is None
 
 
 @pytest.mark.parametrize("batch_size,vocab_size", [(1, 10), (2, 100)])
 def test_logit_processing(processor, batch_size, vocab_size):
     """Test logit processing with different batch and vocab sizes."""
     input_ids = [[0] for _ in range(batch_size)]
-    # Use deterministic logits instead of random ones
     logits = torch.ones(batch_size, vocab_size)
     
     processed = processor.process_logits(input_ids, logits)
     
     # Check tracking
-    assert 0 in processor.original_logits
-    assert 0 in processor.processed_logits
+    assert len(processor.unstructured_logits) == 1
+    assert len(processor.structured_logits) == 1
+    assert processor.unstructured_logits[0].shape == (vocab_size,)
+    assert processor.structured_logits[0].shape == (vocab_size,)
     
     # Check original logits preserved
-    assert torch.allclose(processor.original_logits[0], logits[0])
+    assert torch.allclose(torch.tensor(processor.unstructured_logits[0]), logits[0])
     
     # Check processing (every other logit should be -inf)
     assert torch.all(torch.isinf(processed[:, ::2]))
     assert not torch.any(torch.isinf(processed[:, 1::2]))
 
+    # Check chosen token tracking
+    assert processor._started
+    assert len(processor.chosen_tokens) == 0  # First call doesn't add token
 
-def test_statistics(processor):
-    """Test statistics calculation."""
-    logits = torch.tensor([[1.0, 2.0, -1.0, 0.0]])
+
+def test_chosen_token_tracking(processor):
+    """Test tracking of chosen tokens during generation."""
+    # First token
+    processor.process_logits([[0]], torch.ones(1, 10))
+    assert len(processor.chosen_tokens) == 0
+    assert processor._started
+
+    # Second token - should track the previous choice
+    processor.process_logits([[0, 1]], torch.ones(1, 10))
+    assert len(processor.chosen_tokens) == 1
+    assert processor.chosen_tokens[0] == 1
+
+    # Third token
+    processor.process_logits([[0, 1, 2]], torch.ones(1, 10))
+    assert len(processor.chosen_tokens) == 2
+    assert processor.chosen_tokens[1] == 2
+
+
+@pytest.mark.parametrize("as_matrix", [True, False])
+def test_get_probabilities(processor, as_matrix):
+    """Test probability distribution computation."""
+    # Process a few positions
+    for i in range(3):
+        # Create logits that will result in valid probability distributions
+        logits = torch.full((1, 10), -100.0)  # Very negative but not -inf
+        logits[0, i] = 0.0  # Make one token dominate the probability mass
+        print(f"\nPosition {i} logits:")
+        print(f"Raw logits: {logits[0]}")
+        processor.process_logits([[j for j in range(i + 1)]], logits)
+        
+        # Print the softmax of these logits to debug
+        probs = torch.softmax(logits[0], dim=-1)
+        print(f"Raw probabilities: {probs}")
+        print(f"Probability sum: {probs.sum()}")
+    
+    probs = processor.get_probabilities(as_matrix=as_matrix)
+    print(f"\nProbabilities (as_matrix={as_matrix}):")
+    print(f"Unstructured shape: {probs['unstructured'].shape if as_matrix else [p.shape for p in probs['unstructured']]}")
+    
+    if as_matrix:
+        # For matrix form, we need to check each position (column) separately
+        for pos in range(probs['unstructured'].shape[1]):
+            dist = probs['unstructured'][:, pos]
+            print(f"Position {pos} sum: {np.sum(dist)}")
+            print(f"Position {pos} distribution: {dist}")
+            assert np.allclose(np.sum(dist), 1.0, rtol=1e-5)
+            
+            # Check structured probabilities
+            dist = probs['structured'][:, pos]
+            valid_probs = dist[~np.isinf(dist)]
+            if len(valid_probs) > 0:
+                assert np.allclose(np.sum(valid_probs), 1.0, rtol=1e-5)
+    else:
+        for i, dist in enumerate(probs['unstructured']):
+            print(f"Position {i} sum: {np.sum(dist)}")
+            print(f"Position {i} distribution: {dist}")
+            assert np.allclose(np.sum(dist), 1.0, rtol=1e-5)
+            
+            # Check structured probabilities
+            dist = probs['structured'][i]
+            valid_probs = dist[~np.isinf(dist)]
+            if len(valid_probs) > 0:
+                assert np.allclose(np.sum(valid_probs), 1.0, rtol=1e-5)
+
+
+@pytest.mark.parametrize("as_matrix", [True, False])
+def test_get_logits(processor, as_matrix):
+    """Test logit value retrieval."""
+    # Process a few positions with known values
+    for i in range(3):
+        logits = torch.full((1, 10), float(i))
+        processor.process_logits([[j for j in range(i + 1)]], logits)
+    
+    logits = processor.get_logits(as_matrix=as_matrix)
+    
+    assert set(logits.keys()) == {'unstructured', 'structured'}
+    
+    if as_matrix:
+        assert isinstance(logits['unstructured'], np.ndarray)
+        assert logits['unstructured'].shape == (10, 3)
+        assert logits['structured'].shape == (10, 3)
+        # Check values match what we put in
+        for i in range(3):
+            assert np.allclose(logits['unstructured'][:, i], i)
+    else:
+        assert isinstance(logits['unstructured'], list)
+        assert len(logits['unstructured']) == 3
+        assert all(arr.shape == (10,) for arr in logits['unstructured'])
+        # Check values match what we put in
+        for i, arr in enumerate(logits['unstructured']):
+            assert np.allclose(arr, i)
+
+
+def test_get_top_tokens(processor):
+    """Test top token retrieval with various parameters."""
+    # Process some logits with known values
+    logits = torch.tensor([[2.0, -1.0, 1.0, 0.0, 3.0]])
     processor.process_logits([[0]], logits)
     
-    stats = processor.get_statistics(0)
+    # Test with different k values and explicitly disable logits
+    results = processor.get_top_tokens(k=2, include_logits=False)
+    assert len(results) == 1  # One position
+    assert len(results[0]['tokens']) == 2  # k=2 tokens
     
-    # Check original stats
-    assert set(stats['original'].keys()) == {'mean', 'std', 'min', 'max'}
-    assert abs(stats['original']['mean'] - 0.5) < 1e-6
+    # Check token info structure
+    token_info = results[0]['tokens'][0]
+    assert set(token_info.keys()) == {'token', 'unstructured_prob', 'structured_prob', 'is_chosen'}
     
-    # Check processed stats
-    assert 'valid_tokens' in stats['processed']
-    assert stats['processed']['valid_tokens'] == 2  # Half should be valid
+    # Test position filtering
+    results = processor.get_top_tokens(positions=[0])
+    assert len(results) == 1
+    
+    # Test invalid position
+    results = processor.get_top_tokens(positions=[100])
+    assert len(results) == 0
 
 
-def test_top_tokens(processor):
-    """Test top token retrieval."""
-    logits = torch.tensor([[3.0, -1.0, 2.0, 0.0]])
+def test_sequence_reconstruction(processor):
+    """Test sequence reconstruction from chosen tokens."""
+    # Process a sequence
+    tokens = [[0], [0, 1], [0, 1, 2]]
+    for ids in tokens:
+        print(f"\nProcessing tokens: {ids}")
+        processor.process_logits([ids], torch.ones(1, 10))
+    
+    print(f"\nFinal chosen_tokens: {processor.chosen_tokens}")
+    print(f"sequence(0): '{processor.sequence(0)}'")
+    print(f"sequence(1): '{processor.sequence(1)}'")
+    print(f"sequence(2): '{processor.sequence(2)}'")
+    
+    # Test different positions
+    assert processor.sequence(0) == ""  # No tokens yet
+    assert processor.sequence(1) == "token_1"  # First token
+    assert processor.sequence(2) == "token_1token_2"  # Two tokens
+    assert processor.sequence() == "token_1token_2"  # Full sequence
+    
+    # Test position beyond current sequence
+    assert processor.sequence(100) == "token_1token_2"
+
+
+def test_to_dataframe(processor):
+    """Test DataFrame conversion with various parameters."""
+    # Skip if pandas not available
+    pytest.importorskip("pandas")
+    
+    # Process some logits
+    logits = torch.tensor([[2.0, -1.0, 1.0, 0.0, 3.0]])
     processor.process_logits([[0]], logits)
     
-    tokens = processor.get_top_tokens(0, k=2)
+    # Test probabilities
+    df = processor.to_dataframe(show="probs")
+    assert isinstance(df, pd.DataFrame)
+    assert set(df.columns) == {'position', 'token', 'natural', 'constrained', 'selected', 'chosen'}
+    assert df['position'].nunique() == 1
+    assert (df['natural'] >= 0).all() and (df['natural'] <= 1).all()
     
-    # Check structure
-    assert set(tokens.keys()) == {'original', 'processed'}
-    assert len(tokens['original']) == 2
-    assert all(set(t.keys()) == {'token', 'prob'} for t in tokens['original'])
+    # Test logits
+    df = processor.to_dataframe(show="logits")
+    assert not ((df['natural'] >= 0) & (df['natural'] <= 1)).all()  # Logits can be any value
     
-    # Check ordering
-    assert tokens['original'][0]['prob'] > tokens['original'][1]['prob']
+    # Test min_value filter
+    df = processor.to_dataframe(min_value=0.1)
+    assert len(df) > 0
+    assert ((df['natural'].abs() >= 0.1) | (df['constrained'].abs() >= 0.1)).all()
 
 
-def test_clear_tracking(processor):
+def test_clear(processor):
     """Test clearing tracked data."""
-    processor.process_logits([[0]], torch.randn(1, 10))
-    assert len(processor.original_logits) > 0
+    # Add some data
+    processor.process_logits([[0]], torch.ones(1, 10))
+    processor.process_logits([[0, 1]], torch.ones(1, 10))
     
-    processor.clear_tracking()
-    assert len(processor.original_logits) == 0
-    assert len(processor.processed_logits) == 0
+    assert len(processor.unstructured_logits) > 0
+    assert len(processor.structured_logits) > 0
+    assert len(processor.chosen_tokens) > 0
+    assert processor._started  # Should be True after processing
+    
+    # Clear
+    processor.clear()
+    
+    assert len(processor.unstructured_logits) == 0
+    assert len(processor.structured_logits) == 0
+    assert len(processor.chosen_tokens) == 0
+    assert processor._started  # Should remain True after clear
 
 
 def test_add_tracking_helper():
@@ -146,49 +280,25 @@ def test_add_tracking_helper():
     tracked = add_tracking(generator)
     
     assert isinstance(tracked.logits_processor, LogitTrackingProcessor)
-    assert tracked.logits_processor.max_positions is None
-    
-    tracked = add_tracking(generator, max_positions=5)
-    assert tracked.logits_processor.max_positions == 5
+    assert isinstance(tracked.logits_processor.processor, MockProcessor)
 
 
 @pytest.mark.parametrize("invalid_value", [
     "not a processor",  # Invalid processor type
-    0,  # Invalid max_positions
-    -1,  # Negative max_positions
+    None,  # No processor
 ])
 def test_invalid_inputs(invalid_value):
     """Test handling of invalid inputs."""
-    base = MockProcessor()
-    
     if isinstance(invalid_value, str):
-        # Test invalid processor type
         processor = LogitTrackingProcessor(invalid_value)
-        with pytest.raises(AttributeError, match="'str' object has no attribute 'process_logits'"):
-            # Should raise AttributeError when trying to use process_logits
+        with pytest.raises(AttributeError):
             processor.process_logits([[0]], torch.ones(1, 10))
     else:
-        # Test invalid max_positions
-        with pytest.raises(ValueError):
-            LogitTrackingProcessor(base, max_positions=invalid_value)
-
-
-def test_tracking_disabled():
-    """Test behavior when tracking is disabled."""
-    base = MockProcessor()
-    processor = LogitTrackingProcessor(base, track_original=False, track_processed=False)
-    
-    # Process some logits
-    logits = torch.ones(1, 10)
-    processor.process_logits([[0]], logits)
-    
-    # Check that nothing was tracked
-    assert len(processor.original_logits) == 0
-    assert len(processor.processed_logits) == 0
-    
-    # Check that accessing stats raises KeyError
-    with pytest.raises(KeyError):
-        processor.get_statistics(0)
+        # None processor should work but not modify logits
+        processor = LogitTrackingProcessor(invalid_value)
+        logits = torch.ones(1, 10)
+        result = processor.process_logits([[0]], logits)
+        assert torch.allclose(result, logits)
 
 
 def test_missing_tokenizer():
@@ -201,101 +311,24 @@ def test_missing_tokenizer():
     processor.process_logits([[0]], torch.ones(1, 10))
     
     with pytest.raises(AttributeError):
-        processor.get_top_tokens(0)
+        processor.get_vocab_mapping()
 
 
 def test_shape_mismatch():
     """Test error handling for shape mismatch between input_ids and logits."""
-    base = MockProcessor()
-    processor = LogitTrackingProcessor(base)
+    processor = LogitTrackingProcessor(MockProcessor())
     
-    with pytest.raises(AssertionError, match="batch dimensions must match"):
-        processor.process_logits([[0]], torch.ones(2, 10))  # batch size mismatch
-
-
-def test_empty_sequence():
-    """Test handling of empty input sequences."""
-    base = MockProcessor()
-    processor = LogitTrackingProcessor(base)
+    # Test batch size mismatch
+    input_ids = [[0]]  # batch_size=1
+    logits = torch.ones(2, 10)  # batch_size=2
     
-    logits = torch.ones(1, 10)
-    processor.process_logits([[]], logits)
+    print(f"\nShape mismatch test:")
+    print(f"input_ids shape: {len(input_ids)}x{len(input_ids[0])}")
+    print(f"logits shape: {logits.shape}")
+    print(f"logits[0]: {logits[0]}")  # Print first batch
+    print(f"logits: {logits}")  # Print full tensor
     
-    # Position should be -1 for empty sequence
-    assert -1 in processor.original_logits
-    assert -1 in processor.processed_logits
-
-
-def test_sliding_window_contents():
-    """Test exact contents of sliding window tracking."""
-    base = MockProcessor()
-    processor = LogitTrackingProcessor(base, max_positions=2)
-    
-    # Process 4 positions
-    for i in range(4):
-        logits = torch.full((1, 10), float(i))  # Fill with position number for easy checking
-        processor.process_logits([[j for j in range(i + 1)]], logits)
-    
-    # Should only have positions 2 and 3
-    assert set(processor.original_logits.keys()) == {2, 3}
-    assert torch.all(processor.original_logits[2][0] == 2.0)
-    assert torch.all(processor.original_logits[3][0] == 3.0)
-
-
-def test_all_invalid_logits():
-    """Test behavior when all logits are invalid."""
-    base = MockProcessor()
-    processor = LogitTrackingProcessor(base)
-    
-    # Create logits where processed version has all -inf
-    logits = torch.ones(1, 10)
-    processor.process_logits([[0]], logits)
-    processor.processed_logits[0].fill_(float('-inf'))
-    
-    # Check that statistics and top tokens handle this case
-    stats = processor.get_statistics(0)
-    assert stats['processed']['valid_tokens'] == 0
-    
-    tokens = processor.get_top_tokens(0)
-    assert len(tokens['processed']) == 0
-
-
-def test_top_tokens_large_k():
-    """Test get_top_tokens with k larger than vocab size."""
-    base = MockProcessor()
-    processor = LogitTrackingProcessor(base)
-    
-    vocab_size = 10
-    logits = torch.ones(1, vocab_size)
-    processor.process_logits([[0]], logits)
-    
-    # Request more tokens than exist
-    tokens = processor.get_top_tokens(0, k=20)
-    assert len(tokens['original']) == vocab_size
-    assert len(tokens['processed']) <= vocab_size
-
-
-@pytest.mark.parametrize("pos", [-1, -100])
-def test_negative_position_access(pos):
-    """Test accessing positions with negative indices."""
-    base = MockProcessor()
-    processor = LogitTrackingProcessor(base)
-    
-    with pytest.raises(KeyError):
-        processor.get_statistics(pos)
-    
-    with pytest.raises(KeyError):
-        processor.get_top_tokens(pos)
-
-
-@pytest.mark.parametrize("pos", [100, 1000])
-def test_nonexistent_position_access(pos):
-    """Test accessing statistics/tokens for non-existent positions."""
-    base = MockProcessor()
-    processor = LogitTrackingProcessor(base)
-    
-    with pytest.raises(KeyError):
-        processor.get_statistics(pos)
-    
-    with pytest.raises(KeyError):
-        processor.get_top_tokens(pos) 
+    # We need to ensure the processor validates batch sizes
+    # This should fail because logits has batch_size=2 but input_ids has batch_size=1
+    with pytest.raises(ValueError, match=r"Batch size mismatch"):
+        processor.process_logits(input_ids, logits) 
