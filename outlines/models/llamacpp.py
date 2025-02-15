@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Dict, Iterator, List, Set, Tuple, Union
 
 from outlines.models.base import Model, ModelTypeAdapter
 from outlines.models.tokenizer import Tokenizer
+from outlines.processors import CFGLogitsProcessor
 
 if TYPE_CHECKING:
     from llama_cpp import Llama
@@ -198,6 +199,11 @@ class LlamaCpp(Model):
         The generated text.
 
         """
+        if isinstance(logits_processor, CFGLogitsProcessor):
+            raise NotImplementedError(
+                "CFG generation is not supported for LlamaCpp due to bug in the llama_cpp tokenizer"
+            )
+
         completion = self.model(
             self.type_adapter.format_input(model_input),
             logits_processor=self.type_adapter.format_output_type(logits_processor),
@@ -229,6 +235,11 @@ class LlamaCpp(Model):
         A generator that return strings.
 
         """
+        if isinstance(logits_processor, CFGLogitsProcessor):
+            raise NotImplementedError(
+                "CFG generation is not supported for LlamaCpp due to bug in the llama_cpp tokenizer"
+            )
+
         generator = self.model(
             self.type_adapter.format_input(model_input),
             logits_processor=self.type_adapter.format_output_type(logits_processor),
