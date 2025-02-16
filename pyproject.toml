@@ -55,6 +55,7 @@ anthropic = ["anthropic"]
 gemini = ["google-generativeai"]
 llamacpp = ["llama-cpp-python", "transformers", "datasets", "numpy<2"]
 exllamav2 = ["exllamav2"]
+ollama = ["ollama"]
 test = [
     "pre-commit",
     "pytest",
@@ -76,7 +77,8 @@ test = [
     "transformers",
     "pillow",
     "exllamav2",
-    "jax"
+    "jax",
+    "ollama"
 ]
 serve = [
     "vllm>=0.3.0",
@@ -154,6 +156,7 @@ module = [
     "pycountry.*",
     "airportsdata.*",
     "outlines_core.*",
+    "ollama.*",
 ]
 ignore_missing_imports = true
 
