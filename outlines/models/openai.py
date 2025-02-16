@@ -6,18 +6,19 @@ from typing import Optional, Union
 
 from pydantic import BaseModel
 
+from outlines.models.base import Model, ModelTypeAdapter
 from outlines.prompts import Vision
 from outlines.types import Json
 
 __all__ = ["OpenAI"]
 
 
-class OpenAIBase:
-    """Base class for the OpenAI clients.
+class OpenAITypeAdapter(ModelTypeAdapter):
+    """Type adapter for the OpenAI clients.
 
-    `OpenAI` base is responsible for preparing the arguments to OpenAI's
-    `completions.create` methods: the input (prompt and possibly image), as well
-    as the output type (only JSON).
+    `OpenAITypeAdapter` is responsible for preparing the arguments to OpenAI's
+    `completions.create` methods: the input (prompt and possibly image), as
+    well as the output type (only JSON).
 
     """
 
@@ -65,7 +66,7 @@ class OpenAIBase:
                         {
                             "type": "image_url",
                             "image_url": {
-                                "url": f"data:{model_input.image_format};base64,{model_input.image_str}"
+                                "url": f"data:{model_input.image_format};base64,{model_input.image_str}"  # noqa: E702
                             },
                         },
                     ],
@@ -115,7 +116,7 @@ class OpenAIBase:
         }
 
 
-class OpenAI(OpenAIBase):
+class OpenAI(Model):
     """Thin wrapper around the `openai.OpenAI` client.
 
     This wrapper is used to convert the input and output types specified by the
@@ -128,6 +129,8 @@ class OpenAI(OpenAIBase):
 
         self.client = OpenAI(*args, **kwargs)
         self.model_name = model_name
+        self.model_type = "api"
+        self.type_adapter = OpenAITypeAdapter()
 
     def generate(
         self,
@@ -135,8 +138,8 @@ class OpenAI(OpenAIBase):
         output_type: Optional[Union[type[BaseModel], str]] = None,
         **inference_kwargs,
     ):
-        messages = self.format_input(model_input)
-        response_format = self.format_output_type(output_type)
+        messages = self.type_adapter.format_input(model_input)
+        response_format = self.type_adapter.format_output_type(output_type)
         result = self.client.chat.completions.create(
             model=self.model_name, **messages, **response_format, **inference_kwargs
         )
@@ -157,3 +160,5 @@ class AzureOpenAI(OpenAI):
 
         self.client = AzureOpenAI(*args, **kwargs)
         self.model_name = deployment_name
+        self.model_type = "api"
+        self.type_adapter = OpenAITypeAdapter()

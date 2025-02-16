@@ -1,7 +1,9 @@
 import pickle
 import warnings
+from functools import singledispatchmethod
 from typing import TYPE_CHECKING, Dict, Iterator, List, Set, Tuple, Union
 
+from outlines.models.base import Model, ModelTypeAdapter
 from outlines.models.tokenizer import Tokenizer
 from outlines.processors import CFGLogitsProcessor
 
@@ -94,7 +96,49 @@ class LlamaCppTokenizer(Tokenizer):
         raise NotImplementedError("Cannot load a pickled llamacpp tokenizer")
 
 
-class LlamaCpp:
+class LlamaCppTypeAdapter(ModelTypeAdapter):
+    """Type adapter for the `llama-cpp-python` library.
+
+    `LlamaCppTypeAdapter` is responsible for preparing the arguments to
+    `llama-cpp-python`'s `Llama.__call__` method: the input (a string prompt),
+    as well as the logits processor (an instance of `LogitsProcessorList`).
+
+    """
+
+    @singledispatchmethod
+    def format_input(self, model_input):
+        """Generate the prompt argument to pass to the model.
+
+        Argument
+        --------
+        model_input
+            The input passed by the user.
+
+        """
+        raise NotImplementedError(
+            f"The input type {input} is not available. "
+            "The `llama-cpp-python` library does not support batch inference. "
+        )
+
+    @format_input.register(str)
+    def format_str_input(self, model_input: str):
+        return model_input
+
+    def format_output_type(self, output_type):
+        """Generate the logits processor argument to pass to the model.
+
+        Argument
+        --------
+        output_type
+            The logits processor provided.
+
+        """
+        from llama_cpp import LogitsProcessorList
+
+        return LogitsProcessorList([output_type])
+
+
+class LlamaCpp(Model):
     """Wraps a model provided by the `llama-cpp-python` library."""
 
     def __init__(self, model_path: Union[str, "Llama"], **kwargs):
@@ -116,6 +160,8 @@ class LlamaCpp:
             self.model = Llama(model_path, **kwargs)
 
         self.tokenizer = LlamaCppTokenizer(self.model)
+        self.model_type = "local"
+        self.type_adapter = LlamaCppTypeAdapter()
 
     @classmethod
     def from_pretrained(cls, repo_id, filename, **kwargs):
@@ -135,7 +181,7 @@ class LlamaCpp:
             model = Llama.from_pretrained(repo_id, filename, **kwargs)
             return cls(model)
 
-    def generate(self, prompt: str, logits_processor, **inference_kwargs) -> str:
+    def generate(self, model_input, logits_processor, **inference_kwargs):
         """Generate text using `llama-cpp-python`.
 
         Arguments
@@ -153,21 +199,14 @@ class LlamaCpp:
         The generated text.
 
         """
-        from llama_cpp import LogitsProcessorList
-
-        if not isinstance(prompt, str):
-            raise NotImplementedError(
-                "The `llama-cpp-python` library does not support batch inference."
-            )
-
         if isinstance(logits_processor, CFGLogitsProcessor):
             raise NotImplementedError(
                 "CFG generation is not supported for LlamaCpp due to bug in the llama_cpp tokenizer"
             )
 
         completion = self.model(
-            prompt,
-            logits_processor=LogitsProcessorList([logits_processor]),
+            self.type_adapter.format_input(model_input),
+            logits_processor=self.type_adapter.format_output_type(logits_processor),
             **inference_kwargs,
         )
         result = completion["choices"][0]["text"]
@@ -177,7 +216,7 @@ class LlamaCpp:
         return result
 
     def stream(
-        self, prompt: str, logits_processor, **inference_kwargs
+        self, model_input, logits_processor, **inference_kwargs
     ) -> Iterator[str]:
         """Stream text using `llama-cpp-python`.
 
@@ -196,21 +235,14 @@ class LlamaCpp:
         A generator that return strings.
 
         """
-        from llama_cpp import LogitsProcessorList
-
-        if not isinstance(prompt, str):
-            raise NotImplementedError(
-                "The `llama-cpp-python` library does not support batch inference."
-            )
-
         if isinstance(logits_processor, CFGLogitsProcessor):
             raise NotImplementedError(
                 "CFG generation is not supported for LlamaCpp due to bug in the llama_cpp tokenizer"
             )
 
         generator = self.model(
-            prompt,
-            logits_processor=LogitsProcessorList([logits_processor]),
+            self.type_adapter.format_input(model_input),
+            logits_processor=self.type_adapter.format_output_type(logits_processor),
             stream=True,
             **inference_kwargs,
         )
