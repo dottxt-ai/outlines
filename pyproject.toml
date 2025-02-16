@@ -55,6 +55,7 @@ anthropic = ["anthropic"]
 gemini = ["google-generativeai"]
 llamacpp = ["llama-cpp-python", "transformers", "datasets", "numpy<2"]
 exllamav2 = ["exllamav2"]
+ollama = ["ollama"]
 test = [
     "pre-commit",
     "pytest",
@@ -77,6 +78,7 @@ test = [
     "pillow",
     "exllamav2",
     "jax",
+    "ollama"
 ]
 test-gpu=["outlines[test]", "vllm; sys_platform == 'linux'"]
 serve = [
@@ -156,7 +158,11 @@ module = [
     "iso3166.*",
     "airportsdata.*",
     "outlines_core.*",
+<<<<<<< HEAD
     "genson",
+=======
+    "ollama.*",
+>>>>>>> 5af6b93 (Create the Ollama model)
 ]
 ignore_missing_imports = true
 
