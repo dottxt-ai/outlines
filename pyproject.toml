@@ -69,12 +69,12 @@ test = [
     "huggingface_hub",
     "openai>=1.0.0",
     "datasets",
-    "vllm; sys_platform == 'linux'",
     "transformers",
     "pillow",
     "exllamav2",
     "jax",
 ]
+test-gpu=["outlines[test]", "vllm; sys_platform == 'linux'"]
 serve = [
     "vllm>=0.3.0",
     "uvicorn",
