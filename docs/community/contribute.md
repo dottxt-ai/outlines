@@ -18,7 +18,7 @@ Note that the [issue tracker][issues] is only intended for actionable items. In 
 
 First, [fork the repository on GitHub](https://github.com/dottxt-ai/outlines/fork) and clone the fork locally:
 
-```bash
+```shell
 git clone git@github.com/YourUserName/outlines.git
 cd outlines
 ```
@@ -27,7 +27,7 @@ Create a new virtual environment:
 
 *If you are using `uv`*:
 
-```bash
+```shell
 uv venv
 source .venv/bin/activate
 alias pip="uv pip" # ... or just remember to prepend any pip command with uv in the rest of this guide
@@ -35,27 +35,41 @@ alias pip="uv pip" # ... or just remember to prepend any pip command with uv in 
 
 *If you are using `venv`*:
 
-```bash
+```shell
 python -m venv .venv
 source .venv/bin/activate
 ```
 
 *If you are using `conda`*:
 
-```bash
+```shell
 conda env create -f environment.yml
 ```
 
 Then install the dependencies in editable mode, and install the `pre-commit` hooks:
 
-```bash
+```shell
+python -m venv .venv
+source .venv/bin/activate
+```
+
+Then install the dependencies in editable mode, and install the pre-commit hooks:
+
+```shell
 pip install -e ".[test]"
 pre-commit install
 ```
+If you own a GPU and want to run the vLLM tests you will have to run:
+
+```shell
+pip install -e ".[test-gpu]"
+```
+
+instead.
 
 Outlines provides optional dependencies for different supported backends, which you can install with
 
-```bash
+```shell
 pip install ".[vllm]"
 ```
 
@@ -85,13 +99,13 @@ You will not have access to a GPU, but you'll be able to make basic contribution
 
 Run the tests:
 
-```bash
+```shell
 pytest
 ```
 
 And run the code style checks:
 
-```bash
+```shell
 pre-commit run --all-files
 ```
 
@@ -101,7 +115,7 @@ Outlines uses [asv](https://asv.readthedocs.io) for automated benchmark testing.
 
 You can run the benchmark test suite locally with the following command:
 
-```bash
+```shell
 asv run --config benchmarks/asv.conf.json
 ```
 
@@ -112,19 +126,19 @@ Caveats:
 
 #### Run a specific test:
 
-```bash
+```shell
 asv run --config benchmarks/asv.conf.json -b bench_json_schema.JsonSchemaBenchmark.time_json_schema_to_fsm
 ```
 
 #### Profile a specific test:
 
-```bash
+```shell
 asv run --config benchmarks/asv.conf.json --profile -b bench_json_schema.JsonSchemaBenchmark.time_json_schema_to_fsm
 ```
 
 #### Compare to `origin/main`
 
-```bash
+```shell
 get fetch origin
 asv continuous origin/main HEAD --config benchmarks/asv.conf.json
 ```
@@ -140,13 +154,13 @@ asv continuous origin/main HEAD --config benchmarks/asv.conf.json
 
 To work on the *documentation* you will need to install the related dependencies:
 
-```bash
+```shell
 pip install -r requirements-doc.txt
 ```
 
 To build the documentation and serve it locally, run the following command in the repository's root folder:
 
-```bash
+```shell
 mkdocs serve
 ```
 
@@ -157,7 +171,7 @@ It will be updated every time you make a change.
 
 Create a new branch on your fork, commit and push the changes:
 
-```bash
+```shell
 git checkout -b new-branch
 git add .
 git commit -m "Changes I made"
