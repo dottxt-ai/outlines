@@ -1,4 +1,5 @@
-from outlines_core.fsm.json_schema import build_regex_from_schema
+from outlines_core import Guide as CoreGuide, Index, Vocabulary
+from outlines_core.json_schema import build_regex_from_schema
 
 from outlines.caching import cache_disabled
 from outlines.fsm.guide import RegexGuide

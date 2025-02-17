@@ -40,7 +40,7 @@ dependencies = [
    "iso3166",
    "airportsdata",
    "torch",
-   "outlines_core==0.1.26",
+   "outlines_core==0.2.3",
    "genson",
 ]
 dynamic = ["version"]

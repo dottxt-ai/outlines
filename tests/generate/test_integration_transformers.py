@@ -1,12 +1,13 @@
 import datetime
 import re
 from enum import Enum
-from functools import partial
-from typing import List, Union
+from functools import partial, lru_cache
+from typing import List, Union, cast, Tuple, Dict, Set
 
 import pytest
 import torch
-from outlines_core.fsm.regex import reduced_vocabulary
+from outlines_core import Guide as CoreGuide, Index, Vocabulary
+from outlines_core.json_schema import build_regex_from_schema
 from pydantic import BaseModel, constr
 
 import outlines.generate as generate
@@ -452,6 +453,107 @@ def test_transformers_json_custom_ws(model):
     generator = generate.json(model, schema, whitespace_pattern=r"[ ]?")
     generator.format_sequence = lambda x: x  # patch to return raw text
     assert "\n" not in generator(prompt, max_tokens=500, seed=0)
+
+
+def byte_symbol(b):
+    pass
+
+
+re_llama_byte_token = re.compile(r"^<0x[0-9A-F]{2}>$")
+
+# The "▁*" prefix is required to handle Gemma and GPT-SW3 tokenizers.
+# The "\.*" suffix is required to handle the NorwAI tokenizer.
+# The "\.*" prefix is required to handle the Salamandra tokenizer.
+# The "s*$" suffix is required to handle the OpenCoder tokenizer.
+re_replacement_seq = re.compile(r"^▁*\.*�+\.*s*$")
+
+
+# Copied from transformers.models.gpt2.tokenization_gpt2.bytes_to_unicode
+@lru_cache()
+def gpt2_bytes_to_unicode():
+    """
+    Returns list of utf-8 byte and a mapping to unicode strings. We specifically avoids mapping to whitespace/control
+    characters the bpe code barfs on.
+
+    The reversible bpe codes work on unicode strings. This means you need a large # of unicode characters in your vocab
+    if you want to avoid UNKs. When you're at something like a 10B token dataset you end up needing around 5K for
+    decent coverage. This is a significant percentage of your normal, say, 32K bpe vocab. To avoid that, we want lookup
+    tables between utf-8 bytes and unicode strings.
+    """
+    bs = (
+        list(range(ord("!"), ord("~") + 1))
+        + list(range(ord("¡"), ord("¬") + 1))
+        + list(range(ord("®"), ord("ÿ") + 1))
+    )
+    cs = bs[:]
+    n = 0
+    for b in range(2**8):
+        if b not in bs:
+            bs.append(b)
+            cs.append(2**8 + n)
+            n += 1
+    cs = [chr(n) for n in cs]
+    return dict(zip(bs, cs))
+
+
+@lru_cache()
+def gpt2_unicode_to_bytes():
+    return {v: k for k, v in gpt2_bytes_to_unicode().items()}
+
+
+@lru_cache
+def reduced_vocabulary(
+    tokenizer,
+) -> Tuple[Dict[str, List[int]], Set[int]]:
+    """Create a map from decoded vocabulary tokens to lists of equivalent token ids."""
+    # TODO FIXME: See if we can get the underlying Rust tokenizers from HF and
+    # do all this in Rust
+    empty_token_ids = set()
+    vocabulary: Dict[str, List[int]] = {}
+    for token, token_idx in tokenizer.vocabulary.items():
+        if token in tokenizer.special_tokens:
+            continue
+
+        token_str: Union[str, Tuple[str, ...]] = tokenizer.convert_token_to_string(
+            token
+        )
+
+        if token_str:
+            if isinstance(token, bytes):
+                # Handle BPE tokenizers where the tokens are directly stored as bytes
+                # https://github.com/QwenLM/Qwen/blob/main/tokenization_note.md#regular-tokens
+                token_str = "".join(byte_symbol(b) for b in token)
+
+            elif "\ufffd" in token_str and not re_replacement_seq.match(token):
+                # invalid utf-8 sequences are replaced with � (\ufffd), but there
+                # might also be tokens specifically for �, ��, ���, etc.
+
+                if re_llama_byte_token.match(token):
+                    # llama-like tokenizers have <0xXX> tokens for all
+                    # bytes >= 0x80 and represent all incomplete utf-8
+                    # sequences using such tokens
+                    token_bytes = [int(token[3:5], 16)]
+                else:
+                    # gpt2-like tokenizers have multibyte tokens that can
+                    # have a mix of full and incomplete utf-8 characters,
+                    # for example, b` \xf0` can be one token; these tokenizers
+                    # map each byte to a valid utf-8 character
+                    token_bytes = cast(
+                        List[int], [gpt2_unicode_to_bytes().get(c) for c in token]
+                    )
+                    if None in token_bytes:
+                        raise RuntimeError(
+                            f"Cannot convert token `{token}` ({token_idx}) to bytes: {token_str}"
+                        )
+                token_str = "".join(byte_symbol(b) for b in token_bytes)
+
+            assert isinstance(token_str, str)
+
+            vocabulary.setdefault(token_str, []).append(token_idx)
+        else:
+            empty_token_ids.add(token_idx)
+
+    return vocabulary, empty_token_ids
 
 
 def test_transformers_reduced_vocabulary_caching():

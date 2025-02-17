@@ -23,16 +23,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
+
 import math
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Type, Union
-
 import torch
-from outlines_core.fsm.json_schema import build_regex_from_schema
+from outlines_core.json_schema import build_regex_from_schema
 from pydantic import BaseModel
-
 from outlines.fsm.guide import CFGGuide, Guide, RegexGuide
 from outlines.fsm.json_schema import convert_json_schema_to_str
-
 from .base_logits_processor import OutlinesLogitsProcessor
 
 if TYPE_CHECKING:

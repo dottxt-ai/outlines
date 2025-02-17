@@ -4,7 +4,8 @@ from enum import Enum
 from functools import singledispatch
 from typing import Callable, List, Union
 
-from outlines_core.fsm.json_schema import build_regex_from_schema
+from outlines_core import Guide as CoreGuide, Index, Vocabulary
+from outlines_core.json_schema import build_regex_from_schema
 
 from outlines.fsm.json_schema import get_schema_from_enum
 from outlines.generate.api import SequenceGeneratorAdapter
