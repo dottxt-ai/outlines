@@ -20,7 +20,7 @@ class OpenAIConfig:
     properties that are specific to the OpenAI API. Not all these properties are
     supported by Outlines.
 
-    Properties
+    Parameters
     ----------
     model
         The name of the model. Available models can be found on OpenAI's website.

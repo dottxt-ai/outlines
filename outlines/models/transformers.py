@@ -203,8 +203,8 @@ class Transformers:
     ) -> Union[str, List[str], List[List[str]]]:
         """Generate text using `transformers`.
 
-        Arguments
-        ---------
+        Parameters
+        ----------
         prompts
             A prompt or list of prompts.
         generation_parameters
@@ -304,7 +304,7 @@ class Transformers:
         sampling_parameters: SamplingParameters,
     ) -> dict:
         """
-        Conert outlines generation parameters into model.generate kwargs
+        Convert outlines generation parameters into model.generate kwargs
         """
         from transformers import GenerationConfig, LogitsProcessorList, set_seed
 
