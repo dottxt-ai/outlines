@@ -125,6 +125,7 @@ def prompt(
     manipulation by providing some degree of encapsulation. It uses the `render`
     function internally to render templates.
 
+    ```pycon
     >>> import outlines
     >>>
     >>> @outlines.prompt
@@ -132,35 +133,40 @@ def prompt(
     ...    "I have a ${question}"
     ...
     >>> prompt = build_prompt("How are you?")
+    ```
 
     This API can also be helpful in an "agent" context where parts of the prompt
     are set when the agent is initialized and never modified later. In this situation
     we can partially apply the prompt function at initialization.
 
+    ```pycon
     >>> import outlines
     >>> import functools as ft
     ...
     >>> @outlines.prompt
     ... def solve_task(name: str, objective: str, task: str):
-    ...     '''Your name is {{name}}.
-    ..      Your overall objective is to {{objective}}.
+    ...     \"""Your name is {{name}}.
+    ...     Your overall objective is to {{objective}}.
     ...     Please solve the following task: {{task}}
-    ...     '''
+    ...     \"""
     ...
     >>> hal = ft.partial(solve_task, "HAL", "Travel to Jupiter")
+    ```
 
     Additional Jinja2 filters can be provided as keyword arguments to the decorator.
 
+    ```pycon
     >>> def reverse(s: str) -> str:
     ...     return s[::-1]
     ...
     >>> @outlines.prompt(filters={ 'reverse': reverse })
     ... def reverse_prompt(text):
-    ...     '''{{ text | reverse }}'''
+    ...     \"""{{ text | reverse }}\"""
     ...
     >>> prompt = reverse_prompt("Hello")
     >>> print(prompt)
     ... "olleH"
+    ```
 
     Returns
     -------
