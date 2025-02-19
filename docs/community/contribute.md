@@ -49,13 +49,6 @@ conda env create -f environment.yml
 Then install the dependencies in editable mode, and install the `pre-commit` hooks:
 
 ```shell
-python -m venv .venv
-source .venv/bin/activate
-```
-
-Then install the dependencies in editable mode, and install the pre-commit hooks:
-
-```shell
 pip install -e ".[test]"
 pre-commit install
 ```
