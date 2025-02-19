@@ -248,8 +248,8 @@ class LlamaCpp:
     ) -> str:
         """Generate text using `llama-cpp-python`.
 
-        Arguments
-        ---------
+        Parameters
+        ----------
         prompts
             A prompt or list of prompts.
         generation_parameters
@@ -302,8 +302,8 @@ class LlamaCpp:
     ) -> Iterator[str]:
         """Stream text using `llama-cpp-python`.
 
-        Arguments
-        ---------
+        Parameters
+        ----------
         prompts
             A prompt or list of prompts.
         generation_parameters
@@ -372,8 +372,8 @@ def llamacpp(
     a path to the downloaded model. One can still load a local model
     by initializing `llama_cpp.Llama` directly.
 
-    Arguments
-    ---------
+    Parameters
+    ----------
     repo_id
         The name of the model repository.
     filename:
