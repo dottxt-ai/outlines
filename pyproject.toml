@@ -158,11 +158,8 @@ module = [
     "iso3166.*",
     "airportsdata.*",
     "outlines_core.*",
-<<<<<<< HEAD
     "genson",
-=======
     "ollama.*",
->>>>>>> 5af6b93 (Create the Ollama model)
 ]
 ignore_missing_imports = true
 
