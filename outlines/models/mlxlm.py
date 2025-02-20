@@ -49,8 +49,8 @@ class MLXLM:
     ) -> Iterator[str]:
         """Generate text using `mlx_lm`.
 
-        Arguments
-        ---------
+        Parameters
+        ----------
         prompts
             A prompt or list of prompts.
         generation_parameters
@@ -63,6 +63,7 @@ class MLXLM:
             An instance of `SamplingParameters`, a dataclass that contains
             the name of the sampler to use and related parameters as available
             in Outlines.
+
         Returns
         -------
         The generated text.
@@ -135,14 +136,18 @@ class MLXLM:
 
         A generator producing token ids based on the given prompt from the model.
 
-            Args:
-                prompt (mx.array): The input prompt.
-                temp (float): The temperature for sampling, if 0 the argmax is used.
-                  Default: ``0``.
-                top_p (float, optional): Nulceus sampling, higher means model considers
-                  more less likely words.
-                sampler (str): The sampler string defined by SequenceGeneratorAdapter
-                logits_processor (OutlinesLogitsProcessor): Augment logits before sampling.
+        Parameters
+        ----------
+        prompt
+            The input prompt.
+        temp
+            The temperature for sampling, if 0 the argmax is used.
+        top_p
+            Nulceus sampling, higher means model considers more less likely words.
+        sampler
+            The sampler string defined by SequenceGeneratorAdapter
+        logits_processor
+            Augment logits before sampling.
         """
         import mlx.core as mx
         import mlx_lm

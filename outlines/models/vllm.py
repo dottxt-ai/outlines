@@ -52,8 +52,8 @@ class VLLM:
     ):
         """Generate text using vLLM.
 
-        Arguments
-        ---------
+        Parameters
+        ----------
         prompts
             A prompt or list of prompts.
         generation_parameters
@@ -171,7 +171,7 @@ class VLLM:
 def vllm(model_name: str, **vllm_model_params):
     """Load a vLLM model.
 
-    Arguments
+    Parameters
     ---------
     model_name
         The name of the model to load from the HuggingFace hub.

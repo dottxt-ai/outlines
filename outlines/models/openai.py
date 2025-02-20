@@ -20,11 +20,11 @@ class OpenAIConfig:
     properties that are specific to the OpenAI API. Not all these properties are
     supported by Outlines.
 
-    Properties
+    Parameters
     ----------
     model
         The name of the model. Available models can be found on OpenAI's website.
-    frequence_penalty
+    frequency_penalty
         Number between 2.0 and -2.0. Positive values penalize new tokens based on
         their existing frequency in the text,
     logit_bias
@@ -49,7 +49,6 @@ class OpenAIConfig:
         Number between 0 and 1. Parameter for nucleus sampling.
     user
         A unique identifier for the end-user.
-
     """
 
     model: str = ""

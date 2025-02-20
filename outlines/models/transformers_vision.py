@@ -22,8 +22,8 @@ class TransformersVision(Transformers):
     ) -> Union[str, List[str], List[List[str]]]:
         """Generate text using `transformers`.
 
-        Arguments
-        ---------
+        Parameters
+        ----------
         prompts
             A prompt or list of prompts.
         media
