@@ -118,9 +118,11 @@ class ExLlamaV2Model:
         self, output: Union[str, List[str]], sampling_parameters: SamplingParameters
     ):
         """
-        The purpose of this function is to reformat the output from exllamav2's output format to outline's output format
-        For exllamav2, it mainly accepts only a list or a string(they also do cfg sampling with tuples but we will ignore this for now)
-        The exllamav2's logic is
+        The purpose of this function is to reformat the output from exllamav2's output format to outline's output format.
+
+        For exllamav2, it mainly accepts only a list or a string(they also do cfg sampling with tuples but we will ignore this for now).
+        The exllamav2's logic is:
+
         1. If the prompt is a string, return a string. This is the same as outlines
         2. If a prompt is a list, return a list. This is not the same as outlines output in that if the list is only one element, the string is expected to be outputted.
         3. There is no such thing as num_samples, so the prompts had to be duplicated by num_samples times. Then, we had the function output a list of lists
