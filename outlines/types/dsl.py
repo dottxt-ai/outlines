@@ -146,6 +146,9 @@ class Regex(Term):
     def __repr__(self):
         return f"Regex(pattern='{self.pattern}')"
 
+    def to_regex(self) -> str:
+        return self.pattern
+
 
 class JsonSchema(Term):
     def __init__(self, schema: Union[dict, str, type[BaseModel]]):

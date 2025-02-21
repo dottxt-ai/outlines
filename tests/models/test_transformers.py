@@ -1,117 +1,153 @@
+import re
+from enum import Enum
+
 import pytest
-import torch
-from transformers import AutoTokenizer
-from transformers.models.gpt2 import GPT2TokenizerFast
+from pydantic import BaseModel
+from transformers import AutoModelForSeq2SeqLM
 
-from outlines.models.transformers import TransformerTokenizer, transformers
+from outlines.models.transformers import Mamba, Transformers
+from outlines.types import Choice, Json, Regex
 
-TEST_MODEL = "hf-internal-testing/tiny-random-GPTJForCausalLM"
+TEST_MODEL = "erwanf/gpt2-mini"
+TEST_MODEL_SEQ2SEQ = "hf-internal-testing/tiny-random-t5"
+TEST_MODEL_MAMBA = "hf-internal-testing/tiny-random-MambaForCausalLM"
 
 
-def test_tokenizer():
-    tokenizer = AutoTokenizer.from_pretrained(TEST_MODEL, padding_side="left")
-    tokenizer = TransformerTokenizer(tokenizer)
-    assert tokenizer.eos_token_id == 0
-    assert tokenizer.pad_token_id == 0
-    assert isinstance(tokenizer.tokenizer, GPT2TokenizerFast)
+def test_transformers_instantiate_simple():
+    model = Transformers(TEST_MODEL)
+    assert isinstance(model, Transformers)
 
-    token_ids, attention_mask = tokenizer.encode("Test")
-    assert token_ids.ndim == 2
-    assert token_ids.shape[0] == 1
-    assert isinstance(token_ids, torch.LongTensor)
-    assert token_ids.shape == attention_mask.shape
 
-    token_ids, attention_mask = tokenizer.encode(["Test", "Test"])
-    assert token_ids.ndim == 2
-    assert token_ids.shape[0] == 2
-    assert isinstance(token_ids, torch.LongTensor)
-    assert token_ids.shape == attention_mask.shape
+def test_transformers_instantiate_wrong_kwargs():
+    with pytest.raises(TypeError):
+        Transformers(TEST_MODEL, model_kwargs={"foo": "bar"})
 
-    token_ids, attention_mask = tokenizer.encode(["Test", "A long sentence"])
-    assert token_ids.shape == attention_mask.shape
-    assert attention_mask[0][0] == tokenizer.pad_token_id
 
-    text = tokenizer.decode(torch.tensor([[0, 1, 2]]))
-    isinstance(text, str)
-
-    text = tokenizer.decode(torch.tensor([[0, 1, 2], [3, 4, 5]]))
-    isinstance(text, list)
-    isinstance(text[0], str)
-    isinstance(text[1], str)
-
-    tokenizer = AutoTokenizer.from_pretrained(
-        TEST_MODEL, additional_special_tokens=["<t1>", "<t2>"]
+def test_transformers_instantiate_other_model_class():
+    model = Transformers(
+        model_name=TEST_MODEL_SEQ2SEQ, model_class=AutoModelForSeq2SeqLM
     )
-    tokenizer = TransformerTokenizer(tokenizer)
-    assert "<t1>" in tokenizer.special_tokens
-    assert "<t2>" in tokenizer.special_tokens
+    assert isinstance(model, Transformers)
 
 
-def test_llama_tokenizer():
-    tokenizer = AutoTokenizer.from_pretrained("hf-internal-testing/llama-tokenizer")
-    tokenizer = TransformerTokenizer(tokenizer)
-
-    # Broken
-    assert tokenizer.tokenizer.convert_tokens_to_string(["▁baz"]) == "baz"
-    assert tokenizer.tokenizer.convert_tokens_to_string(["<0x20>"]) == ""
-    assert tokenizer.tokenizer.convert_tokens_to_string(["▁▁▁"]) == "  "
-
-    # Not broken
-    assert tokenizer.convert_token_to_string("▁baz") == " baz"
-    assert tokenizer.convert_token_to_string("<0x20>") == " "
-    assert tokenizer.convert_token_to_string("▁▁▁") == "   "
+def test_transformers_instantiate_mamba():
+    model = Mamba(
+        model_name=TEST_MODEL_MAMBA,
+    )
+    assert isinstance(model, Mamba)
+    assert isinstance(model, Transformers)
 
 
-def test_model():
-    model = transformers(TEST_MODEL, device="cpu")
-    assert isinstance(model.tokenizer, TransformerTokenizer)
-    assert model.model.device.type == "cpu"
-
-    model = transformers(TEST_MODEL, model_kwargs={"device_map": "cpu"})
-    assert isinstance(model.tokenizer, TransformerTokenizer)
-    assert model.model.device.type == "cpu"
-
-    model = transformers(TEST_MODEL, device="cpu", model_kwargs={"device_map": "cuda"})
-    assert isinstance(model.tokenizer, TransformerTokenizer)
-    assert model.model.device.type == "cpu"
-
-    input_ids = torch.tensor([[0, 1, 2]])
-    logits, kv_cache = model(input_ids, torch.ones_like(input_ids))
-    assert logits.type() == "torch.FloatTensor"
-    assert logits.ndim == 2
-    assert logits.shape[0] == 1
-    assert len(kv_cache) == model.model.config.n_layer
-    assert len(kv_cache[0]) == 2
-    assert kv_cache[0][0].shape[1] == model.model.config.n_head
-    assert kv_cache[0][0].shape[2] == 3  # number of tokens
-
-    input_ids = torch.tensor([[0, 1, 2], [3, 4, 5], [6, 7, 8]])
-    logits, kv_cache = model(input_ids, torch.ones_like(input_ids))
-    assert logits.type() == "torch.FloatTensor"
-    assert logits.ndim == 2
-    assert logits.shape[0] == 3
-    assert len(kv_cache) == model.model.config.n_layer
-    assert len(kv_cache[0]) == 2
-    assert kv_cache[0][0].shape[1] == model.model.config.n_head
-    assert kv_cache[0][0].shape[2] == 3  # number of tokens
-
-    with pytest.raises(AssertionError):
-        input_ids = torch.tensor([[[0, 1, 2], [3, 4, 5]], [[6, 7, 8], [0, 1, 2]]])
-        logits = model(input_ids, torch.ones_like(input_ids))
+def test_transformers_instantiate_tokenizer_kwargs():
+    model = Transformers(
+        TEST_MODEL,
+        tokenizer_kwargs={"additional_special_tokens": ["<t1>", "<t2>"]}
+    )
+    assert "<t1>" in model.tokenizer.special_tokens
+    assert "<t2>" in model.tokenizer.special_tokens
 
 
-def test_tokenizer_eq_hash():
-    tokenizer_hf = AutoTokenizer.from_pretrained("gpt2")
+@pytest.fixture
+def model():
+    return Transformers(TEST_MODEL)
 
-    tokenizer = TransformerTokenizer(tokenizer_hf)
-    tokenizer_2 = TransformerTokenizer(tokenizer_hf)
 
-    assert tokenizer == tokenizer_2
-    assert hash(tokenizer) == hash(tokenizer_2)
+def test_transformers_simple(model):
+    result = model.generate("Respond with one word. Not more.", None)
+    assert isinstance(result, str)
 
-    tokenizer_hf_2 = AutoTokenizer.from_pretrained("gpt2")
-    tokenizer_hf_2.add_tokens(["test_token"])
 
-    tokenizer_3 = TransformerTokenizer(tokenizer_hf_2)
-    assert tokenizer != tokenizer_3
-    assert hash(tokenizer) != hash(tokenizer_3)
+def test_transformers_call(model):
+    result = model("Respond with one word. Not more.")
+    assert isinstance(result, str)
+
+
+def test_transformers_inference_kwargs(model):
+    result = model("Respond with one word. Not more.", max_new_tokens=100)
+    assert isinstance(result, str)
+
+
+def test_transformers_invalid_inference_kwargs(model):
+    with pytest.raises(ValueError):
+        model("Respond with one word. Not more.", foo="bar")
+
+
+def test_transformers_regex(model):
+    result = model("Give a number between 0 and 9.", Regex(r"[0-9]"))
+    assert isinstance(result, str)
+    assert re.match(r"[0-9]", result)
+
+
+def test_transformers_json(model):
+    class Character(BaseModel):
+        name: str
+
+    result = model("Create a character with a name.", Json(Character))
+    assert "name" in result
+
+
+def test_transformers_choice(model):
+    class Foo(Enum):
+        cat = "cat"
+        dog = "dog"
+
+    result = model("Cat or dog?", Choice(Foo))
+    assert result in ["cat", "dog"]
+
+
+def test_transformers_batch_samples(model):
+    result = model("Respond with one word. Not more.")
+    assert isinstance(result, str)
+    result = model(
+        "Respond with one word. Not more.", num_return_sequences=2, num_beams=2
+    )
+    assert isinstance(result, list)
+    assert len(result) == 2
+    result = model(
+        ["Respond with one word. Not more.", "Respond with one word. Not more."]
+    )
+    assert isinstance(result, list)
+    assert len(result) == 2
+    result = model(
+        ["Respond with one word. Not more.", "Respond with one word. Not more."],
+        num_return_sequences=2,
+        num_beams=2,
+    )
+    assert isinstance(result, list)
+    assert len(result) == 2
+    for item in result:
+        assert isinstance(item, list)
+        assert len(item) == 2
+
+
+def test_transformers_batch_samples_constrained(model):
+    class Foo(Enum):
+        cat = "cat"
+        dog = "dog"
+
+    result = model("Cat or dog?", Choice(Foo), num_return_sequences=2, num_beams=2)
+    assert isinstance(result, list)
+    assert len(result) == 2
+    assert result[0] in ["cat", "dog"]
+    assert result[1] in ["cat", "dog"]
+    result = model(
+        ["Cat or dog?", "Cat or dog?"],
+        Choice(Foo),
+    )
+    assert isinstance(result, list)
+    assert len(result) == 2
+    assert result[0] in ["cat", "dog"]
+    assert result[1] in ["cat", "dog"]
+    result = model(
+        ["Cat or dog?", "Cat or dog?"],
+        Choice(Foo),
+        num_return_sequences=2,
+        num_beams=2,
+    )
+    assert isinstance(result, list)
+    assert len(result) == 2
+    for item in result:
+        assert isinstance(item, list)
+        assert len(item) == 2
+        assert item[0] in ["cat", "dog"]
+        assert item[1] in ["cat", "dog"]
