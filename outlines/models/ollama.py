@@ -1,9 +1,15 @@
 from functools import singledispatchmethod
 from types import NoneType
-from typing import Iterator
+from typing import Iterator, TYPE_CHECKING
 
 from outlines.models.base import Model, ModelTypeAdapter
 from outlines.types import JsonType
+
+if TYPE_CHECKING:
+    from ollama import Client as OllamaClient
+
+
+__all__ = ["Ollama", "from_ollama"]
 
 
 class OllamaTypeAdapter(ModelTypeAdapter):
@@ -59,20 +65,10 @@ class Ollama(Model):
 
     """
 
-    def __init__(self, model_name: str, *args, **kwargs):
-        from ollama import Client
-
-        self.client = Client(*args, **kwargs)
+    def __init__(self, client: "OllamaClient", model_name: str):
+        self.client = client
         self.model_name = model_name
         self.type_adapter = OllamaTypeAdapter()
-
-    @classmethod
-    def from_pretrained(cls, model_name: str, *args, **kwargs):
-        """Download the model weights from Ollama and create a `Ollama` instance."""
-        from ollama import pull
-
-        pull(model_name)
-        return cls(model_name, *args, **kwargs)
 
     def generate(self, model_input, output_type=None, **kwargs) -> str:
         response = self.client.generate(
@@ -93,3 +89,7 @@ class Ollama(Model):
         )
         for chunk in response:
             yield chunk.response
+
+
+def from_ollama(client: "OllamaClient", model_name: str) -> Ollama:
+    return Ollama(client, model_name)
