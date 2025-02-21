@@ -19,7 +19,7 @@ from .ollama import Ollama, from_ollama
 from .openai import from_openai, OpenAI
 from .transformers import Transformers, TransformerTokenizer, Mamba
 from .transformers_vision import TransformersVision
-from .vllm import VLLM, vllm
+from .vllm import VLLM, from_vllm
 
 LogitsGenerator = Union[
     Transformers, LlamaCpp, OpenAI, ExLlamaV2Model, MLXLM, VLLM, Ollama
