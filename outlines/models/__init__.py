@@ -13,7 +13,7 @@ from .base import Model, ModelTypeAdapter
 from .dottxt import Dottxt
 from .exllamav2 import ExLlamaV2Model, exl2
 from .gemini import from_gemini, Gemini
-from .llamacpp import LlamaCpp
+from .llamacpp import LlamaCpp, from_llamacpp
 from .mlxlm import MLXLM, mlxlm
 from .ollama import Ollama, from_ollama
 from .openai import from_openai, OpenAI
