@@ -4,9 +4,6 @@
 
     You need to install the `google-generativeai` library to be able to use the Gemini API in Outlines. Or alternatively you can run:
 
-    ```bash
-    pip install "outlines[gemini]"
-    ```
 
 ## Gemini models
 

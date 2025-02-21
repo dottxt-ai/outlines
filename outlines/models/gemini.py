@@ -3,7 +3,7 @@
 from enum import EnumMeta
 from functools import singledispatchmethod
 from types import NoneType
-from typing import Optional, Union
+from typing import Optional, Union, TYPE_CHECKING
 
 from pydantic import BaseModel
 from typing_extensions import _TypedDictMeta  # type: ignore
@@ -12,7 +12,11 @@ from outlines.models.base import Model, ModelTypeAdapter
 from outlines.templates import Vision
 from outlines.types import JsonType, Choice, List
 
-__all__ = ["Gemini"]
+
+if TYPE_CHECKING:
+    from google.generativeai import GenerativeModel as GeminiClient
+
+__all__ = ["Gemini", "from_gemini"]
 
 
 class GeminiTypeAdapter(ModelTypeAdapter):
@@ -94,11 +98,8 @@ class GeminiTypeAdapter(ModelTypeAdapter):
 
 
 class Gemini(Model):
-    def __init__(self, model_name: str, *args, **kwargs):
-        import google.generativeai as genai
-
-        self.client = genai.GenerativeModel(model_name, *args, **kwargs)
-        self.model_type = "api"
+    def __init__(self, client: "GeminiClient"):
+        self.client = client
         self.type_adapter = GeminiTypeAdapter()
 
     def generate(
@@ -118,3 +119,7 @@ class Gemini(Model):
         )
 
         return completion.text
+
+
+def from_gemini(client: "GeminiClient"):
+    return Gemini(client)
