@@ -10,7 +10,7 @@ from typing_extensions import _TypedDictMeta  # type: ignore
 
 from outlines.models.base import Model, ModelTypeAdapter
 from outlines.templates import Vision
-from outlines.types import Choice, Json, List
+from outlines.types import JsonType, Choice, List
 
 __all__ = ["Gemini"]
 
@@ -69,7 +69,7 @@ class GeminiTypeAdapter(ModelTypeAdapter):
     def format_none_output_type(self, output_type):
         return {}
 
-    @format_output_type.register(Json)
+    @format_output_type.register(JsonType)
     def format_json_output_type(self, output_type):
         """Gemini only accepts Pydantic models and TypeDicts to define the JSON structure."""
         if issubclass(output_type.definition, BaseModel):
@@ -104,7 +104,7 @@ class Gemini(Model):
     def generate(
         self,
         model_input: Union[str, Vision],
-        output_type: Optional[Union[Json, EnumMeta]] = None,
+        output_type: Optional[Union[JsonType, EnumMeta]] = None,
         **inference_kwargs,
     ):
         import google.generativeai as genai

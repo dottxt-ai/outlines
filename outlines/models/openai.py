@@ -7,8 +7,8 @@ from typing import Optional, Union
 from pydantic import BaseModel
 
 from outlines.models.base import Model, ModelTypeAdapter
-from outlines.templates import Vision
-from outlines.types import Json
+from outlines.prompts import Vision
+from outlines.types import JsonType
 
 __all__ = ["OpenAI"]
 
@@ -92,8 +92,8 @@ class OpenAITypeAdapter(ModelTypeAdapter):
         """
         return {}
 
-    @format_output_type.register(Json)
-    def format_json_output_type(self, output_type: Json):
+    @format_output_type.register(JsonType)
+    def format_json_output_type(self, output_type: JsonType):
         """Generate the `response_format` argument to the client when the user
         specified a `Json` output type.
 
