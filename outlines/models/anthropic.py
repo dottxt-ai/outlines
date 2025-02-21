@@ -1,12 +1,15 @@
 """Integration with Anthropic's API."""
 
 from functools import singledispatchmethod
-from typing import Union
+from typing import Union, TYPE_CHECKING
 
 from outlines.models.base import Model, ModelTypeAdapter
 from outlines.templates import Vision
 
-__all__ = ["Anthropic"]
+if TYPE_CHECKING:
+    from anthropic import Anthropic as AnthropicClient
+
+__all__ = ["Anthropic", "from_anthropic"]
 
 
 class AnthropicTypeAdapter(ModelTypeAdapter):
@@ -82,12 +85,9 @@ class AnthropicTypeAdapter(ModelTypeAdapter):
 
 
 class Anthropic(Model):
-    def __init__(self, model_name: str, *args, **kwargs):
-        from anthropic import Anthropic
-
-        self.client = Anthropic(*args, **kwargs)
+    def __init__(self, client: "AnthropicClient", model_name: str):
+        self.client = client
         self.model_name = model_name
-        self.model_type = "api"
         self.type_adapter = AnthropicTypeAdapter()
 
     def generate(
@@ -106,3 +106,7 @@ class Anthropic(Model):
             **inference_kwargs,
         )
         return completion.content[0].text
+
+
+def from_anthropic(client: "AnthropicClient", model_name: str) -> Anthropic:
+    return Anthropic(client, model_name)
