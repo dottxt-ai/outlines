@@ -5,8 +5,10 @@ import os
 import PIL
 import pytest
 import requests
+from openai import OpenAI as OpenAIClient
 from pydantic import BaseModel
 
+import outlines
 from outlines.models.openai import OpenAI
 from outlines.templates import Vision
 from outlines.types import JsonType
@@ -28,14 +30,16 @@ def api_key():
     return api_key
 
 
-def test_openai_wrong_init_parameters(api_key):
-    with pytest.raises(TypeError, match="got an unexpected"):
-        OpenAI(MODEL_NAME, api_key=api_key, foo=10)
+def test_init_from_client():
+    client = OpenAIClient()
+    model = outlines.from_openai(client, "gpt-4o")
+    assert isinstance(model, OpenAI)
+    assert model.client == client
 
 
 def test_openai_wrong_inference_parameters(api_key):
     with pytest.raises(TypeError, match="got an unexpected"):
-        model = OpenAI(MODEL_NAME, api_key=api_key)
+        model = OpenAI(OpenAIClient(), MODEL_NAME)
         model.generate("prompt", foo=10)
 
 
@@ -45,7 +49,7 @@ def test_openai_wrong_input_type(api_key):
             self.foo = foo
 
     with pytest.raises(NotImplementedError, match="is not available"):
-        model = OpenAI(MODEL_NAME, api_key=api_key)
+        model = OpenAI(OpenAIClient(), MODEL_NAME)
         model.generate(Foo("prompt"))
 
 
@@ -55,27 +59,27 @@ def test_openai_wrong_output_type(api_key):
             self.foo = foo
 
     with pytest.raises(NotImplementedError, match="is not available"):
-        model = OpenAI(MODEL_NAME, api_key=api_key)
+        model = OpenAI(OpenAIClient, MODEL_NAME)
         model.generate("prompt", Foo(1))
 
 
 @pytest.mark.api_call
 def test_openai_simple_call():
-    model = OpenAI(MODEL_NAME)
+    model = OpenAI(OpenAIClient(), MODEL_NAME)
     result = model.generate("Respond with one word. Not more.")
     assert isinstance(result, str)
 
 
 @pytest.mark.api_call
 def test_openai_direct_call():
-    model = OpenAI(MODEL_NAME)
+    model = OpenAI(OpenAIClient(), MODEL_NAME)
     result = model("Respond with one word. Not more.")
     assert isinstance(result, str)
 
 
 @pytest.mark.api_call
 def test_openai_simple_vision():
-    model = OpenAI(MODEL_NAME)
+    model = OpenAI(OpenAIClient(), MODEL_NAME)
 
     url = "https://raw.githubusercontent.com/dottxt-ai/outlines/refs/heads/main/docs/assets/images/logo.png"
     r = requests.get(url, stream=True)
@@ -88,7 +92,7 @@ def test_openai_simple_vision():
 
 @pytest.mark.api_call
 def test_openai_simple_pydantic():
-    model = OpenAI(MODEL_NAME)
+    model = OpenAI(OpenAIClient(), MODEL_NAME)
 
     class Foo(BaseModel):
         bar: int
@@ -100,7 +104,7 @@ def test_openai_simple_pydantic():
 
 @pytest.mark.api_call
 def test_openai_simple_vision_pydantic():
-    model = OpenAI(MODEL_NAME)
+    model = OpenAI(OpenAIClient(), MODEL_NAME)
 
     url = "https://raw.githubusercontent.com/dottxt-ai/outlines/refs/heads/main/docs/assets/images/logo.png"
     r = requests.get(url, stream=True)
@@ -110,14 +114,16 @@ def test_openai_simple_vision_pydantic():
     class Logo(BaseModel):
         name: int
 
-    result = model.generate(Vision("What does this logo represent?", image), JsonType(Logo))
+    result = model.generate(
+        Vision("What does this logo represent?", image), JsonType(Logo)
+    )
     assert isinstance(result, str)
     assert "name" in json.loads(result)
 
 
 @pytest.mark.api_call
 def test_openai_simple_json_schema():
-    model = OpenAI(MODEL_NAME)
+    model = OpenAI(OpenAIClient(), MODEL_NAME)
 
     class Foo(BaseModel):
         bar: int

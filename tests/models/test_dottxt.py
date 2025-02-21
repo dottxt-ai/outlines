@@ -6,7 +6,7 @@ from pydantic import BaseModel
 
 from outlines.generate import Generator
 from outlines.models.dottxt import Dottxt
-from outlines.types import Json
+from outlines.types import JsonType
 
 
 class User(BaseModel):
@@ -44,26 +44,26 @@ def test_dottxt_wrong_output_type(api_key):
 def test_dottxt_wrong_input_type(api_key):
     with pytest.raises(NotImplementedError, match="is not available"):
         model = Dottxt(api_key=api_key)
-        model(["prompt"], Json(User))
+        model(["prompt"], JsonType(User))
 
 
 @pytest.mark.api_call
 def test_dottxt_wrong_inference_parameters(api_key):
     with pytest.raises(TypeError, match="got an unexpected"):
         model = Dottxt(api_key=api_key)
-        model("prompt", Json(User), foo=10)
+        model("prompt", JsonType(User), foo=10)
 
 
 @pytest.mark.api_call
 def test_dottxt_direct_call(api_key):
     model = Dottxt(api_key=api_key, model_name="meta-llama/Llama-3.1-8B-Instruct")
-    result = model("Create a user", Json(User))
+    result = model("Create a user", JsonType(User))
     assert "first_name" in json.loads(result)
 
 
 @pytest.mark.api_call
 def test_dottxt_generator_call(api_key):
     model = Dottxt(api_key=api_key, model_name="meta-llama/Llama-3.1-8B-Instruct")
-    generator = Generator(model, Json(User))
+    generator = Generator(model, JsonType(User))
     result = generator("Create a user")
     assert "first_name" in json.loads(result)
