@@ -6,7 +6,7 @@ from pydantic import BaseModel
 
 from outlines.models import LlamaCpp
 from outlines.processors import RegexLogitsProcessor
-from outlines.types import Choice, Json, Regex
+from outlines.types import Choice, JsonType, Regex
 
 
 def test_load_model():
@@ -42,7 +42,7 @@ def test_llamacpp_json(model):
     class Foo(BaseModel):
         bar: str
 
-    regex_str = Json(Foo).to_regex()
+    regex_str = JsonType(Foo).to_regex()
     logits_processor = RegexLogitsProcessor(regex_str, model.tokenizer)
     result = model.generate(
         "foo? Respond with one word.", logits_processor, max_tokens=1000
@@ -97,7 +97,7 @@ def test_llamacpp_stream_json(model):
     class Foo(BaseModel):
         bar: int
 
-    regex_str = Json(Foo).to_regex()
+    regex_str = JsonType(Foo).to_regex()
     logits_processor = RegexLogitsProcessor(regex_str, model.tokenizer)
     generator = model.stream("foo?", logits_processor)
 
