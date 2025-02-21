@@ -1,95 +1,62 @@
-# transformers
+# Transformers
 
 
 !!! Installation
 
-    You need to install the `transformer`, `datasets` and `torch` libraries to be able to use these models in Outlines, or alternatively:
+    You need to install the `transformer` library to be able to use these models in Outlines, or alternatively:
 
     ```bash
     pip install "outlines[transformers]"
     ```
 
+## Create a `Transformers` model
 
-Outlines provides an integration with the `torch` implementation of causal models in the [transformers][transformers] library. You can initialize the model by passing its name:
-
+The only mandatory argument to instantiate a `Transformers` model is the name of the model to use.
 ```python
 from outlines import models
 
-model = models.transformers("microsoft/Phi-3-mini-4k-instruct", device="cuda")
+model = models.Transformers("microsoft/Phi-3-mini-4k-instruct")
 ```
 
-If you need more fine-grained control you can also initialize the model and tokenizer separately:
+The model name must be a valid `transformers` model name. You can find a list of all in the HuggingFace library [here](https://huggingface.co/models).
 
+When instantiating a `Transformers` model as such, the class creates a model from the transformers libray using the class `AutoModelForCausalLM` by default (`transformers.AutoModelForCausalLM.from_pretrained(model_name, **model_kwargs)`).
 
+You can also provide keyword arguments in an optional `model_kwargs` parameter. Those will be passed to the `from_pretrained` method of the model class. One such argument is `device_map`, which allows you to specify the device on which the model will be loaded.
+
+For instance:
 ```python
-from transformers import AutoModelForCausalLM, AutoTokenizer
 from outlines import models
 
-llm = AutoModelForCausalLM.from_pretrained("gpt2", output_attentions=True)
-tokenizer = AutoTokenizer.from_pretrained("gpt2")
-model = models.Transformers(llm, tokenizer)
+model = models.Transformers("microsoft/Phi-3-mini-4k-instruct", model_kwargs={"device_map": "cuda"})
 ```
 
-## Using Logits Processors
+## Alternative model classes
 
-There are two ways to use Outlines Structured Generation with HuggingFace Transformers:
+If the model you want to use is not compatible with `AutoModelForCausalLM`, you must provide a value for the `model_class` parameter. This value must be a valid `transformers` model class.
 
-1. Use Outlines generation wrapper, `outlines.models.transformers`
-2. Use `OutlinesLogitsProcessor` with `transformers.AutoModelForCausalLM`
+For instance:
+```python
+from outlines import models
+from transformers import AutoModelForSeq2SeqLM
 
-Outlines supports a myriad of logits processors for structured generation. In these example, we will use the `RegexLogitsProcessor` which guarantees generated text matches the specified pattern.
+model = models.Transformers("facebook/bart-large", model_class=AutoModelForSeq2SeqLM)
+```
 
-### Using `outlines.models.transformers`
+When you instantiate a `Transformers` model, the class also creates a `Tokenizer` instance from the `AutoTokenizer` class. You can provide keyword arguments in an optional `tokenizer_kwargs` parameter. Those will be passed to the `from_pretrained` method of the tokenizer class as such: `tokenizer_class.from_pretrained(model_name, **tokenizer_kwargs)`.
+
+Similarly, if your model is not compatible with `AutoTokenizer`, you must provide a value for the `tokenizer_class` parameter.
 
 ```python
-import outlines
+from outlines import models
+from transformers import T5ForConditionalGeneration, T5Tokenizer
 
-time_regex_pattern = r"(0?[1-9]|1[0-2]):[0-5]\d\s?(am|pm)?"
-
-model = outlines.models.transformers("microsoft/Phi-3-mini-4k-instruct", device="cuda")
-generator = outlines.generate.regex(model, time_regex_pattern)
-
-output = generator("The the best time to visit a dentist is at ")
-print(output)
-# 2:30 pm
+model_pile_t5 = models.Transformers(
+    model_name="EleutherAI/pile-t5-large",
+    model_class=T5ForConditionalGeneration,
+    tokenizer_class=T5Tokenizer
+)
 ```
-
-### Using models initialized via the `transformers`  library
-
-```python
-import outlines
-import transformers
-
-
-model_uri = "microsoft/Phi-3-mini-4k-instruct"
-
-outlines_tokenizer = outlines.models.TransformerTokenizer(
-    transformers.AutoTokenizer.from_pretrained(model_uri)
-)
-phone_number_logits_processor = outlines.processors.RegexLogitsProcessor(
-    "\\+?[1-9][0-9]{7,14}",  # phone number pattern
-    outlines_tokenizer,
-)
-
-generator = transformers.pipeline('text-generation', model=model_uri)
-
-output = generator(
-    "Jenny gave me her number it's ",
-	logits_processor=transformers.LogitsProcessorList([phone_number_logits_processor])
-)
-print(output)
-# [{'generated_text': "Jenny gave me her number it's 2125550182"}]
-# not quite 8675309 what we expected, but it is a valid phone number
-```
-
-[transformers]: https://github.com/huggingface/transformers
-
-
-## Alternative Model Classes
-
-`outlines.models.transformers` defaults to `transformers.AutoModelForCausalLM`, which is the appropriate class for most standard large language models, including Llama 3, Mistral, Phi-3, etc.
-
-However other variants with unique behavior can be used as well by passing the appropriate class.
 
 ### Mamba
 
@@ -100,25 +67,14 @@ To use Mamba with outlines you must first install the necessary requirements:
 pip install causal-conv1d>=1.2.0 mamba-ssm torch transformers
 ```
 
-Then you can either create an Mamba-2 Outlines model via
+Then you can create an `Mamba` Outlines model via:
 ```python
-import outlines
+from outlines import models
 
-model = outlines.models.mamba("state-spaces/mamba-2.8b-hf")
+model = models.Mamba("state-spaces/mamba-2.8b-hf", model_kwargs={"device_map": "cuda"}, tokenizer_kwargs={"padding_side": "left"})
 ```
 
-or explicitly with
-```python
-import outlines
-from transformers import MambaForCausalLM
-
-model = outlines.models.transformers(
-    "state-spaces/mamba-2.8b-hf",
-    model_class=MambaForCausalLM
-)
-```
-
-
+Alternatively, you can use the `Transformers` class to create an `Mamba` model by providing the appropriate `model_class` and `tokenizer_class` arguments.
 
 Read [`transformers`'s documentation](https://huggingface.co/docs/transformers/en/model_doc/mamba) for more information.
 
@@ -128,21 +84,43 @@ You can use encoder-decoder (seq2seq) models like T5 and BART with Outlines.
 
 Be cautious with model selection though, some models such as `t5-base` don't include certain characters (`{`) and you may get an error when trying to perform structured generation.
 
-T5 Example:
-```python
-import outlines
-from transformers import AutoModelForSeq2SeqLM
+## Use the model to generate text
 
-model_pile_t5 = outlines.models.transformers(
-    model_name="EleutherAI/pile-t5-large",
-    model_class=AutoModelForSeq2SeqLM,
-)
+Once you have created a `Transformers` model, you can use it to generate text by calling the instance of the model.
+```python
+model("Hello, how are you?")
 ```
 
-Bart Example:
+You can also first create a `Generator` and then call it.
 ```python
-model_bart = outlines.models.transformers(
-    model_name="facebook/bart-large",
-    model_class=AutoModelForSeq2SeqLM,
-)
+from outlines import Generator
+
+generator = Generator(model)
+generator("Hello, how are you?")
+```
+
+`Transformers` models typically support batching and the generation of several samples at once.
+
+For instance:
+```python
+model(["Hello, how are you?", "Respond with one word. Not more."], num_return_sequences=2, num_beams=2)
+```
+
+This would generate two sequences for each prompt, for a total of four sequences (two lists of 2 elements each in a list).
+
+## Use the model to generate structured data
+
+`Transformers` models can generate structured data by providing a value for the parameter `output_type` (the second positional argument of the `generate` method, right after the prompt).
+
+Supported types include `Json`, `Choice`, `Regex` and `CFG`.
+
+For instance:
+```python
+from outlines.types import Json
+from pydantic import BaseModel
+
+class Character(BaseModel):
+    name: str
+
+model("Create a character with a name.", Json(Character))
 ```

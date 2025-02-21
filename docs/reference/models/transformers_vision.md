@@ -2,33 +2,28 @@
 
 Outlines allows seamless use of [vision models](https://huggingface.co/learn/computer-vision-course/en/unit4/multimodal-models/tasks-models-part1).
 
-`outlines.models.transformers_vision` shares interfaces with, and is based on [outlines.models.transformers](./transformers.md).
+`outlines.models.Transformers_vision` shares interfaces with, and is based on [outlines.models.Transformers](./transformers.md).
 
-Tasks supported include
+## Create a `TransformersVision` model
 
-- image + text -> text
-- video + text -> text
+`TransformersVision` models inherit from `Transformers` and accept the same initialization parameters.
 
+In addition, they also accept the optional parameters `processor_class` and `processor_kwargs`. Those are used to create a `Processor` instance that is then used to preprocess the images. By default, `AutoProcessor` is used to create the processor as such: `AutoProcessor.from_pretrained(model_name, **processor_kwargs)`.
 
-
-## Example: Using [Llava-Next](https://huggingface.co/docs/transformers/en/model_doc/llava_next) Vision Models
-
-Install dependencies
-`pip install torchvision pillow flash-attn`
-
-Create the model
+If your model is not compatible with `AutoProcessor`, you must provide a value for the `processor_class` parameter.
+For instance:
 ```python
-import outlines
-from transformers import LlavaNextForConditionalGeneration
+from outlines import models
+from transformers import CLIPModel, CLIPProcessor
 
-model = outlines.models.transformers_vision(
-    "llava-hf/llava-v1.6-mistral-7b-hf",
-    model_class=LlavaNextForConditionalGeneration,
-	device="cuda",
-)
+model = models.TransformersVision("openai/clip-vit-base-patch32", model_class=CLIPModel, processor_class=CLIPProcessor)
 ```
 
-Create convenience function to load a `PIL.Image` from URL
+## Use the model to generate text from prompts and images
+
+When calling the model, the prompt argument you provide must be a dictionary with a key `"prompts"` and a key `"images"`. The associated values must be a string or a list of strings for the prompts, and a PIL image or a list of PIL images for the images. Your prompts must include `<image>` tags tokens to indicate where the image should be inserted. There must be as many `<image>` tags as there are images.
+
+For easier use, we recommend you to create a convenience function to load a `PIL.Image` from URL.
 ```python
 from PIL import Image
 from io import BytesIO
@@ -39,56 +34,65 @@ def img_from_url(url):
     return Image.open(img_byte_stream).convert("RGB")
 ```
 
-### Describing an image
-
+You can then call the model with your prompts and images to generate text.
 ```python
-description_generator = outlines.generate.text(model)
-description_generator(
-    "<image> detailed description:",
-    [img_from_url("https://upload.wikimedia.org/wikipedia/commons/2/25/Siam_lilacpoint.jpg")]
-)
+from transformers import LlavaForConditionalGeneration
+from outlines import models
+
+model = models.TransformersVision("trl-internal-testing/tiny-LlavaForConditionalGeneration", model_class=LlavaForConditionalGeneration)
+prompt = {
+    "prompts": "<image> detailed description:",
+    "images": img_from_url("https://upload.wikimedia.org/wikipedia/commons/2/25/Siam_lilacpoint.jpg")
+}
+model(prompt)
 ```
 
-> This is a color photograph featuring a Siamese cat with striking blue eyes. The cat has a creamy coat and a light eye color, which is typical for the Siamese breed. Its features include elongated ears, a long, thin tail, and a striking coat pattern. The cat is sitting in an indoor setting, possibly on a cat tower or a similar raised platform, which is covered with a beige fabric, providing a comfortable and soft surface for the cat to rest or perch. The surface of the wall behind the cat appears to be a light-colored stucco or plaster.
-
-#### Multiple Images
-
-To include multiple images in your prompt you simply add more `<image>` tokens to the prompt
-
+You can include several images per prompt by adding more `<image>` tags to the prompt. Batching is also supported.
 ```python
-image_urls = [
-	"https://cdn1.byjus.com/wp-content/uploads/2020/08/ShapeArtboard-1-copy-3.png",  # triangle
-	"https://cdn1.byjus.com/wp-content/uploads/2020/08/ShapeArtboard-1-copy-11.png",  # hexagon
-]
-description_generator = outlines.generate.text(model)
-description_generator(
-    "<image><image>What shapes are present?",
-    list(map(img_from_url, image_urls)),
-)
+from transformers import LlavaForConditionalGeneration
+from outlines import models
+
+model = models.TransformersVision("trl-internal-testing/tiny-LlavaForConditionalGeneration", model_class=LlavaForConditionalGeneration)
+prompt = {
+    "prompts": ["<image><image>detailed description:", "<image><image>. What animals are present?"],
+    "images": [
+        img_from_url("https://upload.wikimedia.org/wikipedia/commons/2/25/Siam_lilacpoint.jpg"),
+        img_from_url("https://upload.wikimedia.org/wikipedia/commons/7/71/2010-kodiak-bear-1.jpg"),
+        img_from_url("https://upload.wikimedia.org/wikipedia/commons/2/25/Siam_lilacpoint.jpg"),
+        img_from_url("https://upload.wikimedia.org/wikipedia/commons/7/71/2010-kodiak-bear-1.jpg"),
+    ]
+}
+model(prompt)
 ```
 
-> There are two shapes present. One shape is a hexagon and the other shape is an triangle. '
+Here we have two prompts, each expecting two images. We correspondingly provide four images. This will generate two descriptions, one for each prompt.
 
+### Use the model for structured generation
 
-### Classifying an Image
+You can use the model to generate structured data by providing a value for the parameter `output_type` (the second positional argument of the `generate` method, right after the prompt).
 
+Supported types include `Json`, `Choice`, `Regex` and `CFG`.
+
+For instance to do classification, you can use the `Regex` type:
 ```python
+from outlines import models
+from outlines.types import Regex
+from transformers import LlavaForConditionalGeneration
+
+model = models.TransformersVision("trl-internal-testing/tiny-LlavaForConditionalGeneration", model_class=LlavaForConditionalGeneration)
 pattern = "Mercury|Venus|Earth|Mars|Saturn|Jupiter|Neptune|Uranus|Pluto"
-planet_generator = outlines.generate.regex(model, pattern)
-
-planet_generator(
-    "What planet is this: <image>",
-    [img_from_url("https://upload.wikimedia.org/wikipedia/commons/e/e3/Saturn_from_Cassini_Orbiter_%282004-10-06%29.jpg")]
-)
+prompt = {
+    "prompts": "<image>detailed description:",
+    "images": img_from_url("https://upload.wikimedia.org/wikipedia/commons/e/e3/Saturn_from_Cassini_Orbiter_%282004-10-06%29.jpg"),
+}
+model(prompt, Regex(pattern))
 ```
 
-> Saturn
-
-
-### Extracting Structured Image data
-
+Another example could be to generated a structured description of an image using the `Json` type:
 ```python
+from outlines import models
 from pydantic import BaseModel
+from transformers import LlavaForConditionalGeneration
 from typing import List, Optional
 
 class ImageData(BaseModel):
@@ -97,16 +101,14 @@ class ImageData(BaseModel):
     object_list: List[str]
     is_photo: bool
 
-image_data_generator = outlines.generate.json(model, ImageData)
-
-image_data_generator(
-    "<image> detailed JSON metadata:",
-    [img_from_url("https://upload.wikimedia.org/wikipedia/commons/9/98/Aldrin_Apollo_11_original.jpg")]
-)
+model = models.TransformersVision("trl-internal-testing/tiny-LlavaForConditionalGeneration", model_class=LlavaForConditionalGeneration)
+pattern = "Mercury|Venus|Earth|Mars|Saturn|Jupiter|Neptune|Uranus|Pluto"
+prompt = {
+    "prompts": "<image>detailed description:",
+    "images": img_from_url("https://upload.wikimedia.org/wikipedia/commons/e/e3/Saturn_from_Cassini_Orbiter_%282004-10-06%29.jpg"),
+}
+model(prompt, Json(ImageData))
 ```
-
-> `ImageData(caption='An astronaut on the moon', tags_list=['moon', 'space', 'nasa', 'americanflag'], object_list=['moon', 'moon_surface', 'space_suit', 'americanflag'], is_photo=True)`
-
 
 ## Resources
 
