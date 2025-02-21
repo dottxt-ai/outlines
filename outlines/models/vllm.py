@@ -9,6 +9,9 @@ if TYPE_CHECKING:
     from vllm.sampling_params import SamplingParams
 
 
+__all__ = ["VLLM", "from_vllm"]
+
+
 class VLLM:
     """Represents a vLLM model.
 
@@ -168,22 +171,7 @@ class VLLM:
             self.lora_request = LoRARequest(adapter_path, 1, adapter_path)
 
 
-def vllm(model_name: str, **vllm_model_params):
-    """Load a vLLM model.
-
-    Parameters
-    ---------
-    model_name
-        The name of the model to load from the HuggingFace hub.
-    vllm_model_params
-        vLLM-specific model parameters. See the vLLM code for the full list:
-        https://github.com/vllm-project/vllm/blob/main/vllm/entrypoints/llm.py
-
-    """
-    from vllm import LLM
-
-    model = LLM(model_name, **vllm_model_params)
-
+def from_vllm(model: "LLM") -> VLLM:
     return VLLM(model)
 
 
