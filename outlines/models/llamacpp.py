@@ -141,45 +141,13 @@ class LlamaCppTypeAdapter(ModelTypeAdapter):
 class LlamaCpp(Model):
     """Wraps a model provided by the `llama-cpp-python` library."""
 
-    def __init__(self, model_path: Union[str, "Llama"], **kwargs):
+    def __init__(self, model: "Llama"):
         from llama_cpp import Llama
 
-        if isinstance(model_path, Llama):
-            self.model = model_path
-        else:
-            # TODO: Remove when https://github.com/ggerganov/llama.cpp/pull/5613 is resolved
-            if "tokenizer" not in kwargs:
-                warnings.warn(
-                    "The pre-tokenizer in `llama.cpp` handles unicode improperly "
-                    + "(https://github.com/ggerganov/llama.cpp/pull/5613)\n"
-                    + "Outlines may raise a `RuntimeError` when building the regex index.\n"
-                    + "To circumvent this error when using `models.llamacpp()` you may pass the argument"
-                    + "`tokenizer=llama_cpp.llama_tokenizer.LlamaHFTokenizer.from_pretrained(<hf_repo_id>)`\n"
-                )
-
-            self.model = Llama(model_path, **kwargs)
-
+        self.model = model
         self.tokenizer = LlamaCppTokenizer(self.model)
         self.model_type = "local"
         self.type_adapter = LlamaCppTypeAdapter()
-
-    @classmethod
-    def from_pretrained(cls, repo_id, filename, **kwargs):
-        """Download the model weights from Hugging Face and create a `Llama` instance"""
-        from llama_cpp import Llama
-
-        # TODO: Remove when https://github.com/ggerganov/llama.cpp/pull/5613 is resolved
-        if "tokenizer" not in kwargs:
-            warnings.warn(
-                "The pre-tokenizer in `llama.cpp` handles unicode improperly "
-                + "(https://github.com/ggerganov/llama.cpp/pull/5613)\n"
-                + "Outlines may raise a `RuntimeError` when building the regex index.\n"
-                + "To circumvent this error when using `models.llamacpp()` you may pass the argument"
-                + "`tokenizer=llama_cpp.llama_tokenizer.LlamaHFTokenizer.from_pretrained(<hf_repo_id>)`\n"
-            )
-
-            model = Llama.from_pretrained(repo_id, filename, **kwargs)
-            return cls(model)
 
     def generate(self, model_input, logits_processor, **inference_kwargs):
         """Generate text using `llama-cpp-python`.
@@ -257,3 +225,7 @@ class LlamaCpp(Model):
                     return
 
         return token_generator()
+
+
+def from_llamacpp(model: "Llama"):
+    return LlamaCpp(model)
