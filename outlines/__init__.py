@@ -16,6 +16,7 @@ from outlines.models import (
     from_anthropic,
     from_ollama,
     from_llamacpp,
+    from_mlxlm,
     from_vllm,
 )
 
@@ -24,6 +25,7 @@ models = [
     "from_anthropic",
     "from_gemini",
     "from_llamacpp",
+    "from_mlxlm",
     "from_ollama",
     "from_openai",
     "from_vllm",

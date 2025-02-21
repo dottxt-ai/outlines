@@ -1,9 +1,10 @@
 import pytest
 
-from outlines.models.mlxlm import mlxlm
+import outlines
 from outlines.models.transformers import TransformerTokenizer
 
 try:
+    import mlx_lm
     import mlx.core as mx
 
     HAS_MLX = mx.metal.is_available()
@@ -14,18 +15,21 @@ except ImportError:
 TEST_MODEL = "mlx-community/SmolLM-135M-Instruct-4bit"
 
 
+@pytest.fixture(scope="session")
+def model(tmp_path_factory):
+    model, tokenizer = mlx_lm.load(TEST_MODEL)
+    return outlines.from_mlxlm(model, tokenizer)
+
+
 @pytest.mark.skipif(not HAS_MLX, reason="MLX tests require Apple Silicon")
-def test_mlxlm_model():
-    model = mlxlm(TEST_MODEL)
+def test_mlxlm_model(model):
     assert hasattr(model, "model")
     assert hasattr(model, "tokenizer")
     assert isinstance(model.tokenizer, TransformerTokenizer)
 
 
 @pytest.mark.skipif(not HAS_MLX, reason="MLX tests require Apple Silicon")
-def test_mlxlm_tokenizer():
-    model = mlxlm(TEST_MODEL)
-
+def test_mlxlm_tokenizer(model):
     # Test single string encoding/decoding
     test_text = "Hello, world!"
     token_ids = mx.array(model.mlx_tokenizer.encode(test_text))
@@ -33,10 +37,9 @@ def test_mlxlm_tokenizer():
 
 
 @pytest.mark.skipif(not HAS_MLX, reason="MLX tests require Apple Silicon")
-def test_mlxlm_generate():
+def test_mlxlm_generate(model):
     from outlines.generate.api import GenerationParameters, SamplingParameters
 
-    model = mlxlm(TEST_MODEL)
     prompt = "Write a haiku about programming:"
 
     # Test with basic generation parameters
@@ -54,10 +57,9 @@ def test_mlxlm_generate():
 
 
 @pytest.mark.skipif(not HAS_MLX, reason="MLX tests require Apple Silicon")
-def test_mlxlm_stream():
+def test_mlxlm_stream(model):
     from outlines.generate.api import GenerationParameters, SamplingParameters
 
-    model = mlxlm(TEST_MODEL)
     prompt = "Count from 1 to 5:"
 
     gen_params = GenerationParameters(max_tokens=20, stop_at=None, seed=None)
@@ -83,9 +85,7 @@ def test_mlxlm_stream():
 
 
 @pytest.mark.skipif(not HAS_MLX, reason="MLX tests require Apple Silicon")
-def test_mlxlm_errors():
-    model = mlxlm(TEST_MODEL)
-
+def test_mlxlm_errors(model):
     # Test batch inference (should raise NotImplementedError)
     with pytest.raises(NotImplementedError):
         from outlines.generate.api import GenerationParameters, SamplingParameters
