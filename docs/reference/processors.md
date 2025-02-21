@@ -225,7 +225,7 @@ from outlines.processors.tracking import LogitTrackingProcessor
 
 model_uri = "HuggingFaceTB/SmolLM2-135M-Instruct"
 model = models.transformers(model_uri)
-    
+
 outlines_tokenizer = models.TransformerTokenizer(
     transformers.AutoTokenizer.from_pretrained(model_uri)
 )

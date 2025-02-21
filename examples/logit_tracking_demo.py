@@ -302,7 +302,7 @@ def analyze_json_generation(model):
 
 def main():
     print("Loading model and tokenizer...")
-    
+
     model_uri = "HuggingFaceTB/SmolLM2-135M-Instruct"
     model = models.transformers(model_uri)
 
