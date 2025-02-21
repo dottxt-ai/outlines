@@ -131,18 +131,8 @@ class LogitTrackingProcessor(OutlinesLogitsProcessor):
         self.structured_logits.append(logits[0].detach().cpu().numpy().copy())
         return logits
 
-    def get_probabilities(self, as_matrix: bool = False) -> Dict[str, Union[List[NDArray], NDArray]]:
+    def get_probabilities(self) -> Dict[str, NDArray]:
         """Get probability distributions computed from stored logits.
-
-        Parameters
-        ----------
-        as_matrix : bool
-            If True, convert probability lists to matrices.
-            Each matrix will have shape (vocab_size, n_positions), i.e.
-            return_value['unstructured'] is a vocab_size x n_positions matrix.
-
-            If False, return a list of n_positions arrays, each array having
-            shape (vocab_size,).
 
         Returns
         -------
@@ -162,47 +152,31 @@ class LogitTrackingProcessor(OutlinesLogitsProcessor):
             for logits in self.structured_logits
         ]
 
-        if as_matrix:
-            # Stack arrays into matrices
-            unstructured = np.column_stack(unstructured_probs)
-            structured = np.column_stack(structured_probs)
-        else:
-            # Return as lists
-            unstructured = unstructured_probs
-            structured = structured_probs
+        # Stack arrays into matrices
+        unstructured = np.column_stack(unstructured_probs)
+        structured = np.column_stack(structured_probs)
 
         return {
             'unstructured': unstructured,
             'structured': structured
         }
 
-    def get_logits(self, as_matrix: bool = False) -> Dict[str, Union[List[NDArray], NDArray]]:
+    def get_logits(self) -> Dict[str, NDArray]:
         """Get the stored logit values.
-
-        Parameters
-        ----------
-        as_matrix : bool
-            If True, convert logit lists to matrices.
-            Each matrix will have shape (vocab_size, n_positions), i.e.
-            return_value['unstructured'] is a vocab_size x n_positions matrix.
-
-            If False, return a list of n_positions arrays, each array having
-            shape (vocab_size,).
 
         Returns
         -------
-        Dict[str, Union[List[NDArray], NDArray]]
+        Dict[str, NDArray]
             Contains a dictionary with two keys:
+
             - unstructured: Raw logit values
             - structured: Logit values after constraints
-            Each can be either a list of arrays or a single matrix
+
+            Each matrix will have shape (vocab_size, n_positions), i.e.
+            return_value['unstructured'] is a vocab_size x n_positions matrix.
         """
-        if as_matrix:
-            unstructured = np.column_stack(self.unstructured_logits)
-            structured = np.column_stack(self.structured_logits)
-        else:
-            unstructured = self.unstructured_logits
-            structured = self.structured_logits
+        unstructured = np.column_stack(self.unstructured_logits)
+        structured = np.column_stack(self.structured_logits)
 
         return {
             'unstructured': unstructured,

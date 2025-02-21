@@ -15,7 +15,9 @@ from pydantic import BaseModel, Field
 
 import outlines.models as models
 import outlines.generate as generate
-from outlines.processors.tracking import add_tracking
+from outlines.processors.tracking import add_tracking, LogitTrackingProcessor
+from outlines.processors import RegexLogitsProcessor
+import transformers
 
 def plot_token_distributions(tracking_processor, k=10, positions=None, prefix=""):
     """Plot token probability distributions before and after applying constraints.
@@ -43,7 +45,7 @@ def plot_token_distributions(tracking_processor, k=10, positions=None, prefix=""
     - Grid lines help compare probabilities between tokens
     """
     # Get probability matrices and vocab mapping
-    probs = tracking_processor.get_probabilities(as_matrix=True)
+    probs = tracking_processor.get_probabilities()
     vocab = tracking_processor.get_vocab_mapping()
 
     # Determine positions to plot
@@ -131,11 +133,11 @@ def plot_heatmap(tracking_processor, k=50, positions=None, prefix="", show_both=
     """
     # Get probability matrices and vocab mapping
     if kind == "logits":
-        things = tracking_processor.get_logits(as_matrix=True)
+        things = tracking_processor.get_logits()
         # For logits, mask out very negative values
         threshold = -10  # Logits below this are effectively zero probability
     else:
-        things = tracking_processor.get_probabilities(as_matrix=True)
+        things = tracking_processor.get_probabilities()
         # For probabilities, mask out near-zero values
         threshold = 0.001  # Probabilities below 0.1% are masked
 
@@ -244,7 +246,7 @@ def display_token_analysis(results, show_logits=True):
 
             print(line)
 
-def analyze_json_generation(model, tokenizer):
+def analyze_json_generation(model):
     """Analyze generation with JSON structure constraints."""
     print("\n=== Analyzing JSON-Structured Generation ===")
 
@@ -260,7 +262,7 @@ def analyze_json_generation(model, tokenizer):
     generator = add_tracking(generator)
 
     # Generate JSON
-    prompt = template(tokenizer.tokenizer, "Make me a person with a name, age, zip code, and state. Return the JSON only.")
+    prompt = template(model.tokenizer.tokenizer, "Make me a person with a name, age, zip code, and state. Return the JSON only.")
     print(f"\nPrompt: {prompt}")
     result = generator(prompt)
     print(f"Generated JSON: {result}")
@@ -275,7 +277,7 @@ def analyze_json_generation(model, tokenizer):
     df = generator.logits_processor.to_dataframe(show="probs", min_value=0.01)
 
     # Retrieve only the tokens that were chosen
-    chosen = df[df.selected]
+    chosen = df[df.chosen]
     print(chosen)
 
     # Show sequence at different points
@@ -300,11 +302,12 @@ def analyze_json_generation(model, tokenizer):
 
 def main():
     print("Loading model and tokenizer...")
-    model = models.transformers("HuggingFaceTB/SmolLM2-135M-Instruct", device="cuda")
-    tokenizer = model.tokenizer
-    # Run examples
-    analyze_json_generation(model, tokenizer)
+    
+    model_uri = "HuggingFaceTB/SmolLM2-135M-Instruct"
+    model = models.transformers(model_uri)
 
+    # Run examples
+    analyze_json_generation(model)
 
 if __name__ == "__main__":
     main()

@@ -123,7 +123,26 @@ response = generator(prompt)
 
 Once tracking is enabled, you can analyze the generation process in several ways:
 
-1. Get the top tokens at each position:
+1. Get the logits and probabilities at each position as a matrix:
+
+```python
+# Raw logits as a dictionary with two keys: unstructured and structured
+logits = generator.logits_processor.get_logits()
+
+# Get a vocab_size x n_positions matrix of logits for
+# structured and unstructured logits
+unstructured_logits = logits['unstructured']
+structured_logits = logits['structured']
+
+probabilities = generator.logits_processor.get_probabilities()
+
+# Get a vocab_size x n_positions matrix of probabilities
+# for structured and unstructured logits
+unstructured_probs = probabilities['unstructured']
+structured_probs = probabilities['structured']
+```
+
+2. Get the top tokens at each position:
 
 ```python
 # Get top 5 tokens at each position
@@ -143,7 +162,7 @@ for position_dict in top_k:
         print(f"Was chosen: {token['is_chosen']}")
 ```
 
-2. Convert to a pandas DataFrame for analysis:
+3. Convert to a pandas DataFrame for analysis:
 
 ```python
 import pandas as pd
@@ -159,7 +178,7 @@ print(df)
 # 4         0    To  0.031047          0.0   False
 ```
 
-3. Get the generated sequence up to a position:
+4. Get the generated sequence up to a position:
 
 ```python
 # Get text generated up to position 5
