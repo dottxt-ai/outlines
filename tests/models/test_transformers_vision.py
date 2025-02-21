@@ -14,7 +14,7 @@ from transformers import (
 )
 
 from outlines.models.transformers_vision import TransformersVision
-from outlines.types import Choice, Json, Regex
+from outlines.types import Choice, JsonType, Regex
 
 TEST_MODEL = "trl-internal-testing/tiny-LlavaForConditionalGeneration"
 TEST_CLIP_MODEL = "openai/clip-vit-base-patch32"
@@ -121,7 +121,7 @@ def test_transformers_vision_json(model, images):
 
     result = model(
         {"prompts": "<image>Give a name to this animal.", "images": images[0]},
-        Json(Foo),
+        JsonType(Foo),
     )
     assert "name" in result
 

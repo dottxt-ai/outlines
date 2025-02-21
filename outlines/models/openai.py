@@ -1,14 +1,18 @@
 """Integration with OpenAI's API."""
+
 from functools import singledispatchmethod
 from types import NoneType
-from typing import Optional, Union
+from typing import Optional, Union, TYPE_CHECKING
 
 
 from pydantic import BaseModel
 
 from outlines.models.base import Model, ModelTypeAdapter
-from outlines.prompts import Vision
+from outlines.templates import Vision
 from outlines.types import JsonType
+
+if TYPE_CHECKING:
+    from openai import OpenAI as OpenAIClient, AzureOpenAI as AzureOpenAIClient
 
 __all__ = ["OpenAI"]
 
@@ -124,12 +128,13 @@ class OpenAI(Model):
 
     """
 
-    def __init__(self, model_name: str, *args, **kwargs):
+    def __init__(
+        self, client: Union["OpenAIClient", "AzureOpenAIClient"], model_name: str
+    ):
         from openai import OpenAI
 
-        self.client = OpenAI(*args, **kwargs)
+        self.client = client
         self.model_name = model_name
-        self.model_type = "api"
         self.type_adapter = OpenAITypeAdapter()
 
     def generate(
@@ -147,18 +152,7 @@ class OpenAI(Model):
         return result.choices[0].message.content
 
 
-class AzureOpenAI(OpenAI):
-    """Thin wrapper around the `openai.AzureOpenAI` client.
-
-    This wrapper is used to convert the input and output types specified by the
-    users at a higher level to arguments to the `openai.AzureOpenAI` client.
-
-    """
-
-    def __init__(self, deployment_name: str, *args, **kwargs):
-        from openai import AzureOpenAI
-
-        self.client = AzureOpenAI(*args, **kwargs)
-        self.model_name = deployment_name
-        self.model_type = "api"
-        self.type_adapter = OpenAITypeAdapter()
+def from_openai(
+    client: Union["OpenAIClient", "AzureOpenAIClient"], model_name: str
+) -> OpenAI:
+    return OpenAI(client, model_name)

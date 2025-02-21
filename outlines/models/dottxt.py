@@ -6,7 +6,7 @@ from types import NoneType
 from typing import Optional
 
 from outlines.models.base import Model, ModelTypeAdapter
-from outlines.types import Json
+from outlines.types import JsonType
 
 __all__ = ["Dottxt"]
 
@@ -41,8 +41,8 @@ class DottxtTypeAdapter(ModelTypeAdapter):
             f"The input type {input} is not available with Dottxt."
         )
 
-    @format_output_type.register(Json)
-    def format_json_output_type(self, output_type: Json):
+    @format_output_type.register(JsonType)
+    def format_json_output_type(self, output_type: JsonType):
         """Format the output type to pass to the client."""
         schema = output_type.to_json_schema()
         return json.dumps(schema)
