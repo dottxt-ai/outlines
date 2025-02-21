@@ -12,7 +12,7 @@ from outlines.types import JsonType
 if TYPE_CHECKING:
     from openai import OpenAI as OpenAIClient, AzureOpenAI as AzureOpenAIClient
 
-__all__ = ["OpenAI"]
+__all__ = ["OpenAI", "from_openai"]
 
 
 class OpenAITypeAdapter(ModelTypeAdapter):
@@ -126,7 +126,7 @@ class OpenAI(Model):
 
     """
 
-    def __init__(self, client, model_name: str):
+    def __init__(self, client: Union["OpenAIClient", "AzureOpenAIClient"], model_name: str):
         from openai import OpenAI
 
         self.client = client
