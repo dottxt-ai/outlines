@@ -4,12 +4,14 @@ import re
 import pytest
 import torch
 from pydantic import BaseModel, constr
+from vllm import LLM
 
 try:
     from vllm.sampling_params import SamplingParams
 except ImportError:
     pass
 
+import outlines
 import outlines.generate as generate
 import outlines.grammars as grammars
 import outlines.models as models
@@ -22,7 +24,7 @@ pytestmark = pytest.mark.skipif(
 
 @pytest.fixture(scope="module")
 def model():
-    return models.vllm("gpt2", gpu_memory_utilization=0.5)
+    return outlines.from_vllm(LLM("gpt2", gpu_memory_utilization=0.5))
 
 
 @pytest.mark.parametrize(
