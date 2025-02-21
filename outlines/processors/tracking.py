@@ -50,14 +50,13 @@ class LogitTrackingProcessor(OutlinesLogitsProcessor):
 
     """
 
-    def __init__(self, processor=None):
+    def __init__(self, processor: OutlinesLogitsProcessor):
         """Initialize the tracking processor.
 
         Parameters
         ----------
-        processor : Optional[OutlinesLogitsProcessor]
+        processor : OutlinesLogitsProcessor
             The processor that applies structural constraints.
-            If None, only tracks raw logits.
         """
         self.processor = processor
         self.unstructured_logits = []  # List of logit arrays, one per position
@@ -65,6 +64,10 @@ class LogitTrackingProcessor(OutlinesLogitsProcessor):
         self.vocab_tokens = None      # Will store the vocabulary mapping
         self.chosen_tokens = []       # Track actual chosen tokens during generation
         self._started = False         # Tracks whether to start appending chosen tokens
+
+        # If the processor has a tokenizer, use it
+        if hasattr(processor, 'tokenizer'):
+            self.tokenizer = processor.tokenizer
 
     def process_logits(self, input_ids: Array, logits: Array) -> Array:
         """Process logits and store them.
