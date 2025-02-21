@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from typing import List
 
-from outlines.processors.tracking import LogitTrackingProcessor, add_tracking
+from outlines.processors.tracking import LogitTrackingProcessor, track_logits
 from outlines.processors.base_logits_processor import OutlinesLogitsProcessor
 
 
@@ -113,8 +113,7 @@ def test_chosen_token_tracking(processor):
     assert processor.chosen_tokens[1] == 2
 
 
-@pytest.mark.parametrize("as_matrix", [True, False])
-def test_get_probabilities(processor, as_matrix):
+def test_get_probabilities(processor):
     """Test probability distribution computation."""
     # Process a few positions
     for i in range(3):
@@ -130,62 +129,41 @@ def test_get_probabilities(processor, as_matrix):
         print(f"Raw probabilities: {probs}")
         print(f"Probability sum: {probs.sum()}")
 
-    probs = processor.get_probabilities(as_matrix=as_matrix)
-    print(f"\nProbabilities (as_matrix={as_matrix}):")
-    print(f"Unstructured shape: {probs['unstructured'].shape if as_matrix else [p.shape for p in probs['unstructured']]}")
+    probs = processor.get_probabilities()
+    print("\nProbabilities:")
+    print(f"Unstructured shape: {probs['unstructured'].shape}")
 
-    if as_matrix:
-        # For matrix form, we need to check each position (column) separately
-        for pos in range(probs['unstructured'].shape[1]):
-            dist = probs['unstructured'][:, pos]
-            print(f"Position {pos} sum: {np.sum(dist)}")
-            print(f"Position {pos} distribution: {dist}")
-            assert np.allclose(np.sum(dist), 1.0, rtol=1e-5)
+    # For matrix form, we need to check each position (column) separately
+    for pos in range(probs['unstructured'].shape[1]):
+        dist = probs['unstructured'][:, pos]
+        print(f"Position {pos} sum: {np.sum(dist)}")
+        print(f"Position {pos} distribution: {dist}")
+        assert np.allclose(np.sum(dist), 1.0, rtol=1e-5)
 
-            # Check structured probabilities
-            dist = probs['structured'][:, pos]
-            valid_probs = dist[~np.isinf(dist)]
-            if len(valid_probs) > 0:
-                assert np.allclose(np.sum(valid_probs), 1.0, rtol=1e-5)
-    else:
-        for i, dist in enumerate(probs['unstructured']):
-            print(f"Position {i} sum: {np.sum(dist)}")
-            print(f"Position {i} distribution: {dist}")
-            assert np.allclose(np.sum(dist), 1.0, rtol=1e-5)
-
-            # Check structured probabilities
-            dist = probs['structured'][i]
-            valid_probs = dist[~np.isinf(dist)]
-            if len(valid_probs) > 0:
-                assert np.allclose(np.sum(valid_probs), 1.0, rtol=1e-5)
+        # Check structured probabilities
+        dist = probs['structured'][:, pos]
+        valid_probs = dist[~np.isinf(dist)]
+        if len(valid_probs) > 0:
+            assert np.allclose(np.sum(valid_probs), 1.0, rtol=1e-5)
 
 
-@pytest.mark.parametrize("as_matrix", [True, False])
-def test_get_logits(processor, as_matrix):
+def test_get_logits(processor):
     """Test logit value retrieval."""
     # Process a few positions with known values
     for i in range(3):
         logits = torch.full((1, 10), float(i))
         processor.process_logits([[j for j in range(i + 1)]], logits)
 
-    logits = processor.get_logits(as_matrix=as_matrix)
+    logits = processor.get_logits()
 
     assert set(logits.keys()) == {'unstructured', 'structured'}
 
-    if as_matrix:
-        assert isinstance(logits['unstructured'], np.ndarray)
-        assert logits['unstructured'].shape == (10, 3)
-        assert logits['structured'].shape == (10, 3)
-        # Check values match what we put in
-        for i in range(3):
-            assert np.allclose(logits['unstructured'][:, i], i)
-    else:
-        assert isinstance(logits['unstructured'], list)
-        assert len(logits['unstructured']) == 3
-        assert all(arr.shape == (10,) for arr in logits['unstructured'])
-        # Check values match what we put in
-        for i, arr in enumerate(logits['unstructured']):
-            assert np.allclose(arr, i)
+    assert isinstance(logits['unstructured'], np.ndarray)
+    assert logits['unstructured'].shape == (10, 3)
+    assert logits['structured'].shape == (10, 3)
+    # Check values match what we put in
+    for i in range(3):
+        assert np.allclose(logits['unstructured'][:, i], i)
 
 
 def test_get_top_tokens(processor):
@@ -281,14 +259,14 @@ def test_clear(processor):
     assert processor._started  # Should remain True after clear
 
 
-def test_add_tracking_helper():
-    """Test the add_tracking convenience function."""
+def test_track_logits_helper():
+    """Test the track_logits convenience function."""
     class MockGenerator:
         def __init__(self):
             self.logits_processor = MockProcessor()
 
     generator = MockGenerator()
-    tracked = add_tracking(generator)
+    tracked = track_logits(generator)
 
     assert isinstance(tracked.logits_processor, LogitTrackingProcessor)
     assert isinstance(tracked.logits_processor.processor, MockProcessor)

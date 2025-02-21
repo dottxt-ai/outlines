@@ -87,11 +87,11 @@ The `LogitTrackingProcessor` wraps any processor to track logit scores and token
 
 ### Adding tracking to a generator
 
-The simplest way to add tracking is using the convenience function `add_tracking`:
+The simplest way to add tracking is using the convenience function `track_logits`:
 
 ```python
 from outlines import generate, models
-from outlines.processors import add_tracking
+from outlines.processors import track_logits
 from pydantic import BaseModel
 
 # Define your schema
@@ -102,7 +102,7 @@ class Person(BaseModel):
 # Create generator with tracking
 model = models.transformers("HuggingFaceTB/SmolLM2-135M-Instruct")
 generator = generate.json(model, Person)
-generator = add_tracking(generator)  # Enable tracking
+generator = track_logits(generator)  # Enable tracking
 
 # Apply templating if needed
 prompt = model.tokenizer.tokenizer.apply_chat_template(
@@ -117,7 +117,7 @@ prompt = model.tokenizer.tokenizer.apply_chat_template(
 response = generator(prompt)
 ```
 
-**NOTE**: You __must__ use `generator.logits_processor.clear()` between generations, otherwise the processor will use the logits from the previous generation. You may also construct a new generator and call `add_tracking` again to start tracking from scratch.
+**NOTE**: You __must__ use `generator.logits_processor.clear()` between generations, otherwise the processor will use the logits from the previous generation. You may also construct a new generator and call `track_logits` again to start tracking from scratch.
 
 ### Analyzing generation results
 
@@ -206,7 +206,7 @@ df = generator.logits_processor.to_dataframe(show="probs", min_value=0.01)
 ### Important notes about logit tracking
 
 - Tracking logits is a slow operation, so do not use it in production environments
-- The processor will accumulate logits if you call `generator(prompt)` multiple times, meaning that the tokens stored can be aggregated across generations. You can use `generator.logits_processor.clear()` to reset the processor, or construct a new generator and call `add_tracking` again to start tracking from scratch.
+- The processor will accumulate logits if you call `generator(prompt)` multiple times, meaning that the tokens stored can be aggregated across generations. You can use `generator.logits_processor.clear()` to reset the processor, or construct a new generator and call `track_logits` again to start tracking from scratch.
 - Processed logits will contain `-inf` values when structured outputs are used
 - Token decoding requires the wrapped processor to have a tokenizer attribute
 - Memory usage grows linearly with sequence length

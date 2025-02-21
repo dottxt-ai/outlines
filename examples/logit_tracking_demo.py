@@ -15,7 +15,7 @@ from pydantic import BaseModel, Field
 
 import outlines.models as models
 import outlines.generate as generate
-from outlines.processors.tracking import add_tracking, LogitTrackingProcessor
+from outlines.processors.tracking import track_logits, LogitTrackingProcessor
 from outlines.processors import RegexLogitsProcessor
 import transformers
 
@@ -259,7 +259,7 @@ def analyze_json_generation(model):
 
     # Create generator with tracking
     generator = generate.json(model, Person)
-    generator = add_tracking(generator)
+    generator = track_logits(generator)
 
     # Generate JSON
     prompt = template(model.tokenizer.tokenizer, "Make me a person with a name, age, zip code, and state. Return the JSON only.")

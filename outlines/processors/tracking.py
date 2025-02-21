@@ -237,12 +237,12 @@ class LogitTrackingProcessor(OutlinesLogitsProcessor):
             text_so_far = self.sequence(pos)
 
             # Get values for this position
-            u_probs = probs['unstructured'][pos]
-            s_probs = probs['structured'][pos]
+            u_probs = probs['unstructured'][:, pos]
+            s_probs = probs['structured'][:, pos]
 
             if include_logits:
-                u_logits = logits['unstructured'][pos]
-                s_logits = logits['structured'][pos]
+                u_logits = logits['unstructured'][:, pos]
+                s_logits = logits['structured'][:, pos]
 
             # Get top k indices by maximum probability
             top_indices = np.argsort(np.maximum(u_probs, s_probs))[-k:][::-1]
@@ -368,8 +368,8 @@ class LogitTrackingProcessor(OutlinesLogitsProcessor):
 
         # Process each position
         for pos in range(len(self.unstructured_logits)):
-            u_vals = values['unstructured'][pos]
-            s_vals = values['structured'][pos]
+            u_vals = values['unstructured'][:, pos]
+            s_vals = values['structured'][:, pos]
 
             # Get the chosen token at this position if available
             chosen_token = vocab[self.chosen_tokens[pos]] if pos < len(self.chosen_tokens) else None
@@ -438,7 +438,7 @@ class LogitTrackingProcessor(OutlinesLogitsProcessor):
         return "".join(tokenizer.decode(tokens_to_decode))
 
 
-def add_tracking(generator: "SequenceGenerator") -> "SequenceGenerator":
+def track_logits(generator: "SequenceGenerator") -> "SequenceGenerator":
     """Add probability tracking to any generator.
 
     This is a convenience function that wraps a generator's logits processor
@@ -462,11 +462,11 @@ def add_tracking(generator: "SequenceGenerator") -> "SequenceGenerator":
     --------
     >>> # Track probabilities for unconstrained text generation
     >>> generator = generate.text(model)
-    >>> generator = add_tracking(generator)
+    >>> generator = track_logits(generator)
     >>>
     >>> # Track probabilities for JSON generation
     >>> generator = generate.json(model, schema)
-    >>> generator = add_tracking(generator)
+    >>> generator = track_logits(generator)
     """
     # If there's no logits_processor, throw an error. Logit tracking
     # is currently only supported for structured generators.
