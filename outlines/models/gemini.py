@@ -2,16 +2,20 @@
 from enum import EnumMeta
 from functools import singledispatchmethod
 from types import NoneType
-from typing import Optional, Union
+from typing import Optional, Union, TYPE_CHECKING
 
 from pydantic import BaseModel
 from typing_extensions import _TypedDictMeta  # type: ignore
 
 from outlines.models.base import Model, ModelTypeAdapter
 from outlines.prompts import Vision
-from outlines.types import Choice, Json, List
+from outlines.types import Choice, JsonType, List
 
-__all__ = ["Gemini"]
+
+if TYPE_CHECKING:
+    from google.generativeai import GenerativeModel as GeminiClient
+
+__all__ = ["Gemini", "from_gemini"]
 
 
 class GeminiTypeAdapter(ModelTypeAdapter):
@@ -68,7 +72,7 @@ class GeminiTypeAdapter(ModelTypeAdapter):
     def format_none_output_type(self, output_type):
         return {}
 
-    @format_output_type.register(Json)
+    @format_output_type.register(JsonType)
     def format_json_output_type(self, output_type):
         """Gemini only accepts Pydantic models and TypeDicts to define the JSON structure."""
         if issubclass(output_type.definition, BaseModel):
@@ -93,17 +97,15 @@ class GeminiTypeAdapter(ModelTypeAdapter):
 
 
 class Gemini(Model):
-    def __init__(self, model_name: str, *args, **kwargs):
-        import google.generativeai as genai
+    def __init__(self, client: "GeminiClient"):
 
-        self.client = genai.GenerativeModel(model_name, *args, **kwargs)
-        self.model_type = "api"
+        self.client = client
         self.type_adapter = GeminiTypeAdapter()
 
     def generate(
         self,
         model_input: Union[str, Vision],
-        output_type: Optional[Union[Json, EnumMeta]] = None,
+        output_type: Optional[Union[JsonType, EnumMeta]] = None,
         **inference_kwargs,
     ):
         import google.generativeai as genai
@@ -117,3 +119,7 @@ class Gemini(Model):
         )
 
         return completion.text
+
+
+def from_gemini(client: "GeminiClient"):
+    return Gemini(client)

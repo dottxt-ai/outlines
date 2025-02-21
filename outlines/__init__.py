@@ -10,11 +10,17 @@ from outlines.caching import clear_cache, disable_cache, get_cache
 from outlines.function import Function
 from outlines.prompts import Prompt, prompt
 
+from outlines.models import from_openai, from_gemini, from_anthropic, from_ollama
+
 __all__ = [
     "clear_cache",
     "disable_cache",
     "get_cache",
     "Function",
+    "from_anthropic",
+    "from_gemini",
+    "from_ollama",
+    "from_openai",
     "prompt",
     "Prompt",
     "vectorize",

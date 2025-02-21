@@ -8,14 +8,14 @@ codebase.
 
 from typing import Union
 
-from .anthropic import Anthropic
+from .anthropic import from_anthropic, Anthropic
 from .base import Model, ModelTypeAdapter
 from .exllamav2 import ExLlamaV2Model, exl2
-from .gemini import Gemini
+from .gemini import from_gemini, Gemini
 from .llamacpp import LlamaCpp
 from .mlxlm import MLXLM, mlxlm
-from .ollama import Ollama
-from .openai import AzureOpenAI, OpenAI
+from .ollama import Ollama, from_ollama
+from .openai import from_openai, OpenAI
 from .transformers import Transformers, TransformerTokenizer, mamba, transformers
 from .transformers_vision import TransformersVision, transformers_vision
 from .vllm import VLLM, vllm
@@ -25,4 +25,4 @@ LogitsGenerator = Union[
 ]
 
 LocalModel = LlamaCpp
-APIModel = Union[AzureOpenAI, OpenAI, Anthropic, Gemini, Ollama]
+APIModel = Union[OpenAI, Anthropic, Gemini, Ollama]

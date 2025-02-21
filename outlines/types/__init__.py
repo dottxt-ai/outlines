@@ -5,7 +5,7 @@ from typing import Union
 
 from jsonschema import Draft202012Validator as Validator
 from jsonschema.exceptions import SchemaError
-from outlines_core.json_schema import build_regex_from_schema
+from outlines_core.fsm.json_schema import build_regex_from_schema
 from pydantic import BaseModel, TypeAdapter
 from typing_extensions import _TypedDictMeta  # type: ignore
 
@@ -50,7 +50,7 @@ isbn = Regex(
 
 
 @dataclass
-class Json:
+class JsonType:
     """Represents a JSON object.
 
     The structure of JSON object can be defined using a JSON Schema
