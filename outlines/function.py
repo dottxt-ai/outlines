@@ -4,7 +4,9 @@ from typing import TYPE_CHECKING, Callable, Optional, Tuple, Union
 
 import requests
 
-from outlines import generate, models
+import outlines
+from outlines import models
+from outlines.types import JsonType
 
 if TYPE_CHECKING:
     from outlines.generate.api import SequenceGenerator
@@ -37,8 +39,8 @@ class Function:
 
     def init_generator(self):
         """Load the model and initialize the generator."""
-        model = models.transformers(self.model_name)
-        self.generator = generate.json(model, self.schema)
+        model = models.Transformers(self.model_name)
+        self.generator = outlines.generate.Generator(model, JsonType(self.schema))
 
     def __call__(self, *args, **kwargs):
         """Call the function.

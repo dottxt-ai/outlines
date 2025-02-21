@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from transformers import AutoModelForSeq2SeqLM
 
 from outlines.models.transformers import Mamba, Transformers
-from outlines.types import Choice, Json, Regex
+from outlines.types import Choice, JsonType, Regex
 
 TEST_MODEL = "erwanf/gpt2-mini"
 TEST_MODEL_SEQ2SEQ = "hf-internal-testing/tiny-random-t5"
@@ -82,7 +82,7 @@ def test_transformers_json(model):
     class Character(BaseModel):
         name: str
 
-    result = model("Create a character with a name.", Json(Character))
+    result = model("Create a character with a name.", JsonType(Character))
     assert "name" in result
 
 

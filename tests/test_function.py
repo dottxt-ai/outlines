@@ -1,6 +1,7 @@
+from typing import Annotated
 import pytest
 import responses
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from requests.exceptions import HTTPError
 
 import outlines
@@ -15,14 +16,14 @@ def test_function_basic():
             """{{ text }}"""
 
     class Foo(BaseModel):
-        id: int
+        id: Annotated[str, Field(max_length=5)]
 
     fn = Function(test_template, Foo, "hf-internal-testing/tiny-random-GPTJForCausalLM")
 
     assert fn.generator is None
 
     result = fn("test")
-    assert isinstance(result, BaseModel)
+    Foo.parse_raw(result)
 
 
 def test_download_from_github_invalid():
