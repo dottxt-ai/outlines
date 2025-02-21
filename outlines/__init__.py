@@ -10,6 +10,8 @@ from outlines.caching import clear_cache, disable_cache, get_cache
 from outlines.function import Function
 from outlines.templates import Template, prompt
 
+from outlines.models import from_openai
+
 __all__ = [
     "clear_cache",
     "disable_cache",
