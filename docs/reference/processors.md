@@ -11,7 +11,7 @@ Outlines provides several specialized processors for different use cases:
 - `JSONLogitsProcessor`: Ensures generation follows a JSON schema
 - `RegexLogitsProcessor`: Constrains generation to match a regex pattern
 - `CFGLogitsProcessor`: Enforces a context-free grammar
-- `LogitTrackingProcessor`: Analyzes token probabilities during generation
+- `LogitTrackingProcessor`: Tracks token probabilities and logits
 
 ### RegexLogitsProcessor
 
@@ -193,3 +193,36 @@ df = generator.logits_processor.to_dataframe(show="probs", min_value=0.01)
 - Memory usage grows linearly with sequence length
 - The tracking processor only supports single-batch processing
 - Tracking logits can incur significant overhead -- do not use it in production environments
+
+## Using the tracking processor directly
+
+The tracking processor can be used directly with transformers pipelines:
+
+```python
+import outlines.models as models
+import transformers
+from outlines.processors import RegexLogitsProcessor
+from outlines.processors.tracking import LogitTrackingProcessor
+
+model_uri = "HuggingFaceTB/SmolLM2-135M-Instruct"
+model = models.transformers(model_uri)
+    
+outlines_tokenizer = models.TransformerTokenizer(
+    transformers.AutoTokenizer.from_pretrained(model_uri)
+)
+phone_number_logits_processor = LogitTrackingProcessor(RegexLogitsProcessor(
+    "\\+?[1-9][0-9]{7,14}",  # phone number pattern
+    outlines_tokenizer,
+))
+
+generator = transformers.pipeline('text-generation', model=model_uri)
+
+# Perform inference
+output = generator(
+    "Jenny gave me her number it's ",
+    logits_processor=transformers.LogitsProcessorList([phone_number_logits_processor])
+)
+
+# Retrieve the logits
+phone_number_logits_processor.get_logits()
+```
