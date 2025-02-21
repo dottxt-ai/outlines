@@ -9,7 +9,7 @@ from pydantic import BaseModel
 
 from outlines.models.openai import OpenAI
 from outlines.templates import Vision
-from outlines.types import Json
+from outlines.types import JsonType
 
 MODEL_NAME = "gpt-4o-mini-2024-07-18"
 
@@ -93,7 +93,7 @@ def test_openai_simple_pydantic():
     class Foo(BaseModel):
         bar: int
 
-    result = model.generate("foo?", Json(Foo))
+    result = model.generate("foo?", JsonType(Foo))
     assert isinstance(result, str)
     assert "bar" in json.loads(result)
 
@@ -110,7 +110,7 @@ def test_openai_simple_vision_pydantic():
     class Logo(BaseModel):
         name: int
 
-    result = model.generate(Vision("What does this logo represent?", image), Json(Logo))
+    result = model.generate(Vision("What does this logo represent?", image), JsonType(Logo))
     assert isinstance(result, str)
     assert "name" in json.loads(result)
 
@@ -124,6 +124,6 @@ def test_openai_simple_json_schema():
 
     schema = json.dumps(Foo.model_json_schema())
 
-    result = model.generate("foo?", Json(schema))
+    result = model.generate("foo?", JsonType(schema))
     assert isinstance(result, str)
     assert "bar" in json.loads(result)
