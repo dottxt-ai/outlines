@@ -14,7 +14,7 @@ from outlines.types import JsonType
 if TYPE_CHECKING:
     from openai import OpenAI as OpenAIClient, AzureOpenAI as AzureOpenAIClient
 
-__all__ = ["OpenAI"]
+__all__ = ["OpenAI", "from_openai"]
 
 
 class OpenAITypeAdapter(ModelTypeAdapter):

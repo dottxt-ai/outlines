@@ -12,7 +12,7 @@ from .anthropic import Anthropic
 from .base import Model, ModelTypeAdapter
 from .dottxt import Dottxt
 from .exllamav2 import ExLlamaV2Model, exl2
-from .gemini import Gemini
+from .gemini import from_gemini, Gemini
 from .llamacpp import LlamaCpp
 from .mlxlm import MLXLM, mlxlm
 from .ollama import Ollama
