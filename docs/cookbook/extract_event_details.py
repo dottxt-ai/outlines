@@ -1,11 +1,14 @@
 from datetime import datetime
 
+from mlx_lm import load
 from pydantic import BaseModel, Field
 
-from outlines import generate, models
+import outlines
+from outlines.generate import Generator
+from outlines.types import JsonType
 
 # Load the model
-model = models.mlxlm("mlx-community/Hermes-3-Llama-3.1-8B-8bit")
+model = outlines.from_mlxlm(*load("mlx-community/Hermes-3-Llama-3.1-8B-8bit"))
 
 
 # Define the event schema using Pydantic
@@ -34,7 +37,7 @@ appointment to review math lessons to next Friday at 2pm at the same place, 3 av
 see you 😘 """
 
 # Create the generator
-generator = generate.json(model, Event)
+generator = Generator(model, JsonType(Event))
 
 # Extract the event information
 event = generator(prompt + message)
