@@ -12,6 +12,9 @@ if TYPE_CHECKING:
     from outlines.processors import OutlinesLogitsProcessor
 
 
+__all__ = ["MLXLM", "from_mlxlm"]
+
+
 class MLXLM:
     """
     Represents an `mlx_lm` model
@@ -196,52 +199,5 @@ class MLXLM:
             unprocessed_input_ids = new_token_single
 
 
-def mlxlm(
-    model_name: str,
-    tokenizer_config: dict = {},
-    model_config: dict = {},
-    adapter_path: Optional[str] = None,
-    lazy: bool = False,
-):
-    """Instantiate a model from the `mlx_lm` library and its tokenizer.
-
-    Signature adapted from
-    https://github.com/ml-explore/mlx-examples/blob/4872727/llms/mlx_lm/utils.py#L422
-
-    Parameters
-    ----------
-    Args:
-        path_or_hf_repo (Path): The path or the huggingface repository to load the model from.
-        tokenizer_config (dict, optional): Configuration parameters specifically for the tokenizer.
-            Defaults to an empty dictionary.
-        model_config(dict, optional): Configuration parameters specifically for the model.
-            Defaults to an empty dictionary.
-        adapter_path (str, optional): Path to the LoRA adapters. If provided, applies LoRA layers
-            to the model. Default: ``None``.
-        lazy (bool): If False eval the model parameters to make sure they are
-            loaded in memory before returning, otherwise they will be loaded
-            when needed. Default: ``False``
-
-    Returns
-    -------
-    A `MLXLM` model instance.
-
-    """
-    try:
-        import mlx.core as mx
-        import mlx_lm
-    except ImportError:
-        raise ImportError(
-            "The `mlx_lm` library needs to be installed in order to use `mlx_lm` models."
-        )
-    if not mx.metal.is_available():
-        raise RuntimeError("You cannot use `mlx_lm` without Apple Silicon (Metal)")
-
-    model, tokenizer = mlx_lm.load(
-        model_name,
-        tokenizer_config=tokenizer_config,
-        model_config=model_config,
-        adapter_path=adapter_path,
-        lazy=lazy,
-    )
+def from_mlxlm(model: "nn.Module", tokenizer: "PreTrainedTokenizer") -> MLXLM:
     return MLXLM(model, tokenizer)
