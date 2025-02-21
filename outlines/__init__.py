@@ -10,7 +10,7 @@ from outlines.caching import clear_cache, disable_cache, get_cache
 from outlines.function import Function
 from outlines.templates import Template, prompt
 
-from outlines.models import from_openai, from_gemini, from_anthropic
+from outlines.models import from_openai, from_gemini, from_anthropic, from_ollama
 
 __all__ = [
     "clear_cache",
@@ -19,6 +19,7 @@ __all__ = [
     "Function",
     "from_anthropic",
     "from_gemini",
+    "from_ollama",
     "from_openai",
     "prompt",
     "Template",
