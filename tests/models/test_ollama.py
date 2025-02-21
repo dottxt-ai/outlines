@@ -5,7 +5,7 @@ import pytest
 from pydantic import BaseModel
 
 from outlines.models import Ollama
-from outlines.types import Choice, Json
+from outlines.types import Choice, JsonType
 
 MODEL_NAME = "tinyllama"
 
@@ -39,7 +39,7 @@ def test_ollama_json():
     class Foo(BaseModel):
         foo: str
 
-    result = Ollama(MODEL_NAME)("Respond with one word. Not more.", Json(Foo))
+    result = Ollama(MODEL_NAME)("Respond with one word. Not more.", JsonType(Foo))
     assert isinstance(result, str)
     assert "foo" in json.loads(result)
 
@@ -69,7 +69,7 @@ def test_ollama_stream_json():
         foo: str
 
     model = Ollama(MODEL_NAME)
-    generator = model.stream("Create a character.", Json(Foo))
+    generator = model.stream("Create a character.", JsonType(Foo))
     generated_text = []
     for text in generator:
         generated_text.append(text)

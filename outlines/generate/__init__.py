@@ -3,7 +3,7 @@ from typing import Any, Optional, Union, cast, get_args
 
 from outlines.models import APIModel, LlamaCpp, LocalModel
 from outlines.processors import CFGLogitsProcessor, RegexLogitsProcessor
-from outlines.types import CFG, Choice, Json, List, Regex
+from outlines.types import CFG, Choice, JsonType, List, Regex
 
 from .api import SequenceGenerator
 from .cfg import cfg
@@ -29,7 +29,7 @@ class APIGenerator:
     """
 
     model: APIModel
-    output_type: Optional[Union[Json, List, Choice, Regex]] = None
+    output_type: Optional[Union[JsonType, List, Choice, Regex]] = None
 
     def __post_init__(self):
         if isinstance(self.output_type, CFG):
@@ -58,7 +58,7 @@ class LocalGenerator:
     """
 
     model: LocalModel
-    output_type: Optional[Union[Json, List, Choice, Regex]]
+    output_type: Optional[Union[JsonType, List, Choice, Regex]]
 
     def __post_init__(self):
         if self.output_type is None:
@@ -81,7 +81,7 @@ class LocalGenerator:
 
 def Generator(
     model: Union[LocalModel, APIModel],
-    output_type: Optional[Union[Json, List, Choice, Regex, CFG]] = None,
+    output_type: Optional[Union[JsonType, List, Choice, Regex, CFG]] = None,
 ):
     if isinstance(model, APIModel):  # type: ignore
         return APIGenerator(model, output_type)  # type: ignore
