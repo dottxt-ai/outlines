@@ -17,14 +17,6 @@ from .base_logits_processor import OutlinesLogitsProcessor, Array
 if TYPE_CHECKING:
     from outlines.generate import SequenceGenerator
 
-# Try importing pandas, but don't fail if not available
-try:
-    import pandas as pd
-    PANDAS_AVAILABLE = True
-except ImportError:
-    PANDAS_AVAILABLE = False
-    pd = Any  # For type hints when pandas is not available
-
 class LogitTrackingProcessor(OutlinesLogitsProcessor):
     """Tracks logits for both structured and unstructured token generation.
 
@@ -383,11 +375,7 @@ class LogitTrackingProcessor(OutlinesLogitsProcessor):
         ImportError
             If pandas is not installed
         """
-        if not PANDAS_AVAILABLE:
-            raise ImportError(
-                "pandas is required for DataFrame support. "
-                "Please install it with: pip install pandas"
-            )
+        import pandas as pd
 
         # Get values based on show parameter
         if show == "probs":
