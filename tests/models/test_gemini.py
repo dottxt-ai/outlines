@@ -9,8 +9,8 @@ from pydantic import BaseModel
 from typing_extensions import TypedDict
 
 from outlines.models.gemini import Gemini
-from outlines.templates import Vision
-from outlines.types import Choice, Json, List
+from outlines.prompts import Vision
+from outlines.types import Choice, JsonType, List
 
 MODEL_NAME = "gemini-1.5-flash-latest"
 
@@ -60,7 +60,7 @@ def test_gemini_simple_pydantic():
     class Foo(BaseModel):
         bar: int
 
-    result = model.generate("foo?", Json(Foo))
+    result = model.generate("foo?", JsonType(Foo))
     assert isinstance(result, str)
     assert "bar" in json.loads(result)
 
@@ -95,7 +95,7 @@ def test_gemini_nested_pydantic():
         sna: int
         bar: Bar
 
-    result = model.generate("foo?", Json(Foo))
+    result = model.generate("foo?", JsonType(Foo))
     assert isinstance(result, str)
     assert "sna" in json.loads(result)
     assert "bar" in json.loads(result)
@@ -115,7 +115,7 @@ def test_gemini_simple_json_schema_dict():
         "title": "Foo",
         "type": "object",
     }
-    result = model.generate("foo?", Json(schema))
+    result = model.generate("foo?", JsonType(schema))
     assert isinstance(result, str)
     assert "bar" in json.loads(result)
 
@@ -128,7 +128,7 @@ def test_gemini_simple_json_schema_string():
     model = Gemini(MODEL_NAME)
 
     schema = "{'properties': {'bar': {'title': 'Bar', 'type': 'integer'}}, 'required': ['bar'], 'title': 'Foo', 'type': 'object'}"
-    result = model.generate("foo?", Json(schema))
+    result = model.generate("foo?", JsonType(schema))
     assert isinstance(result, str)
     assert "bar" in json.loads(result)
 
@@ -140,7 +140,7 @@ def test_gemini_simple_typed_dict():
     class Foo(TypedDict):
         bar: int
 
-    result = model.generate("foo?", Json(Foo))
+    result = model.generate("foo?", JsonType(Foo))
     assert isinstance(result, str)
     assert "bar" in json.loads(result)
 
@@ -175,7 +175,7 @@ def test_gemini_simple_list_pydantic():
     class Foo(BaseModel):
         bar: int
 
-    result = model.generate("foo?", List(Json(Foo)))
+    result = model.generate("foo?", List(JsonType(Foo)))
     assert isinstance(json.loads(result), list)
     assert isinstance(json.loads(result)[0], dict)
     assert "bar" in json.loads(result)[0]

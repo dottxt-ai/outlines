@@ -3,7 +3,7 @@ from types import NoneType
 from typing import Iterator
 
 from outlines.models.base import Model, ModelTypeAdapter
-from outlines.types import Json
+from outlines.types import JsonType
 
 
 class OllamaTypeAdapter(ModelTypeAdapter):
@@ -46,8 +46,8 @@ class OllamaTypeAdapter(ModelTypeAdapter):
     def format_none_output_type(self, output_type: None):
         return ""
 
-    @format_output_type.register(Json)
-    def format_json_output_type(self, output_type: Json):
+    @format_output_type.register(JsonType)
+    def format_json_output_type(self, output_type: JsonType):
         return output_type.to_json_schema()
 
 
