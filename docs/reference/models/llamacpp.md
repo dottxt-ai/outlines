@@ -12,7 +12,7 @@ Outlines provides an integration with [Llama.cpp](https://github.com/ggerganov/l
 
 ## Load the model
 
-To load a model you can use the same interface as you would using `llamap-cpp-python` directly. The default method is to initialize the model by passing the path to the weights on your machine. Assuming [Phi2's weights](https://huggingface.co/TheBloke/phi-2-GGUF) are in the current directory:
+You can use `outlines.from_llamacpp` to load a `llama-cpp-python` model. Assuming [Phi2's weights](https://huggingface.co/TheBloke/phi-2-GGUF) are in the current directory:
 
 ```python
 from outlines import models
