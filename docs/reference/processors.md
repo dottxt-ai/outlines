@@ -12,7 +12,6 @@ Outlines provides several specialized processors for different use cases:
 - `RegexLogitsProcessor`: Constrains generation to match a regex pattern
 - `CFGLogitsProcessor`: Enforces a context-free grammar
 - `LogitTrackingProcessor`: Analyzes token probabilities during generation
-- `GuideLogitsProcessor`: Base class for guided generation
 
 ### RegexLogitsProcessor
 
