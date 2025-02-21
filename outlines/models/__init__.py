@@ -10,6 +10,7 @@ from typing import Union
 
 from .anthropic import Anthropic
 from .base import Model, ModelTypeAdapter
+from .dottxt import Dottxt
 from .exllamav2 import ExLlamaV2Model, exl2
 from .gemini import Gemini
 from .llamacpp import LlamaCpp
@@ -25,4 +26,4 @@ LogitsGenerator = Union[
 ]
 
 LocalModel = Union[LlamaCpp, Transformers]
-APIModel = Union[AzureOpenAI, OpenAI, Anthropic, Gemini, Ollama]
+APIModel = Union[AzureOpenAI, OpenAI, Anthropic, Gemini, Ollama, Dottxt]
