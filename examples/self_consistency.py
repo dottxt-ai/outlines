@@ -1,9 +1,9 @@
 import re
 
 import numpy as np
+import openai
 
 import outlines
-import outlines.models as models
 from outlines import Template
 
 examples = [
@@ -55,8 +55,8 @@ few_shots = Template.from_string(
     """
 )
 
-model = models.openai("gpt-4o-mini")
-generator = outlines.generate.text(model)
+model = outlines.from_openai(openai.OpenAI(), "gpt-4o-mini")
+generator = outlines.Generator(model)
 prompt = few_shots(question, examples)
 answers = generator(prompt, samples=10)
 

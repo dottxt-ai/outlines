@@ -12,9 +12,13 @@ References
 
 import argparse
 
+import openai
+
 import outlines
-import outlines.models as models
 from outlines import Template
+
+
+client = openai.OpenAI()
 
 
 def split_into_steps(question, model_name: str):
@@ -24,16 +28,15 @@ def split_into_steps(question, model_name: str):
         """
     )
 
-    model = models.openai(model_name)
-    generator = outlines.generate.text(model)
+    model = outlines.from_openai(client, model_name)
 
     prompt = solve(question)
-    answer = generator(prompt, 500)
+    answer = model(prompt, 500)
     prompt += (
         answer
         + "\n what is the only option that displays the same type of relationship as : :?"
     )
-    answer = generator(prompt, 500)
+    answer = model(prompt, 500)
     completed = prompt + answer
 
     return completed
@@ -49,13 +52,12 @@ def fill_in_the_blanks(question, model_name: str):
 
     solve = Template.from_string("""{{memory}}. Let's begin.""")
 
-    model = models.openai(model_name)
-    generator = outlines.generate.text(model)
+    model = outlines.from_openai(client, model_name)
 
     prompt = determine_goal(question)
-    answer = generator(prompt, stop_at=["."])
+    answer = model(prompt, stop_at=["."])
     prompt = solve(prompt + answer)
-    answer = generator(prompt, max_tokens=500)
+    answer = model(prompt, max_tokens=500)
     completed = prompt + answer
 
     return completed
@@ -89,13 +91,12 @@ def ask_an_expert(question, model_name: str):
         """
     )
 
-    model = models.openai(model_name)
-    generator = outlines.generate.text(model)
+    model = outlines.from_openai(client, model_name)
 
     prompt = find_expert(question)
-    expert = generator(prompt, stop_at=['"'])
+    expert = model(prompt, stop_at=['"'])
     prompt = get_answer(question, expert, prompt + expert)
-    answer = generator(prompt, max_tokens=500)
+    answer = model(prompt, max_tokens=500)
     completed = prompt + answer
 
     return completed
@@ -117,13 +118,12 @@ def ask_an_expert_simple(question, model_name: str):
         """
     )
 
-    model = models.openai(model_name)
-    generator = outlines.generate.text(model)
+    model = outlines.from_openai(client, model_name)
 
     prompt = find_expert(question)
-    expert = generator(prompt, stop_at=["\n", "."])
+    expert = model(prompt, stop_at=["\n", "."])
     prompt = get_answer(expert, prompt + expert)
-    answer = generator(prompt, max_tokens=500)
+    answer = model(prompt, max_tokens=500)
     completed = prompt + answer
 
     return completed

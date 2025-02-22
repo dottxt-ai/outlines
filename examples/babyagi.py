@@ -8,13 +8,14 @@ The original repo can be found at https://github.com/yoheinakajima/babyagi
 from collections import deque
 from typing import Deque, List
 
+from openai import OpenAI
+
 import outlines
-import outlines.models as models
 from outlines import Template
 
 
-model = models.openai("gpt-4o-mini")
-complete = outlines.generate.text(model)
+model = outlines.from_openai(OpenAI(), "gpt-4o-mini")
+complete = outlines.Generator(model)
 
 ## Load the prompts
 perform_task_ppt = Template.from_file("prompts/babyagi_perform_task.txt")
