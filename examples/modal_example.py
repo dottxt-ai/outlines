@@ -4,7 +4,7 @@ app = modal.App(name="outlines-app")
 
 
 outlines_image = modal.Image.debian_slim(python_version="3.11").pip_install(
-    "outlines==0.0.37",
+    "outlines==1.0.0",
     "transformers==4.38.2",
     "datasets==2.18.0",
     "accelerate==0.27.2",
@@ -12,9 +12,11 @@ outlines_image = modal.Image.debian_slim(python_version="3.11").pip_install(
 
 
 def import_model():
-    import outlines
+    from transformers import AutoModelForCausalLM, AutoTokenizer
 
-    outlines.models.transformers("mistralai/Mistral-7B-Instruct-v0.2")
+    model_id = "mistralai/Mistral-7B-Instruct-v0.2"
+    _ = AutoTokenizer.from_pretrained(model_id)
+    _ = AutoModelForCausalLM.from_pretrained(model_id)
 
 
 outlines_image = outlines_image.run_function(import_model)
@@ -63,12 +65,17 @@ def generate(
     prompt: str = "Amiri, a 53 year old warrior woman with a sword and leather armor.",
 ):
     import outlines
+    from transformers import AutoModelForCausalLM, AutoTokenizer
 
-    model = outlines.models.transformers("mistralai/Mistral-7B-v0.1", device="cuda")
+    model_id = "mistralai/Mistral-7B-Instruct-v0.2"
+    model = outlines.from_transformers(
+        tokenizer=AutoTokenizer.from_pretrained(model_id),
+        model=AutoModelForCausalLM.from_pretrained(model_id, device="cuda"),
+    )
 
-    generator = outlines.generate.json(model, schema)
-    character = generator(
-        f"<s>[INST]Give me a character description. Describe {prompt}.[/INST]"
+    character = model(
+        f"<s>[INST]Give me a character description. Describe {prompt}.[/INST]",
+        outlines.JsonType(schema),
     )
 
     print(character)

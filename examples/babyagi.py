@@ -4,14 +4,16 @@ It currently does not use the vector store retrieval
 
 The original repo can be found at https://github.com/yoheinakajima/babyagi
 """
+
 from collections import deque
 from typing import Deque, List
 
-import outlines
-import outlines.models as models
+from openai import OpenAI
 
-model = models.openai("gpt-4o-mini")
-complete = outlines.generate.text(model)
+import outlines
+
+model = outlines.from_openai(OpenAI(), "gpt-4o-mini")
+complete = outlines.Generator(model)
 
 
 #################

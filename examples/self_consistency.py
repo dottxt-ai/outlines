@@ -1,9 +1,9 @@
 import re
 
 import numpy as np
+import openai
 
 import outlines
-import outlines.models as models
 
 examples = [
     {
@@ -55,8 +55,8 @@ def few_shots(question, examples):
     """
 
 
-model = models.openai("gpt-4o-mini")
-generator = outlines.generate.text(model)
+model = outlines.from_openai(openai.OpenAI(), "gpt-4o-mini")
+generator = outlines.Generator(model)
 prompt = few_shots(question, examples)
 answers = generator(prompt, samples=10)
 
@@ -78,5 +78,5 @@ max_count = max(results.values())
 answer_value = [key for key, value in results.items() if value == max_count][0]
 total_count = sum(results.values())
 print(
-    f"The most likely answer is {answer_value} ({max_count/total_count*100}% consensus)"
+    f"The most likely answer is {answer_value} ({max_count / total_count * 100}% consensus)"
 )

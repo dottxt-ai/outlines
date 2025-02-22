@@ -1,4 +1,5 @@
 """An example illustrating parser-based masking."""
+
 import math
 import time
 from copy import copy

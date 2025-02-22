@@ -1,5 +1,7 @@
-import outlines.generate as generate
-import outlines.models as models
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
+import outlines
+from outlines.types import Cfg
 
 nlamb_grammar = r"""
     start: sentence
@@ -75,11 +77,16 @@ json_grammar = r"""
     %ignore WS
 """
 
-model = models.transformers("hf-internal-testing/tiny-random-gpt2")
+model_name = "hf-internal-testing/tiny-random-gpt2"
+model = outlines.from_transformers(
+    AutoModelForCausalLM.from_pretrained(model_name),
+    AutoTokenizer.from_pretrained(model_name),
+)
+
 batch_size = 10
 for grammar in [nlamb_grammar, calc_grammar, dyck_grammar, json_grammar]:
-    generator = generate.cfg(model, grammar, max_tokens=model.model.config.n_positions)
-    sequences = generator([" "] * batch_size)
+    generator = outlines.Generator(model, Cfg(grammar))
+    sequences = generator([" "] * batch_size, max_tokens=model.model.config.n_positions)
     for seq in sequences:
         try:
             parse = generator.fsm.parser.parse(seq)

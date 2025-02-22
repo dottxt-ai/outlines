@@ -9,8 +9,9 @@ References
        arXiv preprint arXiv:2212.06094.
 
 """
+
+import openai
 import outlines
-import outlines.models as models
 
 
 @outlines.prompt
@@ -31,7 +32,7 @@ def build_ooo_prompt(options):
 
 options = ["sea", "mountains", "plains", "sock"]
 
-model = models.openai("gpt-4o-mini")
+model = outlines.from_openai(openai.OpenAI(), "gpt-4o-mini")
 gen_text = outlines.generate.text(model)
 gen_choice = outlines.generate.choice(model, options)
 
