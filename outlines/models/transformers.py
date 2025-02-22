@@ -6,12 +6,10 @@ from outlines.models.tokenizer import Tokenizer
 
 if TYPE_CHECKING:
     import torch
-    from transformers import PreTrainedTokenizer
-
-__all__ = ["Transformers", "Mamba"]
+    from transformers import PreTrainedTokenizer, PreTrainedModel
 
 
-KVCacheType = Tuple[Tuple["torch.DoubleTensor", "torch.DoubleTensor"], ...]
+__all__ = ["Transformers", "from_transformers"]
 
 
 def get_llama_tokenizer_types():
@@ -168,52 +166,28 @@ class Transformers(Model):
 
     def __init__(
         self,
-        model_name: str,
-        model_class=None,
-        model_kwargs: dict = {},
-        tokenizer_class=None,
-        tokenizer_kwargs: dict = {},
+        model: "PreTrainedModel",
+        tokenizer: "PreTrainedTokenizer",
     ):
-        """Create a Transformers model instance
+        """Create a Transformers model instance.
+
+        `outlines` supports `PreTrainedModelForCausalLM`,
+        `PreTrainedMambaForCausalLM`, `PreTrainedModelForSeq2Seq` and any model
+        that implements the `transformers` model API.
 
         Parameters:
         ----------
-        model_name
-            The name of the transformers model to use;
-        model_class
-            The Transformers model class from which to create the model.
-            If not provided,`AutoModelForCausalLM` will be used.
-            If you gave the name of a non-causal language model,
-            you must provide a value for this parameter.
-        model_kwargs
-            A dictionary of keyword arguments to pass to the `from_pretrained`
-            method of the model class.
-        tokenizer_class
-            The Transformers tokenizer class from which to create the tokenizer.
-            If not provided,`AutoTokenizer` will be used.
-            If you gave the name of a model that is not compatible with `AutoTokenizer`,
-            you must provide a value for this parameter.
-        tokenizer_kwargs
-            A dictionary of keyword arguments to pass to the `from_pretrained`
-            method of the tokenizer class.
+        model
+            A `PreTrainedModel`, or any model that is compatible with the
+            `transformers` API for models.
+        tokenizer
+            A `PreTrainedTokenizer`, or any tokenizer that is compatible with
+            the `transformers` API for tokenizers.
 
         """
-        if model_class is None or tokenizer_class is None:
-            try:
-                from transformers import AutoModelForCausalLM, AutoTokenizer
-            except ImportError:
-                raise ImportError(
-                    "The `transformers` library needs to be installed in order to use `transformers` models."
-                )
-        if model_class is None:
-            model_class = AutoModelForCausalLM
-        if tokenizer_class is None:
-            tokenizer_class = AutoTokenizer
-        self.model = model_class.from_pretrained(model_name, **model_kwargs)
-        tokenizer_kwargs.setdefault("padding_side", "left")
-        self.tokenizer = TransformerTokenizer(
-            tokenizer_class.from_pretrained(model_name, **tokenizer_kwargs)
-        )
+        tokenizer.padding_size = "left"
+        self.model = model
+        self.tokenizer = TransformerTokenizer(tokenizer)
         self.type_adapter = TransformersTypeAdapter()
 
     def generate(self, model_input, output_type, **inference_kwargs):
@@ -278,41 +252,8 @@ class Transformers(Model):
             )
 
 
-class Mamba(Transformers):
-    """Represents a Mamba model."""
-
-    def __init__(
-        self,
-        model_name: str,
-        model_kwargs: dict = {},
-        tokenizer_kwargs: dict = {},
-    ):
-        """
-        Create a Mamba model instance
-
-        Parameters:
-        ----------
-        model_name
-            The name of the transformers model to use. It will be passed to
-            the `from_pretrained` method of the `MambaForCausalLM` class.
-        model_kwargs
-            A dictionary of keyword arguments to pass to the `from_pretrained`
-            method of the `MambaForCausalLM` class.
-        tokenizer_kwargs
-            A dictionary of keyword arguments to pass to the `from_pretrained`
-            method of the `AutoTokenizer` class.
-        """
-        try:
-            from transformers import MambaForCausalLM
-
-        except ImportError:
-            raise ImportError(
-                "The `mamba_ssm`, `torch` and `transformer` libraries needs to be installed in order to use Mamba."
-            )
-
-        return super().__init__(
-            model_name=model_name,
-            model_class=MambaForCausalLM,
-            model_kwargs=model_kwargs,
-            tokenizer_kwargs=tokenizer_kwargs,
-        )
+def from_transformers(
+    model: Union["PreTrainedModel", object],
+    tokenizer: Union["PreTrainedTokenizer", object],
+):
+    return Transformers(model, tokenizer)

@@ -3,9 +3,10 @@ from enum import Enum
 
 import pytest
 from pydantic import BaseModel
-from transformers import AutoModelForSeq2SeqLM
+import transformers
 
-from outlines.models.transformers import Mamba, Transformers
+import outlines
+from outlines.models.transformers import Transformers
 from outlines.types import Choice, JsonType, Regex
 
 TEST_MODEL = "erwanf/gpt2-mini"
@@ -14,42 +15,36 @@ TEST_MODEL_MAMBA = "hf-internal-testing/tiny-random-MambaForCausalLM"
 
 
 def test_transformers_instantiate_simple():
-    model = Transformers(TEST_MODEL)
+    model = outlines.from_transformers(
+        transformers.AutoModelForCausalLM.from_pretrained(TEST_MODEL),
+        transformers.AutoTokenizer.from_pretrained(TEST_MODEL),
+    )
     assert isinstance(model, Transformers)
 
 
-def test_transformers_instantiate_wrong_kwargs():
-    with pytest.raises(TypeError):
-        Transformers(TEST_MODEL, model_kwargs={"foo": "bar"})
-
-
 def test_transformers_instantiate_other_model_class():
-    model = Transformers(
-        model_name=TEST_MODEL_SEQ2SEQ, model_class=AutoModelForSeq2SeqLM
+    model = outlines.from_transformers(
+        transformers.AutoModelForSeq2SeqLM.from_pretrained(TEST_MODEL_SEQ2SEQ),
+        transformers.AutoTokenizer.from_pretrained(TEST_MODEL),
     )
     assert isinstance(model, Transformers)
 
 
 def test_transformers_instantiate_mamba():
-    model = Mamba(
-        model_name=TEST_MODEL_MAMBA,
+    model = outlines.from_transformers(
+        transformers.MambaForCausalLM.from_pretrained(TEST_MODEL_MAMBA),
+        transformers.AutoTokenizer.from_pretrained(TEST_MODEL),
     )
-    assert isinstance(model, Mamba)
     assert isinstance(model, Transformers)
-
-
-def test_transformers_instantiate_tokenizer_kwargs():
-    model = Transformers(
-        TEST_MODEL,
-        tokenizer_kwargs={"additional_special_tokens": ["<t1>", "<t2>"]}
-    )
-    assert "<t1>" in model.tokenizer.special_tokens
-    assert "<t2>" in model.tokenizer.special_tokens
 
 
 @pytest.fixture
 def model():
-    return Transformers(TEST_MODEL)
+    model = outlines.from_transformers(
+        transformers.AutoModelForCausalLM.from_pretrained(TEST_MODEL),
+        transformers.AutoTokenizer.from_pretrained(TEST_MODEL),
+    )
+    return model
 
 
 def test_transformers_simple(model):

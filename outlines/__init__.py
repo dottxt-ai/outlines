@@ -12,6 +12,7 @@ from outlines.templates import Template, prompt
 
 from outlines.models import (
     from_openai,
+    from_transformers,
     from_gemini,
     from_anthropic,
     from_ollama,
@@ -28,7 +29,7 @@ models = [
     "from_mlxlm",
     "from_ollama",
     "from_openai",
-    "from_vllm",
+    "from_transformersfrom_vllm",
 ]
 
 __all__ = [
