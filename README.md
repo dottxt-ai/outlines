@@ -80,10 +80,15 @@ Please see [the documentation](https://dottxt-ai.github.io/outlines/latest/refer
 You can reduce the completion to a choice between multiple possibilities:
 
 ``` python
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
 import outlines
 
 model_name = "HuggingFaceTB/SmolLM2-360M-Instruct"
-model = outlines.models.transformers(model_name)
+model = outlines.from_transformers(
+    AutoModelForCausalLM.from_pretrained(model_name),
+    AutoTokenizer.from_pretrained(model_name)
+)
 
 # You must apply the chat template tokens to the prompt!
 # See below for an example.
@@ -100,9 +105,7 @@ Text: I really really really want pizza.
 <|im_start|>assistant
 """
 
-generator = outlines.generate.choice(model, ["Pizza", "Pasta", "Salad", "Dessert"])
-answer = generator(prompt)
-
+answer = model(prompt, outlines.Choice(["Pizza", "Pasta", "Salad", "Dessert"]))
 # Likely answer: Pizza
 ```
 
@@ -117,8 +120,7 @@ class Food(str, Enum):
     salad = "Salad"
     dessert = "Dessert"
 
-generator = outlines.generate.choice(model, Food)
-answer = generator(prompt)
+answer = model(prompt, outlines.Choice(Food))
 # Likely answer: Pizza
 ````
 
@@ -128,9 +130,14 @@ You can instruct the model to only return integers or floats:
 
 
 ``` python
+from transformers import AutoModelForCausalLM, AutoTokenizer
 import outlines
 
-model = outlines.models.transformers("WizardLM/WizardMath-7B-V1.1")
+model_name = "WizardLM/WizardMath-7B-V1.1"
+model = outlines.from_transformers(
+    AutoModelForCausalLM.from_pretrained(model_name),
+    AutoTokenizer.from_pretrained(model_name)
+)
 
 prompt = "<s>result of 9 + 9 = 18</s><s>result of 1 + 2 = "
 answer = outlines.generate.format(model, int)(prompt)
@@ -138,8 +145,7 @@ print(answer)
 # 3
 
 prompt = "sqrt(2)="
-generator = outlines.generate.format(model, float)
-answer = generator(prompt, max_tokens=10)
+answer = model(prompt, outlines.types.number, max_tokens=10)
 print(answer)
 # 1.41421356
 ```
@@ -151,9 +157,14 @@ Outlines also comes with fast regex-structured generation. In fact, the `choice`
 hood:
 
 ``` python
+from transformers import AutoModelForCausalLM, AutoTokenizer
 import outlines
 
-model = outlines.models.transformers("microsoft/Phi-3-mini-4k-instruct")
+model_name = "microsoft/Phi-3-mini-4k-instruct"
+model = outlines.from_transformers(
+    AutoModelForCausalLM.from_pretrained(model_name),
+    AutoTokenizer.from_pretrained(model_name)
+)
 
 prompt = """
 <|im_start|>system You are a helpful assistant.
@@ -167,15 +178,13 @@ The IP address of a Google DNS server is
 
 """
 
-generator = outlines.generate.text(model)
-unstructured = generator(prompt, max_tokens=30)
+unstructured = model(prompt, max_tokens=10)
 
-generator = outlines.generate.regex(
-    model,
-    r"((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)",
-    sampler=outlines.samplers.greedy(),
+structured = model(
+    prompt,
+    outlines.Regex(r"((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)"),
+    max_tokens=30
 )
-structured = generator(prompt, max_tokens=30)
 
 print(unstructured)
 # 8.8.8.8
@@ -196,6 +205,7 @@ Outlines users can guide the generation process so the output is *guaranteed* to
 ```python
 from enum import Enum
 from pydantic import BaseModel, constr
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
 import outlines
 
@@ -222,20 +232,25 @@ class Character(BaseModel):
     strength: int
 
 
-model = outlines.models.transformers("microsoft/Phi-3-mini-4k-instruct")
+model_name = "microsoft/Phi-3-mini-4k-instruct"
+model = outlines.from_transformers(
+    AutoModelForCausalLM.from_pretrained(model_name),
+    AutoTokenizer.from_pretrained(model_name)
+)
 
 # Construct structured sequence generator
-generator = outlines.generate.json(model, Character)
 
 # Draw a sample
 seed = 789001
 
-character = generator("Give me a character description", seed=seed)
+prompt = "Give me a character description"
+character = model(prompt, outlines.JsonType(Character), seed=seed)
 
 print(repr(character))
 # Character(name='Anderson', age=28, armor=<Armor.chainmail: 'chainmail'>, weapon=<Weapon.sword: 'sword'>, strength=8)
 
-character = generator("Give me an interesting character description")
+prompt = "Give me an interesting character description"
+character = model(prompt, outlines.JsonType(Character), seed=seed)
 
 print(repr(character))
 # Character(name='Vivian Thr', age=44, armor=<Armor.plate: 'plate'>, weapon=<Weapon.crossbow: 'crossbow'>, strength=125)
@@ -248,6 +263,8 @@ The method works with union types, optional types, arrays, nested schemas, etc. 
 Sometimes you just want to be able to pass a JSON Schema instead of a Pydantic model. We've got you covered:
 
 ``` python
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
 import outlines
 
 schema = '''{
@@ -287,9 +304,14 @@ schema = '''{
     }
 }'''
 
-model = outlines.models.transformers("microsoft/Phi-3-mini-4k-instruct")
-generator = outlines.generate.json(model, schema)
-character = generator("Give me a character description")
+model_name = "microsoft/Phi-3-mini-4k-instruct"
+model = outlines.from_transformers(
+    AutoModelForCausalLM.from_pretrained(model_name),
+    AutoTokenizer.from_pretrained(model_name)
+)
+
+prompt = "Give me a character description"
+character = model(prompt, outlines.JsonType(schema))
 ```
 
 ### Using context-free grammars to guide generation
@@ -297,6 +319,8 @@ character = generator("Give me a character description")
 Formal grammars rule the world, and Outlines makes them rule LLMs too. You can pass any context-free grammar in the EBNF format and Outlines will generate an output that is valid to this grammar:
 
 ``` python
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
 import outlines
 
 arithmetic_grammar = """
@@ -313,9 +337,14 @@ arithmetic_grammar = """
     %import common.NUMBER
 """
 
-model = outlines.models.transformers("WizardLM/WizardMath-7B-V1.1")
-generator = outlines.generate.cfg(model, arithmetic_grammar)
-sequence = generator("Alice had 4 apples and Bob ate 2. Write an expression for Alice's apples:")
+model_name = "WizardLM/WizardMath-7B-V1.1"
+model = outlines.from_transformers(
+    AutoModelForCausalLM.from_pretrained(model_name),
+    AutoTokenizer.from_pretrained(model_name)
+)
+
+prompt = "Alice had 4 apples and Bob ate 2. Write an expression for Alice's apples:"
+sequence = model(prompt, outlines.types.Cfg(arithmetic_grammar))
 
 print(sequence)
 # (8-2)
@@ -328,17 +357,24 @@ This was a very simple grammar, and you can use `outlines.generate.cfg` to gener
 Outlines can infer the structure of the output from the signature of a function. The result is a dictionary, and can be passed directly to the function using the usual dictionary expansion syntax `**`:
 
 ```python
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
 import outlines
 
 
 def add(a: int, b: int):
     return a + b
 
-model = outlines.models.transformers("WizardLM/WizardMath-7B-V1.1")
-generator = outlines.generate.json(model, add)
+
+model_name = "WizardLM/WizardMath-7B-V1.1"
+model = outlines.from_transformers(
+    AutoModelForCausalLM.from_pretrained(model_name),
+    AutoTokenizer.from_pretrained(model_name)
+)
+generator = outlines.generate.json(model, outlines.types.JsonType(add))
 result = generator("Return json with two integers named a and b respectively. a is odd and b even.")
 
-print(add(**result))
+# print(add(**result))
 # 3
 ```
 
@@ -349,6 +385,8 @@ You can also embed various functions into an enum to generate params:
 ```python
 from enum import Enum
 from functools import partial
+
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
 import outlines
 
@@ -363,11 +401,15 @@ class Operation(Enum):
     add = partial(add)
     mul = partial(mul)
 
-model = outlines.models.transformers("WizardLM/WizardMath-7B-V1.1")
-generator = outlines.generate.json(model, Operation)
+model_name = "WizardLM/WizardMath-7B-V1.1"
+model = outlines.from_transformers(
+    AutoModelForCausalLM.from_pretrained(model_name),
+    AutoTokenizer.from_pretrained(model_name)
+)
+generator = outlines.generate.json(model, outlines.types.JsonType(Operation))
 result = generator("Return json with two float named c and d respectively. c is negative and d greater than 1.0.")
 
-print(result)
+#print(result)
 # {'c': -3.14, 'd': 1.5}
 ```
 
@@ -393,6 +435,8 @@ You are a sentiment-labelling assistant.
 You can then load it and call it with:
 
 ``` python
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
 import outlines
 
 examples = [
