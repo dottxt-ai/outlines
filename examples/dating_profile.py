@@ -6,7 +6,7 @@ import transformers
 from pydantic import BaseModel, conlist
 
 import outlines
-from outlines import models, Template
+from outlines import Template
 
 
 class QuestionChoice(str, Enum):
@@ -86,26 +86,28 @@ samples: list[Example] = [
 # Below requires ~13GB of GPU memory
 # https://huggingface.co/mosaicml/mpt-7b-8k-instruct
 # Motivation: Reasonably large model that fits on a single GPU and has been fine-tuned for a larger context window
+model_name = "mosaicml/mpt-7b-8k-instruct"
 config = transformers.AutoConfig.from_pretrained(
     "mosaicml/mpt-7b-8k-instruct", trust_remote_code=True
 )
 config.init_device = "meta"
-model = models.transformers(
-    model_name="mosaicml/mpt-7b-8k-instruct",
-    device="cuda",
-    model_kwargs={
-        "config": config,
-        "trust_remote_code": True,
-        "torch_dtype": torch.bfloat16,
-        "device_map": {"": 0},
-    },
+model = outlines.from_transformers(
+    transformers.AutoModelForCausalLM.from_pretrained(
+        model_name,
+        device="cuda",
+        config=config,
+        trust_remote_code=True,
+        torch_dtype=torch.bfloat16,
+        device_map={"": 0},
+    ),
+    transformers.AutoTokenizer.from_pretrained(model_name),
 )
 
 new_description = "I'm a laid-back lawyer who spends a lot of his free-time gaming. I work in a corporate office, but ended up here after the start-up I cofounded got acquired, so still play ping pong with my cool coworkers every day. I have a bar at home where I make cocktails, which is great for entertaining friends. I secretly like to wear suits and get a new one tailored every few months. I also like weddings because I get to wear those suits, and it's a good excuse for a date. I watch the latest series because I'm paying, with my hard-earned money, for every streaming service."
 
 dating_profile_prompt = Template.from_file("prompts/dating_profile.txt")
 prompt = dating_profile_prompt(description=new_description, examples=samples)
-profile = outlines.generate.json(model, DatingProfile)(prompt)  # type: ignore
+profile = model(prompt, outlines.JsonType(DatingProfile))  # type: ignore
 print(profile)
 
 # Sample generated profiles
