@@ -47,9 +47,6 @@ dependencies = [
 dynamic = ["version"]
 
 [project.optional-dependencies]
-transformers = ["transformers", "accelerate", "datasets", "numpy<2"]
-exllamav2 = ["exllamav2"]
-dottxt = ["dottxt"]
 test = [
     "pre-commit",
     "pytest",
