@@ -13,10 +13,10 @@ References
 
 import requests  # type: ignore
 
+from openai import OpenAI
+
 import outlines
-from outlines import Template
-import outlines.generate as generate
-import outlines.models as models
+from outlines import Generator, Choice, Template
 
 
 build_reAct_prompt = Template.from_string(
@@ -48,11 +48,11 @@ def search_wikipedia(query: str):
 
 
 prompt = build_reAct_prompt("Where is Apple Computers headquarted? ")
-model = models.openai("gpt-4o-mini")
+model = outlines.from_openai(OpenAI(), "gpt-4o-mini")
 
-mode_generator = generate.choice(model, choices=["Tho", "Act"])
-action_generator = generate.choice(model, choices=["Search", "Finish"])
-text_generator = generate.text(model)
+mode_generator = Generator(model, Choice(["Tho", "Act"]))
+action_generator = Generator(model, Choice(["Search", "Finish"]))
+text_generator = Generator(model)
 
 for i in range(1, 10):
     mode = mode_generator(prompt, max_tokens=128)
