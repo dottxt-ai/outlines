@@ -190,7 +190,7 @@ class Transformers(Model):
         self.tokenizer = TransformerTokenizer(tokenizer)
         self.type_adapter = TransformersTypeAdapter()
 
-    def generate(self, model_input, output_type, **inference_kwargs):
+    def _prepare_model_inputs(self, model_input, output_type):
         prompts = self.type_adapter.format_input(model_input)
         input_ids, attention_mask = self.tokenizer.encode(prompts)
         inputs = {
@@ -198,6 +198,10 @@ class Transformers(Model):
             "attention_mask": attention_mask.to(self.model.device),
         }
 
+        return prompts, inputs
+
+    def generate(self, model_input, output_type, **inference_kwargs):
+        prompts, inputs = self._prepare_model_inputs(model_input, output_type)
         logits_processor = self.type_adapter.format_output_type(output_type)
 
         generated_ids = self._generate_output_seq(
@@ -205,7 +209,7 @@ class Transformers(Model):
         )
 
         # if single str input, convert to a 1D outputt
-        if isinstance(model_input, str):
+        if isinstance(prompts, str):
             generated_ids = generated_ids.squeeze(0)
 
         return self._decode_generation(generated_ids)
@@ -252,8 +256,125 @@ class Transformers(Model):
             )
 
 
+class TransformersVisionTypeAdapter(ModelTypeAdapter):
+    """Type adapter for TransformersVision models."""
+
+    @singledispatchmethod
+    def format_input(self, model_input):
+        """Generate the prompt argument to pass to the model.
+
+        Argument
+        --------
+        model_input
+            The input passed by the user.
+
+        """
+        raise NotImplementedError(
+            f"The input type {input} is not available. Please provide a "
+            "dictionary with the following format: "
+            "{'prompts': Union[str, List[str]], 'images': Union[Any, List[Any]]}"
+            "Make sure the number of image tags in the prompts is equal to the "
+            "number of images provided."
+        )
+
+    @format_input.register(dict)
+    def format_list_input(self, model_input):
+        if "prompts" not in model_input or "images" not in model_input:
+            raise ValueError(
+                "The input must contain the following keys: 'prompts' and 'images'."
+            )
+        return model_input["prompts"], model_input["images"]
+
+    def format_output_type(self, output_type):
+        """Generate the logits processor argument to pass to the model.
+
+        Argument
+        --------
+        output_type
+            The logits processor provided.
+
+        """
+        from transformers import LogitsProcessorList
+
+        if output_type is not None:
+            return LogitsProcessorList([output_type])
+        return None
+
+
+class TransformersVision(Transformers):
+    """Represents a `transformers` model with a vision processor."""
+
+    def __init__(self, model: "PreTrainedModel", processor):
+        """Create a TransformersVision model instance
+
+        We rely on the `__init__` method of the `Transformers` class to handle
+        most of the initialization and then add elements specific to vision
+        models.
+
+        """
+        self.processor = processor
+        self.processor.padding_side = "left"
+        self.processor.pad_token = "[PAD]"
+
+        tokenizer: "PreTrainedTokenizer" = self.processor.tokenizer
+
+        super().__init__(model, tokenizer)
+
+        self.type_adapter = TransformersVisionTypeAdapter()
+
+    def _prepare_model_inputs(self, model_input, output_type):
+        prompts, images = self.type_adapter.format_input(model_input)
+        inputs = self.processor(
+            text=prompts, images=images, padding=True, return_tensors="pt"
+        ).to(self.model.device)
+
+        return prompts, inputs
+
+
 def from_transformers(
-    model: Union["PreTrainedModel", object],
-    tokenizer: Union["PreTrainedTokenizer", object],
+    model: "PreTrainedModel",
+    tokenizer_or_processor: "PreTrainedTokenizer",
 ):
-    return Transformers(model, tokenizer)
+    from transformers import (
+        PreTrainedTokenizer,
+        PreTrainedTokenizerFast,
+        Blip2Processor,
+        LlavaProcessor,
+        IdeficsProcessor,
+        CLIPProcessor,
+        Qwen2_5_VLProcessor,
+        Qwen2VLProcessor,
+        NougatProcessor,
+        LlavaNextProcessor,
+        PixtralProcessor,
+        PaliGemmaProcessor,
+    )
+
+    vision_processors = (
+        Blip2Processor,
+        LlavaProcessor,
+        IdeficsProcessor,
+        CLIPProcessor,
+        Qwen2_5_VLProcessor,
+        Qwen2VLProcessor,
+        NougatProcessor,
+        LlavaNextProcessor,
+        PixtralProcessor,
+        PaliGemmaProcessor,
+    )
+
+    if isinstance(
+        tokenizer_or_processor, (PreTrainedTokenizer, PreTrainedTokenizerFast)
+    ):
+        tokenizer = tokenizer_or_processor
+        return Transformers(model, tokenizer)
+    elif isinstance(tokenizer_or_processor, vision_processors):
+        processor = tokenizer_or_processor
+        return TransformersVision(model, processor)
+    else:
+        raise ValueError(
+            "We could determine whether the model passed to `from_transformers`"
+            + " is a text-2-text of vision language model. If you passed a"
+            + " vision language model please open an issue pasting the error"
+            + " with the name of the vision language model."
+        )
