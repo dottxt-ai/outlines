@@ -51,7 +51,7 @@ jobs:
         echo "::set-output name=id::$MATRIX_ID"
     - name: Run tests
       run: |
-        uv run pytest -x --cov=outlines
+        uv run pytest -x --cov=outlines -m 'not api_call'
       env:
         COVERAGE_FILE: .coverage.${{ steps.matrix-id.outputs.id }}
     - name: Upload coverage data
