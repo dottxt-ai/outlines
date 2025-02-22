@@ -33,6 +33,7 @@ jobs:
       run: |
         curl -fsSL https://ollama.com/install.sh | sh
         ollama --version
+        ollama pull tinyllama
     - name: Set up test environment
       run: |
         python -m pip install --upgrade pip

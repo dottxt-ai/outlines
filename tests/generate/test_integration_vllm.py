@@ -4,18 +4,18 @@ import re
 import pytest
 import torch
 from pydantic import BaseModel, constr
-from vllm import LLM
-
-try:
-    from vllm.sampling_params import SamplingParams
-except ImportError:
-    pass
 
 import outlines
 import outlines.generate as generate
 import outlines.grammars as grammars
 import outlines.models as models
 import outlines.samplers as samplers
+
+try:
+    from vllm import LLM
+    from vllm.sampling_params import SamplingParams
+except ImportError:
+    pass
 
 pytestmark = pytest.mark.skipif(
     not torch.cuda.is_available(), reason="vLLM models can only be run on GPU."

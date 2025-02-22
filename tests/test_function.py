@@ -1,4 +1,6 @@
 from typing import Annotated
+
+import json
 import pytest
 import responses
 from pydantic import BaseModel, Field
@@ -24,6 +26,8 @@ def test_function_basic():
 
     result = fn("test")
     Foo.parse_raw(result)
+    assert isinstance(json.loads(result), dict)
+    assert "id" in json.loads(result)
 
 
 def test_download_from_github_invalid():
