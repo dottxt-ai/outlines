@@ -30,8 +30,8 @@ def api_key():
     return api_key
 
 
-def test_init_from_client():
-    client = OpenAIClient()
+def test_init_from_client(api_key):
+    client = OpenAIClient(api_key=api_key)
     model = outlines.from_openai(client, "gpt-4o")
     assert isinstance(model, OpenAI)
     assert model.client == client
@@ -39,7 +39,7 @@ def test_init_from_client():
 
 def test_openai_wrong_inference_parameters(api_key):
     with pytest.raises(TypeError, match="got an unexpected"):
-        model = OpenAI(OpenAIClient(), MODEL_NAME)
+        model = OpenAI(OpenAIClient(api_key=api_key), MODEL_NAME)
         model.generate("prompt", foo=10)
 
 
@@ -49,7 +49,7 @@ def test_openai_wrong_input_type(api_key):
             self.foo = foo
 
     with pytest.raises(NotImplementedError, match="is not available"):
-        model = OpenAI(OpenAIClient(), MODEL_NAME)
+        model = OpenAI(OpenAIClient(api_key=api_key), MODEL_NAME)
         model.generate(Foo("prompt"))
 
 
@@ -59,7 +59,7 @@ def test_openai_wrong_output_type(api_key):
             self.foo = foo
 
     with pytest.raises(NotImplementedError, match="is not available"):
-        model = OpenAI(OpenAIClient, MODEL_NAME)
+        model = OpenAI(OpenAIClient(api_key=api_key), MODEL_NAME)
         model.generate("prompt", Foo(1))
 
 
