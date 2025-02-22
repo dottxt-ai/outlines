@@ -10,9 +10,9 @@ from typing import TYPE_CHECKING, Optional, Union, List, Literal, Dict, Any
 
 import numpy as np
 import torch
-from numpy.typing import NDArray
 
 from .base_logits_processor import OutlinesLogitsProcessor, Array
+from ..models.tokenizer import Tokenizer
 
 if TYPE_CHECKING:
     from outlines.generate import SequenceGenerator
@@ -34,9 +34,9 @@ class LogitTrackingProcessor(OutlinesLogitsProcessor):
     ----------
     processor : Optional[OutlinesLogitsProcessor]
         The processor that applies structural constraints
-    unstructured_logits : List[NDArray]
+    unstructured_logits : List[Array]
         Raw logits from the model for each position
-    structured_logits : List[NDArray]
+    structured_logits : List[Array]
         Logits after applying constraints for each position
     vocab_tokens : Optional[List[str]]
         Mapping from vocabulary indices to token strings
@@ -47,29 +47,31 @@ class LogitTrackingProcessor(OutlinesLogitsProcessor):
     _started : bool
         Tracks whether to start appending chosen tokens. This is set to True
         on the first call to process_logits, and remains True thereafter.
-
+    tokenizer : Optional[Tokenizer]
+        The tokenizer used for decoding tokens
     """
 
-    def __init__(self, processor: OutlinesLogitsProcessor):
+    def __init__(self, processor: Optional[OutlinesLogitsProcessor]):
         """Initialize the tracking processor.
 
         Parameters
         ----------
-        processor : OutlinesLogitsProcessor
+        processor : Optional[OutlinesLogitsProcessor]
             The processor that applies structural constraints.
         """
         self.processor = processor
-        self.unstructured_logits = []  # List of logit arrays, one per position
-        self.structured_logits = []    # List of logit arrays, one per position
-        self.vocab_tokens = None      # Will store the vocabulary mapping
-        self.chosen_tokens = []       # Track actual chosen tokens during generation
-        self._started = False         # Tracks whether to start appending chosen tokens
+        self.unstructured_logits: List[Array] = []  # List of logit arrays, one per position
+        self.structured_logits: List[Array] = []    # List of logit arrays, one per position
+        self.vocab_tokens: Optional[List[str]] = None  # Will store the vocabulary mapping
+        self.chosen_tokens: List[int] = []  # Track actual chosen tokens during generation
+        self._started: bool = False  # Tracks whether to start appending chosen tokens
+        self.tokenizer: Optional[Tokenizer] = None
 
         # If the processor has a tokenizer, use it
-        if hasattr(processor, 'tokenizer'):
+        if processor is not None and hasattr(processor, 'tokenizer'):
             self.tokenizer = processor.tokenizer
 
-    def process_logits(self, input_ids: Array, logits: Array) -> Array:
+    def process_logits(self, input_ids: List[List[int]], logits: torch.Tensor) -> torch.Tensor:
         """Process logits and store them.
 
         This method:
@@ -80,14 +82,14 @@ class LogitTrackingProcessor(OutlinesLogitsProcessor):
 
         Parameters
         ----------
-        input_ids : Array
+        input_ids : List[List[int]]
             The input token ids for the sequence. Must be single batch.
-        logits : Array
+        logits : torch.Tensor
             The original logits to process, shape (1, vocab_size)
 
         Returns
         -------
-        Array
+        torch.Tensor
             The processed logits, shape (1, vocab_size)
 
         Raises
@@ -131,12 +133,12 @@ class LogitTrackingProcessor(OutlinesLogitsProcessor):
         self.structured_logits.append(logits[0].detach().cpu().numpy().copy())
         return logits
 
-    def get_probabilities(self) -> Dict[str, NDArray]:
+    def get_probabilities(self) -> Dict[str, Array]:
         """Get probability distributions computed from stored logits.
 
         Returns
         -------
-        Dict[str, Union[List[NDArray], NDArray]]
+        Dict[str, Union[List[Array], Array]]
             Contains a dictionary with two keys:
             - unstructured: Raw probability distributions
             - structured: Probability distributions after constraints
@@ -161,12 +163,12 @@ class LogitTrackingProcessor(OutlinesLogitsProcessor):
             'structured': structured
         }
 
-    def get_logits(self) -> Dict[str, NDArray]:
+    def get_logits(self) -> Dict[str, Array]:
         """Get the stored logit values.
 
         Returns
         -------
-        Dict[str, NDArray]
+        Dict[str, Array]
             Contains a dictionary with two keys:
 
             - unstructured: Raw logit values
@@ -245,7 +247,10 @@ class LogitTrackingProcessor(OutlinesLogitsProcessor):
                 s_logits = logits['structured'][:, pos]
 
             # Get top k indices by maximum probability
-            top_indices = np.argsort(np.maximum(u_probs, s_probs))[-k:][::-1]
+            max_probs = np.maximum(u_probs, s_probs)
+            # Ensure we get exactly k indices by setting k to min(k, vocab_size)
+            k_actual = min(k, len(max_probs))
+            top_indices = np.argsort(max_probs)[-k_actual:][::-1]
 
             # Get the actual next token for comparison
             next_token = self.sequence(pos + 1)[len(text_so_far):] if pos < len(self.structured_logits)-1 else ""
@@ -278,8 +283,7 @@ class LogitTrackingProcessor(OutlinesLogitsProcessor):
         return results
 
     def get_vocab_mapping(self) -> List[str]:
-        """Get the mapping from vocabulary indices to token strings. Each token
-        matches
+        """Get the mapping from vocabulary indices to token strings.
 
         Returns
         -------
@@ -291,14 +295,15 @@ class LogitTrackingProcessor(OutlinesLogitsProcessor):
         AttributeError
             If no tokenizer is available
         """
-        if not hasattr(self, 'tokenizer'):
+        if not hasattr(self, 'tokenizer') or self.tokenizer is None:
             raise AttributeError("No tokenizer available for mapping tokens")
 
         if self.vocab_tokens is None:
             # Create the mapping if we haven't yet
+            vocab_size = len(self.unstructured_logits[0])
             self.vocab_tokens = [
-                self.processor.tokenizer.decode([i])[0]
-                for i in range(len(self.unstructured_logits[0]))
+                self.tokenizer.decode([i])[0]
+                for i in range(vocab_size)
             ]
 
         return self.vocab_tokens
@@ -313,7 +318,7 @@ class LogitTrackingProcessor(OutlinesLogitsProcessor):
         self,
         show: Literal["probs", "logits"] = "probs",
         min_value: Optional[float] = None
-    ) -> "pd.DataFrame":
+    ):
         """Convert tracking data to a pandas DataFrame for analysis.
 
         Parameters
@@ -334,25 +339,18 @@ class LogitTrackingProcessor(OutlinesLogitsProcessor):
             - constrained: Values after constraints
             - chosen: Whether this token was chosen (True/False)
 
-        Examples
-        --------
-        >>> # Get probability data for top 10 tokens
-        >>> df = processor.to_dataframe(show="probs")
-        >>> df.sort_values("natural", ascending=False).head()
-        >>>
-        >>> # Get logit data above threshold
-        >>> df = processor.to_dataframe(show="logits", min_value=-5)
-        >>> df.query("position == 0").nlargest(5, "natural")
-        >>>
-        >>> # Get all tokens with probability > 1%
-        >>> df = processor.to_dataframe(show="probs", min_value=0.01)
-
         Raises
         ------
         ImportError
             If pandas is not installed
         """
-        import pandas as pd
+        try:
+            import pandas as pd
+        except ImportError:
+            raise ImportError(
+                "pandas is required for DataFrame conversion. "
+                "Install it with: pip install pandas"
+            )
 
         # Get values based on show parameter
         if show == "probs":
@@ -367,7 +365,7 @@ class LogitTrackingProcessor(OutlinesLogitsProcessor):
         rows = []
 
         # Process each position
-        for pos in range(len(self.unstructured_logits)):
+        for pos in range(values['unstructured'].shape[1]):  # Use shape[1] for number of positions
             u_vals = values['unstructured'][:, pos]
             s_vals = values['structured'][:, pos]
 
@@ -381,7 +379,8 @@ class LogitTrackingProcessor(OutlinesLogitsProcessor):
 
                 # Both filters: get top k among values >= min_value
                 valid_indices = np.where(max_vals >= min_value)[0]
-                valid_indices = valid_indices[np.argsort(max_vals[valid_indices])[-10:]]
+                if len(valid_indices) > 0:  # Only sort if we have valid indices
+                    valid_indices = valid_indices[np.argsort(max_vals[valid_indices])[-10:]]
             else:
                 # No filters: include all tokens
                 valid_indices = range(len(vocab))
@@ -392,8 +391,8 @@ class LogitTrackingProcessor(OutlinesLogitsProcessor):
                 rows.append({
                     'position': pos,
                     'token': token,
-                    'natural': u_vals[idx],
-                    'constrained': s_vals[idx],
+                    'natural': float(u_vals[idx]),  # Convert to float to avoid numpy type issues
+                    'constrained': float(s_vals[idx]),
                     'chosen': token == chosen_token
                 })
 
