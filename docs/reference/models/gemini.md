@@ -2,7 +2,7 @@
 
 !!! Installation
 
-    You need to install the `google-generativeai` library to be able to use the Gemini API in Outlines. Or alternatively you can run:
+    You need to install the `google-generativeai` library to be able to use the Gemini API in Outlines: `pip install google-generativeai`
 
 
 ## Gemini models
@@ -10,10 +10,11 @@
 Outlines supports models available via the Gemini API, e.g. Gemini 1.5. You can initialize the model by passing the model name to `outlines.models.Gemini`:
 
 ```python
-from outlines import models
+import outlines
+import google.generativeai as genai
 
-model = models.Gemini("gemini-1-5-flash")
-model = models.Gemini("gemini-1-5-pro")
+model = outlines.from_gemini(genai.GenerativeModel("gemini-1-5-flash"))
+model = outlines.from_gemini(genai.GenerativeModel("gemini-1-5-pro"))
 ```
 
 Check the [Gemini documentation](https://ai.google.dev/gemini-api/docs/models/gemini) for an up-to-date list of available models.
@@ -23,11 +24,15 @@ Check the [Gemini documentation](https://ai.google.dev/gemini-api/docs/models/ge
 To generate text using a Gemini model you need to build a `Generator` object, possibly with the desired output type. You can then call the model by calling the `Generator`. The method accepts every argument that you could pass to the `client.completions.create` function, as keyword arguments:
 
 ```python
-from outlines import models, Generator
+import outlines
+import google.generativeai as genai
 
-model = models.Gemini("gemini-1-5-flash")
-generator = Generator(model)
+model = outlines.from_gemini(genai.GenerativeModel("gemini-1-5-flash"))
+generator = outlines.Generator(model)
 result = generator("Prompt", max_tokens=1024)
+
+# Call the model directly
+result = model("Prompt", max_tokens=1024)
 ```
 
 ### Structured generation
@@ -40,17 +45,22 @@ Outlines provides support for JSON Schema-based structured generation with the G
 
 ```python
 from collections import TypedDict
-from outlines import Generator, models
-from outlines.types import Json
 
-model = models.Gemini("gemini-1-5-flash")
+import google.generativeai as genai
+
+import outlines
+from outlines import Generator
+from outlines.types import JsonType
+
+
+model = outlines.from_gemini(genai.GenerativeModel("gemini-1-5-flash"))
 
 class Person(TypedDict):
     first_name: str
     last_name: str
     age: int
 
-generator = Generator(model, Json(Person))
+generator = Generator(model, JsonType(Person))
 generator("current indian prime minister on january 1st 2023")
 # Person(first_name='Narendra', last_name='Modi', age=72)
 ```
@@ -65,10 +75,13 @@ Outlines provides support for multiple-choices structured generation. Enums and 
 
 ```python
 from enum import Enum
-from outlines import Generator, models
+
+import google.generativeai as genai
+
+from outlines import Generator
 from outlines.types import Choice
 
-model = models.Gemini("gemini-1-5-flash")
+model = outlines.from_gemini(genai.GenerativeModel("gemini-1-5-flash"))
 
 class Foo(Enum):
     foo = "Foo"
