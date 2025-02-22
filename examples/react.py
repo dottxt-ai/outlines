@@ -10,11 +10,12 @@ References
 .. [2] Yao, S., Zhao, J., Yu, D., Du, N., Shafran, I., Narasimhan, K., & Cao, Y. (2022). React: Synergizing reasoning and acting in language models. arXiv preprint arXiv:2210.03629.
 
 """
+
+from openai import OpenAI
 import requests  # type: ignore
 
 import outlines
-import outlines.generate as generate
-import outlines.models as models
+from outlines import Generator, Choice
 
 
 @outlines.prompt
@@ -46,11 +47,11 @@ def search_wikipedia(query: str):
 
 
 prompt = build_reAct_prompt("Where is Apple Computers headquarted? ")
-model = models.openai("gpt-4o-mini")
+model = outlines.from_openai(OpenAI(), "gpt-4o-mini")
 
-mode_generator = generate.choice(model, choices=["Tho", "Act"])
-action_generator = generate.choice(model, choices=["Search", "Finish"])
-text_generator = generate.text(model)
+mode_generator = Generator(model, Choice(["Tho", "Act"]))
+action_generator = Generator(model, Choice(["Search", "Finish"]))
+text_generator = Generator(model)
 
 for i in range(1, 10):
     mode = mode_generator(prompt, max_tokens=128)
