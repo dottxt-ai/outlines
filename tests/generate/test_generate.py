@@ -4,8 +4,8 @@ from enum import Enum
 
 import pytest
 
+import outlines
 import outlines.generate as generate
-import outlines.models as models
 import outlines.samplers as samplers
 
 ##########################################
@@ -22,11 +22,12 @@ def model_llamacpp(tmp_path_factory):
         filename="TinyMistral-248M-v2-Instruct.Q4_K_M.gguf",
         verbose=False,
     )
-    return models.LlamaCpp(llm)
+    return outlines.from_llamacpp(llm)
 
 
 @pytest.fixture(scope="session")
 def model_exllamav2(tmp_path_factory):
+    from outlines.models.exllamav2 import exl2
     from huggingface_hub import snapshot_download
 
     tmp_dir = tmp_path_factory.mktemp("model_download")
@@ -35,7 +36,7 @@ def model_exllamav2(tmp_path_factory):
         cache_dir=tmp_dir,
     )
 
-    return models.exl2(
+    return exl2(
         model_path=model_path,
         cache_q4=True,
         paged=False,
@@ -44,56 +45,79 @@ def model_exllamav2(tmp_path_factory):
 
 @pytest.fixture(scope="session")
 def model_mlxlm(tmp_path_factory):
-    return models.mlxlm("mlx-community/TinyLlama-1.1B-Chat-v1.0-4bit")
+    from mlx_lm import load
+
+    return outlines.from_mlxlm(*load("mlx-community/TinyLlama-1.1B-Chat-v1.0-4bit"))
 
 
 @pytest.fixture(scope="session")
 def model_mlxlm_phi3(tmp_path_factory):
-    return models.mlxlm("mlx-community/Phi-3-mini-4k-instruct-4bit")
+    from mlx_lm import load
+
+    return outlines.from_mlxlm(*load("mlx-community/Phi-3-mini-4k-instruct-4bit"))
 
 
 @pytest.fixture(scope="session")
 def model_transformers_random(tmp_path_factory):
-    return models.Transformers("hf-internal-testing/tiny-random-gpt2")
+    from transformers import AutoModelForCausalLM, AutoTokenizer
+
+    return outlines.from_transformers(
+        AutoModelForCausalLM.fromt_pretrained("hf-internal-testing/tiny-random-gpt2"),
+        AutoTokenizer.fromt_pretrained("hf-internal-testing/tiny-random-gpt2"),
+    )
 
 
 @pytest.fixture(scope="session")
 def model_transformers_opt125m(tmp_path_factory):
-    return models.Transformers("facebook/opt-125m")
+    from transformers import AutoModelForCausalLM, AutoTokenizer
+
+    return outlines.from_transformers(
+        AutoModelForCausalLM.fromt_pretrained("facebook/opt-125m"),
+        AutoTokenizer.fromt_pretrained("facebook/opt-125m"),
+    )
 
 
 @pytest.fixture(scope="session")
 def model_mamba(tmp_path_factory):
-    return models.Mamba(model_name="state-spaces/mamba-130m-hf")
+    from transformers import MambaModel, AutoTokenizer
+
+    return outlines.from_transformers(
+        MambaModel.from_pretrained(model_name="state-spaces/mamba-130m-hf"),
+        AutoTokenizer.from_pretrained(model_name="state-spaces/mamba-130m-hf"),
+    )
 
 
 @pytest.fixture(scope="session")
 def model_bart(tmp_path_factory):
-    from transformers import AutoModelForSeq2SeqLM
+    from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 
-    return models.Transformers("facebook/bart-base", model_class=AutoModelForSeq2SeqLM)
+    return outlines.from_transformers(
+        AutoModelForSeq2SeqLM.from_pretrained("facebook/bart-base"),
+        AutoTokenizer.from_pretrained("facebook/bart-base"),
+    )
 
 
 @pytest.fixture(scope="session")
 def model_transformers_vision(tmp_path_factory):
     import torch
-    from transformers import LlavaNextForConditionalGeneration
+    from transformers import LlavaNextForConditionalGeneration, AutoTokenizer
 
-    return models.transformers_vision(
-        "llava-hf/llava-v1.6-mistral-7b-hf",
-        model_class=LlavaNextForConditionalGeneration,
-        device="cuda",
-        model_kwargs=dict(
+    return outlines.from_transformers(
+        LlavaNextForConditionalGeneration.from_pretrained(
+            "llava-hf/llava-v1.6-mistral-7b-hf",
             torch_dtype=torch.bfloat16,
             load_in_4bit=True,
-            low_cpu_mem_usage=True,
+            low_mem_cpu_usage=True,
         ),
+        AutoTokenizer.from_pretrained("llava-hf/llava-v1.6-mistral-7b-hf"),
     )
 
 
 @pytest.fixture(scope="session")
 def model_vllm(tmp_path_factory):
-    return models.vllm("facebook/opt-125m", gpu_memory_utilization=0.1)
+    from vllm import LLM
+
+    return outlines.from_vllm(LLM("facebook/opt-125m", gpu_memory_utilization=0.1))
 
 
 # TODO: exllamav2 failing in main, address in https://github.com/dottxt-ai/outlines/issues/808

@@ -5,7 +5,6 @@ import outlines.grammars
 import outlines.models
 import outlines.processors
 import outlines.types
-from outlines.generate import Generator
 from outlines.types import Choice, Regex, JsonType
 from outlines.base import vectorize
 from outlines.caching import clear_cache, disable_cache, get_cache
@@ -25,7 +24,7 @@ from outlines.models import (
 )
 
 
-models = [
+model_list = [
     "from_anthropic",
     "from_gemini",
     "from_llamacpp",
@@ -48,4 +47,4 @@ __all__ = [
     "Template",
     "vectorize",
     "grammars",
-] + models
+] + model_list
