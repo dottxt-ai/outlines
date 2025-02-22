@@ -4,7 +4,8 @@ from pathlib import Path
 import pytest
 from transformers import AutoTokenizer
 
-from outlines import grammars, models
+from outlines import grammars
+from outlines.models.transformers import TransformerTokenizer
 from outlines.fsm.guide import CFGGuide
 
 
@@ -341,12 +342,12 @@ def test_cfg_next_token(name, cleanup_lark_import):
 
 @pytest.fixture(scope="session")
 def tokenizer_sentencepiece_gpt2():
-    return models.TransformerTokenizer(AutoTokenizer.from_pretrained("gpt2"))
+    return TransformerTokenizer(AutoTokenizer.from_pretrained("gpt2"))
 
 
 @pytest.fixture(scope="session")
 def tokenizer_sentencepiece_llama1():
-    return models.TransformerTokenizer(
+    return TransformerTokenizer(
         AutoTokenizer.from_pretrained(
             "trl-internal-testing/tiny-random-LlamaForCausalLM"
         )
@@ -355,14 +356,14 @@ def tokenizer_sentencepiece_llama1():
 
 @pytest.fixture(scope="session")
 def tokenizer_tiktoken_llama3():
-    return models.TransformerTokenizer(
+    return TransformerTokenizer(
         AutoTokenizer.from_pretrained("yujiepan/llama-3-tiny-random")
     )
 
 
 @pytest.fixture(scope="session")
 def tokenizer_character_level_byt5():
-    return models.TransformerTokenizer(
+    return TransformerTokenizer(
         AutoTokenizer.from_pretrained("google/byt5-small")
     )
 
