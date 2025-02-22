@@ -17,7 +17,7 @@ from .llamacpp import LlamaCpp, from_llamacpp
 from .mlxlm import MLXLM, from_mlxlm
 from .ollama import Ollama, from_ollama
 from .openai import from_openai, OpenAI
-from .transformers import Transformers, TransformerTokenizer, Mamba
+from .transformers import Transformers, TransformerTokenizer, from_transformers
 from .transformers_vision import TransformersVision
 from .vllm import VLLM, from_vllm
 

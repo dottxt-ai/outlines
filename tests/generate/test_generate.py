@@ -71,9 +71,7 @@ def model_mamba(tmp_path_factory):
 def model_bart(tmp_path_factory):
     from transformers import AutoModelForSeq2SeqLM
 
-    return models.Transformers(
-        "facebook/bart-base", model_class=AutoModelForSeq2SeqLM
-    )
+    return models.Transformers("facebook/bart-base", model_class=AutoModelForSeq2SeqLM)
 
 
 @pytest.fixture(scope="session")
@@ -281,7 +279,7 @@ def test_generate_json(request, model_fixture, sample_schema):
 
 
 # TODO: add support for genson in the Regex type of v1.0
-#def test_integrate_genson_generate_json(request):
+# def test_integrate_genson_generate_json(request):
 #    from genson import SchemaBuilder
 #
 #    builder = SchemaBuilder()
