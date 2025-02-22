@@ -1,92 +1,34 @@
 # Transformers
 
+!!! Note "Documentation"
 
-!!! Installation
+    To be able to use Transformers models in Outlines, you must install the `transformers` library, `pip install transformers`
 
-    You need to install the `transformer` library to be able to use these models in Outlines, or alternatively:
-
-    ```bash
-    pip install "outlines[transformers]"
-    ```
+    Consult the [`transformers` documentation](https://huggingface.co/docs/transformers/en/index) for detailed informations about how to initialize models and the available options.
 
 ## Create a `Transformers` model
 
-The only mandatory argument to instantiate a `Transformers` model is the name of the model to use.
-```python
-from outlines import models
-
-model = models.Transformers("microsoft/Phi-3-mini-4k-instruct")
-```
-
-The model name must be a valid `transformers` model name. You can find a list of all in the HuggingFace library [here](https://huggingface.co/models).
-
-When instantiating a `Transformers` model as such, the class creates a model from the transformers libray using the class `AutoModelForCausalLM` by default (`transformers.AutoModelForCausalLM.from_pretrained(model_name, **model_kwargs)`).
-
-You can also provide keyword arguments in an optional `model_kwargs` parameter. Those will be passed to the `from_pretrained` method of the model class. One such argument is `device_map`, which allows you to specify the device on which the model will be loaded.
-
-For instance:
-```python
-from outlines import models
-
-model = models.Transformers("microsoft/Phi-3-mini-4k-instruct", model_kwargs={"device_map": "cuda"})
-```
-
-## Alternative model classes
-
-If the model you want to use is not compatible with `AutoModelForCausalLM`, you must provide a value for the `model_class` parameter. This value must be a valid `transformers` model class.
-
-For instance:
-```python
-from outlines import models
-from transformers import AutoModelForSeq2SeqLM
-
-model = models.Transformers("facebook/bart-large", model_class=AutoModelForSeq2SeqLM)
-```
-
-When you instantiate a `Transformers` model, the class also creates a `Tokenizer` instance from the `AutoTokenizer` class. You can provide keyword arguments in an optional `tokenizer_kwargs` parameter. Those will be passed to the `from_pretrained` method of the tokenizer class as such: `tokenizer_class.from_pretrained(model_name, **tokenizer_kwargs)`.
-
-Similarly, if your model is not compatible with `AutoTokenizer`, you must provide a value for the `tokenizer_class` parameter.
+You can use `outlines.from_transformers` to load a `transformers` model and tokenizer:
 
 ```python
+from transformers import AutoModelForCausalLM, AutoTokenizer
 from outlines import models
-from transformers import T5ForConditionalGeneration, T5Tokenizer
 
-model_pile_t5 = models.Transformers(
-    model_name="EleutherAI/pile-t5-large",
-    model_class=T5ForConditionalGeneration,
-    tokenizer_class=T5Tokenizer
+model_name = "microsoft/Phi-3-mini-4k-instruct"
+model = models.from_transformers(
+    AutoModelForCausalLM.from_pretrained(model_name),
+    AutoTokenizer.from_pretrained(model_name)
 )
 ```
 
-### Mamba
-
-[Mamba](https://github.com/state-spaces/mamba) is a transformers alternative which employs memory efficient, linear-time decoding.
-
-To use Mamba with outlines you must first install the necessary requirements:
-```
-pip install causal-conv1d>=1.2.0 mamba-ssm torch transformers
-```
-
-Then you can create an `Mamba` Outlines model via:
-```python
-from outlines import models
-
-model = models.Mamba("state-spaces/mamba-2.8b-hf", model_kwargs={"device_map": "cuda"}, tokenizer_kwargs={"padding_side": "left"})
-```
-
-Alternatively, you can use the `Transformers` class to create an `Mamba` model by providing the appropriate `model_class` and `tokenizer_class` arguments.
-
-Read [`transformers`'s documentation](https://huggingface.co/docs/transformers/en/model_doc/mamba) for more information.
-
-### Encoder-Decoder Models
-
-You can use encoder-decoder (seq2seq) models like T5 and BART with Outlines.
+The model name must be a valid `transformers` model name. You can find a list of all in the HuggingFace library [here](https://huggingface.co/models). We currently support `CausalLM`, `Seq2Seq`, `Mamba` and vision models.
 
 Be cautious with model selection though, some models such as `t5-base` don't include certain characters (`{`) and you may get an error when trying to perform structured generation.
 
 ## Use the model to generate text
 
 Once you have created a `Transformers` model, you can use it to generate text by calling the instance of the model.
+
 ```python
 model("Hello, how are you?")
 ```

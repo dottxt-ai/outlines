@@ -7,6 +7,8 @@
     - To download Ollama: https://ollama.com/download
     - To install the ollama python sdk: `pip install ollama`
 
+    Consult the [`ollama` documentation](https://github.com/ollama/ollama-python) for detailed informations about how to initialize models and the available options.
+
 ## Ollama models
 
 You must provide a model name when instantiating the `outlines.models.Ollama` class. This model must be available on your system.

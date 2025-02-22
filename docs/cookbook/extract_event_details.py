@@ -7,6 +7,7 @@ import outlines
 from outlines.generate import Generator
 from outlines.types import JsonType
 
+
 # Load the model
 model = outlines.from_mlxlm(*load("mlx-community/Hermes-3-Llama-3.1-8B-8bit"))
 

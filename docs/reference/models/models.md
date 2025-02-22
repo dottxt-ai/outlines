@@ -4,53 +4,49 @@ title: Models
 
 # Models
 
-Outlines supports generation using a number of inference engines (`outlines.models`). Loading a model using outlines follows a similar interface between inference engines:
+This section provides detailed information about using structured generation with a number of inference engines.
 
-```python
-import outlines
+## Supported providers
 
-model = outlines.models.transformers("microsoft/Phi-3-mini-128k-instruct")
-model = outlines.models.transformers_vision("llava-hf/llava-v1.6-mistral-7b-hf")
-model = outlines.models.vllm("microsoft/Phi-3-mini-128k-instruct")
-model = outlines.models.llamacpp(
-    "microsoft/Phi-3-mini-4k-instruct-gguf", "Phi-3-mini-4k-instruct-q4.gguf"
-)
-model = outlines.models.exllamav2("bartowski/Phi-3-mini-128k-instruct-exl2")
-model = outlines.models.mlxlm("mlx-community/Phi-3-mini-4k-instruct-4bit")
+### Open Source models
 
-model = outlines.models.openai(
-    "gpt-4o-mini",
-    api_key=os.environ["OPENAI_API_KEY"]
-)
-```
+Open source models offer more flexibility for structured generation as we have control over the sampling loop:
 
+- [transformers](transformers.md) - Run open-source models locally.
+- [llama-cpp-python](llamacpp.md) - Python bindings for llama.cpp.
+- [mlx-lm](mlxlm.md) - Run open-source models on Metal hardware.
+- [vllm](vlm.md) - Run open-source models on the vLLM engine.
+- [exllamaV2](exllamav2.md)
 
-# Feature Matrix
-|                   | [Transformers](transformers.md) | [Transformers Vision](transformers_vision.md) | [vLLM](vllm.md) | [llama.cpp](llamacpp.md) | [ExLlamaV2](exllamav2.md) | [MLXLM](mlxlm.md) | [OpenAI](openai.md)* |
-|-------------------|--------------|---------------------|------|-----------|-----------|-------|---------|
-| **Device**        |              |                     |      |           |           |       |         |
-| Cuda              | ✅           | ✅                  | ✅   | ✅        | ✅        | ❌    | N/A     |
-| Apple Silicon     | ✅           | ✅                  | ❌   | ✅        | ✅        | ✅    | N/A     |
-| x86 / AMD64       | ✅           | ✅                  | ❌   | ✅        | ✅        | ❌    | N/A     |
-| **Sampling**      |              |                     |      |           |           |       |         |
-| Greedy            | ✅           | ✅                  | ✅   | ✅*       | ✅        | ✅    | ❌      |
-| Multinomial       | ✅           | ✅                  | ✅   | ✅        | ✅        | ✅    | ✅      |
-| Multiple Samples  | ✅           | ✅                  |      | ❌        |           | ❌    | ✅      |
-| Beam Search       | ✅           | ✅                  | ✅   | ❌        | ✅        | ❌    | ❌      |
-| **Generation**    |              |                     |      |           |           |       |         |
-| Batch             | ✅           | ✅                  | ✅   | ❌        | ?         | ❌    | ❌      |
-| Stream            | ✅           | ❌                  | ❌   | ✅        | ?         | ✅    | ❌      |
-| Text              | ✅           | ✅                  | ✅   | ✅        | ✅        | ✅    | ✅      |
-| **Structured**    | ✅           | ✅                  | ✅   | ✅        | ✅        | ✅    | ✅      |
-| JSON Schema       | ✅           | ✅                  | ✅   | ✅        | ✅        | ✅    | ✅      |
-| Choice            | ✅           | ✅                  | ✅   | ✅        | ✅        | ✅    | ✅      |
-| Regex             | ✅           | ✅                  | ✅   | ✅        | ✅        | ✅    | ❌      |
-| Grammar           | ✅           | ✅                  | ✅   | ✅        | ✅        | ✅    | ❌      |
+Ollama only supports Json Schema:
+
+- [ollama](ollama.md) - Python client library for Ollama.
+
+### Cloud AI providers
+
+OpenAI has recently integrated [structured outputs][structured-outputs] in its API, and only JSON Schema-based structured generation is available. Google's Gemini API supports both Json Schema and multiple choices:
+
+- [OpenAI](openai.md) - GPT-4o, o1, o3-mini and other OpenAI models.
+- [Azure OpenAI](openai.md) - Microsoft's Azure-hosted OpenAI models.
+- [Gemini](gemini.md) - Run Google's Gemini model.
 
 
-## Caveats
+## Structure generation coverage
 
-- OpenAI doesn't support structured generation due to limitations in their API and server implementation.
-- `outlines.generate` ["Structured"](../generation/generation.md) includes methods such as `outlines.generate.regex`, `outlines.generate.json`, `outlines.generate.cfg`, etc.
-- MLXLM only supports Apple Silicon.
-- llama.cpp greedy sampling available via multinomial with `temperature = 0.0`.
+Integrations differ in their coverage of structured generation. Here is a summary:
+
+
+|                   | [Transformers](transformers.md) | [vLLM](vllm.md) | [llama.cpp](llamacpp.md) | [ExLlamaV2](exllamav2.md) | [MLXLM](mlxlm.md) | [OpenAI](openai.md) | [Gemini](gemini.md)
+|-------------------|--------------|------|-----------|-----------|-------|---------|-------|
+| **Supported HW**  |              |      |           |           |       |         |       |
+| CUDA              | ✅           | ✅  | ✅        | ✅        | ❌    | N/A     | N/A   |
+| Apple Silicon     | ✅           | ❌  | ✅        | ✅        | ✅    | N/A     | N/A   |
+| x86 / AMD64       | ✅           | ❌  | ✅        | ✅        | ❌    | N/A     | N/A   |
+| **Structure**     |               |     |           |           |       |         |       |
+| JSON Schema       | ✅           | ✅  | ✅        | ✅        | ✅    | ✅      | ✅   |
+| Choice            | ✅           | ✅  | ✅        | ✅        | ✅    | ❌      | ✅   |
+| Regex             | ✅           | ✅  | ✅        | ✅        | ✅    | ❌      | ❌   |
+| Grammar           | ✅           | ✅  | ✅        | ✅        | ✅    | ❌      | ❌   |
+
+
+[structured-outputs]: https://platform.openai.com/docs/guides/structured-outputs
