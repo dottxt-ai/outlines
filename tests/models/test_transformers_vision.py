@@ -11,9 +11,11 @@ from transformers import (
     CLIPModel,
     CLIPProcessor,
     LlavaForConditionalGeneration,
+    AutoProcessor,
 )
 
-from outlines.models.transformers_vision import TransformersVision
+import outlines
+from outlines.models.transformers import TransformersVision
 from outlines.types import Choice, JsonType, Regex
 
 TEST_MODEL = "trl-internal-testing/tiny-LlavaForConditionalGeneration"
@@ -35,22 +37,16 @@ def images():
 
 @pytest.fixture
 def model():
-    return TransformersVision(
-        model_name=TEST_MODEL, model_class=LlavaForConditionalGeneration
+    return outlines.from_transformers(
+        LlavaForConditionalGeneration.from_pretrained(TEST_MODEL),
+        AutoProcessor.from_pretrained(TEST_MODEL),
     )
 
 
 def test_transformers_vision_instantiate_simple():
-    model = TransformersVision(
-        model_name=TEST_MODEL,
-        model_class=Blip2ForConditionalGeneration,
-    )
-    assert isinstance(model, TransformersVision)
-
-
-def test_transformers_vision_instantiate_other_processor_class():
-    model = TransformersVision(
-        model_name=TEST_CLIP_MODEL, model_class=CLIPModel, processor_class=CLIPProcessor
+    model = outlines.from_transformers(
+        Blip2ForConditionalGeneration.from_pretrained(TEST_MODEL),
+        AutoProcessor.from_pretrained(TEST_MODEL),
     )
     assert isinstance(model, TransformersVision)
 
