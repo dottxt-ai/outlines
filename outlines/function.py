@@ -8,7 +8,7 @@ from outlines import generate, models
 
 if TYPE_CHECKING:
     from outlines.generate.api import SequenceGenerator
-    from outlines.prompts import Prompt
+    from outlines.templates import Template
 
 
 @dataclass
@@ -22,7 +22,7 @@ class Function:
 
     """
 
-    prompt_template: "Prompt"
+    prompt_template: "Template"
     schema: Union[str, Callable, object]
     model_name: str
     generator: Optional["SequenceGenerator"] = None
