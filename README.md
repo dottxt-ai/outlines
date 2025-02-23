@@ -379,13 +379,23 @@ print(result)
 ## Prompting
 
 Building prompts can get messy. **Outlines** makes it easier to write and manage
-prompts by encapsulating templates inside "template functions".
+prompts by encapsulating templates inside "template functions". Template
+functions use the Jinja2 templating engine to help build complex prompts in a
+concise manner.
 
-These functions make it possible to neatly separate the prompt logic from the
-general program logic; they can be imported from other modules and libraries.
+Template functions are created by loading a Jinja2 template from a text file.
+Assume you have the following prompt template defined in `prompt.txt`:
 
-Template functions require no superfluous abstraction, they use the Jinja2
-templating engine to help build complex prompts in a concise manner:
+``` text
+You are a sentiment-labelling assistant.
+
+{% for example in examples %}
+{{ example[0] }} // {{ example[1] }}
+{% endfor %}
+{{ to_label }} //
+```
+
+You can then load it and call it with:
 
 ``` python
 import outlines
@@ -397,41 +407,16 @@ examples = [
     ("The waiter was rude", "Negative")
 ]
 
-@outlines.prompt
-def labelling(to_label, examples):
-    """You are a sentiment-labelling assistant.
-
-    {% for example in examples %}
-    {{ example[0] }} // {{ example[1] }}
-    {% endfor %}
-    {{ to_label }} //
-    """
-
-model = outlines.models.transformers("microsoft/Phi-3-mini-4k-instruct")
-prompt = labelling("Just awesome", examples)
-answer = outlines.generate.text(model)(prompt, max_tokens=100)
-```
-
-You can also load a template from a text file. Assume you have the following prompt template defined in `prompt.txt`:
-
-``` text
-You are a sentiment-labelling assistant.
-
-{% for example in examples %}
-{{ example[0] }} // {{ example[1] }}
-{% endfor %}
-{{ to_label }} //
-```
-
-You can load it with:
-
-``` python
-import outlines
-
 labelling = outlines.Template.from_file("prompt.txt")
 prompt = labelling("Just awesome", examples)
-
 ```
+
+This helps:
+
+- Keep content separate from the code
+- Design "white space perfect" prompts
+
+It is more maintainable and means prompts can be versioned separately from the code.
 
 ## Join us
 
