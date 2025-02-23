@@ -9,7 +9,7 @@ from pydantic import BaseModel
 from typing_extensions import TypedDict
 
 from outlines.models.gemini import Gemini
-from outlines.prompts import Vision
+from outlines.templates import Vision
 from outlines.types import Choice, Json, List
 
 MODEL_NAME = "gemini-1.5-flash-latest"

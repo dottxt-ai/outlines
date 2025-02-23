@@ -9,7 +9,6 @@ from outlines.function import Function, download_from_github, extract_function_f
 
 def test_function_basic():
     with pytest.deprecated_call(match="The @prompt decorator"):
-
         @outlines.prompt
         def test_template(text: str):
             """{{ text }}"""
