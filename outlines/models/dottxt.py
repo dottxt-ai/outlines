@@ -1,4 +1,5 @@
 """Integration with Dottxt's API."""
+
 import json
 from functools import singledispatchmethod
 from types import NoneType

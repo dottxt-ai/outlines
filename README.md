@@ -406,6 +406,7 @@ examples = [
     ("The waiter was rude", "Negative")
 ]
 
+<<<<<<< HEAD
 labelling = outlines.Template.from_file("prompt.txt")
 prompt = labelling("Just awesome", examples)
 ```
@@ -434,11 +435,19 @@ You can load it with:
 ``` python
 import outlines
 
+=======
+>>>>>>> 732de37 (Add deprecation warning for the `prompt` decorator)
 labelling = outlines.Template.from_file("prompt.txt")
 prompt = labelling("Just awesome", examples)
-
 ```
 >>>>>>> 8b15cf3 (Rename `Prompt` to `Template`)
+
+This helps:
+
+- Keep content separate from the code
+- Design "white space perfect" prompts
+
+It is more maintainable and means prompts can be versioned separately from the code.
 
 ## Join us
 
