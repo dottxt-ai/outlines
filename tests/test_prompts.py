@@ -6,11 +6,11 @@ import pytest
 from pydantic import BaseModel, Field
 
 import outlines
-from outlines.prompts import Prompt
+from outlines.prompts import Prompt, build_template_from_str
 
 
 def render(content: str, **kwargs):
-    template = Prompt._template_from_str(content)
+    template = build_template_from_str(content)
     return template.render(kwargs)
 
 
@@ -418,5 +418,5 @@ def test_template_from_str_with_extra_linebreaks():
 
 
     """
-    template = Prompt._template_from_str(content)
+    template = build_template_from_str(content)
     assert template.render(name="World") == "Hello, World!\n"
