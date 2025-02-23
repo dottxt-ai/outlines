@@ -1,4 +1,5 @@
 """Generate valid country codes and names."""
+
 from enum import Enum
 
 from iso3166 import countries

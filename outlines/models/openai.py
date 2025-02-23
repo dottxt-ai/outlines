@@ -1,4 +1,5 @@
 """Integration with OpenAI's API."""
+
 import copy
 import functools
 from dataclasses import asdict, dataclass, field, replace
@@ -139,7 +140,13 @@ class OpenAI:
         if samples is None:
             samples = self.config.n
 
-        config = replace(self.config, max_tokens=max_tokens, temperature=temperature, n=samples, stop=stop_at)  # type: ignore
+        config = replace(
+            self.config,
+            max_tokens=max_tokens,
+            temperature=temperature,
+            n=samples,
+            stop=stop_at,
+        )  # type: ignore
 
         response, prompt_tokens, completion_tokens = generate_chat(
             prompt, system_prompt, self.client, config
