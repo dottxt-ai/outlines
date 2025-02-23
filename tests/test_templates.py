@@ -6,7 +6,7 @@ import pytest
 from pydantic import BaseModel, Field
 
 import outlines
-from outlines.prompts import Prompt, build_template_from_str
+from outlines.templates import Template, build_template_from_str
 
 
 def render(content: str, **kwargs):
@@ -380,7 +380,7 @@ A:
 
 
 def test_prompt_from_file(temp_prompt_file):
-    prompt = Prompt.from_file(temp_prompt_file)
+    prompt = Template.from_file(temp_prompt_file)
     assert prompt.signature is None
     examples = [
         {"question": "What is the capital of France?", "answer": "Paris"},
@@ -407,7 +407,7 @@ def test_prompt_from_str():
     content = """
     Hello, {{ name }}!
     """
-    prompt = Prompt.from_str(content)
+    prompt = Template.from_str(content)
     assert prompt.signature is None
     assert prompt(name="World") == "Hello, World!"
 

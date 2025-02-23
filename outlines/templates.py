@@ -40,10 +40,10 @@ class Vision:
 
 
 @dataclass
-class Prompt:
+class Template:
     """Represents a prompt template.
 
-    We return a `Prompt` class instead of a simple function so the
+    We return a `Template` class instead of a simple function so the
     template can be accessed by callers.
 
     """
@@ -68,7 +68,7 @@ class Prompt:
 
     @classmethod
     def from_str(cls, content: str, filters: Dict[str, Callable] = {}):
-        """Create a `Prompt` instance from a string containing a Jinja template.
+        """Create a `Template` instance from a string containing a Jinja template.
 
         Parameters
         ----------
@@ -83,7 +83,7 @@ class Prompt:
 
     @classmethod
     def from_file(cls, path: Path, filters: Dict[str, Callable] = {}):
-        """Create a `Prompt` instance from a file containing a Jinja template.
+        """Create a `Template` instance from a file containing a Jinja template.
 
         Note: This method does not allow to include and inheritance to reference files
         that are outside the folder or subfolders of the file given to `from_file`.
@@ -95,8 +95,8 @@ class Prompt:
 
         Returns
         -------
-        Prompt
-            An instance of the Prompt class with the template loaded from the file.
+        Template
+            An instance of the Template class with the template loaded from the file.
         """
         # We don't use a `Signature` here because it seems not feasible to infer one from a Jinja2 environment that is
         # split across multiple files (since e.g. we support features like Jinja2 includes and template inheritance)
@@ -189,7 +189,7 @@ def prompt(
 
     Returns
     -------
-    A `Prompt` callable class which will render the template when called.
+    A `Template` callable class which will render the template when called.
 
     """
     if fn is None:
@@ -205,7 +205,7 @@ def prompt(
 
     template = build_template_from_str(cast(str, docstring), filters)
 
-    return Prompt(template, signature)
+    return Template(template, signature)
 
 
 def create_jinja_env(

@@ -412,6 +412,27 @@ prompt = labelling("Just awesome", examples)
 answer = outlines.generate.text(model)(prompt, max_tokens=100)
 ```
 
+You can also load a template from a text file. Assume you have the following prompt template defined in `prompt.txt`:
+
+``` text
+You are a sentiment-labelling assistant.
+
+{% for example in examples %}
+{{ example[0] }} // {{ example[1] }}
+{% endfor %}
+{{ to_label }} //
+```
+
+You can load it with:
+
+``` python
+import outlines
+
+labelling = outlines.Template.from_file("prompt.txt")
+prompt = labelling("Just awesome", examples)
+
+```
+
 ## Join us
 
 - 💡 **Have an idea?** Come chat with us on [Discord][discord]
