@@ -14,8 +14,7 @@ class Sampler(Protocol):
         next_token_logits: "torch.DoubleTensor",
         sequence_weights: "torch.DoubleTensor",
         rng: "torch.Generator",
-    ) -> "torch.DoubleTensor":
-        ...
+    ) -> "torch.DoubleTensor": ...
 
 
 @dataclass(frozen=True)

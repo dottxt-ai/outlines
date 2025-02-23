@@ -51,7 +51,7 @@ def get_cache():
     """
     from outlines._version import __version__ as outlines_version  # type: ignore
 
-    outlines_cache_dir = os.environ.get('OUTLINES_CACHE_DIR')
+    outlines_cache_dir = os.environ.get("OUTLINES_CACHE_DIR")
     xdg_cache_home = os.environ.get("XDG_CACHE_HOME")
     home_dir = os.path.normpath(os.path.expanduser("~"))
     if outlines_cache_dir:

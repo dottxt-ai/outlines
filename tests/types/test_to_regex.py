@@ -1,7 +1,22 @@
 import pytest
 
 
-from outlines.types.dsl import String, Regex, JsonSchema, KleeneStar, KleenePlus, QuantifyBetween, QuantifyExact, QuantifyMaximum, QuantifyMinimum, Sequence, Alternatives, Optional, Term, to_regex
+from outlines.types.dsl import (
+    String,
+    Regex,
+    JsonSchema,
+    KleeneStar,
+    KleenePlus,
+    QuantifyBetween,
+    QuantifyExact,
+    QuantifyMaximum,
+    QuantifyMinimum,
+    Sequence,
+    Alternatives,
+    Optional,
+    Term,
+    to_regex,
+)
 
 
 def test_to_regex_simple():
