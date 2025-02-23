@@ -4,12 +4,15 @@ from typing import Any, Protocol, Tuple, Type
 
 from outlines.types import Regex, boolean as boolean_regex, date as date_regex
 from outlines.types import datetime as datetime_regex
-from outlines.types import integer as integer_regex, number as number_regex, time as time_regex
+from outlines.types import (
+    integer as integer_regex,
+    number as number_regex,
+    time as time_regex,
+)
 
 
 class FormatFunction(Protocol):
-    def __call__(self, sequence: str) -> Any:
-        ...
+    def __call__(self, sequence: str) -> Any: ...
 
 
 def python_types_to_regex(python_type: Type) -> Tuple[Regex, FormatFunction]:

@@ -10,7 +10,16 @@ from pydantic import BaseModel, TypeAdapter
 from typing_extensions import _TypedDictMeta  # type: ignore
 
 from . import airports, countries, locale
-from outlines.types.dsl import Regex, json_schema, one_or_more, optional, regex, repeat, zero_or_more, times
+from outlines.types.dsl import (
+    Regex,
+    json_schema,
+    one_or_more,
+    optional,
+    regex,
+    repeat,
+    zero_or_more,
+    times,
+)
 
 
 # Python types

@@ -1,4 +1,5 @@
 """Generate valid airport codes."""
+
 from enum import Enum
 
 import airportsdata
