@@ -1,4 +1,5 @@
 """Integration with OpenAI's API."""
+
 from functools import singledispatchmethod
 from types import NoneType
 from typing import Optional, Union, TYPE_CHECKING
