@@ -5,7 +5,7 @@ import pytest
 import requests
 
 from outlines.models.anthropic import Anthropic
-from outlines.prompts import Vision
+from outlines.templates import Vision
 
 MODEL_NAME = "claude-3-haiku-20240307"
 

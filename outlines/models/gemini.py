@@ -1,4 +1,5 @@
 """Integration with Gemini's API."""
+
 from enum import EnumMeta
 from functools import singledispatchmethod
 from types import NoneType
@@ -8,7 +9,7 @@ from pydantic import BaseModel
 from typing_extensions import _TypedDictMeta  # type: ignore
 
 from outlines.models.base import Model, ModelTypeAdapter
-from outlines.prompts import Vision
+from outlines.templates import Vision
 from outlines.types import Choice, Json, List
 
 __all__ = ["Gemini"]

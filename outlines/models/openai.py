@@ -7,7 +7,7 @@ from typing import Optional, Union
 from pydantic import BaseModel
 
 from outlines.models.base import Model, ModelTypeAdapter
-from outlines.prompts import Vision
+from outlines.templates import Vision
 from outlines.types import Json
 
 __all__ = ["OpenAI"]
