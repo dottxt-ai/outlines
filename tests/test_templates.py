@@ -113,60 +113,63 @@ def test_render_jinja():
 
 
 def test_prompt_basic():
-    @outlines.prompt
-    def test_tpl(variable):
-        """{{variable}} test"""
+    with pytest.deprecated_call():
+        @outlines.prompt
+        def test_tpl(variable):
+            """{{variable}} test"""
 
-    assert list(test_tpl.signature.parameters) == ["variable"]
+        assert list(test_tpl.signature.parameters) == ["variable"]
 
-    with pytest.raises(TypeError):
-        test_tpl(v="test")
+        with pytest.raises(TypeError):
+            test_tpl(v="test")
 
-    p = test_tpl("test")
-    assert p == "test test"
+        p = test_tpl("test")
+        assert p == "test test"
 
-    p = test_tpl(variable="test")
-    assert p == "test test"
+        p = test_tpl(variable="test")
+        assert p == "test test"
 
-    @outlines.prompt
-    def test_single_quote_tpl(variable):
-        "${variable} test"
+        @outlines.prompt
+        def test_single_quote_tpl(variable):
+            "${variable} test"
 
-    assert list(test_single_quote_tpl.signature.parameters) == ["variable"]
+        assert list(test_single_quote_tpl.signature.parameters) == ["variable"]
 
-    p = test_tpl("test")
-    assert p == "test test"
+        p = test_tpl("test")
+        assert p == "test test"
 
 
 def test_prompt_kwargs():
-    @outlines.prompt
-    def test_kwarg_tpl(var, other_var="other"):
-        """{{var}} and {{other_var}}"""
+    with pytest.deprecated_call():
+        @outlines.prompt
+        def test_kwarg_tpl(var, other_var="other"):
+            """{{var}} and {{other_var}}"""
 
-    assert list(test_kwarg_tpl.signature.parameters) == ["var", "other_var"]
+        assert list(test_kwarg_tpl.signature.parameters) == ["var", "other_var"]
 
-    p = test_kwarg_tpl("test")
-    assert p == "test and other"
+        p = test_kwarg_tpl("test")
+        assert p == "test and other"
 
-    p = test_kwarg_tpl("test", other_var="kwarg")
-    assert p == "test and kwarg"
+        p = test_kwarg_tpl("test", other_var="kwarg")
+        assert p == "test and kwarg"
 
-    p = test_kwarg_tpl("test", "test")
-    assert p == "test and test"
+        p = test_kwarg_tpl("test", "test")
+        assert p == "test and test"
 
 
 def test_no_prompt():
-    with pytest.raises(TypeError, match="template"):
+    with pytest.deprecated_call():
+        with pytest.raises(TypeError, match="template"):
 
-        @outlines.prompt
-        def test_empty(variable):
-            pass
+            @outlines.prompt
+            def test_empty(variable):
+                pass
 
-    with pytest.raises(TypeError, match="template"):
+        with pytest.raises(TypeError, match="template"):
 
-        @outlines.prompt
-        def test_only_code(variable):
-            return variable
+            @outlines.prompt
+            def test_only_code(variable):
+                return variable
 
 
 def test_prompt_function():
@@ -180,41 +183,44 @@ def test_prompt_function():
         """
         pass
 
-    @outlines.prompt
-    def name_description_ppt(fn):
-        """
-        {{fn|name}}: {{fn|description}}
-        """
+    with pytest.deprecated_call():
+        @outlines.prompt
+        def name_description_ppt(fn):
+            """
+            {{fn|name}}: {{fn|description}}
+            """
 
-    rendered = name_description_ppt(empty_fn)
-    assert rendered == "empty_fn: "
+        rendered = name_description_ppt(empty_fn)
+        assert rendered == "empty_fn: "
 
-    rendered = name_description_ppt(with_description)
-    assert rendered == "with_description: A description."
+        rendered = name_description_ppt(with_description)
+        assert rendered == "with_description: A description."
 
     def with_signature(one: int, two: List[str], three: float = 1.0):
         pass
 
-    @outlines.prompt
-    def name_signature_ppt(fn):
-        """
-        {{fn|name}}: {{fn|signature}}
-        """
+    with pytest.deprecated_call():
+        @outlines.prompt
+        def name_signature_ppt(fn):
+            """
+            {{fn|name}}: {{fn|signature}}
+            """
 
-    rendered = name_signature_ppt(with_signature)
-    assert rendered == "with_signature: one: int, two: List[str], three: float = 1.0"
+        rendered = name_signature_ppt(with_signature)
+        assert rendered == "with_signature: one: int, two: List[str], three: float = 1.0"
 
     def test_function_call(one, two=2):
         return one + two
 
-    @outlines.prompt
-    def source_ppt(fn):
-        """
-        {{fn|source}}
-        """
+    with pytest.deprecated_call():
+        @outlines.prompt
+        def source_ppt(fn):
+            """
+            {{fn|source}}
+            """
 
-    rendered = source_ppt(test_function_call)
-    assert rendered == "def test_function_call(one, two=2):\n    return one + two\n"
+        rendered = source_ppt(test_function_call)
+        assert rendered == "def test_function_call(one, two=2):\n    return one + two\n"
 
 
 def test_prompt_pydantic_response():
@@ -222,43 +228,45 @@ def test_prompt_pydantic_response():
         one: str = Field(description="a description")
         two: str
 
-    @outlines.prompt
-    def source_ppt(model):
-        "{{model | schema }}"
+    with pytest.deprecated_call():
+        @outlines.prompt
+        def source_ppt(model):
+            "{{model | schema }}"
 
-    prompt = source_ppt(SimpleResponse)
-    assert prompt == '{\n  "one": "a description",\n  "two": "<two>"\n}'
+        prompt = source_ppt(SimpleResponse)
+        assert prompt == '{\n  "one": "a description",\n  "two": "<two>"\n}'
 
-    class NestedResponse(BaseModel):
-        answer: str
-        thought: SimpleResponse
+        class NestedResponse(BaseModel):
+            answer: str
+            thought: SimpleResponse
 
-    prompt = source_ppt(NestedResponse)
-    assert (
-        prompt
-        == '{\n  "answer": "<answer>",\n  "thought": {\n    "one": "a description",\n    "two": "<two>"\n  }\n}'
-    )
+        prompt = source_ppt(NestedResponse)
+        assert (
+            prompt
+            == '{\n  "answer": "<answer>",\n  "thought": {\n    "one": "a description",\n    "two": "<two>"\n  }\n}'
+        )
 
-    class ConvolutedResponse(BaseModel):
-        part_one: NestedResponse
-        part_two: SimpleResponse
+        class ConvolutedResponse(BaseModel):
+            part_one: NestedResponse
+            part_two: SimpleResponse
 
-    prompt = source_ppt(ConvolutedResponse)
-    assert (
-        prompt
-        == '{\n  "part_one": {\n    "answer": "<answer>",\n    "thought": {\n      "one": "a description",\n      "two": "<two>"\n    }\n  },\n  "part_two": {\n    "one": "a description",\n    "two": "<two>"\n  }\n}'
-    )
+        prompt = source_ppt(ConvolutedResponse)
+        assert (
+            prompt
+            == '{\n  "part_one": {\n    "answer": "<answer>",\n    "thought": {\n      "one": "a description",\n      "two": "<two>"\n    }\n  },\n  "part_two": {\n    "one": "a description",\n    "two": "<two>"\n  }\n}'
+        )
 
 
 def test_prompt_dict_response():
     response = {"one": "a description", "two": ""}
 
-    @outlines.prompt
-    def source_ppt(model):
-        "{{model | schema }}"
+    with pytest.deprecated_call():
+        @outlines.prompt
+        def source_ppt(model):
+            "{{model | schema }}"
 
-    prompt = source_ppt(response)
-    assert prompt == '{\n  "one": "a description",\n  "two": ""\n}'
+        prompt = source_ppt(response)
+        assert prompt == '{\n  "one": "a description",\n  "two": ""\n}'
 
 
 def test_prompt_args():
@@ -297,45 +305,47 @@ def test_prompt_args():
     ):
         pass
 
-    @outlines.prompt
-    def args_prompt(fn):
-        """args: {{ fn | args }}"""
+    with pytest.deprecated_call():
+        @outlines.prompt
+        def args_prompt(fn):
+            """args: {{ fn | args }}"""
 
-    assert args_prompt(no_args) == "args: "
-    assert args_prompt(with_args) == "args: x, y, z"
-    assert (
-        args_prompt(with_annotations)
-        == "args: x: bool, y: str, z: Dict[int, List[str]]"
-    )
-    assert (
-        args_prompt(with_defaults)
-        == "args: x=True, y='Hi', z={4: ['I', 'love', 'outlines']}"
-    )
-    assert (
-        args_prompt(with_annotations_and_defaults)
-        == "args: x: bool = True, y: str = 'Hi', z: Dict[int, List[str]] = {4: ['I', 'love', 'outlines']}"
-    )
-    assert (
-        args_prompt(with_all)
-        == "args: x1, y1, z1, x2: bool, y2: str, z2: Dict[int, List[str]], x3=True, y3='Hi', z3={4: ['I', 'love', 'outlines']}, x4: bool = True, y4: str = 'Hi', z4: Dict[int, List[str]] = {4: ['I', 'love', 'outlines']}"
-    )
+        assert args_prompt(no_args) == "args: "
+        assert args_prompt(with_args) == "args: x, y, z"
+        assert (
+            args_prompt(with_annotations)
+            == "args: x: bool, y: str, z: Dict[int, List[str]]"
+        )
+        assert (
+            args_prompt(with_defaults)
+            == "args: x=True, y='Hi', z={4: ['I', 'love', 'outlines']}"
+        )
+        assert (
+            args_prompt(with_annotations_and_defaults)
+            == "args: x: bool = True, y: str = 'Hi', z: Dict[int, List[str]] = {4: ['I', 'love', 'outlines']}"
+        )
+        assert (
+            args_prompt(with_all)
+            == "args: x1, y1, z1, x2: bool, y2: str, z2: Dict[int, List[str]], x3=True, y3='Hi', z3={4: ['I', 'love', 'outlines']}, x4: bool = True, y4: str = 'Hi', z4: Dict[int, List[str]] = {4: ['I', 'love', 'outlines']}"
+        )
 
 
 def test_prompt_with_additional_filters():
     def reverse(s: str) -> str:
         return s[::-1]
 
-    @outlines.prompt(filters=dict(reverse=reverse))
-    def test_tpl(variable):
-        """{{ variable | reverse }} test"""
+    with pytest.deprecated_call():
+        @outlines.prompt(filters=dict(reverse=reverse))
+        def test_tpl(variable):
+            """{{ variable | reverse }} test"""
 
-    assert list(test_tpl.signature.parameters) == ["variable"]
+        assert list(test_tpl.signature.parameters) == ["variable"]
 
-    p = test_tpl("test")
-    assert p == "tset test"
+        p = test_tpl("test")
+        assert p == "tset test"
 
-    p = test_tpl(variable="example")
-    assert p == "elpmaxe test"
+        p = test_tpl(variable="example")
+        assert p == "elpmaxe test"
 
 
 @pytest.fixture

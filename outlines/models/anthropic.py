@@ -1,9 +1,10 @@
 """Integration with Anthropic's API."""
+
 from functools import singledispatchmethod
 from typing import Union
 
 from outlines.models.base import Model, ModelTypeAdapter
-from outlines.prompts import Vision
+from outlines.templates import Vision
 
 __all__ = ["Anthropic"]
 

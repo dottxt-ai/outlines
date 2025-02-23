@@ -8,6 +8,7 @@ import textwrap
 from dataclasses import dataclass
 from io import BytesIO
 from typing import Any, Callable, Dict, List, Optional, Type, cast
+import warnings
 
 import jinja2
 from jinja2 import Environment, StrictUndefined
@@ -192,6 +193,16 @@ def prompt(
     A `Template` callable class which will render the template when called.
 
     """
+    warnings.warn(
+        "The @prompt decorator is deprecated and will be removed in outlines 1.1.0. "
+        "Instead of using docstring templates, please use Template.from_file() to "
+        "load your prompts from separate template files, or a simple Python function "
+        "that returns text. This helps keep prompt content separate from code and is "
+        "more maintainable.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+
     if fn is None:
         return lambda fn: prompt(fn, cast(Dict[str, Callable], filters))
 

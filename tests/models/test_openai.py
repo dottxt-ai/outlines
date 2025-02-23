@@ -8,7 +8,7 @@ import requests
 from pydantic import BaseModel
 
 from outlines.models.openai import OpenAI
-from outlines.prompts import Vision
+from outlines.templates import Vision
 from outlines.types import Json
 
 MODEL_NAME = "gpt-4o-mini-2024-07-18"
