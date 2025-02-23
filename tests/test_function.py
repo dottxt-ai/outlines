@@ -8,9 +8,10 @@ from outlines.function import Function, download_from_github, extract_function_f
 
 
 def test_function_basic():
-    @outlines.prompt
-    def test_template(text: str):
-        """{{ text }}"""
+    with pytest.deprecated_call(match="The @prompt decorator"):
+        @outlines.prompt
+        def test_template(text: str):
+            """{{ text }}"""
 
     class Foo(BaseModel):
         id: int
@@ -102,10 +103,11 @@ function = outlines.Function(
 )
     """
 
-    fn = extract_function_from_file(content, "function")
-    assert (
-        str(type(fn)) == "<class 'outlines.function.Function'>"
-    )  # because imported via `exec`
+    with pytest.deprecated_call(match="The @prompt decorator"):
+        fn = extract_function_from_file(content, "function")
+        assert (
+            str(type(fn)) == "<class 'outlines.function.Function'>"
+        )  # because imported via `exec`
 
 
 def test_extract_function_from_file_no_function():
@@ -129,5 +131,6 @@ program = outlines.Function(
 )
     """
 
-    with pytest.raises(AttributeError, match="Could not find"):
-        extract_function_from_file(content, "function")
+    with pytest.deprecated_call(match="The @prompt decorator"):
+        with pytest.raises(AttributeError, match="Could not find"):
+            extract_function_from_file(content, "function")
