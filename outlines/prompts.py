@@ -41,10 +41,10 @@ class Vision:
 
 @dataclass
 class Prompt:
-    """Represents a prompt function.
+    """Represents a prompt template.
 
     We return a `Prompt` class instead of a simple function so the
-    template defined in prompt functions can be accessed.
+    template can be accessed by callers.
 
     """
 
@@ -68,8 +68,7 @@ class Prompt:
 
     @classmethod
     def from_str(cls, content: str, filters: Dict[str, Callable] = {}):
-        """
-        Create an instance of the class from a string.
+        """Create a `Prompt` instance from a string containing a Jinja template.
 
         Parameters
         ----------
@@ -80,12 +79,11 @@ class Prompt:
         -------
         An instance of the class with the provided content as a template.
         """
-        return cls(cls._template_from_str(content, filters), None)
+        return cls(build_template_from_str(content, filters), None)
 
     @classmethod
     def from_file(cls, path: Path, filters: Dict[str, Callable] = {}):
-        """
-        Create a Prompt instance from a file containing a Jinja template.
+        """Create a `Prompt` instance from a file containing a Jinja template.
 
         Note: This method does not allow to include and inheritance to reference files
         that are outside the folder or subfolders of the file given to `from_file`.
@@ -102,44 +100,38 @@ class Prompt:
         """
         # We don't use a `Signature` here because it seems not feasible to infer one from a Jinja2 environment that is
         # split across multiple files (since e.g. we support features like Jinja2 includes and template inheritance)
-        return cls(cls._template_from_file(path, filters), None)
+        return cls(build_template_from_file(path, filters), None)
 
-    @classmethod
-    def _template_from_str(
-        _, content: str, filters: Dict[str, Callable] = {}
-    ) -> jinja2.Template:
-        # Dedent, and remove extra linebreak
-        cleaned_template = inspect.cleandoc(content)
 
-        # Add linebreak if there were any extra linebreaks that
-        # `cleandoc` would have removed
-        ends_with_linebreak = content.replace(" ", "").endswith("\n\n")
-        if ends_with_linebreak:
-            cleaned_template += "\n"
+def build_template_from_str(
+    content: str, filters: Dict[str, Callable] = {}
+) -> jinja2.Template:
+    # Dedent, and remove extra linebreak
+    cleaned_template = inspect.cleandoc(content)
 
-        # Remove extra whitespaces, except those that immediately follow a newline symbol.
-        # This is necessary to avoid introducing whitespaces after backslash `\` characters
-        # used to continue to the next line without linebreak.
-        cleaned_template = re.sub(r"(?![\r\n])(\b\s+)", " ", cleaned_template)
+    # Add linebreak if there were any extra linebreaks that
+    # `cleandoc` would have removed
+    ends_with_linebreak = content.replace(" ", "").endswith("\n\n")
+    if ends_with_linebreak:
+        cleaned_template += "\n"
 
-        env = create_jinja_env(None, filters)
-        env.filters["name"] = get_fn_name
-        env.filters["description"] = get_fn_description
-        env.filters["source"] = get_fn_source
-        env.filters["signature"] = get_fn_signature
-        env.filters["schema"] = get_schema
-        env.filters["args"] = get_fn_args
+    # Remove extra whitespaces, except those that immediately follow a newline symbol.
+    # This is necessary to avoid introducing whitespaces after backslash `\` characters
+    # used to continue to the next line without linebreak.
+    cleaned_template = re.sub(r"(?![\r\n])(\b\s+)", " ", cleaned_template)
 
-        return env.from_string(cleaned_template)
+    env = create_jinja_env(None, filters)
 
-    @classmethod
-    def _template_from_file(
-        _, path: Path, filters: Dict[str, Callable] = {}
-    ) -> jinja2.Template:
-        file_directory = os.path.dirname(os.path.abspath(path))
-        env = create_jinja_env(jinja2.FileSystemLoader(file_directory), filters)
+    return env.from_string(cleaned_template)
 
-        return env.get_template(os.path.basename(path))
+
+def build_template_from_file(
+    path: Path, filters: Dict[str, Callable] = {}
+) -> jinja2.Template:
+    file_directory = os.path.dirname(os.path.abspath(path))
+    env = create_jinja_env(jinja2.FileSystemLoader(file_directory), filters)
+
+    return env.get_template(os.path.basename(path))
 
 
 def prompt(
@@ -211,7 +203,7 @@ def prompt(
     if docstring is None:
         raise TypeError("Could not find a template in the function's docstring.")
 
-    template = Prompt._template_from_str(cast(str, docstring), filters)
+    template = build_template_from_str(cast(str, docstring), filters)
 
     return Prompt(template, signature)
 
@@ -219,6 +211,27 @@ def prompt(
 def create_jinja_env(
     loader: Optional[jinja2.BaseLoader], filters: Dict[str, Callable]
 ) -> jinja2.Environment:
+    """Create a new Jinja environment.
+
+    The Jinja environment is loaded with a set of pre-defined filters:
+    - `name`: get the name of a function
+    - `description`: get a function's docstring
+    - `source`: get a function's source code
+    - `signature`: get a function's signature
+    - `args`: get a function's arguments
+    - `schema`: isplay a JSON Schema
+
+    Users may pass additional filters, and/or override existing ones.
+
+    Arguments
+    ---------
+    loader
+       An optional `BaseLoader` instance
+    filters
+       A dictionary of filters, map between the filter's name and the
+       corresponding function.
+
+    """
     env = jinja2.Environment(
         loader=loader,
         trim_blocks=True,
@@ -227,6 +240,15 @@ def create_jinja_env(
         undefined=jinja2.StrictUndefined,
     )
 
+    env.filters["name"] = get_fn_name
+    env.filters["description"] = get_fn_description
+    env.filters["source"] = get_fn_source
+    env.filters["signature"] = get_fn_signature
+    env.filters["schema"] = get_schema
+    env.filters["args"] = get_fn_args
+
+    # The filters passed by the user may override the
+    # pre-defined filters.
     for name, filter_fn in filters.items():
         env.filters[name] = filter_fn
 
