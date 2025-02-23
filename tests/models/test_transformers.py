@@ -38,6 +38,14 @@ def test_transformers_instantiate_mamba():
     assert isinstance(model, Transformers)
 
 
+def test_transformers_instantiate_tokenizer_kwargs():
+    model = Transformers(
+        TEST_MODEL, tokenizer_kwargs={"additional_special_tokens": ["<t1>", "<t2>"]}
+    )
+    assert "<t1>" in model.tokenizer.special_tokens
+    assert "<t2>" in model.tokenizer.special_tokens
+
+
 @pytest.fixture
 def model():
     model = outlines.from_transformers(
