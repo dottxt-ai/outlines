@@ -1,19 +1,20 @@
 import io
 import json
+from dataclasses import dataclass
 from enum import Enum
-from typing import Generator
+from typing import Generator, Literal
 
-import PIL
 import google.generativeai as genai
 import pytest
 import requests
+from PIL import Image
 from pydantic import BaseModel
 from typing_extensions import TypedDict
 
 import outlines
 from outlines.models.gemini import Gemini
 from outlines.templates import Vision
-from outlines.types import Choice, JsonType, List
+
 
 MODEL_NAME = "gemini-1.5-flash-latest"
 
@@ -21,6 +22,21 @@ MODEL_NAME = "gemini-1.5-flash-latest"
 @pytest.fixture(scope="session")
 def model():
     return Gemini(genai.GenerativeModel(MODEL_NAME))
+
+
+@pytest.fixture
+def image():
+    width, height = 1, 1
+    white_background = (255, 255, 255)
+    image = Image.new("RGB", (width, height), white_background)
+
+    # Save to an in-memory bytes buffer and read as png
+    buffer = io.BytesIO()
+    image.save(buffer, format="PNG")
+    buffer.seek(0)
+    image = Image.open(buffer)
+
+    return image
 
 
 def test_gemini_wrong_inference_parameters(model):
@@ -48,12 +64,7 @@ def test_gemini_direct_call(model):
 
 
 @pytest.mark.api_call
-def test_gemini_simple_vision(model):
-    url = "https://raw.githubusercontent.com/dottxt-ai/outlines/refs/heads/main/docs/assets/images/logo.png"
-    r = requests.get(url, stream=True)
-    if r.status_code == 200:
-        image = PIL.Image.open(io.BytesIO(r.content))
-
+def test_gemini_simple_vision(model, image):
     result = model.generate(Vision("What does this logo represent?", image))
     assert isinstance(result, str)
 
@@ -71,11 +82,6 @@ def test_gemini_simple_pydantic(model):
 @pytest.mark.xfail(reason="Vision models do not work with structured outputs.")
 @pytest.mark.api_call
 def test_gemini_simple_vision_pydantic(model):
-    url = "https://raw.githubusercontent.com/dottxt-ai/outlines/refs/heads/main/docs/assets/images/logo.png"
-    r = requests.get(url, stream=True)
-    if r.status_code == 200:
-        image = PIL.Image.open(io.BytesIO(r.content))
-
     class Logo(BaseModel):
         name: int
 
@@ -133,15 +139,13 @@ def test_gemini_simple_typed_dict(model):
     class Foo(TypedDict):
         bar: int
 
-    result = model.generate("foo?", JsonType(Foo))
+    result = model.generate("foo?", Foo)
     assert isinstance(result, str)
     assert "bar" in json.loads(result)
 
 
 @pytest.mark.api_call
-def test_gemini_simple_dataclass():
-    model = Gemini(genai.GenerativeModel(MODEL_NAME))
-
+def test_gemini_simple_dataclass(model):
     @dataclass
     class Foo:
         bar: int
@@ -153,19 +157,17 @@ def test_gemini_simple_dataclass():
 
 @pytest.mark.api_call
 def test_gemini_simple_choice_enum(model):
-
     class Foo(Enum):
         bar = "Bar"
         foor = "Foo"
 
-    result = model.generate("foo?", Choice(Foo))
+    result = model.generate("foo?", Foo)
     assert isinstance(result, str)
     assert result == "Foo" or result == "Bar"
 
 
 @pytest.mark.api_call
-def test_gemini_sample_choice_literal():
-    model = Gemini(genai.GenerativeModel(MODEL_NAME))
+def test_gemini_sample_choice_literal(model):
     result = model.generate("foo?", Literal["Foo", "Bar"])
     assert isinstance(result, str)
     assert result == "Foo" or result == "Bar"
@@ -177,7 +179,7 @@ def test_gemini_sample_choice_literal():
 @pytest.mark.api_call
 def test_gemini_simple_choice_list(model):
     choices = ["Foo", "Bar"]
-    result = model.generate("foo?", Choice(choices))
+    result = model.generate("foo?", choices)
     assert isinstance(result, str)
     assert result == "Foo" or result == "Bar"
 
@@ -187,7 +189,7 @@ def test_gemini_simple_list_pydantic(model):
     class Foo(BaseModel):
         bar: int
 
-    result = model.generate("foo?", List(JsonType(Foo)))
+    result = model.generate("foo?", list[Foo])
     assert isinstance(json.loads(result), list)
     assert isinstance(json.loads(result)[0], dict)
     assert "bar" in json.loads(result)[0]
