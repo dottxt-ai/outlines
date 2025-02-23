@@ -363,9 +363,7 @@ def tokenizer_tiktoken_llama3():
 
 @pytest.fixture(scope="session")
 def tokenizer_character_level_byt5():
-    return TransformerTokenizer(
-        AutoTokenizer.from_pretrained("google/byt5-small")
-    )
+    return TransformerTokenizer(AutoTokenizer.from_pretrained("google/byt5-small"))
 
 
 # Collects all samples within cfg_samples/ and makes adding

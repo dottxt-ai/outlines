@@ -5,7 +5,6 @@ from types import NoneType
 from typing import Optional, Union, TYPE_CHECKING
 
 
-
 from pydantic import BaseModel
 
 from outlines.models.base import Model, ModelTypeAdapter

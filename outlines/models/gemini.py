@@ -1,16 +1,21 @@
 """Integration with Gemini's API."""
 
-from enum import EnumMeta
-from functools import singledispatchmethod
+from dataclasses import is_dataclass
+from enum import EnumMeta, Enum
 from types import NoneType
-from typing import Optional, Union, TYPE_CHECKING
-
-from pydantic import BaseModel
+from typing import (
+    get_args,
+    get_origin,
+    Optional,
+    Union,
+    Any,
+    TYPE_CHECKING,
+    Literal,
+)
 from typing_extensions import _TypedDictMeta  # type: ignore
-
+from pydantic import BaseModel
 from outlines.models.base import Model, ModelTypeAdapter
 from outlines.templates import Vision
-from outlines.types import JsonType, Choice, List
 
 
 if TYPE_CHECKING:
@@ -28,7 +33,6 @@ class GeminiTypeAdapter(ModelTypeAdapter):
 
     """
 
-    @singledispatchmethod
     def format_input(self, model_input):
         """Generate the `messages` argument to pass to the client.
 
@@ -38,63 +42,70 @@ class GeminiTypeAdapter(ModelTypeAdapter):
             The input passed by the user.
 
         """
-        raise NotImplementedError(
-            f"The input type {input} is not available with Gemini. The only available types are `str` and `Vision`."
-        )
-
-    @format_input.register(str)
-    def format_str_input(self, model_input: str):
-        """Generate the `messages` argument to pass to the client when the user
-        only passes a prompt.
-
-        """
-        return {"contents": [model_input]}
-
-    @format_input.register(Vision)
-    def format_vision_input(self, model_input: Vision):
-        """Generate the `messages` argument to pass to the client when the user
-        passes a prompt and an image.
-
-        """
-        return {"contents": [model_input.prompt, model_input.image]}
-
-    @singledispatchmethod
-    def format_output_type(self, output_type):
-        raise NotImplementedError
-
-    @format_output_type.register(List)
-    def format_list_output_type(self, output_type):
-        return {
-            "response_mime_type": "application/json",
-            "response_schema": list[output_type.definition.definition],
-        }
-
-    @format_output_type.register(NoneType)
-    def format_none_output_type(self, output_type):
-        return {}
-
-    @format_output_type.register(JsonType)
-    def format_json_output_type(self, output_type):
-        """Gemini only accepts Pydantic models and TypeDicts to define the JSON structure."""
-        if issubclass(output_type.definition, BaseModel):
-            return {
-                "response_mime_type": "application/json",
-                "response_schema": output_type.definition,
-            }
-        elif isinstance(output_type.definition, _TypedDictMeta):
-            return {
-                "response_mime_type": "application/json",
-                "response_schema": output_type.definition,
-            }
+        if isinstance(model_input, str):
+            return {"contents": [model_input]}
+        elif isinstance(model_input, Vision):
+            return {"contents": [model_input.prompt, model_input.image]}
         else:
-            raise NotImplementedError
+            raise NotImplementedError(
+                f"The input type {input} is not available with Gemini. The only available types are `str` and `Vision`."
+            )
 
-    @format_output_type.register(Choice)
+    def format_output_type(self, output_type):
+        if output_type is None:
+            return {}
+        elif is_dataclass(output_type):
+            return self.format_json_output_type(output_type)
+        elif isinstance(output_type, _TypedDictMeta):
+            return self.format_json_output_type(output_type)
+        elif isinstance(output_type, type(BaseModel)):
+            return self.format_json_output_type(output_type)
+        elif isinstance(output_type, EnumMeta):
+            return self.format_enum_output_type(output_type)
+        elif get_origin(output_type) is Literal:
+            out = Enum("Foo", [(arg, arg) for arg in get_args(output_type)])
+            return self.format_enum_output_type(out)
+        elif get_origin(output_type) is list:
+            return self.format_list_output_type(output_type)
+        else:
+            raise TypeError(
+                f"Type {getattr(output_type, '__name__', output_type)} is not supported by Gemini. "
+                "Consider using a local model or dottxt instead."
+            )
+
     def format_enum_output_type(self, output_type):
         return {
             "response_mime_type": "text/x.enum",
-            "response_schema": output_type.definition,
+            "response_schema": output_type,
         }
+
+    def format_json_output_type(self, output_type):
+        return {
+            "response_mime_type": "application/json",
+            "response_schema": output_type,
+        }
+
+    def format_list_output_type(self, output_type):
+        args = get_args(output_type)
+
+        if len(args) == 1:
+            item_type = args[0]
+
+            # Check if list item type is supported
+            if (
+                isinstance(item_type, type(BaseModel))
+                or issubclass(item_type, _TypedDictMeta)
+                or is_dataclass(item_type)
+            ):
+                return {
+                    "response_mime_type": "application/json",
+                    "response_schema": output_type,
+                }
+
+        raise TypeError(
+            f"Gemini only supports List[BaseModel], List[TypedDict] or list[dataclass]. "
+            f"Got {output_type} instead."
+        )
 
 
 class Gemini(Model):
@@ -105,7 +116,7 @@ class Gemini(Model):
     def generate(
         self,
         model_input: Union[str, Vision],
-        output_type: Optional[Union[JsonType, EnumMeta]] = None,
+        output_type: Optional[Any] = None,
         **inference_kwargs,
     ):
         import google.generativeai as genai
