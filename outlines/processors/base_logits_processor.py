@@ -81,6 +81,15 @@ class OutlinesLogitsProcessor(Protocol):
         torch_logits = self._to_torch(logits)
         input_ids = self._to_torch(input_ids)
 
+        # if input_ids is 1D and logits is 2D with a single sequence,
+        # reshape input_ids to 2D (needed for mlx-lm)
+        if (
+            len(input_ids.shape) == 1
+            and len(torch_logits.shape) == 2
+            and torch_logits.shape[0] == 1
+        ):
+            input_ids = input_ids.unsqueeze(0)
+
         assert torch_logits.shape[:-1] == input_ids.shape[:-1]
 
         # Guarantee passed as 2D Tensors, then covert back to original (1D or 2D) shape
