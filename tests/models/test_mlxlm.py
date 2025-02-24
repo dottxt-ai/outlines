@@ -1,11 +1,18 @@
 import pytest
+import re
+from enum import Enum
 
 import outlines
+from outlines.types import Choice, JsonType, Regex
 from outlines.models.transformers import TransformerTokenizer
+from pydantic import BaseModel
+from transformers import PreTrainedTokenizer
 
 try:
     import mlx_lm
     import mlx.core as mx
+    from mlx_lm import load
+    from mlx_lm.tokenizer_utils import TokenizerWrapper
 
     HAS_MLX = mx.metal.is_available()
 except ImportError:
@@ -22,8 +29,9 @@ def model(tmp_path_factory):
 
 
 @pytest.mark.skipif(not HAS_MLX, reason="MLX tests require Apple Silicon")
-def test_mlxlm_model(model):
+def test_mlxlm_model_initialization(model):
     assert hasattr(model, "model")
+    assert hasattr(model, "mlx_tokenizer")
     assert hasattr(model, "tokenizer")
     assert isinstance(model.tokenizer, TransformerTokenizer)
 
@@ -32,69 +40,63 @@ def test_mlxlm_model(model):
 def test_mlxlm_tokenizer(model):
     # Test single string encoding/decoding
     test_text = "Hello, world!"
-    token_ids = mx.array(model.mlx_tokenizer.encode(test_text))
+    token_ids, _ = model.tokenizer.encode(test_text)
+    token_ids = mx.array(token_ids)
     assert isinstance(token_ids, mx.array)
 
 
 @pytest.mark.skipif(not HAS_MLX, reason="MLX tests require Apple Silicon")
-def test_mlxlm_generate(model):
-    from outlines.generate.api import GenerationParameters, SamplingParameters
-
-    prompt = "Write a haiku about programming:"
-
-    # Test with basic generation parameters
-    gen_params = GenerationParameters(max_tokens=50, stop_at=None, seed=None)
-
-    # Test with different sampling parameters
-    sampling_params = SamplingParameters(
-        sampler="multinomial", num_samples=1, top_p=0.9, top_k=None, temperature=0.7
-    )
-
-    # Test generation
-    output = model.generate(prompt, gen_params, None, sampling_params)
-    assert isinstance(output, str)
-    assert len(output) > 0
+def test_mlxlm_simple(model):
+    result = model.generate("Respond with one word. Not more.", None)
+    assert isinstance(result, str)
 
 
 @pytest.mark.skipif(not HAS_MLX, reason="MLX tests require Apple Silicon")
-def test_mlxlm_stream(model):
-    from outlines.generate.api import GenerationParameters, SamplingParameters
-
-    prompt = "Count from 1 to 5:"
-
-    gen_params = GenerationParameters(max_tokens=20, stop_at=None, seed=None)
-
-    sampling_params = SamplingParameters(
-        sampler="greedy",  # Use greedy sampling for deterministic output
-        num_samples=1,
-        top_p=None,
-        top_k=None,
-        temperature=0.0,
-    )
-
-    # Test streaming
-    stream = model.stream(prompt, gen_params, None, sampling_params)
-    tokens = list(stream)
-    assert len(tokens) > 0
-    assert all(isinstance(token, str) for token in tokens)
-
-    # Test that concatenated streaming output matches generate output
-    streamed_text = "".join(tokens)
-    generated_text = model.generate(prompt, gen_params, None, sampling_params)
-    assert streamed_text == generated_text
+def test_mlxlm_call(model):
+    result = model("Respond with one word. Not more.")
+    assert isinstance(result, str)
 
 
 @pytest.mark.skipif(not HAS_MLX, reason="MLX tests require Apple Silicon")
-def test_mlxlm_errors(model):
-    # Test batch inference (should raise NotImplementedError)
-    with pytest.raises(NotImplementedError):
-        from outlines.generate.api import GenerationParameters, SamplingParameters
+def test_mlxlm_invalid_input_type(model):
+    with pytest.raises(NotImplementedError, match="is not available"):
+        model(["Respond with one word. Not more."])
 
-        gen_params = GenerationParameters(max_tokens=10, stop_at=None, seed=None)
-        sampling_params = SamplingParameters("multinomial", 1, None, None, 1.0)
-        model.generate(["prompt1", "prompt2"], gen_params, None, sampling_params)
 
-    # Test beam search (should raise NotImplementedError)
-    with pytest.raises(NotImplementedError):
-        sampling_params = SamplingParameters("beam_search", 1, None, None, 1.0)
-        model.generate("test prompt", gen_params, None, sampling_params)
+@pytest.mark.skipif(not HAS_MLX, reason="MLX tests require Apple Silicon")
+def test_mlxlm_invalid_inference_kwargs(model):
+    with pytest.raises(TypeError):
+        model("Respond with one word. Not more.", foo="bar")
+
+
+@pytest.mark.skipif(not HAS_MLX, reason="MLX tests require Apple Silicon")
+def test_mlxlm_inference_kwargs(model):
+    result = model("Write a short story about a cat.", max_tokens=2)
+    assert isinstance(result, str)
+    assert len(result) < 20
+
+
+@pytest.mark.skipif(not HAS_MLX, reason="MLX tests require Apple Silicon")
+def test_mlxlm_regex(model):
+    result = model("Give a number between 0 and 9.", Regex(r"[0-9]"))
+    assert isinstance(result, str)
+    assert re.match(r"[0-9]", result)
+
+
+@pytest.mark.skipif(not HAS_MLX, reason="MLX tests require Apple Silicon")
+def test_mlxlm_JsonType(model):
+    class Character(BaseModel):
+        name: str
+
+    result = model("Create a character with a name.", JsonType(Character))
+    assert "name" in result
+
+
+@pytest.mark.skipif(not HAS_MLX, reason="MLX tests require Apple Silicon")
+def test_mlxlm_choice(model):
+    class Foo(Enum):
+        cat = "cat"
+        dog = "dog"
+
+    result = model("Cat or dog?", Choice(Foo))
+    assert result in ["cat", "dog"]
