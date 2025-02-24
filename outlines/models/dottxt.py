@@ -3,10 +3,13 @@
 import json
 from functools import singledispatchmethod
 from types import NoneType
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 
 from outlines.models.base import Model, ModelTypeAdapter
 from outlines.types import JsonType
+
+if TYPE_CHECKING:
+    from dottxt import Dottxt as DottxtClient
 
 __all__ = ["Dottxt"]
 
@@ -63,11 +66,15 @@ class Dottxt(Model):
 
     """
 
-    def __init__(self, model_name: Optional[str] = None, *args, **kwargs):
-        from dottxt.client import Dottxt
-
-        self.client = Dottxt(*args, **kwargs)
+    def __init__(
+        self,
+        client: "Dottxt",
+        model_name: Optional[str] = None,
+        model_revision: str = "",
+    ):
+        self.client = client
         self.model_name = model_name
+        self.model_revision = model_revision
         self.type_adapter = DottxtTypeAdapter()
 
     def generate(self, model_input, output_type=None, **inference_kwargs):
@@ -76,6 +83,7 @@ class Dottxt(Model):
 
         if self.model_name:
             inference_kwargs["model_name"] = self.model_name
+            inference_kwargs["model_revision"] = self.model_revision
 
         completion = self.client.json(
             prompt,
@@ -83,3 +91,11 @@ class Dottxt(Model):
             **inference_kwargs,
         )
         return completion.data
+
+
+def from_dottxt(
+    client: "DottxtClient",
+    model_name: Optional[str] = None,
+    model_revision: str = "",
+):
+    return Dottxt(client, model_name, model_revision)

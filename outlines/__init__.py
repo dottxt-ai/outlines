@@ -13,6 +13,7 @@ from outlines.generate import Generator
 from outlines.templates import Template, prompt
 
 from outlines.models import (
+    from_dottxt,
     from_openai,
     from_transformers,
     from_gemini,
@@ -26,12 +27,14 @@ from outlines.models import (
 
 model_list = [
     "from_anthropic",
+    "from_dottxt",
     "from_gemini",
     "from_llamacpp",
     "from_mlxlm",
     "from_ollama",
     "from_openai",
-    "from_transformersfrom_vllm",
+    "from_transformers",
+    "from_vllm",
 ]
 
 __all__ = [
