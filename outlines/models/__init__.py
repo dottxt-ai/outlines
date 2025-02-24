@@ -29,5 +29,5 @@ LogitsGenerator = Union[
     Transformers, LlamaCpp, OpenAI, ExLlamaV2Model, MLXLM, VLLM, Ollama
 ]
 
-LocalModel = Union[LlamaCpp, Transformers, MLXLM, VLLM]
-APIModel = Union[OpenAI, Anthropic, Gemini, Ollama, Dottxt]
+SteerableModel = Union[LlamaCpp, Transformers, MLXLM, VLLM]
+BlackBoxModel = Union[OpenAI, Anthropic, Gemini, Ollama, Dottxt]
