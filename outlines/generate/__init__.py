@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Any, Optional, Union, cast, get_args
 
-from outlines.models import APIModel, LlamaCpp, LocalModel
+from outlines.models import BlackBoxModel, SteerableModel
 from outlines.processors import CFGLogitsProcessor, RegexLogitsProcessor
 from outlines.types import CFG, Choice, JsonType, List, Regex
 
@@ -16,8 +16,8 @@ from .text import text
 
 
 @dataclass
-class APIGenerator:
-    """Represents an API-based generator.
+class BlackBoxGenerator:
+    """Represents a generator for which we don't control constrained generation.
 
     Attributes
     ----------
@@ -28,7 +28,7 @@ class APIGenerator:
 
     """
 
-    model: APIModel
+    model: BlackBoxModel
     output_type: Optional[Union[JsonType, List, Choice, Regex]] = None
 
     def __post_init__(self):
@@ -42,8 +42,8 @@ class APIGenerator:
 
 
 @dataclass
-class LocalGenerator:
-    """Represents a local model-based generator.
+class SteerableGenerator:
+    """Represents a generator for which we control constrained generation.
 
     We use this class to keep track of the logits processor which can be quite
     expensive to build.
@@ -57,7 +57,7 @@ class LocalGenerator:
 
     """
 
-    model: LocalModel
+    model: SteerableModel
     output_type: Optional[Union[JsonType, List, Choice, Regex]]
 
     def __post_init__(self):
@@ -80,10 +80,10 @@ class LocalGenerator:
 
 
 def Generator(
-    model: Union[LocalModel, APIModel],
+    model: Union[SteerableModel, BlackBoxModel],
     output_type: Optional[Union[JsonType, List, Choice, Regex, CFG]] = None,
 ):
-    if isinstance(model, APIModel):  # type: ignore
-        return APIGenerator(model, output_type)  # type: ignore
+    if isinstance(model, BlackBoxModel):  # type: ignore
+        return BlackBoxGenerator(model, output_type)  # type: ignore
     else:
-        return LocalGenerator(model, output_type)  # type: ignore
+        return SteerableGenerator(model, output_type)  # type: ignore
