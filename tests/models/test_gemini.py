@@ -2,12 +2,13 @@ import io
 import json
 from enum import Enum
 from typing import Generator
+
 import PIL
+import google.generativeai as genai
 import pytest
 import requests
 from pydantic import BaseModel
 from typing_extensions import TypedDict
-import google.generativeai as genai
 
 import outlines
 from outlines.models.gemini import Gemini
@@ -62,7 +63,7 @@ def test_gemini_simple_pydantic(model):
     class Foo(BaseModel):
         bar: int
 
-    result = model.generate("foo?", JsonType(Foo))
+    result = model.generate("foo?", Foo)
     assert isinstance(result, str)
     assert "bar" in json.loads(result)
 
@@ -93,7 +94,7 @@ def test_gemini_nested_pydantic(model):
         sna: int
         bar: Bar
 
-    result = model.generate("foo?", JsonType(Foo))
+    result = model.generate("foo?", Foo)
     assert isinstance(result, str)
     assert "sna" in json.loads(result)
     assert "bar" in json.loads(result)
@@ -111,7 +112,7 @@ def test_gemini_simple_json_schema_dict(model):
         "title": "Foo",
         "type": "object",
     }
-    result = model.generate("foo?", JsonType(schema))
+    result = model.generate("foo?", schema)
     assert isinstance(result, str)
     assert "bar" in json.loads(result)
 
@@ -122,7 +123,7 @@ def test_gemini_simple_json_schema_dict(model):
 @pytest.mark.api_call
 def test_gemini_simple_json_schema_string(model):
     schema = "{'properties': {'bar': {'title': 'Bar', 'type': 'integer'}}, 'required': ['bar'], 'title': 'Foo', 'type': 'object'}"
-    result = model.generate("foo?", JsonType(schema))
+    result = model.generate("foo?", schema)
     assert isinstance(result, str)
     assert "bar" in json.loads(result)
 
@@ -138,7 +139,21 @@ def test_gemini_simple_typed_dict(model):
 
 
 @pytest.mark.api_call
+def test_gemini_simple_dataclass():
+    model = Gemini(genai.GenerativeModel(MODEL_NAME))
+
+    @dataclass
+    class Foo:
+        bar: int
+
+    result = model.generate("foo?", Foo)
+    assert isinstance(result, str)
+    assert "bar" in json.loads(result)
+
+
+@pytest.mark.api_call
 def test_gemini_simple_choice_enum(model):
+
     class Foo(Enum):
         bar = "Bar"
         foor = "Foo"
@@ -148,6 +163,17 @@ def test_gemini_simple_choice_enum(model):
     assert result == "Foo" or result == "Bar"
 
 
+@pytest.mark.api_call
+def test_gemini_sample_choice_literal():
+    model = Gemini(genai.GenerativeModel(MODEL_NAME))
+    result = model.generate("foo?", Literal["Foo", "Bar"])
+    assert isinstance(result, str)
+    assert result == "Foo" or result == "Bar"
+
+
+@pytest.mark.xfail(
+    reason="Gemini supports lists for choices but we do not as it is semantically incorrect."
+)
 @pytest.mark.api_call
 def test_gemini_simple_choice_list(model):
     choices = ["Foo", "Bar"]
