@@ -167,7 +167,7 @@ nav:
   - API Reference:
       - api/index.md
       - api/models.md
-      - api/prompts.md
+      - api/templates.md
       - api/json_schema.md
       - api/guide.md
       - api/parsing.md
