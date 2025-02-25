@@ -1,15 +1,15 @@
 """Integration with OpenAI's API."""
 
-from functools import singledispatchmethod
-from types import NoneType
+from dataclasses import is_dataclass
+import json
 from typing import Optional, Union, TYPE_CHECKING
+from typing_extensions import is_typeddict
 
-
-from pydantic import BaseModel
+from pydantic import BaseModel, TypeAdapter
 
 from outlines.models.base import Model, ModelTypeAdapter
 from outlines.templates import Vision
-from outlines.types import JsonType
+from outlines.types import JsonSchema, Regex, CFG
 
 if TYPE_CHECKING:
     from openai import OpenAI as OpenAIClient, AzureOpenAI as AzureOpenAIClient
@@ -26,7 +26,6 @@ class OpenAITypeAdapter(ModelTypeAdapter):
 
     """
 
-    @singledispatchmethod
     def format_input(self, model_input):
         """Generate the `messages` argument to pass to the client.
 
@@ -36,12 +35,15 @@ class OpenAITypeAdapter(ModelTypeAdapter):
             The input passed by the user.
 
         """
-        raise NotImplementedError(
+        if isinstance(model_input, str):
+            return self.format_str_model_input(model_input)
+        elif isinstance(model_input, Vision):
+            return self.format_vision_model_input(model_input)
+        raise TypeError(
             f"The input type {input} is not available with OpenAI. The only available types are `str` and `Vision`."
         )
 
-    @format_input.register(str)
-    def format_str_input(self, model_input: str):
+    def format_str_model_input(self, model_input: str):
         """Generate the `messages` argument to pass to the client when the user
         only passes a prompt.
 
@@ -55,8 +57,7 @@ class OpenAITypeAdapter(ModelTypeAdapter):
             ]
         }
 
-    @format_input.register(Vision)
-    def format_vision_input(self, model_input: Vision):
+    def format_vision_model_input(self, model_input: Vision):
         """Generate the `messages` argument to pass to the client when the user
         passes a prompt and an image.
 
@@ -78,31 +79,48 @@ class OpenAITypeAdapter(ModelTypeAdapter):
             ]
         }
 
-    @singledispatchmethod
     def format_output_type(self, output_type):
         """Generate the `response_format` argument to the client based on the
         output type specified by the user.
 
-        """
-        raise NotImplementedError(
-            f"The type {output_type} is not available with OpenAI. The only output type available is `Json`."
-        )
-
-    @format_output_type.register(NoneType)
-    def format_none_output_type(self, _: None):
-        """Generate the `response_format` argument to the client when no
-        output type is specified by the user.
+        TODO: `int`, `float` and other Python types could be supported via JSON Schema.
 
         """
-        return {}
 
-    @format_output_type.register(JsonType)
-    def format_json_output_type(self, output_type: JsonType):
+        # Unsupported languages
+        if isinstance(output_type, Regex):
+            raise TypeError(
+                "Neither regex-based structured outputs nor the `pattern` keyword in Json Schema are available with OpenAI. Use an open source model or dottxt instead."
+            )
+        elif isinstance(output_type, CFG):
+            raise TypeError(
+                "CFG-based structured outputs are not available with OpenAI. Use an open source model or dottxt instead."
+            )
+
+        if output_type is None:
+            return {}
+        elif is_dataclass(output_type):
+            output_type = TypeAdapter(output_type).json_schema()
+            return self.format_json_output_type(output_type)
+        elif is_typeddict(output_type):
+            output_type = TypeAdapter(output_type).json_schema()
+            return self.format_json_output_type(output_type)
+        elif isinstance(output_type, type(BaseModel)):
+            output_type = output_type.model_json_schema()
+            return self.format_json_output_type(output_type)
+        elif isinstance(output_type, JsonSchema):
+            return self.format_json_output_type(json.loads(output_type.schema))
+        else:
+            type_name = getattr(output_type, "__name__", output_type)
+            raise TypeError(
+                f"The type `{type_name}` is not available with OpenAI. Use an open source model or dottxt instead."
+            )
+
+    def format_json_output_type(self, schema: dict):
         """Generate the `response_format` argument to the client when the user
         specified a `Json` output type.
 
         """
-        schema = output_type.to_json_schema()
 
         # OpenAI requires `additionalProperties` to be set
         if "additionalProperties" not in schema:
@@ -143,13 +161,30 @@ class OpenAI(Model):
         output_type: Optional[Union[type[BaseModel], str]] = None,
         **inference_kwargs,
     ):
+        import openai
+
         messages = self.type_adapter.format_input(model_input)
         response_format = self.type_adapter.format_output_type(output_type)
-        result = self.client.chat.completions.create(
-            model=self.model_name, **messages, **response_format, **inference_kwargs
-        )
 
-        return result.choices[0].message.content
+        try:
+            result = self.client.chat.completions.create(
+                model=self.model_name, **messages, **response_format, **inference_kwargs
+            )
+        except openai.BadRequestError as e:
+            if e.body["message"].startswith("Invalid schema"):
+                raise TypeError(
+                    f"OpenAI does not support your schema: {e.body['message']}. Try a local model or dottxt instead."
+                )
+            else:
+                raise e
+
+        message = result.choices[0].message
+        if message.refusal is not None:
+            raise ValueError(
+                f"OpenAI refused to answer the request: {result.choices[0].refusal}"
+            )
+
+        return message.content
 
     def generate_stream(
         self,

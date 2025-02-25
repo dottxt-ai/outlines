@@ -2,7 +2,6 @@
 
 from dataclasses import is_dataclass
 from enum import EnumMeta, Enum
-from types import NoneType
 from typing import (
     get_args,
     get_origin,
