@@ -59,9 +59,13 @@ class SteerableGenerator:
     """
 
     model: SteerableModel
-    output_type: Optional[Union[JsonType, List, Choice, Regex, CFG, interegular.fsm.FSM]]
+    output_type: Optional[Any]
 
     def __post_init__(self):
+        # If CFG -> CFG
+        # if dict -> CFG
+        # if Any -> None
+        # Else -> Regex
         if self.output_type is None:
             self.logits_processor = None
         else:
