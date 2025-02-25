@@ -4,6 +4,7 @@ import numpy as np
 
 import outlines
 import outlines.models as models
+from outlines import Template
 
 examples = [
     {
@@ -43,8 +44,7 @@ examples = [
 question = "When I was 6 my sister was half my age. Now I’m 70 how old is my sister?"
 
 
-@outlines.prompt
-def few_shots(question, examples):
+few_shots = Template.from_string(
     """
     {% for example in examples %}
     Q: {{ example.question }}
@@ -53,7 +53,7 @@ def few_shots(question, examples):
     Q: {{ question }}
     A:
     """
-
+)
 
 model = models.openai("gpt-4o-mini")
 generator = outlines.generate.text(model)

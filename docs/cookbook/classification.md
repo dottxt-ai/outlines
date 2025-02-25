@@ -16,8 +16,10 @@ model = outlines.models.transformers("TheBloke/Mistral-7B-OpenOrca-AWQ", device=
 We will use the following prompt template:
 
 ```python
-@outlines.prompt
-def customer_support(request):
+from outlines import Template
+
+
+customer_support = Template.from_string(
     """You are an experienced customer success manager.
 
     Given a request from a client, you need to determine when the
@@ -36,6 +38,7 @@ def customer_support(request):
 
     Request: {{ request }}
     Label: """
+)
 ```
 
 ## Choosing between multiple choices

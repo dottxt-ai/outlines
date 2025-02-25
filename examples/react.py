@@ -13,29 +13,30 @@ References
 import requests  # type: ignore
 
 import outlines
+from outlines import Template
 import outlines.generate as generate
 import outlines.models as models
 
 
-@outlines.prompt
-def build_reAct_prompt(question):
-    """What is the elevation range for the area that the eastern sector of the Colorado orogeny extends into?
-    Tho 1: I need to search Colorado orogeny, find the area that the eastern sector of the Colorado ...
-    Act 2: Search 'Colorado orogeny'
-    Obs 2: The Colorado orogeny was an episode of mountain building (an orogeny) ...
-    Tho 3: It does not mention the eastern sector. So I need to look up eastern sector.
-    ...
-    Tho 4: High Plains rise in elevation from around 1,800 to 7,000 ft, so the answer is 1,800 to 7,000 ft.
-    Act 5: Finish '1,800 to 7,000 ft'
-    {{ question }}
-    """
+build_reAct_prompt = Template.from_string(
+"""What is the elevation range for the area that the eastern sector of the Colorado orogeny extends into?
+Tho 1: I need to search Colorado orogeny, find the area that the eastern sector of the Colorado ...
+Act 2: Search 'Colorado orogeny'
+Obs 2: The Colorado orogeny was an episode of mountain building (an orogeny) ...
+Tho 3: It does not mention the eastern sector. So I need to look up eastern sector.
+...
+Tho 4: High Plains rise in elevation from around 1,800 to 7,000 ft, so the answer is 1,800 to 7,000 ft.
+Act 5: Finish '1,800 to 7,000 ft'
+{{ question }}
+"""
+)
 
 
-@outlines.prompt
-def add_mode(i, mode, result, prompt):
-    """{{ prompt }}
-    {{ mode }} {{ i }}: {{ result }}
-    """
+add_mode = Template.from_string(
+"""{{ prompt }}
+{{ mode }} {{ i }}: {{ result }}
+"""
+)
 
 
 def search_wikipedia(query: str):

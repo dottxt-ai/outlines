@@ -9,48 +9,16 @@ from typing import Deque, List
 
 import outlines
 import outlines.models as models
+from outlines import Template
+
 
 model = models.openai("gpt-4o-mini")
 complete = outlines.generate.text(model)
 
-
-#################
-# Perform tasks #
-#################
-
-
-@outlines.prompt
-def perform_task_ppt(objective: str, task: str):
-    """You are an AI who performs one task based on the following objective: {{objective}}.
-
-    Your task: {{task.task_name}}
-
-    Response:
-    """
-
-
-#####################
-# Create a new task #
-#####################
-
-
-@outlines.prompt
-def create_tasks_ppt(
-    objective: str, previous_task: str, result: str, task_list: List[str]
-):
-    """You are an task creation AI that uses the result of an execution agent to \
-    create new tasks with the following objective: {{objective}}.
-
-    The last completed task has the result: {{result}}.
-
-    This result was based on this task description: {{previous_task}}. These are \
-    incomplete tasks: {{task_list | join(task_list)}}.
-
-    Based on the result, create new tasks to be completed by the AI system that \
-    do not overlap with incomplete tasks.
-
-    Return the tasks as an array.
-    """
+## Load the prompts
+perform_task_ppt = Template.from_file("prompts/babyagi_perform_task.txt")
+create_tasks_ppt = Template.from_file("prompts/babyagi_create_task.txt")
+prioritize_tasks_ppt = Template.from_file("prompts/babyagi_prioritize_task.txt")
 
 
 def create_tasks_fmt(result: str) -> List[str]:
@@ -63,26 +31,6 @@ def create_tasks_fmt(result: str) -> List[str]:
             task_list.append(parts[1].strip())
 
     return task_list
-
-
-########################
-# Prioritize new tasks #
-########################
-
-
-@outlines.prompt
-def prioritize_tasks_ppt(objective: str, task_names: List[str], next_task_id: int):
-    """You are a task prioritization AI tasked with cleaning the formatting of \
-    and reprioritizing the following tasks: {{task_names}}.
-
-    Consider the ultimate objective of your team: {{objective}}.
-
-    Do not remove any tasks. Return the result as a numbered list, like:
-    #. First task
-    #. Second task
-
-    Start the tasks list with the number {{next_task_id}}.
-    """
 
 
 def prioritize_tasks_fmt(result: str):

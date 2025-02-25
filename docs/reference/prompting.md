@@ -33,15 +33,13 @@ will pass to the prompt function.
 
 === "Code"
 
-    ```python
-    import outlines
+    ```python title="greetings.py"
+    from outlines import Template
 
-    @outlines.prompt
-    def greetings(name, question):
-        """Hello, {{ name }}!
-        {{ question }}
-        """
+    prompt = """Hello, {{ name }}!
+    {{ question }}"""
 
+    greetings = Template.from_string(prompt)
     prompt = greetings("user", "How are you?")
     print(prompt)
     ```
@@ -58,12 +56,10 @@ If a variable is missing in the function's arguments, Jinja2 will throw an `Unde
 === "Code"
 
     ```python
-    import outlines
+    from outlines import Template
 
-    @outlines.prompt
-    def greetings(name):
-        """Hello, {{ surname }}!"""
-
+    prompt = """Hello, {{ surname }}!"""
+    greetings = Template.from_string(prompt)
     prompt = greetings("user")
     ```
 
@@ -72,9 +68,9 @@ If a variable is missing in the function's arguments, Jinja2 will throw an `Unde
     ```text
     Traceback (most recent call last):
       File "<stdin>", line 9, in <module>
-      File "/home/remi/projects/normal/outlines/outlines/prompts.py", line 38, in __call__
+      File "/home/remi/projects/normal/outlines/outlines/templates.py", line 38, in __call__
           return render(self.template, **bound_arguments.arguments)
-      File "/home/remi/projects/normal/outlines/outlines/prompts.py", line 213, in render
+      File "/home/remi/projects/normal/outlines/outlines/templates.py", line 213, in render
           return jinja_template.render(**values)
       File "/home/remi/micromamba/envs/outlines/lib/python3.9/site-packages/jinja2/environment.py", line 1301, in render
           self.environment.handle_exception()
@@ -84,26 +80,23 @@ If a variable is missing in the function's arguments, Jinja2 will throw an `Unde
       jinja2.exceptions.UndefinedError: 'surname' is undefined
     ```
 
-## Importing prompt functions
+## Importing prompts from files
 
-Prompt functions are functions, and thus can be imported from other modules:
+Outlines allows you to read a prompt template from a text file. This way you can build "white space perfect" prompts, and version them independently from your code. We have found ourselves gravitating around this pattern a lot since Outlines came out:
 
-=== "prompts.py"
-    ```python
-    import outlines
-
-    @outlines.prompt
-    def greetings(name, question):
-        """Hello, {{ name }}!
-        {{ question }}
-        """
+=== "prompt.txt"
+    ```text
+    """Hello, {{ name }}!
+    {{ question }}
+    """
     ```
 
 === "generate.py"
 
     ```python
-    from .prompts import greetings
+    from outlines import Template
 
+    greetings = Template.from_file("prompt.txt")
     prompt = greetings("John Doe", "How are you today?")
     ```
 
@@ -123,27 +116,26 @@ keys `question` and `answer` to the prompt function:
 
 === "Code"
 
-    ```python
-    import outlines
+    ```text title="prompt.txt"
+    {{ instructions }}
 
-    @outlines.prompt
-    def few_shots(instructions, examples, question):
-        """{{ instructions }}
+    Examples
+    --------
 
-        Examples
-        --------
+    {% for example in examples %}
+    Q: {{ example.question }}
+    A: {{ example.answer }}
 
-        {% for example in examples %}
-        Q: {{ example.question }}
-        A: {{ example.answer }}
+    {% endfor %}
+    Question
+    --------
 
-        {% endfor %}
-        Question
-        --------
+    Q: {{ question }}
+    A:
+    ```
 
-        Q: {{ question }}
-        A:
-        """
+    ```python title="render.py"
+    from outlines import Template
 
     instructions = "Please answer the following question following the examples"
     examples = [
@@ -152,6 +144,7 @@ keys `question` and `answer` to the prompt function:
     ]
     question = "4+4 = ?"
 
+    few_shots = Template.from_file("prompt.txt")
     prompt = few_shots(instructions, examples, question)
     print(prompt)
     ```
@@ -194,7 +187,7 @@ Several projects (e.g.[Toolformer](https://arxiv.org/abs/2302.04761), [ViperGPT]
 === "Code"
 
     ```python
-    import outlines
+    from outlines import Template
 
     def my_tool(arg1: str, arg2: int):
         """Tool description.
@@ -203,16 +196,15 @@ Several projects (e.g.[Toolformer](https://arxiv.org/abs/2302.04761), [ViperGPT]
         """
         pass
 
-    @outlines.prompt
-    def tool_prompt(question, tool):
-        """{{ question }}
+    prompt = """{{ question }}
 
-        COMMANDS
-        1. {{ tool | name }}: {{ tool | description }}, args: {{ tool | args }}
+    COMMANDS
+    1. {{ tool | name }}: {{ tool | description }}, args: {{ tool | args }}
 
-        {{ tool | source }}
-        """
+    {{ tool | source }}
+    """
 
+    tool_prompt = Template.from_string(prompt)
     prompt = tool_prompt("Can you do something?", my_tool)
     print(prompt)
     ```
@@ -250,16 +242,14 @@ pretty print a dictionary from within an Outlines prompt function
     ```python
     from pydantic import BaseModel, Field
 
-    import outlines
+   from outlines import Template
 
     class MyResponse(BaseModel):
         field1: int = Field(description="an int")
         field2: str
 
-    @outlines.prompt
-    def my_prompt(response_model):
-        """{{ response_model | schema }}"""
 
+    my_prompt = Template.from_string("""{{ response_model | schema }}""")
     prompt = my_prompt(MyResponse)
     print(prompt)
     # {
@@ -285,8 +275,9 @@ pretty print a dictionary from within an Outlines prompt function
 
 ## Formatting conventions
 
-Prompt functions are opinionated when it comes to rendering, and these opinions
-are meant to avoid prompting mistakes and help with formatting.
+Prompt templates are opinionated when it comes to rendering a template read from
+a string, and these opinions are meant to avoid prompting mistakes and help with
+formatting.
 
 ### Whitespaces
 
@@ -300,18 +291,19 @@ below does not matter for formatting:
 === "Code"
 
     ```python
-    import outlines
+    from outlines import Template
 
-    @outlines.prompt
-    def prompt1():
-        """My prompt
-        """
 
-    @outlines.prompt
-    def prompt2():
-        """
-        My prompt
-        """
+    prompt1 = Template.from_string(
+    """My prompt
+    """
+    )
+
+    prompt2 = Template.from_string(
+    """
+    My prompt
+    """
+    )
 
     print(prompt1())
     print(prompt2())
@@ -329,27 +321,27 @@ Indentation is relative to the second line of the docstring, and leading spaces 
 === "Code"
 
     ```python
-    import outlines
+    from outlines import Template
 
-    @outlines.prompt
-    def example1():
-        """First line
+    example1 = Template.from_string(
+    """First line
+    Second line
+    """
+    )
+
+    example2 = Template.from_string(
+    """
         Second line
-        """
+        Third line
+    """
+    )
 
-    @outlines.prompt
-    def example2():
-        """
-          Second line
+    example3 = Template.from_string(
+    """
+        Second line
           Third line
-        """
-
-    @outlines.prompt
-    def example3():
-        """
-          Second line
-            Third line
-        """
+    """
+    )
 
     print(example1())
     print(example2())
@@ -378,18 +370,18 @@ You can use the backslash `\` to break a long line of text. It will render as a 
 === "Code"
 
     ```python
-    import outlines
+    from outlines import Template
 
-    @outlines.prompt
-    def example():
-       """
-       Break in \
-       several lines \
-       But respect the indentation
-           on line breaks.
-       And after everything \
-       Goes back to normal
-       """
+    example = Template.from_string(
+    """
+    Break in \
+    several lines \
+    But respect the indentation
+        on line breaks.
+    And after everything \
+    Goes back to normal
+    """
+    )
 
     print(example())
     ```

@@ -13,8 +13,7 @@ import outlines
 import outlines.models as models
 
 
-@outlines.prompt
-def build_ooo_prompt(options):
+build_ooo_prompt = outlines.Template.from_string(
     """
     Pick the odd word out: skirt, dress, pen, jacket.
     skirt is clothing, dress is clothing, pen is an object, jacket is clothing.
@@ -27,7 +26,7 @@ def build_ooo_prompt(options):
     Pick the odd word out: {{ options | join(", ") }}.
 
     """
-
+)
 
 options = ["sea", "mountains", "plains", "sock"]
 

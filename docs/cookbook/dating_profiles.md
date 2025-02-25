@@ -57,9 +57,9 @@ class Example:
 We will use Outlines' prompt templating abilities to generate the prompt for us. This help clearly separate the general prompting logic from what is specific to an example.
 
 ```python
+from outlines import Template
 
-@outlines.prompt
-def dating_profile_prompt(description: str, examples: list[Example]):
+dating_profile_prompt = Template.from_string(
     """
     You are a world-renowned matchmaker who understands the modern dating
     market. Your job is to generate dating app profiles for male clients
@@ -79,6 +79,7 @@ def dating_profile_prompt(description: str, examples: list[Example]):
     Description: {{ description }}
     Profile:
     """
+)
 ```
 
 We will provide the model with several few-shot examples:
