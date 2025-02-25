@@ -1,5 +1,4 @@
 from functools import singledispatchmethod
-from types import NoneType
 from typing import Iterator, TYPE_CHECKING
 
 from outlines.models.base import Model, ModelTypeAdapter
@@ -48,9 +47,9 @@ class OllamaTypeAdapter(ModelTypeAdapter):
             "Ollama only supports structured output with `Json`."
         )
 
-    @format_output_type.register(NoneType)
-    def format_none_output_type(self, output_type: None):
-        return ""
+    # @format_output_type.register(NoneType)
+    # def format_none_output_type(self, output_type: None):
+    #     return ""
 
     @format_output_type.register(JsonType)
     def format_json_output_type(self, output_type: JsonType):

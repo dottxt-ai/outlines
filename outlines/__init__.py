@@ -9,6 +9,8 @@ from outlines.caching import clear_cache, disable_cache, get_cache
 from outlines.function import Function
 from outlines.generator import Generator
 from outlines.templates import Template, prompt
+from outlines.types import regex, json_schema, cfg
+from outlines.templates import Vision
 
 from outlines.models import (
     from_dottxt,
