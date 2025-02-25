@@ -5,7 +5,7 @@ from outlines.models import BlackBoxModel, SteerableModel
 from outlines.processors import CFGLogitsProcessor, RegexLogitsProcessor
 from outlines.types import CFG, Choice, JsonType, List, Regex
 
-from .api import SequenceGenerator
+from .api import SequenceGeneratorAdapter
 from .cfg import cfg
 from .choice import choice
 from .format import format
