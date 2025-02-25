@@ -79,9 +79,12 @@ class AnthropicTypeAdapter(ModelTypeAdapter):
 
     def format_output_type(self, output_type):
         """Not implemented for Anthropic."""
-        raise NotImplementedError(
-            f"The output type {output_type} is not available with Anthropic."
-        )
+        if output_type is None:
+            return {}
+        else:
+            raise NotImplementedError(
+                f"The output type {output_type} is not available with Anthropic."
+            )
 
 
 class Anthropic(Model):
