@@ -1,9 +1,14 @@
-import json as json
+from dataclasses import is_dataclass
+import datetime
+from enum import EnumMeta
+import json
 import re
 from dataclasses import dataclass
-from typing import Any, List, Union
+from typing import Any, List, Union, get_origin, Literal, get_args
+from typing_extensions import _TypedDictMeta  # type: ignore
+import outlines.types as types
 
-from pydantic import BaseModel, GetCoreSchemaHandler, GetJsonSchemaHandler
+from pydantic import BaseModel, GetCoreSchemaHandler, GetJsonSchemaHandler, TypeAdapter
 from pydantic.json_schema import JsonSchemaValue
 from pydantic_core import core_schema as cs
 from outlines_core.fsm.json_schema import build_regex_from_schema
@@ -355,6 +360,169 @@ def regex(pattern: str):
 
 def json_schema(schema: Union[str, dict, type[BaseModel]]):
     return JsonSchema(schema)
+
+
+def python_types_to_terms(ptype: Any, recursion_depth: int = 0) -> Term:
+    """Convert Python types to Outlines DSL terms that constrain LLM output.
+
+    Arguments
+    ---------
+    ptype
+        The Python type to convert
+    recursion_depth
+        Current recursion depth to prevent infinite recursion
+
+    Returns
+    -------
+    The corresponding DSL `Term` instance.
+    """
+    if recursion_depth > 10:
+        raise RecursionError(
+            f"Maximum recursion depth exceeded when converting {ptype}. "
+            "This might be due to a recursive type definition."
+        )
+
+    # First handle Term instances
+    if isinstance(ptype, Term):
+        return ptype
+
+    # Basic types
+    if ptype is int or get_origin(ptype) is int:
+        return types.integer
+    elif ptype is float or get_origin(ptype) is float:
+        return types.number
+    elif ptype is bool or get_origin(ptype) is bool:
+        return types.boolean
+    elif ptype is str or get_origin(ptype) is str:
+        return String(ptype)
+    elif ptype is datetime.time:
+        return types.time
+    elif ptype is datetime.date:
+        return types.date
+    elif ptype is datetime.datetime:
+        return types.datetime
+
+    # Structured types
+    structured_type_checks = [
+        lambda x: is_dataclass(x),
+        lambda x: isinstance(x, _TypedDictMeta),
+        lambda x: isinstance(x, BaseModel),
+    ]
+    if any(check(ptype) for check in structured_type_checks):
+        schema = TypeAdapter(ptype).json_schema()
+        return JsonSchema(schema)
+
+    # Enums
+    if isinstance(ptype, EnumMeta):
+        return Alternatives(
+            [python_types_to_terms(arg.value, recursion_depth + 1) for arg in ptype]  # type: ignore
+        )
+
+    # Generic types
+    origin = get_origin(ptype)
+    args = get_origin(ptype)
+
+    if origin is Literal:
+        return _handle_literal(args)
+    elif origin is Union:
+        return _handle_union(args, recursion_depth)
+    elif origin is list:
+        return _handle_list(args, recursion_depth)
+    elif origin is tuple:
+        return _handle_tuple(args, recursion_depth)
+    elif ptype is dict:
+        return _handle_dict(args, recursion_depth)
+    else:
+        type_name = getattr(ptype, "__name__", ptype)
+        raise TypeError(
+            f"Type {type_name} is currently not supported. Please open an issue: "
+            "https://github.com/dottxt-ai/outlines/issues"
+        )
+
+
+def _handle_literal(args: tuple) -> Alternatives:
+    return Alternatives([python_types_to_terms(arg) for arg in args])
+
+
+def _handle_union(args: tuple, recursion_depth: int) -> Alternatives:
+    # Handle the Optional[T] type
+    if len(args) == 2 and (type(None) in args or None in args):
+        other_ptype = next(arg for arg in args if arg not in (type(None), None))
+        return Alternatives(
+            [
+                python_types_to_terms(other_ptype, recursion_depth + 1),
+                String("None"),
+            ]
+        )
+    return Alternatives(
+        [python_types_to_terms(arg, recursion_depth + 1) for arg in args]
+    )
+
+
+def _handle_list(args: tuple, recursion_depth: int) -> Sequence:
+    if args is None or len(args) > 1:
+        raise TypeError(
+            f"Only homogeneous lists are supported. Got multiple type arguments {args}."
+        )
+    item_type = python_types_to_terms(args[0], recursion_depth + 1)
+    return Sequence(
+        [
+            String("["),
+            item_type,
+            KleeneStar(Sequence([String(","), item_type])),
+            String("]"),
+        ]
+    )
+
+
+def _handle_tuple(args: tuple, recursion_depth: int) -> Sequence:
+    if args is None:
+        return String("()")
+    elif len(args) == 2 and args[1] is Ellipsis:
+        item_term = python_types_to_terms(args[0], recursion_depth + 1)
+        return Sequence(
+            [
+                String("("),
+                item_term,
+                KleeneStar(Sequence([String(","), item_term])),
+                String(")"),
+            ]
+        )
+    else:
+        items = [python_types_to_terms(arg, recursion_depth + 1) for arg in args]
+        separator = String(", ")
+        elements = []
+        for i, item in enumerate(items):
+            elements.append(item)
+            if i < len(items) - 1:
+                elements.append(separator)
+        return Sequence([String("("), *elements, String(")")])
+
+
+def _handle_dict(args: tuple, recursion_depth: int) -> Sequence:
+    if args is None or len(args) != 2:
+        raise TypeError(f"Dict must have exactly two type arguments. Got {args}.")
+    # Add dict support with key:value pairs
+    key_type = python_types_to_terms(args[0], recursion_depth + 1)
+    value_type = python_types_to_terms(args[1], recursion_depth + 1)
+    return Sequence(
+        [
+            String("{"),
+            Optional(
+                Sequence(
+                    [
+                        key_type,
+                        String(":"),
+                        value_type,
+                        KleeneStar(
+                            Sequence([String(","), key_type, String(":"), value_type])
+                        ),
+                    ]
+                )
+            ),
+            String("}"),
+        ]
+    )
 
 
 def to_regex(term: Term) -> str:
