@@ -1,6 +1,5 @@
 """Integration with Anthropic's API."""
 
-from functools import singledispatchmethod
 from typing import Union, TYPE_CHECKING
 
 from outlines.models.base import Model, ModelTypeAdapter
@@ -23,7 +22,6 @@ class AnthropicTypeAdapter(ModelTypeAdapter):
 
     """
 
-    @singledispatchmethod
     def format_input(self, model_input):
         """Generate the `messages` argument to pass to the client.
 
@@ -33,16 +31,15 @@ class AnthropicTypeAdapter(ModelTypeAdapter):
             The input passed by the user.
 
         """
-        raise NotImplementedError(
+        if isinstance(model_input, str):
+            return self.format_str_model_input(model_input)
+        elif isinstance(model_input, Vision):
+            return self.format_vision_model_input(model_input)
+        raise TypeError(
             f"The input type {input} is not available with Anthropic. The only available types are `str` and `Vision`."
         )
 
-    @format_input.register(str)
-    def format_str_input(self, model_input: str):
-        """Generate the `messages` argument to pass to the client when the user
-        only passes a prompt.
-
-        """
+    def format_str_model_input(self, model_input):
         return {
             "messages": [
                 {
@@ -52,12 +49,7 @@ class AnthropicTypeAdapter(ModelTypeAdapter):
             ]
         }
 
-    @format_input.register(Vision)
-    def format_vision_input(self, model_input: Vision):
-        """Generate the `messages` argument to pass to the client when the user
-        passes a prompt and an image.
-
-        """
+    def format_vision_model_input(self, model_input):
         return {
             "messages": [
                 {
