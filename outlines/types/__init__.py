@@ -15,8 +15,8 @@ from outlines.types.dsl import (
     JsonSchema,
     regex,
     json_schema,
-    either,
     optional,
+    either,
     exactly,
     at_least,
     at_most,
@@ -146,3 +146,6 @@ class CFG:
     """Represents a Context-Free Grammar as a string."""
 
     definition: str
+
+
+cfg = CFG
