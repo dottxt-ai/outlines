@@ -15,8 +15,10 @@ model = outlines.models.transformers("TheBloke/Mistral-7B-OpenOrca-AWQ", device=
 And we will be using the following prompt template:
 
 ```python
-@outlines.prompt
-def take_order(order):
+from outlines import Template
+
+
+take_order = Template.from_string(
     """You are the owner of a pizza parlor. Customers \
     send you orders from which you need to extract:
 
@@ -42,6 +44,7 @@ def take_order(order):
 
     ORDER: {{ order }}
     RESULT: """
+)
 ```
 
 We now define our data model using Pydantic:

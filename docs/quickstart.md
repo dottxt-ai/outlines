@@ -115,10 +115,9 @@ Or use the [requests][requests]{:target="_blank"} library from another python pr
 Prompting can lead to messy code. Outlines' prompt functions are python functions that contain a template for the prompt in their docstring. We use a powerful templating language to allow you to loop over lists, dictionaries, add conditionals, etc. directly from the prompt. When called, a prompt function returns the rendered template:
 
 ```python
-import outlines
+from outlines import Template
 
-@outlines.prompt
-def few_shots(instructions, examples, question):
+few_shots = Template.from_string(
     """{{ instructions }}
 
     Examples
@@ -135,6 +134,7 @@ def few_shots(instructions, examples, question):
     Q: {{ question }}
     A:
     """
+)
 
 instructions = "Please answer the following question following the examples"
 examples = [
@@ -175,9 +175,9 @@ Once you are done experimenting with a prompt and an output structure, it is use
     import outlines
 
 
-    @outlines.prompt
-    def tell_a_joke(topic):
+    tell_a_joke = outlines.Template.from_string(
         """Tell me a joke about {{ topic }}."""
+    )
 
     class Joke(BaseModel):
         setup: str

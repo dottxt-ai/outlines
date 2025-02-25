@@ -6,7 +6,7 @@ import transformers
 from pydantic import BaseModel, conlist
 
 import outlines
-from outlines import models
+from outlines import models, Template
 
 
 class QuestionChoice(str, Enum):
@@ -39,23 +39,6 @@ class DatingProfile(BaseModel):
 class Example:
     description: str
     profile: DatingProfile
-
-
-@outlines.prompt
-def dating_profile_prompt(description: str, examples: list[Example]):
-    """
-    You are a world-renowned matchmaker who understands the modern dating market. Your job is to generate dating app profiles for male clients interested in women based on a provided description. The profiles should be authentic, show off their strengths, and maximize their likelihood of getting matches on dating apps.
-    Here are some examples of past clients that you have successfully created profiles for:
-    {% for example in examples %}
-    Description:
-    {{ example.description }}
-    Profile:
-    {{ example.profile }}
-    {% endfor %}
-    Here is the new client who you need to create a profile for:
-    Description: {{ description }}
-    Profile:
-    """
 
 
 samples: list[Example] = [
@@ -120,6 +103,7 @@ model = models.transformers(
 
 new_description = "I'm a laid-back lawyer who spends a lot of his free-time gaming. I work in a corporate office, but ended up here after the start-up I cofounded got acquired, so still play ping pong with my cool coworkers every day. I have a bar at home where I make cocktails, which is great for entertaining friends. I secretly like to wear suits and get a new one tailored every few months. I also like weddings because I get to wear those suits, and it's a good excuse for a date. I watch the latest series because I'm paying, with my hard-earned money, for every streaming service."
 
+dating_profile_prompt = Template.from_file("prompts/dating_profile.txt")
 prompt = dating_profile_prompt(description=new_description, examples=samples)
 profile = outlines.generate.json(model, DatingProfile)(prompt)  # type: ignore
 print(profile)

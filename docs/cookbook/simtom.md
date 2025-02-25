@@ -23,18 +23,15 @@ To implement SimToM with Outlines, we will need to:
 
 Let's dive into it!
 
-### Using Prompt Functions
-
-With Outlines, you can write your prompts as Python functions by adding the `@outlines.prompt` decorator. The prompt template is contained in their docstring, and their arguments correspond to variables used in the prompt.
+### Using Prompt Templates
 
 The authors have shared their code, prompts and data in [this GitHub repository](https://github.com/shawnsihyunlee/simulatedtom). Below, we define in Outlines the prompts they used for the ToMI dataset:
 
 ```python
-import outlines
+from outlines import Template
 
 
-@outlines.prompt
-def perspective_taking(story: str, character: str) -> None:
+perspective_taking = Template.from_string(
     """<s>[INST] The following is a sequence of events about some characters, that takes place in multiple locations.
     Your job is to output only the events that the specified character, {{character}}, knows about.
 
@@ -45,9 +42,9 @@ def perspective_taking(story: str, character: str) -> None:
 
     Story: {{story}}
     What events does {{character}} know about? Only output the events according to the above rules, do not provide an explanation. [/INST]""" # noqa
+)
 
-@outlines.prompt
-def simulation(events: list, name: str, question: str) -> None:
+simulation = Template.from_string(
     """<s>[INST] {% for event in events %}
     {{event}}
     {% endfor %}
@@ -55,6 +52,7 @@ def simulation(events: list, name: str, question: str) -> None:
     Based on the above information, answer the following question:
     {{question}}
     You must choose one of the above choices, do not say there is not enough information. Answer with a single word, do not output anything else. [/INST]""" # noqa
+)
 ```
 
 ### JSON Structured Generation

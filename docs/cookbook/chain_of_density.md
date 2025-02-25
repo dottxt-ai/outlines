@@ -29,10 +29,10 @@ The prompt also asks the model to return a list of JSON objects that contain the
 We can now implement the prompt provided in the paper:
 
 ```python
-import outlines
+from outlines import Template
 
-@outlines.prompt
-def chain_of_density(article):
+
+chain_of_density = Template.from_string(
     """Article: {{ article }}
 
     You will generate increasingly concise, entity-dense summaries of the above Article.
@@ -61,6 +61,7 @@ def chain_of_density(article):
 
     Answer in JSON. The JSON should be a a dictionary with key "summaries" that contains a list (length 5) of dictionaries whose keys are "Missing_Entities" and "Denser_Summary".
     """
+)
 ```
 
 ??? Note
