@@ -3,7 +3,6 @@
 from dataclasses import is_dataclass
 import json
 from functools import singledispatchmethod
-from types import NoneType
 from typing import Optional, TYPE_CHECKING
 
 from pydantic import BaseModel, TypeAdapter
