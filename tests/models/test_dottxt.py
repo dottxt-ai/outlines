@@ -2,14 +2,12 @@ import json
 import os
 
 import pytest
-from pydantic import BaseModel
-
 from dottxt.client import Dottxt as DottxtClient
+from pydantic import BaseModel
 
 import outlines
 from outlines import Generator
 from outlines.models.dottxt import Dottxt
-from outlines.types import JsonType
 
 
 class User(BaseModel):
@@ -39,7 +37,7 @@ def test_dottxt_wrong_init_parameters(api_key):
 
 
 def test_dottxt_wrong_output_type(api_key):
-    with pytest.raises(NotImplementedError, match="must provide an output type"):
+    with pytest.raises(TypeError, match="You must provide an output type"):
         client = DottxtClient(api_key=api_key)
         model = Dottxt(client)
         model("prompt")
@@ -54,10 +52,10 @@ def test_dottxt_init_from_client(api_key):
 
 @pytest.mark.api_call
 def test_dottxt_wrong_input_type(api_key):
-    with pytest.raises(NotImplementedError, match="is not available"):
+    with pytest.raises(TypeError, match="You must provide an output type"):
         client = DottxtClient(api_key=api_key)
         model = Dottxt(client)
-        model(["prompt"], JsonType(User))
+        model(["prompt"], User)
 
 
 @pytest.mark.api_call
@@ -65,28 +63,37 @@ def test_dottxt_wrong_inference_parameters(api_key):
     with pytest.raises(TypeError, match="got an unexpected"):
         client = DottxtClient(api_key=api_key)
         model = Dottxt(client)
-        model("prompt", JsonType(User), foo=10)
+        model("prompt", User, foo=10)
 
 
 @pytest.mark.api_call
-def test_dottxt_direct_call(api_key):
+def test_dottxt_direct_pydantic_call(api_key):
     client = DottxtClient(api_key=api_key)
     model = Dottxt(client)
-    result = model("Create a user", JsonType(User))
+    result = model("Create a user", User)
     assert "first_name" in json.loads(result)
 
 
 @pytest.mark.api_call
-def test_dottxt_generator_call(api_key):
+def test_dottxt_direct_jsonschema_call(api_key):
     client = DottxtClient(api_key=api_key)
     model = Dottxt(client)
-    generator = Generator(model, JsonType(User))
+    result = model("Create a user", User)
+    assert "first_name" in json.loads(result)
+
+
+@pytest.mark.api_call
+def test_dottxt_generator_pydantic_call(api_key):
+    client = DottxtClient(api_key=api_key)
+    model = Dottxt(client)
+    generator = Generator(model, User)
     result = generator("Create a user")
     assert "first_name" in json.loads(result)
 
 
+@pytest.mark.api_call
 def test_dottxt_streaming(api_key):
     client = DottxtClient(api_key=api_key)
     model = Dottxt(client)
     with pytest.raises(NotImplementedError, match="Dottxt does not support streaming"):
-        model.stream("Create a user", JsonType(User))
+        model.stream("Create a user", User)
