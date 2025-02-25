@@ -41,7 +41,7 @@ class Template:
             return self.template.render(**kwargs)
 
     @classmethod
-    def from_str(cls, content: str, filters: Dict[str, Callable] = {}):
+    def from_string(cls, content: str, filters: Dict[str, Callable] = {}):
         """Create a `Template` instance from a string containing a Jinja template.
 
         Parameters
@@ -53,7 +53,7 @@ class Template:
         -------
         An instance of the class with the provided content as a template.
         """
-        return cls(build_template_from_str(content, filters), None)
+        return cls(build_template_from_string(content, filters), None)
 
     @classmethod
     def from_file(cls, path: Path, filters: Dict[str, Callable] = {}):
@@ -77,7 +77,7 @@ class Template:
         return cls(build_template_from_file(path, filters), None)
 
 
-def build_template_from_str(
+def build_template_from_string(
     content: str, filters: Dict[str, Callable] = {}
 ) -> jinja2.Template:
     # Dedent, and remove extra linebreak
@@ -187,7 +187,7 @@ def prompt(
     if docstring is None:
         raise TypeError("Could not find a template in the function's docstring.")
 
-    template = build_template_from_str(cast(str, docstring), filters)
+    template = build_template_from_string(cast(str, docstring), filters)
 
     return Template(template, signature)
 
