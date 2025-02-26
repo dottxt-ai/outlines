@@ -6,7 +6,7 @@ from outlines.models.tokenizer import Tokenizer
 
 if TYPE_CHECKING:
     import torch
-    from transformers import PreTrainedTokenizer, PreTrainedModel
+    from transformers import PreTrainedTokenizer, PreTrainedModel, ProcessorMixin
 
 
 __all__ = ["Transformers", "from_transformers"]
@@ -256,12 +256,12 @@ class Transformers(Model):
             )
 
 
-class TransformersVisionTypeAdapter(ModelTypeAdapter):
-    """Type adapter for TransformersVision models."""
+class TransformersMultiModalTypeAdapter(ModelTypeAdapter):
+    """Type adapter for TransformersMultiModal models."""
 
     @singledispatchmethod
     def format_input(self, model_input):
-        """Generate the prompt argument to pass to the model.
+        """Generate the prompt arguments to pass to the model.
 
         Argument
         --------
@@ -272,18 +272,27 @@ class TransformersVisionTypeAdapter(ModelTypeAdapter):
         raise NotImplementedError(
             f"The input type {input} is not available. Please provide a "
             "dictionary with the following format: "
-            "{'prompts': Union[str, List[str]], 'images': Union[Any, List[Any]]}"
-            "Make sure the number of image tags in the prompts is equal to the "
-            "number of images provided."
+            "{'text': Union[str, List[str]], 'images': Optional[Union[Any, "
+            "List[Any]]], 'audios': Optional[Union[Any, List[Any]]]}"
+            "Either 'images' or 'audios' must be provided."
+            "Make sure the text is formatted correctly for the model "
+            "(e.g. include <image> or <|AUDIO|> tags)."
         )
 
     @format_input.register(dict)
     def format_list_input(self, model_input):
-        if "prompts" not in model_input or "images" not in model_input:
-            raise ValueError(
-                "The input must contain the following keys: 'prompts' and 'images'."
+        if (
+            "text" not in model_input
+            or (
+                "images" not in model_input
+                and "audios" not in model_input
             )
-        return model_input["prompts"], model_input["images"]
+        ):
+            raise ValueError(
+                "The input must contain the 'text' key along with either "
+                "'images' or 'audios'."
+            )
+        return model_input
 
     def format_output_type(self, output_type):
         """Generate the logits processor argument to pass to the model.
@@ -301,11 +310,11 @@ class TransformersVisionTypeAdapter(ModelTypeAdapter):
         return None
 
 
-class TransformersVision(Transformers):
+class TransformersMultiModal(Transformers):
     """Represents a `transformers` model with a vision processor."""
 
     def __init__(self, model: "PreTrainedModel", processor):
-        """Create a TransformersVision model instance
+        """Create a TransformersMultiModal model instance
 
         We rely on the `__init__` method of the `Transformers` class to handle
         most of the initialization and then add elements specific to vision
@@ -320,47 +329,25 @@ class TransformersVision(Transformers):
 
         super().__init__(model, tokenizer)
 
-        self.type_adapter = TransformersVisionTypeAdapter()
+        self.type_adapter = TransformersMultiModalTypeAdapter()
 
     def _prepare_model_inputs(self, model_input, output_type):
-        prompts, images = self.type_adapter.format_input(model_input)
+        model_input = self.type_adapter.format_input(model_input)
         inputs = self.processor(
-            text=prompts, images=images, padding=True, return_tensors="pt"
+            **model_input, padding=True, return_tensors="pt"
         ).to(self.model.device)
 
-        return prompts, inputs
+        return model_input["text"], inputs
 
 
 def from_transformers(
     model: "PreTrainedModel",
-    tokenizer_or_processor: "PreTrainedTokenizer",
+    tokenizer_or_processor: Union["PreTrainedTokenizer", "ProcessorMixin"],
 ):
     from transformers import (
         PreTrainedTokenizer,
         PreTrainedTokenizerFast,
-        Blip2Processor,
-        LlavaProcessor,
-        IdeficsProcessor,
-        CLIPProcessor,
-        Qwen2_5_VLProcessor,
-        Qwen2VLProcessor,
-        NougatProcessor,
-        LlavaNextProcessor,
-        PixtralProcessor,
-        PaliGemmaProcessor,
-    )
-
-    vision_processors = (
-        Blip2Processor,
-        LlavaProcessor,
-        IdeficsProcessor,
-        CLIPProcessor,
-        Qwen2_5_VLProcessor,
-        Qwen2VLProcessor,
-        NougatProcessor,
-        LlavaNextProcessor,
-        PixtralProcessor,
-        PaliGemmaProcessor,
+        ProcessorMixin
     )
 
     if isinstance(
@@ -368,13 +355,12 @@ def from_transformers(
     ):
         tokenizer = tokenizer_or_processor
         return Transformers(model, tokenizer)
-    elif isinstance(tokenizer_or_processor, vision_processors):
+    elif isinstance(tokenizer_or_processor, ProcessorMixin):
         processor = tokenizer_or_processor
-        return TransformersVision(model, processor)
+        return TransformersMultiModal(model, processor)
     else:
         raise ValueError(
             "We could determine whether the model passed to `from_transformers`"
-            + " is a text-2-text of vision language model. If you passed a"
-            + " vision language model please open an issue pasting the error"
-            + " with the name of the vision language model."
+            + " is a text-2-text or a multi-modal model. Please provide a "
+            + "a transformers tokenizer or processor."
         )

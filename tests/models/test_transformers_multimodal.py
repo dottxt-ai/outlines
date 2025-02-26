@@ -1,3 +1,5 @@
+# we only test vision models here as audio models are too heavy to run on CI
+
 import re
 from enum import Enum
 from io import BytesIO
@@ -15,7 +17,7 @@ from transformers import (
 )
 
 import outlines
-from outlines.models.transformers import TransformersVision
+from outlines.models.transformers import TransformersMultiModal
 from outlines.types import Choice, JsonType, Regex
 
 TEST_MODEL = "trl-internal-testing/tiny-LlavaForConditionalGeneration"
@@ -48,12 +50,12 @@ def test_transformers_vision_instantiate_simple():
         Blip2ForConditionalGeneration.from_pretrained(TEST_MODEL),
         AutoProcessor.from_pretrained(TEST_MODEL),
     )
-    assert isinstance(model, TransformersVision)
+    assert isinstance(model, TransformersMultiModal)
 
 
 def test_transformers_vision_simple(model, images):
     result = model.generate(
-        {"prompts": "<image>Describe this image in one sentence:", "images": images[0]},
+        {"text": "<image>Describe this image in one sentence:", "images": images[0]},
         None,
     )
     assert isinstance(result, str)
@@ -61,7 +63,7 @@ def test_transformers_vision_simple(model, images):
 
 def test_transformers_vision_call(model, images):
     result = model(
-        {"prompts": "<image>Describe this image in one sentence:", "images": images[0]}
+        {"text": "<image>Describe this image in one sentence:", "images": images[0]}
     )
     assert isinstance(result, str)
 
@@ -70,7 +72,7 @@ def test_transformers_vision_wrong_number_images(model, images):
     with pytest.raises(ValueError):
         a = model(
             {
-                "prompts": "<image>Describe this image in one sentence:",
+                "text": "<image>Describe this image in one sentence:",
                 "images": [images[0], images[1]],
             }
         )
@@ -84,7 +86,7 @@ def test_transformers_vision_wrong_input_type(model):
 
 def test_transformers_inference_kwargs(model, images):
     result = model(
-        {"prompts": "<image>Describe this image in one sentence:", "images": images[0]},
+        {"text": "<image>Describe this image in one sentence:", "images": images[0]},
         max_new_tokens=100,
     )
     assert isinstance(result, str)
@@ -94,7 +96,7 @@ def test_transformers_invalid_inference_kwargs(model, images):
     with pytest.raises(ValueError):
         model(
             {
-                "prompts": "<image>Describe this image in one sentence:",
+                "text": "<image>Describe this image in one sentence:",
                 "images": images[0],
             },
             foo="bar",
@@ -104,7 +106,7 @@ def test_transformers_invalid_inference_kwargs(model, images):
 def test_transformers_several_images(model, images):
     result = model(
         {
-            "prompts": "<image><image>Describe this image in one sentence:",
+            "text": "<image><image>Describe this image in one sentence:",
             "images": [images[0], images[1]],
         }
     )
@@ -116,7 +118,7 @@ def test_transformers_vision_json(model, images):
         name: str
 
     result = model(
-        {"prompts": "<image>Give a name to this animal.", "images": images[0]},
+        {"text": "<image>Give a name to this animal.", "images": images[0]},
         JsonType(Foo),
     )
     assert "name" in result
@@ -124,7 +126,7 @@ def test_transformers_vision_json(model, images):
 
 def test_transformers_vision_regex(model, images):
     result = model(
-        {"prompts": "<image>How old is it?", "images": images[0]}, Regex(r"[0-9]")
+        {"text": "<image>How old is it?", "images": images[0]}, Regex(r"[0-9]")
     )
 
     assert isinstance(result, str)
@@ -137,7 +139,7 @@ def test_transformers_vision_choice(model, images):
         dog = "dog"
 
     result = model(
-        {"prompts": "<image>Is it a cat or a dog?", "images": images[0]}, Choice(Foo)
+        {"text": "<image>Is it a cat or a dog?", "images": images[0]}, Choice(Foo)
     )
 
     assert isinstance(result, str)
@@ -146,7 +148,7 @@ def test_transformers_vision_choice(model, images):
 
 def test_transformers_vision_batch_samples(model, images):
     result = model(
-        {"prompts": "<image>Describe this image in one sentence.", "images": images[0]},
+        {"text": "<image>Describe this image in one sentence.", "images": images[0]},
         num_return_sequences=2,
         num_beams=2,
     )
@@ -154,7 +156,7 @@ def test_transformers_vision_batch_samples(model, images):
     assert len(result) == 2
     result = model(
         {
-            "prompts": [
+            "text": [
                 "<image>Describe this image in one sentence.",
                 "<image>Describe this image in one sentence.",
             ],
@@ -165,7 +167,7 @@ def test_transformers_vision_batch_samples(model, images):
     assert len(result) == 2
     result = model(
         {
-            "prompts": [
+            "text": [
                 "<image>Describe this image in one sentence.",
                 "<image>Describe this image in one sentence.",
             ],
@@ -187,7 +189,7 @@ def test_transformers_vision_batch_samples_constrained(model, images):
         dog = "dog"
 
     result = model(
-        {"prompts": "<image>Describe this image in one sentence.", "images": images[0]},
+        {"text": "<image>Describe this image in one sentence.", "images": images[0]},
         Choice(Foo),
         num_return_sequences=2,
         num_beams=2,
@@ -198,7 +200,7 @@ def test_transformers_vision_batch_samples_constrained(model, images):
         assert item in ["cat", "dog"]
     result = model(
         {
-            "prompts": [
+            "text": [
                 "<image>Describe this image in one sentence.",
                 "<image>Describe this image in one sentence.",
             ],
@@ -212,7 +214,7 @@ def test_transformers_vision_batch_samples_constrained(model, images):
         assert item in ["cat", "dog"]
     result = model(
         {
-            "prompts": [
+            "text": [
                 "<image>Describe this image in one sentence.",
                 "<image>Describe this image in one sentence.",
             ],
