@@ -44,11 +44,13 @@ def test_dottxt_wrong_output_type(api_key):
         model = Dottxt(client)
         model("prompt")
 
+
 def test_dottxt_init_from_client(api_key):
     client = DottxtClient(api_key=api_key)
     model = outlines.from_dottxt(client)
     assert isinstance(model, Dottxt)
     assert model.client == client
+
 
 @pytest.mark.api_call
 def test_dottxt_wrong_input_type(api_key):

@@ -159,6 +159,7 @@ hood:
 ``` python
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import outlines
+from outlines import regex
 
 model_name = "microsoft/Phi-3-mini-4k-instruct"
 model = outlines.from_transformers(
@@ -239,12 +240,11 @@ model = outlines.from_transformers(
 )
 
 # Construct structured sequence generator
+generator = outlines.Generator(model, Character)
 
 # Draw a sample
 seed = 789001
-
-prompt = "Give me a character description"
-character = model(prompt, outlines.JsonType(Character), seed=seed)
+character = generator("Give me a character description", seed=seed)
 
 print(repr(character))
 # Character(name='Anderson', age=28, armor=<Armor.chainmail: 'chainmail'>, weapon=<Weapon.sword: 'sword'>, strength=8)
@@ -365,16 +365,17 @@ import outlines
 def add(a: int, b: int):
     return a + b
 
-
 model_name = "WizardLM/WizardMath-7B-V1.1"
 model = outlines.from_transformers(
     AutoModelForCausalLM.from_pretrained(model_name),
     AutoTokenizer.from_pretrained(model_name)
 )
-generator = outlines.generate.json(model, outlines.types.JsonType(add))
-result = generator("Return json with two integers named a and b respectively. a is odd and b even.")
+result = model(
+    "Return json with two integers named a and b respectively. a is odd and b even.",
+    add
+)
 
-# print(add(**result))
+print(add(**result))
 # 3
 ```
 
@@ -406,9 +407,8 @@ model = outlines.from_transformers(
     AutoModelForCausalLM.from_pretrained(model_name),
     AutoTokenizer.from_pretrained(model_name)
 )
-generator = outlines.generate.json(model, outlines.types.JsonType(Operation))
+generator = outlines.Generator(model, outlines.types.JsonType(Operation))
 result = generator("Return json with two float named c and d respectively. c is negative and d greater than 1.0.")
-
 #print(result)
 # {'c': -3.14, 'd': 1.5}
 ```

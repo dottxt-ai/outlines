@@ -2,7 +2,7 @@ import io
 import json
 import os
 
-import PIL
+from PIL import Image
 import pytest
 import requests
 from openai import OpenAI as OpenAIClient
@@ -11,7 +11,7 @@ from pydantic import BaseModel
 import outlines
 from outlines.models.openai import OpenAI
 from outlines.templates import Vision
-from outlines.types import JsonType
+from outlines.types import json_schema
 
 MODEL_NAME = "gpt-4o-mini-2024-07-18"
 
@@ -28,6 +28,21 @@ def api_key():
     if not api_key:
         return "MOCK_VALUE"
     return api_key
+
+
+@pytest.fixture
+def image():
+    width, height = 1, 1
+    white_background = (255, 255, 255)
+    image = Image.new("RGB", (width, height), white_background)
+
+    # Save to an in-memory bytes buffer and read as png
+    buffer = io.BytesIO()
+    image.save(buffer, format="PNG")
+    buffer.seek(0)
+    image = Image.open(buffer)
+
+    return image
 
 
 def test_init_from_client(api_key):
@@ -58,7 +73,7 @@ def test_openai_wrong_output_type(api_key):
         def __init__(self, foo):
             self.foo = foo
 
-    with pytest.raises(NotImplementedError, match="is not available"):
+    with pytest.raises(TypeError, match="is not available"):
         model = OpenAI(OpenAIClient(api_key=api_key), MODEL_NAME)
         model.generate("prompt", Foo(1))
 
@@ -78,14 +93,8 @@ def test_openai_direct_call():
 
 
 @pytest.mark.api_call
-def test_openai_simple_vision():
+def test_openai_simple_vision(image):
     model = OpenAI(OpenAIClient(), MODEL_NAME)
-
-    url = "https://raw.githubusercontent.com/dottxt-ai/outlines/refs/heads/main/docs/assets/images/logo.png"
-    r = requests.get(url, stream=True)
-    if r.status_code == 200:
-        image = PIL.Image.open(io.BytesIO(r.content))
-
     result = model.generate(Vision("What does this logo represent?", image))
     assert isinstance(result, str)
 
@@ -97,26 +106,19 @@ def test_openai_simple_pydantic():
     class Foo(BaseModel):
         bar: int
 
-    result = model.generate("foo?", JsonType(Foo))
+    result = model.generate("foo?", Foo)
     assert isinstance(result, str)
     assert "bar" in json.loads(result)
 
 
 @pytest.mark.api_call
-def test_openai_simple_vision_pydantic():
+def test_openai_simple_vision_pydantic(image):
     model = OpenAI(OpenAIClient(), MODEL_NAME)
-
-    url = "https://raw.githubusercontent.com/dottxt-ai/outlines/refs/heads/main/docs/assets/images/logo.png"
-    r = requests.get(url, stream=True)
-    if r.status_code == 200:
-        image = PIL.Image.open(io.BytesIO(r.content))
 
     class Logo(BaseModel):
         name: int
 
-    result = model.generate(
-        Vision("What does this logo represent?", image), JsonType(Logo)
-    )
+    result = model.generate(Vision("What does this logo represent?", image), Logo)
     assert isinstance(result, str)
     assert "name" in json.loads(result)
 
@@ -130,6 +132,6 @@ def test_openai_simple_json_schema():
 
     schema = json.dumps(Foo.model_json_schema())
 
-    result = model.generate("foo?", JsonType(schema))
+    result = model.generate("foo?", json_schema(schema))
     assert isinstance(result, str)
     assert "bar" in json.loads(result)
