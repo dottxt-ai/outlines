@@ -1,0 +1,60 @@
+name: Nightly Tests
+
+# Run every day at 6:00 AM UTC
+on:
+  schedule:
+    - cron: "0 6 * * *"
+
+jobs:
+  tests:
+    name: Run the tests
+    runs-on: ubuntu-latest
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      DOTTXT_API_KEY: ${{ secrets.DOTTXT_API_KEY }}
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10"]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install Ollama
+      run: |
+        curl -fsSL https://ollama.com/install.sh | sh
+        ollama --version
+        ollama pull tinyllama
+    - name: Set up test environment
+      run: |
+        python -m pip install --upgrade pip
+        pip install uv
+        uv venv
+        uv pip install -e .[test]
+    - name: Create matrix id
+      id: matrix-id
+      env:
+        MATRIX_CONTEXT: ${{ toJson(matrix) }}
+      run: |
+        echo $MATRIX_CONTEXT
+        export MATRIX_ID=`echo $MATRIX_CONTEXT | md5sum | cut -c 1-32`
+        echo $MATRIX_ID
+        echo "::set-output name=id::$MATRIX_ID"
+    - name: Run tests
+      run: |
+        uv run pytest -x --cov=outlines
+      env:
+        COVERAGE_FILE: .coverage.${{ steps.matrix-id.outputs.id }}
+    - name: Slack notification on failure
+      if: failure()
+      uses: 8398a7/action-slack@v3
+      with:
+        status: ${{ job.status }}
+        fields: commit,author,ref
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_TESTS_ERRORS_WEBHOOK_URL }}
