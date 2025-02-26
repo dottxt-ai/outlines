@@ -2239,9 +2239,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#outlines.templates.Template.from_str" class="md-nav__link">
+  <a href="#outlines.templates.Template.from_string" class="md-nav__link">
     <span class="md-ellipsis">
-      from_str
+      from_string
     </span>
   </a>
   
@@ -2721,9 +2721,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#outlines.templates.Template.from_str" class="md-nav__link">
+  <a href="#outlines.templates.Template.from_string" class="md-nav__link">
     <span class="md-ellipsis">
-      from_str
+      from_string
     </span>
   </a>
   
@@ -2986,7 +2986,7 @@ template can be accessed by callers.</p>
 </span><span id="__span-0-41"><a id="__codelineno-0-41" name="__codelineno-0-41"></a>            <span style="color: #81A1C1; font-weight: bold">return</span> <span style="color: #81A1C1">self</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">template</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">render</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1; font-weight: bold">**</span><span style="color: #D8DEE9">kwargs</span><span style="color: #ECEFF4">)</span>
 </span><span id="__span-0-42"><a id="__codelineno-0-42" name="__codelineno-0-42"></a>
 </span><span id="__span-0-43"><a id="__codelineno-0-43" name="__codelineno-0-43"></a>    <span style="color: #D08770">@classmethod</span>
-</span><span id="__span-0-44"><a id="__codelineno-0-44" name="__codelineno-0-44"></a>    <span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">from_str</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">cls</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">content</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">str</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">filters</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">Dict</span><span style="color: #ECEFF4">[</span><span style="color: #81A1C1">str</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">Callable</span><span style="color: #ECEFF4">]</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #ECEFF4">{}):</span>
+</span><span id="__span-0-44"><a id="__codelineno-0-44" name="__codelineno-0-44"></a>    <span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">from_string</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">cls</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">content</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">str</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">filters</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">Dict</span><span style="color: #ECEFF4">[</span><span style="color: #81A1C1">str</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">Callable</span><span style="color: #ECEFF4">]</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #ECEFF4">{}):</span>
 </span><span id="__span-0-45"><a id="__codelineno-0-45" name="__codelineno-0-45"></a><span style="color: #D8DEE9">        </span><span style="color: #616E87">&quot;&quot;&quot;Create a `Template` instance from a string containing a Jinja template.</span>
 </span><span id="__span-0-46"><a id="__codelineno-0-46" name="__codelineno-0-46"></a>
 </span><span id="__span-0-47"><a id="__codelineno-0-47" name="__codelineno-0-47"></a><span style="color: #616E87">        Parameters</span>
@@ -2998,7 +2998,7 @@ template can be accessed by callers.</p>
 </span><span id="__span-0-53"><a id="__codelineno-0-53" name="__codelineno-0-53"></a><span style="color: #616E87">        -------</span>
 </span><span id="__span-0-54"><a id="__codelineno-0-54" name="__codelineno-0-54"></a><span style="color: #616E87">        An instance of the class with the provided content as a template.</span>
 </span><span id="__span-0-55"><a id="__codelineno-0-55" name="__codelineno-0-55"></a><span style="color: #616E87">        &quot;&quot;&quot;</span>
-</span><span id="__span-0-56"><a id="__codelineno-0-56" name="__codelineno-0-56"></a>        <span style="color: #81A1C1; font-weight: bold">return</span> <span style="color: #81A1C1">cls</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">build_template_from_str</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">content</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">filters</span><span style="color: #ECEFF4">),</span> <span style="color: #81A1C1; font-weight: bold">None</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-0-56"><a id="__codelineno-0-56" name="__codelineno-0-56"></a>        <span style="color: #81A1C1; font-weight: bold">return</span> <span style="color: #81A1C1">cls</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">build_template_from_string</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">content</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">filters</span><span style="color: #ECEFF4">),</span> <span style="color: #81A1C1; font-weight: bold">None</span><span style="color: #ECEFF4">)</span>
 </span><span id="__span-0-57"><a id="__codelineno-0-57" name="__codelineno-0-57"></a>
 </span><span id="__span-0-58"><a id="__codelineno-0-58" name="__codelineno-0-58"></a>    <span style="color: #D08770">@classmethod</span>
 </span><span id="__span-0-59"><a id="__codelineno-0-59" name="__codelineno-0-59"></a>    <span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">from_file</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">cls</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">path</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">Path</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">filters</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">Dict</span><span style="color: #ECEFF4">[</span><span style="color: #81A1C1">str</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">Callable</span><span style="color: #ECEFF4">]</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #ECEFF4">{}):</span>
@@ -3229,8 +3229,8 @@ that are outside the folder or subfolders of the file given to <code>from_file</
 <div class="doc doc-object doc-function">
 
 
-<h3 id="outlines.templates.Template.from_str" class="doc doc-heading">
-            <code class="highlight language-python"><span style="color: #D8DEE9">from_str</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">content</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">filters</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #ECEFF4">{})</span></code>
+<h3 id="outlines.templates.Template.from_string" class="doc doc-heading">
+            <code class="highlight language-python"><span style="color: #D8DEE9">from_string</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">content</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">filters</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #ECEFF4">{})</span></code>
 
   <span class="doc doc-labels">
       <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
@@ -3260,7 +3260,7 @@ that are outside the folder or subfolders of the file given to <code>from_file</
                 <code>content</code>
             </td>
             <td>
-                  <code>str</code>
+                  <code><span title="str">str</span></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3313,7 +3313,7 @@ that are outside the folder or subfolders of the file given to <code>from_file</
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-54">54</a></span>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-55">55</a></span>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-56">56</a></span></pre></div></td><td class="code"><div><pre style="line-height: 125%;"><span></span><code><span id="__span-0-43"><a id="__codelineno-0-43" name="__codelineno-0-43"></a><span style="color: #D08770">@classmethod</span>
-</span><span id="__span-0-44"><a id="__codelineno-0-44" name="__codelineno-0-44"></a><span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">from_str</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">cls</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">content</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">str</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">filters</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">Dict</span><span style="color: #ECEFF4">[</span><span style="color: #81A1C1">str</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">Callable</span><span style="color: #ECEFF4">]</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #ECEFF4">{}):</span>
+</span><span id="__span-0-44"><a id="__codelineno-0-44" name="__codelineno-0-44"></a><span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">from_string</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">cls</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">content</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">str</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">filters</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">Dict</span><span style="color: #ECEFF4">[</span><span style="color: #81A1C1">str</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">Callable</span><span style="color: #ECEFF4">]</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #ECEFF4">{}):</span>
 </span><span id="__span-0-45"><a id="__codelineno-0-45" name="__codelineno-0-45"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">&quot;&quot;&quot;Create a `Template` instance from a string containing a Jinja template.</span>
 </span><span id="__span-0-46"><a id="__codelineno-0-46" name="__codelineno-0-46"></a>
 </span><span id="__span-0-47"><a id="__codelineno-0-47" name="__codelineno-0-47"></a><span style="color: #616E87">    Parameters</span>
@@ -3325,7 +3325,7 @@ that are outside the folder or subfolders of the file given to <code>from_file</
 </span><span id="__span-0-53"><a id="__codelineno-0-53" name="__codelineno-0-53"></a><span style="color: #616E87">    -------</span>
 </span><span id="__span-0-54"><a id="__codelineno-0-54" name="__codelineno-0-54"></a><span style="color: #616E87">    An instance of the class with the provided content as a template.</span>
 </span><span id="__span-0-55"><a id="__codelineno-0-55" name="__codelineno-0-55"></a><span style="color: #616E87">    &quot;&quot;&quot;</span>
-</span><span id="__span-0-56"><a id="__codelineno-0-56" name="__codelineno-0-56"></a>    <span style="color: #81A1C1; font-weight: bold">return</span> <span style="color: #81A1C1">cls</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">build_template_from_str</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">content</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">filters</span><span style="color: #ECEFF4">),</span> <span style="color: #81A1C1; font-weight: bold">None</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-0-56"><a id="__codelineno-0-56" name="__codelineno-0-56"></a>    <span style="color: #81A1C1; font-weight: bold">return</span> <span style="color: #81A1C1">cls</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">build_template_from_string</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">content</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">filters</span><span style="color: #ECEFF4">),</span> <span style="color: #81A1C1; font-weight: bold">None</span><span style="color: #ECEFF4">)</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -4069,7 +4069,7 @@ we can partially apply the prompt function at initialization.</p>
 </span><span id="__span-0-187"><a id="__codelineno-0-187" name="__codelineno-0-187"></a>    <span style="color: #81A1C1; font-weight: bold">if</span> <span style="color: #D8DEE9">docstring</span> <span style="color: #81A1C1; font-weight: bold">is</span> <span style="color: #81A1C1; font-weight: bold">None</span><span style="color: #ECEFF4">:</span>
 </span><span id="__span-0-188"><a id="__codelineno-0-188" name="__codelineno-0-188"></a>        <span style="color: #81A1C1; font-weight: bold">raise</span> <span style="color: #BF616A">TypeError</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;Could not find a template in the function&#39;s docstring.&quot;</span><span style="color: #ECEFF4">)</span>
 </span><span id="__span-0-189"><a id="__codelineno-0-189" name="__codelineno-0-189"></a>
-</span><span id="__span-0-190"><a id="__codelineno-0-190" name="__codelineno-0-190"></a>    <span style="color: #D8DEE9">template</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">build_template_from_str</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">cast</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">str</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">docstring</span><span style="color: #ECEFF4">),</span> <span style="color: #D8DEE9">filters</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-0-190"><a id="__codelineno-0-190" name="__codelineno-0-190"></a>    <span style="color: #D8DEE9">template</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">build_template_from_string</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">cast</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">str</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">docstring</span><span style="color: #ECEFF4">),</span> <span style="color: #D8DEE9">filters</span><span style="color: #ECEFF4">)</span>
 </span><span id="__span-0-191"><a id="__codelineno-0-191" name="__codelineno-0-191"></a>
 </span><span id="__span-0-192"><a id="__codelineno-0-192" name="__codelineno-0-192"></a>    <span style="color: #81A1C1; font-weight: bold">return</span> <span style="color: #D8DEE9">Template</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">template</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">signature</span><span style="color: #ECEFF4">)</span>
 </span></code></pre></div></td></tr></table></div>
