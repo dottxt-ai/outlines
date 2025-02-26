@@ -4,7 +4,7 @@ from outlines.generate.api import (
     SequenceGeneratorAdapter,
     VisionSequenceGeneratorAdapter,
 )
-from outlines.models import OpenAI, TransformersVision
+from outlines.models import OpenAI, TransformersMultiModal
 from outlines.samplers import Sampler, multinomial
 from outlines.types import Regex
 
@@ -39,7 +39,7 @@ def regex(model, regex_str: str | Regex, sampler: Sampler = multinomial()):
     return SequenceGeneratorAdapter(model, logits_processor, sampler)
 
 
-@regex.register(TransformersVision)
+@regex.register(TransformersMultiModal)
 def regex_vision(
     model,
     regex_str: str | Regex,

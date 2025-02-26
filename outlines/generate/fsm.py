@@ -7,7 +7,7 @@ from outlines.generate.api import (
     SequenceGeneratorAdapter,
     VisionSequenceGeneratorAdapter,
 )
-from outlines.models import TransformersVision
+from outlines.models import TransformersMultiModal
 from outlines.samplers import Sampler, multinomial
 
 
@@ -22,7 +22,7 @@ def fsm(
     return SequenceGeneratorAdapter(model, logits_processor, sampler)
 
 
-@fsm.register(TransformersVision)
+@fsm.register(TransformersMultiModal)
 def fsm_vision(model, fsm: interegular.fsm.FSM, sampler: Sampler = multinomial()):
     from outlines.processors import GuideLogitsProcessor
 

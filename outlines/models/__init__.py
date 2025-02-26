@@ -20,7 +20,7 @@ from .openai import from_openai, OpenAI
 from .transformers import (
     Transformers,
     TransformerTokenizer,
-    TransformersVision,
+    TransformersMultiModal,
     from_transformers,
 )
 from .vllm import VLLM, from_vllm

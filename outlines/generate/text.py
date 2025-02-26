@@ -4,7 +4,7 @@ from outlines.generate.api import (
     SequenceGeneratorAdapter,
     VisionSequenceGeneratorAdapter,
 )
-from outlines.models import OpenAI, TransformersVision
+from outlines.models import OpenAI, TransformersMultiModal
 from outlines.samplers import Sampler, multinomial
 
 
@@ -34,7 +34,7 @@ def text(model, sampler: Sampler = multinomial()) -> SequenceGeneratorAdapter:
     return SequenceGeneratorAdapter(model, None, sampler)
 
 
-@text.register(TransformersVision)
+@text.register(TransformersMultiModal)
 def text_vision(model, sampler: Sampler = multinomial()):
     return VisionSequenceGeneratorAdapter(model, None, sampler)
 
