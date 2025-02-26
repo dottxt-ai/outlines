@@ -4,7 +4,7 @@ from outlines.generate.api import (
     SequenceGeneratorAdapter,
     VisionSequenceGeneratorAdapter,
 )
-from outlines.models import LlamaCpp, OpenAI, TransformersVision
+from outlines.models import LlamaCpp, OpenAI, TransformersMultiModal
 from outlines.samplers import Sampler, multinomial
 
 
@@ -33,7 +33,7 @@ def cfg(
     return SequenceGeneratorAdapter(model, logits_processor, sampler)
 
 
-@cfg.register(TransformersVision)
+@cfg.register(TransformersMultiModal)
 def cfg_vision(model, cfg_str: str, sampler: Sampler = multinomial()):
     from outlines.processors import CFGLogitsProcessor
 

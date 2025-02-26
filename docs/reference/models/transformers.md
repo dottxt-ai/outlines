@@ -21,7 +21,7 @@ model = models.from_transformers(
 )
 ```
 
-The model name must be a valid `transformers` model name. You can find a list of all in the HuggingFace library [here](https://huggingface.co/models). We currently support `CausalLM`, `Seq2Seq`, `Mamba` and vision models.
+The model name must be a valid `transformers` model name. You can find a list of all in the HuggingFace library [here](https://huggingface.co/models). We currently support `CausalLM`, `Seq2Seq`, `Mamba`, vision and audio models.
 
 Be cautious with model selection though, some models such as `t5-base` don't include certain characters (`{`) and you may get an error when trying to perform structured generation.
 
