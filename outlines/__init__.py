@@ -9,6 +9,7 @@ from outlines.types import Choice, Regex, JsonType
 from outlines.base import vectorize
 from outlines.caching import clear_cache, disable_cache, get_cache
 from outlines.function import Function
+from outlines.macros import Macro
 from outlines.generate import Generator
 from outlines.templates import Template, prompt
 
