@@ -20,12 +20,24 @@ class Function:
     the function can be called with arguments that will be used to render the
     prompt template.
 
+    Note:
+        This class is part of the deprecated 'function' module and is deprecated
+        starting from version 1.0.0. It will be removed in version 1.1.0. Please
+        pin your version to <1.1.0 if you need to continue using it.
+
     """
 
     prompt_template: "Template"
     schema: Union[str, Callable, object]
     model_name: str
     generator: Optional["SequenceGeneratorAdapter"] = None
+
+    def __post_init__(self):
+        raise DeprecationWarning(
+            "The 'function' module is deprecated starting from version 1.0.0 "
+            + "and will be removed in version 1.1.0. Please use the `Macro` "
+            + "class instead. See https://github.com/dottxt-ai/outlines/tree/main/docs/reference/macros.md"
+        )
 
     @classmethod
     def from_github(cls, program_path: str, function_name: str = "fn"):
