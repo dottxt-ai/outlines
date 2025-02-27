@@ -26,7 +26,7 @@ First time here? Go to our [setup guide](https://dottxt-ai.github.io/outlines/la
 
 ## Features
 
-- 🤖 [Multiple model integrations](https://dottxt-ai.github.io/outlines/latest/installation): OpenAI, transformers, llama.cpp, exllama2, mamba
+- 🤖 [Multiple model integrations](https://dottxt-ai.github.io/outlines/latest/installation): OpenAI, transformers, llama.cpp, mamba
 - 🔥 Fast [JSON generation](#efficient-json-generation-following-a-pydantic-model) following a JSON schema or a Pydantic model
 - 🚄 [Multiple choices](#multiple-choices), [type constraints](#type-constraint) and dynamic stopping
 - 📝 Generate text that follows a [regex](#efficient-regex-structured-generation) or a [context-free grammar](#using-context-free-grammars-to-guide-generation)

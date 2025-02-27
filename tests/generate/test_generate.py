@@ -26,24 +26,6 @@ def model_llamacpp(tmp_path_factory):
 
 
 @pytest.fixture(scope="session")
-def model_exllamav2(tmp_path_factory):
-    from outlines.models.exllamav2 import exl2
-    from huggingface_hub import snapshot_download
-
-    tmp_dir = tmp_path_factory.mktemp("model_download")
-    model_path = snapshot_download(
-        repo_id="blockblockblock/TinyLlama-1.1B-Chat-v1.0-bpw4.6-exl2",
-        cache_dir=tmp_dir,
-    )
-
-    return exl2(
-        model_path=model_path,
-        cache_q4=True,
-        paged=False,
-    )
-
-
-@pytest.fixture(scope="session")
 def model_mlxlm(tmp_path_factory):
     from mlx_lm import load
 
@@ -120,16 +102,8 @@ def model_vllm(tmp_path_factory):
     return outlines.from_vllm(LLM("facebook/opt-125m", gpu_memory_utilization=0.1))
 
 
-# TODO: exllamav2 failing in main, address in https://github.com/dottxt-ai/outlines/issues/808
 # TODO: t5 tokenizer doesn't work with streaming
 """
-@pytest.fixture(scope="session")
-def model_exllamav2(tmp_path_factory):
-    return models.exllamav2(
-        model_path="blockblockblock/TinyLlama-1.1B-Chat-v1.0-bpw4-exl2",
-        device="cpu"
-    )
-
 @pytest.fixture(scope="session")
 def model_t5(tmp_path_factory):
     from transformers import AutoModelForSeq2SeqLM
@@ -142,7 +116,6 @@ def model_t5(tmp_path_factory):
 
 ALL_MODEL_FIXTURES = (
     # "model_llamacpp",  # temporary disabled due to the v1 model refactoring
-    "model_exllamav2",
     # "model_mlxlm",
     # "model_mlxlm_phi3",
     # "model_transformers_random",

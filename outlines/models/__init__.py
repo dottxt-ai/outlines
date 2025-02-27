@@ -11,7 +11,6 @@ from typing import Union
 from .anthropic import from_anthropic, Anthropic
 from .base import Model, ModelTypeAdapter
 from .dottxt import Dottxt, from_dottxt
-from .exllamav2 import ExLlamaV2Model, exl2
 from .gemini import from_gemini, Gemini
 from .llamacpp import LlamaCpp, from_llamacpp
 from .mlxlm import MLXLM, from_mlxlm
@@ -26,7 +25,7 @@ from .transformers import (
 from .vllm import VLLM, from_vllm
 
 LogitsGenerator = Union[
-    Transformers, LlamaCpp, OpenAI, ExLlamaV2Model, MLXLM, VLLM, Ollama
+    Transformers, LlamaCpp, OpenAI, MLXLM, VLLM, Ollama
 ]
 
 SteerableModel = Union[LlamaCpp, Transformers, MLXLM, VLLM]
