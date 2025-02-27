@@ -16,7 +16,6 @@ Open source models offer more flexibility for structured generation as we have c
 - [llama-cpp-python](llamacpp.md) - Python bindings for llama.cpp.
 - [mlx-lm](mlxlm.md) - Run open-source models on Metal hardware.
 - [vllm](vlm.md) - Run open-source models on the vLLM engine.
-- [exllamaV2](exllamav2.md)
 
 Ollama only supports Json Schema:
 
@@ -36,17 +35,17 @@ OpenAI has recently integrated [structured outputs][structured-outputs] in its A
 Integrations differ in their coverage of structured generation. Here is a summary:
 
 
-|                   | [Transformers](transformers.md) | [vLLM](vllm.md) | [llama.cpp](llamacpp.md) | [ExLlamaV2](exllamav2.md) | [MLXLM](mlxlm.md) | [OpenAI](openai.md) | [Gemini](gemini.md)
-|-------------------|--------------|------|-----------|-----------|-------|---------|-------|
-| **Supported HW**  |              |      |           |           |       |         |       |
-| CUDA              | ✅           | ✅  | ✅        | ✅        | ❌    | N/A     | N/A   |
-| Apple Silicon     | ✅           | ❌  | ✅        | ✅        | ✅    | N/A     | N/A   |
-| x86 / AMD64       | ✅           | ❌  | ✅        | ✅        | ❌    | N/A     | N/A   |
-| **Structure**     |               |     |           |           |       |         |       |
-| JSON Schema       | ✅           | ✅  | ✅        | ✅        | ✅    | ✅      | ✅   |
-| Choice            | ✅           | ✅  | ✅        | ✅        | ✅    | ❌      | ✅   |
-| Regex             | ✅           | ✅  | ✅        | ✅        | ✅    | ❌      | ❌   |
-| Grammar           | ✅           | ✅  | ✅        | ✅        | ✅    | ❌      | ❌   |
+|                   | [Transformers](transformers.md) | [vLLM](vllm.md) | [llama.cpp](llamacpp.md) | [MLXLM](mlxlm.md) | [OpenAI](openai.md) | [Gemini](gemini.md) |
+|-------------------|--------------|------|-----------|-------|---------|-------|
+| **Supported HW**  |              |      |           |       |         |       |
+| CUDA              | ✅           | ✅  | ✅        | ❌    | N/A     | N/A   |
+| Apple Silicon     | ✅           | ❌  | ✅        | ✅    | N/A     | N/A   |
+| x86 / AMD64       | ✅           | ❌  | ✅        | ❌    | N/A     | N/A   |
+| **Structure**     |               |     |           |       |         |       |
+| JSON Schema       | ✅           | ✅  | ✅        | ✅    | ✅      | ✅   |
+| Choice            | ✅           | ✅  | ✅        | ✅    | ❌      | ✅   |
+| Regex             | ✅           | ✅  | ✅        | ✅    | ❌      | ❌   |
+| Grammar           | ✅           | ✅  | ✅        | ✅    | ❌      | ❌   |
 
 
 [structured-outputs]: https://platform.openai.com/docs/guides/structured-outputs

@@ -30,7 +30,6 @@ def pytest_collection_modifyitems(config, items):
                 if (
                     model_param.startswith("model_transformers_vision")
                     or model_param.startswith("model_vllm")
-                    or model_param.startswith("model_exllamav2")
                 ):
                     item.add_marker(skip_marker)
 
