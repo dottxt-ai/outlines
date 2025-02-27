@@ -1,47 +1,6 @@
 from importlib import reload
 
 import pytest
-import torch
-
-
-def is_metal_available():
-    try:
-        import mlx.core as mx
-        import mlx_lm  # noqa: F401
-
-        assert mx.metal.is_available()
-    except (ImportError, AssertionError):
-        return False
-    return True
-
-
-def pytest_collection_modifyitems(config, items):
-    """
-    If mlxlm and Metal aren't available, skip mlxlm tests
-    If CUDA isn't available, skip vllm and transformers_vision
-    """
-    if not torch.cuda.is_available():
-        skip_marker = pytest.mark.skip(
-            reason="Skipping test because CUDA is not available"
-        )
-        for item in items:
-            if "model_fixture" in item.fixturenames:
-                model_param = item.callspec.params.get("model_fixture", None)
-                if (
-                    model_param.startswith("model_transformers_vision")
-                    or model_param.startswith("model_vllm")
-                ):
-                    item.add_marker(skip_marker)
-
-    if not is_metal_available():
-        skip_marker = pytest.mark.skip(
-            reason="Skipping test because mlx-lm or Metal are not available"
-        )
-        for item in items:
-            if "model_fixture" in item.fixturenames:
-                model_param = item.callspec.params.get("model_fixture", None)
-                if model_param.startswith("model_mlxlm"):
-                    item.add_marker(skip_marker)
 
 
 @pytest.fixture
