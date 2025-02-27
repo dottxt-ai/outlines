@@ -11,10 +11,10 @@
 
 Outlines supports models available via vLLM's offline batched inference interface. You can load a model using:
 
-
 ```python
 import outlines
 from vllm import LLM
+
 model = outlines.from_vllm(LLM("microsoft/Phi-3-mini-4k-instruct"))
 ```
 
@@ -28,17 +28,36 @@ Models are loaded from the [HuggingFace hub](https://huggingface.co/).
 
 ## Generate text
 
-In addition to the parameters described in the [text generation section](../text.md) you can pass an instance of `SamplingParams` directly to any generator via the `sampling_params` keyword argument:
+To generate text, you can just call the model with a prompt as argument:
 
 ```python
-from vllm.sampling_params import SamplingParams
-from outlines import models, generate
-
+import outlines
+from vllm import LLM
 
 model = outlines.from_vllm(LLM("microsoft/Phi-3-mini-4k-instruct"))
-params = SamplingParams(n=2, frequency_penalty=1., min_tokens=2)
-answer = model("A prompt", sampling_params=params)
+answer = model("Write a short story about a cat.")
 ```
+
+You can also use structured generation with the `VLLM` model by providing an output type after the prompt:
+
+```python
+import outlines
+from vllm import LLM
+from outlines.types import JsonType
+from pydantic import BaseModel
+
+class Character(BaseModel):
+    name: str
+
+model = outlines.from_vllm(LLM("microsoft/Phi-3-mini-4k-instruct"))
+answer = model("Create a character.", output_type=JsonType(Character))
+```
+
+The VLLM model supports batch generation. To use it, you can pass a list of strings as prompt instead of a single string.
+
+## Optional parameters
+
+When calling the model, you can provide optional parameters on top of the prompt and the output type. Those will be passed on to the `LLM.generate` method of the `vllm` library. An optional parameter of particular interest is `sampling_params`, which is an instance of `SamplingParams`. You can find more information about it in the [vLLM documentation][https://docs.vllm.ai/en/latest/api/inference_params.html].
 
 !!! Warning
 
