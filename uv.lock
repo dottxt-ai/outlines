@@ -626,28 +626,6 @@ wheels = [
 ]
 
 [[package]]
-name = "exllamav2"
-version = "0.2.7"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "fastparquet" },
-    { name = "ninja" },
-    { name = "numpy" },
-    { name = "pandas" },
-    { name = "pillow" },
-    { name = "pygments" },
-    { name = "regex" },
-    { name = "rich" },
-    { name = "safetensors" },
-    { name = "sentencepiece" },
-    { name = "torch" },
-    { name = "websockets" },
-]
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/b5/04/300012908311c9a904d44c74a037821e7cde530c648afff4ad6bed4e22c3/exllamav2-0.2.7-py3-none-any.whl", hash = "sha256:410d1a69fed329f6f1c10de6988a3b6b33e1fa715aa4fe32c545edd1abd1254b", size = 1512625 },
-]
-
-[[package]]
 name = "fastapi"
 version = "0.115.6"
 source = { registry = "https://pypi.org/simple" }
@@ -1917,9 +1895,6 @@ dependencies = [
 ]
 
 [package.optional-dependencies]
-exllamav2 = [
-    { name = "exllamav2" },
-]
 llamacpp = [
     { name = "datasets" },
     { name = "llama-cpp-python" },
@@ -1946,7 +1921,6 @@ test = [
     { name = "datasets" },
     { name = "diff-cover", version = "9.2.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9.17'" },
     { name = "diff-cover", version = "9.2.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.9.17'" },
-    { name = "exllamav2" },
     { name = "huggingface-hub" },
     { name = "jax", version = "0.4.30", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.10'" },
     { name = "jax", version = "0.5.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
@@ -1989,8 +1963,6 @@ requires-dist = [
     { name = "datasets", marker = "extra == 'transformers'" },
     { name = "diff-cover", marker = "extra == 'test'" },
     { name = "diskcache" },
-    { name = "exllamav2", marker = "extra == 'exllamav2'" },
-    { name = "exllamav2", marker = "extra == 'test'" },
     { name = "fastapi", marker = "extra == 'serve'" },
     { name = "genson" },
     { name = "huggingface-hub", marker = "extra == 'test'" },

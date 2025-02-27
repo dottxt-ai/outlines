@@ -159,7 +159,6 @@ nav:
               - Llama.cpp: reference/models/llamacpp.md
               - vLLM: reference/models/vllm.md
               - TGI: reference/models/tgi.md
-              - ExllamaV2: reference/models/exllamav2.md
               - MLX: reference/models/mlxlm.md
               - Mamba: reference/models/transformers/#mamba
           - API:

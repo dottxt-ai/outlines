@@ -10,13 +10,13 @@ You can install Outlines with `pip`:
 pip install outlines
 ```
 
-Outlines supports OpenAI, Transformers, Mamba, llama.cpp, and ExLlamaV2, but **you will need to install them manually**:
+Outlines supports OpenAI, Transformers, Mamba and llama.cpp, but **you will need to install them manually**:
 
 ```sh
 pip install openai
 pip install transformers datasets accelerate torch
 pip install llama-cpp-python
-pip install exllamav2 transformers torch
+pip install transformers torch
 pip install mamba_ssm transformers torch
 pip install vllm
 ```
@@ -32,7 +32,6 @@ Outlines provides multiple optional dependency sets to support different backend
 - `pip install "outlines[mlx]"` for [MLX-LM](https://github.com/ml-explore/mlx-lm), optimized for Apple silicon.
 - `pip install "outlines[openai]"` to use OpenAI’s API.
 - `pip install "outlines[llamacpp]"` for [llama.cpp](https://github.com/ggerganov/llama.cpp), a lightweight LLM inference engine.
-- `pip install "outlines[exllamav2]"` for [ExLlamaV2](https://github.com/turboderp/exllamav2), optimized for NVIDIA GPUs.
 
 ## Bleeding Edge
 
