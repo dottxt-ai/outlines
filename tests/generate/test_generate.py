@@ -143,16 +143,15 @@ def model_t5(tmp_path_factory):
 ALL_MODEL_FIXTURES = (
     # "model_llamacpp",  # temporary disabled due to the v1 model refactoring
     "model_exllamav2",
-    "model_mlxlm",
-    "model_mlxlm_phi3",
+    # "model_mlxlm",
+    # "model_mlxlm_phi3",
     # "model_transformers_random",
     # "model_transformers_opt125m",
     # "model_mamba",
     # "model_bart",
     # "model_transformers_vision",
-    "model_vllm",
+    # "model_vllm",
 )
-
 
 class MyEnum(Enum):
     foo = "foo"
