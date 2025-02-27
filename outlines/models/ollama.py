@@ -1,8 +1,12 @@
-from functools import singledispatchmethod
+from dataclasses import is_dataclass
+import json
 from typing import Iterator, TYPE_CHECKING
 
+from pydantic import BaseModel, TypeAdapter
+from typing_extensions import _TypedDictMeta  # type: ignore
+
 from outlines.models.base import Model, ModelTypeAdapter
-from outlines.types import JsonType
+from outlines.types import Regex, CFG, JsonSchema
 
 if TYPE_CHECKING:
     from ollama import Client as OllamaClient
@@ -14,7 +18,6 @@ __all__ = ["Ollama", "from_ollama"]
 class OllamaTypeAdapter(ModelTypeAdapter):
     """Type adapter for the Ollama model."""
 
-    @singledispatchmethod
     def format_input(self, model_input):
         """Generate the prompt argument to pass to the model.
 
@@ -24,36 +27,47 @@ class OllamaTypeAdapter(ModelTypeAdapter):
             The input passed by the user.
 
         """
-        raise NotImplementedError(
-            f"The input type {input} is not available. "
+        if isinstance(model_input, str):
+            return model_input
+        raise TypeError(
+            f"The input type {model_input} is not available. "
             "Ollama does not support batch inference."
         )
 
-    @format_input.register(str)
-    def format_str_input(self, model_input: str):
-        return model_input
-
-    @singledispatchmethod
     def format_output_type(self, output_type):
-        """Generate the `format` argument to pass to the model.
+        """Format the output type to pass to the client.
 
-        Argument
-        --------
-        output_type
-            The output type passed by the user.
+        TODO: `int`, `float` and other Python types could be supported via JSON Schema.
         """
-        raise NotImplementedError(
-            f"The output type {input} is not available. "
-            "Ollama only supports structured output with `Json`."
-        )
 
-    # @format_output_type.register(NoneType)
-    # def format_none_output_type(self, output_type: None):
-    #     return ""
+        if isinstance(output_type, Regex):
+            raise TypeError(
+                "Regex-based structured outputs are not supported by Ollama. Use an open source model in the meantime."
+            )
+        elif isinstance(output_type, CFG):
+            raise TypeError(
+                "CFG-based structured outputs are not supported by Ollama. Use an open source model in the meantime."
+            )
 
-    @format_output_type.register(JsonType)
-    def format_json_output_type(self, output_type: JsonType):
-        return output_type.to_json_schema()
+        if output_type is None:
+            return None
+        elif isinstance(output_type, JsonSchema):
+            return json.loads(output_type.schema)
+        elif is_dataclass(output_type):
+            schema = TypeAdapter(output_type).json_schema()
+            return schema
+        elif isinstance(output_type, _TypedDictMeta):
+            schema = TypeAdapter(output_type).json_schema()
+            return schema
+        elif isinstance(output_type, type(BaseModel)):
+            schema = output_type.model_json_schema()
+            return schema
+        else:
+            type_name = getattr(output_type, "__name__", output_type)
+            raise TypeError(
+                f"The type `{type_name}` is not supported by Ollama. "
+                "Consider using a local model instead."
+            )
 
 
 class Ollama(Model):
