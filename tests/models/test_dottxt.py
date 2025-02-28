@@ -7,7 +7,7 @@ from pydantic import BaseModel
 from dottxt.client import Dottxt as DottxtClient
 
 import outlines
-from outlines.generate import Generator
+from outlines import Generator
 from outlines.models.dottxt import Dottxt
 from outlines.types import JsonType
 

@@ -4,7 +4,7 @@ from mlx_lm import load
 from pydantic import BaseModel, Field
 
 import outlines
-from outlines.generate import Generator
+from outlines import Generator
 from outlines.types import JsonType
 
 
