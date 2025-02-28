@@ -32,7 +32,7 @@ You can find the list of available models on the [Ollama library](https://ollama
 As with other models, you can either first create a `Generator` object and then call it
 ```python
 from outlines.models import Ollama
-from outlines.generate import Generator
+from outlines import Generator
 
 model = Ollama("tinyllama")
 generator = Generator(model)
