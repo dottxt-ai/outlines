@@ -15,13 +15,16 @@ from outlines.types.dsl import (
     Sequence,
     String,
     Term,
+    either,
     one_or_more,
+    zero_or_more,
     optional,
-    repeat,
-    times,
+    between,
+    at_most,
+    at_least,
+    exactly,
     regex,
     json_schema,
-    zero_or_more,
 )
 
 
@@ -96,43 +99,149 @@ def test_dsl_init():
         QuantifyBetween(string, 3, 1)
 
 
-def test_dsl_operations():
+def test_dsl_sequence():
     a = String("a")
     b = String("b")
-    assert isinstance(a + b, Sequence)
-    assert (a + b).terms[0] == a
-    assert (a + b).terms[1] == b
 
-    assert isinstance(a | b, Alternatives)
-    assert (a | b).terms[0] == a
-    assert (a | b).terms[1] == b
+    sequence = a + b
+    assert isinstance(sequence, Sequence)
+    assert sequence.terms[0] == a
+    assert sequence.terms[1] == b
 
-
-def test_dsl_operations_string_conversion():
-    b = String("b")
     sequence = "a" + b
     assert isinstance(sequence, Sequence)
     assert isinstance(sequence.terms[0], String)
     assert sequence.terms[0].value == "a"
     assert sequence.terms[1].value == "b"
 
-    sequence = b + "a"
+    sequence = a + "b"
     assert isinstance(sequence, Sequence)
-    assert isinstance(sequence.terms[0], String)
-    assert sequence.terms[0].value == "b"
-    assert sequence.terms[1].value == "a"
+    assert isinstance(sequence.terms[1], String)
+    assert sequence.terms[0].value == "a"
+    assert sequence.terms[1].value == "b"
 
-    alternative = "a" | b
-    assert isinstance(alternative, Alternatives)
-    assert isinstance(alternative.terms[0], String)
-    assert alternative.terms[0].value == "a"
-    assert alternative.terms[1].value == "b"
 
-    alternative = b | "a"
-    assert isinstance(alternative, Alternatives)
-    assert isinstance(alternative.terms[0], String)
-    assert alternative.terms[0].value == "b"
-    assert alternative.terms[1].value == "a"
+def test_dsl_alternatives():
+    a = String("a")
+    b = String("b")
+
+    alt = either(a, b)
+    assert isinstance(alt, Alternatives)
+    assert isinstance(alt.terms[0], String)
+    assert isinstance(alt.terms[1], String)
+
+    alt = either("a", "b")
+    assert isinstance(alt, Alternatives)
+    assert isinstance(alt.terms[0], String)
+    assert isinstance(alt.terms[1], String)
+
+    alt = either("a", b)
+    assert isinstance(alt, Alternatives)
+    assert isinstance(alt.terms[0], String)
+    assert isinstance(alt.terms[1], String)
+
+
+def test_dsl_optional():
+    a = String("a")
+
+    opt = optional(a)
+    assert isinstance(opt, Optional)
+
+    opt = optional("a")
+    assert isinstance(opt, Optional)
+    assert isinstance(opt.term, String)
+
+    opt = a.optional()
+    assert isinstance(opt, Optional)
+
+
+def test_dsl_exactly():
+    a = String("a")
+
+    rep = exactly(2, a)
+    assert isinstance(rep, QuantifyExact)
+    assert rep.count == 2
+
+    rep = exactly(2, "a")
+    assert isinstance(rep, QuantifyExact)
+    assert isinstance(rep.term, String)
+
+    rep = a.exactly(2)
+    assert isinstance(rep, QuantifyExact)
+
+
+def test_dsl_at_least():
+    a = String("a")
+
+    rep = at_least(2, a)
+    assert isinstance(rep, QuantifyMinimum)
+    assert rep.min_count == 2
+
+    rep = at_least(2, "a")
+    assert isinstance(rep, QuantifyMinimum)
+    assert isinstance(rep.term, String)
+
+    rep = a.at_least(2)
+    assert isinstance(rep, QuantifyMinimum)
+
+
+def test_dsl_at_most():
+    a = String("a")
+
+    rep = at_most(2, a)
+    assert isinstance(rep, QuantifyMaximum)
+    assert rep.max_count == 2
+
+    rep = at_most(2, "a")
+    assert isinstance(rep, QuantifyMaximum)
+    assert isinstance(rep.term, String)
+
+    rep = a.at_most(2)
+    assert isinstance(rep, QuantifyMaximum)
+
+
+def test_between():
+    a = String("a")
+
+    rep = between(1, 2, a)
+    assert isinstance(rep, QuantifyBetween)
+    assert rep.min_count == 1
+    assert rep.max_count == 2
+
+    rep = between(1, 2, "a")
+    assert isinstance(rep, QuantifyBetween)
+    assert isinstance(rep.term, String)
+
+    rep = a.between(1, 2)
+    assert isinstance(rep, QuantifyBetween)
+
+
+def test_dsl_zero_or_more():
+    a = String("a")
+
+    rep = zero_or_more(a)
+    assert isinstance(rep, KleeneStar)
+
+    rep = zero_or_more("a")
+    assert isinstance(rep, KleeneStar)
+    assert isinstance(rep.term, String)
+
+    rep = a.zero_or_more()
+    assert isinstance(rep, KleeneStar)
+
+
+def test_dsl_one_or_more():
+    a = String("a")
+
+    rep = one_or_more(a)
+    assert isinstance(rep, KleenePlus)
+
+    rep = one_or_more("a")
+    assert isinstance(rep, KleenePlus)
+    assert isinstance(rep.term, String)
+
+    rep = a.zero_or_more()
+    assert isinstance(rep, KleeneStar)
 
 
 def test_dsl_aliases():
@@ -141,72 +250,6 @@ def test_dsl_aliases():
 
     test = json_schema('{"type": "string"}')
     assert isinstance(test, JsonSchema)
-
-    test = String("test")
-
-    assert isinstance(test.times(3), QuantifyExact)
-    assert test.times(3).count == 3
-    assert test.times(3).term == test
-
-    assert isinstance(times(test, 3), QuantifyExact)
-    assert times(test, 3).count == 3
-    assert times(test, 3).term == test
-
-    assert isinstance(test.one_or_more(), KleenePlus)
-    assert test.one_or_more().term == test
-
-    assert isinstance(one_or_more(test), KleenePlus)
-    assert one_or_more(test).term == test
-
-    assert isinstance(test.zero_or_more(), KleeneStar)
-    assert test.zero_or_more().term == test
-
-    assert isinstance(zero_or_more(test), KleeneStar)
-    assert zero_or_more(test).term == test
-
-    assert isinstance(test.optional(), Optional)
-    assert test.optional().term == test
-
-    assert isinstance(optional(test), Optional)
-    assert optional(test).term == test
-
-    rep_min = test.repeat(2, None)
-    assert isinstance(rep_min, QuantifyMinimum)
-    assert rep_min.min_count == 2
-
-    rep_min = repeat(test, 2, None)
-    assert isinstance(rep_min, QuantifyMinimum)
-    assert rep_min.min_count == 2
-
-    rep_max = test.repeat(None, 2)
-    assert isinstance(rep_max, QuantifyMaximum)
-    assert rep_max.max_count == 2
-
-    rep_max = repeat(test, None, 2)
-    assert isinstance(rep_max, QuantifyMaximum)
-    assert rep_max.max_count == 2
-
-    rep_between = test.repeat(1, 2)
-    assert isinstance(rep_between, QuantifyBetween)
-    assert rep_between.min_count == 1
-    assert rep_between.max_count == 2
-
-    rep_between = repeat(test, 1, 2)
-    assert isinstance(rep_between, QuantifyBetween)
-    assert rep_between.min_count == 1
-    assert rep_between.max_count == 2
-
-    with pytest.raises(ValueError, match="QuantifyBetween: `max_count` must be"):
-        test.repeat(2, 1)
-
-    with pytest.raises(ValueError, match="QuantifyBetween: `max_count` must be"):
-        repeat(test, 2, 1)
-
-    with pytest.raises(ValueError, match="repeat: you must provide"):
-        test.repeat(None, None)
-
-    with pytest.raises(ValueError, match="repeat: you must provide"):
-        repeat(test, None, None)
 
 
 def test_dsl_term_pydantic_simple():
@@ -230,7 +273,7 @@ def test_dsl_term_pydantic_combination():
     c = String("c")
 
     class Model(BaseModel):
-        field: (a + b) | c
+        field: either((a + b), c)
 
     schema = Model.model_json_schema()
     assert schema == {
@@ -247,7 +290,7 @@ def test_dsl_display():
     a = String("a")
     b = String("b")
     c = Regex("[0-9]")
-    d = KleeneStar(a | b) + c
+    d = Sequence([KleeneStar(Alternatives([a, b])), c])
 
     tree = str(d)
     assert (

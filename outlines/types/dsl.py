@@ -103,6 +103,27 @@ class Term:
     def __str__(self):
         return self.display_ascii_tree()
 
+    def optional(self) -> "Optional":
+        return optional(self)
+
+    def exactly(self, count: int) -> "QuantifyExact":
+        return exactly(count, self)
+
+    def at_least(self, count: int) -> "QuantifyMinimum":
+        return at_least(count, self)
+
+    def at_most(self, count: int) -> "QuantifyMaximum":
+        return at_most(count, self)
+
+    def between(self, min_count: int, max_count: int) -> "QuantifyBetween":
+        return between(min_count, max_count, self)
+
+    def one_or_more(self) -> "KleenePlus":
+        return one_or_more(self)
+
+    def zero_or_more(self) -> "KleeneStar":
+        return zero_or_more(self)
+
 
 @dataclass
 class String(Term):
@@ -297,64 +318,60 @@ class QuantifyBetween(Term):
         return f"QuantifyBetween(term={repr(self.term)}, min_count={repr(self.min_count)}, max_count={repr(self.max_count)})"
 
 
-def either(*args: Union[str, Term]):
-    """Represents an alternative between different terms or strings.
-
-    This factory function automatically translates string arguments
-    into `String` objects.
-    """
-    args = [String(arg) if arg is str else arg for arg in args]
-    return Alternatives(args)
-
-
-def optional(self: Union[Term, str]) -> Optional:
-    self = String(self) if self is str else self
-    return Optional(self)
-
-
-def one_or_more(self: Term) -> KleenePlus:
-    self = String(self) if self is str else self
-    return KleenePlus(self)
-
-
-def between(self: Term, min_count: int, max_count: int) -> QuantifyBetween:
-    self = String(self) if self is str else self
-    match (min_count, max_count):
-        case (None, None):
-            raise ValueError(
-                "repeat: you must provide a value for at least `min_count` or `max_count`"
-            )
-        case (_, None):
-            return QuantifyMinimum(self, min_count)
-        case (None, _):
-            return QuantifyMaximum(self, max_count)
-        case _:
-            return QuantifyBetween(self, min_count, max_count)
-
-
-def times(self: Term, count: int = 0) -> QuantifyExact:
-    self = String(self) if self is str else self
-    return QuantifyExact(self, count)
-
-
-def zero_or_more(self: Term) -> KleeneStar:
-    self = String(self) if self is str else self
-    return KleeneStar(self)
-
-
-Term.one_or_more = one_or_more  # type: ignore
-Term.optional = optional  # type: ignore
-Term.repeat = repeat  # type: ignore
-Term.times = times  # type: ignore
-Term.zero_or_more = zero_or_more  # type: ignore
-
-
 def regex(pattern: str):
     return Regex(pattern)
 
 
 def json_schema(schema: Union[str, dict, type[BaseModel]]):
     return JsonSchema(schema)
+
+
+def either(*terms: Union[str, Term]):
+    """Represents an alternative between different terms or strings.
+
+    This factory function automatically translates string arguments
+    into `String` objects.
+    """
+    terms = [String(arg) if isinstance(arg, str) else arg for arg in terms]
+    return Alternatives(terms)
+
+
+def optional(term: Union[Term, str]) -> Optional:
+    term = String(term) if isinstance(term, str) else term
+    return Optional(term)
+
+
+def exactly(count: int, term: Union[Term, str]) -> QuantifyExact:
+    """Repeat the term exactly `count` times."""
+    term = String(term) if isinstance(term, str) else term
+    return QuantifyExact(term, count)
+
+
+def at_least(count: int, term: Union[Term, str]) -> QuantifyMinimum:
+    """Repeat the term at least `count` times."""
+    term = String(term) if isinstance(term, str) else term
+    return QuantifyMinimum(term, count)
+
+
+def at_most(count: int, term: Union[Term, str]) -> QuantifyMaximum:
+    """Repeat the term exactly `count` times."""
+    term = String(term) if isinstance(term, str) else term
+    return QuantifyMaximum(term, count)
+
+
+def between(min_count: int, max_count: int, term: Union[Term, str]) -> QuantifyBetween:
+    term = String(term) if isinstance(term, str) else term
+    return QuantifyBetween(term, min_count, max_count)
+
+
+def zero_or_more(term: Union[Term, str]) -> KleeneStar:
+    term = String(term) if isinstance(term, str) else term
+    return KleeneStar(term)
+
+
+def one_or_more(term: Union[Term, str]) -> KleenePlus:
+    term = String(term) if isinstance(term, str) else term
+    return KleenePlus(term)
 
 
 def to_regex(term: Term) -> str:
