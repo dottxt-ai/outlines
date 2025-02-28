@@ -19,7 +19,7 @@ You can either create a `Generator` object and call it afterward:
 
 ```python
 from outlines.models import Dottxt
-from outlines.generate import Generator
+from outlines import Generator
 from pydantic import BaseModel
 
 class Character(BaseModel):

@@ -67,7 +67,7 @@ class Model(ABC):
         ```
 
         """
-        from outlines.generate import Generator
+        from outlines import Generator
 
         return Generator(self, output_type)(model_input, **inference_kwargs)
 
