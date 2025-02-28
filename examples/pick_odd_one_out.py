@@ -9,6 +9,7 @@ References
        arXiv preprint arXiv:2212.06094.
 
 """
+
 import outlines
 import outlines.models as models
 

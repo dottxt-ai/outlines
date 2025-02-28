@@ -1,4 +1,5 @@
 """Example from https://dust.tt/spolu/a/d12ac33169"""
+
 import outlines
 import outlines.models as models
 from outlines import Template

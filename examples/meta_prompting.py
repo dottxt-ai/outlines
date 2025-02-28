@@ -9,6 +9,7 @@ References
        https://arxiv.org/abs/2102.07350.
 
 """
+
 import argparse
 
 import outlines
@@ -17,7 +18,6 @@ from outlines import Template
 
 
 def split_into_steps(question, model_name: str):
-
     solve = Template.from_string(
         """{{question}}
         Rephrase : : as a true or false statement, identify an Object, relationship and subject
@@ -40,7 +40,6 @@ def split_into_steps(question, model_name: str):
 
 
 def fill_in_the_blanks(question, model_name: str):
-
     determine_goal = Template.from_string(
         """{{question}}
 
@@ -48,9 +47,7 @@ def fill_in_the_blanks(question, model_name: str):
         """
     )
 
-    solve = Template.from_string(
-        """{{memory}}. Let's begin."""
-    )
+    solve = Template.from_string("""{{memory}}. Let's begin.""")
 
     model = models.openai(model_name)
     generator = outlines.generate.text(model)
@@ -65,7 +62,6 @@ def fill_in_the_blanks(question, model_name: str):
 
 
 def ask_an_expert(question, model_name: str):
-
     find_expert = Template.from_string(
         """
         {{question}}
