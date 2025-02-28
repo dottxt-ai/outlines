@@ -297,7 +297,6 @@ class QuantifyBetween(Term):
         return f"QuantifyBetween(term={repr(self.term)}, min_count={repr(self.min_count)}, max_count={repr(self.max_count)})"
 
 
-def optional(self: Term) -> Optional:
 def either(*args: Union[str, Term]):
     """Represents an alternative between different terms or strings.
 
@@ -308,14 +307,18 @@ def either(*args: Union[str, Term]):
     return Alternatives(args)
 
 
+def optional(self: Union[Term, str]) -> Optional:
+    self = String(self) if self is str else self
     return Optional(self)
 
 
 def one_or_more(self: Term) -> KleenePlus:
+    self = String(self) if self is str else self
     return KleenePlus(self)
 
 
-def repeat(self: Term, min_count: int, max_count: int) -> QuantifyBetween:
+def between(self: Term, min_count: int, max_count: int) -> QuantifyBetween:
+    self = String(self) if self is str else self
     match (min_count, max_count):
         case (None, None):
             raise ValueError(
@@ -330,10 +333,12 @@ def repeat(self: Term, min_count: int, max_count: int) -> QuantifyBetween:
 
 
 def times(self: Term, count: int = 0) -> QuantifyExact:
+    self = String(self) if self is str else self
     return QuantifyExact(self, count)
 
 
 def zero_or_more(self: Term) -> KleeneStar:
+    self = String(self) if self is str else self
     return KleeneStar(self)
 
 
