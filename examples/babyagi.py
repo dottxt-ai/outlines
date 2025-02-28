@@ -4,6 +4,7 @@ It currently does not use the vector store retrieval
 
 The original repo can be found at https://github.com/yoheinakajima/babyagi
 """
+
 from collections import deque
 from typing import Deque, List
 

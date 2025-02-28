@@ -10,6 +10,7 @@ References
 .. [2] Yao, S., Zhao, J., Yu, D., Du, N., Shafran, I., Narasimhan, K., & Cao, Y. (2022). React: Synergizing reasoning and acting in language models. arXiv preprint arXiv:2210.03629.
 
 """
+
 import requests  # type: ignore
 
 import outlines
@@ -19,7 +20,7 @@ import outlines.models as models
 
 
 build_reAct_prompt = Template.from_string(
-"""What is the elevation range for the area that the eastern sector of the Colorado orogeny extends into?
+    """What is the elevation range for the area that the eastern sector of the Colorado orogeny extends into?
 Tho 1: I need to search Colorado orogeny, find the area that the eastern sector of the Colorado ...
 Act 2: Search 'Colorado orogeny'
 Obs 2: The Colorado orogeny was an episode of mountain building (an orogeny) ...
@@ -33,7 +34,7 @@ Act 5: Finish '1,800 to 7,000 ft'
 
 
 add_mode = Template.from_string(
-"""{{ prompt }}
+    """{{ prompt }}
 {{ mode }} {{ i }}: {{ result }}
 """
 )

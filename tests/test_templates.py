@@ -114,6 +114,7 @@ def test_render_jinja():
 
 def test_prompt_basic():
     with pytest.deprecated_call():
+
         @outlines.prompt
         def test_tpl(variable):
             """{{variable}} test"""
@@ -141,6 +142,7 @@ def test_prompt_basic():
 
 def test_prompt_kwargs():
     with pytest.deprecated_call():
+
         @outlines.prompt
         def test_kwarg_tpl(var, other_var="other"):
             """{{var}} and {{other_var}}"""
@@ -184,6 +186,7 @@ def test_prompt_function():
         pass
 
     with pytest.deprecated_call():
+
         @outlines.prompt
         def name_description_ppt(fn):
             """
@@ -200,6 +203,7 @@ def test_prompt_function():
         pass
 
     with pytest.deprecated_call():
+
         @outlines.prompt
         def name_signature_ppt(fn):
             """
@@ -207,12 +211,15 @@ def test_prompt_function():
             """
 
         rendered = name_signature_ppt(with_signature)
-        assert rendered == "with_signature: one: int, two: List[str], three: float = 1.0"
+        assert (
+            rendered == "with_signature: one: int, two: List[str], three: float = 1.0"
+        )
 
     def test_function_call(one, two=2):
         return one + two
 
     with pytest.deprecated_call():
+
         @outlines.prompt
         def source_ppt(fn):
             """
@@ -229,6 +236,7 @@ def test_prompt_pydantic_response():
         two: str
 
     with pytest.deprecated_call():
+
         @outlines.prompt
         def source_ppt(model):
             "{{model | schema }}"
@@ -261,6 +269,7 @@ def test_prompt_dict_response():
     response = {"one": "a description", "two": ""}
 
     with pytest.deprecated_call():
+
         @outlines.prompt
         def source_ppt(model):
             "{{model | schema }}"
@@ -306,6 +315,7 @@ def test_prompt_args():
         pass
 
     with pytest.deprecated_call():
+
         @outlines.prompt
         def args_prompt(fn):
             """args: {{ fn | args }}"""
@@ -335,6 +345,7 @@ def test_prompt_with_additional_filters():
         return s[::-1]
 
     with pytest.deprecated_call():
+
         @outlines.prompt(filters=dict(reverse=reverse))
         def test_tpl(variable):
             """{{ variable | reverse }} test"""
