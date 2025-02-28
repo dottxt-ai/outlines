@@ -43,18 +43,6 @@ class Term:
 
         return Sequence([other, self])
 
-    def __or__(self: "Term", other: Union[str, "Term"]) -> "Alternatives":
-        if isinstance(other, str):
-            other = String(other)
-
-        return Alternatives([self, other])
-
-    def __ror__(self: "Term", other: Union[str, "Term"]) -> "Alternatives":
-        if isinstance(other, str):
-            other = String(other)
-
-        return Alternatives([other, self])
-
     def __get_validator__(self, _core_schema):
         def validate(input_value):
             return self.validate(input_value)
@@ -310,6 +298,16 @@ class QuantifyBetween(Term):
 
 
 def optional(self: Term) -> Optional:
+def either(*args: Union[str, Term]):
+    """Represents an alternative between different terms or strings.
+
+    This factory function automatically translates string arguments
+    into `String` objects.
+    """
+    args = [String(arg) if arg is str else arg for arg in args]
+    return Alternatives(args)
+
+
     return Optional(self)
 
 
