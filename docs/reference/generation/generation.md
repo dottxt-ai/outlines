@@ -4,34 +4,30 @@ title: Generation
 
 # Generation
 
-Once an [Outlines model](../models/models.md) is constructed you can use `outlines.generate` to generate text. Standard LLM generation is possible via `outlines.generate.text`, along with a variety of structured generation methods described below. (For a detailed technical explanation of how structured generation works, you may review the [Structured Generation Explanation](./structured_generation_explanation.md) page)
+Once an [Outlines model](../models/models.md) is constructed you can use a `Generator` to generate text. The second argument to the `Generator` constructor is the output type. Standard LLM generation is possible by not passing any output type. Otherwise, you can provide a variety of different output types to benefit from structured generation. (For a detailed technical explanation of how structured generation works, you may review the [Structured Generation Explanation](./structured_generation_explanation.md) page)
 
 Before generating text, you must construct an `outlines.model`. Example:
 
 ```python
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
 import outlines
 
-model = outlines.models.transformers("microsoft/Phi-3-mini-4k-instruct", device="cuda")
+model_name = "microsoft/Phi-3-mini-4k-instruct"
+model = outlines.from_transformers(
+    AutoModelForCausalLM.from_pretrained(model_name),
+    AutoTokenizer.from_pretrained(model_name)
+)
 ```
+
 ### Text generator
 
 ```python
-generator = outlines.generate.text(model)
+generator = outlines.Generator(model)
 
 result = generator("Question: What's 2+2? Answer:", max_tokens=100)
 print(result)
 # The answer is 4
-
-# Outlines also supports streaming output
-stream = generator.stream("What's 2+2?", max_tokens=4)
-for i in range(5):
-	token = next(stream)
-	print(repr(token))
-# '2'
-# '+'
-# '2'
-# ' equals'
-# '4'
 ```
 
 ### [Multi-label classification](./choices.md)
@@ -40,9 +36,9 @@ Outlines allows you to do multi-label classification by guiding the model so it 
 
 ```python
 import outlines
+from outlines.types import Choice
 
-model = outlines.models.transformers("microsoft/Phi-3-mini-128k-instruct")
-generator = outlines.generate.choice(model, ["Blue", "Red", "Yellow"])
+generator = outlines.Generator(model, Choice(["Blue", "Red", "Yellow"]))
 
 color = generator("What is the closest color to Indigo? ")
 print(color)
@@ -59,6 +55,7 @@ Outlines can guide models so that they output valid JSON **100%** of the time. Y
     from enum import Enum
     from pydantic import BaseModel, constr, conint
 
+    from outlines.types import JsonType
     import outlines
 
     class Armor(str, Enum):
@@ -73,8 +70,7 @@ Outlines can guide models so that they output valid JSON **100%** of the time. Y
         armor: Armor
         strength: conint(gt=1, lt=100)
 
-    model = outlines.models.transformers("microsoft/Phi-3-mini-128k-instruct")
-    generator = outlines.generate.json(model, Character)
+    generator = outlines.Generator(model, JsonType(Character))
 
     character = generator(
         "Generate a new character for my awesome game: "
@@ -88,6 +84,7 @@ Outlines can guide models so that they output valid JSON **100%** of the time. Y
 
     ```python
     import outlines
+    from outlines.types import JsonType
 
     schema = """{
         "$defs": {
@@ -108,8 +105,7 @@ Outlines can guide models so that they output valid JSON **100%** of the time. Y
         "type": "object"
     }"""
 
-    model = outlines.models.transformers("microsoft/Phi-3-mini-128k-instruct")
-    generator = outlines.generate.json(model, schema)
+    generator = outlines.Generator(model, JsonType(schema))
     character = generator(
         "Generate a new character for my awesome game: "
         + "name, age (between 1 and 99), armor and strength. "
@@ -129,7 +125,8 @@ Outlines also allows to generate text that is valid to any [context-free grammar
 Here we show a simple example of a grammar that defines arithmetic operations:
 
 ```python
-from outlines import models, generate
+import outlines
+from outlines.types import CFG
 
 arithmetic_grammar = """
     ?start: sum
@@ -152,8 +149,7 @@ arithmetic_grammar = """
     %ignore WS_INLINE
 """
 
-model = models.transformers("microsoft/Phi-3-mini-128k-instruct")
-generator = generate.cfg(model, arithmetic_grammar, max_tokens=100)
+generator = outlines.Generator(model, CFG(arithmetic_grammar, max_tokens=100))
 
 result = generator("Question: How can you write 5*5 using addition?\nAnswer:")
 print(result)
@@ -164,10 +160,11 @@ print(result)
 EBNF grammars can be cumbersome to write. This is why Outlines provides grammar definitions in the `outlines.grammars.` module
 
 ```python
-from outlines import models, generate, grammars
+import outlines
+from outlines import grammars
+from outlines.types import CFG
 
-model = models.transformers("microsoft/Phi-3-mini-128k-instruct")
-generator = generate.cfg(model, grammars.arithmetic, max_tokens=100)
+generator = outlines.Generator(model, CFG(grammars.arithmetic, max_tokens=100))
 
 result = generator("Question: How can you write 5*5 using addition?\nAnswer:")
 print(result)
@@ -182,33 +179,16 @@ The available grammars are listed [here](https://github.com/dottxt-ai/outlines/t
 Slightly simpler, but no less useful, Outlines can generate text that is in the language of a [regular expression](https://www.regular-expressions.info/tutorial.html). For instance to force the model to generate IP addresses:
 
 ```python
-from outlines import models, generate
-
-model = models.transformers("microsoft/Phi-3-mini-128k-instruct")
+import outlines
+from outlines.types import Regex
 
 regex_str = r"((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?)"
-generator = generate.regex(model, regex_str)
+generator = outlines.Generator(model, Regex(regex_str))
 
 result = generator("What is the IP address of localhost?\nIP: ")
 print(result)
 # 127.0.0.100
 ```
-
-### [Generate a given Python type](./types.md)
-
-We provide a shortcut to regex-structured generation for simple use cases. Pass a Python type to the `outlines.generate.format` function and the LLM will output text that matches this type:
-
-```python
-from outlines import models, generate
-
-model = models.transformers("microsoft/Phi-3-mini-128k-instruct")
-generator = generate.format(model, int)
-
-result = generator("What is 2+2?")
-print(result)
-# 4
-```
-
 
 [jsonschema]: https://json-schema.org/learn/getting-started-step-by-step
 [pydantic]: https://docs.pydantic.dev/latest
