@@ -35,7 +35,7 @@ You can use these types in Pydantic schemas for JSON-structured generation:
 ```python
 from pydantic import BaseModel
 
-from outlines import models, generate, types
+from outlines import models, types, Generator
 
 # Specify the locale for types
 locale = types.locale("us")
@@ -46,32 +46,18 @@ class Client(BaseModel):
     zip_code: locale.ZipCode
 
 
-model = models.transformers("microsoft/Phi-3-mini-4k-instruct")
-generator = generate.json(model, Client)
+model_name = "microsoft/Phi-3-mini-4k-instruct"
+model = outlines.from_transformers(
+    AutoModelForCausalLM.from_pretrained(model_name),
+    AutoTokenizer.from_pretrained(model_name)
+)
+generator = Generator(model, types.JsonType(Client))
 result = generator(
     "Create a client profile with the fields name, phone_number and zip_code"
 )
 print(result)
 # name='Tommy' phone_number='129-896-5501' zip_code='50766'
 ```
-
-Or simply with `outlines.generate.format`:
-
-```python
-from pydantic import BaseModel
-
-from outlines import models, generate, types
-
-
-model = models.transformers("microsoft/Phi-3-mini-4k-instruct")
-generator = generate.format(model, types.locale("us").PhoneNumber)
-result = generator(
-    "Return a US Phone number: "
-)
-print(result)
-# 334-253-2630
-```
-
 
 We plan on adding many more custom types. If you have found yourself writing regular expressions to generate fields of a given type, or if you could benefit from more specific types don't hesite to [submit a PR](https://github.com/dottxt-ai/outlines/pulls) or [open an issue](https://github.com/dottxt-ai/outlines/issues/new/choose).
 
