@@ -6,7 +6,6 @@ import outlines.models
 import outlines.processors
 import outlines.types
 from outlines.types import Choice, Regex, JsonType
-from outlines.base import vectorize
 from outlines.caching import clear_cache, disable_cache, get_cache
 from outlines.function import Function
 from outlines.generator import Generator
@@ -48,6 +47,5 @@ __all__ = [
     "Regex",
     "prompt",
     "Template",
-    "vectorize",
     "grammars",
 ] + model_list
