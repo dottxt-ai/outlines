@@ -1,8 +1,11 @@
 from dataclasses import dataclass
 from typing import Any, Optional, Union, cast, get_args
 
+import interegular
+
+from outlines.fsm.guide import RegexGuide
 from outlines.models import BlackBoxModel, SteerableModel
-from outlines.processors import CFGLogitsProcessor, RegexLogitsProcessor
+from outlines.processors import CFGLogitsProcessor, GuideLogitsProcessor, RegexLogitsProcessor
 from outlines.types import CFG, Choice, JsonType, List, Regex
 
 
@@ -27,6 +30,10 @@ class BlackBoxGenerator:
             raise NotImplementedError(
                 "CFG generation is not supported for API-based models"
             )
+        elif isinstance(self.output_type, interegular.fsm.FSM):
+            raise NotImplementedError(
+                "FSM generation is not supported for API-based models"
+            )
 
     def __call__(self, prompt, **inference_kwargs):
         return self.model.generate(prompt, self.output_type, **inference_kwargs)
@@ -49,7 +56,7 @@ class SteerableGenerator:
     """
 
     model: SteerableModel
-    output_type: Optional[Union[JsonType, List, Choice, Regex]]
+    output_type: Optional[Union[JsonType, List, Choice, Regex, CFG, interegular.fsm.FSM]]
 
     def __post_init__(self):
         if self.output_type is None:
@@ -60,6 +67,9 @@ class SteerableGenerator:
                 self.logits_processor = CFGLogitsProcessor(
                     cfg_string, self.model.tokenizer
                 )
+            elif isinstance(self.output_type, interegular.fsm.FSM):
+                guide = RegexGuide.from_interegular_fsm(self.output_type, self.model.tokenizer)
+                self.logits_processor = GuideLogitsProcessor(tokenizer=self.model.tokenizer, guide=guide)
             else:
                 regex_string = self.output_type.to_regex()
                 self.logits_processor = RegexLogitsProcessor(
@@ -72,7 +82,7 @@ class SteerableGenerator:
 
 def Generator(
     model: Union[SteerableModel, BlackBoxModel],
-    output_type: Optional[Union[JsonType, List, Choice, Regex, CFG]] = None,
+    output_type: Optional[Union[JsonType, List, Choice, Regex, CFG, interegular.fsm.FSM]] = None,
 ):
     if isinstance(model, BlackBoxModel):  # type: ignore
         return BlackBoxGenerator(model, output_type)  # type: ignore
