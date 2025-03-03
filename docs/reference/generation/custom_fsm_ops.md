@@ -12,8 +12,8 @@ In the following example we build a fsm which recognizes only the strings valid 
 
 ```python
 import interegular
-from outlines import models, generate
-
+from outlines import from_transformers, Generator
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
 list_of_strings_pattern = """\["[^"\s]*"(?:,"[^"\s]*")*\]"""
 pink_elephant_pattern = """.*(pink|elephant).*"""
@@ -28,9 +28,13 @@ difference_fsm_fsm.accepts('["a","pink","elephant"]')
 difference_fsm_fsm.accepts('["a","blue","donkey"]')
 # True
 
+model_name = "microsoft/Phi-3-mini-4k-instruct"
+model = from_transformers(
+    AutoModelForCausalLM.from_pretrained(model_name),
+    AutoTokenizer.from_pretrained(model_name)
+)
 
-model = models.transformers("microsoft/Phi-3-mini-4k-instruct")
-generator = generate.fsm(model, difference_fsm)
+generator = Generator(model, difference_fsm)
 response = generator("Don't talk about pink elephants")
 ```
 
