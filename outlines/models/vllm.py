@@ -2,7 +2,6 @@ import dataclasses
 from functools import singledispatchmethod
 from typing import TYPE_CHECKING, List, Optional, Union
 
-from outlines.generate.api import GenerationParameters, SamplingParameters
 from outlines.models.base import Model, ModelTypeAdapter
 
 if TYPE_CHECKING:

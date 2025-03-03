@@ -1,6 +1,5 @@
 """Outlines is a Generative Model Programming Framework."""
 
-import outlines.generate
 import outlines.grammars
 import outlines.models
 import outlines.processors
