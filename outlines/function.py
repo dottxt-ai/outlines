@@ -7,7 +7,6 @@ import requests
 import outlines
 
 if TYPE_CHECKING:
-    from outlines.generate import SequenceGeneratorAdapter
     from outlines.templates import Template
 
 
@@ -25,7 +24,7 @@ class Function:
     prompt_template: "Template"
     schema: Union[str, Callable, object]
     model_name: str
-    generator: Optional["SequenceGeneratorAdapter"] = None
+    generator = None
 
     @classmethod
     def from_github(cls, program_path: str, function_name: str = "fn"):
