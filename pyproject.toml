@@ -42,7 +42,6 @@ dependencies = [
    "torch",
    "outlines_core==0.1.26",
    "genson",
-   "pre-commit>=4.0.1",
 ]
 dynamic = ["version"]
 
