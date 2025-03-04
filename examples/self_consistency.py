@@ -78,5 +78,5 @@ max_count = max(results.values())
 answer_value = [key for key, value in results.items() if value == max_count][0]
 total_count = sum(results.values())
 print(
-    f"The most likely answer is {answer_value} ({max_count/total_count*100}% consensus)"
+    f"The most likely answer is {answer_value} ({max_count / total_count * 100}% consensus)"
 )
