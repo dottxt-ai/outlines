@@ -121,6 +121,7 @@ module = [
     "jaxlib",
     "jax.numpy",
     "jinja2",
+    "pandas.*",
     "jsonschema.*",
     "openai.*",
     "mamba_ssm.*",

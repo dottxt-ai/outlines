@@ -9,7 +9,7 @@ if TYPE_CHECKING:
     import mlx.core as mx
 
 
-Array = Union[NDArray, torch.Tensor, List, "mx.array"]
+Array = Union[NDArray, torch.Tensor, "mx.array"]
 
 
 def is_mlx_array_type(array_type):
