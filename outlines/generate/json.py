@@ -92,7 +92,9 @@ def json_openai(
         )
 
     if isinstance(schema_object, type(BaseModel)):
-        schema = pyjson.dumps(schema_object.model_json_schema())
+        schema = schema_object.model_json_schema()
+        schema["additionalProperties"] = False
+        schema = pyjson.dumps(schema)
         format_sequence = lambda x: schema_object.parse_raw(x)
     elif isinstance(schema_object, str):
         schema = schema_object
