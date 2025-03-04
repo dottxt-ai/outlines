@@ -1312,13 +1312,13 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#early-introduction-to-quantifiers-operators" class="md-nav__link">
+  <a href="#early-introduction-to-quantifiers-combining-terms" class="md-nav__link">
     <span class="md-ellipsis">
-      Early Introduction to Quantifiers &amp; Operators
+      Early Introduction to Quantifiers &amp; Combining Terms
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Early Introduction to Quantifiers &amp; Operators">
+    <nav class="md-nav" aria-label="Early Introduction to Quantifiers &amp; Combining Terms">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -1332,9 +1332,9 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#timescount" class="md-nav__link">
+  <a href="#exactlycount" class="md-nav__link">
     <span class="md-ellipsis">
-      times(count)
+      exactly(count)
     </span>
   </a>
   
@@ -1368,9 +1368,27 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#repeatmin_count-max_count" class="md-nav__link">
+  <a href="#betweenmin_count-max_count" class="md-nav__link">
     <span class="md-ellipsis">
-      repeat(min_count, max_count)
+      between(min_count, max_count)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#at_leastcount" class="md-nav__link">
+    <span class="md-ellipsis">
+      at_least(count)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#at_mostcount" class="md-nav__link">
+    <span class="md-ellipsis">
+      at_most(count)
     </span>
   </a>
   
@@ -1406,9 +1424,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#alternation" class="md-nav__link">
+  <a href="#alternation-either" class="md-nav__link">
     <span class="md-ellipsis">
-      Alternation (|)
+      Alternation (either())
     </span>
   </a>
   
@@ -2771,13 +2789,13 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#early-introduction-to-quantifiers-operators" class="md-nav__link">
+  <a href="#early-introduction-to-quantifiers-combining-terms" class="md-nav__link">
     <span class="md-ellipsis">
-      Early Introduction to Quantifiers &amp; Operators
+      Early Introduction to Quantifiers &amp; Combining Terms
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Early Introduction to Quantifiers &amp; Operators">
+    <nav class="md-nav" aria-label="Early Introduction to Quantifiers &amp; Combining Terms">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -2791,9 +2809,9 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#timescount" class="md-nav__link">
+  <a href="#exactlycount" class="md-nav__link">
     <span class="md-ellipsis">
-      times(count)
+      exactly(count)
     </span>
   </a>
   
@@ -2827,9 +2845,27 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#repeatmin_count-max_count" class="md-nav__link">
+  <a href="#betweenmin_count-max_count" class="md-nav__link">
     <span class="md-ellipsis">
-      repeat(min_count, max_count)
+      between(min_count, max_count)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#at_leastcount" class="md-nav__link">
+    <span class="md-ellipsis">
+      at_least(count)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#at_mostcount" class="md-nav__link">
+    <span class="md-ellipsis">
+      at_most(count)
     </span>
   </a>
   
@@ -2865,9 +2901,9 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#alternation" class="md-nav__link">
+  <a href="#alternation-either" class="md-nav__link">
     <span class="md-ellipsis">
-      Alternation (|)
+      Alternation (either())
     </span>
   </a>
   
@@ -2998,37 +3034,40 @@
 </span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">to_regex</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">digit</span><span style="color: #ECEFF4">))</span>    <span style="color: #616E87; font-style: italic"># Output: [0-9]+</span>
 </span></code></pre></div>
 <hr />
-<h2 id="early-introduction-to-quantifiers-operators">Early Introduction to Quantifiers &amp; Operators</h2>
+<h2 id="early-introduction-to-quantifiers-combining-terms">Early Introduction to Quantifiers &amp; Combining Terms</h2>
 <p>The DSL supports common regex quantifiers as methods on every <code>Term</code>. These methods allow you to specify how many times a pattern should be matched. They include:</p>
 <ul>
-<li><strong><code>times(count)</code></strong>: Matches the term exactly <code>count</code> times.</li>
+<li><strong><code>exactly(count)</code></strong>: Matches the term exactly <code>count</code> times.</li>
 <li><strong><code>optional()</code></strong>: Matches the term zero or one time.</li>
 <li><strong><code>one_or_more()</code></strong>: Matches the term one or more times (Kleene Plus).</li>
 <li><strong><code>zero_or_more()</code></strong>: Matches the term zero or more times (Kleene Star).</li>
-<li><strong><code>repeat(min_count, max_count)</code></strong>: Matches the term between <code>min_count</code> and <code>max_count</code> times (or open-ended if one value is omitted).</li>
+<li><strong><code>between(min_count, max_count)</code></strong>: Matches the term between <code>min_count</code> and <code>max_count</code> times (inclusive).</li>
+<li><strong><code>at_least(count)</code></strong>: Matches the term at least <code>count</code> times.</li>
+<li><strong><code>at_most(count)</code></strong>: Matches the term up to <code>count</code> times.</li>
 </ul>
-<p>Let’s see these quantifiers side by side with examples.</p>
+<p>These quantifiers can also be used as functions that take the <code>Term</code> as an argument. If the term is a plain string, it will be automatically converted to a <code>String</code> object. Thus <code>String("foo").optional()</code> is equivalent to <code>optional("foo")</code>.</p>
+<p>Let's see these quantifiers side by side with examples.</p>
 <h3 id="quantifiers-in-action">Quantifiers in Action</h3>
-<h4 id="timescount"><code>times(count)</code></h4>
+<h4 id="exactlycount"><code>exactly(count)</code></h4>
 <p>This method restricts the term to appear exactly <code>count</code> times.</p>
 <div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span style="color: #616E87; font-style: italic"># Example: exactly 5 digits</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span style="color: #D8DEE9">five_digits</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">Regex</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">r&quot;\d&quot;</span><span style="color: #ECEFF4">)</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">times</span><span style="color: #ECEFF4">(</span><span style="color: #B48EAD">5</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span style="color: #D8DEE9">five_digits</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">Regex</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">r&quot;\d&quot;</span><span style="color: #ECEFF4">)</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">exactly</span><span style="color: #ECEFF4">(</span><span style="color: #B48EAD">5</span><span style="color: #ECEFF4">)</span>
 </span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">to_regex</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">five_digits</span><span style="color: #ECEFF4">))</span>  <span style="color: #616E87; font-style: italic"># Output: (\d){5}</span>
 </span></code></pre></div>
-<p>You can also use the <code>times</code> function:</p>
-<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines.types</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">times</span>
+<p>You can also use the <code>exactly</code> function:</p>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines.types</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">exactly</span>
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
 </span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span style="color: #616E87; font-style: italic"># Example: exactly 5 digits</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span style="color: #D8DEE9">five_digits</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">times</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">Regex</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">r&quot;\d&quot;</span><span style="color: #ECEFF4">),</span> <span style="color: #B48EAD">5</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span style="color: #D8DEE9">five_digits</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">exactly</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">Regex</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">r&quot;\d&quot;</span><span style="color: #ECEFF4">),</span> <span style="color: #B48EAD">5</span><span style="color: #ECEFF4">)</span>
 </span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">to_regex</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">five_digits</span><span style="color: #ECEFF4">))</span>  <span style="color: #616E87; font-style: italic"># Output: (\d){5}</span>
 </span></code></pre></div>
 <h4 id="optional"><code>optional()</code></h4>
-<p>The <code>optional()</code> method makes a term optional, meaning it may occur zero or one time.</p>
+<p>This method makes a term optional, meaning it may occur zero or one time.</p>
 <div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span style="color: #616E87; font-style: italic"># Example: an optional &quot;s&quot; at the end of a word</span>
 </span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span style="color: #D8DEE9">maybe_s</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">String</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;s&quot;</span><span style="color: #ECEFF4">)</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">optional</span><span style="color: #ECEFF4">()</span>
 </span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">to_regex</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">maybe_s</span><span style="color: #ECEFF4">))</span>  <span style="color: #616E87; font-style: italic"># Output: (s)?</span>
 </span></code></pre></div>
-<p>You can also use the <code>optional</code> function, the string will automatically be converted to a <code>String</code> object:</p>
+<p>You can also use the <code>optional</code> function:</p>
 <div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines.types</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">optional</span>
 </span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
 </span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span style="color: #616E87; font-style: italic"># Example: an optional &quot;s&quot; at the end of a word</span>
@@ -3049,63 +3088,73 @@
 </span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">to_regex</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">letters</span><span style="color: #ECEFF4">))</span>  <span style="color: #616E87; font-style: italic"># Output: ([A-Za-z])+</span>
 </span></code></pre></div>
 <h4 id="zero_or_more"><code>zero_or_more()</code></h4>
-<p>This method means that the term can occur zero or more times.</p>
+<p>This method indicates that the term can occur zero or more times.</p>
 <div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span style="color: #616E87; font-style: italic"># Example: zero or more spaces</span>
 </span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span style="color: #D8DEE9">spaces</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">String</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot; &quot;</span><span style="color: #ECEFF4">)</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">zero_or_more</span><span style="color: #ECEFF4">()</span>
 </span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">to_regex</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">spaces</span><span style="color: #ECEFF4">))</span>  <span style="color: #616E87; font-style: italic"># Output: ( )*</span>
 </span></code></pre></div>
-<p>You can also use the <code>zero_or_more</code> function, the string will automatically be converted to a <code>String</code> instance:</p>
+<p>You can also use the <code>zero_or_more</code> function:</p>
 <div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines.types</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">zero_or_more</span>
 </span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>
 </span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span style="color: #616E87; font-style: italic"># Example: zero or more spaces</span>
 </span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span style="color: #D8DEE9">spaces</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">zero_or_more</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot; &quot;</span><span style="color: #ECEFF4">)</span>
 </span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">to_regex</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">spaces</span><span style="color: #ECEFF4">))</span>  <span style="color: #616E87; font-style: italic"># Output: ( )*</span>
 </span></code></pre></div>
-<h4 id="repeatmin_count-max_count"><code>repeat(min_count, max_count)</code></h4>
-<p>The <code>repeat</code> method provides flexibility to set a lower and/or upper bound on the number of occurrences.</p>
+<h4 id="betweenmin_count-max_count"><code>between(min_count, max_count)</code></h4>
+<p>This method indicates that the term can appear any number of times between <code>min_count</code> and <code>max_count</code> (inclusive).</p>
 <div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span style="color: #616E87; font-style: italic"># Example: Between 2 and 4 word characters</span>
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span style="color: #D8DEE9">word_chars</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">Regex</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">r&quot;\w&quot;</span><span style="color: #ECEFF4">)</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">repeat</span><span style="color: #ECEFF4">(</span><span style="color: #B48EAD">2</span><span style="color: #ECEFF4">,</span> <span style="color: #B48EAD">4</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span style="color: #D8DEE9">word_chars</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">Regex</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">r&quot;\w&quot;</span><span style="color: #ECEFF4">)</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">between</span><span style="color: #ECEFF4">(</span><span style="color: #B48EAD">2</span><span style="color: #ECEFF4">,</span> <span style="color: #B48EAD">4</span><span style="color: #ECEFF4">)</span>
 </span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">to_regex</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">word_chars</span><span style="color: #ECEFF4">))</span>  <span style="color: #616E87; font-style: italic"># Output: (\w){2,4}</span>
-</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>
-</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span style="color: #616E87; font-style: italic"># Example: At least 3 digits (min specified, max left open)</span>
-</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span style="color: #D8DEE9">at_least_three</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">Regex</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">r&quot;\d&quot;</span><span style="color: #ECEFF4">)</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">repeat</span><span style="color: #ECEFF4">(</span><span style="color: #B48EAD">3</span><span style="color: #ECEFF4">,</span> <span style="color: #81A1C1; font-weight: bold">None</span><span style="color: #ECEFF4">)</span>
-</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">to_regex</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">at_least_three</span><span style="color: #ECEFF4">))</span>  <span style="color: #616E87; font-style: italic"># Output: (\d){3,}</span>
-</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>
-</span><span id="__span-9-9"><a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span style="color: #616E87; font-style: italic"># Example: Up to 2 punctuation marks (max specified, min omitted)</span>
-</span><span id="__span-9-10"><a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span style="color: #D8DEE9">up_to_two</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">Regex</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">r&quot;[,.]&quot;</span><span style="color: #ECEFF4">)</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">repeat</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1; font-weight: bold">None</span><span style="color: #ECEFF4">,</span> <span style="color: #B48EAD">2</span><span style="color: #ECEFF4">)</span>
-</span><span id="__span-9-11"><a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">to_regex</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">up_to_two</span><span style="color: #ECEFF4">))</span>  <span style="color: #616E87; font-style: italic"># Output: ([,.]){,2}</span>
 </span></code></pre></div>
-<p>You can also use the <code>repeat</code> function:</p>
-<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">repeat</span>
+<p>You can also use the <code>between</code> function:</p>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines.types</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">between</span>
 </span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>
 </span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span style="color: #616E87; font-style: italic"># Example: Between 2 and 4 word characters</span>
-</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span style="color: #D8DEE9">word_chars</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">repeat</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">Regex</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">r&quot;\w&quot;</span><span style="color: #ECEFF4">),</span> <span style="color: #B48EAD">2</span><span style="color: #ECEFF4">,</span> <span style="color: #B48EAD">4</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span style="color: #D8DEE9">word_chars</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">between</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">Regex</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">r&quot;\w&quot;</span><span style="color: #ECEFF4">),</span> <span style="color: #B48EAD">2</span><span style="color: #ECEFF4">,</span> <span style="color: #B48EAD">4</span><span style="color: #ECEFF4">)</span>
 </span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">to_regex</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">word_chars</span><span style="color: #ECEFF4">))</span>  <span style="color: #616E87; font-style: italic"># Output: (\w){2,4}</span>
-</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>
-</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span style="color: #616E87; font-style: italic"># Example: At least 3 digits (min specified, max left open)</span>
-</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span style="color: #D8DEE9">at_least_three</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">repeat</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">Regex</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">r&quot;\d&quot;</span><span style="color: #ECEFF4">),</span> <span style="color: #B48EAD">3</span><span style="color: #ECEFF4">,</span> <span style="color: #81A1C1; font-weight: bold">None</span><span style="color: #ECEFF4">)</span>
-</span><span id="__span-10-9"><a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">to_regex</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">at_least_three</span><span style="color: #ECEFF4">))</span>  <span style="color: #616E87; font-style: italic"># Output: (\d){3,}</span>
-</span><span id="__span-10-10"><a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a>
-</span><span id="__span-10-11"><a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a><span style="color: #616E87; font-style: italic"># Example: Up to 2 punctuation marks (max specified, min omitted)</span>
-</span><span id="__span-10-12"><a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a><span style="color: #D8DEE9">up_to_two</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">repeat</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">Regex</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">r&quot;[,.]&quot;</span><span style="color: #ECEFF4">),</span> <span style="color: #81A1C1; font-weight: bold">None</span><span style="color: #ECEFF4">,</span> <span style="color: #B48EAD">2</span><span style="color: #ECEFF4">)</span>
-</span><span id="__span-10-13"><a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">to_regex</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">up_to_two</span><span style="color: #ECEFF4">))</span>  <span style="color: #616E87; font-style: italic"># Output: ([,.]){,2}</span>
+</span></code></pre></div>
+<h4 id="at_leastcount"><code>at_least(count)</code></h4>
+<p>This method indicates that the term must appear at least <code>count</code> times.</p>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span style="color: #616E87; font-style: italic"># Example: At least 3 digits</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span style="color: #D8DEE9">at_least_three</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">Regex</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">r&quot;\d&quot;</span><span style="color: #ECEFF4">)</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">at_least</span><span style="color: #ECEFF4">(</span><span style="color: #B48EAD">3</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">to_regex</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">at_least_three</span><span style="color: #ECEFF4">))</span>  <span style="color: #616E87; font-style: italic"># Output: (\d){3,}</span>
+</span></code></pre></div>
+<p>You can also use the <code>at_least</code> function:</p>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines.types</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">at_least</span>
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span style="color: #616E87; font-style: italic"># Example: At least 3 digits</span>
+</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span style="color: #D8DEE9">at_least_three</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">at_least</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">Regex</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">r&quot;\d&quot;</span><span style="color: #ECEFF4">),</span> <span style="color: #B48EAD">3</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">to_regex</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">at_least_three</span><span style="color: #ECEFF4">))</span>  <span style="color: #616E87; font-style: italic"># Output: (\d){3,}</span>
+</span></code></pre></div>
+<h4 id="at_mostcount"><code>at_most(count)</code></h4>
+<p>This method indicates that the term can appear at most <code>count</code> times.</p>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span style="color: #616E87; font-style: italic"># Example: At most 3 digits</span>
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span style="color: #D8DEE9">up_to_three</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">Regex</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">r&quot;\d&quot;</span><span style="color: #ECEFF4">)</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">at_most</span><span style="color: #ECEFF4">(</span><span style="color: #B48EAD">3</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">to_regex</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">up_to_three</span><span style="color: #ECEFF4">))</span>  <span style="color: #616E87; font-style: italic"># Output: (\d){0,3}</span>
+</span></code></pre></div>
+<p>You can also use the <code>at_most</code> function:</p>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines.types</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">at_most</span>
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span style="color: #616E87; font-style: italic"># Example: At most 3 digits</span>
+</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span style="color: #D8DEE9">up_to_three</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">at_most</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">Regex</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">r&quot;\d&quot;</span><span style="color: #ECEFF4">),</span> <span style="color: #B48EAD">3</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">to_regex</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">up_to_three</span><span style="color: #ECEFF4">))</span>  <span style="color: #616E87; font-style: italic"># Output: (\d){0,3}</span>
 </span></code></pre></div>
 <hr />
 <h2 id="combining-terms">Combining Terms</h2>
 <p>The DSL allows you to combine basic terms into more complex patterns using concatenation and alternation.</p>
 <h3 id="concatenation">Concatenation (<code>+</code>)</h3>
 <p>The <code>+</code> operator (and its reflected variant) concatenates terms, meaning that the terms are matched in sequence.</p>
-<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span style="color: #616E87; font-style: italic"># Example: Match &quot;hello world&quot;</span>
-</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span style="color: #D8DEE9">pattern</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">String</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;hello&quot;</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">+</span> <span style="color: #A3BE8C">&quot; &quot;</span> <span style="color: #81A1C1; font-weight: bold">+</span> <span style="color: #D8DEE9">Regex</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">r&quot;\w+&quot;</span><span style="color: #ECEFF4">)</span>
-</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">to_regex</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">pattern</span><span style="color: #ECEFF4">))</span>  <span style="color: #616E87; font-style: italic"># Output: hello\ (\w+)</span>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span style="color: #616E87; font-style: italic"># Example: Match &quot;hello world&quot;</span>
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span style="color: #D8DEE9">pattern</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">String</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;hello&quot;</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">+</span> <span style="color: #A3BE8C">&quot; &quot;</span> <span style="color: #81A1C1; font-weight: bold">+</span> <span style="color: #D8DEE9">Regex</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">r&quot;\w+&quot;</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">to_regex</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">pattern</span><span style="color: #ECEFF4">))</span>  <span style="color: #616E87; font-style: italic"># Output: hello\ (\w+)</span>
 </span></code></pre></div>
-<h3 id="alternation">Alternation (<code>|</code>)</h3>
-<p>The <code>|</code> operator creates alternatives, allowing a match for one of several patterns.</p>
-<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span style="color: #616E87; font-style: italic"># Example: Match either &quot;cat&quot; or &quot;dog&quot;</span>
-</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span style="color: #D8DEE9">animal</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">String</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;cat&quot;</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">|</span> <span style="color: #A3BE8C">&quot;dog&quot;</span>
-</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">to_regex</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">animal</span><span style="color: #ECEFF4">))</span>  <span style="color: #616E87; font-style: italic"># Output: (cat|dog)</span>
+<h3 id="alternation-either">Alternation (<code>either()</code>)</h3>
+<p>The <code>either()</code> function creates alternatives, allowing a match for one of several patterns. You can provide as many terms as you want.</p>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span style="color: #616E87; font-style: italic"># Example: Match either &quot;cat&quot; or &quot;dog&quot; or &quot;mouse&quot;</span>
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span style="color: #D8DEE9">animal</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">either</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">String</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;cat&quot;</span><span style="color: #ECEFF4">),</span> <span style="color: #A3BE8C">&quot;dog&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;mouse&quot;</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">to_regex</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">animal</span><span style="color: #ECEFF4">))</span>  <span style="color: #616E87; font-style: italic"># Output: (cat|dog|mouse)</span>
 </span></code></pre></div>
-<p><em>Note:</em> When using operators with plain strings (such as <code>"dog"</code>), the DSL automatically wraps them in a <code>String</code> object and escapes the characters that have a special meaning in regular expressions.</p>
+<p><em>Note:</em> When using <code>either()</code> with plain strings (such as <code>"dog"</code>), the DSL automatically wraps them in a <code>String</code> object that escapes the characters that have a special meaning in regular expressions, just like with quantifier functions.</p>
 <hr />
 <h2 id="custom-types">Custom types</h2>
 <p>The DSL comes "batteries included" with types that represent common text constructs:</p>
@@ -3124,9 +3173,9 @@
 <li><code>paragraph</code> reprensents a pagraph (one or more sentences separated by one or more ilne breaks)</li>
 </ul>
 <p>For instance you can describe the answers in the GSM8K dataset using the following pattern:</p>
-<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines.types</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">sentence</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">digit</span>
-</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>
-</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span style="color: #D8DEE9">answer</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">&quot;A: &quot;</span> <span style="color: #81A1C1; font-weight: bold">+</span> <span style="color: #D8DEE9">sentence</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">repeat</span><span style="color: #ECEFF4">(</span><span style="color: #B48EAD">2</span><span style="color: #ECEFF4">,</span><span style="color: #B48EAD">4</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">+</span> <span style="color: #A3BE8C">&quot; So the answer is: &quot;</span> <span style="color: #81A1C1; font-weight: bold">+</span> <span style="color: #D8DEE9">digit</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">repeat</span><span style="color: #ECEFF4">(</span><span style="color: #B48EAD">1</span><span style="color: #ECEFF4">,</span><span style="color: #B48EAD">4</span><span style="color: #ECEFF4">)</span>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines.types</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">sentence</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">digit</span>
+</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>
+</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span style="color: #D8DEE9">answer</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">&quot;A: &quot;</span> <span style="color: #81A1C1; font-weight: bold">+</span> <span style="color: #D8DEE9">sentence</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">between</span><span style="color: #ECEFF4">(</span><span style="color: #B48EAD">2</span><span style="color: #ECEFF4">,</span><span style="color: #B48EAD">4</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">+</span> <span style="color: #A3BE8C">&quot; So the answer is: &quot;</span> <span style="color: #81A1C1; font-weight: bold">+</span> <span style="color: #D8DEE9">digit</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">between</span><span style="color: #ECEFF4">(</span><span style="color: #B48EAD">1</span><span style="color: #ECEFF4">,</span><span style="color: #B48EAD">4</span><span style="color: #ECEFF4">)</span>
 </span></code></pre></div>
 <hr />
 <h2 id="practical-examples">Practical Examples</h2>
@@ -3134,55 +3183,55 @@
 <p>Suppose you want to create a regex that matches an ID format like "ID-12345", where:
 - The literal "ID-" must be at the start.
 - Followed by exactly 5 digits.</p>
-<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span style="color: #D8DEE9">id_pattern</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">&quot;ID-&quot;</span> <span style="color: #81A1C1; font-weight: bold">+</span> <span style="color: #D8DEE9">Regex</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">r&quot;\d&quot;</span><span style="color: #ECEFF4">)</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">times</span><span style="color: #ECEFF4">(</span><span style="color: #B48EAD">5</span><span style="color: #ECEFF4">)</span>
-</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">to_regex</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">id_pattern</span><span style="color: #ECEFF4">))</span>  <span style="color: #616E87; font-style: italic"># Output: ID-(\d){5}</span>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span style="color: #D8DEE9">id_pattern</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">&quot;ID-&quot;</span> <span style="color: #81A1C1; font-weight: bold">+</span> <span style="color: #D8DEE9">Regex</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">r&quot;\d&quot;</span><span style="color: #ECEFF4">)</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">exactly</span><span style="color: #ECEFF4">(</span><span style="color: #B48EAD">5</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">to_regex</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">id_pattern</span><span style="color: #ECEFF4">))</span>  <span style="color: #616E87; font-style: italic"># Output: ID-(\d){5}</span>
 </span></code></pre></div>
 <h3 id="example-2-email-validation-with-pydantic">Example 2: Email Validation with Pydantic</h3>
 <p>You can define a regex for email validation and use it as a type in a Pydantic model.</p>
-<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">pydantic</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">BaseModel</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">ValidationError</span>
-</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>
-</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span style="color: #616E87; font-style: italic"># Define an email regex term (this is a simplified version)</span>
-</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span style="color: #D8DEE9">email_regex</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">Regex</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">r&quot;[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+&quot;</span><span style="color: #ECEFF4">)</span>
-</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>
-</span><span id="__span-15-6"><a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span style="color: #81A1C1; font-weight: bold">class</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">User</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">BaseModel</span><span style="color: #ECEFF4">):</span>
-</span><span id="__span-15-7"><a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a>    <span style="color: #D8DEE9">name</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">str</span>
-</span><span id="__span-15-8"><a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a>    <span style="color: #D8DEE9">email</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">email_regex</span>  <span style="color: #616E87; font-style: italic"># Use our DSL regex as a field type</span>
-</span><span id="__span-15-9"><a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a>
-</span><span id="__span-15-10"><a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a><span style="color: #616E87; font-style: italic"># Valid input</span>
-</span><span id="__span-15-11"><a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a><span style="color: #D8DEE9">user</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">User</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">name</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #A3BE8C">&quot;Alice&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">email</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #A3BE8C">&quot;alice@example.com&quot;</span><span style="color: #ECEFF4">)</span>
-</span><span id="__span-15-12"><a id="__codelineno-15-12" name="__codelineno-15-12" href="#__codelineno-15-12"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">user</span><span style="color: #ECEFF4">)</span>
-</span><span id="__span-15-13"><a id="__codelineno-15-13" name="__codelineno-15-13" href="#__codelineno-15-13"></a>
-</span><span id="__span-15-14"><a id="__codelineno-15-14" name="__codelineno-15-14" href="#__codelineno-15-14"></a><span style="color: #616E87; font-style: italic"># Invalid input (raises a ValidationError)</span>
-</span><span id="__span-15-15"><a id="__codelineno-15-15" name="__codelineno-15-15" href="#__codelineno-15-15"></a><span style="color: #81A1C1; font-weight: bold">try</span><span style="color: #ECEFF4">:</span>
-</span><span id="__span-15-16"><a id="__codelineno-15-16" name="__codelineno-15-16" href="#__codelineno-15-16"></a>    <span style="color: #D8DEE9">User</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">name</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #A3BE8C">&quot;Bob&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">email</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #A3BE8C">&quot;not-an-email&quot;</span><span style="color: #ECEFF4">)</span>
-</span><span id="__span-15-17"><a id="__codelineno-15-17" name="__codelineno-15-17" href="#__codelineno-15-17"></a><span style="color: #81A1C1; font-weight: bold">except</span> <span style="color: #D8DEE9">ValidationError</span> <span style="color: #81A1C1; font-weight: bold">as</span> <span style="color: #D8DEE9">e</span><span style="color: #ECEFF4">:</span>
-</span><span id="__span-15-18"><a id="__codelineno-15-18" name="__codelineno-15-18" href="#__codelineno-15-18"></a>    <span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">e</span><span style="color: #ECEFF4">)</span>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">pydantic</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">BaseModel</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">ValidationError</span>
+</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>
+</span><span id="__span-19-3"><a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span style="color: #616E87; font-style: italic"># Define an email regex term (this is a simplified version)</span>
+</span><span id="__span-19-4"><a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span style="color: #D8DEE9">email_regex</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">Regex</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">r&quot;[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+&quot;</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-19-5"><a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>
+</span><span id="__span-19-6"><a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a><span style="color: #81A1C1; font-weight: bold">class</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">User</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">BaseModel</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-19-7"><a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a>    <span style="color: #D8DEE9">name</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">str</span>
+</span><span id="__span-19-8"><a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a>    <span style="color: #D8DEE9">email</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">email_regex</span>  <span style="color: #616E87; font-style: italic"># Use our DSL regex as a field type</span>
+</span><span id="__span-19-9"><a id="__codelineno-19-9" name="__codelineno-19-9" href="#__codelineno-19-9"></a>
+</span><span id="__span-19-10"><a id="__codelineno-19-10" name="__codelineno-19-10" href="#__codelineno-19-10"></a><span style="color: #616E87; font-style: italic"># Valid input</span>
+</span><span id="__span-19-11"><a id="__codelineno-19-11" name="__codelineno-19-11" href="#__codelineno-19-11"></a><span style="color: #D8DEE9">user</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">User</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">name</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #A3BE8C">&quot;Alice&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">email</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #A3BE8C">&quot;alice@example.com&quot;</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-19-12"><a id="__codelineno-19-12" name="__codelineno-19-12" href="#__codelineno-19-12"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">user</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-19-13"><a id="__codelineno-19-13" name="__codelineno-19-13" href="#__codelineno-19-13"></a>
+</span><span id="__span-19-14"><a id="__codelineno-19-14" name="__codelineno-19-14" href="#__codelineno-19-14"></a><span style="color: #616E87; font-style: italic"># Invalid input (raises a ValidationError)</span>
+</span><span id="__span-19-15"><a id="__codelineno-19-15" name="__codelineno-19-15" href="#__codelineno-19-15"></a><span style="color: #81A1C1; font-weight: bold">try</span><span style="color: #ECEFF4">:</span>
+</span><span id="__span-19-16"><a id="__codelineno-19-16" name="__codelineno-19-16" href="#__codelineno-19-16"></a>    <span style="color: #D8DEE9">User</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">name</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #A3BE8C">&quot;Bob&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">email</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #A3BE8C">&quot;not-an-email&quot;</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-19-17"><a id="__codelineno-19-17" name="__codelineno-19-17" href="#__codelineno-19-17"></a><span style="color: #81A1C1; font-weight: bold">except</span> <span style="color: #D8DEE9">ValidationError</span> <span style="color: #81A1C1; font-weight: bold">as</span> <span style="color: #D8DEE9">e</span><span style="color: #ECEFF4">:</span>
+</span><span id="__span-19-18"><a id="__codelineno-19-18" name="__codelineno-19-18" href="#__codelineno-19-18"></a>    <span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">e</span><span style="color: #ECEFF4">)</span>
 </span></code></pre></div>
 <p>When used in a Pydantic model, the email field is automatically validated against the regex pattern and its JSON Schema includes the <code>pattern</code> constraint.</p>
 <h3 id="example-3-building-a-complex-pattern">Example 3: Building a Complex Pattern</h3>
 <p>Consider a pattern to match a simple date format: <code>YYYY-MM-DD</code>.</p>
-<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span style="color: #D8DEE9">year</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">Regex</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">r&quot;\d&quot;</span><span style="color: #ECEFF4">)</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">times</span><span style="color: #ECEFF4">(</span><span style="color: #B48EAD">4</span><span style="color: #ECEFF4">)</span>         <span style="color: #616E87; font-style: italic"># Four digits for the year</span>
-</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span style="color: #D8DEE9">month</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">Regex</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">r&quot;\d&quot;</span><span style="color: #ECEFF4">)</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">times</span><span style="color: #ECEFF4">(</span><span style="color: #B48EAD">2</span><span style="color: #ECEFF4">)</span>         <span style="color: #616E87; font-style: italic"># Two digits for the month</span>
-</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span style="color: #D8DEE9">day</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">Regex</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">r&quot;\d&quot;</span><span style="color: #ECEFF4">)</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">times</span><span style="color: #ECEFF4">(</span><span style="color: #B48EAD">2</span><span style="color: #ECEFF4">)</span>           <span style="color: #616E87; font-style: italic"># Two digits for the day</span>
-</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>
-</span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span style="color: #616E87; font-style: italic"># Combine with literal hyphens</span>
-</span><span id="__span-16-6"><a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a><span style="color: #D8DEE9">date_pattern</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">year</span> <span style="color: #81A1C1; font-weight: bold">+</span> <span style="color: #A3BE8C">&quot;-&quot;</span> <span style="color: #81A1C1; font-weight: bold">+</span> <span style="color: #D8DEE9">month</span> <span style="color: #81A1C1; font-weight: bold">+</span> <span style="color: #A3BE8C">&quot;-&quot;</span> <span style="color: #81A1C1; font-weight: bold">+</span> <span style="color: #D8DEE9">day</span>
-</span><span id="__span-16-7"><a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">to_regex</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">date_pattern</span><span style="color: #ECEFF4">))</span>
-</span><span id="__span-16-8"><a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a><span style="color: #616E87; font-style: italic"># Output: (\d){4}\-(\d){2}\-(\d){2}</span>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span style="color: #D8DEE9">year</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">Regex</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">r&quot;\d&quot;</span><span style="color: #ECEFF4">)</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">exactly</span><span style="color: #ECEFF4">(</span><span style="color: #B48EAD">4</span><span style="color: #ECEFF4">)</span>         <span style="color: #616E87; font-style: italic"># Four digits for the year</span>
+</span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span style="color: #D8DEE9">month</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">Regex</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">r&quot;\d&quot;</span><span style="color: #ECEFF4">)</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">exactly</span><span style="color: #ECEFF4">(</span><span style="color: #B48EAD">2</span><span style="color: #ECEFF4">)</span>        <span style="color: #616E87; font-style: italic"># Two digits for the month</span>
+</span><span id="__span-20-3"><a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span style="color: #D8DEE9">day</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">Regex</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">r&quot;\d&quot;</span><span style="color: #ECEFF4">)</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">exactly</span><span style="color: #ECEFF4">(</span><span style="color: #B48EAD">2</span><span style="color: #ECEFF4">)</span>          <span style="color: #616E87; font-style: italic"># Two digits for the day</span>
+</span><span id="__span-20-4"><a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a>
+</span><span id="__span-20-5"><a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a><span style="color: #616E87; font-style: italic"># Combine with literal hyphens</span>
+</span><span id="__span-20-6"><a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a><span style="color: #D8DEE9">date_pattern</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">year</span> <span style="color: #81A1C1; font-weight: bold">+</span> <span style="color: #A3BE8C">&quot;-&quot;</span> <span style="color: #81A1C1; font-weight: bold">+</span> <span style="color: #D8DEE9">month</span> <span style="color: #81A1C1; font-weight: bold">+</span> <span style="color: #A3BE8C">&quot;-&quot;</span> <span style="color: #81A1C1; font-weight: bold">+</span> <span style="color: #D8DEE9">day</span>
+</span><span id="__span-20-7"><a id="__codelineno-20-7" name="__codelineno-20-7" href="#__codelineno-20-7"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">to_regex</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">date_pattern</span><span style="color: #ECEFF4">))</span>
+</span><span id="__span-20-8"><a id="__codelineno-20-8" name="__codelineno-20-8" href="#__codelineno-20-8"></a><span style="color: #616E87; font-style: italic"># Output: (\d){4}\-(\d){2}\-(\d){2}</span>
 </span></code></pre></div>
 <hr />
 <h2 id="visualizing-your-pattern">Visualizing Your Pattern</h2>
 <p>One of the unique features of this DSL is that each term can print its underlying structure as an ASCII tree. This visualization can be particularly helpful when dealing with complex expressions.</p>
-<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span style="color: #616E87; font-style: italic"># A composite pattern using concatenation and quantifiers</span>
-</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span style="color: #D8DEE9">pattern</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">&quot;a&quot;</span> <span style="color: #81A1C1; font-weight: bold">+</span> <span style="color: #D8DEE9">String</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;b&quot;</span><span style="color: #ECEFF4">)</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">one_or_more</span><span style="color: #ECEFF4">()</span> <span style="color: #81A1C1; font-weight: bold">+</span> <span style="color: #A3BE8C">&quot;c&quot;</span>
-</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">pattern</span><span style="color: #ECEFF4">)</span>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span style="color: #616E87; font-style: italic"># A composite pattern using concatenation and quantifiers</span>
+</span><span id="__span-21-2"><a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span style="color: #D8DEE9">pattern</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">&quot;a&quot;</span> <span style="color: #81A1C1; font-weight: bold">+</span> <span style="color: #D8DEE9">String</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;b&quot;</span><span style="color: #ECEFF4">)</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">one_or_more</span><span style="color: #ECEFF4">()</span> <span style="color: #81A1C1; font-weight: bold">+</span> <span style="color: #A3BE8C">&quot;c&quot;</span>
+</span><span id="__span-21-3"><a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">pattern</span><span style="color: #ECEFF4">)</span>
 </span></code></pre></div>
 <p><em>Expected Output:</em></p>
-<div class="language-text highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>└── Sequence
-</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>    ├── String(&#39;a&#39;)
-</span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>    ├── KleenePlus(+)
-</span><span id="__span-18-4"><a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a>    │   └── String(&#39;b&#39;)
-</span><span id="__span-18-5"><a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>    └── String(&#39;c&#39;)
+<div class="language-text highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>└── Sequence
+</span><span id="__span-22-2"><a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a>    ├── String(&#39;a&#39;)
+</span><span id="__span-22-3"><a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a>    ├── KleenePlus(+)
+</span><span id="__span-22-4"><a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a>    │   └── String(&#39;b&#39;)
+</span><span id="__span-22-5"><a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a>    └── String(&#39;c&#39;)
 </span></code></pre></div>
 <p>This tree representation makes it easy to see the hierarchy and order of operations in your regular expression.</p>
 <hr />
@@ -3211,7 +3260,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2025-01-26T18:47:29+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2025-01-26</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2025-03-04T14:20:34+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2025-03-04</span>
   </span>
 
     
@@ -3238,6 +3287,11 @@
 
     
     <nav>
+      
+        <a href="https://github.com/RobinPicard" class="md-author" title="@RobinPicard">
+          
+          <img src="https://avatars.githubusercontent.com/u/83579270?v=4&size=72" alt="RobinPicard">
+        </a>
       
         <a href="https://github.com/rlouf" class="md-author" title="@rlouf">
           
