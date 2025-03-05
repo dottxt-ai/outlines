@@ -1,22 +1,21 @@
-from dataclasses import is_dataclass
 import datetime
-from enum import EnumMeta
 import json
 import re
-from dataclasses import dataclass
-from typing import Any, List, Union, get_origin, Literal, get_args, Callable
-from typing_extensions import _TypedDictMeta  # type: ignore
-import outlines.types as types
-from outlines import grammars
+from dataclasses import dataclass, is_dataclass
+from enum import EnumMeta
 from types import FunctionType
-from outlines.fsm.json_schema import get_schema_from_signature
-import interegular
-from genson import SchemaBuilder
+from typing import Any, Callable, List, Literal, Union, get_args, get_origin, _TypedDictMeta # type: ignore
 
+import interegular
 import jsonschema
+from genson import SchemaBuilder
 from pydantic import BaseModel, GetCoreSchemaHandler, GetJsonSchemaHandler, TypeAdapter
 from pydantic.json_schema import JsonSchemaValue
 from pydantic_core import core_schema as cs
+
+import outlines.types as types
+from outlines import grammars
+from outlines.fsm.json_schema import get_schema_from_signature
 from outlines_core.fsm.json_schema import build_regex_from_schema
 
 
@@ -194,6 +193,16 @@ class JsonSchema(Term):
 
     def __repr__(self):
         return f"JsonSchema(schema='{self.schema}')"
+
+    def __eq__(self, other):
+        if not isinstance(other, JsonSchema):
+            return False
+        try:
+            self_dict = json.loads(self.schema)
+            other_dict = json.loads(other.schema)
+            return self_dict == other_dict
+        except json.JSONDecodeError:
+            return self.schema == other.schema
 
 
 @dataclass
@@ -475,17 +484,9 @@ def python_types_to_terms(ptype: Any, recursion_depth: int = 0) -> Term:
             ]
         )
 
-    # Callables
-    if callable(ptype) and not isinstance(ptype, type):
-        return JsonSchema(get_schema_from_signature(ptype))
-
-    # Interegular FSM are passed on as is and are handled by the Generator
-    elif isinstance(ptype, interegular.fsm.FSM):
-        return ptype
-
     # Generic types
     origin = get_origin(ptype)
-    args = get_origin(ptype)
+    args = get_args(ptype)
 
     if origin is Literal:
         return _handle_literal(args)
@@ -495,14 +496,22 @@ def python_types_to_terms(ptype: Any, recursion_depth: int = 0) -> Term:
         return _handle_list(args, recursion_depth)
     elif origin is tuple:
         return _handle_tuple(args, recursion_depth)
-    elif ptype is dict:
+    elif origin is dict:
         return _handle_dict(args, recursion_depth)
-    else:
-        type_name = getattr(ptype, "__name__", ptype)
-        raise TypeError(
-            f"Type {type_name} is currently not supported. Please open an issue: "
-            "https://github.com/dottxt-ai/outlines/issues"
-        )
+
+    # Callables
+    if callable(ptype) and not isinstance(ptype, type):
+        return JsonSchema(get_schema_from_signature(ptype))
+
+    # Interegular FSM are passed on as is and are handled by the Generator
+    elif isinstance(ptype, interegular.fsm.FSM):
+        return ptype
+
+    type_name = getattr(ptype, "__name__", ptype)
+    raise TypeError(
+        f"Type {type_name} is currently not supported. Please open an issue: "
+        "https://github.com/dottxt-ai/outlines/issues"
+    )
 
 
 def _get_enum_members(ptype: EnumMeta) -> List[Any]:
@@ -518,6 +527,7 @@ def _get_enum_members(ptype: EnumMeta) -> List[Any]:
 
 
 def _handle_literal(args: tuple) -> Alternatives:
+    print(args)
     return Alternatives([python_types_to_terms(arg) for arg in args])
 
 
@@ -546,14 +556,14 @@ def _handle_list(args: tuple, recursion_depth: int) -> Sequence:
         [
             String("["),
             item_type,
-            KleeneStar(Sequence([String(","), item_type])),
+            KleeneStar(Sequence([String(", "), item_type])),
             String("]"),
         ]
     )
 
 
-def _handle_tuple(args: tuple, recursion_depth: int) -> Sequence:
-    if args is None:
+def _handle_tuple(args: tuple, recursion_depth: int) -> Union[Sequence, String]:
+    if len(args) == 0:
         return String("()")
     elif len(args) == 2 and args[1] is Ellipsis:
         item_term = python_types_to_terms(args[0], recursion_depth + 1)
@@ -561,7 +571,7 @@ def _handle_tuple(args: tuple, recursion_depth: int) -> Sequence:
             [
                 String("("),
                 item_term,
-                KleeneStar(Sequence([String(","), item_term])),
+                KleeneStar(Sequence([String(", "), item_term])),
                 String(")"),
             ]
         )
@@ -592,7 +602,7 @@ def _handle_dict(args: tuple, recursion_depth: int) -> Sequence:
                         String(":"),
                         value_type,
                         KleeneStar(
-                            Sequence([String(","), key_type, String(":"), value_type])
+                            Sequence([String(", "), key_type, String(":"), value_type])
                         ),
                     ]
                 )
