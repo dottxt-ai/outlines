@@ -418,6 +418,8 @@ def python_types_to_terms(ptype: Any, recursion_depth: int = 0) -> Term:
     elif ptype is bool or get_origin(ptype) is bool:
         return types.boolean
     elif ptype is str or get_origin(ptype) is str:
+        return types.string
+    elif isinstance(ptype, str):
         return String(ptype)
     elif ptype is dict:
         return CFG(grammars.json)
