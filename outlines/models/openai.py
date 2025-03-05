@@ -99,6 +99,8 @@ class OpenAITypeAdapter(ModelTypeAdapter):
 
         if output_type is None:
             return {}
+        elif output_type is dict:
+            return self.format_json_mode_type()
         elif is_dataclass(output_type):
             output_type = TypeAdapter(output_type).json_schema()
             return self.format_json_output_type(output_type)
@@ -136,6 +138,14 @@ class OpenAITypeAdapter(ModelTypeAdapter):
                 },
             }
         }
+
+    def format_json_mode_type(self):
+        """Generate the `response_format` argument to the client when the user
+        specified the output type should be a JSON but without specifying the
+        schema (also called "JSON mode").
+
+        """
+        return {"response_format": {"type": "json_object"}}
 
 
 class OpenAI(Model):
