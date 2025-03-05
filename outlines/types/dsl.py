@@ -148,9 +148,6 @@ class Regex(Term):
     def __repr__(self):
         return f"Regex(pattern='{self.pattern}')"
 
-    def to_regex(self) -> str:
-        return self.pattern
-
 
 @dataclass
 class CFG(Term):
