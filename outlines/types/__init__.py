@@ -26,6 +26,7 @@ from outlines.types.dsl import (
 
 
 # Python types
+string = Regex(r'"[^"]*"')
 integer = Regex(r"[+-]?(0|[1-9][0-9]*)")
 boolean = Regex("(True|False)")
 number = Regex(rf"{integer.pattern}(\.[0-9]+)?([eE][+-][0-9]+)?")
