@@ -12,8 +12,10 @@ from typing_extensions import _TypedDictMeta  # type: ignore
 from . import airports, countries, locale
 from outlines.types.dsl import (
     Regex,
+    CFG,
     JsonSchema,
     regex,
+    cfg,
     json_schema,
     optional,
     either,
@@ -21,6 +23,7 @@ from outlines.types.dsl import (
     at_least,
     at_most,
     between,
+    repeat,
     zero_or_more,
     one_or_more,
 )
@@ -139,13 +142,3 @@ class Choice:
         choices = self.to_list()
         regex_str = r"(" + r"|".join(choices) + r")"
         return regex_str
-
-
-@dataclass
-class CFG:
-    """Represents a Context-Free Grammar as a string."""
-
-    definition: str
-
-
-cfg = CFG
