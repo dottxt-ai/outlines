@@ -419,8 +419,6 @@ def python_types_to_terms(ptype: Any, recursion_depth: int = 0) -> Term:
         return types.boolean
     elif ptype is str or get_origin(ptype) is str:
         return types.string
-    elif isinstance(ptype, str):
-        return String(ptype)
     elif ptype is dict:
         return CFG(grammars.json)
     elif ptype is datetime.time:
@@ -429,6 +427,12 @@ def python_types_to_terms(ptype: Any, recursion_depth: int = 0) -> Term:
         return types.date
     elif ptype is datetime.datetime:
         return types.datetime
+
+    # Basic type instances
+    if isinstance(ptype, str):
+        return String(ptype)
+    elif isinstance(ptype, (int, float)):
+        return Regex(str(ptype))
 
     # Structured types
     structured_type_checks = [
