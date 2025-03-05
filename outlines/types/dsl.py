@@ -4,10 +4,12 @@ from enum import EnumMeta
 import json
 import re
 from dataclasses import dataclass
-from typing import Any, List, Union, get_origin, Literal, get_args
+from typing import Any, List, Union, get_origin, Literal, get_args, Callable
 from typing_extensions import _TypedDictMeta  # type: ignore
 import outlines.types as types
 from outlines import grammars
+from types import FunctionType
+from outlines.fsm.json_schema import get_schema_from_signature
 
 import jsonschema
 from pydantic import BaseModel, GetCoreSchemaHandler, GetJsonSchemaHandler, TypeAdapter
@@ -428,7 +430,7 @@ def python_types_to_terms(ptype: Any, recursion_depth: int = 0) -> Term:
     structured_type_checks = [
         lambda x: is_dataclass(x),
         lambda x: isinstance(x, _TypedDictMeta),
-        lambda x: issubclass(x, BaseModel),
+        lambda x: isinstance(x, type) and issubclass(x, BaseModel),
     ]
     if any(check(ptype) for check in structured_type_checks):
         schema = TypeAdapter(ptype).json_schema()
@@ -437,8 +439,15 @@ def python_types_to_terms(ptype: Any, recursion_depth: int = 0) -> Term:
     # Enums
     if isinstance(ptype, EnumMeta):
         return Alternatives(
-            [python_types_to_terms(arg.value, recursion_depth + 1) for arg in ptype]  # type: ignore
+            [
+                python_types_to_terms(member, recursion_depth + 1)
+                for member in _get_enum_members(ptype)
+            ]
         )
+
+    # Callables
+    if callable(ptype) and not isinstance(ptype, type):
+        return JsonSchema(get_schema_from_signature(ptype))
 
     # Generic types
     origin = get_origin(ptype)
@@ -460,6 +469,18 @@ def python_types_to_terms(ptype: Any, recursion_depth: int = 0) -> Term:
             f"Type {type_name} is currently not supported. Please open an issue: "
             "https://github.com/dottxt-ai/outlines/issues"
         )
+
+
+def _get_enum_members(ptype: EnumMeta) -> List[Any]:
+    regular_members = [member.value for member in ptype]  # type: ignore
+    function_members = [
+        value for key, value in ptype.__dict__.items()
+        if (
+            isinstance(value, FunctionType)
+            and not (key.startswith('__') and key.endswith('__'))
+        )
+    ]
+    return regular_members + function_members
 
 
 def _handle_literal(args: tuple) -> Alternatives:
