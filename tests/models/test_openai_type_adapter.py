@@ -116,6 +116,11 @@ def test_openai_type_adapter_output_none(adapter):
     assert result == {}
 
 
+def test_openai_type_adapter_json_mode(adapter):
+    result = adapter.format_output_type(dict)
+    assert result == {"response_format": {"type": "json_object"}}
+
+
 def test_openai_type_adapter_dataclass(adapter, schema):
     @dataclass
     class User:
