@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from typing import Any, List, Union, get_origin, Literal, get_args
 from typing_extensions import _TypedDictMeta  # type: ignore
 import outlines.types as types
+from outlines import grammars
 
 import jsonschema
 from pydantic import BaseModel, GetCoreSchemaHandler, GetJsonSchemaHandler, TypeAdapter
@@ -414,6 +415,8 @@ def python_types_to_terms(ptype: Any, recursion_depth: int = 0) -> Term:
         return types.boolean
     elif ptype is str or get_origin(ptype) is str:
         return String(ptype)
+    elif ptype is dict:
+        return CFG(grammars.json)
     elif ptype is datetime.time:
         return types.time
     elif ptype is datetime.date:
