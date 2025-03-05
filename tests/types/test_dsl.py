@@ -1,6 +1,24 @@
+import datetime
+import json
+from dataclasses import dataclass
+from enum import Enum
+from typing import (
+    Dict,
+    List,
+    Literal,
+    Tuple,
+    TypedDict,
+    Union,
+    get_args,
+    Optional as PyOptional
+)
+
+import interegular
 import pytest
+from genson import SchemaBuilder
 from pydantic import BaseModel
 
+from outlines import grammars, types
 from outlines.types.dsl import (
     Alternatives,
     JsonSchema,
@@ -15,12 +33,18 @@ from outlines.types.dsl import (
     Sequence,
     String,
     Term,
+    _handle_dict,
+    _handle_list,
+    _handle_literal,
+    _handle_tuple,
+    _handle_union,
+    json_schema,
     one_or_more,
     optional,
+    python_types_to_terms,
+    regex,
     repeat,
     times,
-    regex,
-    json_schema,
     zero_or_more,
 )
 
@@ -254,3 +278,270 @@ def test_dsl_display():
         tree
         == "└── Sequence\n    ├── KleeneStar(*)\n    │   └── Alternatives(|)\n    │       ├── String('a')\n    │       └── String('b')\n    └── Regex('[0-9]')\n"
     )
+
+
+def test_dsl_python_types_to_terms():
+    with pytest.raises(RecursionError):
+        python_types_to_terms(None, 11)
+
+    term = Term()
+    assert python_types_to_terms(term) == term
+
+    assert python_types_to_terms(int) == types.integer
+    assert python_types_to_terms(float) == types.number
+    assert python_types_to_terms(bool) == types.boolean
+    assert python_types_to_terms(str) == types.string
+    assert python_types_to_terms(datetime.time) == types.time
+    assert python_types_to_terms(datetime.date) == types.date
+    assert python_types_to_terms(datetime.datetime) == types.datetime
+    assert python_types_to_terms(dict) == types.CFG(grammars.json)
+
+    string_instance = "a"
+    assert python_types_to_terms(string_instance) == String(string_instance)
+    int_instance = 1
+    assert python_types_to_terms(int_instance) == Regex(r"1")
+    float_instance = 1.0
+    assert python_types_to_terms(float_instance) == Regex(r"1.0")
+
+    @dataclass
+    class DataClass:
+        a: int
+        b: str
+
+    assert python_types_to_terms(DataClass) == JsonSchema(
+        {
+            "properties": {"a": {"title": "A", "type": "integer"}, "b": {"title": "B", "type": "string"}},
+            "required": ["a", "b"],
+            "title": "DataClass",
+            "type": "object",
+        }
+    )
+
+    class SomeTypedDict(TypedDict):
+        a: int
+        b: str
+
+    assert python_types_to_terms(SomeTypedDict) == JsonSchema(
+        {
+            "properties": {"a": {"title": "A", "type": "integer"}, "b": {"title": "B", "type": "string"}},
+            "required": ["a", "b"],
+            "title": "SomeTypedDict",
+            "type": "object",
+        }
+    )
+
+    class PydanticModel(BaseModel):
+        a: int
+        b: str
+
+    assert python_types_to_terms(PydanticModel) == JsonSchema(
+        {
+            "properties": {"a": {"title": "A", "type": "integer"}, "b": {"title": "B", "type": "string"}},
+            "required": ["a", "b"],
+            "title": "PydanticModel",
+            "type": "object",
+        }
+    )
+
+    builder = SchemaBuilder()
+    builder.add_schema({"type": "object", "properties": {}})
+    builder.add_object({"hi": "there"})
+    builder.add_object({"hi": 5})
+    assert python_types_to_terms(builder) == JsonSchema(
+        {
+            "$schema": "http://json-schema.org/schema#",
+            "type": "object",
+            "properties": {"hi": {"type": ["integer", "string"]}},
+            "required": ["hi"]
+        }
+    )
+
+    interegular_fsm = interegular.fsm.FSM(
+        alphabet={},
+        states={},
+        initial={},
+        finals={},
+        map={},
+        __no_validation__=True,
+    )
+    assert python_types_to_terms(interegular_fsm) is interegular_fsm
+
+    def func(a: int, b: str):
+        return (a, b)
+
+    assert python_types_to_terms(func) == JsonSchema(
+        {
+            "type": "object",
+            "properties": {
+                "a": {"title": "A", "type": "integer"},
+                "b": {"title": "B", "type": "string"},
+            },
+            "required": ["a", "b"],
+            "title": "func",
+        }
+    )
+
+    class SomeEnum(Enum):
+        a = "a"
+        b = int
+        c = func
+
+    result = python_types_to_terms(SomeEnum)
+    assert isinstance(result, Alternatives)
+    assert len(result.terms) == 3
+    assert result.terms[0] == String("a")
+    assert result.terms[1] == types.integer
+    assert isinstance(result.terms[2], JsonSchema)
+    schema_dict = json.loads(result.terms[2].schema)
+    assert schema_dict == {
+        "properties": {
+            "a": {"title": "A", "type": "integer"},
+            "b": {"title": "B", "type": "string"},
+        },
+        "required": ["a", "b"],
+        "title": "func",
+        "type": "object",
+    }
+
+    # for generic types we only test the dispatch as the functions that
+    # convert to terms are tested in distinct tests below
+    assert python_types_to_terms(Literal["a", "b"]) == _handle_literal(("a", "b"))
+    assert python_types_to_terms(Union[int, str]) == _handle_union((int, str), recursion_depth=0)
+    assert python_types_to_terms(list[int]) == _handle_list((int,), recursion_depth=0)
+    assert python_types_to_terms(tuple[int, str]) == _handle_tuple((int, str), recursion_depth=0)
+    assert python_types_to_terms(dict[int, str]) == _handle_dict((int, str), recursion_depth=0)
+
+
+def test_dsl_handle_literal():
+    literal = Literal["a", 1]
+    result = _handle_literal(get_args(literal))
+    assert isinstance(result, Alternatives)
+    assert len(result.terms) == 2
+    assert result.terms[0] == String("a")
+    assert result.terms[1] == Regex(r"1")
+
+
+def test_dsl_handle_union():
+    # test simple Union
+    simple_union = Union[int, str]
+    result = _handle_union(get_args(simple_union), recursion_depth=0)
+    assert isinstance(result, Alternatives)
+    assert len(result.terms) == 2
+    assert result.terms[0] == types.integer
+    assert result.terms[1] == types.string
+
+    # test with Optional[T]
+    optional_type = PyOptional[int]
+    result = _handle_union(get_args(optional_type), recursion_depth=0)
+    assert isinstance(result, Alternatives)
+    assert len(result.terms) == 2
+    assert result.terms[0] == types.integer
+    assert result.terms[1] == String("None")
+
+    # test with more complex types
+    class TestModel(BaseModel):
+        field: str
+
+    class TestEnum(Enum):
+        a = "a"
+        b = "b"
+
+    complex_union = Union[TestModel, TestEnum]
+    result = _handle_union(get_args(complex_union), recursion_depth=0)
+    assert isinstance(result, Alternatives)
+    assert len(result.terms) == 2
+    assert isinstance(result.terms[0], JsonSchema)
+    assert isinstance(result.terms[1], Alternatives)
+    assert len(result.terms[1].terms) == 2
+    assert result.terms[1].terms[0] == String("a")
+    assert result.terms[1].terms[1] == String("b")
+
+
+def test_dsl_handle_list():
+    with pytest.raises(TypeError):
+        _handle_list((int, str), recursion_depth=0)
+
+    # simple type
+    list_type = list[int]
+    result = _handle_list(get_args(list_type), recursion_depth=0)
+    assert isinstance(result, Sequence)
+    assert len(result.terms) == 4
+    assert result.terms[0] == String("[")
+    assert result.terms[1] == types.integer
+    assert isinstance(result.terms[2], KleeneStar)
+    assert result.terms[2].term == Sequence([String(", "), types.integer])
+    assert result.terms[3] == String("]")
+
+    # more complex type
+    list_type = list[Union[int, str]]
+    result = _handle_list(get_args(list_type), recursion_depth=0)
+    assert isinstance(result, Sequence)
+    assert len(result.terms) == 4
+    assert result.terms[0] == String("[")
+    assert result.terms[1] == _handle_union(get_args(Union[int, str]), recursion_depth=0)
+    assert isinstance(result.terms[2], KleeneStar)
+    assert result.terms[2].term == Sequence([String(", "), _handle_union(get_args(Union[int, str]), recursion_depth=0)])
+    assert result.terms[3] == String("]")
+
+
+def test_dsl_handle_tuple():
+    # empty tuple
+    tuple_type = Tuple[()]
+    result = _handle_tuple(get_args(tuple_type), recursion_depth=0)
+    assert isinstance(result, String)
+    assert result.value == "()"
+
+    # tuple with ellipsis
+    tuple_type = tuple[int, ...]
+    result = _handle_tuple(get_args(tuple_type), recursion_depth=0)
+    assert isinstance(result, Sequence)
+    assert len(result.terms) == 4
+    assert result.terms[0] == String("(")
+    assert result.terms[1] == types.integer
+    assert isinstance(result.terms[2], KleeneStar)
+    assert result.terms[2].term == Sequence([String(", "), types.integer])
+    assert result.terms[3] == String(")")
+
+    # tuple with fixed length
+    tuple_type = tuple[int, str]
+    result = _handle_tuple(get_args(tuple_type), recursion_depth=0)
+    assert isinstance(result, Sequence)
+    assert len(result.terms) == 5
+    assert result.terms[0] == String("(")
+    assert result.terms[1] == types.integer
+    assert result.terms[2] == String(", ")
+    assert result.terms[3] == types.string
+    assert result.terms[4] == String(")")
+
+    # tuple with fixed length and complex types
+    tuple_type = tuple[int, Union[str, int]]
+    result = _handle_tuple(get_args(tuple_type), recursion_depth=0)
+    assert isinstance(result, Sequence)
+    assert len(result.terms) == 5
+    assert result.terms[0] == String("(")
+    assert result.terms[1] == types.integer
+    assert result.terms[2] == String(", ")
+    assert result.terms[3] == _handle_union(get_args(Union[str, int]), recursion_depth=0)
+    assert result.terms[4] == String(")")
+
+
+def test_dsl_handle_dict():
+    # args of incorrect length
+    with pytest.raises(TypeError):
+        incorrect_dict_type = dict[int, str, int]
+        _handle_dict(get_args(incorrect_dict_type), recursion_depth=0)
+
+    # correct type
+    dict_type = dict[int, str]
+    result = _handle_dict(get_args(dict_type), recursion_depth=0)
+    assert isinstance(result, Sequence)
+    assert len(result.terms) == 3
+    assert result.terms[0] == String("{")
+    assert isinstance(result.terms[1], Optional)
+    assert isinstance(result.terms[1].term, Sequence)
+    assert len(result.terms[1].term.terms) == 4
+    assert result.terms[1].term.terms[0] == types.integer
+    assert result.terms[1].term.terms[1] == String(":")
+    assert result.terms[1].term.terms[2] == types.string
+    assert result.terms[1].term.terms[3] == KleeneStar(Sequence([String(", "), types.integer, String(":"), types.string]))
+    assert result.terms[2] == String("}")
