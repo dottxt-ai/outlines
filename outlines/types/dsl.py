@@ -11,6 +11,7 @@ from outlines import grammars
 from types import FunctionType
 from outlines.fsm.json_schema import get_schema_from_signature
 import interegular
+from genson import SchemaBuilder
 
 import jsonschema
 from pydantic import BaseModel, GetCoreSchemaHandler, GetJsonSchemaHandler, TypeAdapter
@@ -435,6 +436,11 @@ def python_types_to_terms(ptype: Any, recursion_depth: int = 0) -> Term:
     ]
     if any(check(ptype) for check in structured_type_checks):
         schema = TypeAdapter(ptype).json_schema()
+        return JsonSchema(schema)
+
+    # genSON SchemaBuilder
+    elif isinstance(ptype, SchemaBuilder):
+        schema = ptype.to_json()
         return JsonSchema(schema)
 
     # Enums
