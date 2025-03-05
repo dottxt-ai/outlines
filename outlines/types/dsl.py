@@ -147,6 +147,17 @@ class Regex(Term):
         return self.pattern
 
 
+@dataclass
+class CFG(Term):
+    definition: str
+
+    def _display_node(self) -> str:
+        return f"CFG('{self.definition}')"
+
+    def __repr__(self):
+        return f"CFG(definition='{self.definition}')"
+
+
 class JsonSchema(Term):
     def __init__(self, schema: Union[dict, str, type[BaseModel]]):
         if isinstance(schema, dict):
@@ -360,6 +371,10 @@ Term.zero_or_more = zero_or_more  # type: ignore
 
 def regex(pattern: str):
     return Regex(pattern)
+
+
+def cfg(definition: str):
+    return CFG(definition)
 
 
 def json_schema(schema: Union[str, dict, type[BaseModel]]):
