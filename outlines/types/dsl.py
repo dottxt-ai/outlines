@@ -10,6 +10,7 @@ import outlines.types as types
 from outlines import grammars
 from types import FunctionType
 from outlines.fsm.json_schema import get_schema_from_signature
+import interegular
 
 import jsonschema
 from pydantic import BaseModel, GetCoreSchemaHandler, GetJsonSchemaHandler, TypeAdapter
@@ -448,6 +449,10 @@ def python_types_to_terms(ptype: Any, recursion_depth: int = 0) -> Term:
     # Callables
     if callable(ptype) and not isinstance(ptype, type):
         return JsonSchema(get_schema_from_signature(ptype))
+
+    # Interegular FSM are passed on as is and are handled by the Generator
+    elif isinstance(ptype, interegular.fsm.FSM):
+        return ptype
 
     # Generic types
     origin = get_origin(ptype)
