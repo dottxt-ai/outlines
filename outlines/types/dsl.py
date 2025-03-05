@@ -8,6 +8,7 @@ from typing import Any, List, Union, get_origin, Literal, get_args
 from typing_extensions import _TypedDictMeta  # type: ignore
 import outlines.types as types
 
+import jsonschema
 from pydantic import BaseModel, GetCoreSchemaHandler, GetJsonSchemaHandler, TypeAdapter
 from pydantic.json_schema import JsonSchemaValue
 from pydantic_core import core_schema as cs
@@ -171,6 +172,9 @@ class JsonSchema(Term):
             )
 
         self.schema = schema_str
+
+    def __post_init__(self):
+        jsonschema.Draft7Validator.check_schema(json.loads(self.schema))
 
     def _display_node(self) -> str:
         return f"JsonSchema('{self.schema}')"
@@ -426,7 +430,7 @@ def python_types_to_terms(ptype: Any, recursion_depth: int = 0) -> Term:
     structured_type_checks = [
         lambda x: is_dataclass(x),
         lambda x: isinstance(x, _TypedDictMeta),
-        lambda x: isinstance(x, BaseModel),
+        lambda x: issubclass(x, BaseModel),
     ]
     if any(check(ptype) for check in structured_type_checks):
         schema = TypeAdapter(ptype).json_schema()
