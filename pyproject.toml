@@ -37,11 +37,12 @@ dependencies = [
    "requests",
    "tqdm",
    "typing_extensions",
-   "pycountry",
+   "iso3166",
    "airportsdata",
    "torch",
    "outlines_core==0.1.26",
    "genson",
+   "pre-commit>=4.0.1",
 ]
 dynamic = ["version"]
 
@@ -68,12 +69,12 @@ test = [
     "huggingface_hub",
     "openai>=1.0.0",
     "datasets",
-    "vllm; sys_platform == 'linux'",
     "transformers",
     "pillow",
     "exllamav2",
     "jax",
 ]
+test-gpu=["outlines[test]", "vllm; sys_platform == 'linux'"]
 serve = [
     "vllm>=0.3.0",
     "uvicorn",
@@ -121,6 +122,7 @@ module = [
     "jaxlib",
     "jax.numpy",
     "jinja2",
+    "pandas.*",
     "jsonschema.*",
     "openai.*",
     "mamba_ssm.*",
@@ -131,6 +133,7 @@ module = [
     "cloudpickle.*",
     "diskcache.*",
     "pydantic.*",
+    "pydantic_core.*",
     "pytest",
     "referencing.*",
     "torch.*",
@@ -145,7 +148,7 @@ module = [
     "vllm.*",
     "uvicorn.*",
     "fastapi.*",
-    "pycountry.*",
+    "iso3166.*",
     "airportsdata.*",
     "outlines_core.*",
     "genson",

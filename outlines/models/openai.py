@@ -1,4 +1,5 @@
 """Integration with OpenAI's API."""
+
 import copy
 import functools
 from dataclasses import asdict, dataclass, field, replace
@@ -20,11 +21,11 @@ class OpenAIConfig:
     properties that are specific to the OpenAI API. Not all these properties are
     supported by Outlines.
 
-    Properties
+    Parameters
     ----------
     model
         The name of the model. Available models can be found on OpenAI's website.
-    frequence_penalty
+    frequency_penalty
         Number between 2.0 and -2.0. Positive values penalize new tokens based on
         their existing frequency in the text,
     logit_bias
@@ -49,7 +50,6 @@ class OpenAIConfig:
         Number between 0 and 1. Parameter for nucleus sampling.
     user
         A unique identifier for the end-user.
-
     """
 
     model: str = ""
@@ -140,7 +140,13 @@ class OpenAI:
         if samples is None:
             samples = self.config.n
 
-        config = replace(self.config, max_tokens=max_tokens, temperature=temperature, n=samples, stop=stop_at)  # type: ignore
+        config = replace(
+            self.config,
+            max_tokens=max_tokens,
+            temperature=temperature,
+            n=samples,
+            stop=stop_at,
+        )  # type: ignore
 
         response, prompt_tokens, completion_tokens = generate_chat(
             prompt, system_prompt, self.client, config

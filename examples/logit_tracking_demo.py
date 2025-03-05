@@ -15,7 +15,7 @@ from pydantic import BaseModel, Field
 
 import outlines.models as models
 import outlines.generate as generate
-from outlines.processors.tracking import track_logits, LogitTrackingProcessor
+from outlines.processors.tracking import track_logits, LogitTracker
 from outlines.processors import RegexLogitsProcessor
 import transformers
 
@@ -274,7 +274,7 @@ def analyze_json_generation(model):
     display_token_analysis(results, show_logits=True)
 
     # Convert to dataframe
-    df = generator.logits_processor.to_dataframe(show="probs", min_value=0.01)
+    df = generator.logits_processor.get_probabilities_dataframe(min_value=0.01)
 
     # Retrieve only the tokens that were chosen
     chosen = df[df.chosen]
@@ -283,7 +283,7 @@ def analyze_json_generation(model):
     # Show sequence at different points
     print("\n2. Generation sequence at different points:")
     for pos in [5, 10, 15, 20]:
-        print(f"\nFirst {pos} tokens: {repr(generator.logits_processor.sequence(pos))}")
+        print(f"\nFirst {pos} tokens: {repr(generator.logits_processor.sequence_up_to(pos))}")
 
     # Visualize how JSON structure affects probabilities
     print("\nCreating visualizations:")

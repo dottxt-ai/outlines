@@ -2,6 +2,7 @@ import asyncio
 import contextlib
 import functools
 import os
+import tempfile
 from typing import Callable, Optional
 
 import cloudpickle
@@ -50,8 +51,21 @@ def get_cache():
     """
     from outlines._version import __version__ as outlines_version  # type: ignore
 
-    home_dir = os.path.expanduser("~")
-    cache_dir = os.environ.get("OUTLINES_CACHE_DIR", f"{home_dir}/.cache/outlines")
+    outlines_cache_dir = os.environ.get("OUTLINES_CACHE_DIR")
+    xdg_cache_home = os.environ.get("XDG_CACHE_HOME")
+    home_dir = os.path.normpath(os.path.expanduser("~"))
+    if outlines_cache_dir:
+        # OUTLINES_CACHE_DIR takes precendence
+        cache_dir = outlines_cache_dir
+    elif xdg_cache_home:
+        cache_dir = os.path.join(xdg_cache_home, ".cache", "outlines")
+    elif home_dir != "/":
+        cache_dir = os.path.join(home_dir, ".cache", "outlines")
+    else:
+        # home_dir may be / inside a docker container without existing user
+        tempdir = tempfile.gettempdir()
+        cache_dir = os.path.join(tempdir, ".cache", "outlines")
+
     memory = Cache(
         cache_dir,
         eviction_policy="none",
