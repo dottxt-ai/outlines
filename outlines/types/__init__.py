@@ -12,10 +12,13 @@ from typing_extensions import _TypedDictMeta  # type: ignore
 from . import airports, countries, locale
 from outlines.types.dsl import (
     Regex,
+    CFG,
+    JsonSchema,
     json_schema,
     one_or_more,
     optional,
     regex,
+    cfg,
     repeat,
     zero_or_more,
     times,
@@ -23,6 +26,7 @@ from outlines.types.dsl import (
 
 
 # Python types
+string = Regex(r'"[^"]*"')
 integer = Regex(r"[+-]?(0|[1-9][0-9]*)")
 boolean = Regex("(True|False)")
 number = Regex(rf"{integer.pattern}(\.[0-9]+)?([eE][+-][0-9]+)?")
@@ -56,89 +60,3 @@ email = Regex(
 isbn = Regex(
     r"(?:ISBN(?:-1[03])?:? )?(?=[0-9X]{10}$|(?=(?:[0-9]+[- ]){3})[- 0-9X]{13}$|97[89][0-9]{10}$|(?=(?:[0-9]+[- ]){4})[- 0-9]{17}$)(?:97[89][- ]?)?[0-9]{1,5}[- ]?[0-9]+[- ]?[0-9]+[- ]?[0-9X]"
 )
-
-
-@dataclass
-class JsonType:
-    """Represents a JSON object.
-
-    The structure of JSON object can be defined using a JSON Schema
-    specification represented as a string or a dictionary, or a Pydantic
-    BaseModel.
-
-    Attributes
-    ----------
-    definition
-        The object used to define the structure of the JSON object.
-
-    """
-
-    definition: Union[str, dict, type[BaseModel]]
-    whitespace_pattern: str = " "
-
-    def to_json_schema(self):
-        if isinstance(self.definition, str):
-            schema = json.loads(self.definition)
-        elif isinstance(self.definition, dict):
-            schema = self.definition
-        elif isinstance(self.definition, type(BaseModel)):
-            schema = self.definition.model_json_schema()
-        elif isinstance(self.definition, _TypedDictMeta):
-            schema = TypeAdapter(self.definition).json_schema()
-        elif is_dataclass(self.definition):
-            schema = TypeAdapter(self.definition).json_schema()
-        else:
-            raise TypeError(
-                "The Json definition must be a JSON Schema string, dictionary or Pydantic model."
-            )
-
-        try:
-            Validator.check_schema(schema)
-        except SchemaError as e:
-            raise e
-
-        return schema
-
-    def to_regex(self):
-        schema = self.to_json_schema()
-        schema_str = json.dumps(schema)
-        return build_regex_from_schema(schema_str, self.whitespace_pattern)
-
-
-@dataclass
-class List:
-    definition: list
-
-    def to_regex(self):
-        raise NotImplementedError(
-            "Structured generation for lists of objects are not implemented yet."
-        )
-
-
-@dataclass
-class Choice:
-    """Represents a multiple choice"""
-
-    definition: Union[EnumMeta, list[str]]
-
-    def __post_init__(self):
-        if isinstance(self.definition, list):
-            self.definition = Enum("Definition", [(x, x) for x in self.definition])
-
-    def to_list(self):
-        if isinstance(self.definition, list):
-            return self.definition
-        else:
-            return [x.value for x in self.definition]
-
-    def to_regex(self):
-        choices = self.to_list()
-        regex_str = r"(" + r"|".join(choices) + r")"
-        return regex_str
-
-
-@dataclass
-class CFG:
-    """Represents a Context-Free Grammar as a string."""
-
-    definition: str

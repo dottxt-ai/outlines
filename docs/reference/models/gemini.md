@@ -50,7 +50,6 @@ import google.generativeai as genai
 
 import outlines
 from outlines import Generator
-from outlines.types import JsonType
 
 
 model = outlines.from_gemini(genai.GenerativeModel("gemini-1-5-flash"))
@@ -60,7 +59,7 @@ class Person(TypedDict):
     last_name: str
     age: int
 
-generator = Generator(model, JsonType(Person))
+generator = Generator(model, Person)
 generator("current indian prime minister on january 1st 2023")
 # Person(first_name='Narendra', last_name='Modi', age=72)
 ```
@@ -79,7 +78,6 @@ from enum import Enum
 import google.generativeai as genai
 
 from outlines import Generator
-from outlines.types import Choice
 
 model = outlines.from_gemini(genai.GenerativeModel("gemini-1-5-flash"))
 
@@ -88,7 +86,7 @@ class Foo(Enum):
     fizz = "Fizz"
     fuzz = "Fuzz"
 
-generator = Generator(model, Choice(Foo))
+generator = Generator(model, Foo)
 generator("current indian prime minister on january 1st 2023")
 # Person(first_name='Narendra', last_name='Modi', age=72)
 ```

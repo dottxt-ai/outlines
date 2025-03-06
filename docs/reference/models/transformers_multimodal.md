@@ -140,7 +140,7 @@ You can include multiple audio files by providing a list for the `audios` argume
 
 You can use the model to generate structured data by providing a value for the parameter `output_type` (the second positional argument of the `generate` method, right after the prompt).
 
-Supported types include `Json`, `Choice`, `Regex` and `CFG`.
+You can use most common Python types along with the Outlines DSL types `JsonSchema`, `Regex` and `CFG`.
 
 For instance to do classification, you can use the `Regex` type:
 ```python

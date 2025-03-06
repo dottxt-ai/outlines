@@ -43,7 +43,6 @@ Integrations differ in their coverage of structured generation. Here is a summar
 | x86 / AMD64       | ✅           | ❌  | ✅        | ❌    | N/A     | N/A   |
 | **Structure**     |               |     |           |       |         |       |
 | JSON Schema       | ✅           | ✅  | ✅        | ✅    | ✅      | ✅   |
-| Choice            | ✅           | ✅  | ✅        | ✅    | ❌      | ✅   |
 | Regex             | ✅           | ✅  | ✅        | ✅    | ❌      | ❌   |
 | Grammar           | ✅           | ✅  | ✅        | ✅    | ❌      | ❌   |
 

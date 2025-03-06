@@ -80,6 +80,7 @@ Please see [the documentation](https://dottxt-ai.github.io/outlines/latest/refer
 You can reduce the completion to a choice between multiple possibilities:
 
 ``` python
+from typing import Literal
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 import outlines
@@ -105,7 +106,7 @@ Text: I really really really want pizza.
 <|im_start|>assistant
 """
 
-answer = model(prompt, outlines.Choice(["Pizza", "Pasta", "Salad", "Dessert"]))
+answer = model(prompt, Literal["Pizza", "Pasta", "Salad", "Dessert"])
 # Likely answer: Pizza
 ```
 
@@ -120,7 +121,7 @@ class Food(str, Enum):
     salad = "Salad"
     dessert = "Dessert"
 
-answer = model(prompt, outlines.Choice(Food))
+answer = model(prompt, Food)
 # Likely answer: Pizza
 ````
 
@@ -159,6 +160,7 @@ hood:
 ``` python
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import outlines
+from outlines import regex
 
 model_name = "microsoft/Phi-3-mini-4k-instruct"
 model = outlines.from_transformers(
@@ -239,18 +241,17 @@ model = outlines.from_transformers(
 )
 
 # Construct structured sequence generator
+generator = outlines.Generator(model, Character)
 
 # Draw a sample
 seed = 789001
-
-prompt = "Give me a character description"
-character = model(prompt, outlines.JsonType(Character), seed=seed)
+character = generator("Give me a character description", seed=seed)
 
 print(repr(character))
 # Character(name='Anderson', age=28, armor=<Armor.chainmail: 'chainmail'>, weapon=<Weapon.sword: 'sword'>, strength=8)
 
 prompt = "Give me an interesting character description"
-character = model(prompt, outlines.JsonType(Character), seed=seed)
+character = model(prompt, Character, seed=seed)
 
 print(repr(character))
 # Character(name='Vivian Thr', age=44, armor=<Armor.plate: 'plate'>, weapon=<Weapon.crossbow: 'crossbow'>, strength=125)
@@ -311,7 +312,7 @@ model = outlines.from_transformers(
 )
 
 prompt = "Give me a character description"
-character = model(prompt, outlines.JsonType(schema))
+character = model(prompt, outlines.json_schema(schema))
 ```
 
 ### Using context-free grammars to guide generation
@@ -365,16 +366,17 @@ import outlines
 def add(a: int, b: int):
     return a + b
 
-
 model_name = "WizardLM/WizardMath-7B-V1.1"
 model = outlines.from_transformers(
     AutoModelForCausalLM.from_pretrained(model_name),
     AutoTokenizer.from_pretrained(model_name)
 )
-generator = outlines.generate.json(model, outlines.types.JsonType(add))
-result = generator("Return json with two integers named a and b respectively. a is odd and b even.")
+result = model(
+    "Return json with two integers named a and b respectively. a is odd and b even.",
+    add
+)
 
-# print(add(**result))
+print(add(**result))
 # 3
 ```
 
@@ -406,9 +408,8 @@ model = outlines.from_transformers(
     AutoModelForCausalLM.from_pretrained(model_name),
     AutoTokenizer.from_pretrained(model_name)
 )
-generator = outlines.generate.json(model, outlines.types.JsonType(Operation))
+generator = outlines.Generator(model, Operation)
 result = generator("Return json with two float named c and d respectively. c is negative and d greater than 1.0.")
-
 #print(result)
 # {'c': -3.14, 'd': 1.5}
 ```

@@ -89,7 +89,6 @@ from openai import OpenAI
 from pydantic import BaseModel
 
 import outlines
-from outlines.types import JsonType
 
 model = outlines.from_openai(OpenAI(), "gpt-4o-mini")
 
@@ -98,7 +97,7 @@ class Person(BaseModel):
     last_name: str
     age: int
 
-generator = Generator(model, Json(Person))
+generator = Generator(model, Person)
 generator("current indian prime minister on january 1st 2023")
 # Person(first_name='Narendra', last_name='Modi', age=72)
 ```

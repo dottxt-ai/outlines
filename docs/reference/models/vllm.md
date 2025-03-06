@@ -43,14 +43,13 @@ You can also use structured generation with the `VLLM` model by providing an out
 ```python
 import outlines
 from vllm import LLM
-from outlines.types import JsonType
 from pydantic import BaseModel
 
 class Character(BaseModel):
     name: str
 
 model = outlines.from_vllm(LLM("microsoft/Phi-3-mini-4k-instruct"))
-answer = model("Create a character.", output_type=JsonType(Character))
+answer = model("Create a character.", output_type=Character)
 ```
 
 The VLLM model supports batch generation. To use it, you can pass a list of strings as prompt instead of a single string.

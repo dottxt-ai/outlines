@@ -5,7 +5,6 @@ from pydantic import BaseModel, Field
 
 import outlines
 from outlines import Generator
-from outlines.types import JsonType
 
 
 # Load the model
@@ -38,7 +37,7 @@ appointment to review math lessons to next Friday at 2pm at the same place, 3 av
 see you 😘 """
 
 # Create the generator
-generator = Generator(model, JsonType(Event))
+generator = Generator(model, Event)
 
 # Extract the event information
 event = generator(prompt + message)

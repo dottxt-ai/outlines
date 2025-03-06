@@ -51,7 +51,7 @@ model = outlines.from_transformers(
     AutoModelForCausalLM.from_pretrained(model_name),
     AutoTokenizer.from_pretrained(model_name)
 )
-generator = Generator(model, types.JsonType(Client))
+generator = Generator(model, Client)
 result = generator(
     "Create a client profile with the fields name, phone_number and zip_code"
 )

@@ -4,11 +4,12 @@ import outlines.grammars
 import outlines.models
 import outlines.processors
 import outlines.types
-from outlines.types import Choice, Regex, JsonType
 from outlines.caching import clear_cache, disable_cache, get_cache
 from outlines.function import Function
 from outlines.generator import Generator
 from outlines.templates import Template, prompt
+from outlines.types import regex, json_schema, cfg
+from outlines.templates import Vision
 
 from outlines.models import (
     from_dottxt,
@@ -41,9 +42,9 @@ __all__ = [
     "get_cache",
     "Function",
     "Generator",
-    "JsonType",
-    "Cfg",
-    "Regex",
+    "regex",
+    "json_schema",
+    "cfg",
     "prompt",
     "Template",
     "grammars",

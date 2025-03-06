@@ -7,7 +7,7 @@ from pydantic import BaseModel
 
 from outlines.models import LlamaCpp
 from outlines.processors import RegexLogitsProcessor
-from outlines.types import Choice, JsonType, Regex
+from outlines.types.dsl import Regex, python_types_to_terms, to_regex
 
 
 def test_load_model():
@@ -48,12 +48,7 @@ def test_llamacpp_json(model):
     class Foo(BaseModel):
         bar: str
 
-    regex_str = JsonType(Foo).to_regex()
-    logits_processor = RegexLogitsProcessor(regex_str, model.tokenizer)
-    result = model.generate(
-        "foo? Respond with one word.", logits_processor, max_tokens=1000
-    )
-
+    result = model("foo? Respond with one word.", Foo, max_tokens=1000)
     assert isinstance(result, str)
     assert "bar" in json.loads(result)
 
@@ -63,10 +58,7 @@ def test_llamacpp_choice(model):
         bar = "Bar"
         foor = "Foo"
 
-    regex_str = Choice(Foo).to_regex()
-    logits_processor = RegexLogitsProcessor(regex_str, model.tokenizer)
-    result = model.generate("foo?", logits_processor)
-
+    result = model("foo?", Foo)
     assert result == "Foo" or result == "Bar"
 
 
@@ -103,7 +95,7 @@ def test_llamacpp_stream_json(model):
     class Foo(BaseModel):
         bar: int
 
-    regex_str = JsonType(Foo).to_regex()
+    regex_str = to_regex(python_types_to_terms(Foo))
     logits_processor = RegexLogitsProcessor(regex_str, model.tokenizer)
     generator = model.stream("foo?", logits_processor)
 
@@ -116,7 +108,7 @@ def test_llamacpp_stream_choice(model):
         bar = "Bar"
         foor = "Foo"
 
-    regex_str = Choice(Foo).to_regex()
+    regex_str = to_regex(python_types_to_terms(Foo))
     logits_processor = RegexLogitsProcessor(regex_str, model.tokenizer)
     generator = model.stream("foo?", logits_processor)
 

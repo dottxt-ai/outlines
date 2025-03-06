@@ -3,7 +3,7 @@ import re
 from enum import Enum
 
 import outlines
-from outlines.types import Choice, JsonType, Regex
+from outlines.types import Regex
 from outlines.models.transformers import TransformerTokenizer
 from pydantic import BaseModel
 from transformers import PreTrainedTokenizer
@@ -88,7 +88,7 @@ def test_mlxlm_JsonType(model):
     class Character(BaseModel):
         name: str
 
-    result = model("Create a character with a name.", JsonType(Character))
+    result = model("Create a character with a name.", Character)
     assert "name" in result
 
 
@@ -98,5 +98,5 @@ def test_mlxlm_choice(model):
         cat = "cat"
         dog = "dog"
 
-    result = model("Cat or dog?", Choice(Foo))
+    result = model("Cat or dog?", Foo)
     assert result in ["cat", "dog"]

@@ -18,7 +18,7 @@ from transformers import (
 
 import outlines
 from outlines.models.transformers import TransformersMultiModal
-from outlines.types import Choice, JsonType, Regex
+from outlines.types import Regex
 
 TEST_MODEL = "trl-internal-testing/tiny-LlavaForConditionalGeneration"
 TEST_CLIP_MODEL = "openai/clip-vit-base-patch32"
@@ -119,7 +119,7 @@ def test_transformers_vision_json(model, images):
 
     result = model(
         {"text": "<image>Give a name to this animal.", "images": images[0]},
-        JsonType(Foo),
+        Foo,
     )
     assert "name" in result
 
@@ -139,7 +139,7 @@ def test_transformers_vision_choice(model, images):
         dog = "dog"
 
     result = model(
-        {"text": "<image>Is it a cat or a dog?", "images": images[0]}, Choice(Foo)
+        {"text": "<image>Is it a cat or a dog?", "images": images[0]}, Foo
     )
 
     assert isinstance(result, str)
@@ -190,7 +190,7 @@ def test_transformers_vision_batch_samples_constrained(model, images):
 
     result = model(
         {"text": "<image>Describe this image in one sentence.", "images": images[0]},
-        Choice(Foo),
+        Foo,
         num_return_sequences=2,
         num_beams=2,
     )
@@ -206,7 +206,7 @@ def test_transformers_vision_batch_samples_constrained(model, images):
             ],
             "images": [images[0], images[1]],
         },
-        Choice(Foo),
+        Foo,
     )
     assert isinstance(result, list)
     assert len(result) == 2
@@ -220,7 +220,7 @@ def test_transformers_vision_batch_samples_constrained(model, images):
             ],
             "images": [images[0], images[1]],
         },
-        Choice(Foo),
+        Foo,
         num_return_sequences=2,
         num_beams=2,
     )

@@ -30,15 +30,15 @@ print(result)
 # The answer is 4
 ```
 
-### [Multi-label classification](./choices.md)
+### [Multi-label classification]
 
 Outlines allows you to do multi-label classification by guiding the model so it can only output either of the specified choices:
 
 ```python
+from typing import Literal
 import outlines
-from outlines.types import Choice
 
-generator = outlines.Generator(model, Choice(["Blue", "Red", "Yellow"]))
+generator = outlines.Generator(model, Literal["Blue", "Red", "Yellow"])
 
 color = generator("What is the closest color to Indigo? ")
 print(color)
@@ -55,7 +55,6 @@ Outlines can guide models so that they output valid JSON **100%** of the time. Y
     from enum import Enum
     from pydantic import BaseModel, constr, conint
 
-    from outlines.types import JsonType
     import outlines
 
     class Armor(str, Enum):
@@ -70,7 +69,7 @@ Outlines can guide models so that they output valid JSON **100%** of the time. Y
         armor: Armor
         strength: conint(gt=1, lt=100)
 
-    generator = outlines.Generator(model, JsonType(Character))
+    generator = outlines.Generator(model, Character)
 
     character = generator(
         "Generate a new character for my awesome game: "
@@ -84,7 +83,7 @@ Outlines can guide models so that they output valid JSON **100%** of the time. Y
 
     ```python
     import outlines
-    from outlines.types import JsonType
+    from outlines.types import JsonSchema
 
     schema = """{
         "$defs": {
@@ -105,7 +104,7 @@ Outlines can guide models so that they output valid JSON **100%** of the time. Y
         "type": "object"
     }"""
 
-    generator = outlines.Generator(model, JsonType(schema))
+    generator = outlines.Generator(model, JsonSchema(schema))
     character = generator(
         "Generate a new character for my awesome game: "
         + "name, age (between 1 and 99), armor and strength. "

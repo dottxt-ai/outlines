@@ -54,7 +54,7 @@ This would generate two sequences for each prompt, for a total of four sequences
 
 `Transformers` models can generate structured data by providing a value for the parameter `output_type` (the second positional argument of the `generate` method, right after the prompt).
 
-Supported types include `Json`, `Choice`, `Regex` and `CFG`.
+You can use most common Python types along with the Outlines DSL types `JsonSchema`, `Regex` and `CFG`.
 
 For instance:
 ```python
@@ -64,5 +64,5 @@ from pydantic import BaseModel
 class Character(BaseModel):
     name: str
 
-model("Create a character with a name.", Json(Character))
+model("Create a character with a name.", Character)
 ```

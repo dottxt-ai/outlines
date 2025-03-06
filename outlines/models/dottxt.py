@@ -1,12 +1,16 @@
 """Integration with Dottxt's API."""
 
+from dataclasses import is_dataclass
 import json
 from functools import singledispatchmethod
-from types import NoneType
 from typing import Optional, TYPE_CHECKING
 
+from pydantic import BaseModel, TypeAdapter
+from typing_extensions import _TypedDictMeta  # type: ignore
+
 from outlines.models.base import Model, ModelTypeAdapter
-from outlines.types import JsonType
+from outlines.types import Regex, CFG, JsonSchema
+
 
 if TYPE_CHECKING:
     from dottxt import Dottxt as DottxtClient
@@ -15,7 +19,6 @@ __all__ = ["Dottxt"]
 
 
 class DottxtTypeAdapter(ModelTypeAdapter):
-    @singledispatchmethod
     def format_input(self, model_input):
         """Generate the `messages` argument to pass to the client.
 
@@ -25,37 +28,49 @@ class DottxtTypeAdapter(ModelTypeAdapter):
             The input passed by the user.
 
         """
-        raise NotImplementedError(
-            f"The input type {input} is not available with Dottxt. The only available type is `str`."
+        if isinstance(model_input, str):
+            return model_input
+        raise TypeError(
+            f"The input type {model_input} is not available with Dottxt. The only available type is `str`."
         )
 
-    @format_input.register(str)
-    def format_str_input(self, model_input: str):
-        """Generate the `messages` argument to pass to the client when the user
-        only passes a prompt.
-
-        """
-        return model_input
-
-    @singledispatchmethod
     def format_output_type(self, output_type):
-        """Format the output type to pass to the client."""
-        raise NotImplementedError(
-            f"The input type {input} is not available with Dottxt."
-        )
+        """Format the output type to pass to the client.
 
-    @format_output_type.register(JsonType)
-    def format_json_output_type(self, output_type: JsonType):
-        """Format the output type to pass to the client."""
-        schema = output_type.to_json_schema()
-        return json.dumps(schema)
+        TODO: `int`, `float` and other Python types could be supported via JSON Schema.
+        """
 
-    @format_output_type.register(NoneType)
-    def format_none_output_type(self, output_type: None):
-        """Format the output type to pass to the client."""
-        raise NotImplementedError(
-            "You must provide an output type. Dottxt only supports constrained generation."
-        )
+        # Unsupported languages
+        if output_type is None:
+            raise TypeError(
+                "You must provide an output type. Dottxt only supports constrained generation."
+            )
+        elif isinstance(output_type, Regex):
+            raise TypeError(
+                "Regex-based structured outputs will soon be available with Dottxt. Use an open source model in the meantime."
+            )
+        elif isinstance(output_type, CFG):
+            raise TypeError(
+                "CFG-based structured outputs will soon be available with Dottxt. Use an open source model in the meantime."
+            )
+
+        elif isinstance(output_type, JsonSchema):
+            return output_type.schema
+        elif is_dataclass(output_type):
+            schema = TypeAdapter(output_type).json_schema()
+            return json.dumps(schema)
+        elif isinstance(output_type, _TypedDictMeta):
+            schema = TypeAdapter(output_type).json_schema()
+            return json.dumps(schema)
+        elif isinstance(output_type, type(BaseModel)):
+            schema = output_type.model_json_schema()
+            return json.dumps(schema)
+        else:
+            type_name = getattr(output_type, "__name__", output_type)
+            raise TypeError(
+                f"The type `{type_name}` is not supported by Dottxt. "
+                "Consider using a local mode instead."
+            )
 
 
 class Dottxt(Model):

@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Callable, Optional, Tuple, Union
 import requests
 
 import outlines
+from outlines.types import JsonSchema
 
 if TYPE_CHECKING:
     from outlines.templates import Template
@@ -43,7 +44,7 @@ class Function:
             AutoTokenizer.from_pretrained(self.model_name),
         )
 
-        self.generator = outlines.Generator(model, outlines.JsonType(self.schema))
+        self.generator = outlines.Generator(model, JsonSchema(self.schema))
 
     def __call__(self, *args, **kwargs):
         """Call the function.

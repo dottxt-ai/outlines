@@ -1,11 +1,21 @@
-import json as json
+import datetime
+import json
 import re
-from dataclasses import dataclass
-from typing import Any, List, Union
+from dataclasses import dataclass, is_dataclass
+from enum import EnumMeta
+from types import FunctionType
+from typing import Any, Callable, List, Literal, Union, get_args, get_origin, _TypedDictMeta # type: ignore
 
-from pydantic import BaseModel, GetCoreSchemaHandler, GetJsonSchemaHandler
+import interegular
+import jsonschema
+from genson import SchemaBuilder
+from pydantic import BaseModel, GetCoreSchemaHandler, GetJsonSchemaHandler, TypeAdapter
 from pydantic.json_schema import JsonSchemaValue
 from pydantic_core import core_schema as cs
+
+import outlines.types as types
+from outlines import grammars
+from outlines.fsm.json_schema import get_schema_from_signature
 from outlines_core.fsm.json_schema import build_regex_from_schema
 
 
@@ -137,32 +147,57 @@ class Regex(Term):
     def __repr__(self):
         return f"Regex(pattern='{self.pattern}')"
 
-    def to_regex(self) -> str:
-        return self.pattern
+
+@dataclass
+class CFG(Term):
+    definition: str
+
+    def _display_node(self) -> str:
+        return f"CFG('{self.definition}')"
+
+    def __repr__(self):
+        return f"CFG(definition='{self.definition}')"
 
 
 class JsonSchema(Term):
-    def __init__(self, schema: Union[dict, str, type[BaseModel]]):
+    def __init__(self, schema: Union[dict, str, type[BaseModel], _TypedDictMeta, type]):
         if isinstance(schema, dict):
             schema_str = json.dumps(schema)
         elif isinstance(schema, str):
             schema_str = schema
-        elif issubclass(schema, BaseModel):
-            schema_str = json.dumps(schema.model_json_schema())
+        elif isinstance(schema, type) and issubclass(schema, BaseModel):
+            schema_str = json.dumps(schema.model_json_schema())  # type: ignore
+        elif isinstance(schema, _TypedDictMeta):
+            schema_str = json.dumps(TypeAdapter(schema).json_schema())
+        elif is_dataclass(schema):
+            schema_str = json.dumps(TypeAdapter(schema).json_schema())
         else:
             raise ValueError(
-                f"Cannot parse schema {json_schema}. The schema must be either "
+                f"Cannot parse schema {schema}. The schema must be either "
                 + "a Pydantic class, a dictionary or a string that contains the JSON "
                 + "schema specification"
             )
 
         self.schema = schema_str
 
+    def __post_init__(self):
+        jsonschema.Draft7Validator.check_schema(json.loads(self.schema))
+
     def _display_node(self) -> str:
         return f"JsonSchema('{self.schema}')"
 
     def __repr__(self):
         return f"JsonSchema(schema='{self.schema}')"
+
+    def __eq__(self, other):
+        if not isinstance(other, JsonSchema):
+            return False
+        try:
+            self_dict = json.loads(self.schema)
+            other_dict = json.loads(other.schema)
+            return self_dict == other_dict
+        except json.JSONDecodeError:
+            return self.schema == other.schema
 
 
 @dataclass
@@ -353,8 +388,212 @@ def regex(pattern: str):
     return Regex(pattern)
 
 
+def cfg(definition: str):
+    return CFG(definition)
+
+
 def json_schema(schema: Union[str, dict, type[BaseModel]]):
     return JsonSchema(schema)
+
+
+def python_types_to_terms(ptype: Any, recursion_depth: int = 0) -> Term:
+    """Convert Python types to Outlines DSL terms that constrain LLM output.
+
+    Arguments
+    ---------
+    ptype
+        The Python type to convert
+    recursion_depth
+        Current recursion depth to prevent infinite recursion
+
+    Returns
+    -------
+    The corresponding DSL `Term` instance.
+    """
+    if recursion_depth > 10:
+        raise RecursionError(
+            f"Maximum recursion depth exceeded when converting {ptype}. "
+            "This might be due to a recursive type definition."
+        )
+
+    # First handle Term instances
+    if isinstance(ptype, Term):
+        return ptype
+
+    # Basic types
+    if ptype is int or get_origin(ptype) is int:
+        return types.integer
+    elif ptype is float or get_origin(ptype) is float:
+        return types.number
+    elif ptype is bool or get_origin(ptype) is bool:
+        return types.boolean
+    elif ptype is str or get_origin(ptype) is str:
+        return types.string
+    elif ptype is dict:
+        return CFG(grammars.json)
+    elif ptype is datetime.time:
+        return types.time
+    elif ptype is datetime.date:
+        return types.date
+    elif ptype is datetime.datetime:
+        return types.datetime
+
+    # Basic type instances
+    if isinstance(ptype, str):
+        return String(ptype)
+    elif isinstance(ptype, (int, float)):
+        return Regex(str(ptype))
+
+    # Structured types
+    structured_type_checks = [
+        lambda x: is_dataclass(x),
+        lambda x: isinstance(x, _TypedDictMeta),
+        lambda x: isinstance(x, type) and issubclass(x, BaseModel),
+    ]
+    if any(check(ptype) for check in structured_type_checks):
+        schema = TypeAdapter(ptype).json_schema()
+        return JsonSchema(schema)
+
+    # genSON SchemaBuilder
+    elif isinstance(ptype, SchemaBuilder):
+        schema = ptype.to_json()
+        return JsonSchema(schema)
+
+    # Enums
+    if isinstance(ptype, EnumMeta):
+        return Alternatives(
+            [
+                python_types_to_terms(member, recursion_depth + 1)
+                for member in _get_enum_members(ptype)
+            ]
+        )
+
+    # Generic types
+    origin = get_origin(ptype)
+    args = get_args(ptype)
+
+    if origin is Literal:
+        return _handle_literal(args)
+    elif origin is Union:
+        return _handle_union(args, recursion_depth)
+    elif origin is list:
+        return _handle_list(args, recursion_depth)
+    elif origin is tuple:
+        return _handle_tuple(args, recursion_depth)
+    elif origin is dict:
+        return _handle_dict(args, recursion_depth)
+
+    # Callables
+    if callable(ptype) and not isinstance(ptype, type):
+        return JsonSchema(get_schema_from_signature(ptype))
+
+    # Interegular FSM are passed on as is and are handled by the Generator
+    elif isinstance(ptype, interegular.fsm.FSM):
+        return ptype
+
+    type_name = getattr(ptype, "__name__", ptype)
+    raise TypeError(
+        f"Type {type_name} is currently not supported. Please open an issue: "
+        "https://github.com/dottxt-ai/outlines/issues"
+    )
+
+
+def _get_enum_members(ptype: EnumMeta) -> List[Any]:
+    regular_members = [member.value for member in ptype]  # type: ignore
+    function_members = [
+        value for key, value in ptype.__dict__.items()
+        if (
+            isinstance(value, FunctionType)
+            and not (key.startswith('__') and key.endswith('__'))
+        )
+    ]
+    return regular_members + function_members
+
+
+def _handle_literal(args: tuple) -> Alternatives:
+    print(args)
+    return Alternatives([python_types_to_terms(arg) for arg in args])
+
+
+def _handle_union(args: tuple, recursion_depth: int) -> Alternatives:
+    # Handle the Optional[T] type
+    if len(args) == 2 and (type(None) in args or None in args):
+        other_ptype = next(arg for arg in args if arg not in (type(None), None))
+        return Alternatives(
+            [
+                python_types_to_terms(other_ptype, recursion_depth + 1),
+                String("None"),
+            ]
+        )
+    return Alternatives(
+        [python_types_to_terms(arg, recursion_depth + 1) for arg in args]
+    )
+
+
+def _handle_list(args: tuple, recursion_depth: int) -> Sequence:
+    if args is None or len(args) > 1:
+        raise TypeError(
+            f"Only homogeneous lists are supported. Got multiple type arguments {args}."
+        )
+    item_type = python_types_to_terms(args[0], recursion_depth + 1)
+    return Sequence(
+        [
+            String("["),
+            item_type,
+            KleeneStar(Sequence([String(", "), item_type])),
+            String("]"),
+        ]
+    )
+
+
+def _handle_tuple(args: tuple, recursion_depth: int) -> Union[Sequence, String]:
+    if len(args) == 0:
+        return String("()")
+    elif len(args) == 2 and args[1] is Ellipsis:
+        item_term = python_types_to_terms(args[0], recursion_depth + 1)
+        return Sequence(
+            [
+                String("("),
+                item_term,
+                KleeneStar(Sequence([String(", "), item_term])),
+                String(")"),
+            ]
+        )
+    else:
+        items = [python_types_to_terms(arg, recursion_depth + 1) for arg in args]
+        separator = String(", ")
+        elements = []
+        for i, item in enumerate(items):
+            elements.append(item)
+            if i < len(items) - 1:
+                elements.append(separator)
+        return Sequence([String("("), *elements, String(")")])
+
+
+def _handle_dict(args: tuple, recursion_depth: int) -> Sequence:
+    if args is None or len(args) != 2:
+        raise TypeError(f"Dict must have exactly two type arguments. Got {args}.")
+    # Add dict support with key:value pairs
+    key_type = python_types_to_terms(args[0], recursion_depth + 1)
+    value_type = python_types_to_terms(args[1], recursion_depth + 1)
+    return Sequence(
+        [
+            String("{"),
+            Optional(
+                Sequence(
+                    [
+                        key_type,
+                        String(":"),
+                        value_type,
+                        KleeneStar(
+                            Sequence([String(", "), key_type, String(":"), value_type])
+                        ),
+                    ]
+                )
+            ),
+            String("}"),
+        ]
+    )
 
 
 def to_regex(term: Term) -> str:

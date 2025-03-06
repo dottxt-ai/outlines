@@ -1,13 +1,14 @@
 import json
 from enum import Enum
+from typing import Annotated
 
 import pytest
 from ollama import Client as OllamaClient
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 import outlines
 from outlines.models import Ollama
-from outlines.types import Choice, JsonType
+
 
 MODEL_NAME = "tinyllama"
 CLIENT = OllamaClient()
@@ -40,11 +41,9 @@ def test_ollama_direct():
 
 def test_ollama_json():
     class Foo(BaseModel):
-        foo: str
+        foo: Annotated[str, Field(max_length=1)]
 
-    result = Ollama(CLIENT, MODEL_NAME)(
-        "Respond with one word. Not more.", JsonType(Foo)
-    )
+    result = Ollama(CLIENT, MODEL_NAME)("Respond with one word. Not more.", Foo)
     assert isinstance(result, str)
     assert "foo" in json.loads(result)
 
@@ -54,12 +53,12 @@ def test_ollama_wrong_output_type():
         bar = "Bar"
         foor = "Foo"
 
-    with pytest.raises(NotImplementedError, match="is not available"):
-        Ollama(CLIENT, MODEL_NAME).generate("foo?", Choice(Foo))
+    with pytest.raises(TypeError, match="is not supported"):
+        Ollama(CLIENT, MODEL_NAME).generate("foo?", Foo)
 
 
 def test_ollama_wrong_input_type():
-    with pytest.raises(NotImplementedError, match="is not available"):
+    with pytest.raises(TypeError, match="is not available"):
         Ollama(CLIENT, MODEL_NAME).generate(["foo?", "bar?"], None)
 
 
@@ -71,10 +70,10 @@ def test_ollama_stream():
 
 def test_ollama_stream_json():
     class Foo(BaseModel):
-        foo: str
+        foo: Annotated[str, Field(max_length=2)]
 
     model = Ollama(CLIENT, MODEL_NAME)
-    generator = model.stream("Create a character.", JsonType(Foo))
+    generator = model.stream("Create a character.", Foo)
     generated_text = []
     for text in generator:
         generated_text.append(text)
