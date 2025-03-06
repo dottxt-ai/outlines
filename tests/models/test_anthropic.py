@@ -29,7 +29,7 @@ def test_anthropic_wrong_input_type():
         def __init__(self, foo):
             self.foo = foo
 
-    with pytest.raises(NotImplementedError, match="is not available"):
+    with pytest.raises(TypeError, match="is not available"):
         model = Anthropic(AnthropicClient(), MODEL_NAME)
         model.generate(Foo("prompt"))
 

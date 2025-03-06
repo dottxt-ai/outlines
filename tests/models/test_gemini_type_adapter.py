@@ -94,6 +94,19 @@ def test_gemini_type_adapter_output_none(adapter):
     assert result == {}
 
 
+def test_gemini_type_adapter_output_dict(adapter, schema):
+    json_schema = {
+        "properties": {"bar": {"type": "integer"}},
+        "required": ["bar"],
+        "type": "object",
+    }
+    result = adapter.format_output_type(json_schema)
+    assert result == {
+        "response_mime_type": "application/json",
+        "response_schema": json_schema,
+    }
+
+
 def test_gemini_type_adapter_output_dataclass(adapter, schema):
     @dataclass
     class User:

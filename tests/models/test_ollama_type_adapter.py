@@ -78,7 +78,7 @@ def test_ollama_type_adapter_output_dataclass(adapter, schema):
         name: str
 
     result = adapter.format_output_type(User)
-    assert result == json.dumps(schema)
+    assert result == schema
 
 
 def test_ollama_type_adapter_output_typed_dict(adapter, schema):
@@ -87,7 +87,7 @@ def test_ollama_type_adapter_output_typed_dict(adapter, schema):
         name: str
 
     result = adapter.format_output_type(User)
-    assert result == json.dumps(schema)
+    assert result == schema
 
 
 def test_ollama_type_adapter_output_pydantic(adapter, schema):
@@ -96,15 +96,15 @@ def test_ollama_type_adapter_output_pydantic(adapter, schema):
         name: str
 
     result = adapter.format_output_type(User)
-    assert result == json.dumps(schema)
+    assert result == schema
 
 
 def test_ollama_type_adapter_json_schema_str(adapter, schema):
     schema_str = json.dumps(schema)
     result = adapter.format_output_type(json_schema(schema_str))
-    assert result == json.dumps(schema)
+    assert result == schema
 
 
 def test_ollama_type_adapter_json_schema_dict(adapter, schema):
     result = adapter.format_output_type(json_schema(schema))
-    assert result == json.dumps(schema)
+    assert result == schema

@@ -80,6 +80,7 @@ Please see [the documentation](https://dottxt-ai.github.io/outlines/latest/refer
 You can reduce the completion to a choice between multiple possibilities:
 
 ``` python
+from typing import Literal
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 import outlines
@@ -105,7 +106,7 @@ Text: I really really really want pizza.
 <|im_start|>assistant
 """
 
-answer = model(prompt, outlines.Choice(["Pizza", "Pasta", "Salad", "Dessert"]))
+answer = model(prompt, Literal["Pizza", "Pasta", "Salad", "Dessert"])
 # Likely answer: Pizza
 ```
 
@@ -120,7 +121,7 @@ class Food(str, Enum):
     salad = "Salad"
     dessert = "Dessert"
 
-answer = model(prompt, outlines.Choice(Food))
+answer = model(prompt, Food)
 # Likely answer: Pizza
 ````
 
@@ -250,7 +251,7 @@ print(repr(character))
 # Character(name='Anderson', age=28, armor=<Armor.chainmail: 'chainmail'>, weapon=<Weapon.sword: 'sword'>, strength=8)
 
 prompt = "Give me an interesting character description"
-character = model(prompt, outlines.JsonType(Character), seed=seed)
+character = model(prompt, Character, seed=seed)
 
 print(repr(character))
 # Character(name='Vivian Thr', age=44, armor=<Armor.plate: 'plate'>, weapon=<Weapon.crossbow: 'crossbow'>, strength=125)
@@ -311,7 +312,7 @@ model = outlines.from_transformers(
 )
 
 prompt = "Give me a character description"
-character = model(prompt, outlines.JsonType(schema))
+character = model(prompt, outlines.json_schema(schema))
 ```
 
 ### Using context-free grammars to guide generation
@@ -407,7 +408,7 @@ model = outlines.from_transformers(
     AutoModelForCausalLM.from_pretrained(model_name),
     AutoTokenizer.from_pretrained(model_name)
 )
-generator = outlines.Generator(model, outlines.types.JsonType(Operation))
+generator = outlines.Generator(model, Operation)
 result = generator("Return json with two float named c and d respectively. c is negative and d greater than 1.0.")
 #print(result)
 # {'c': -3.14, 'd': 1.5}
