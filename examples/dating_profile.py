@@ -107,7 +107,7 @@ new_description = "I'm a laid-back lawyer who spends a lot of his free-time gami
 
 dating_profile_prompt = Template.from_file("prompts/dating_profile.txt")
 prompt = dating_profile_prompt(description=new_description, examples=samples)
-profile = model(prompt, outlines.JsonType(DatingProfile))  # type: ignore
+profile = model(prompt, outlines.json_schema(DatingProfile))  # type: ignore
 print(profile)
 
 # Sample generated profiles
