@@ -34,7 +34,7 @@ if __name__ == "__main__":
     model = outlines.from_llamacpp(Llama("./mistral-7b-instruct-v0.2.Q5_K_M.gguf"))
 
     # Construct structured sequence generator
-    generator = outlines.Generator(model, outlines.JsonType(Character))
+    generator = outlines.Generator(model, Character)
 
     # Draw a sample
     seed = 789005
