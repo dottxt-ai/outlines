@@ -7,7 +7,7 @@ import transformers
 
 import outlines
 from outlines.models.transformers import Transformers
-from outlines.types import Choice, JsonType, Regex
+from outlines.types import Regex
 
 TEST_MODEL = "erwanf/gpt2-mini"
 TEST_MODEL_SEQ2SEQ = "hf-internal-testing/tiny-random-t5"
@@ -39,8 +39,11 @@ def test_transformers_instantiate_mamba():
 
 
 def test_transformers_instantiate_tokenizer_kwargs():
-    model = Transformers(
-        TEST_MODEL, tokenizer_kwargs={"additional_special_tokens": ["<t1>", "<t2>"]}
+    model = outlines.from_transformers(
+        transformers.AutoModelForCausalLM.from_pretrained(TEST_MODEL),
+        transformers.AutoTokenizer.from_pretrained(
+            TEST_MODEL, additional_special_tokens=["<t1>", "<t2>"]
+        ),
     )
     assert "<t1>" in model.tokenizer.special_tokens
     assert "<t2>" in model.tokenizer.special_tokens
@@ -85,7 +88,7 @@ def test_transformers_json(model):
     class Character(BaseModel):
         name: str
 
-    result = model("Create a character with a name.", JsonType(Character))
+    result = model("Create a character with a name.", Character)
     assert "name" in result
 
 
@@ -94,7 +97,7 @@ def test_transformers_choice(model):
         cat = "cat"
         dog = "dog"
 
-    result = model("Cat or dog?", Choice(Foo))
+    result = model("Cat or dog?", Foo)
     assert result in ["cat", "dog"]
 
 
@@ -128,14 +131,14 @@ def test_transformers_batch_samples_constrained(model):
         cat = "cat"
         dog = "dog"
 
-    result = model("Cat or dog?", Choice(Foo), num_return_sequences=2, num_beams=2)
+    result = model("Cat or dog?", Foo, num_return_sequences=2, num_beams=2)
     assert isinstance(result, list)
     assert len(result) == 2
     assert result[0] in ["cat", "dog"]
     assert result[1] in ["cat", "dog"]
     result = model(
         ["Cat or dog?", "Cat or dog?"],
-        Choice(Foo),
+        Foo,
     )
     assert isinstance(result, list)
     assert len(result) == 2
@@ -143,7 +146,7 @@ def test_transformers_batch_samples_constrained(model):
     assert result[1] in ["cat", "dog"]
     result = model(
         ["Cat or dog?", "Cat or dog?"],
-        Choice(Foo),
+        Foo,
         num_return_sequences=2,
         num_beams=2,
     )

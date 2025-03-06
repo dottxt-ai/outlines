@@ -52,7 +52,7 @@ def test_dottxt_init_from_client(api_key):
 
 @pytest.mark.api_call
 def test_dottxt_wrong_input_type(api_key):
-    with pytest.raises(TypeError, match="You must provide an output type"):
+    with pytest.raises(TypeError, match="is not available"):
         client = DottxtClient(api_key=api_key)
         model = Dottxt(client)
         model(["prompt"], User)

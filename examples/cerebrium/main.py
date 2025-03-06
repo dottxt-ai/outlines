@@ -40,7 +40,7 @@ def generate(
 ):
     character = model(
         f"<s>[INST]Give me a character description. Describe {prompt}.[/INST]",
-        outlines.JsonType(schema),
+        outlines.json_schema(schema),
     )
 
     print(character)
