@@ -169,16 +169,20 @@ class CFG(Term):
 
 
 class JsonSchema(Term):
-    def __init__(self, schema: Union[dict, str, type[BaseModel]]):
+    def __init__(self, schema: Union[dict, str, type[BaseModel], _TypedDictMeta, type]):
         if isinstance(schema, dict):
             schema_str = json.dumps(schema)
         elif isinstance(schema, str):
             schema_str = schema
-        elif issubclass(schema, BaseModel):
-            schema_str = json.dumps(schema.model_json_schema())
+        elif isinstance(schema, type) and issubclass(schema, BaseModel):
+            schema_str = json.dumps(schema.model_json_schema())  # type: ignore
+        elif isinstance(schema, _TypedDictMeta):
+            schema_str = json.dumps(TypeAdapter(schema).json_schema())
+        elif is_dataclass(schema):
+            schema_str = json.dumps(TypeAdapter(schema).json_schema())
         else:
             raise ValueError(
-                f"Cannot parse schema {json_schema}. The schema must be either "
+                f"Cannot parse schema {schema}. The schema must be either "
                 + "a Pydantic class, a dictionary or a string that contains the JSON "
                 + "schema specification"
             )

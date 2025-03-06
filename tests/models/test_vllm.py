@@ -12,7 +12,7 @@ except ImportError:
 
 import outlines
 from outlines.models.vllm import VLLM
-from outlines.types import Choice, JsonType, Regex
+from outlines.types import Regex
 
 
 TEST_MODEL = "erwanf/gpt2-mini"
@@ -59,7 +59,7 @@ def test_vllm_json(model):
     class Character(BaseModel):
         name: str
 
-    result = model("Create a character with a name.", JsonType(Character))
+    result = model("Create a character with a name.", Character)
     assert "name" in result
 
 
@@ -68,7 +68,7 @@ def test_vllm_choice(model):
         cat = "cat"
         dog = "dog"
 
-    result = model("Cat or dog?", Choice(Foo))
+    result = model("Cat or dog?", Foo)
     assert result in ["cat", "dog"]
 
 
@@ -104,7 +104,7 @@ def test_vllm_batch_samples_constrained(model):
 
     result = model(
         "Cat or dog?",
-        Choice(Foo),
+        Foo,
         sampling_params=SamplingParams(n=2)
     )
     assert isinstance(result, list)
@@ -114,7 +114,7 @@ def test_vllm_batch_samples_constrained(model):
 
     result = model(
         ["Cat or dog?", "Cat or dog?"],
-        Choice(Foo),
+        Foo,
     )
     assert isinstance(result, list)
     assert len(result) == 2
@@ -123,7 +123,7 @@ def test_vllm_batch_samples_constrained(model):
 
     result = model(
         ["Cat or dog?", "Cat or dog?"],
-        Choice(Foo),
+        Foo,
         sampling_params=SamplingParams(n=2)
     )
     assert isinstance(result, list)

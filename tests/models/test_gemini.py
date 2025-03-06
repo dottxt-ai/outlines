@@ -79,9 +79,8 @@ def test_gemini_simple_pydantic(model):
     assert "bar" in json.loads(result)
 
 
-@pytest.mark.xfail(reason="Vision models do not work with structured outputs.")
 @pytest.mark.api_call
-def test_gemini_simple_vision_pydantic(model):
+def test_gemini_simple_vision_pydantic(model, image):
     class Logo(BaseModel):
         name: int
 
@@ -90,7 +89,6 @@ def test_gemini_simple_vision_pydantic(model):
     assert "name" in json.loads(result)
 
 
-@pytest.mark.xfail(reason="Gemini seems to be unable to follow nested schemas.")
 @pytest.mark.api_call
 def test_gemini_nested_pydantic(model):
     class Bar(BaseModel):
@@ -105,22 +103,6 @@ def test_gemini_nested_pydantic(model):
     assert "sna" in json.loads(result)
     assert "bar" in json.loads(result)
     assert "fu" in json.loads(result)["bar"]
-
-
-@pytest.mark.xfail(
-    reason="The Gemini SDK's serialization method does not support Json Schema dictionaries."
-)
-@pytest.mark.api_call
-def test_gemini_simple_json_schema_dict(model):
-    schema = {
-        "properties": {"bar": {"title": "Bar", "type": "integer"}},
-        "required": ["bar"],
-        "title": "Foo",
-        "type": "object",
-    }
-    result = model.generate("foo?", schema)
-    assert isinstance(result, str)
-    assert "bar" in json.loads(result)
 
 
 @pytest.mark.xfail(
@@ -140,6 +122,18 @@ def test_gemini_simple_typed_dict(model):
         bar: int
 
     result = model.generate("foo?", Foo)
+    assert isinstance(result, str)
+    assert "bar" in json.loads(result)
+
+
+@pytest.mark.api_call
+def test_gemini_simple_json_schema_dict(model):
+    schema = {
+        "properties": {"bar": {"type": "integer"}},
+        "required": ["bar"],
+        "type": "object",
+    }
+    result = model.generate("foo?", schema)
     assert isinstance(result, str)
     assert "bar" in json.loads(result)
 
