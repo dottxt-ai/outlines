@@ -91,9 +91,7 @@ def test_llamacpp_stream_simple(model):
 
 
 def test_llamacpp_stream_regex(model):
-    regex_str = Regex(r"[0-9]").pattern
-    logits_processor = RegexLogitsProcessor(regex_str, model.tokenizer)
-    generator = model.stream("Respond with one word. Not more.", logits_processor)
+    generator = model.stream("Respond with one word. Not more.", Regex(r"[0-9]"))
 
     x = next(generator)
     assert isinstance(x, str)
@@ -103,9 +101,7 @@ def test_llamacpp_stream_json(model):
     class Foo(BaseModel):
         bar: int
 
-    regex_str = JsonType(Foo).to_regex()
-    logits_processor = RegexLogitsProcessor(regex_str, model.tokenizer)
-    generator = model.stream("foo?", logits_processor)
+    generator = model.stream("foo?", JsonType(Foo))
 
     x = next(generator)
     assert x == "{"
@@ -116,9 +112,7 @@ def test_llamacpp_stream_choice(model):
         bar = "Bar"
         foor = "Foo"
 
-    regex_str = Choice(Foo).to_regex()
-    logits_processor = RegexLogitsProcessor(regex_str, model.tokenizer)
-    generator = model.stream("foo?", logits_processor)
+    generator = model.stream("foo?", Choice(Foo))
 
     x = next(generator)
     assert isinstance(x, str)

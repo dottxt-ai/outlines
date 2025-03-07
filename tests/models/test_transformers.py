@@ -146,3 +146,8 @@ def test_transformers_batch_samples_constrained(model):
         assert len(item) == 2
         assert item[0] in ["cat", "dog"]
         assert item[1] in ["cat", "dog"]
+
+
+def test_transformers_streaming(model):
+    with pytest.raises(NotImplementedError, match="Streaming is not implemented"):
+        model.stream("Respond with one word. Not more.")

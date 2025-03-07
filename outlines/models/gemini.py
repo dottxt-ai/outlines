@@ -114,11 +114,36 @@ class Gemini(Model):
         generation_config = genai.GenerationConfig(
             **self.type_adapter.format_output_type(output_type)
         )
+
         completion = self.client.generate_content(
             generation_config=generation_config, **contents, **inference_kwargs
         )
 
         return completion.text
+
+    def generate_stream(
+        self,
+        model_input: Union[str, Vision],
+        output_type: Optional[Union[JsonType, Choice, List]] = None,
+        **inference_kwargs,
+    ):
+        import google.generativeai as genai
+
+        contents = self.type_adapter.format_input(model_input)
+        generation_config = genai.GenerationConfig(
+            **self.type_adapter.format_output_type(output_type)
+        )
+
+        stream = self.client.generate_content(
+            generation_config=generation_config,
+            **contents,
+            **inference_kwargs,
+            stream=True,
+        )
+
+        for chunk in stream:
+            if hasattr(chunk, "text") and chunk.text:
+                yield chunk.text
 
 
 def from_gemini(client: "GeminiClient"):

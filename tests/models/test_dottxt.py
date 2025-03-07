@@ -69,7 +69,7 @@ def test_dottxt_wrong_inference_parameters(api_key):
 @pytest.mark.api_call
 def test_dottxt_direct_call(api_key):
     client = DottxtClient(api_key=api_key)
-    model = Dottxt(client, model_name="meta-llama/Llama-3.1-8B-Instruct")
+    model = Dottxt(client)
     result = model("Create a user", JsonType(User))
     assert "first_name" in json.loads(result)
 
@@ -77,7 +77,14 @@ def test_dottxt_direct_call(api_key):
 @pytest.mark.api_call
 def test_dottxt_generator_call(api_key):
     client = DottxtClient(api_key=api_key)
-    model = Dottxt(client, model_name="meta-llama/Llama-3.1-8B-Instruct")
+    model = Dottxt(client)
     generator = Generator(model, JsonType(User))
     result = generator("Create a user")
     assert "first_name" in json.loads(result)
+
+
+def test_dottxt_streaming(api_key):
+    client = DottxtClient(api_key=api_key)
+    model = Dottxt(client)
+    with pytest.raises(NotImplementedError, match="Dottxt does not support streaming"):
+        model.stream("Create a user", JsonType(User))

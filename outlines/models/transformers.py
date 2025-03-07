@@ -214,7 +214,7 @@ class Transformers(Model):
 
         return self._decode_generation(generated_ids)
 
-    def stream(self, model_input, output_type, **inference_kwargs):
+    def generate_stream(self, model_input, output_type, **inference_kwargs):
         """
         TODO: implement following completion of https://github.com/huggingface/transformers/issues/30810
         """
