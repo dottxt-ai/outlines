@@ -149,14 +149,14 @@ class LlamaCpp(Model):
         self.model_type = "local"
         self.type_adapter = LlamaCppTypeAdapter()
 
-    def generate(self, model_input, logits_processor, **inference_kwargs):
+    def generate(self, model_input, output_type, **inference_kwargs):
         """Generate text using `llama-cpp-python`.
 
         Arguments
         ---------
         prompt
             A prompt.
-        logits_processor
+        output_type
             The logits processor to use when generating text.
         inference_kwargs
             The inference kwargs that can be passed to the `Llama.__call__` method
@@ -167,14 +167,14 @@ class LlamaCpp(Model):
         The generated text.
 
         """
-        if isinstance(logits_processor, CFGLogitsProcessor):
+        if isinstance(output_type, CFGLogitsProcessor):
             raise NotImplementedError(
                 "CFG generation is not supported for LlamaCpp due to bug in the llama_cpp tokenizer"
             )
 
         completion = self.model(
             self.type_adapter.format_input(model_input),
-            logits_processor=self.type_adapter.format_output_type(logits_processor),
+            logits_processor=self.type_adapter.format_output_type(output_type),
             **inference_kwargs,
         )
         result = completion["choices"][0]["text"]
@@ -183,16 +183,16 @@ class LlamaCpp(Model):
 
         return result
 
-    def stream(
-        self, model_input, logits_processor, **inference_kwargs
-    ) -> Iterator[str]:
+    def generate_stream(
+        self, model_input, output_type, **inference_kwargs
+    ):
         """Stream text using `llama-cpp-python`.
 
         Arguments
         ---------
         prompt
             A prompt.
-        logits_processor
+        output_type
             The logits processor to use when generating text.
         inference_kwargs
             The inference kwargs that can be passed to the `Llama.__call__` method
@@ -203,14 +203,14 @@ class LlamaCpp(Model):
         A generator that return strings.
 
         """
-        if isinstance(logits_processor, CFGLogitsProcessor):
+        if isinstance(output_type, CFGLogitsProcessor):
             raise NotImplementedError(
                 "CFG generation is not supported for LlamaCpp due to bug in the llama_cpp tokenizer"
             )
 
         generator = self.model(
             self.type_adapter.format_input(model_input),
-            logits_processor=self.type_adapter.format_output_type(logits_processor),
+            logits_processor=self.type_adapter.format_output_type(output_type),
             stream=True,
             **inference_kwargs,
         )

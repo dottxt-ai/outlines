@@ -1,7 +1,7 @@
 import io
 import json
 import os
-
+from typing import Generator
 import PIL
 import pytest
 import requests
@@ -133,3 +133,12 @@ def test_openai_simple_json_schema():
     result = model.generate("foo?", JsonType(schema))
     assert isinstance(result, str)
     assert "bar" in json.loads(result)
+
+
+@pytest.mark.api_call
+def test_openai_streaming():
+    model = OpenAI(OpenAIClient(), MODEL_NAME)
+
+    result = model.stream("Respond with one word. Not more.")
+    assert isinstance(result, Generator)
+    assert isinstance(next(result), str)

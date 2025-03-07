@@ -1,7 +1,7 @@
 import io
 import json
 from enum import Enum
-
+from typing import Generator
 import PIL
 import pytest
 import requests
@@ -17,9 +17,13 @@ from outlines.types import Choice, JsonType, List
 MODEL_NAME = "gemini-1.5-flash-latest"
 
 
-def test_gemini_wrong_inference_parameters():
+@pytest.fixture(scope="session")
+def model():
+    return Gemini(genai.GenerativeModel(MODEL_NAME))
+
+
+def test_gemini_wrong_inference_parameters(model):
     with pytest.raises(TypeError, match="got an unexpected"):
-        model = Gemini(genai.GenerativeModel(MODEL_NAME))
         model.generate("prompt", foo=10)
 
 
@@ -31,23 +35,19 @@ def test_gemini_init_from_client():
 
 
 @pytest.mark.api_call
-def test_gemini_simple_call():
-    model = Gemini(genai.GenerativeModel(MODEL_NAME))
+def test_gemini_simple_call(model):
     result = model.generate("Respond with one word. Not more.")
     assert isinstance(result, str)
 
 
 @pytest.mark.api_call
-def test_gemini_direct_call():
-    model = Gemini(genai.GenerativeModel(MODEL_NAME))
+def test_gemini_direct_call(model):
     result = model("Respond with one word. Not more.")
     assert isinstance(result, str)
 
 
 @pytest.mark.api_call
-def test_gemini_simple_vision():
-    model = Gemini(genai.GenerativeModel(MODEL_NAME))
-
+def test_gemini_simple_vision(model):
     url = "https://raw.githubusercontent.com/dottxt-ai/outlines/refs/heads/main/docs/assets/images/logo.png"
     r = requests.get(url, stream=True)
     if r.status_code == 200:
@@ -58,9 +58,7 @@ def test_gemini_simple_vision():
 
 
 @pytest.mark.api_call
-def test_gemini_simple_pydantic():
-    model = Gemini(genai.GenerativeModel(MODEL_NAME))
-
+def test_gemini_simple_pydantic(model):
     class Foo(BaseModel):
         bar: int
 
@@ -71,9 +69,7 @@ def test_gemini_simple_pydantic():
 
 @pytest.mark.xfail(reason="Vision models do not work with structured outputs.")
 @pytest.mark.api_call
-def test_gemini_simple_vision_pydantic():
-    model = Gemini(genai.GenerativeModel(MODEL_NAME))
-
+def test_gemini_simple_vision_pydantic(model):
     url = "https://raw.githubusercontent.com/dottxt-ai/outlines/refs/heads/main/docs/assets/images/logo.png"
     r = requests.get(url, stream=True)
     if r.status_code == 200:
@@ -89,9 +85,7 @@ def test_gemini_simple_vision_pydantic():
 
 @pytest.mark.xfail(reason="Gemini seems to be unable to follow nested schemas.")
 @pytest.mark.api_call
-def test_gemini_nested_pydantic():
-    model = Gemini(genai.GenerativeModel(MODEL_NAME))
-
+def test_gemini_nested_pydantic(model):
     class Bar(BaseModel):
         fu: str
 
@@ -110,9 +104,7 @@ def test_gemini_nested_pydantic():
     reason="The Gemini SDK's serialization method does not support Json Schema dictionaries."
 )
 @pytest.mark.api_call
-def test_gemini_simple_json_schema_dict():
-    model = Gemini(genai.GenerativeModel(MODEL_NAME))
-
+def test_gemini_simple_json_schema_dict(model):
     schema = {
         "properties": {"bar": {"title": "Bar", "type": "integer"}},
         "required": ["bar"],
@@ -128,9 +120,7 @@ def test_gemini_simple_json_schema_dict():
     reason="The Gemini SDK's serialization method does not support Json Schema strings."
 )
 @pytest.mark.api_call
-def test_gemini_simple_json_schema_string():
-    model = Gemini(genai.GenerativeModel(MODEL_NAME))
-
+def test_gemini_simple_json_schema_string(model):
     schema = "{'properties': {'bar': {'title': 'Bar', 'type': 'integer'}}, 'required': ['bar'], 'title': 'Foo', 'type': 'object'}"
     result = model.generate("foo?", JsonType(schema))
     assert isinstance(result, str)
@@ -138,9 +128,7 @@ def test_gemini_simple_json_schema_string():
 
 
 @pytest.mark.api_call
-def test_gemini_simple_typed_dict():
-    model = Gemini(genai.GenerativeModel(MODEL_NAME))
-
+def test_gemini_simple_typed_dict(model):
     class Foo(TypedDict):
         bar: int
 
@@ -150,9 +138,7 @@ def test_gemini_simple_typed_dict():
 
 
 @pytest.mark.api_call
-def test_gemini_simple_choice_enum():
-    model = Gemini(genai.GenerativeModel(MODEL_NAME))
-
+def test_gemini_simple_choice_enum(model):
     class Foo(Enum):
         bar = "Bar"
         foor = "Foo"
@@ -163,9 +149,7 @@ def test_gemini_simple_choice_enum():
 
 
 @pytest.mark.api_call
-def test_gemini_simple_choice_list():
-    model = Gemini(genai.GenerativeModel(MODEL_NAME))
-
+def test_gemini_simple_choice_list(model):
     choices = ["Foo", "Bar"]
     result = model.generate("foo?", Choice(choices))
     assert isinstance(result, str)
@@ -173,9 +157,7 @@ def test_gemini_simple_choice_list():
 
 
 @pytest.mark.api_call
-def test_gemini_simple_list_pydantic():
-    model = Gemini(genai.GenerativeModel(MODEL_NAME))
-
+def test_gemini_simple_list_pydantic(model):
     class Foo(BaseModel):
         bar: int
 
@@ -183,3 +165,10 @@ def test_gemini_simple_list_pydantic():
     assert isinstance(json.loads(result), list)
     assert isinstance(json.loads(result)[0], dict)
     assert "bar" in json.loads(result)[0]
+
+
+@pytest.mark.api_call
+def test_gemini_streaming(model):
+    result = model.stream("Respond with one word. Not more.")
+    assert isinstance(result, Generator)
+    assert isinstance(next(result), str)

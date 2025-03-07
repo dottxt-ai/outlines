@@ -151,6 +151,26 @@ class OpenAI(Model):
 
         return result.choices[0].message.content
 
+    def generate_stream(
+        self,
+        model_input: Union[str, Vision],
+        output_type: Optional[Union[type[BaseModel], str]] = None,
+        **inference_kwargs,
+    ):
+        messages = self.type_adapter.format_input(model_input)
+        response_format = self.type_adapter.format_output_type(output_type)
+        stream = self.client.chat.completions.create(
+            model=self.model_name,
+            stream=True,
+            **messages,
+            **response_format,
+            **inference_kwargs
+        )
+
+        for chunk in stream:
+            if chunk.choices and chunk.choices[0].delta.content is not None:
+                yield chunk.choices[0].delta.content
+
 
 def from_openai(
     client: Union["OpenAIClient", "AzureOpenAIClient"], model_name: str

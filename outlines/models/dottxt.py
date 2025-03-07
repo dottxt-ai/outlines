@@ -92,6 +92,12 @@ class Dottxt(Model):
         )
         return completion.data
 
+    def generate_stream(self, model_input, output_type=None, **inference_kwargs):
+        raise NotImplementedError(
+            "Dottxt does not support streaming. Call the model/generator for "
+            + "regular generation instead."
+        )
+
 
 def from_dottxt(
     client: "DottxtClient",
