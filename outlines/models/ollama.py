@@ -79,7 +79,7 @@ class Ollama(Model):
         )
         return response.response
 
-    def stream(self, model_input, output_type=None, **kwargs) -> Iterator[str]:
+    def generate_stream(self, model_input, output_type=None, **kwargs) -> Iterator[str]:
         response = self.client.generate(
             model=self.model_name,
             prompt=self.type_adapter.format_input(model_input),

@@ -126,7 +126,7 @@ class VLLM(Model):
 
         return results
 
-    def stream(self, model_input, output_type, **inference_kwargs):
+    def generate_stream(self, model_input, output_type, **inference_kwargs):
         """Return a text generator.
 
         Streaming is not yet available for `vllm.LLM`.
