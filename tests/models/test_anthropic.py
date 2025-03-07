@@ -1,4 +1,5 @@
 import io
+from typing import Generator
 
 from anthropic import Anthropic as AnthropicClient
 import PIL
@@ -10,6 +11,11 @@ from outlines.models.anthropic import Anthropic
 from outlines.templates import Vision
 
 MODEL_NAME = "claude-3-haiku-20240307"
+
+
+@pytest.fixture(scope="session")
+def model():
+    return Anthropic(AnthropicClient(), MODEL_NAME)
 
 
 def test_anthropic_wrong_inference_parameters():
@@ -46,24 +52,20 @@ def test_anthropic_wrong_output_type():
 
 
 @pytest.mark.api_call
-def test_anthropic_simple_call():
-    model = Anthropic(AnthropicClient(), MODEL_NAME)
+def test_anthropic_simple_call(model):
     result = model.generate("Respond with one word. Not more.", max_tokens=1024)
     assert isinstance(result, str)
 
 
 @pytest.mark.xfail(reason="Anthropic requires the `max_tokens` parameter to be set")
 @pytest.mark.api_call
-def test_anthropic_direct_call():
-    model = Anthropic(AnthropicClient(), MODEL_NAME)
+def test_anthropic_direct_call(model):
     result = model("Respond with one word. Not more.", max_tokens=1024)
     assert isinstance(result, str)
 
 
 @pytest.mark.api_call
-def test_anthropic_simple_vision():
-    model = Anthropic(AnthropicClient(), MODEL_NAME)
-
+def test_anthropic_simple_vision(model):
     url = "https://raw.githubusercontent.com/dottxt-ai/outlines/refs/heads/main/docs/assets/images/logo.png"
     r = requests.get(url, stream=True)
     if r.status_code == 200:
@@ -73,3 +75,10 @@ def test_anthropic_simple_vision():
         Vision("What does this logo represent?", image), max_tokens=1024
     )
     assert isinstance(result, str)
+
+
+@pytest.mark.api_call
+def test_anthopic_streaming(model):
+    result = model.stream("Respond with one word. Not more.", max_tokens=1024)
+    assert isinstance(result, Generator)
+    assert isinstance(next(result), str)

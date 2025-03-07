@@ -38,6 +38,9 @@ class BlackBoxGenerator:
     def __call__(self, prompt, **inference_kwargs):
         return self.model.generate(prompt, self.output_type, **inference_kwargs)
 
+    def stream(self, prompt, **inference_kwargs):
+        return self.model.generate_stream(prompt, self.output_type, **inference_kwargs)
+
 
 @dataclass
 class SteerableGenerator:
@@ -78,6 +81,9 @@ class SteerableGenerator:
 
     def __call__(self, prompt, **inference_kwargs):
         return self.model.generate(prompt, self.logits_processor, **inference_kwargs)
+
+    def stream(self, prompt, **inference_kwargs):
+        return self.model.generate_stream(prompt, self.logits_processor, **inference_kwargs)
 
 
 def Generator(

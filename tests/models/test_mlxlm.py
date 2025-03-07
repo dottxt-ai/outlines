@@ -1,6 +1,7 @@
 import pytest
 import re
 from enum import Enum
+from typing import Generator
 
 import outlines
 from outlines.types import Choice, JsonType, Regex
@@ -100,3 +101,12 @@ def test_mlxlm_choice(model):
 
     result = model("Cat or dog?", Choice(Foo))
     assert result in ["cat", "dog"]
+
+
+@pytest.mark.skipif(not HAS_MLX, reason="MLX tests require Apple Silicon")
+def test_mlxlm_stream_text_stop(model):
+    generator = model.stream(
+        "Respond with one word. Not more.", None, max_tokens=100
+    )
+    assert isinstance(generator, Generator)
+    assert isinstance(next(generator), str)
