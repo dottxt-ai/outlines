@@ -74,7 +74,7 @@ class MLXLM(Model):
         self.tokenizer = TransformerTokenizer(tokenizer._tokenizer)
         self.type_adapter = MLXLMTypeAdapter()
 
-    def generate(self, model_input, output_type, **kwargs):
+    def generate(self, model_input, output_type=None, **kwargs):
         """Generate text using `mlx-lm`.
 
         Arguments
@@ -97,7 +97,7 @@ class MLXLM(Model):
             **kwargs,
         )
 
-    def stream(self, model_input, output_type, **kwargs):
+    def generate_stream(self, model_input, output_type=None, **kwargs):
         """Stream text using `mlx-lm`.
 
         Arguments

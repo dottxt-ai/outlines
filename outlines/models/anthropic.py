@@ -107,6 +107,25 @@ class Anthropic(Model):
         )
         return completion.content[0].text
 
+    def generate_stream(
+        self, model_input: Union[str, Vision], output_type=None, **inference_kwargs
+    ):
+        messages = self.type_adapter.format_input(model_input)
+
+        if output_type is not None:
+            raise NotImplementedError(
+                f"The type {output_type} is not available with Anthropic."
+            )
+
+        completion = self.client.messages.stream(
+            **messages,
+            model=self.model_name,
+            **inference_kwargs,
+        )
+        for chunk in completion:
+            if chunk.type == "content_block_delta":
+                yield chunk.delta.text
+
 
 def from_anthropic(client: "AnthropicClient", model_name: str) -> Anthropic:
     return Anthropic(client, model_name)

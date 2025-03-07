@@ -71,12 +71,47 @@ class Model(ABC):
 
         return Generator(self, output_type)(model_input, **inference_kwargs)
 
+    def stream(self, model_input, output_type=None, **inference_kwargs):
+        """Stream a response from the model.
+
+        Users can use the `stream` method from the model directly, in which
+        case we will create a generator instance with the output type provided
+        and then invoke its `stream` method.
+        Thus, those commands are equivalent:
+        ```python
+        generator = Generator(model, Foo)
+        for chunk in generator("prompt"):
+            print(chunk)
+        ```
+        and
+        ```python
+        for chunk in model.stream("prompt", Foo):
+            print(chunk)
+        ```
+
+        """
+        from outlines import Generator
+
+        return Generator(self, output_type).stream(model_input, **inference_kwargs)
+
     @abstractmethod
     def generate(self, model_input, output_type=None, **inference_kwargs):
         """Generate a response from the model.
 
         The output_type argument contains a logits processor for local models
         while it contains a type (Json, Enum...) for the API-based models.
+        This method is not intended to be used directly by end users.
+
+        """
+        ...
+
+    @abstractmethod
+    def generate_stream(self, model_input, output_type=None, **inference_kwargs):
+        """Generate a stream of responses from the model.
+
+        The output_type argument contains a logits processor for local models
+        while it contains a type (Json, Enum...) for the API-based models.
+        This method is not intended to be used directly by end users.
 
         """
         ...
