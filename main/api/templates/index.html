@@ -2859,6 +2859,7 @@
 
 
 
+
   <div class="doc doc-children">
 
 
@@ -2889,6 +2890,7 @@
         <p>Represents a prompt template.</p>
 <p>We return a <code>Template</code> class instead of a simple function so the
 template can be accessed by callers.</p>
+
 
 
 
@@ -3071,6 +3073,7 @@ template can be accessed by callers.</p>
       </tbody>
     </table>
 
+
             <details class="quote">
               <summary>Source code in <code>outlines/templates.py</code></summary>
               <div class="language-python highlight" style="background: #2E3440"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-28">28</a></span>
@@ -3168,7 +3171,12 @@ that are outside the folder or subfolders of the file given to <code>from_file</
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><a class="autorefs autorefs-internal" title="outlines.templates.Template" href="#outlines.templates.Template">Template</a></code>
+                  <code><a class="autorefs autorefs-internal" title="Template
+
+
+  
+      dataclass
+   (outlines.templates.Template)" href="#outlines.templates.Template">Template</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -3178,6 +3186,7 @@ that are outside the folder or subfolders of the file given to <code>from_file</
           </tr>
       </tbody>
     </table>
+
 
             <details class="quote">
               <summary>Source code in <code>outlines/templates.py</code></summary>
@@ -3297,6 +3306,7 @@ that are outside the folder or subfolders of the file given to <code>from_file</
       </tbody>
     </table>
 
+
             <details class="quote">
               <summary>Source code in <code>outlines/templates.py</code></summary>
               <div class="language-python highlight" style="background: #2E3440"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-43">43</a></span>
@@ -3371,6 +3381,7 @@ filters
    A dictionary of filters, map between the filter's name and the
    corresponding function.</p>
 </details>
+
             <details class="quote">
               <summary>Source code in <code>outlines/templates.py</code></summary>
               <div class="language-python highlight" style="background: #2E3440"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-195">195</a></span>
@@ -3481,6 +3492,7 @@ filters
 
         <p>Returns the arguments of a function with annotations and default values if provided.</p>
 
+
             <details class="quote">
               <summary>Source code in <code>outlines/templates.py</code></summary>
               <div class="language-python highlight" style="background: #2E3440"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-255">255</a></span>
@@ -3520,6 +3532,7 @@ filters
     <div class="doc doc-contents ">
 
         <p>Returns the first line of a callable's docstring.</p>
+
 
             <details class="quote">
               <summary>Source code in <code>outlines/templates.py</code></summary>
@@ -3565,6 +3578,7 @@ filters
 
         <p>Returns the name of a callable.</p>
 
+
             <details class="quote">
               <summary>Source code in <code>outlines/templates.py</code></summary>
               <div class="language-python highlight" style="background: #2E3440"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-242">242</a></span>
@@ -3606,6 +3620,7 @@ filters
     <div class="doc doc-contents ">
 
         <p>Return the signature of a callable.</p>
+
 
             <details class="quote">
               <summary>Source code in <code>outlines/templates.py</code></summary>
@@ -3653,6 +3668,7 @@ filters
 
         <p>Return the source code of a callable.</p>
 
+
             <details class="quote">
               <summary>Source code in <code>outlines/templates.py</code></summary>
               <div class="language-python highlight" style="background: #2E3440"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-281">281</a></span>
@@ -3699,6 +3715,7 @@ filters
 
         <p>Return a pretty-printed dictionary</p>
 
+
             <details class="quote">
               <summary>Source code in <code>outlines/templates.py</code></summary>
               <div class="language-python highlight" style="background: #2E3440"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-318">318</a></span>
@@ -3726,6 +3743,7 @@ filters
     <div class="doc doc-contents ">
 
         <p>Return the schema of a Pydantic model.</p>
+
 
             <details class="quote">
               <summary>Source code in <code>outlines/templates.py</code></summary>
@@ -3783,6 +3801,7 @@ filters
 <p>This recursively follows the references to other schemas in case
 of nested models. Other schemas are stored under the "definitions"
 key in the schema of the top-level model.</p>
+
 
             <details class="quote">
               <summary>Source code in <code>outlines/templates.py</code></summary>
@@ -3906,6 +3925,7 @@ we can partially apply the prompt function at initialization.</p>
           </tr>
       </tbody>
     </table>
+
 
             <details class="quote">
               <summary>Source code in <code>outlines/templates.py</code></summary>

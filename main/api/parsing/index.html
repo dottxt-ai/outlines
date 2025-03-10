@@ -2865,6 +2865,7 @@
 
 
 
+
   <div class="doc doc-children">
 
 
@@ -2891,6 +2892,7 @@
 
 
         <p>An <code>Indenter</code> that doesn't reset its state every time <code>process</code> is called.</p>
+
 
 
 
@@ -3027,6 +3029,7 @@
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
               Bases: <code><span title="lark.parsers.lalr_parser.ParserState">ParserState</span></code></p>
+
 
 
 
@@ -3380,6 +3383,7 @@
         <p>Adapted from https://github.com/lark-parser/lark/blob/be542c2ff6d968817df019b8bf03f37b3111c08c/lark/parsers/lalr_interactive_parser.py#L95
 Returns the set of possible tokens that will advance the parser into a new valid state.</p>
 
+
             <details class="quote">
               <summary>Source code in <code>outlines/fsm/parsing.py</code></summary>
               <div class="language-python highlight" style="background: #2E3440"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-480">480</a></span>
@@ -3444,6 +3448,7 @@ Returns the set of possible tokens that will advance the parser into a new valid
 steps removed.  Since we're not exactly parsing in order to obtain a
 CST or anything similar, we can avoid the growing expense of tracking
 the parse tree.</p>
+
 
             <details class="quote">
               <summary>Source code in <code>outlines/fsm/parsing.py</code></summary>
@@ -3556,6 +3561,7 @@ the parse tree.</p>
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
               Bases: <code><span title="lark.parser_frontends.ParsingFrontend">ParsingFrontend</span></code></p>
+
 
 
 
@@ -3822,6 +3828,7 @@ the parse tree.</p>
 
         <p>Compute state transition and symbols-to-states maps.</p>
 
+
             <details class="quote">
               <summary>Source code in <code>outlines/fsm/parsing.py</code></summary>
               <div class="language-python highlight" style="background: #2E3440"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-196">196</a></span>
@@ -3879,6 +3886,7 @@ the union of each terminal's FSM.</p>
 parse states that use the termsets, parse state FSMs, and information
 mapping the components of the parse state FSMs to their terminal symbol
 FSMs.</p>
+
 
             <details class="quote">
               <summary>Source code in <code>outlines/fsm/parsing.py</code></summary>
@@ -3973,6 +3981,7 @@ FSMs.</p>
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
               Bases: <code><span title="lark.lexer.Scanner">Scanner</span></code></p>
+
 
 
 
@@ -4175,6 +4184,7 @@ FSMs.</p>
 
         <p>Get the possible terminal symbols for an FSM state sequence.</p>
 
+
             <details class="quote">
               <summary>Source code in <code>outlines/fsm/parsing.py</code></summary>
               <div class="language-python highlight" style="background: #2E3440"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-589">589</a></span>
@@ -4226,6 +4236,7 @@ FSMs.</p>
     <div class="doc doc-contents ">
 
         <p>Determine an FSM match over <code>text</code> starting at <code>pos</code> and continuing <code>last_fsm_state_seq</code>.</p>
+
 
             <details class="quote">
               <summary>Source code in <code>outlines/fsm/parsing.py</code></summary>
@@ -4330,6 +4341,7 @@ FSMs.</p>
 <p>This is an updated version of <code>interegular.fsm.FSM.union</code> made to return an
 extra map of component FSMs to the sets of state transitions that
 correspond to them in the new FSM.</p>
+
 
             <details class="quote">
               <summary>Source code in <code>outlines/fsm/parsing.py</code></summary>
@@ -4700,6 +4712,7 @@ and sets of the final/accept states.</p>
       </tbody>
     </table>
 
+
             <details class="quote">
               <summary>Source code in <code>outlines/fsm/parsing.py</code></summary>
               <div class="language-python highlight" style="background: #2E3440"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-1051">1051</a></span>
@@ -4797,6 +4810,7 @@ and sets of the final/accept states.</p>
     <div class="doc doc-contents ">
 
         <p>Construct a <code>dict</code> mapping terminal symbol names to their finite state machines.</p>
+
 
             <details class="quote">
               <summary>Source code in <code>outlines/fsm/parsing.py</code></summary>

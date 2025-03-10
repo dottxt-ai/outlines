@@ -3686,6 +3686,7 @@ codebase.</p>
 
 
 
+
   <div class="doc doc-children">
 
 
@@ -3708,6 +3709,7 @@ codebase.</p>
 </h2>
 
     <div class="doc doc-contents ">
+
 
 
 
@@ -3740,6 +3742,7 @@ codebase.</p>
 
 
         <p>Represents a <code>exl2</code> model.</p>
+
 
 
 
@@ -4180,6 +4183,7 @@ codebase.</p>
         <p>Prepare the generation parameters.</p>
 <p><code>exllamav2</code> uses different default values</p>
 
+
             <details class="quote">
               <summary>Source code in <code>outlines/models/exllamav2.py</code></summary>
               <div class="language-python highlight" style="background: #2E3440"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-55"> 55</a></span>
@@ -4328,6 +4332,7 @@ The exllamav2's logic is:</p>
 <li>If a prompt is a list, return a list. This is not the same as outlines output in that if the list is only one element, the string is expected to be outputted.</li>
 <li>There is no such thing as num_samples, so the prompts had to be duplicated by num_samples times. Then, we had the function output a list of lists</li>
 </ol>
+
 
             <details class="quote">
               <summary>Source code in <code>outlines/models/exllamav2.py</code></summary>
@@ -4662,6 +4667,7 @@ The exllamav2's logic is:</p>
       </tbody>
     </table>
 
+
             <details class="quote">
               <summary>Source code in <code>outlines/models/exllamav2.py</code></summary>
               <div class="language-python highlight" style="background: #2E3440"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-246">246</a></span>
@@ -4924,6 +4930,7 @@ The exllamav2's logic is:</p>
 
 
 
+
   <div class="doc doc-children">
 
 
@@ -4952,6 +4959,7 @@ The exllamav2's logic is:</p>
 them the same interface in Outlines and allow users to easily switch
 between providers. This class wraps the <code>llama_cpp.Llama</code> class from the
 <code>llama-cpp-python</code> library.</p>
+
 
 
 
@@ -5576,6 +5584,7 @@ a list of possible values: https://llama-cpp-python.readthedocs.io/en/latest/api
       </tbody>
     </table>
 
+
             <details class="quote">
               <summary>Source code in <code>outlines/models/llamacpp.py</code></summary>
               <div class="language-python highlight" style="background: #2E3440"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-241">241</a></span>
@@ -5702,6 +5711,7 @@ a list of possible values: https://llama-cpp-python.readthedocs.io/en/latest/api
 
         <p>Prepare the generation parameters.</p>
 <p><code>llama-cpp-python</code> uses different default values</p>
+
 
             <details class="quote">
               <summary>Source code in <code>outlines/models/llamacpp.py</code></summary>
@@ -6032,6 +6042,7 @@ a list of possible values: https://llama-cpp-python.readthedocs.io/en/latest/api
       </tbody>
     </table>
 
+
             <details class="quote">
               <summary>Source code in <code>outlines/models/llamacpp.py</code></summary>
               <div class="language-python highlight" style="background: #2E3440"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-295">295</a></span>
@@ -6182,7 +6193,8 @@ a list of possible values: https://llama-cpp-python.readthedocs.io/en/latest/api
 
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
-              Bases: <code><a class="autorefs autorefs-internal" title="outlines.models.tokenizer.Tokenizer" href="#outlines.models.tokenizer.Tokenizer">Tokenizer</a></code></p>
+              Bases: <code><a class="autorefs autorefs-internal" title="Tokenizer (outlines.models.tokenizer.Tokenizer)" href="#outlines.models.tokenizer.Tokenizer">Tokenizer</a></code></p>
+
 
 
 
@@ -6385,6 +6397,7 @@ a list of possible values: https://llama-cpp-python.readthedocs.io/en/latest/api
 
         <p>Create a stable representation for outlines.caching</p>
 
+
             <details class="quote">
               <summary>Source code in <code>outlines/models/llamacpp.py</code></summary>
               <div class="language-python highlight" style="background: #2E3440"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-96"> 96</a></span>
@@ -6498,6 +6511,7 @@ for the full list: https://llama-cpp-python.readthedocs.io/en/latest/api-referen
           </tr>
       </tbody>
     </table>
+
 
             <details class="quote">
               <summary>Source code in <code>outlines/models/llamacpp.py</code></summary>
@@ -6619,6 +6633,7 @@ for the full list: https://llama-cpp-python.readthedocs.io/en/latest/api-referen
 
 
 
+
   <div class="doc doc-children">
 
 
@@ -6643,6 +6658,7 @@ for the full list: https://llama-cpp-python.readthedocs.io/en/latest/api-referen
 
 
         <p>Represents an <code>mlx_lm</code> model</p>
+
 
 
 
@@ -7139,6 +7155,7 @@ https://github.com/ml-explore/mlx-examples/blob/4872727/llms/mlx_lm/utils.py#L12
       </tbody>
     </table>
 
+
             <details class="quote">
               <summary>Source code in <code>outlines/models/mlxlm.py</code></summary>
               <div class="language-python highlight" style="background: #2E3440"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-125">125</a></span>
@@ -7408,6 +7425,7 @@ in Outlines.</p>
       </tbody>
     </table>
 
+
             <details class="quote">
               <summary>Source code in <code>outlines/models/mlxlm.py</code></summary>
               <div class="language-python highlight" style="background: #2E3440"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-43"> 43</a></span>
@@ -7663,6 +7681,7 @@ lazy (bool): If False eval the model parameters to make sure they are
       </tbody>
     </table>
 
+
             <details class="quote">
               <summary>Source code in <code>outlines/models/mlxlm.py</code></summary>
               <div class="language-python highlight" style="background: #2E3440"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-199">199</a></span>
@@ -7797,6 +7816,7 @@ lazy (bool): If False eval the model parameters to make sure they are
 
 
 
+
   <div class="doc doc-children">
 
 
@@ -7821,6 +7841,7 @@ lazy (bool): If False eval the model parameters to make sure they are
 
 
         <p>An object that represents the OpenAI API.</p>
+
 
 
 
@@ -8194,6 +8215,7 @@ when they are generated.</p>
       </tbody>
     </table>
 
+
             <details class="quote">
               <summary>Source code in <code>outlines/models/openai.py</code></summary>
               <div class="language-python highlight" style="background: #2E3440"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-103">103</a></span>
@@ -8371,6 +8393,7 @@ parameters that cannot be set by calling this class' methods.</p>
           </tr>
       </tbody>
     </table>
+
 
             <details class="quote">
               <summary>Source code in <code>outlines/models/openai.py</code></summary>
@@ -8671,6 +8694,7 @@ lower values make it more deterministic.</p>
 
 
 
+
               <details class="quote">
                 <summary>Source code in <code>outlines/models/openai.py</code></summary>
                 <div class="language-python highlight" style="background: #2E3440"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-16">16</a></span>
@@ -8810,6 +8834,7 @@ lower values make it more deterministic.</p>
     <div class="doc doc-contents ">
 
         <p>Handle OpenAI API errors and missing API key.</p>
+
 
             <details class="quote">
               <summary>Source code in <code>outlines/models/openai.py</code></summary>
@@ -8951,7 +8976,12 @@ before the prompt.</p>
                 <code>config</code>
             </td>
             <td>
-                  <code><a class="autorefs autorefs-internal" title="outlines.models.openai.OpenAIConfig" href="#outlines.models.openai.OpenAIConfig">OpenAIConfig</a></code>
+                  <code><a class="autorefs autorefs-internal" title="OpenAIConfig
+
+
+  
+      dataclass
+   (outlines.models.openai.OpenAIConfig)" href="#outlines.models.openai.OpenAIConfig">OpenAIConfig</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -8987,6 +9017,7 @@ before the prompt.</p>
           </tr>
       </tbody>
     </table>
+
 
             <details class="quote">
               <summary>Source code in <code>outlines/models/openai.py</code></summary>
@@ -9122,6 +9153,7 @@ before the prompt.</p>
 
 
 
+
   <div class="doc doc-children">
 
 
@@ -9145,6 +9177,7 @@ before the prompt.</p>
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
               Bases: <code><span title="typing.Hashable">Hashable</span></code>, <code><span title="typing.Protocol">Protocol</span></code></p>
+
 
 
 
@@ -9234,6 +9267,7 @@ before the prompt.</p>
 represented by the special characted <code>Ġ</code>. This prevents matching a raw
 token that includes <code>Ġ</code> with a string.</p>
 
+
             <details class="quote">
               <summary>Source code in <code>outlines/models/tokenizer.py</code></summary>
               <div class="language-python highlight" style="background: #2E3440"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-24">24</a></span>
@@ -9270,6 +9304,7 @@ token that includes <code>Ġ</code> with a string.</p>
 
         <p>Translate an array of token ids to a string or list of strings.</p>
 
+
             <details class="quote">
               <summary>Source code in <code>outlines/models/tokenizer.py</code></summary>
               <div class="language-python highlight" style="background: #2E3440"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-20">20</a></span>
@@ -9295,6 +9330,7 @@ token that includes <code>Ġ</code> with a string.</p>
     <div class="doc doc-contents ">
 
         <p>Translate the input prompts into arrays of token ids and attention mask.</p>
+
 
             <details class="quote">
               <summary>Source code in <code>outlines/models/tokenizer.py</code></summary>
@@ -9349,6 +9385,7 @@ token that includes <code>Ġ</code> with a string.</p>
 
 
 
+
   <div class="doc doc-children">
 
 
@@ -9371,10 +9408,11 @@ token that includes <code>Ġ</code> with a string.</p>
 
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
-              Bases: <code><a class="autorefs autorefs-internal" title="outlines.models.tokenizer.Tokenizer" href="#outlines.models.tokenizer.Tokenizer">Tokenizer</a></code></p>
+              Bases: <code><a class="autorefs autorefs-internal" title="Tokenizer (outlines.models.tokenizer.Tokenizer)" href="#outlines.models.tokenizer.Tokenizer">Tokenizer</a></code></p>
 
 
         <p>Represents a tokenizer for models in the <code>transformers</code> library.</p>
+
 
 
 
@@ -9550,6 +9588,7 @@ token that includes <code>Ġ</code> with a string.</p>
 
 
         <p>Represents a <code>transformers</code> model.</p>
+
 
 
 
@@ -10095,6 +10134,7 @@ token that includes <code>Ġ</code> with a string.</p>
 
         <p>Convert outlines generation parameters into model.generate kwargs</p>
 
+
             <details class="quote">
               <summary>Source code in <code>outlines/models/transformers.py</code></summary>
               <div class="language-python highlight" style="background: #2E3440"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-299">299</a></span>
@@ -10293,6 +10333,7 @@ attention head.</p>
           </tr>
       </tbody>
     </table>
+
 
             <details class="quote">
               <summary>Source code in <code>outlines/models/transformers.py</code></summary>
@@ -10510,6 +10551,7 @@ in Outlines.</p>
       </tbody>
     </table>
 
+
             <details class="quote">
               <summary>Source code in <code>outlines/models/transformers.py</code></summary>
               <div class="language-python highlight" style="background: #2E3440"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-197">197</a></span>
@@ -10646,6 +10688,7 @@ in Outlines.</p>
 and equivalent behaviour but isn't yielded until generation completes.</p>
 <p>TODO: implement following completion of https://github.com/huggingface/transformers/issues/30810</p>
 
+
             <details class="quote">
               <summary>Source code in <code>outlines/models/transformers.py</code></summary>
               <div class="language-python highlight" style="background: #2E3440"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-255">255</a></span>
@@ -10761,6 +10804,7 @@ and equivalent behaviour but isn't yielded until generation completes.</p>
 
         <p>Get all the Llama tokenizer types/classes that need work-arounds.</p>
 <p>When they can't be imported, a dummy class is created.</p>
+
 
             <details class="quote">
               <summary>Source code in <code>outlines/models/transformers.py</code></summary>
@@ -10967,6 +11011,7 @@ the <code>device_map</code> entry in <code>model_kwargs</code> when provided.</p
       </tbody>
     </table>
 
+
             <details class="quote">
               <summary>Source code in <code>outlines/models/transformers.py</code></summary>
               <div class="language-python highlight" style="background: #2E3440"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-386">386</a></span>
@@ -11101,6 +11146,7 @@ the <code>device_map</code> entry in <code>model_kwargs</code> when provided.</p
 
 
 
+
   <div class="doc doc-children">
 
 
@@ -11123,7 +11169,8 @@ the <code>device_map</code> entry in <code>model_kwargs</code> when provided.</p
 
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
-              Bases: <code><a class="autorefs autorefs-internal" title="outlines.models.Transformers" href="#outlines.models.transformers.Transformers">Transformers</a></code></p>
+              Bases: <code><a class="autorefs autorefs-internal" title="Transformers (outlines.models.Transformers)" href="#outlines.models.transformers.Transformers">Transformers</a></code></p>
+
 
 
 
@@ -11410,6 +11457,7 @@ in Outlines.</p>
       </tbody>
     </table>
 
+
             <details class="quote">
               <summary>Source code in <code>outlines/models/transformers_vision.py</code></summary>
               <div class="language-python highlight" style="background: #2E3440"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-15">15</a></span>
@@ -11658,6 +11706,7 @@ the <code>device_map</code> entry in <code>model_kwargs</code> when provided.</p
       </tbody>
     </table>
 
+
             <details class="quote">
               <summary>Source code in <code>outlines/models/transformers_vision.py</code></summary>
               <div class="language-python highlight" style="background: #2E3440"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-76"> 76</a></span>
@@ -11818,6 +11867,7 @@ the <code>device_map</code> entry in <code>model_kwargs</code> when provided.</p
 
 
 
+
   <div class="doc doc-children">
 
 
@@ -11846,6 +11896,7 @@ the <code>device_map</code> entry in <code>model_kwargs</code> when provided.</p
 them the same interface in Outlines and allow users to easily switch
 between providers. This class wraps the <code>vllm.LLM</code> class from the
 <code>vllm</code> library.</p>
+
 
 
 
@@ -12375,6 +12426,7 @@ vLLM documentation for more details: https://docs.vllm.ai/en/latest/dev/sampling
       </tbody>
     </table>
 
+
             <details class="quote">
               <summary>Source code in <code>outlines/models/vllm.py</code></summary>
               <div class="language-python highlight" style="background: #2E3440"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-43"> 43</a></span>
@@ -12609,6 +12661,7 @@ vLLM documentation for more details: https://docs.vllm.ai/en/latest/dev/sampling
 <p>Streaming is not yet available for <code>vllm.LLM</code>.</p>
 <p>TODO: Implement the streaming functionality ourselves.</p>
 
+
             <details class="quote">
               <summary>Source code in <code>outlines/models/vllm.py</code></summary>
               <div class="language-python highlight" style="background: #2E3440"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-150">150</a></span>
@@ -12716,6 +12769,7 @@ compile FSMs for this model.</p>
           </tr>
       </tbody>
     </table>
+
 
             <details class="quote">
               <summary>Source code in <code>outlines/models/vllm.py</code></summary>
@@ -12859,6 +12913,7 @@ https://github.com/vllm-project/vllm/blob/main/vllm/entrypoints/llm.py</p>
           </tr>
       </tbody>
     </table>
+
 
             <details class="quote">
               <summary>Source code in <code>outlines/models/vllm.py</code></summary>
