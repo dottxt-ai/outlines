@@ -1,5 +1,5 @@
 ---
-title: installation
+title: Installation
 ---
 
 # Installation
