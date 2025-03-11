@@ -3,7 +3,7 @@ from typing import Any, Optional, Union, cast, get_args
 
 import interegular
 
-from outlines.fsm.guide import RegexGuide
+from outlines.processors.guide import RegexGuide
 from outlines.models import BlackBoxModel, SteerableModel
 from outlines.processors import CFGLogitsProcessor, GuideLogitsProcessor, RegexLogitsProcessor
 from outlines.types import CFG, Choice, JsonType, List, Regex
