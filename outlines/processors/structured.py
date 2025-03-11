@@ -31,7 +31,7 @@ import torch
 from outlines_core.fsm.json_schema import build_regex_from_schema
 from pydantic import BaseModel
 
-from outlines.fsm.guide import CFGGuide, Guide, RegexGuide
+from outlines.processors.guide import CFGGuide, Guide, RegexGuide
 from outlines.fsm.json_schema import convert_json_schema_to_str
 
 from .base_logits_processor import OutlinesLogitsProcessor
@@ -48,7 +48,7 @@ class GuideLogitsProcessor(OutlinesLogitsProcessor):
     tokenizer
         The tokenizer used to convert tokens to ids.
     guide
-        The `outlines.fsm.Guide` which is used to bias the logits.
+        The `outlines.processors.guide` which is used to bias the logits.
     """
 
     tokenizer: "Tokenizer"
@@ -64,7 +64,7 @@ class GuideLogitsProcessor(OutlinesLogitsProcessor):
         tokenizer
             The tokenizer used to convert tokens to ids.
         guide
-            The `outlines.fsm.Guide. which is used to bias the logits.
+            The `outlines.processors.guide. which is used to bias the logits.
         """
         self.tokenizer = tokenizer
         self.guide = guide
