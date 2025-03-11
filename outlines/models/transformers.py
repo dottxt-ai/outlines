@@ -271,26 +271,21 @@ class TransformersMultiModalTypeAdapter(ModelTypeAdapter):
         """
         raise NotImplementedError(
             f"The input type {input} is not available. Please provide a "
-            "dictionary with the following format: "
-            "{'text': Union[str, List[str]], 'images': Optional[Union[Any, "
-            "List[Any]]], 'audios': Optional[Union[Any, List[Any]]]}"
-            "Either 'images' or 'audios' must be provided."
-            "Make sure the text is formatted correctly for the model "
-            "(e.g. include <image> or <|AUDIO|> tags)."
+            + "dictionary containing at least the 'text' key with a value "
+            + "of type Union[str, List[str]]. You should also include the "
+            + "other keys required by your processor (for instance, 'images' "
+            + "or 'audios')."
+            + "Make sure that the text is correctly formatted for the model "
+            + "(e.g. include <image> or <|AUDIO|> tags) and that the number "
+            + "of text tags match the number of additional assets provided."
         )
 
     @format_input.register(dict)
     def format_list_input(self, model_input):
-        if (
-            "text" not in model_input
-            or (
-                "images" not in model_input
-                and "audios" not in model_input
-            )
-        ):
+        if "text" not in model_input:
             raise ValueError(
-                "The input must contain the 'text' key along with either "
-                "'images' or 'audios'."
+                "The input must contain the 'text' key along with the other "
+                + "keys required by your processor."
             )
         return model_input
 
