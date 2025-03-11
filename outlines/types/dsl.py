@@ -1,10 +1,11 @@
 import datetime
 import json
 import re
+import sys
 from dataclasses import dataclass
 from enum import EnumMeta
 from types import FunctionType
-from typing import Any, Callable, List, Literal, Union, get_args, get_origin, _TypedDictMeta # type: ignore
+from typing import Any, Callable, List, Literal, Union, get_args, get_origin
 
 import interegular
 import jsonschema
@@ -43,6 +44,11 @@ from outlines.types.utils import (
     is_interegular_fsm,
 )
 from outlines_core.fsm.json_schema import build_regex_from_schema
+
+if sys.version_info >= (3, 12):
+    from typing import _TypedDictMeta  # type: ignore
+else:
+    from typing_extensions import _TypedDictMeta  # type: ignore
 
 
 class Term:
@@ -559,13 +565,14 @@ def python_types_to_terms(ptype: Any, recursion_depth: int = 0) -> Term:
 
 def _get_enum_members(ptype: EnumMeta) -> List[Any]:
     regular_members = [member.value for member in ptype]  # type: ignore
-    function_members = [
-        value for key, value in ptype.__dict__.items()
+    function_members = []
+    for key, value in ptype.__dict__.items():
         if (
             isinstance(value, FunctionType)
             and not (key.startswith('__') and key.endswith('__'))
-        )
-    ]
+            and key != '_generate_next_value_'  # Skip this specific method that causes issues
+        ):
+            function_members.append(value)
     return regular_members + function_members
 
 
@@ -605,7 +612,7 @@ def _handle_list(args: tuple, recursion_depth: int) -> Sequence:
 
 
 def _handle_tuple(args: tuple, recursion_depth: int) -> Union[Sequence, String]:
-    if len(args) == 0:
+    if len(args) == 0 or args == ((),):
         return String("()")
     elif len(args) == 2 and args[1] is Ellipsis:
         item_term = python_types_to_terms(args[0], recursion_depth + 1)

@@ -64,7 +64,7 @@ def test_openai_wrong_input_type(api_key):
         def __init__(self, foo):
             self.foo = foo
 
-    with pytest.raises(NotImplementedError, match="is not available"):
+    with pytest.raises(TypeError, match="is not available"):
         model = OpenAI(OpenAIClient(api_key=api_key), MODEL_NAME)
         model.generate(Foo("prompt"))
 

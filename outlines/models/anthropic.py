@@ -112,13 +112,15 @@ class Anthropic(Model):
                 f"The type {output_type} is not available with Anthropic."
             )
 
-        completion = self.client.messages.stream(
+        stream = self.client.messages.create(
             **messages,
             model=self.model_name,
+            stream=True,
             **inference_kwargs,
         )
-        for chunk in completion:
-            if chunk.type == "content_block_delta":
+
+        for chunk in stream:
+            if chunk.type == "content_block_delta" and chunk.delta.type == "text_delta":
                 yield chunk.delta.text
 
 

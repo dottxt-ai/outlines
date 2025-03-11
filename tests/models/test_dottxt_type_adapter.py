@@ -1,8 +1,8 @@
 import io
 import json
 import pytest
+import sys
 from dataclasses import dataclass
-from typing_extensions import TypedDict
 
 from PIL import Image
 from genson import SchemaBuilder
@@ -11,6 +11,11 @@ from pydantic import BaseModel
 from outlines.models.dottxt import DottxtTypeAdapter
 from outlines.templates import Vision
 from outlines.types import cfg, json_schema, regex
+
+if sys.version_info >= (3, 12):
+    from typing import TypedDict
+else:
+    from typing_extensions import TypedDict
 
 
 @pytest.fixture

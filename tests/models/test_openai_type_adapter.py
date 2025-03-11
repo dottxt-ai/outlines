@@ -1,8 +1,9 @@
 import io
 import json
 import pytest
+import sys
 from dataclasses import dataclass
-from typing import Literal, TypedDict
+from typing import Literal
 
 from genson import SchemaBuilder
 from PIL import Image
@@ -10,6 +11,11 @@ from pydantic import BaseModel
 
 from outlines import cfg, json_schema, regex, Vision
 from outlines.models.openai import OpenAITypeAdapter
+
+if sys.version_info >= (3, 12):
+    from typing import TypedDict
+else:
+    from typing_extensions import TypedDict
 
 
 @pytest.fixture
