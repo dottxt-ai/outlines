@@ -75,6 +75,13 @@ def test_call(array_type, processor):
     processed_logits = processor(input_ids, logits)
 
     assert isinstance(processed_logits, type(arrays[array_type]))
-    assert np.allclose(
-        np.array(processed_logits), np.array([[2.0, 4.0], [6.0, 8.0]], dtype=np.float32)
-    )
+
+    # Convert to numpy array for comparison, handling PyTorch tensors properly
+    if array_type == "torch":
+        expected = np.array([[2.0, 4.0], [6.0, 8.0]], dtype=np.float32)
+        actual = processed_logits.detach().cpu().numpy()
+        assert np.allclose(actual, expected)
+    else:
+        assert np.allclose(
+            np.array(processed_logits), np.array([[2.0, 4.0], [6.0, 8.0]], dtype=np.float32)
+        )

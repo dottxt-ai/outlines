@@ -1,5 +1,6 @@
 import io
 import json
+import sys
 from dataclasses import dataclass
 from enum import Enum
 from typing import Generator, Literal
@@ -9,11 +10,15 @@ import pytest
 import requests
 from PIL import Image
 from pydantic import BaseModel
-from typing_extensions import TypedDict
 
 import outlines
 from outlines.models.gemini import Gemini
 from outlines.templates import Vision
+
+if sys.version_info >= (3, 12):
+    from typing import TypedDict
+else:
+    from typing_extensions import TypedDict
 
 
 MODEL_NAME = "gemini-1.5-flash-latest"

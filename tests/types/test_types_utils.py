@@ -1,5 +1,6 @@
 import datetime
 import pytest
+import sys
 from dataclasses import dataclass
 from enum import Enum
 from typing import (
@@ -11,7 +12,6 @@ from typing import (
     NewType,
     Optional,
     Tuple,
-    TypedDict,
     Union
 )
 
@@ -44,6 +44,11 @@ from outlines.types.utils import (
     is_typing_tuple,
     is_union
 )
+
+if sys.version_info >= (3, 12):
+    from typing import TypedDict
+else:
+    from typing_extensions import TypedDict
 
 
 @pytest.fixture
