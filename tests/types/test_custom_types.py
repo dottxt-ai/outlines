@@ -4,7 +4,6 @@ import pytest
 from pydantic import BaseModel
 
 from outlines import types
-from outlines.fsm.types import python_types_to_regex
 from outlines.types.dsl import to_regex
 
 
