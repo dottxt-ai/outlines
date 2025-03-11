@@ -1,5 +1,6 @@
 import datetime
 import json
+import sys
 from dataclasses import dataclass
 from enum import Enum
 from typing import (
@@ -7,7 +8,6 @@ from typing import (
     List,
     Literal,
     Tuple,
-    TypedDict,
     Union,
     get_args,
     Optional as PyOptional
@@ -51,6 +51,11 @@ from outlines.types.dsl import (
     python_types_to_terms,
     cfg,
 )
+
+if sys.version_info >= (3, 12):
+    from typing import TypedDict
+else:
+    from typing_extensions import TypedDict
 
 
 def test_dsl_init():

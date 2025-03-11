@@ -1,6 +1,7 @@
 import io
 import json
 import pytest
+import sys
 from dataclasses import dataclass
 from enum import Enum, EnumMeta
 from typing import Literal, get_args
@@ -8,11 +9,15 @@ from typing import Literal, get_args
 from PIL import Image
 from genson import SchemaBuilder
 from pydantic import BaseModel
-from typing_extensions import TypedDict, is_typeddict
 
 from outlines import cfg, json_schema, regex
 from outlines.models.gemini import GeminiTypeAdapter
 from outlines.templates import Vision
+
+if sys.version_info >= (3, 12):
+    from typing import TypedDict, is_typeddict
+else:
+    from typing_extensions import TypedDict, is_typeddict
 
 
 @pytest.fixture
