@@ -1,7 +1,8 @@
 import dataclasses
 import datetime
+import sys
 from enum import Enum, EnumMeta
-from typing import ( # type: ignore
+from typing import (
     Annotated,
     Any,
     Dict,
@@ -12,13 +13,16 @@ from typing import ( # type: ignore
     Union,
     get_args,
     get_origin,
-    _TypedDictMeta,
 )
 
 import interegular
 from genson import SchemaBuilder
 from pydantic import BaseModel
-from typing_extensions import _TypedDictMeta as Ext_TypedDictMeta  # type: ignore
+
+if sys.version_info >= (3, 12):
+    from typing import _TypedDictMeta  # type: ignore
+else:
+    from typing_extensions import _TypedDictMeta  # type: ignore
 
 
 # Type identification
@@ -117,13 +121,14 @@ def is_dataclass(value: Any) -> bool:
 
 
 def is_typed_dict(value: Any) -> bool:
-    return (
-        isinstance(value, _TypedDictMeta)
-        or isinstance(value, Ext_TypedDictMeta)
-    )
+    return isinstance(value, _TypedDictMeta)
 
 
-def is_pydantic_model(value: Any) -> bool:
+def is_pydantic_model(value):
+    # needed because generic type cannot be used with `issubclass`    # for Python versions < 3.11
+    if get_origin(value) is not None:
+        return False
+
     return isinstance(value, type) and issubclass(value, BaseModel)
 
 
