@@ -1,4 +1,3 @@
-from dataclasses import is_dataclass
 import json
 from typing import Iterator, TYPE_CHECKING
 
@@ -7,6 +6,8 @@ from typing_extensions import _TypedDictMeta  # type: ignore
 
 from outlines.models.base import Model, ModelTypeAdapter
 from outlines.types import Regex, CFG, JsonSchema
+from outlines.types.utils import is_dataclass, is_typed_dict, is_pydantic_model, is_genson_schema_builder
+
 
 if TYPE_CHECKING:
     from ollama import Client as OllamaClient
@@ -56,12 +57,14 @@ class OllamaTypeAdapter(ModelTypeAdapter):
         elif is_dataclass(output_type):
             schema = TypeAdapter(output_type).json_schema()
             return schema
-        elif isinstance(output_type, _TypedDictMeta):
+        elif is_typed_dict(output_type):
             schema = TypeAdapter(output_type).json_schema()
             return schema
-        elif isinstance(output_type, type(BaseModel)):
+        elif is_pydantic_model(output_type):
             schema = output_type.model_json_schema()
             return schema
+        elif is_genson_schema_builder(output_type):
+            return output_type.to_json()
         else:
             type_name = getattr(output_type, "__name__", output_type)
             raise TypeError(

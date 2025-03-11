@@ -1,7 +1,7 @@
 import datetime
 import json
 import re
-from dataclasses import dataclass, is_dataclass
+from dataclasses import dataclass
 from enum import EnumMeta
 from types import FunctionType
 from typing import Any, Callable, List, Literal, Union, get_args, get_origin, _TypedDictMeta # type: ignore
@@ -16,6 +16,32 @@ from pydantic_core import core_schema as cs
 import outlines.types as types
 from outlines import grammars
 from outlines.fsm.json_schema import get_schema_from_signature
+from outlines.types.utils import (
+    is_int,
+    is_int_instance,
+    is_float,
+    is_float_instance,
+    is_str,
+    is_str_instance,
+    is_bool,
+    is_datetime,
+    is_date,
+    is_time,
+    is_native_dict,
+    is_dict_instance,
+    is_dataclass,
+    is_typed_dict,
+    is_pydantic_model,
+    is_genson_schema_builder,
+    is_literal,
+    is_union,
+    is_enum,
+    is_callable,
+    is_typing_list,
+    is_typing_tuple,
+    is_typing_dict,
+    is_interegular_fsm,
+)
 from outlines_core.fsm.json_schema import build_regex_from_schema
 
 
@@ -41,27 +67,27 @@ class Term:
 
     """
 
-    def __add__(self: "Term", other: Union[str, "Term"]) -> "Sequence":
-        if isinstance(other, str):
-            other = String(other)
+    def __add__(self: "Term", other: "Term") -> "Sequence":
+        if is_str_instance(other):
+            other = String(str(other))
 
         return Sequence([self, other])
 
-    def __radd__(self: "Term", other: Union[str, "Term"]) -> "Sequence":
-        if isinstance(other, str):
-            other = String(other)
+    def __radd__(self: "Term", other: "Term") -> "Sequence":
+        if is_str_instance(other):
+            other = String(str(other))
 
         return Sequence([other, self])
 
-    def __or__(self: "Term", other: Union[str, "Term"]) -> "Alternatives":
-        if isinstance(other, str):
-            other = String(other)
+    def __or__(self: "Term", other: "Term") -> "Alternatives":
+        if is_str_instance(other):
+            other = String(str(other))
 
         return Alternatives([self, other])
 
-    def __ror__(self: "Term", other: Union[str, "Term"]) -> "Alternatives":
-        if isinstance(other, str):
-            other = String(other)
+    def __ror__(self: "Term", other: "Term") -> "Alternatives":
+        if is_str_instance(other):
+            other = String(str(other))
 
         return Alternatives([other, self])
 
@@ -160,22 +186,27 @@ class CFG(Term):
 
 
 class JsonSchema(Term):
-    def __init__(self, schema: Union[dict, str, type[BaseModel], _TypedDictMeta, type]):
-        if isinstance(schema, dict):
+    def __init__(self, schema: Union[dict, str, type[BaseModel], _TypedDictMeta, type, SchemaBuilder]):
+        schema_str: str
+
+        if is_dict_instance(schema):
             schema_str = json.dumps(schema)
-        elif isinstance(schema, str):
-            schema_str = schema
-        elif isinstance(schema, type) and issubclass(schema, BaseModel):
+        elif is_str_instance(schema):
+            schema_str = str(schema)
+        elif is_pydantic_model(schema):
             schema_str = json.dumps(schema.model_json_schema())  # type: ignore
-        elif isinstance(schema, _TypedDictMeta):
+        elif is_typed_dict(schema):
             schema_str = json.dumps(TypeAdapter(schema).json_schema())
         elif is_dataclass(schema):
             schema_str = json.dumps(TypeAdapter(schema).json_schema())
+        elif is_genson_schema_builder(schema):
+            schema_str = schema.to_json()  # type: ignore
         else:
             raise ValueError(
                 f"Cannot parse schema {schema}. The schema must be either "
-                + "a Pydantic class, a dictionary or a string that contains the JSON "
-                + "schema specification"
+                + "a Pydantic class, typed dict, a dataclass, a genSON schema "
+                + "builder or a string or dict that contains the JSON schema "
+                + "specification"
             )
 
         self.schema = schema_str
@@ -421,46 +452,44 @@ def python_types_to_terms(ptype: Any, recursion_depth: int = 0) -> Term:
         return ptype
 
     # Basic types
-    if ptype is int or get_origin(ptype) is int:
+    if is_int(ptype):
         return types.integer
-    elif ptype is float or get_origin(ptype) is float:
+    elif is_float(ptype):
         return types.number
-    elif ptype is bool or get_origin(ptype) is bool:
+    elif is_bool(ptype):
         return types.boolean
-    elif ptype is str or get_origin(ptype) is str:
+    elif is_str(ptype):
         return types.string
-    elif ptype is dict:
+    elif is_native_dict(ptype):
         return CFG(grammars.json)
-    elif ptype is datetime.time:
+    elif is_time(ptype):
         return types.time
-    elif ptype is datetime.date:
+    elif is_date(ptype):
         return types.date
-    elif ptype is datetime.datetime:
+    elif is_datetime(ptype):
         return types.datetime
 
     # Basic type instances
-    if isinstance(ptype, str):
+    if is_str_instance(ptype):
         return String(ptype)
-    elif isinstance(ptype, (int, float)):
+    elif is_int_instance(ptype) or is_float_instance(ptype):
         return Regex(str(ptype))
 
     # Structured types
     structured_type_checks = [
         lambda x: is_dataclass(x),
-        lambda x: isinstance(x, _TypedDictMeta),
-        lambda x: isinstance(x, type) and issubclass(x, BaseModel),
+        lambda x: is_typed_dict(x),
+        lambda x: is_pydantic_model(x),
     ]
     if any(check(ptype) for check in structured_type_checks):
         schema = TypeAdapter(ptype).json_schema()
         return JsonSchema(schema)
 
-    # genSON SchemaBuilder
-    elif isinstance(ptype, SchemaBuilder):
+    elif is_genson_schema_builder(ptype):
         schema = ptype.to_json()
         return JsonSchema(schema)
 
-    # Enums
-    if isinstance(ptype, EnumMeta):
+    if is_enum(ptype):
         return Alternatives(
             [
                 python_types_to_terms(member, recursion_depth + 1)
@@ -468,27 +497,25 @@ def python_types_to_terms(ptype: Any, recursion_depth: int = 0) -> Term:
             ]
         )
 
-    # Generic types
-    origin = get_origin(ptype)
     args = get_args(ptype)
-
-    if origin is Literal:
+    if is_literal(ptype):
         return _handle_literal(args)
-    elif origin is Union:
+    elif is_union(ptype):
         return _handle_union(args, recursion_depth)
-    elif origin is list:
+    elif is_typing_list(ptype):
         return _handle_list(args, recursion_depth)
-    elif origin is tuple:
+    elif is_typing_tuple(ptype):
         return _handle_tuple(args, recursion_depth)
-    elif origin is dict:
+    elif is_typing_dict(ptype):
         return _handle_dict(args, recursion_depth)
 
-    # Callables
-    if callable(ptype) and not isinstance(ptype, type):
+    if is_callable(ptype):
         return JsonSchema(get_schema_from_signature(ptype))
 
-    # Interegular FSM are passed on as is and are handled by the Generator
-    elif isinstance(ptype, interegular.fsm.FSM):
+    if isinstance(ptype, interegular.fsm.FSM):
+        return ptype
+
+    if is_interegular_fsm(ptype):
         return ptype
 
     type_name = getattr(ptype, "__name__", ptype)
@@ -511,7 +538,6 @@ def _get_enum_members(ptype: EnumMeta) -> List[Any]:
 
 
 def _handle_literal(args: tuple) -> Alternatives:
-    print(args)
     return Alternatives([python_types_to_terms(arg) for arg in args])
 
 

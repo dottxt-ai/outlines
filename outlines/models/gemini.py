@@ -1,6 +1,5 @@
 """Integration with Gemini's API."""
 
-from dataclasses import is_dataclass
 from enum import EnumMeta, Enum
 from typing import (
     get_args,
@@ -11,12 +10,23 @@ from typing import (
     TYPE_CHECKING,
     Literal,
 )
-from typing_extensions import is_typeddict
+
 from pydantic import BaseModel, TypeAdapter
+from typing_extensions import is_typeddict
+
 from outlines.models.base import Model, ModelTypeAdapter
 from outlines.templates import Vision
 from outlines.types import Regex, CFG, JsonSchema
-
+from outlines.types.utils import (
+    is_dataclass,
+    is_typed_dict,
+    is_pydantic_model,
+    is_genson_schema_builder,
+    is_enum,
+    is_literal,
+    is_typing_list,
+    literal_to_enum
+)
 
 if TYPE_CHECKING:
     from google.generativeai import GenerativeModel as GeminiClient
@@ -63,6 +73,10 @@ class GeminiTypeAdapter(ModelTypeAdapter):
             raise TypeError(
                 "CFG-based structured outputs are not available with Gemini. Use an open source model or dottxt instead."
             )
+        elif is_genson_schema_builder(output_type):
+            raise TypeError(
+                "The Gemini SDK does not accept Genson schema builders as an input. Pass a Pydantic model, typed dict or dataclass instead."
+            )
         elif isinstance(output_type, JsonSchema):
             raise TypeError(
                 "The Gemini SDK does not accept Json Schemas as an input. Pass a Pydantic model, typed dict or dataclass instead."
@@ -70,22 +84,21 @@ class GeminiTypeAdapter(ModelTypeAdapter):
 
         if output_type is None:
             return {}
-        elif is_dataclass(output_type):  # structured types
+        # structured types
+        elif is_dataclass(output_type):
             return self.format_json_output_type(output_type)
-        elif is_typeddict(output_type):
+        elif is_typed_dict(output_type):
             return self.format_json_output_type(output_type)
-        elif isinstance(output_type, type(BaseModel)):
+        elif is_pydantic_model(output_type):
             return self.format_json_output_type(output_type)
-        # json schema as a dict is accepted but the title keyword is not supported ?!
-        # another restriction: the dict cannot be put in a list
-        elif isinstance(output_type, dict):
-            return self.format_json_output_type(output_type)
-        elif isinstance(output_type, EnumMeta):  # Enum types
+        # enum types
+        elif is_enum(output_type):
             return self.format_enum_output_type(output_type)
-        elif get_origin(output_type) is Literal:
-            out = Enum("EnumFromLiteral", [(arg, arg) for arg in get_args(output_type)])
-            return self.format_enum_output_type(out)
-        elif get_origin(output_type) is list:  # List of objects
+        elif is_literal(output_type):
+            enum = literal_to_enum(output_type)
+            return self.format_enum_output_type(enum)
+        # list of objects
+        elif is_typing_list(output_type):
             return self.format_list_output_type(output_type)
         else:
             type_name = getattr(output_type, "__name__", output_type)
@@ -114,8 +127,8 @@ class GeminiTypeAdapter(ModelTypeAdapter):
 
             # Check if list item type is supported
             if (
-                isinstance(item_type, type(BaseModel))
-                or is_typeddict(item_type)
+                is_pydantic_model(item_type)
+                or is_typed_dict(item_type)
                 or is_dataclass(item_type)
             ):
                 return {
@@ -123,10 +136,10 @@ class GeminiTypeAdapter(ModelTypeAdapter):
                     "response_schema": output_type,
                 }
 
-            elif isinstance(item_type, dict):
+            else:
                 raise TypeError(
-                    "JSON schema dict output type is not supported with lists. "
-                    "Use a Pydantic model, typed dict or dataclass instead."
+                    "The only supported types for list items are Pydantic "
+                    + "models, typed dicts and dataclasses."
                 )
 
         raise TypeError(
