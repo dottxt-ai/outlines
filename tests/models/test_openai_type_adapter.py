@@ -1,14 +1,14 @@
 import io
 import json
-from typing import Literal
-from typing_extensions import TypedDict
+import pytest
 from dataclasses import dataclass
+from typing import Literal, TypedDict
 
+from genson import SchemaBuilder
 from PIL import Image
 from pydantic import BaseModel
-import pytest
 
-from outlines import json_schema, regex, cfg, Vision
+from outlines import cfg, json_schema, regex, Vision
 from outlines.models.openai import OpenAITypeAdapter
 
 
@@ -153,6 +153,25 @@ def test_openai_type_adapter_pydantic(adapter, schema):
     assert isinstance(result, dict)
     assert result["response_format"]["json_schema"]["strict"] is True
     assert result["response_format"]["json_schema"]["schema"] == schema
+
+
+def test_openai_type_adapter_genson_schema_builder(adapter, schema):
+    builder = SchemaBuilder()
+    builder.add_schema({"type": "object", "properties": {}})
+    builder.add_object({"hi": "there"})
+    builder.add_object({"hi": 5})
+
+    result = adapter.format_output_type(builder)
+    assert isinstance(result, dict)
+    assert result["response_format"]["json_schema"]["strict"] is True
+    expected_schema = {
+        "$schema": "http://json-schema.org/schema#",
+        "type": "object",
+        "properties": {"hi": {"type": ["integer", "string"]}},
+        "required": ["hi"],
+        "additionalProperties": False  # OpenAI adds this
+    }
+    assert result["response_format"]["json_schema"]["schema"] == expected_schema
 
 
 def test_openai_type_adapter_json_schema_str(adapter, schema):
