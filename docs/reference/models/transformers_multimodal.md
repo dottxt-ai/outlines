@@ -21,21 +21,28 @@ model = models.from_transformers(
 )
 ```
 
-You must provider a processor adapted to your model. We currently only support vision and audio models.
+You must provider a processor adapted to your model. We currently offer official support for vision and audio models only, but you can use this class for any type of multimodal model (for instance video) as long as you provide the appropriate processor for your transformers model.
 
-## Use the model to generate text from prompts and images/audios
+## Use the model to generate text from prompts and assets
 
 When calling the model, the prompt argument you provide must be a dictionary using the following format:
 ```
 {
     "text": Union[str, List[str]],
-    "images": Optional[Union[Any, List[Any]]],
-    "audios": Optional[Union[Any, List[Any]]],
+    "...": Any
 }
 ```
 
-The `text` key is required. Either the `images` or `audios` key must be provided.
-The format and values of those keys must correspond to what you would provide to the `__call__` method of the processor if you were to call it directly. Thus, the text prompt must include the appropriate tags to indicate where the images or audios should be inserted (e.g. `<image>` or `<|AUDIO|>`).
+The `text` key is mandatory. Other keys are optional and depend on the processor you are using.
+The format and values of those keys must correspond to what you would provide to the `__call__` method of the processor if you were to call it directly. Thus, the text prompt must include the appropriate tags to indicate where the assets should be inserted (e.g. `<image>` or `<|AUDIO|>`).
+
+Example of a correctly formatted prompt for a vision model:
+```
+{
+    "text": "<image>Describe this image in one sentence:",
+    "images": PIL.Image.Image
+}
+```
 
 ### Vision models
 
