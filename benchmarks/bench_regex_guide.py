@@ -1,5 +1,5 @@
 from outlines.caching import cache_disabled
-from outlines.fsm.guide import RegexGuide
+from outlines.processors.guide import RegexGuide
 
 from .common import setup_tokenizer
 
