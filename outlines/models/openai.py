@@ -1,15 +1,21 @@
 """Integration with OpenAI's API."""
 
-from dataclasses import is_dataclass
 import json
 from typing import Optional, Union, TYPE_CHECKING
-from typing_extensions import is_typeddict
 
 from pydantic import BaseModel, TypeAdapter
+from typing_extensions import is_typeddict
 
 from outlines.models.base import Model, ModelTypeAdapter
 from outlines.templates import Vision
 from outlines.types import JsonSchema, Regex, CFG
+from outlines.types.utils import (
+    is_dataclass,
+    is_typed_dict,
+    is_pydantic_model,
+    is_genson_schema_builder,
+    is_native_dict
+)
 
 if TYPE_CHECKING:
     from openai import OpenAI as OpenAIClient, AzureOpenAI as AzureOpenAIClient
@@ -99,17 +105,20 @@ class OpenAITypeAdapter(ModelTypeAdapter):
 
         if output_type is None:
             return {}
-        elif output_type is dict:
+        elif is_native_dict(output_type):
             return self.format_json_mode_type()
         elif is_dataclass(output_type):
             output_type = TypeAdapter(output_type).json_schema()
             return self.format_json_output_type(output_type)
-        elif is_typeddict(output_type):
+        elif is_typed_dict(output_type):
             output_type = TypeAdapter(output_type).json_schema()
             return self.format_json_output_type(output_type)
-        elif isinstance(output_type, type(BaseModel)):
+        elif is_pydantic_model(output_type):
             output_type = output_type.model_json_schema()
             return self.format_json_output_type(output_type)
+        elif is_genson_schema_builder(output_type):
+            schema = json.loads(output_type.to_json())
+            return self.format_json_output_type(schema)
         elif isinstance(output_type, JsonSchema):
             return self.format_json_output_type(json.loads(output_type.schema))
         else:
