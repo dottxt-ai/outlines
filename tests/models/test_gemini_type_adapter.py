@@ -1,16 +1,16 @@
-from dataclasses import dataclass
-from enum import EnumMeta
-import json
-from typing import Literal, get_args
-from typing_extensions import TypedDict, is_typeddict
-from enum import Enum
 import io
+import json
+import pytest
+from dataclasses import dataclass
+from enum import Enum, EnumMeta
+from typing import Literal, get_args
 
 from PIL import Image
+from genson import SchemaBuilder
 from pydantic import BaseModel
-import pytest
+from typing_extensions import TypedDict, is_typeddict
 
-from outlines import regex, cfg, json_schema
+from outlines import cfg, json_schema, regex
 from outlines.models.gemini import GeminiTypeAdapter
 from outlines.templates import Vision
 
@@ -85,6 +85,9 @@ def test_gemini_type_adapter_output_invalid(adapter):
     with pytest.raises(TypeError, match="CFG-based structured outputs"):
         adapter.format_output_type(cfg(""))
 
+    with pytest.raises(TypeError, match="The Gemini SDK does not accept"):
+        adapter.format_output_type(SchemaBuilder())
+
     with pytest.raises(TypeError, match="The Gemini SDK does not"):
         adapter.format_output_type(json_schema(""))
 
@@ -92,19 +95,6 @@ def test_gemini_type_adapter_output_invalid(adapter):
 def test_gemini_type_adapter_output_none(adapter):
     result = adapter.format_output_type(None)
     assert result == {}
-
-
-def test_gemini_type_adapter_output_dict(adapter, schema):
-    json_schema = {
-        "properties": {"bar": {"type": "integer"}},
-        "required": ["bar"],
-        "type": "object",
-    }
-    result = adapter.format_output_type(json_schema)
-    assert result == {
-        "response_mime_type": "application/json",
-        "response_schema": json_schema,
-    }
 
 
 def test_gemini_type_adapter_output_dataclass(adapter, schema):

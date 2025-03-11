@@ -1,15 +1,16 @@
 import io
-from dataclasses import dataclass
 import json
 import pytest
+from dataclasses import dataclass
 from typing_extensions import TypedDict
 
 from PIL import Image
+from genson import SchemaBuilder
 from pydantic import BaseModel
 
 from outlines.models.dottxt import DottxtTypeAdapter
-from outlines.types import regex, cfg, json_schema
 from outlines.templates import Vision
+from outlines.types import cfg, json_schema, regex
 
 
 @pytest.fixture
@@ -100,6 +101,24 @@ def test_dottxt_type_adapter_output_pydantic(adapter, schema):
 
     result = adapter.format_output_type(User)
     assert result == json.dumps(schema)
+
+
+def test_dottxt_type_adapter_output_genson_schema_builder(adapter, schema):
+    builder = SchemaBuilder()
+    builder.add_schema({"type": "object", "properties": {}})
+    builder.add_object({"hi": "there"})
+    builder.add_object({"hi": 5})
+
+    result = adapter.format_output_type(builder)
+    result_dict = json.loads(result)
+    assert isinstance(result_dict, dict)
+    expected_schema = {
+        "$schema": "http://json-schema.org/schema#",
+        "type": "object",
+        "properties": {"hi": {"type": ["integer", "string"]}},
+        "required": ["hi"],
+    }
+    assert result_dict == expected_schema
 
 
 def test_dottxt_type_adapter_json_schema_str(adapter, schema):
