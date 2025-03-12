@@ -25,7 +25,7 @@ from outlines.types.utils import (
     is_enum,
     is_literal,
     is_typing_list,
-    literal_to_enum
+    get_enum_from_literal
 )
 
 if TYPE_CHECKING:
@@ -95,7 +95,7 @@ class GeminiTypeAdapter(ModelTypeAdapter):
         elif is_enum(output_type):
             return self.format_enum_output_type(output_type)
         elif is_literal(output_type):
-            enum = literal_to_enum(output_type)
+            enum = get_enum_from_literal(output_type)
             return self.format_enum_output_type(enum)
         # list of objects
         elif is_typing_list(output_type):
