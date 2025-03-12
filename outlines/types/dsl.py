@@ -10,14 +10,15 @@ from typing import Any, Callable, List, Literal, Union, get_args, get_origin
 import interegular
 import jsonschema
 from genson import SchemaBuilder
+from outlines_core.fsm.json_schema import build_regex_from_schema
 from pydantic import BaseModel, GetCoreSchemaHandler, GetJsonSchemaHandler, TypeAdapter
 from pydantic.json_schema import JsonSchemaValue
 from pydantic_core import core_schema as cs
 
 import outlines.types as types
 from outlines import grammars
-from outlines.fsm.json_schema import get_schema_from_signature
 from outlines.types.utils import (
+    get_schema_from_signature,
     is_int,
     is_int_instance,
     is_float,
@@ -43,7 +44,6 @@ from outlines.types.utils import (
     is_typing_dict,
     is_interegular_fsm,
 )
-from outlines_core.fsm.json_schema import build_regex_from_schema
 
 if sys.version_info >= (3, 12):
     from typing import _TypedDictMeta  # type: ignore
