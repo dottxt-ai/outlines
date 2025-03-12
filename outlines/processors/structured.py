@@ -32,7 +32,7 @@ from outlines_core.fsm.json_schema import build_regex_from_schema
 from pydantic import BaseModel
 
 from outlines.processors.guide import CFGGuide, Guide, RegexGuide
-from outlines.fsm.json_schema import convert_json_schema_to_str
+from outlines.types import JsonSchema
 
 from .base_logits_processor import OutlinesLogitsProcessor
 
@@ -182,7 +182,7 @@ class JSONLogitsProcessor(RegexLogitsProcessor):
             literals). For example, to allow only a single space or newline with
             `whitespace_pattern=r"[\n ]?"`
         """
-        schema_str = convert_json_schema_to_str(json_schema=schema)
+        schema_str = JsonSchema(schema).schema
         regex_string = build_regex_from_schema(schema_str, whitespace_pattern)
         super().__init__(regex_string=regex_string, tokenizer=tokenizer)
 
