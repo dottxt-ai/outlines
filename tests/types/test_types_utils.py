@@ -1,7 +1,6 @@
 import datetime
 import pytest
 import sys
-from contextlib import nullcontext
 from dataclasses import dataclass
 from enum import Enum
 from functools import partial
@@ -21,6 +20,7 @@ import interegular
 from genson import SchemaBuilder
 from pydantic import BaseModel, constr
 
+from outlines.types.dsl import JsonSchema
 from outlines.types.utils import (
     get_enum_from_literal,
     get_schema_from_enum,
@@ -68,6 +68,29 @@ def sample_enum():
     return SampleEnum
 
 @pytest.fixture
+def sample_complex_enum():
+    def add_func(a: float, b: float) -> float:
+        return a + b
+
+    class SampleComplexEnum(Enum):
+        add = partial(add_func)
+        a = "a"
+        b = 2
+
+    return SampleComplexEnum
+
+@pytest.fixture
+def sample_empty_enum():
+    def add_func(a: float, b: float) -> float:
+        return a + b
+
+    # the enum is empty because the function is not registered as callable
+    class SampleEmptyEnum(Enum):
+        add = add_func
+
+    return SampleEmptyEnum
+
+@pytest.fixture
 def sample_class():
     class SampleClass:
         pass
@@ -109,7 +132,14 @@ def sample_schema_builder():
 
 @pytest.fixture
 def sample_function():
-    def sample_function():
+    def sample_function(foo: str, bar: List[int]):
+        pass
+
+    return sample_function
+
+@pytest.fixture
+def sample_function_missing_type():
+    def sample_function(foo, bar: List[int]):
         pass
 
     return sample_function
@@ -356,3 +386,29 @@ def test_get_enum_from_literal(sample_enum):
     assert getattr(complex_enum, "True").value
     assert getattr(complex_enum, "None").value is None
     assert getattr(complex_enum, "SampleEnum.A").value == sample_enum.A
+
+
+def test_get_schema_from_signature(sample_function, sample_function_missing_type):
+    result = get_schema_from_signature(sample_function)
+    assert result["type"] == "object"
+    assert list(result["properties"].keys()) == ["foo", "bar"]
+    assert result["properties"]["foo"]["type"] == "string"
+    assert result["properties"]["bar"]["type"] == "array"
+    assert result["properties"]["bar"]["items"]["type"] == "integer"
+
+    # in case of a function missing type annotations
+    with pytest.raises(ValueError):
+        get_schema_from_signature(sample_function_missing_type)
+
+
+def test_get_schema_from_enum(sample_complex_enum, sample_empty_enum):
+    schema = get_schema_from_enum(sample_complex_enum)
+    assert JsonSchema(schema)
+    assert schema["title"] == sample_complex_enum.__name__
+    assert len(schema["oneOf"]) == len(sample_complex_enum)
+    for elt in schema["oneOf"]:
+        assert type(elt) in [int, float, bool, type(None), str, dict]
+
+    # in case of an empty enum because the function member is not registered as callable
+    with pytest.raises(ValueError):
+        get_schema_from_enum(sample_empty_enum)

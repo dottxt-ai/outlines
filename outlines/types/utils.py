@@ -20,7 +20,7 @@ from typing import (
 
 import interegular
 from genson import SchemaBuilder
-from pydantic import BaseModel
+from pydantic import BaseModel, create_model
 
 if sys.version_info >= (3, 12):
     from typing import _TypedDictMeta  # type: ignore
@@ -159,3 +159,46 @@ def get_enum_from_literal(value) -> Enum:
         value.__name__,
         {str(arg): arg for arg in get_args(value)}
     )
+
+
+def get_schema_from_signature(fn: Callable) -> dict:
+    """Turn a function signature into a JSON schema.
+
+    Every JSON object valid to the output JSON Schema can be passed
+    to `fn` using the ** unpacking syntax.
+
+    """
+    signature = inspect.signature(fn)
+    arguments = {}
+    for name, arg in signature.parameters.items():
+        if arg.annotation == inspect._empty:
+            raise ValueError("Each argument must have a type annotation")
+        else:
+            arguments[name] = (arg.annotation, ...)
+
+    try:
+        fn_name = fn.__name__
+    except Exception as e:
+        fn_name = "Arguments"
+        warnings.warn(
+            f"The function name could not be determined. Using default name 'Arguments' instead. For debugging, here is exact error:\n{e}",
+            category=UserWarning,
+        )
+    model = create_model(fn_name, **arguments)
+
+    return model.model_json_schema()
+
+
+def get_schema_from_enum(myenum: type[Enum]) -> dict:
+    if len(myenum) == 0:
+        raise ValueError(
+            f"Your enum class {myenum.__name__} has 0 members. If you are working with an enum of functions, do not forget to register them as callable (using `partial` for instance)"
+        )
+    choices = [
+        get_schema_from_signature(elt.value.func)
+        if callable(elt.value)
+        else {"const": elt.value}
+        for elt in myenum
+    ]
+    schema = {"title": myenum.__name__, "oneOf": choices}
+    return schema
