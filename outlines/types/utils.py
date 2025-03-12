@@ -1,10 +1,13 @@
 import dataclasses
 import datetime
+import inspect
 import sys
+import warnings
 from enum import Enum, EnumMeta
 from typing import (
     Annotated,
     Any,
+    Callable,
     Dict,
     Literal,
     List,
@@ -151,5 +154,8 @@ def is_interegular_fsm(value: Any) -> bool:
 # Type conversion
 
 
-def literal_to_enum(value) -> Enum:
-    return Enum(value.__name__, [(arg, arg) for arg in get_args(value)])
+def get_enum_from_literal(value) -> Enum:
+    return Enum(
+        value.__name__,
+        {str(arg): arg for arg in get_args(value)}
+    )

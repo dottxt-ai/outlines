@@ -1,8 +1,10 @@
 import datetime
 import pytest
 import sys
+from contextlib import nullcontext
 from dataclasses import dataclass
 from enum import Enum
+from functools import partial
 from typing import (
     Annotated,
     Any,
@@ -17,9 +19,12 @@ from typing import (
 
 import interegular
 from genson import SchemaBuilder
-from pydantic import BaseModel
+from pydantic import BaseModel, constr
 
 from outlines.types.utils import (
+    get_enum_from_literal,
+    get_schema_from_enum,
+    get_schema_from_signature,
     is_bool,
     is_callable,
     is_date,
@@ -49,6 +54,9 @@ if sys.version_info >= (3, 12):
     from typing import TypedDict
 else:
     from typing_extensions import TypedDict
+
+
+# Type identification
 
 
 @pytest.fixture
@@ -330,3 +338,21 @@ def test_is_interegular_fsm(sample_interegular_fsm):
     assert is_interegular_fsm(sample_interegular_fsm)
     assert not is_interegular_fsm({})
     assert not is_interegular_fsm("")
+
+
+# Type conversion
+
+
+def test_get_enum_from_literal(sample_enum):
+    basic_enum = get_enum_from_literal(Literal["a", "b"])
+    assert(is_enum(basic_enum))
+    assert basic_enum.a.value == "a"
+    assert basic_enum.b.value == "b"
+
+    complex_enum = get_enum_from_literal(Literal["a", 1, True, None, sample_enum.A])
+    assert is_enum(complex_enum)
+    assert complex_enum.a.value == "a"
+    assert getattr(complex_enum, "1").value == 1
+    assert getattr(complex_enum, "True").value
+    assert getattr(complex_enum, "None").value is None
+    assert getattr(complex_enum, "SampleEnum.A").value == sample_enum.A
