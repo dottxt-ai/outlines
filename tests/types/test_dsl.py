@@ -361,15 +361,8 @@ def test_dsl_python_types_to_terms():
         }
     )
 
-    interegular_fsm = interegular.fsm.FSM(
-        alphabet={},
-        states={},
-        initial={},
-        finals={},
-        map={},
-        __no_validation__=True,
-    )
-    assert python_types_to_terms(interegular_fsm) is interegular_fsm
+    interegular_fsm = interegular.parse_pattern(r"abc").to_fsm()
+    assert python_types_to_terms(types.fsm(interegular_fsm)).fsm is interegular_fsm
 
     def func(a: int, b: str):
         return (a, b)
