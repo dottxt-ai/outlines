@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import TYPE_CHECKING, List, Protocol, Type, Union
+from typing import TYPE_CHECKING, List, Protocol, Type, Union, runtime_checkable
 
 import numpy as np
 import torch
@@ -30,6 +30,7 @@ def is_jax_array_type(array_type):
     )
 
 
+@runtime_checkable
 class OutlinesLogitsProcessor(Protocol):
     """
     Base class for logits processors which normalizes types of logits:
