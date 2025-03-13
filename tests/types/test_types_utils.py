@@ -36,7 +36,6 @@ from outlines.types.utils import (
     is_genson_schema_builder,
     is_int,
     is_int_instance,
-    is_interegular_fsm,
     is_literal,
     is_native_dict,
     is_pydantic_model,
@@ -143,11 +142,6 @@ def sample_function_missing_type():
         pass
 
     return sample_function
-
-@pytest.fixture
-def sample_interegular_fsm():
-    pattern = interegular.parse_pattern(r"[a-z]{3}-[0-9]{2}")
-    return pattern.to_fsm()
 
 
 def test_is_int():
@@ -362,12 +356,6 @@ def test_is_callable(sample_function, sample_class, sample_dataclass, sample_typ
     assert not is_callable(sample_dataclass)
     assert not is_callable(sample_typed_dict)
     assert not is_callable(sample_pydantic_model)
-
-
-def test_is_interegular_fsm(sample_interegular_fsm):
-    assert is_interegular_fsm(sample_interegular_fsm)
-    assert not is_interegular_fsm({})
-    assert not is_interegular_fsm("")
 
 
 # Type conversion

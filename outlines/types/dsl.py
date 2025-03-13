@@ -212,6 +212,17 @@ class CFG(Term):
         return f"CFG(definition='{self.definition}')"
 
 
+@dataclass
+class FSM(Term):
+    fsm: interegular.fsm.FSM
+
+    def _display_node(self) -> str:
+        return f"FSM({self.fsm.__repr__()})"
+
+    def __repr__(self):
+        return f"FSM(fsm={self.fsm.__repr__()})"
+
+
 class JsonSchema(Term):
     def __init__(self, schema: Union[dict, str, type[BaseModel], _TypedDictMeta, type, SchemaBuilder]):
         schema_str: str
@@ -413,6 +424,10 @@ def cfg(definition: str):
     return CFG(definition)
 
 
+def fsm(fsm: interegular.fsm.FSM):
+    return FSM(fsm)
+
+
 def json_schema(schema: Union[str, dict, type[BaseModel]]):
     return JsonSchema(schema)
 
@@ -549,12 +564,6 @@ def python_types_to_terms(ptype: Any, recursion_depth: int = 0) -> Term:
 
     if is_callable(ptype):
         return JsonSchema(get_schema_from_signature(ptype))
-
-    if isinstance(ptype, interegular.fsm.FSM):
-        return ptype
-
-    if is_interegular_fsm(ptype):
-        return ptype
 
     type_name = getattr(ptype, "__name__", ptype)
     raise TypeError(
