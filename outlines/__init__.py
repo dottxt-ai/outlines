@@ -6,7 +6,6 @@ import outlines.processors
 import outlines.types
 from outlines.applications import Application
 from outlines.caching import clear_cache, disable_cache, get_cache
-from outlines.function import Function
 from outlines.generator import Generator
 from outlines.templates import Template, prompt
 from outlines.types import regex, json_schema, cfg
@@ -42,7 +41,6 @@ __all__ = [
     "disable_cache",
     "get_cache",
     "Application",
-    "Function",
     "Generator",
     "regex",
     "json_schema",
