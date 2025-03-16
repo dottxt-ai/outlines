@@ -4,6 +4,7 @@ import outlines.grammars
 import outlines.models
 import outlines.processors
 import outlines.types
+from outlines.applications import Application
 from outlines.caching import clear_cache, disable_cache, get_cache
 from outlines.function import Function
 from outlines.generator import Generator
@@ -40,6 +41,7 @@ __all__ = [
     "clear_cache",
     "disable_cache",
     "get_cache",
+    "Application",
     "Function",
     "Generator",
     "regex",
