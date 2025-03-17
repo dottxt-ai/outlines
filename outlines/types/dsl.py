@@ -211,6 +211,24 @@ class CFG(Term):
     def __repr__(self):
         return f"CFG(definition='{self.definition}')"
 
+    def __eq__(self, other):
+        if not isinstance(other, CFG):
+            return False
+        return self.definition == other.definition
+
+    @classmethod
+    def from_file(cls, path: str):
+        """Create a CFG instance from a file containing a CFG definition.
+
+        Parameters
+        ----------
+        path : str
+            The path to the file containing the CFG definition.
+        """
+        with open(path, "r") as f:
+            definition = f.read()
+        return cls(definition)
+
 
 @dataclass
 class FSM(Term):
@@ -267,6 +285,20 @@ class JsonSchema(Term):
             return self_dict == other_dict
         except json.JSONDecodeError:
             return self.schema == other.schema
+
+    @classmethod
+    def from_file(cls, path: str):
+        """Create a JsonSchema instance from a .json file containing a JSON
+        schema.
+
+        Parameters
+        ----------
+        path : str
+            The path to the file containing the JSON schema.
+        """
+        with open(path, "r") as f:
+            schema = json.load(f)
+        return cls(schema)
 
 
 @dataclass
