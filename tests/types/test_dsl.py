@@ -1,6 +1,8 @@
 import datetime
 import json
+import os
 import sys
+import tempfile
 from dataclasses import dataclass
 from enum import Enum
 from typing import (
@@ -33,6 +35,7 @@ from outlines.types.dsl import (
     Sequence,
     String,
     Term,
+    CFG,
     _handle_dict,
     _handle_list,
     _handle_literal,
@@ -283,6 +286,40 @@ def test_dsl_display():
         tree
         == "└── Sequence\n    ├── KleeneStar(*)\n    │   └── Alternatives(|)\n    │       ├── String('a')\n    │       └── String('b')\n    └── Regex('[0-9]')\n"
     )
+
+
+def test_dsl_cfg_from_file():
+    grammar_content = """
+    ?start: expression
+    ?expression: term (("+" | "-") term)*
+    ?term: factor (("*" | "/") factor)*
+    ?factor: NUMBER
+    """
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=True) as temp_file:
+        temp_file.write(grammar_content)
+        temp_file.flush()
+        temp_file_path = temp_file.name
+        cfg = CFG.from_file(temp_file_path)
+        assert cfg == CFG(grammar_content)
+
+
+def test_dsl_json_schema_from_file():
+    schema_content = """
+    {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string"
+            }
+        }
+    }
+    """
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=True) as temp_file:
+        temp_file.write(schema_content)
+        temp_file.flush()
+        temp_file_path = temp_file.name
+        schema = JsonSchema.from_file(temp_file_path)
+        assert schema == JsonSchema(schema_content)
 
 
 def test_dsl_python_types_to_terms():
