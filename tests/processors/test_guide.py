@@ -1,6 +1,23 @@
 import pytest
 
+import llama_cpp
+import transformers
+
+import outlines
 from outlines.processors.guide import CFGGuide, Generate, RegexGuide, StopAtEOSGuide, Write
+from outlines import caching
+
+try:
+    import mlx_lm
+    HAS_MLX = True
+except ImportError:
+    HAS_MLX = False
+
+try:
+    import vllm
+    HAS_VLLM = True
+except ImportError:
+    HAS_VLLM = False
 
 
 def assert_expected_tensor_ids(tensor, ids):
@@ -179,6 +196,45 @@ def test_regex_final_state():
 
     state = fsm.get_next_state(state=5, token_id=103)
     assert fsm.is_final_state(state)
+
+
+def test_regex_guide_caching():
+    assert caching._caching_enabled
+
+    cache = caching.get_cache()
+    _, _ = cache.stats(enable=True, reset=True) # (hits, misses)
+
+    regex = r"[0-9]{3}"
+
+    models = [
+        outlines.from_transformers(
+            transformers.AutoModelForCausalLM.from_pretrained("erwanf/gpt2-mini"),
+            transformers.AutoTokenizer.from_pretrained("erwanf/gpt2-mini")
+        ),
+        outlines.from_llamacpp(llama_cpp.Llama.from_pretrained(
+            repo_id="M4-ai/TinyMistral-248M-v2-Instruct-GGUF",
+            filename="TinyMistral-248M-v2-Instruct.Q4_K_M.gguf",
+        ))
+    ]
+    if HAS_MLX:
+        models.append(outlines.from_mlxlm(
+            *mlx_lm.load("mlx-community/SmolLM-135M-Instruct-4bit")
+        ))
+    if HAS_VLLM:
+        models.append(outlines.from_vllm(vllm.LLM("erwanf/gpt2-mini")))
+
+    for i, model in enumerate(models):
+        # First call for each model should be a miss
+        RegexGuide.from_regex(regex, model.tokenizer)
+        expected_misses = i + 1
+        expected_hits = i
+        assert cache.stats(enable=True, reset=False) == (expected_hits, expected_misses)
+
+        # Second call for each model
+        RegexGuide.from_regex(regex, model.tokenizer)
+        expected_misses = i + 1
+        expected_hits = i + 1
+        assert cache.stats(enable=True, reset=False) == (expected_hits, expected_misses)
 
 
 def test_cfg():
