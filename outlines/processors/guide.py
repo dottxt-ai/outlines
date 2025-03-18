@@ -15,6 +15,7 @@ from outlines_core.fsm.guide import (
 )
 
 from outlines import grammars
+from outlines.caching import cache
 from outlines.fsm.parsing import PartialLark, PartialParserState
 
 if TYPE_CHECKING:
@@ -72,6 +73,7 @@ class StopAtEOSGuide(Guide):
         return self
 
 
+@cache()
 def cached_create_states_mapping(regex_string, tokenizer, *args, **kwargs):
     return uncached_create_states_mapping(regex_string, tokenizer, *args, **kwargs)
 
