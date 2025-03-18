@@ -87,16 +87,30 @@ jobs:
         with:
           name: coverage-data
 
-      - name: Fetch main for coverage diff
+      - name: Determine base branch for comparison
+        id: base-branch
         run: |
-          git fetch --no-tags --prune origin main
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            # For PRs, use the remote tracking branch
+            COMPARE_BRANCH="origin/${{ github.base_ref }}"
+            echo "COMPARE_BRANCH=$COMPARE_BRANCH" >> $GITHUB_ENV
+          else
+            # For push events, compare against the parent commit
+            COMPARE_BRANCH="${{ github.event.before }}"
+            echo "COMPARE_BRANCH=$COMPARE_BRANCH" >> $GITHUB_ENV
+          fi
+          echo "Using $COMPARE_BRANCH for coverage comparison"
+
+      - name: Fetch base branch for coverage diff
+        run: |
+          git fetch --no-tags --prune origin ${COMPARE_BRANCH#origin/}
 
       - name: Combine coverage & fail if it's <100%.
         run: |
           python -m coverage combine
           python -m coverage html --skip-covered --skip-empty
           python -m coverage xml
-          diff-cover coverage.xml --markdown-report=coverage.md --fail-under=100 || (cat coverage.md >> $GITHUB_STEP_SUMMARY && exit 1)
+          diff-cover coverage.xml --compare-branch=$COMPARE_BRANCH --markdown-report=coverage.md --fail-under=100 || (cat coverage.md >> $GITHUB_STEP_SUMMARY && exit 1)
 
       - name: Upload HTML report if check failed.
         uses: actions/upload-artifact@v4
