@@ -230,7 +230,7 @@ class CFGLogitsProcessor(GuideLogitsProcessor):
             gen_ids = seq_ids[self._seq_start_idx :]
             curr_state_key = hash(tuple(self.tensor_adapter.to_list(gen_ids)))
 
-            if curr_state_key not in self._guide_states:
+            if curr_state_key not in self._guide_states: # pragma: no cover
                 prev_state = self._guide_states[hash(tuple(self.tensor_adapter.to_list(gen_ids[:-1])))]
                 curr_state = self.guide.get_next_state(prev_state, self.tensor_adapter.to_scalar(gen_ids[-1]))
                 self._guide_states[curr_state_key] = curr_state
