@@ -29,7 +29,7 @@ adapters = {
 if HAS_MLX:
     adapters["mlx"] = MLXTensorAdapter()
 
-frameworks = list(adapters.keys())
+frameworks = ["numpy", "torch", "jax", "mlx"]
 
 def create_tensor(framework, shape, dtype=None):
     if framework == "torch":
@@ -39,7 +39,9 @@ def create_tensor(framework, shape, dtype=None):
     elif framework == "jax":
         key = jax.random.PRNGKey(0)
         return jax.random.normal(key, shape=shape)
-    elif framework == "mlx" and HAS_MLX:
+    elif framework == "mlx":
+        if not HAS_MLX:
+            pytest.skip("MLX not available")
         return mx.random.normal(shape)
 
 def compare_tensors(framework, tensor1, tensor2):
@@ -49,7 +51,9 @@ def compare_tensors(framework, tensor1, tensor2):
         return np.array_equal(tensor1, tensor2)
     elif framework == "jax":
         return jax.numpy.array_equal(tensor1, tensor2)
-    elif framework == "mlx" and HAS_MLX:
+    elif framework == "mlx":
+        if not HAS_MLX:
+            pytest.skip("MLX not available")
         return mx.array_equal(tensor1, tensor2)
 
 
@@ -200,12 +204,13 @@ def test_tensor_adapter_concatenate(framework):
 
 
 @pytest.mark.parametrize("framework", frameworks)
-def test_tensor_adapter_to_device(framework):
+def test_tensor_adapter_get_to_device(framework):
     tensor = create_tensor(framework, (2, 3))
-    device_tensor = adapters[framework].to_device(tensor, "cpu")
+    device = adapters[framework].get_device(tensor)
+    device_tensor = adapters[framework].to_device(tensor, device)
 
     if framework == "torch":
-        assert device_tensor.device.type == "cpu"
+        assert isinstance(device_tensor.device.type, str)
         assert compare_tensors(framework, device_tensor, tensor)
     else:
         assert compare_tensors(framework, device_tensor, tensor)
@@ -233,7 +238,9 @@ def test_tensor_adapter_apply_mask(framework):
     elif framework == "jax":
         key = jax.random.PRNGKey(0)
         mask = jax.random.normal(key, shape=(2, 3)) > 0
-    elif framework == "mlx" and HAS_MLX:
+    elif framework == "mlx":
+        if not HAS_MLX:
+            pytest.skip("MLX not available")
         mask = mx.random.normal((2, 3)) > 0
 
     masked = adapters[framework].apply_mask(tensor, mask, float("-inf"))

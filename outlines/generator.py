@@ -66,15 +66,17 @@ class SteerableGenerator:
             if isinstance(term, CFG):
                 cfg_string = term.definition
                 self.logits_processor = CFGLogitsProcessor(
-                    cfg_string, self.model.tokenizer
+                    cfg_string, self.model.tokenizer, self.model.tensor_library_name
                 )
             elif isinstance(term, FSM):
                 guide = RegexGuide.from_interegular_fsm(term.fsm, self.model.tokenizer)
-                self.logits_processor = GuideLogitsProcessor(tokenizer=self.model.tokenizer, guide=guide)
+                self.logits_processor = GuideLogitsProcessor(
+                    self.model.tokenizer, guide, self.model.tensor_library_name
+                )
             else:
                 regex_string = to_regex(term)
                 self.logits_processor = RegexLogitsProcessor(
-                    regex_string, self.model.tokenizer
+                    regex_string, self.model.tokenizer, self.model.tensor_library_name
                 )
 
     @classmethod

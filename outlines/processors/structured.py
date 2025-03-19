@@ -109,8 +109,6 @@ class GuideLogitsProcessor(OutlinesLogitsProcessor):
         batch_indices = []
         for i, guide_state in enumerate(sequence_states):
             allowed_tokens = self.guide.get_next_instruction(guide_state).tokens
-            print(guide_state)
-            print("here", allowed_tokens)
             allowed_tokens_batch.append(allowed_tokens)
             batch_indices.append(
                 self.tensor_adapter.full_like(allowed_tokens, i)

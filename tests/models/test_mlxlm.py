@@ -23,18 +23,31 @@ except ImportError:
 TEST_MODEL = "mlx-community/SmolLM-135M-Instruct-4bit"
 
 
+
+@pytest.mark.skipif(not HAS_MLX, reason="MLX tests require Apple Silicon")
+def test_mlxlm_model_initialization():
+    model = outlines.from_mlxlm(*mlx_lm.load(TEST_MODEL))
+    assert hasattr(model, "model")
+    assert hasattr(model, "mlx_tokenizer")
+    assert hasattr(model, "tokenizer")
+    assert hasattr(model, "tensor_adapter")
+    assert isinstance(model.tokenizer, TransformerTokenizer)
+    assert model.tensor_library_name == "mlx"
+
+
+@pytest.mark.skipif(not HAS_MLX, reason="MLX tests require Apple Silicon")
+def test_mlxlm_model_initialization_tensor_library_name():
+    model = outlines.from_mlxlm(
+        *mlx_lm.load(TEST_MODEL),
+        tensor_library_name="torch"
+    )
+    assert model.tensor_library_name == "torch"
+
+
 @pytest.fixture(scope="session")
 def model(tmp_path_factory):
     model, tokenizer = mlx_lm.load(TEST_MODEL)
     return outlines.from_mlxlm(model, tokenizer)
-
-
-@pytest.mark.skipif(not HAS_MLX, reason="MLX tests require Apple Silicon")
-def test_mlxlm_model_initialization(model):
-    assert hasattr(model, "model")
-    assert hasattr(model, "mlx_tokenizer")
-    assert hasattr(model, "tokenizer")
-    assert isinstance(model.tokenizer, TransformerTokenizer)
 
 
 @pytest.mark.skipif(not HAS_MLX, reason="MLX tests require Apple Silicon")

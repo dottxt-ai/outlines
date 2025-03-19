@@ -53,19 +53,24 @@ class VLLMTypeAdapter(ModelTypeAdapter):
 
 class VLLM(Model):
     """Represents a `vllm` model."""
+    _default_tensor_library_name = "torch"
 
-    def __init__(self, model: "LLM"):
+    def __init__(self, model: "LLM", tensor_library_name: Optional[str] = None):
         """Create a VLLM model instance.
 
         Parameters
         ----------
         model
             A `vllm.LLM` model instance.
+        tensor_library_name
+            The name of the tensor library to use.
+            If not provided, the default for the model will be used.
 
         """
         self.model = model
         self.tokenizer = self._get_tokenizer()
         self.type_adapter = VLLMTypeAdapter()
+        super().__init__(tensor_library_name)
 
     def _get_tokenizer(self):
         if hasattr(self.model, "get_tokenizer"):
@@ -139,8 +144,8 @@ class VLLM(Model):
         )
 
 
-def from_vllm(model: "LLM") -> VLLM:
-    return VLLM(model)
+def from_vllm(model: "LLM", tensor_library_name: Optional[str] = None) -> VLLM:
+    return VLLM(model, tensor_library_name)
 
 
 def adapt_tokenizer(tokenizer: "PreTrainedTokenizerBase") -> "PreTrainedTokenizerBase":

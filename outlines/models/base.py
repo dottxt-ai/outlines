@@ -48,8 +48,40 @@ class Model(ABC):
     types received by the model.
 
     """
-
     type_adapter: ModelTypeAdapter
+    _default_tensor_library_name: str
+
+    def __init__(self, tensor_library_name=None):
+        """Initialize the model.
+
+        Parameters
+        ----------
+        tensor_library_name: Optional name of the tensor library to use.
+            If not provided, the default for the model will be used.
+
+        """
+        self._tensor_library_name = tensor_library_name
+
+    @property
+    def tensor_library_name(self):
+        """Return the name of the tensor library used by the model.
+
+        If a custom tensor library name was provided during initialization,
+        that value will be returned. Otherwise, the model's default tensor
+        library name will be used.
+        """
+        if (
+            not hasattr(self, "_default_tensor_library_name")
+            and not self._tensor_library_name
+        ):
+            raise NotImplementedError(
+                "This model does not have an associated tensor library. "
+                + "Tensors libraries only apply to local models."
+            )
+        elif self._tensor_library_name:
+            return self._tensor_library_name
+        else:
+            return self._default_tensor_library_name
 
     def __call__(self, model_input, output_type=None, **inference_kwargs):
         """Call the model.

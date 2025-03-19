@@ -71,7 +71,15 @@ class MockLogitsProcessor(OutlinesLogitsProcessor):
 
 
 @pytest.mark.parametrize("library", libraries)
-def test_call(library):
+def test_base_logits_processor_init(library):
+    processor = MockLogitsProcessor(library)
+    assert processor.tensor_adapter is not None
+    with pytest.raises(NotImplementedError):
+        processor = MockLogitsProcessor("foo")
+
+
+@pytest.mark.parametrize("library", libraries)
+def test_base_logits_processor_call(library):
     processor = MockLogitsProcessor(library)
     input_values = arrays[library]
     for input_value in input_values:
