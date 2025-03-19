@@ -1,5 +1,5 @@
 from functools import singledispatchmethod
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 from outlines.models.base import Model, ModelTypeAdapter
 from outlines.models.transformers import TransformerTokenizer
@@ -50,11 +50,13 @@ class MLXLMTypeAdapter(ModelTypeAdapter):
 
 class MLXLM(Model):
     """Represents an `mlx_lm` model."""
+    _default_tensor_library_name = "mlx"
 
     def __init__(
         self,
         model: "nn.Module",
         tokenizer: "PreTrainedTokenizer",
+        tensor_library_name: Optional[str] = None,
     ):
         """Create a MLXLM model instance.
 
@@ -65,6 +67,9 @@ class MLXLM(Model):
         tokenizer
             An instance of an mlx-lm tokenizer or of a compatible
             transformers tokenizer.
+        tensor_library_name
+            The name of the tensor library to use.
+            If not provided, the default for the model will be used.
 
         """
         self.model = model
@@ -73,6 +78,7 @@ class MLXLM(Model):
         # self.tokenizer is used by the logits processor
         self.tokenizer = TransformerTokenizer(tokenizer._tokenizer)
         self.type_adapter = MLXLMTypeAdapter()
+        super().__init__(tensor_library_name)
 
     def generate(self, model_input, output_type=None, **kwargs):
         """Generate text using `mlx-lm`.
@@ -122,5 +128,9 @@ class MLXLM(Model):
             yield token
 
 
-def from_mlxlm(model: "nn.Module", tokenizer: "PreTrainedTokenizer") -> MLXLM:
-    return MLXLM(model, tokenizer)
+def from_mlxlm(
+    model: "nn.Module",
+    tokenizer: "PreTrainedTokenizer",
+    tensor_library_name: Optional[str] = None,
+) -> MLXLM:
+    return MLXLM(model, tokenizer, tensor_library_name)

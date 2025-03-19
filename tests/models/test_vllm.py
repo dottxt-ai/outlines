@@ -7,8 +7,9 @@ from pydantic import BaseModel
 
 try:
     from vllm import LLM, SamplingParams
+    HAS_VLLM = True
 except ImportError:
-    pass
+    HAS_VLLM = False
 
 import outlines
 from outlines.models.vllm import VLLM
@@ -18,9 +19,23 @@ from outlines.types import Regex
 TEST_MODEL = "erwanf/gpt2-mini"
 
 pytestmark = pytest.mark.skipif(
-    not torch.cuda.is_available(),
+    not HAS_VLLM,
     reason="vLLM models can only be run on GPU."
 )
+
+
+def test_vllm_model_initialization():
+    model = outlines.from_vllm(LLM(TEST_MODEL))
+    assert hasattr(model, "model")
+    assert hasattr(model, "tokenizer")
+    assert hasattr(model, "tensor_adapter")
+    assert model.tensor_library_name == "torch"
+
+
+def test_vllm_model_initialization_tensor_library_name(model):
+    model = outlines.from_vllm(LLM(TEST_MODEL), "numpy")
+    assert model.tensor_library_name == "numpy"
+
 
 @pytest.fixture(scope="session")
 def model(tmp_path_factory):

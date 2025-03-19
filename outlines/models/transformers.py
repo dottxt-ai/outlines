@@ -1,5 +1,5 @@
 from functools import singledispatchmethod
-from typing import TYPE_CHECKING, List, Tuple, Union
+from typing import TYPE_CHECKING, List, Optional, Tuple, Union
 
 from outlines.models.base import Model, ModelTypeAdapter
 from outlines.models.tokenizer import Tokenizer
@@ -163,11 +163,13 @@ class TransformersTypeAdapter(ModelTypeAdapter):
 
 class Transformers(Model):
     """Represents a `transformers` model."""
+    _default_tensor_library_name = "torch"
 
     def __init__(
         self,
         model: "PreTrainedModel",
         tokenizer: "PreTrainedTokenizer",
+        tensor_library_name: Optional[str] = None,
     ):
         """Create a Transformers model instance.
 
@@ -183,12 +185,16 @@ class Transformers(Model):
         tokenizer
             A `PreTrainedTokenizer`, or any tokenizer that is compatible with
             the `transformers` API for tokenizers.
+        tensor_library_name
+            The name of the tensor library to use.
+            If not provided, the default for the model will be used.
 
         """
         tokenizer.padding_size = "left"
         self.model = model
         self.tokenizer = TransformerTokenizer(tokenizer)
         self.type_adapter = TransformersTypeAdapter()
+        super().__init__(tensor_library_name)
 
     def _prepare_model_inputs(self, model_input, output_type):
         prompts = self.type_adapter.format_input(model_input)
@@ -308,7 +314,12 @@ class TransformersMultiModalTypeAdapter(ModelTypeAdapter):
 class TransformersMultiModal(Transformers):
     """Represents a `transformers` model with a vision processor."""
 
-    def __init__(self, model: "PreTrainedModel", processor):
+    def __init__(
+        self,
+        model: "PreTrainedModel",
+        processor,
+        tensor_library_name: Optional[str] = None,
+    ):
         """Create a TransformersMultiModal model instance
 
         We rely on the `__init__` method of the `Transformers` class to handle
@@ -322,7 +333,7 @@ class TransformersMultiModal(Transformers):
 
         tokenizer: "PreTrainedTokenizer" = self.processor.tokenizer
 
-        super().__init__(model, tokenizer)
+        super().__init__(model, tokenizer, tensor_library_name)
 
         self.type_adapter = TransformersMultiModalTypeAdapter()
 
@@ -338,6 +349,7 @@ class TransformersMultiModal(Transformers):
 def from_transformers(
     model: "PreTrainedModel",
     tokenizer_or_processor: Union["PreTrainedTokenizer", "ProcessorMixin"],
+    tensor_library_name: Optional[str] = None,
 ):
     from transformers import (
         PreTrainedTokenizer,
@@ -349,10 +361,10 @@ def from_transformers(
         tokenizer_or_processor, (PreTrainedTokenizer, PreTrainedTokenizerFast)
     ):
         tokenizer = tokenizer_or_processor
-        return Transformers(model, tokenizer)
+        return Transformers(model, tokenizer, tensor_library_name)
     elif isinstance(tokenizer_or_processor, ProcessorMixin):
         processor = tokenizer_or_processor
-        return TransformersMultiModal(model, processor)
+        return TransformersMultiModal(model, processor, tensor_library_name)
     else:
         raise ValueError(
             "We could determine whether the model passed to `from_transformers`"

@@ -5,13 +5,13 @@ import pytest
 from llama_cpp import Llama
 from pydantic import BaseModel
 
-from outlines.models import LlamaCpp
+from outlines.models import LlamaCpp, from_llamacpp
 from outlines.processors import RegexLogitsProcessor
 from outlines.types.dsl import Regex, python_types_to_terms, to_regex
 
 
 def test_load_model():
-    model = LlamaCpp(
+    model = from_llamacpp(
         Llama.from_pretrained(
             repo_id="M4-ai/TinyMistral-248M-v2-Instruct-GGUF",
             filename="TinyMistral-248M-v2-Instruct.Q4_K_M.gguf",
@@ -39,7 +39,7 @@ def test_llamacpp_simple(model):
 
 def test_llamacpp_regex(model):
     regex_str = Regex(r"[0-9]").pattern
-    logits_processor = RegexLogitsProcessor(regex_str, model.tokenizer)
+    logits_processor = RegexLogitsProcessor(regex_str, model.tokenizer, model.tensor_library_name)
     result = model.generate("Respond with one word. Not more.", logits_processor)
     assert isinstance(result, str)
 
