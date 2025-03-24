@@ -25,16 +25,15 @@ limitations under the License.
 """
 
 import math
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Type, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Type, Union, cast
 
-import torch
 from outlines_core.fsm.json_schema import build_regex_from_schema
 from pydantic import BaseModel
 
 from outlines.processors.guide import CFGGuide, Guide, RegexGuide
 from outlines.types import JsonSchema
 
-from .base_logits_processor import OutlinesLogitsProcessor
+from .base_logits_processor import OutlinesLogitsProcessor, TensorType
 
 if TYPE_CHECKING:
     from outlines.models.tokenizer import Tokenizer
@@ -56,7 +55,7 @@ class GuideLogitsProcessor(OutlinesLogitsProcessor):
     _guide_states: Dict[int, Any]
     _seq_start_idx: Optional[int]
 
-    def __init__(self, tokenizer: "Tokenizer", guide: Guide):
+    def __init__(self, tokenizer: "Tokenizer", guide: Guide, tensor_library_name: str):
         """A Guide-based logits processor.
 
         Parameters
@@ -65,15 +64,18 @@ class GuideLogitsProcessor(OutlinesLogitsProcessor):
             The tokenizer used to convert tokens to ids.
         guide
             The `outlines.processors.guide. which is used to bias the logits.
+        tensor_library_name
+            The name of the library to use to manipulate the tensors.
         """
+        super().__init__(tensor_library_name=tensor_library_name)
         self.tokenizer = tokenizer
         self.guide = guide
         self._guide_states = {hash(tuple([])): self.guide.initial_state}
         self._seq_start_idx = None
 
     def process_logits(
-        self, input_ids: torch.LongTensor, logits: torch.FloatTensor
-    ) -> torch.Tensor:
+        self, input_ids: TensorType, logits: TensorType
+    ) -> TensorType:
         """Use the Guide to bias the logits before sampling the next token.
 
         Parameters
@@ -85,21 +87,20 @@ class GuideLogitsProcessor(OutlinesLogitsProcessor):
 
         Returns
         -------
-        torch.Tensor
-            The biased logits.
+        The biased logits.
         """
         if self._seq_start_idx is None:
-            self._seq_start_idx = len(input_ids[0])
+            self._seq_start_idx = len(input_ids[0]) # type: ignore
 
         sequence_states: List[int] = []  # vector of states corresponding to `input_ids`
 
-        for seq_ids in input_ids:
+        for seq_ids in input_ids: # type: ignore
             gen_ids = seq_ids[self._seq_start_idx :]
-            curr_state_key = hash(tuple(gen_ids.tolist()))
+            curr_state_key = hash(tuple(self.tensor_adapter.to_list(gen_ids)))
 
             if curr_state_key not in self._guide_states:
-                prev_state = self._guide_states[hash(tuple(gen_ids[:-1].tolist()))]
-                curr_state = self.guide.get_next_state(prev_state, gen_ids[-1].item())
+                prev_state = self._guide_states[hash(tuple(self.tensor_adapter.to_list(gen_ids[:-1])))]
+                curr_state = self.guide.get_next_state(prev_state, self.tensor_adapter.to_scalar(gen_ids[-1]))
                 self._guide_states[curr_state_key] = curr_state
 
             sequence_states.append(self._guide_states[curr_state_key])
@@ -110,63 +111,64 @@ class GuideLogitsProcessor(OutlinesLogitsProcessor):
             allowed_tokens = self.guide.get_next_instruction(guide_state).tokens
             allowed_tokens_batch.append(allowed_tokens)
             batch_indices.append(
-                torch.full_like(allowed_tokens, i)
+                self.tensor_adapter.full_like(allowed_tokens, i)
             )  # Store batch index for each allowed token
 
-        allowed_tokens_concat = torch.cat(allowed_tokens_batch).to(logits.device)
-        batch_indices_concat = torch.cat(batch_indices).to(logits.device)
+        device = self.tensor_adapter.get_device(logits)
+        allowed_tokens_concat = self.tensor_adapter.to_device(
+            self.tensor_adapter.concatenate(allowed_tokens_batch),
+            device
+        )
+        batch_indices_concat = self.tensor_adapter.to_device(
+            self.tensor_adapter.concatenate(batch_indices),
+            device
+        )
 
-        mask = torch.ones_like(logits, dtype=torch.bool)
+        mask = self.tensor_adapter.boolean_ones_like(logits)
         mask[batch_indices_concat, allowed_tokens_concat] = False
-        logits.masked_fill_(mask, float("-inf"))
+        logits = self.tensor_adapter.apply_mask(logits, mask, float("-inf"))
 
         return logits
 
     def copy(self) -> "GuideLogitsProcessor":
         """Return a copy of the logits processor."""
-        return GuideLogitsProcessor(tokenizer=self.tokenizer, guide=self.guide.copy())
+        return GuideLogitsProcessor(
+            tokenizer=self.tokenizer,
+            guide=self.guide.copy(),
+            tensor_library_name=self.tensor_adapter.library_name
+        )
 
 
 class RegexLogitsProcessor(GuideLogitsProcessor):
-    """Bias generation based on a regular expression.
-
-    Attributes
-    ----------
-    tokenizer
-        The tokenizer used to convert tokens to ids.
-    guide
-        The `outlines.fsm.RegexGuide. which is used to bias the logits.
-    """
-
-    def __init__(self, regex_string: str, tokenizer: "Tokenizer"):
+    """Bias generation based on a regular expression."""
+    def __init__(
+        self,
+        regex_string: str,
+        tokenizer: "Tokenizer",
+        tensor_library_name: str,
+    ):
         """Compile the RegexGuide that drives the regex-guided generation.
 
         Parameters
         ----------
         regex_string
-            A string that represents a regular expression
+            A string that represents a regular expression.
         tokenizer
-            An Outlines tokenizer
+            An Outlines tokenizer.
+        tensor_library_name
+            The name of the library to use to manipulate the tensors.
         """
         guide = RegexGuide.from_regex(regex_string, tokenizer)
-        super().__init__(tokenizer=tokenizer, guide=guide)
+        super().__init__(tokenizer=tokenizer, guide=guide, tensor_library_name=tensor_library_name)
 
 
 class JSONLogitsProcessor(RegexLogitsProcessor):
-    """Bias generation based on a JSON schema.
-
-    Attributes
-    ----------
-    tokenizer
-        The tokenizer used to convert tokens to ids.
-    guide
-        The `outlines.fsm.RegexGuide. which is used to bias the logits.
-    """
-
+    """Bias generation based on a JSON schema."""
     def __init__(
         self,
         schema: Union[dict, Type[BaseModel], str],
         tokenizer: "Tokenizer",
+        tensor_library_name: str,
         whitespace_pattern: Optional[str] = None,
     ):
         """Compile the Guide that drives the JSON-guided generation.
@@ -177,14 +179,16 @@ class JSONLogitsProcessor(RegexLogitsProcessor):
             A JSON schema that encodes the structure we want the model to generate.
         tokenizer
             The tokenizer used to convert tokens to ids.
+        tensor_library_name
+            The name of the library to use to manipulate the tensors.
         whitespace_pattern
             Pattern to use for JSON syntactic whitespace (doesn't impact string
             literals). For example, to allow only a single space or newline with
-            `whitespace_pattern=r"[\n ]?"`
+            `whitespace_pattern=r"[\n ]?"`.
         """
         schema_str = JsonSchema(schema).schema
         regex_string = build_regex_from_schema(schema_str, whitespace_pattern)
-        super().__init__(regex_string=regex_string, tokenizer=tokenizer)
+        super().__init__(regex_string=regex_string, tokenizer=tokenizer, tensor_library_name=tensor_library_name)
 
 
 class CFGLogitsProcessor(GuideLogitsProcessor):
@@ -200,7 +204,7 @@ class CFGLogitsProcessor(GuideLogitsProcessor):
 
     guide: CFGGuide
 
-    def __init__(self, cfg_str: str, tokenizer: "Tokenizer"):
+    def __init__(self, cfg_str: str, tokenizer: "Tokenizer", tensor_library_name: str):
         """Compile the CFGGuide that drives the CFG-guided generation.
 
         Parameters
@@ -211,11 +215,11 @@ class CFGLogitsProcessor(GuideLogitsProcessor):
             The tokenizer used to convert tokens to ids.
         """
         cfg_guide = CFGGuide(cfg_string=cfg_str, tokenizer=tokenizer)
-        super().__init__(tokenizer=tokenizer, guide=cfg_guide)
+        super().__init__(tokenizer=tokenizer, guide=cfg_guide, tensor_library_name=tensor_library_name)
 
     def process_logits(
-        self, input_ids: torch.LongTensor, logits: torch.Tensor
-    ) -> torch.Tensor:
+        self, input_ids, logits
+    ):
         """Same behavior as GuideLogitsProcessor, but uses rejection sampling"""
         if self._seq_start_idx is None:
             self._seq_start_idx = len(input_ids[0])
@@ -224,20 +228,20 @@ class CFGLogitsProcessor(GuideLogitsProcessor):
 
         for seq_ids in input_ids:
             gen_ids = seq_ids[self._seq_start_idx :]
-            curr_state_key = hash(tuple(gen_ids.tolist()))
+            curr_state_key = hash(tuple(self.tensor_adapter.to_list(gen_ids)))
 
-            if curr_state_key not in self._guide_states:
-                prev_state = self._guide_states[hash(tuple(gen_ids[:-1].tolist()))]
-                curr_state = self.guide.get_next_state(prev_state, gen_ids[-1].item())
+            if curr_state_key not in self._guide_states: # pragma: no cover
+                prev_state = self._guide_states[hash(tuple(self.tensor_adapter.to_list(gen_ids[:-1])))]
+                curr_state = self.guide.get_next_state(prev_state, self.tensor_adapter.to_scalar(gen_ids[-1]))
                 self._guide_states[curr_state_key] = curr_state
 
             sequence_states.append(self._guide_states[curr_state_key])
 
-        mask = torch.full_like(logits, -math.inf)
+        mask = self.tensor_adapter.full_like(logits, -math.inf)
         for i, guide_state in enumerate(sequence_states):
             first_legal_token = next(
                 self.guide.iter_valid_token_ids(
-                    guide_state, torch.argsort(logits[i], descending=True)
+                    guide_state, self.tensor_adapter.argsort_descending(logits[i])
                 )
             )
             mask[i, [first_legal_token]] = logits[i, [first_legal_token]]
