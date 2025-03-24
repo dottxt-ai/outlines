@@ -50,6 +50,7 @@ class MLXLMTypeAdapter(ModelTypeAdapter):
 
 class MLXLM(Model):
     """Represents an `mlx_lm` model."""
+    tensor_library_name = "mlx"
 
     def __init__(
         self,

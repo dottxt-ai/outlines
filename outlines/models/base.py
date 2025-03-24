@@ -46,10 +46,11 @@ class Model(ABC):
     attribute of type `ModelTypeAdapter`. The methods of the `type_adapter`
     attribute are used in the `generate` method to format the input and output
     types received by the model.
+    Additionally, local models must define a `tensor_library_name` attribute.
 
     """
-
     type_adapter: ModelTypeAdapter
+    tensor_library_name: str
 
     def __call__(self, model_input, output_type=None, **inference_kwargs):
         """Call the model.

@@ -53,6 +53,7 @@ class VLLMTypeAdapter(ModelTypeAdapter):
 
 class VLLM(Model):
     """Represents a `vllm` model."""
+    tensor_library_name = "torch"
 
     def __init__(self, model: "LLM"):
         """Create a VLLM model instance.

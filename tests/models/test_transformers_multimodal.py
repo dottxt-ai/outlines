@@ -9,19 +9,19 @@ import pytest
 from PIL import Image
 from pydantic import BaseModel
 from transformers import (
-    Blip2ForConditionalGeneration,
-    CLIPModel,
-    CLIPProcessor,
     LlavaForConditionalGeneration,
     AutoProcessor,
 )
 
 import outlines
-from outlines.models.transformers import TransformersMultiModal
+from outlines.models.transformers import (
+    TransformersMultiModal,
+    TransformerTokenizer,
+    TransformersMultiModalTypeAdapter,
+)
 from outlines.types import Regex
 
 TEST_MODEL = "trl-internal-testing/tiny-LlavaForConditionalGeneration"
-TEST_CLIP_MODEL = "openai/clip-vit-base-patch32"
 IMAGE_URLS = [
     "https://upload.wikimedia.org/wikipedia/commons/2/25/Siam_lilacpoint.jpg",
     "https://upload.wikimedia.org/wikipedia/commons/7/71/2010-kodiak-bear-1.jpg",
@@ -47,10 +47,13 @@ def model():
 
 def test_transformers_vision_instantiate_simple():
     model = outlines.from_transformers(
-        Blip2ForConditionalGeneration.from_pretrained(TEST_MODEL),
+        LlavaForConditionalGeneration.from_pretrained(TEST_MODEL),
         AutoProcessor.from_pretrained(TEST_MODEL),
     )
     assert isinstance(model, TransformersMultiModal)
+    assert isinstance(model.tokenizer, TransformerTokenizer)
+    assert isinstance(model.type_adapter, TransformersMultiModalTypeAdapter)
+    assert model.tensor_library_name == "torch"
 
 
 def test_transformers_vision_simple(model, images):
