@@ -6,7 +6,11 @@ from pydantic import BaseModel
 import transformers
 
 import outlines
-from outlines.models.transformers import Transformers
+from outlines.models.transformers import (
+    Transformers,
+    TransformerTokenizer,
+    TransformersTypeAdapter,
+)
 from outlines.types import Regex
 
 TEST_MODEL = "erwanf/gpt2-mini"
@@ -20,14 +24,31 @@ def test_transformers_instantiate_simple():
         transformers.AutoTokenizer.from_pretrained(TEST_MODEL),
     )
     assert isinstance(model, Transformers)
+    assert isinstance(model.tokenizer, TransformerTokenizer)
+    assert isinstance(model.type_adapter, TransformersTypeAdapter)
+    assert model.tensor_library_name == "torch"
 
 
-def test_transformers_instantiate_other_model_class():
+def test_transformers_instantiate_flax_model():
     model = outlines.from_transformers(
-        transformers.AutoModelForSeq2SeqLM.from_pretrained(TEST_MODEL_SEQ2SEQ),
+        transformers.FlaxAutoModelForCausalLM.from_pretrained(TEST_MODEL),
         transformers.AutoTokenizer.from_pretrained(TEST_MODEL),
     )
     assert isinstance(model, Transformers)
+    assert isinstance(model.tokenizer, TransformerTokenizer)
+    assert isinstance(model.type_adapter, TransformersTypeAdapter)
+    assert model.tensor_library_name == "jax"
+
+
+def test_transformers_instantiate_tensorflow_model():
+    model = outlines.from_transformers(
+        transformers.TFAutoModelForCausalLM.from_pretrained(TEST_MODEL),
+        transformers.AutoTokenizer.from_pretrained(TEST_MODEL),
+    )
+    assert isinstance(model, Transformers)
+    assert isinstance(model.tokenizer, TransformerTokenizer)
+    assert isinstance(model.type_adapter, TransformersTypeAdapter)
+    assert model.tensor_library_name == "tensorflow"
 
 
 def test_transformers_instantiate_mamba():

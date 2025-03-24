@@ -185,10 +185,35 @@ class Transformers(Model):
             the `transformers` API for tokenizers.
 
         """
+        # We need to handle the cases in which jax/flax or tensorflow
+        # is not available in the environment.
+        try:
+            from transformers import FlaxPreTrainedModel
+        except ImportError:
+            FlaxPreTrainedModel = None
+
+        try:
+            from transformers import TFPreTrainedModel
+        except ImportError:
+            TFPreTrainedModel = None
+
         tokenizer.padding_size = "left"
         self.model = model
         self.tokenizer = TransformerTokenizer(tokenizer)
         self.type_adapter = TransformersTypeAdapter()
+
+        if (
+            FlaxPreTrainedModel is not None
+            and isinstance(model, FlaxPreTrainedModel)
+        ):
+            self.tensor_library_name = "jax"
+        elif (
+            TFPreTrainedModel is not None
+            and isinstance(model, TFPreTrainedModel)
+        ):
+            self.tensor_library_name = "tensorflow"
+        else:
+            self.tensor_library_name = "torch"
 
     def _prepare_model_inputs(self, model_input, output_type):
         prompts = self.type_adapter.format_input(model_input)

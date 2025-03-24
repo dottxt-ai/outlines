@@ -70,10 +70,11 @@ async def generate(request: Request) -> Response:
 
     json_schema = request_dict.pop("schema", None)
     regex_string = request_dict.pop("regex", None)
+    tensor_library_name = request_dict.pop("tensor_library_name", "torch")
     if json_schema is not None:
-        logits_processors = [JSONLogitsProcessor(json_schema, tokenizer)]
+        logits_processors = [JSONLogitsProcessor(json_schema, tokenizer, tensor_library_name)]
     elif regex_string is not None:
-        logits_processors = [RegexLogitsProcessor(regex_string, tokenizer)]
+        logits_processors = [RegexLogitsProcessor(regex_string, tokenizer, tensor_library_name)]
     else:
         logits_processors = []
 

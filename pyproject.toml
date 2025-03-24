@@ -28,7 +28,6 @@ dependencies = [
    "jinja2",
    "lark",
    "nest_asyncio",
-   "numpy",
    "cloudpickle",
    "diskcache",
    "pydantic>=2.0",
@@ -40,7 +39,6 @@ dependencies = [
    "typing_extensions",
    "iso3166",
    "airportsdata",
-   "torch",
    "outlines_core==0.1.26",
    "genson",
 ]
@@ -68,6 +66,11 @@ test = [
     "transformers",
     "pillow",
     "jax",
+    "flax",
+    "numpy",
+    "torch",
+    "tensorflow",
+    "tf-keras",
     "ollama",
     "dottxt",
     "sentencepiece",
@@ -107,6 +110,7 @@ filterwarnings = [
     "ignore::FutureWarning:huggingface_hub.*",
     "ignore::UserWarning",
     "ignore::DeprecationWarning:pyairports.*",
+    "ignore::DeprecationWarning:jax.*",
 ]
 
 [tool.mypy]
@@ -152,6 +156,10 @@ module = [
     "genson",
     "ollama.*",
     "dottxt.*",
+    "tensorflow",
+    "tensorflow.*",
+    "tf-keras",
+    "tf-keras.*",
 ]
 ignore_missing_imports = true
 
