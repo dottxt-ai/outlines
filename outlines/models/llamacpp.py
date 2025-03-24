@@ -1,7 +1,7 @@
 import pickle
 import warnings
 from functools import singledispatchmethod
-from typing import TYPE_CHECKING, Dict, Iterator, List, Set, Tuple, Union
+from typing import TYPE_CHECKING, Dict, Iterator, List, Optional, Set, Tuple, Union
 
 from outlines.models.base import Model, ModelTypeAdapter
 from outlines.models.tokenizer import Tokenizer
@@ -140,13 +140,13 @@ class LlamaCppTypeAdapter(ModelTypeAdapter):
 
 class LlamaCpp(Model):
     """Wraps a model provided by the `llama-cpp-python` library."""
+    tensor_library_name = "numpy"
 
     def __init__(self, model: "Llama"):
         from llama_cpp import Llama
 
         self.model = model
         self.tokenizer = LlamaCppTokenizer(self.model)
-        self.model_type = "local"
         self.type_adapter = LlamaCppTypeAdapter()
 
     def generate(self, model_input, output_type, **inference_kwargs):

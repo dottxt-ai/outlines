@@ -5,6 +5,11 @@ from typing import Generator
 
 import outlines
 from outlines.types import Regex
+from outlines.models.mlxlm import (
+    MLXLM,
+    MLXLMTypeAdapter,
+    from_mlxlm
+)
 from outlines.models.transformers import TransformerTokenizer
 from pydantic import BaseModel
 from transformers import PreTrainedTokenizer
@@ -23,18 +28,21 @@ except ImportError:
 TEST_MODEL = "mlx-community/SmolLM-135M-Instruct-4bit"
 
 
+@pytest.mark.skipif(not HAS_MLX, reason="MLX tests require Apple Silicon")
+def test_mlxlm_model_initialization():
+    model = from_mlxlm(*mlx_lm.load(TEST_MODEL))
+    assert isinstance(model, MLXLM)
+    assert isinstance(model.model, mlx_lm.MLXLM)
+    assert isinstance(model.mlx_tokenizer, mlx_lm.TokenizerWrapper)
+    assert isinstance(model.tokenizer, TransformerTokenizer)
+    assert isinstance(model.type_adapter, MLXLMTypeAdapter)
+    assert model.tensor_library_name == "mlx"
+
+
 @pytest.fixture(scope="session")
 def model(tmp_path_factory):
     model, tokenizer = mlx_lm.load(TEST_MODEL)
     return outlines.from_mlxlm(model, tokenizer)
-
-
-@pytest.mark.skipif(not HAS_MLX, reason="MLX tests require Apple Silicon")
-def test_mlxlm_model_initialization(model):
-    assert hasattr(model, "model")
-    assert hasattr(model, "mlx_tokenizer")
-    assert hasattr(model, "tokenizer")
-    assert isinstance(model.tokenizer, TransformerTokenizer)
 
 
 @pytest.mark.skipif(not HAS_MLX, reason="MLX tests require Apple Silicon")

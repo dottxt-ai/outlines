@@ -34,6 +34,7 @@ def sample_processor():
     processor = RegexLogitsProcessor(
         regex_string="[0-9]{3}",
         tokenizer=model.tokenizer,
+        tensor_library_name=model.tensor_library_name,
     )
     return processor
 
@@ -62,14 +63,29 @@ def test_steerable_generator_init_invalid_processor(steerable_model):
         SteerableGenerator.from_processor(steerable_model, Literal["foo", "bar"])
 
 
-def test_steerable_generator_init_valid_output_type(steerable_model):
+def test_steerable_generator_init_cfg_output_type(steerable_model):
+    generator = SteerableGenerator(steerable_model, CFG('start: "a"'))
+    assert generator.model == steerable_model
+    assert isinstance(generator.logits_processor, OutlinesLogitsProcessor)
+
+
+def test_steerable_generator_init_fsm_output_type(steerable_model):
+    generator = SteerableGenerator(
+        steerable_model,
+        FSM(interegular.parse_pattern(r"abc").to_fsm())
+    )
+    assert generator.model == steerable_model
+    assert isinstance(generator.logits_processor, OutlinesLogitsProcessor)
+
+
+def test_steerable_generator_init_other_output_type(steerable_model):
     generator = SteerableGenerator(steerable_model, Literal["foo", "bar"])
     assert generator.model == steerable_model
     assert isinstance(generator.logits_processor, OutlinesLogitsProcessor)
 
 
 def test_steerable_generator_init_invalid_output_type(steerable_model, sample_processor):
-    with pytest.raises(TypeError):
+    with pytest.raises(ValueError):
         SteerableGenerator(steerable_model, sample_processor)
 
 
