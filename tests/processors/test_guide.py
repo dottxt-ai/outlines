@@ -202,6 +202,7 @@ def test_regex_guide_caching():
     assert caching._caching_enabled
 
     cache = caching.get_cache()
+    cache.clear()
     _, _ = cache.stats(enable=True, reset=True) # (hits, misses)
 
     regex = r"[0-9]{3}"
@@ -221,7 +222,7 @@ def test_regex_guide_caching():
             *mlx_lm.load("mlx-community/SmolLM-135M-Instruct-4bit")
         ))
     if HAS_VLLM:
-        models.append(outlines.from_vllm(vllm.LLM("erwanf/gpt2-mini")))
+        models.append(outlines.from_vllm(vllm.LLM("TinyLlama/TinyLlama-1.1B-Chat-v1.0")))
 
     for i, model in enumerate(models):
         # First call for each model should be a miss
