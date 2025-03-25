@@ -189,12 +189,12 @@ class Transformers(Model):
         # is not available in the environment.
         try:
             from transformers import FlaxPreTrainedModel
-        except ImportError:
+        except ImportError:  # pragma: no cover
             FlaxPreTrainedModel = None
 
         try:
             from transformers import TFPreTrainedModel
-        except ImportError:
+        except ImportError:  # pragma: no cover
             TFPreTrainedModel = None
 
         tokenizer.padding_size = "left"
