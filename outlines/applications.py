@@ -35,7 +35,7 @@ class Application:
     )
 
     template_string = "What is 2 times {{ num }}?"
-    template = Template.from_str(template_string)
+    template = Template.from_string(template_string)
 
     application = Application(template, JsonType(OutputModel))
 
