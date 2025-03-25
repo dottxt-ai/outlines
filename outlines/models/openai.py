@@ -197,13 +197,17 @@ class OpenAI(Model):
             else:
                 raise e
 
-        message = result.choices[0].message
-        if message.refusal is not None:
-            raise ValueError(
-                f"OpenAI refused to answer the request: {result.choices[0].refusal}"
-            )
+        messages = [choice.message for choice in result.choices]
+        for message in messages:
+            if message.refusal is not None:
+                raise ValueError(
+                    f"OpenAI refused to answer the request: {message.refusal}"
+                )
 
-        return message.content
+        if len(messages) == 1:
+            return messages[0].content
+        else:
+            return [message.content for message in messages]
 
     def generate_stream(
         self,
