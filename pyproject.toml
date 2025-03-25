@@ -111,6 +111,7 @@ filterwarnings = [
     "ignore::UserWarning",
     "ignore::DeprecationWarning:pyairports.*",
     "ignore::DeprecationWarning:jax.*",
+    "ignore::DeprecationWarning:flax.*",
 ]
 
 [tool.mypy]
@@ -167,6 +168,10 @@ ignore_missing_imports = true
 omit = [
     "outlines/_version.py",
     "tests/*",
+    "outlines/models/mlxlm.py",
+    "outlines/models/vllm.py",
+    "outlines/processors/tensor_adapters/mlx.py",
+    "outlines/serve/serve.py",
 ]
 branch = true
 relative_files = true
