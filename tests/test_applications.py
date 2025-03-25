@@ -37,7 +37,7 @@ def another_model():
 
 
 def test_application_initialization():
-    template = Template.from_str("Test {{ value }}")
+    template = Template.from_string("Test {{ value }}")
     output_type = None
     application = Application(template, output_type)
 
@@ -48,7 +48,7 @@ def test_application_initialization():
 
 
 def test_application_template_call(model):
-    template = Template.from_str("Test {{ value }}")
+    template = Template.from_string("Test {{ value }}")
     output_type = None
     application = Application(template, output_type)
     result = application(model, value="example")
@@ -68,7 +68,7 @@ def test_application_callable_call(model):
 
 
 def test_application_template_error(model):
-    template = Template.from_str("Test {{ value }}")
+    template = Template.from_string("Test {{ value }}")
     output_type = None
     application = Application(template, output_type)
 
@@ -77,7 +77,7 @@ def test_application_template_error(model):
 
 
 def test_application_generator_reuse(model, another_model):
-    template = Template.from_str("Test {{ value }}")
+    template = Template.from_string("Test {{ value }}")
     output_type = None
     application = Application(template, output_type)
 
