@@ -87,6 +87,16 @@ def test_openai_simple_call():
 
 
 @pytest.mark.api_call
+def test_openai_simple_call_multiple_samples():
+    model = OpenAI(OpenAIClient(), MODEL_NAME)
+    result = model.generate("Respond with one word. Not more.", n=2)
+    assert isinstance(result, list)
+    assert len(result) == 2
+    assert isinstance(result[0], str)
+    assert isinstance(result[1], str)
+
+
+@pytest.mark.api_call
 def test_openai_direct_call():
     model = OpenAI(OpenAIClient(), MODEL_NAME)
     result = model("Respond with one word. Not more.")
