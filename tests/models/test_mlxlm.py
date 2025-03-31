@@ -12,13 +12,10 @@ from outlines.models.mlxlm import (
 )
 from outlines.models.transformers import TransformerTokenizer
 from pydantic import BaseModel
-from transformers import PreTrainedTokenizer
 
 try:
     import mlx_lm
     import mlx.core as mx
-    from mlx_lm import load
-    from mlx_lm.tokenizer_utils import TokenizerWrapper
 
     HAS_MLX = mx.metal.is_available()
 except ImportError:
@@ -32,8 +29,10 @@ TEST_MODEL = "mlx-community/SmolLM-135M-Instruct-4bit"
 def test_mlxlm_model_initialization():
     model = from_mlxlm(*mlx_lm.load(TEST_MODEL))
     assert isinstance(model, MLXLM)
-    assert isinstance(model.model, mlx_lm.MLXLM)
-    assert isinstance(model.mlx_tokenizer, mlx_lm.TokenizerWrapper)
+    assert isinstance(model.model, mlx_lm.models.llama.Model)
+    assert isinstance(
+        model.mlx_tokenizer, mlx_lm.tokenizer_utils.TokenizerWrapper
+    )
     assert isinstance(model.tokenizer, TransformerTokenizer)
     assert isinstance(model.type_adapter, MLXLMTypeAdapter)
     assert model.tensor_library_name == "mlx"

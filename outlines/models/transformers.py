@@ -197,8 +197,9 @@ class Transformers(Model):
         except ImportError:  # pragma: no cover
             TFPreTrainedModel = None
 
-        tokenizer.padding_size = "left"
+        tokenizer.padding_side = "left"
         self.model = model
+        self.transformer_tokenizer = tokenizer
         self.tokenizer = TransformerTokenizer(tokenizer)
         self.type_adapter = TransformersTypeAdapter()
 
@@ -249,7 +250,11 @@ class Transformers(Model):
 
     def _generate_output_seq(self, prompts, inputs, **inference_kwargs):
         input_ids = inputs["input_ids"]
-        output_ids = self.model.generate(**inputs, **inference_kwargs)
+        output_ids = self.model.generate(
+            **inputs,
+            tokenizer=self.transformer_tokenizer,
+            **inference_kwargs,
+        )
 
         # encoder-decoder returns output_ids only, decoder-only returns full seq ids
         if self.model.config.is_encoder_decoder:

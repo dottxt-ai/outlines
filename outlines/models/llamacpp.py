@@ -143,8 +143,6 @@ class LlamaCpp(Model):
     tensor_library_name = "numpy"
 
     def __init__(self, model: "Llama"):
-        from llama_cpp import Llama
-
         self.model = model
         self.tokenizer = LlamaCppTokenizer(self.model)
         self.type_adapter = LlamaCppTypeAdapter()
@@ -225,6 +223,22 @@ class LlamaCpp(Model):
                     return
 
         return token_generator()
+
+    def load_lora(self, adapter_path: str):
+        warnings.warn("""
+            The `load_lora` method is deprecated starting from v1.0.0.
+            Support for it will be removed in v1.5.0.
+            """,
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        if self.model._model.apply_lora_from_file(
+            adapter_path,
+            1.0,
+        ):
+            raise RuntimeError(
+                f"Failed to apply LoRA from lora path: {adapter_path}"
+            )
 
 
 def from_llamacpp(model: "Llama"):

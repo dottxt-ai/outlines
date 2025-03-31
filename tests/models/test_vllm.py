@@ -2,7 +2,6 @@ import re
 from enum import Enum
 
 import pytest
-import torch
 from pydantic import BaseModel
 
 try:
@@ -151,5 +150,8 @@ def test_vllm_batch_samples_constrained(model):
 
 
 def test_vllm_streaming(model):
-    with pytest.raises(NotImplementedError, match="Streaming is not implemented"):
+    with pytest.raises(
+        NotImplementedError,
+        match="Streaming is not available for the vLLM integration."
+    ):
         model.stream("Respond with one word. Not more.")

@@ -1,4 +1,4 @@
-import dataclasses
+import warnings
 from functools import singledispatchmethod
 from typing import TYPE_CHECKING, List, Optional, Union
 
@@ -7,7 +7,6 @@ from outlines.models.base import Model, ModelTypeAdapter
 if TYPE_CHECKING:
     from transformers import PreTrainedTokenizerBase
     from vllm import LLM
-    from vllm.sampling_params import SamplingParams
 
 
 __all__ = ["VLLM", "from_vllm"]
@@ -67,6 +66,7 @@ class VLLM(Model):
         self.model = model
         self.tokenizer = self._get_tokenizer()
         self.type_adapter = VLLMTypeAdapter()
+        self.lora_request = None # v0 legacy, to be removed
 
     def _get_tokenizer(self):
         if hasattr(self.model, "get_tokenizer"):
@@ -111,6 +111,7 @@ class VLLM(Model):
         results = self.model.generate(
             self.type_adapter.format_input(model_input),
             sampling_params=sampling_params,
+            lora_request=self.lora_request, # v0 legacy, to be removed
             **inference_kwargs,
         )
         results = [[sample.text for sample in batch.outputs] for batch in results]
@@ -138,6 +139,24 @@ class VLLM(Model):
         raise NotImplementedError(
             "Streaming is not available for the vLLM integration."
         )
+
+    def load_lora(self, adapter_path: Optional[str]):
+        warnings.warn("""
+            The `load_lora` method is deprecated starting from v1.0.0.
+            Support for it will be removed in v1.5.0.
+            Please use the v1 of the `outlines` library by using the
+            `outlines.from_vllm` function to create a `VLLM` model
+            instance.
+            In the v1, you must pass the `lora_request` argument as
+            a keyword argument when calling the model or generator.
+            """)
+
+        from vllm.lora.request import LoRARequest
+
+        if adapter_path is None:
+            self.lora_request = None
+        else:
+            self.lora_request = LoRARequest(adapter_path, 1, adapter_path)
 
 
 def from_vllm(model: "LLM") -> VLLM:

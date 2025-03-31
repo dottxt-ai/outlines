@@ -113,14 +113,14 @@ class MLXLM(Model):
         """
         from mlx_lm import stream_generate
 
-        for token in stream_generate(
+        for gen_response in stream_generate(
             self.model,
             self.mlx_tokenizer,
             self.type_adapter.format_input(model_input),
             logits_processors=self.type_adapter.format_output_type(output_type),
             **kwargs,
         ):
-            yield token
+            yield gen_response.text
 
 
 def from_mlxlm(model: "nn.Module", tokenizer: "PreTrainedTokenizer") -> MLXLM:

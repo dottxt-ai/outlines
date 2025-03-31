@@ -1,17 +1,26 @@
-import datetime
 import json
 import re
 import sys
 from dataclasses import dataclass
 from enum import EnumMeta
 from types import FunctionType
-from typing import Any, Callable, List, Literal, Union, get_args, get_origin
-
+from typing import (
+    Any,
+    List,
+    Optional as OptionalType,
+    Union,
+    get_args,
+)
 import interegular
 import jsonschema
 from genson import SchemaBuilder
 from outlines_core.fsm.json_schema import build_regex_from_schema
-from pydantic import BaseModel, GetCoreSchemaHandler, GetJsonSchemaHandler, TypeAdapter
+from pydantic import (
+    BaseModel,
+    GetCoreSchemaHandler,
+    GetJsonSchemaHandler,
+    TypeAdapter,
+)
 from pydantic.json_schema import JsonSchemaValue
 from pydantic_core import core_schema as cs
 
@@ -242,7 +251,13 @@ class FSM(Term):
 
 
 class JsonSchema(Term):
-    def __init__(self, schema: Union[dict, str, type[BaseModel], _TypedDictMeta, type, SchemaBuilder]):
+    def __init__(
+        self,
+        schema: Union[
+            dict, str, type[BaseModel], _TypedDictMeta, type, SchemaBuilder
+        ],
+        whitespace_pattern: OptionalType[str] = None,
+    ):
         schema_str: str
 
         if is_dict_instance(schema):
@@ -266,6 +281,7 @@ class JsonSchema(Term):
             )
 
         self.schema = schema_str
+        self.whitespace_pattern = whitespace_pattern
 
     def __post_init__(self):
         jsonschema.Draft7Validator.check_schema(json.loads(self.schema))
@@ -714,7 +730,7 @@ def to_regex(term: Term) -> str:
         case Regex():
             return f"({term.pattern})"
         case JsonSchema():
-            regex_str = build_regex_from_schema(term.schema)
+            regex_str = build_regex_from_schema(term.schema, term.whitespace_pattern)
             return f"({regex_str})"
         case KleeneStar():
             return f"({to_regex(term.term)})*"
