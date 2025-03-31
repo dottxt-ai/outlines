@@ -12,7 +12,7 @@ from outlines.models.llamacpp import (
     from_llamacpp
 )
 from outlines.processors import RegexLogitsProcessor
-from outlines.types.dsl import Regex, python_types_to_terms, to_regex
+from outlines.types.dsl import Regex
 
 
 def test_load_model():
