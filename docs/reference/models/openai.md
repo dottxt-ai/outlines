@@ -116,7 +116,7 @@ model = models.openai(client, config)
 
 ## Structured Generation Support
 
-Outlines provides support for [OpenAI Structured Outputs](https://platform.openai.com/docs/guides/structured-outputs/json-mode) via `outlines.generate.json`, `outlines.generate.choice`
+Outlines wraps [OpenAI Structured Outputs](https://platform.openai.com/docs/guides/structured-outputs/json-mode) via `outlines.generate.json`, `outlines.generate.choice`
 
 ```python
 from pydantic import BaseModel, ConfigDict
@@ -143,6 +143,10 @@ print(generator("Which came first?"))
 !!! Warning
 
     Structured generation support only provided to OpenAI-compatible endpoints which conform to OpenAI's standard. Additionally, `generate.regex` and `generate.cfg` are not supported.
+
+!!! Warning
+
+    If you are using OpenAI models, you'll be subject to the same constraints as [OpenAI Structured Outputs]([https://platform.openai.com/docs/guides/structured-outputs/json-mode](https://platform.openai.com/docs/guides/structured-outputs/json-mode?api-mode=chat#supported-schemas).
 
 
 ## Advanced configuration
