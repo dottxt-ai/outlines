@@ -54,6 +54,20 @@ def test_mlxlm_generate():
 
 
 @pytest.mark.skipif(not HAS_MLX, reason="MLX tests require Apple Silicon")
+def test_mlxlm_generate_with_stop_at():
+    from outlines.generate.api import GenerationParameters, SamplingParameters
+
+    model = mlxlm(TEST_MODEL)
+    prompt = 'Write sentence and end with "stop":'
+
+    gen_params = GenerationParameters(max_tokens=50, stop_at="stop", seed=None)
+    sampling_params = SamplingParameters(sampler="greedy")
+
+    output = model.generate(prompt, gen_params, None, sampling_params)
+    assert "stop" in output
+
+
+@pytest.mark.skipif(not HAS_MLX, reason="MLX tests require Apple Silicon")
 def test_mlxlm_stream():
     from outlines.generate.api import GenerationParameters, SamplingParameters
 
