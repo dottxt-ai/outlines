@@ -1,0 +1,7 @@
+baseURL: https://docs.dottxt.ai/outlines/
+languageCode: en-us
+title: Outlines documentation
+
+module:
+  imports:
+    - path: github.com/imfing/hextra

@@ -1,0 +1,18 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Outlines documentation – </title>
+    <link>http://localhost:1313/outlines/</link>
+    <description>Recent content on Outlines documentation</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 07 Apr 2025 11:42:31 -0700</lastBuildDate>
+    
+	  <atom:link href="http://localhost:1313/outlines/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+      
+      
+    
+    
+  </channel>
+</rss>
