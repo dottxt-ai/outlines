@@ -20,7 +20,8 @@ def cfg(
     """Generate text in the language of a Context-Free Grammar
 
     This function is deprecated starting from v1.0.0. Do not use it.
-    Instead, use the `Generator` object instead as such:
+    Support for it will be removed in v1.5.0.
+    Use the `Generator` object instead:
 
     ```python
     from outlines import Generator
@@ -51,7 +52,7 @@ def cfg(
     warnings.warn("""
         The `cfg` function is deprecated starting from v1.0.0.
         Do not use it. Support for it will be removed in v1.5.0.
-        Instead, use the `Generator` object instead as such:
+        Use the `Generator` object instead:
         ```python
         from outlines import Generator
         from outlines.types import CFG

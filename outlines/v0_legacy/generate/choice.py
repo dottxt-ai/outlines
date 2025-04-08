@@ -5,11 +5,11 @@ import re
 import json as pyjson
 import warnings
 from enum import Enum
-from typing import List, Union
+from typing import Callable, List, Union
 
 from outlines.models.openai import OpenAI
 from outlines.types.utils import get_schema_from_enum
-from outlines.v0_legacy.generate.api import GeneratorV0Adapter
+from outlines.v0_legacy.generate.api import GeneratorV0Adapter, GeneratorVisionV0Adapter
 from outlines.v0_legacy.generate.json import json
 from outlines.v0_legacy.generate.regex import regex
 from outlines.v0_legacy.samplers import Sampler, multinomial
@@ -20,11 +20,12 @@ def choice(
     model,
     choices: Union[List[str], type[Enum]],
     sampler: Sampler = multinomial(),
-) -> GeneratorV0Adapter:
+) -> Union[GeneratorV0Adapter, GeneratorVisionV0Adapter, Callable]:
     """Generate a choice from a list of options.
 
     This function is deprecated starting from v1.0.0. Do not use it.
-    Instead, use the `Generator` object instead as such:
+    Support for it will be removed in v1.5.0.
+    Use the `Generator` object instead:
 
     ```python
     from typing import Literal
@@ -53,7 +54,7 @@ def choice(
     warnings.warn("""
         The `choice` function is deprecated starting from v1.0.0.
         Do not use it. Support for it will be removed in v1.5.0.
-        Instead, use the `Generator` object instead as such:
+        Use the `Generator` object instead:
         ```python
         from outlines import Generator
         from typing import Literal
@@ -67,7 +68,12 @@ def choice(
     )
 
     if isinstance(model, OpenAI):
-        return choice_openai(model, choices, sampler)
+        if isinstance(choices, list):
+            return choice_openai(model, choices, sampler)
+        raise ValueError(
+            "The `choice` function with OpenAI only supports a list of "
+            + "strings as choices."
+        )
 
     if isinstance(choices, type(Enum)):
         regex_str = build_regex_from_schema(pyjson.dumps(get_schema_from_enum(choices)))
@@ -93,12 +99,9 @@ def choice(
 
 def choice_openai(
     model,
-    choices: Union[List[str], type[Enum]],
+    choices: List[str],
     sampler: Sampler = multinomial(),
-):
-
-    if isinstance(choices, type(Enum)):
-        choices = [choice.value for choice in choices]
+) -> Callable:
 
     choices_schema = pyjson.dumps(
         {
@@ -117,7 +120,7 @@ def choice_openai(
         )
         generator = json(model, choices_schema, sampler)
 
-    def generate_choice(*args, **kwargs):
+    def generate_choice(*args, **kwargs): # pragma: no cover
         return generator(*args, **kwargs)["result"]
 
     return generate_choice
