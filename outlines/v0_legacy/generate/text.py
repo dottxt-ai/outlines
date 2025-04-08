@@ -3,6 +3,7 @@
 
 import warnings
 from typing import Union
+
 from outlines.models.openai import OpenAI
 from outlines.v0_legacy.models.transformers_vision import TransformersVision
 from outlines.v0_legacy.generate.api import (
@@ -12,13 +13,14 @@ from outlines.v0_legacy.generate.api import (
 from outlines.v0_legacy.samplers import Sampler, multinomial
 
 
-def text(
-        model, sampler: Sampler = multinomial()
-    ) -> Union[GeneratorV0Adapter, GeneratorVisionV0Adapter, OpenAI]:
+def text(model, sampler: Sampler = multinomial()) -> Union[
+    GeneratorV0Adapter, GeneratorVisionV0Adapter, OpenAI
+]:
     """Generate unconstrained text.
 
     This function is deprecated starting from v1.0.0. Do not use it.
-    Instead, use the `Generator` object instead as such:
+    Support for it will be removed in v1.5.0.
+    Use the `Generator` object instead:
 
     ```python
     from outlines import Generator
@@ -43,7 +45,7 @@ def text(
     warnings.warn("""
         The `text` function is deprecated starting from v1.0.0.
         Do not use it. Support for it will be removed in v1.5.0.
-        Instead, use the `Generator` object instead as such:
+        Use the `Generator` object instead:
         ```python
         from outlines import Generator
         generator = Generator(model)

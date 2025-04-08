@@ -23,11 +23,12 @@ def json(
     schema_object: Union[str, object, Callable],
     sampler: Sampler = multinomial(),
     whitespace_pattern: Optional[str] = None,
-) -> Union[GeneratorV0Adapter, GeneratorVisionV0Adapter]:
+) -> GeneratorV0Adapter:
     """Generate structured text that follows a JSON Schema.
 
     This function is deprecated starting from v1.0.0. Do not use it.
-    Instead, use the `Generator` object instead as such:
+    Support for it will be removed in v1.5.0.
+    Use the `Generator` object instead:
 
     ```python
     from outlines import Generator
@@ -62,7 +63,7 @@ def json(
     warnings.warn("""
         The `json` function is deprecated starting from v1.0.0.
         Do not use it. Support for it will be removed in v1.5.0.
-        Instead, use the `Generator` object instead as such:
+        Use the `Generator` object instead:
         ```python
         from outlines import Generator
         from outlines.types import JsonSchema
@@ -82,7 +83,7 @@ def json(
     if is_callable(schema_object):
         json_schema = str(get_schema_from_signature(schema_object))  # type: ignore
     else:
-        json_schema = JsonSchema(schema_object, whitespace_pattern) # type: ignore
+        json_schema = JsonSchema(schema_object, whitespace_pattern)
 
     if isinstance(model, TransformersVision):
         generator = GeneratorVisionV0Adapter(model, json_schema, sampler)
@@ -124,8 +125,8 @@ def json_openai(
     else:
         raise ValueError(
             f"Cannot parse schema {schema_object}. The schema must be either "
-            + "a Pydantic object, a function or a string that contains the JSON "
-            + "Schema specification"
+            + "a Pydantic object or a string that contains the JSON Schema "
+            + "specification"
         )
 
     # create copied, patched model with normalized json schema set
