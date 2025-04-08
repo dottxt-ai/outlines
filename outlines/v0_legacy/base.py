@@ -7,7 +7,7 @@ from typing import Callable, Optional
 
 # Allow nested loops for running in notebook. We don't enable it globally as it
 # may interfere with other libraries that use asyncio.
-if hasattr(builtins, "__IPYTHON__"):
+if hasattr(builtins, "__IPYTHON__"): # pragma: no cover
     try:
         import nest_asyncio
 
@@ -45,7 +45,7 @@ class vectorize:
                 _parse_input_dimensions,
                 _update_dim_sizes,
             )
-        else:
+        else: # pragma: no cover
             from numpy.lib.function_base import (
                 _calculate_shapes,
                 _parse_gufunc_signature,

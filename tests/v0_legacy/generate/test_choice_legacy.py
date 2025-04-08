@@ -86,5 +86,12 @@ def test_choice_legacy_openai(openai_model):
         DeprecationWarning,
         match="The `choice` function is deprecated",
     ):
+        with pytest.raises(
+            ValueError,
+            match="The `choice` function with OpenAI only supports a list of "
+            + "strings as choices.",
+        ):
+            choice(openai_model, EnumChoice)
+
         generator = choice(openai_model, ["foo", "bar"])
         assert isinstance(generator, Callable)

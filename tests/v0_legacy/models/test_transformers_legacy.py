@@ -33,7 +33,7 @@ def test_transformers_legacy_init():
         match="The `transformers` function is deprecated",
     ):
         model = models.transformers(
-            model_name="prajjwal1/bert-tiny",
+            model_name="bert-base-uncased",
             model_class=BertForSequenceClassification,
             tokenizer_class=BertTokenizer,
         )

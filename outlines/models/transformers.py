@@ -20,28 +20,28 @@ def get_llama_tokenizer_types():
     """
     try:
         from transformers.models.llama import LlamaTokenizer
-    except ImportError:
+    except ImportError:  # pragma: no cover
 
         class LlamaTokenizer:  # type: ignore
             pass
 
     try:
         from transformers.models.llama import LlamaTokenizerFast
-    except ImportError:
+    except ImportError:  # pragma: no cover
 
         class LlamaTokenizerFast:  # type: ignore
             pass
 
     try:
         from transformers.models.code_llama import CodeLlamaTokenizer
-    except ImportError:
+    except ImportError:  # pragma: no cover
 
         class CodeLlamaTokenizer:  # type: ignore
             pass
 
     try:
         from transformers.models.code_llama import CodeLlamaTokenizerFast
-    except ImportError:
+    except ImportError:  # pragma: no cover
 
         class CodeLlamaTokenizerFast:  # type: ignore
             pass
@@ -230,6 +230,8 @@ class Transformers(Model):
         prompts, inputs = self._prepare_model_inputs(model_input, output_type)
         logits_processor = self.type_adapter.format_output_type(output_type)
 
+        print(inference_kwargs)
+
         generated_ids = self._generate_output_seq(
             prompts, inputs, logits_processor=logits_processor, **inference_kwargs
         )
@@ -280,7 +282,7 @@ class Transformers(Model):
                 self.tokenizer.decode(generated_ids[i])
                 for i in range(len(generated_ids))
             ]
-        else:
+        else:  # pragma: no cover
             raise TypeError(
                 f"Generated outputs aren't 1D, 2D or 3D, but instead are {generated_ids.shape}"
             )

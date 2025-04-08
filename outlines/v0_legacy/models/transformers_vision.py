@@ -88,7 +88,7 @@ def transformers_vision(
     if processor_class is None or tokenizer_class is None:
         try:
             from transformers import AutoProcessor, AutoTokenizer
-        except ImportError:
+        except ImportError:  # pragma: no cover
             raise ImportError(
                 "The `transformers` library needs to be installed in order to use `transformers` models."
             )
@@ -105,13 +105,6 @@ def transformers_vision(
     processor_kwargs.setdefault("padding_side", "left")
     processor_kwargs.setdefault("pad_token", "[PAD]")
     processor = processor_class.from_pretrained(model_name, **processor_kwargs)
-
-    if tokenizer_class is None:
-        if getattr(processor, "tokenizer", None):
-            tokenizer = processor.tokenizer
-        else:
-            tokenizer = AutoTokenizer.from_pretrained(model_name, **processor_kwargs)
-    else:
-        tokenizer = tokenizer_class.from_pretrained(model_name, **processor_kwargs)
+    tokenizer = tokenizer_class.from_pretrained(model_name, **processor_kwargs)
 
     return TransformersVision(model, tokenizer, processor)

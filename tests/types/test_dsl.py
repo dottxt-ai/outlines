@@ -1,6 +1,5 @@
 import datetime
 import json
-import os
 import sys
 import tempfile
 from dataclasses import dataclass
@@ -37,6 +36,7 @@ from outlines.types.dsl import (
     Term,
     either,
     CFG,
+    FSM,
     _handle_dict,
     _handle_list,
     _handle_literal,
@@ -52,7 +52,6 @@ from outlines.types.dsl import (
     exactly,
     regex,
     python_types_to_terms,
-    cfg,
 )
 
 if sys.version_info >= (3, 12):
@@ -65,26 +64,32 @@ def test_dsl_init():
     string = String("test")
     assert string.value == "test"
     assert repr(string) == "String(value='test')"
+    assert string.display_ascii_tree() == "└── String('test')\n"
 
     regex = Regex("[0-9]")
     assert regex.pattern == "[0-9]"
     assert repr(regex) == "Regex(pattern='[0-9]')"
+    assert regex.display_ascii_tree() == "└── Regex('[0-9]')\n"
 
     schema = JsonSchema('{ "type": "string" }')
     assert schema.schema == '{ "type": "string" }'
     assert repr(schema) == 'JsonSchema(schema=\'{ "type": "string" }\')'
+    assert schema.display_ascii_tree() == "└── JsonSchema('{ \"type\": \"string\" }')\n"
 
     kleene_star = KleeneStar(string)
     assert kleene_star.term == string
     assert repr(kleene_star) == "KleeneStar(term=String(value='test'))"
+    assert kleene_star.display_ascii_tree() == "└── KleeneStar(*)\n    └── String('test')\n"
 
     kleene_plus = KleenePlus(string)
     assert kleene_plus.term == string
     assert repr(kleene_plus) == "KleenePlus(term=String(value='test'))"
+    assert kleene_plus.display_ascii_tree() == "└── KleenePlus(+)\n    └── String('test')\n"
 
     optional = Optional(string)
     assert optional.term == string
     assert repr(optional) == "Optional(term=String(value='test'))"
+    assert optional.display_ascii_tree() == "└── Optional(?)\n    └── String('test')\n"
 
     alternatives = Alternatives([string, regex])
     assert alternatives.terms[0] == string
@@ -93,6 +98,7 @@ def test_dsl_init():
         repr(alternatives)
         == "Alternatives(terms=[String(value='test'), Regex(pattern='[0-9]')])"
     )
+    assert alternatives.display_ascii_tree() == "└── Alternatives(|)\n    ├── String('test')\n    └── Regex('[0-9]')\n"
 
     sequence = Sequence([string, regex])
     assert sequence.terms[0] == string
@@ -101,21 +107,25 @@ def test_dsl_init():
         repr(sequence)
         == "Sequence(terms=[String(value='test'), Regex(pattern='[0-9]')])"
     )
+    assert sequence.display_ascii_tree() == "└── Sequence\n    ├── String('test')\n    └── Regex('[0-9]')\n"
 
     exact = QuantifyExact(string, 3)
     assert exact.term == string
     assert exact.count == 3
     assert repr(exact) == "QuantifyExact(term=String(value='test'), count=3)"
+    assert exact.display_ascii_tree() == "└── Quantify({3})\n    └── String('test')\n"
 
     minimum = QuantifyMinimum(string, 3)
     assert minimum.term == string
     assert minimum.min_count == 3
     assert repr(minimum) == "QuantifyMinimum(term=String(value='test'), min_count=3)"
+    assert minimum.display_ascii_tree() == "└── Quantify({3,})\n    └── String('test')\n"
 
     maximum = QuantifyMaximum(string, 3)
     assert maximum.term == string
     assert maximum.max_count == 3
     assert repr(maximum) == "QuantifyMaximum(term=String(value='test'), max_count=3)"
+    assert maximum.display_ascii_tree() == "└── Quantify({,3})\n    └── String('test')\n"
 
     between = QuantifyBetween(string, 1, 3)
     assert between.term == string
@@ -125,12 +135,51 @@ def test_dsl_init():
         repr(between)
         == "QuantifyBetween(term=String(value='test'), min_count=1, max_count=3)"
     )
+    assert between.display_ascii_tree() == "└── Quantify({1,3})\n    └── String('test')\n"
 
     with pytest.raises(
         ValueError, match="`max_count` must be greater than `min_count`"
     ):
         QuantifyBetween(string, 3, 1)
 
+
+def test_dsl_term_methods():
+    a = String("a")
+    b = Regex("[0-9]")
+    c = "c"
+
+    assert a + b == Sequence([a, b])
+    assert a + c == Sequence([a, String(c)])
+    assert a.__radd__(b) == Sequence([b, a])
+    assert a.__radd__(c) == Sequence([String(c), a])
+
+    assert a | b == Alternatives([a, b])
+    assert a | c == Alternatives([a, String(c)])
+    assert a.__ror__(b) == Alternatives([b, a])
+    assert a.__ror__(c) == Alternatives([String(c), a])
+
+    core_schema = a.__get_pydantic_core_schema__("", "")
+    validator = a.__get_validator__(core_schema)
+    assert validator("a") == "a"
+    with pytest.raises(
+        ValueError,
+        match="Input should be in the language of the regular expression",
+    ):
+        validator("b")
+
+    assert a.__get_pydantic_json_schema__("", "") == {"type": "string", "pattern": "a"}
+
+    assert a.matches("a")
+    assert not a.matches("b")
+
+    assert a.display_ascii_tree() == "└── String('a')\n"
+
+    with pytest.raises(NotImplementedError):
+        Term()._display_node()
+
+    assert a._display_children("") == ""
+
+    assert a.__str__() == "└── String('a')\n"
 
 def test_dsl_sequence():
     a = String("a")
@@ -177,7 +226,7 @@ def test_dsl_alternatives():
 def test_dsl_optional():
     a = String("a")
 
-    opt = optional(a)
+    opt = a.optional()
     assert isinstance(opt, Optional)
 
     opt = optional("a")
@@ -191,7 +240,7 @@ def test_dsl_optional():
 def test_dsl_exactly():
     a = String("a")
 
-    rep = exactly(2, a)
+    rep = a.exactly(2)
     assert isinstance(rep, QuantifyExact)
     assert rep.count == 2
 
@@ -206,7 +255,7 @@ def test_dsl_exactly():
 def test_dsl_at_least():
     a = String("a")
 
-    rep = at_least(2, a)
+    rep = a.at_least(2)
     assert isinstance(rep, QuantifyMinimum)
     assert rep.min_count == 2
 
@@ -221,7 +270,7 @@ def test_dsl_at_least():
 def test_dsl_at_most():
     a = String("a")
 
-    rep = at_most(2, a)
+    rep = a.at_most(2)
     assert isinstance(rep, QuantifyMaximum)
     assert rep.max_count == 2
 
@@ -236,7 +285,7 @@ def test_dsl_at_most():
 def test_between():
     a = String("a")
 
-    rep = between(1, 2, a)
+    rep = a.between(1, 2)
     assert isinstance(rep, QuantifyBetween)
     assert rep.min_count == 1
     assert rep.max_count == 2
@@ -252,7 +301,7 @@ def test_between():
 def test_dsl_zero_or_more():
     a = String("a")
 
-    rep = zero_or_more(a)
+    rep = a.zero_or_more()
     assert isinstance(rep, KleeneStar)
 
     rep = zero_or_more("a")
@@ -266,7 +315,7 @@ def test_dsl_zero_or_more():
 def test_dsl_one_or_more():
     a = String("a")
 
-    rep = one_or_more(a)
+    rep = a.one_or_more()
     assert isinstance(rep, KleenePlus)
 
     rep = one_or_more("a")
@@ -330,6 +379,76 @@ def test_dsl_display():
         tree
         == "└── Sequence\n    ├── KleeneStar(*)\n    │   └── Alternatives(|)\n    │       ├── String('a')\n    │       └── String('b')\n    └── Regex('[0-9]')\n"
     )
+
+
+def test_cfg():
+    cfg_string = """
+?start: expr
+?expr: NUMBER
+"""
+    cfg = types.cfg(cfg_string)
+    assert isinstance(cfg, CFG)
+    assert cfg.definition.strip() == "?start: expr\n?expr: NUMBER"
+    assert cfg._display_node() == "CFG('\n?start: expr\n?expr: NUMBER\n')"
+    assert cfg.__repr__() == "CFG(definition='\n?start: expr\n?expr: NUMBER\n')"
+    assert cfg == types.cfg(cfg_string)
+    assert not cfg == "a"
+
+
+def test_fsm():
+    interegular_fsm = interegular.parse_pattern(r"a").to_fsm()
+    fsm = types.fsm(interegular_fsm)
+    assert isinstance(fsm, FSM)
+    assert fsm.fsm == interegular_fsm
+    assert fsm._display_node() == f"FSM({fsm.fsm.__repr__()})"
+    assert fsm.__repr__() == f"FSM(fsm={fsm.fsm.__repr__()})"
+
+
+def test_json_schema():
+    # init dict
+    schema = types.json_schema({"type": "string"})
+    assert schema.schema == '{"type": "string"}'
+
+    # init str
+    schema = types.json_schema('{"type": "string"}')
+    assert schema.schema == '{"type": "string"}'
+
+    # init Pydantic model
+    class PydanticModel(BaseModel):
+        foo: str
+    schema = types.json_schema(PydanticModel)
+    assert schema.schema == '{"properties": {"foo": {"title": "Foo", "type": "string"}}, "required": ["foo"], "title": "PydanticModel", "type": "object"}'
+
+    # init TypedDict
+    class SomeTypedDict(TypedDict):
+        foo: str
+    schema = types.json_schema(SomeTypedDict)
+    assert schema.schema == '{"properties": {"foo": {"title": "Foo", "type": "string"}}, "required": ["foo"], "title": "SomeTypedDict", "type": "object"}'
+
+    # init dataclass
+    @dataclass
+    class DataClass:
+        foo: str
+    schema = types.json_schema(DataClass)
+    assert schema.schema == '{"properties": {"foo": {"title": "Foo", "type": "string"}}, "required": ["foo"], "title": "DataClass", "type": "object"}'
+
+    # init SchemaBuilder
+    builder = SchemaBuilder()
+    builder.add_schema({"type": "object", "properties": {}})
+    schema = types.json_schema(builder)
+    assert schema.schema == '{"$schema": "http://json-schema.org/schema#", "type": "object"}'
+
+    # init unsupported type
+    with pytest.raises(ValueError, match="Cannot parse schema"):
+        types.json_schema(1)
+
+    # other methods
+    schema = types.json_schema('{"type": "string"}')
+    schema.__post_init__()
+    assert schema._display_node() == "JsonSchema('{\"type\": \"string\"}')"
+    assert schema.__repr__() == "JsonSchema(schema='{\"type\": \"string\"}')"
+    assert schema == types.json_schema('{"type": "string"}')
+    assert not schema == "a"
 
 
 def test_dsl_cfg_from_file():

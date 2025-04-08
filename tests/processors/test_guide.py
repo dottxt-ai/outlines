@@ -47,6 +47,8 @@ def test_stop_at_eos():
     assert fsm.is_final_state(fsm.start_state) is False
     assert fsm.is_final_state(fsm.final_state) is True
 
+    assert isinstance(fsm.copy(), StopAtEOSGuide)
+
 
 def test_regex_vocabulary_error():
     class MockTokenizer:
@@ -295,6 +297,8 @@ def test_cfg():
     assert guide.must_terminate_state(state)
     assert guide.can_terminate_state(state)
 
+    assert isinstance(guide.copy(), CFGGuide)
+
 
 def test_cfg_early_termination():
     class MockTokenizer:
@@ -522,3 +526,14 @@ def test_cfg_allow_both_extend_and_shift_terminal():
     state = guide.get_next_state(state, token_id=4)
     assert guide.must_terminate_state(state)
     assert guide.can_terminate_state(state)
+    assert guide.is_final_state(state)
+
+    cfg_str = """
+        start: CHAR
+        CHAR: /./
+    """
+
+    guide = CFGGuide(cfg_str, tokenizer)
+
+    state = guide.get_next_state(guide.initial_state, token_id=1)
+    assert guide.get_next_state(state, token_id=4).parser_state is None

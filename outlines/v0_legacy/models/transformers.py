@@ -127,7 +127,7 @@ def transformers(
     if model_class is None or tokenizer_class is None:
         try:
             from transformers import AutoModelForCausalLM, AutoTokenizer
-        except ImportError:
+        except ImportError:  # pragma: no cover
             raise ImportError(
                 "The `transformers` library needs to be installed in order to use `transformers` models."
             )
@@ -176,7 +176,7 @@ def mamba(
     try:
         from transformers import MambaForCausalLM
 
-    except ImportError:
+    except ImportError:  # pragma: no cover
         raise ImportError(
             "The `mamba_ssm`, `torch` and `transformer` libraries needs to be installed in order to use Mamba."
         )

@@ -12,7 +12,7 @@ from outlines.models.llamacpp import (
     from_llamacpp
 )
 from outlines.processors import RegexLogitsProcessor
-from outlines.types.dsl import Regex
+from outlines.types.dsl import Regex, CFG
 
 
 def test_load_model():
@@ -70,24 +70,24 @@ def test_llamacpp_choice(model):
     assert result == "Foo" or result == "Bar"
 
 
+def test_llamacpp_cfg(model):
+    with pytest.raises(
+        NotImplementedError,
+        match="CFG generation is not supported for LlamaCpp"
+    ):
+        model("Respond with one word. Not more.", CFG('start: "a"'))
+
+
 def test_llamacpp_text_stop(model):
     result = model.generate("Write the letter a.", None, stop="a", max_tokens=100)
     assert "a" not in result
 
 
-def test_llamacpp_stream_text_stop(model):
-    generator = model.stream("Write the letter a.", None, stop="a", max_tokens=100)
-
-    result = next(generator)
-    assert isinstance(result, str)
-    assert result != "a"
-
-
 def test_llamacpp_stream_simple(model):
     generator = model.stream("Respond with one word. Not more.", None)
 
-    x = next(generator)
-    assert isinstance(x, str)
+    for x in generator:
+        assert isinstance(x, str)
 
 
 def test_llamacpp_stream_regex(model):
@@ -107,6 +107,14 @@ def test_llamacpp_stream_json(model):
     assert x == "{"
 
 
+def test_llamacpp_stream_cfg(model):
+    with pytest.raises(
+        NotImplementedError,
+        match="CFG generation is not supported for LlamaCpp"
+    ):
+        model.stream("Respond with one word. Not more.", CFG('start: "a"'))
+
+
 def test_llamacpp_stream_choice(model):
     class Foo(Enum):
         bar = "Bar"
@@ -115,4 +123,12 @@ def test_llamacpp_stream_choice(model):
     generator = model.stream("foo?", Foo)
 
     x = next(generator)
-    assert isinstance(x, str)
+    assert x[0] in ("B", "F")
+
+
+def test_llamacpp_stream_text_stop(model):
+    generator = model.stream("Write the letter a.", None, stop="a", max_tokens=100)
+
+    result = next(generator)
+    assert isinstance(result, str)
+    assert result != "a"
