@@ -1,7 +1,39 @@
-baseURL: https://docs.dottxt.ai/outlines/
+baseURL: docs.dottxt.ai/
 languageCode: en-us
 title: Outlines documentation
 
 module:
   imports:
     - path: github.com/imfing/hextra
+
+menu:
+  main:
+    - name: Documentation
+      pageRef: /docs
+      weight: 1
+    - name: Blog
+      pageRef: /blog
+      weight: 2
+    - name: About
+      pageRef: /about
+      weight: 3
+    - name: Search
+      weight: 4
+      params:
+        type: search
+    - name: GitHub
+      weight: 5
+      url: "https://github.com/imfing/hextra"
+      params:
+        icon: github
+
+params:
+  navbar:
+    displayTitle: true
+    displayLogo: true
+    logo:
+      path: images/logo.svg
+      dark: images/logo-dark.svg
+      link: /
+      width: 40
+      height: 20
