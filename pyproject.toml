@@ -165,27 +165,37 @@ module = [
 ignore_missing_imports = true
 
 [tool.coverage.run]
+# we omit the files that require a GPU or Apple Silicon
+# as well as the models that make API calls
 omit = [
     "outlines/_version.py",
-    "tests/*",
+    "outlines/models/anthropic.py",
+    "outlines/models/dottxt.py",
+    "outlines/models/gemini.py",
     "outlines/models/mlxlm.py",
+    "outlines/models/openai.py",
     "outlines/models/vllm.py",
     "outlines/processors/tensor_adapters/mlx.py",
     "outlines/serve/serve.py",
+    "outlines/v0_legacy/models/anthropic.py",
+    "outlines/v0_legacy/models/dottxt.py",
+    "outlines/v0_legacy/models/exllamav2.py",
+    "outlines/v0_legacy/models/gemini.py",
+    "outlines/v0_legacy/models/mlxlm.py",
+    "outlines/v0_legacy/models/openai.py",
+    "outlines/v0_legacy/models/vllm.py",
+    "tests/*",
 ]
 branch = true
 relative_files = true
 
 [tool.coverage.report]
-omit = [
-    "tests/*",
-]
+show_missing = true
 exclude_lines = [
     "pragma: no cover",
     "if TYPE_CHECKING:",
     "\\.\\.\\.",
 ]
-show_missing = true
 
 [tool.diff_cover]
 compare_branch = "origin/main"

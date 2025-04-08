@@ -189,3 +189,12 @@ def test_json_legacy_openai_json_string(openai_model):
         generator.format_sequence('{"key": "value"}')
         == pyjson.loads('{"key": "value"}')
     )
+
+
+def test_json_legacy_openai_not_supported(openai_model):
+    with pytest.warns(
+        DeprecationWarning,
+        match="The `json` function is deprecated",
+    ):
+        with pytest.raises(ValueError, match="Cannot parse schema"):
+            json(openai_model, int)

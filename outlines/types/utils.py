@@ -22,9 +22,9 @@ import interegular
 from genson import SchemaBuilder
 from pydantic import BaseModel, create_model
 
-if sys.version_info >= (3, 12):
+if sys.version_info >= (3, 12): # pragma: no cover
     from typing import _TypedDictMeta  # type: ignore
-else:
+else: # pragma: no cover
     from typing_extensions import _TypedDictMeta  # type: ignore
 
 

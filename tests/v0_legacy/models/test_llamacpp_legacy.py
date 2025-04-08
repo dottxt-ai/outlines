@@ -3,7 +3,7 @@ from dataclasses import asdict
 
 import pytest
 from llama_cpp import Llama
-from llama_cpp.llama_tokenizer import LlamaHFTokenizer, LlamaTokenizer
+from llama_cpp.llama_tokenizer import LlamaHFTokenizer, LlamaTokenizer # type: ignore
 
 from outlines import models, samplers, generate
 from outlines.v0_legacy.models.llamacpp import llamacpp_params_adapter
@@ -36,10 +36,12 @@ def test_llamacpp_legacy_init():
             repo_id="M4-ai/TinyMistral-248M-v2-Instruct-GGUF",
             filename="TinyMistral-248M-v2-Instruct.Q4_K_M.gguf",
             tokenizer=LlamaHFTokenizer.from_pretrained("distilbert-base-uncased"),
+            n_ctx=0,
+            verbose=True,
         )
     assert isinstance(model, models.LlamaCpp)
     assert isinstance(model.model, Llama)
-    assert not model.model.verbose
+    assert model.model.verbose
     assert isinstance(model.model.tokenizer(), LlamaTokenizer)
 
 
@@ -119,7 +121,7 @@ def test_llamacpp_legacy_params_adapter_model_specific_params():
     )
     assert result.get("min_p") == 0.5
     assert result.get("repeat_penalty") == 1.5
-    assert not result.get("stream")
+    assert not hasattr(result, "stream")
 
 
 def test_llamacpp_legacy_call_generation():

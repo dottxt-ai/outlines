@@ -9,10 +9,6 @@ import outlines.types
 from outlines.applications import Application
 from outlines.caching import clear_cache, disable_cache, get_cache
 from outlines.generator import Generator
-from outlines.templates import Template, prompt
-from outlines.types import regex, json_schema, cfg
-from outlines.templates import Vision
-
 from outlines.models import (
     from_dottxt,
     from_openai,
@@ -24,6 +20,17 @@ from outlines.models import (
     from_mlxlm,
     from_vllm,
 )
+from outlines.templates import Template, prompt
+from outlines.types import regex, json_schema, cfg
+from outlines.templates import Vision
+
+from .v0_legacy import (
+    generate,
+    samplers,
+    models as legacy_models,
+    function,
+)
+from .v0_legacy.function import Function
 
 model_list = [
     "from_anthropic",
@@ -53,13 +60,6 @@ __all__ = [
 
 
 # v0 legacy
-
-# flake8: noqa: E402
-from .v0_legacy import generate
-from .v0_legacy import samplers
-from .v0_legacy import models as legacy_models
-from .v0_legacy import function
-from .v0_legacy.function import Function
 
 generate_module = ModuleType("generate")
 generate_module.__dict__.update(generate.__dict__)
