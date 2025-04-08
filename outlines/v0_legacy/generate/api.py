@@ -38,7 +38,7 @@ class GeneratorV0Adapter:
     """
 
     def __init__(self, model, output_type, sampler):
-        if not isinstance(model, V0GeneratorModel):  # type: ignore[misc]
+        if not isinstance(model, V0GeneratorModel):  # type: ignore
             raise ValueError(
                 "You can only use the v0 API with models that were already"
                 + f"available in v0. Got {type(model)}."
@@ -64,19 +64,14 @@ class GeneratorV0Adapter:
 
         if isinstance(self.model, LlamaCpp):
             adapter_function = llamacpp_params_adapter
-        elif isinstance(self.model, VLLM):
+        elif isinstance(self.model, VLLM): # pragma: no cover
             adapter_function = vllm_params_adapter
         elif isinstance(self.model, Transformers):
             adapter_function = transformers_params_adapter
-        elif isinstance(self.model, ExLlamaV2Model):
+        elif isinstance(self.model, ExLlamaV2Model): # pragma: no cover
             adapter_function = exllamav2_params_adapter
-        elif isinstance(self.model, MLXLM):
+        elif isinstance(self.model, MLXLM): # pragma: no cover
             adapter_function = mlxlm_params_adapter
-        else:
-            raise ValueError(
-                "You can only use the v0 API with models that were already"
-                + f"available in v0. Got {type(self.model)}."
-            )
 
         inference_params = adapter_function(
             self.sampling_params,
@@ -87,7 +82,7 @@ class GeneratorV0Adapter:
 
     def __call__(
         self,
-        prompts: Union[str, List[str], dict],
+        prompts: Union[str, List[str], Dict[str, Any]],
         max_tokens: Optional[int] = None,
         stop_at: Optional[Union[str, List[str]]] = None,
         seed: Optional[int] = None,
@@ -95,7 +90,9 @@ class GeneratorV0Adapter:
     ):
         result = self.generator(
             prompts,
-            **self.create_inference_params(max_tokens, stop_at, seed, **model_specific_params)
+            **self.create_inference_params(
+                max_tokens, stop_at, seed, **model_specific_params
+            )
         )
         if isinstance(result, list):
             return [self.format_sequence(r) for r in result]
@@ -104,7 +101,7 @@ class GeneratorV0Adapter:
 
     def stream(
         self,
-        prompts: Union[str, List[str], dict],
+        prompts: Union[str, List[str], Dict[str, Any]],
         max_tokens: Optional[int] = None,
         stop_at: Optional[Union[str, List[str]]] = None,
         seed: Optional[int] = None,
@@ -112,7 +109,9 @@ class GeneratorV0Adapter:
     ):
         return self.generator.stream(
             prompts,
-            **self.create_inference_params(max_tokens, stop_at, seed, **model_specific_params)
+            **self.create_inference_params(
+                max_tokens, stop_at, seed, **model_specific_params
+            )
         )
 
 
@@ -139,10 +138,10 @@ class GeneratorVisionV0Adapter(GeneratorV0Adapter):
             "images": media,
         }
 
-    def __call__( # type: ignore[override]
+    def __call__(  # type: ignore
         self,
         prompts: Union[str, List[str]],
-        media: Union[Any, List[Any]],
+        media: Union[str, List[str]],
         max_tokens: Optional[int] = None,
         stop_at: Optional[Union[str, List[str]]] = None,
         seed: Optional[int] = None,
@@ -157,10 +156,10 @@ class GeneratorVisionV0Adapter(GeneratorV0Adapter):
             **model_specific_params
         )
 
-    def stream( # type: ignore[override]
+    def stream(  # type: ignore
         self,
         prompts: Union[str, List[str]],
-        media: Union[Any, List[Any]],
+        media: Union[str, List[str]],
         max_tokens: Optional[int] = None,
         stop_at: Optional[Union[str, List[str]]] = None,
         seed: Optional[int] = None,
