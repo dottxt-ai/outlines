@@ -47,6 +47,15 @@ def test_application_initialization():
     assert application.generator is None
 
 
+def test_application_generator_no_model():
+    template = Template.from_string("Test {{ value }}")
+    output_type = None
+    application = Application(template, output_type)
+
+    with pytest.raises(ValueError):
+        application(None)
+
+
 def test_application_template_call(model):
     template = Template.from_string("Test {{ value }}")
     output_type = None

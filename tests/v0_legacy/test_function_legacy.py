@@ -33,6 +33,47 @@ def test_function_basic():
 
             result = fn("test")
             assert isinstance(result, BaseModel)
+            assert fn.generator is not None
+            fn("test")
+
+
+@responses.activate
+def test_function_from_github():
+    content = """
+import outlines
+from pydantic import BaseModel
+
+model = "gpt2"
+
+
+prompt = outlines.Template.from_string("{{ text }}")
+
+
+class User(BaseModel):
+    id: int
+    name: str
+
+
+fn = outlines.Function(
+    prompt,
+    User,
+    "gpt2",
+)
+"""
+    responses.add(
+        responses.GET,
+        "https://raw.githubusercontent.com/dottxt-ai/outlines/main/program.py",
+        body=content,
+        status=200,
+    )
+    with pytest.warns(
+        DeprecationWarning,
+        match="The `Function` class is deprecated",
+    ):
+        fn = Function.from_github("dottxt-ai/outlines/program", "fn")
+        assert (
+            str(type(fn)) == "<class 'outlines.v0_legacy.function.Function'>"
+        )
 
 
 def test_download_from_github_invalid():

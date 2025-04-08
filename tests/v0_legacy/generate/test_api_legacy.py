@@ -1,6 +1,7 @@
 from io import BytesIO
-from urllib.request import urlopen
 from dataclasses import asdict
+from typing import Generator
+from urllib.request import urlopen
 
 import pytest
 import transformers
@@ -9,7 +10,7 @@ from anthropic import Anthropic as AnthropicClient
 
 from outlines import models, samplers
 from outlines.generator import SteerableGenerator
-from outlines.models import TransformersVision  # type: ignore
+from outlines.v0_legacy.models.transformers_vision import TransformersVision
 from outlines.processors import RegexLogitsProcessor
 from outlines.v0_legacy.generate.api import (
     GeneratorV0Adapter,
@@ -40,8 +41,9 @@ def transformers_vision_model():
         match="The `transformers_vision` function is deprecated",
     ):
         return models.transformers_vision(
-            "erwanf/gpt2-mini",
-            transformers.AutoModelForCausalLM
+            "trl-internal-testing/tiny-LlavaForConditionalGeneration",
+            model_class=transformers.LlavaForConditionalGeneration,
+            processor_class=transformers.AutoProcessor,
         )
 
 
@@ -80,29 +82,29 @@ def test_generator_v0_adapter_init(transformers_model):
         match="You can only use the v0 API with models that were already"
         + "available in v0. Got <class 'outlines.models.anthropic.Anthropic'>.",
     ):
-        adapter = GeneratorV0Adapter(model, None, samplers.greedy())
+        GeneratorV0Adapter(model, None, samplers.greedy())
 
     # unknown output type
     with pytest.raises(
         TypeError,
         match="is currently not supported",
     ):
-        adapter = GeneratorV0Adapter(
+        GeneratorV0Adapter(
             transformers_model, type, samplers.greedy()
         )
 
     # valid initialization
-    adapter = GeneratorV0Adapter(
+    generator_v0_adapter = GeneratorV0Adapter(
         transformers_model,
         int,
         samplers.greedy(),
     )
-    assert isinstance(adapter, GeneratorV0Adapter)
-    assert adapter.model == transformers_model
-    assert adapter.sampling_params == asdict(samplers.greedy().sampling_params)
-    assert isinstance(adapter.generator, SteerableGenerator)
-    assert adapter.generator.model == transformers_model
-    assert isinstance(adapter.generator.logits_processor, RegexLogitsProcessor)
+    assert isinstance(generator_v0_adapter, GeneratorV0Adapter)
+    assert generator_v0_adapter.model == transformers_model
+    assert generator_v0_adapter.sampling_params == asdict(samplers.greedy().sampling_params)
+    assert isinstance(generator_v0_adapter.generator, SteerableGenerator)
+    assert generator_v0_adapter.generator.model == transformers_model
+    assert isinstance(generator_v0_adapter.generator.logits_processor, RegexLogitsProcessor)
 
 
 def test_generator_v0_adapter_create_inference_params(
@@ -119,21 +121,27 @@ def test_generator_v0_adapter_create_inference_params(
         "foo": "bar",
     }
 
-    generator = create_generator_v0_adapter(llama_cpp_model)
-    result = generator.create_inference_params(**args, **kwargs)
+    result = (
+        create_generator_v0_adapter(llama_cpp_model)
+        .create_inference_params(**args, **kwargs)
+    )
     assert isinstance(result, dict)
 
-    generator = create_generator_v0_adapter(transformers_vision_model)
-    result = generator.create_inference_params(**args, **kwargs)
+    result = (
+        create_generator_v0_adapter(transformers_vision_model)
+        .create_inference_params(**args, **kwargs)
+    )
     assert isinstance(result, dict)
 
-    generator = create_generator_v0_adapter(transformers_model)
-    result = generator.create_inference_params(**args, **kwargs)
+    result = (
+        create_generator_v0_adapter(transformers_model)
+        .create_inference_params(**args, **kwargs)
+    )
     assert isinstance(result, dict)
 
 
 def test_generator_vision_v0_adapter_merge_prompts_and_media(transformers_vision_model):
-    generator = create_generator_v0_adapter(transformers_vision_model)
+    generator_v0_adapter = create_generator_v0_adapter(transformers_vision_model)
     prompts = ["Hello, world!", "Goodbye, world!"]
     media = [
         img_from_url(
@@ -143,7 +151,36 @@ def test_generator_vision_v0_adapter_merge_prompts_and_media(transformers_vision
             "https://upload.wikimedia.org/wikipedia/commons/2/25/Siam_lilacpoint.jpg"
         )
     ]
-    result = generator.merge_prompts_and_media(prompts, media)
+    result = generator_v0_adapter.merge_prompts_and_media(prompts, media)
     assert isinstance(result, dict)
     assert result["text"] == prompts
     assert result["images"] == media
+
+
+def test_generator_v0_adapter_call_stream(llama_cpp_model, transformers_model):
+    generator_v0_adapter = create_generator_v0_adapter(transformers_model)
+    result = generator_v0_adapter("Hello, world!", max_tokens=10)
+    assert isinstance(result, str)
+    result = generator_v0_adapter(["Hello, world!", "Goodbye, world!"], max_tokens=10)
+    assert isinstance(result, list)
+    for r in result:
+        assert isinstance(r, str)
+
+    generator_v0_adapter = create_generator_v0_adapter(llama_cpp_model)
+    gen = generator_v0_adapter.stream("Hello, world!", max_tokens=10)
+    assert isinstance(gen, Generator)
+
+
+def test_generator_v0_adapter_vision_call_stream(transformers_vision_model):
+    generator_v0_adapter = create_generator_v0_adapter(transformers_vision_model)
+    media = img_from_url(
+        "https://upload.wikimedia.org/wikipedia/commons/2/25/Siam_lilacpoint.jpg"
+    )
+    result = generator_v0_adapter("Hello, world!<image>", media, max_tokens=10)
+    assert isinstance(result, str)
+    with pytest.raises(
+        NotImplementedError,
+        match="Streaming is not implemented for Transformers models",
+    ):
+        gen = generator_v0_adapter.stream("Hello, world!<image>", media, max_tokens=10)
+        assert isinstance(gen, Generator)

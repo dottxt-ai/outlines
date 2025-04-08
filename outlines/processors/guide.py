@@ -176,10 +176,6 @@ class CFGGuide(Guide):
         int
             Valid token ids.
         """
-        if state.parser_state is None:
-            yield self.eos_token_id
-            return
-
         for token_id in candidate_token_ids:
             if token_id == self.eos_token_id:
                 if self.can_terminate_state(state):

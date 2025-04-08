@@ -5,6 +5,15 @@ from importlib import reload
 
 import diskcache
 import pytest
+from diskcache import Cache, UNKNOWN
+from outlines.caching import CloudpickleDisk
+
+
+@pytest.fixture
+def temp_dir():
+    """Create a temporary directory for testing."""
+    directory = tempfile.mkdtemp()
+    yield directory
 
 
 @pytest.fixture

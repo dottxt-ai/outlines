@@ -78,7 +78,7 @@ def llamacpp_params_adapter(
         kwargs["repeat_penalty"] = 1.0
 
     # The choice to stream or not should happen via the high-level API
-    kwargs["stream"] = False
+    kwargs.pop("stream", None)
 
     return kwargs
 

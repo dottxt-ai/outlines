@@ -27,17 +27,14 @@ class Vision:
 
     def __post_init__(self):
         image = self.image
+
+        if not image.format:
+            raise TypeError("Could not read the format of the image passed to the model.")
+
         buffer = BytesIO()
         image.save(buffer, format=image.format)
         self.image_str = base64.b64encode(buffer.getvalue()).decode("utf-8")
-
-        image_format = image.format
-        if image_format is not None:
-            self.image_format = f"image/{image_format.lower()}"
-        else:
-            raise TypeError(
-                "Could not read the format of the image passed to the model."
-            )
+        self.image_format = f"image/{image.format.lower()}"
 
 
 @dataclass
@@ -230,7 +227,7 @@ def create_jinja_env(
     - `source`: get a function's source code
     - `signature`: get a function's signature
     - `args`: get a function's arguments
-    - `schema`: isplay a JSON Schema
+    - `schema`: display a JSON Schema
 
     Users may pass additional filters, and/or override existing ones.
 
@@ -314,7 +311,7 @@ def get_fn_source(fn: Callable):
     re_search = re.search(re.compile(r"(\bdef\b.*)", re.DOTALL), source)
     if re_search is not None:
         source = re_search.group(0)
-    else:
+    else:  # pragma: no cover
         raise TypeError("Could not read the function's source code")
 
     return source
@@ -327,7 +324,7 @@ def get_fn_signature(fn: Callable):
 
     source = textwrap.dedent(inspect.getsource(fn))
     re_search = re.search(re.compile(r"\(([^)]+)\)"), source)
-    if re_search is None:
+    if re_search is None:  # pragma: no cover
         signature = ""
     else:
         signature = re_search.group(1)
@@ -351,9 +348,6 @@ def get_schema_dict(model: Dict):
 @get_schema.register(type(pydantic.BaseModel))
 def get_schema_pydantic(model: Type[pydantic.BaseModel]):
     """Return the schema of a Pydantic model."""
-    if not isinstance(model, type(pydantic.BaseModel)):
-        raise TypeError("The `schema` filter only applies to Pydantic models.")
-
     if hasattr(model, "model_json_schema"):
         def_key = "$defs"
         raw_schema = model.model_json_schema()

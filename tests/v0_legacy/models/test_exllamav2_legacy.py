@@ -3,7 +3,7 @@ import warnings
 import pytest
 
 try:
-    import exllamav2  # noqa: F401
+    import exllamav2  # type: ignore
     HAS_EXV2 = True
 except ImportError:
     HAS_EXV2 = False
@@ -12,7 +12,6 @@ except ImportError:
     )
 
 from outlines import models, samplers, generate
-from outlines.v0_legacy.models.exllamav2 import exllamav2_params_adapter
 from outlines.v0_legacy.generate.api import GeneratorV0Adapter
 
 pytestmark = pytest.mark.skipif(
@@ -59,10 +58,19 @@ def test_exllamav2_legacy_call(model):
     )
     assert isinstance(generator, GeneratorV0Adapter)
 
-    result = generator(["Write a short story.", "Write a poem."], 10, "e", 2)
+    result = generator(["Write a short story.", "Write a poem."], 2, "e", 2)
     assert isinstance(result, list)
     for sequence in result:
         assert isinstance(sequence, list)
         for s in sequence:
             assert isinstance(s, str)
             assert len(s) < 20
+
+    # stream
+    generator = generate.text(model)
+    assert isinstance(generator, GeneratorV0Adapter)
+
+    result = generator.stream("Respond with a single word.", 2)
+    assert isinstance(result, GeneratorV0Adapter)
+    for r in result:
+        assert isinstance(r, str)

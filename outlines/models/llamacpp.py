@@ -1,4 +1,3 @@
-import pickle
 import warnings
 from functools import singledispatchmethod
 from typing import TYPE_CHECKING, Dict, Iterator, List, Optional, Set, Tuple, Union
@@ -66,7 +65,7 @@ class LlamaCppTokenizer(Tokenizer):
             from transformers.file_utils import SPIECE_UNDERLINE
 
             token_str = self._hf_tokenizer.convert_tokens_to_string([token])
-            if token.startswith(SPIECE_UNDERLINE) or token == "<0x20>":
+            if token.startswith(SPIECE_UNDERLINE) or token == "<0x20>": # pragma: no cover
                 token_str = " " + token_str
             return token_str
         else:
@@ -78,8 +77,15 @@ class LlamaCppTokenizer(Tokenizer):
         return self.__getstate__() == other.__getstate__()
 
     def __hash__(self):
+        # We create a custom hash as pickle.dumps(self) is not stable
         if self._hash is None:
-            self._hash = hash(pickle.dumps(self))
+            self._hash = hash((
+                tuple(sorted(self.vocabulary.items())),
+                self.eos_token_id,
+                self.eos_token,
+                self.pad_token_id,
+                tuple(sorted(self.special_tokens)),
+            ))
         return self._hash
 
     def __getstate__(self):
@@ -224,7 +230,7 @@ class LlamaCpp(Model):
 
         return token_generator()
 
-    def load_lora(self, adapter_path: str):
+    def load_lora(self, adapter_path: str):  # pragma: no cover
         warnings.warn("""
             The `load_lora` method is deprecated starting from v1.0.0.
             Support for it will be removed in v1.5.0.

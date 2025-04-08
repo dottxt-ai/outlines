@@ -51,12 +51,11 @@ from outlines.types.utils import (
     is_typing_list,
     is_typing_tuple,
     is_typing_dict,
-    is_interegular_fsm,
 )
 
-if sys.version_info >= (3, 12):
+if sys.version_info >= (3, 12):  # pragma: no cover
     from typing import _TypedDictMeta  # type: ignore
-else:
+else:  # pragma: no cover
     from typing_extensions import _TypedDictMeta  # type: ignore
 
 
@@ -299,7 +298,7 @@ class JsonSchema(Term):
             self_dict = json.loads(self.schema)
             other_dict = json.loads(other.schema)
             return self_dict == other_dict
-        except json.JSONDecodeError:
+        except json.JSONDecodeError:  # pragma: no cover
             return self.schema == other.schema
 
     @classmethod

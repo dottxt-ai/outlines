@@ -132,3 +132,4 @@ def test_structured_cfg_logits_processor_call(tokenizer):
     input_ids = torch.randint(0, len(vocab_token_ids), (1, 10))
     output = processor(input_ids, logits)
     assert output.shape == (1, len(vocab_token_ids))
+    processor(input_ids, logits)
