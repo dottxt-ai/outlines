@@ -4,15 +4,7 @@ import copy
 import functools
 import json
 import warnings
-from typing import (
-    Any,
-    Callable,
-    Dict,
-    List,
-    Optional,
-    TYPE_CHECKING,
-    Union
-)
+from typing import Callable, Dict, List, Optional, Union, TYPE_CHECKING
 from dataclasses import asdict, dataclass, field, replace
 
 from pydantic import BaseModel, TypeAdapter
@@ -182,7 +174,7 @@ class OpenAI(Model):
     def __init__(
         self,
         client: Union["OpenAIClient", "AzureOpenAIClient"],
-        model_name: Any,
+        model_name: Union[str, "OpenAIConfig"],
         **kwargs
     ):
         # legacy mode
@@ -282,7 +274,7 @@ class OpenAI(Model):
 
     def new_with_replacements(self, **kwargs):
         if hasattr(self, "legacy_instance"):
-            return self.legacy_instance.new_with_replacements(**kwargs)
+            return self.legacy_instance.new_with_replacements(self, **kwargs)
         raise NotImplementedError("This method is only available in legacy mode")
 
     def __str__(self):
@@ -455,9 +447,11 @@ class OpenAILegacy():
             "Streaming is currently not supported for the OpenAI API"
         )
 
-    def new_with_replacements(self, **kwargs):
-        new_instance = copy.copy(self)
-        new_instance.config = replace(new_instance.config, **kwargs)
+    def new_with_replacements(self, model, **kwargs):
+        new_instance = copy.copy(model)
+        new_instance.legacy_instance.config = replace(
+            new_instance.legacy_instance.config, **kwargs
+        )
         return new_instance
 
     def __str__(self):

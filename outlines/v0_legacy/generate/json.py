@@ -78,10 +78,10 @@ def json(
     )
 
     if isinstance(model, OpenAI):
-        return json_openai(model, schema_object, sampler, whitespace_pattern)
+        return json_openai(model, schema_object, sampler)
 
     if is_callable(schema_object):
-        json_schema = str(get_schema_from_signature(schema_object))  # type: ignore
+        json_schema = JsonSchema(get_schema_from_signature(schema_object))  # type: ignore
     else:
         json_schema = JsonSchema(schema_object, whitespace_pattern)
 
@@ -106,7 +106,6 @@ def json_openai(
     model,
     schema_object: Union[str, object, Callable],
     sampler: Sampler = multinomial(),
-    whitespace_pattern: Optional[str] = None,
 ):
     if not isinstance(sampler, multinomial):
         raise NotImplementedError(

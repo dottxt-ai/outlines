@@ -15,7 +15,7 @@ from typing import (
 
 if TYPE_CHECKING:
     import torch.LongTensor
-    from exllamav2.generator import ExLlamaV2DynamicGenerator, ExLlamaV2Sampler
+    from exllamav2.generator import ExLlamaV2DynamicGenerator, ExLlamaV2Sampler  # type: ignore
 
 
 def exllamav2_params_adapter(sampling_params: dict, generation_params: dict, kwargs: dict) -> dict:
@@ -332,7 +332,7 @@ def exl2(
 
     """
     try:
-        from exllamav2 import (
+        from exllamav2 import (  # type: ignore
             ExLlamaV2,
             ExLlamaV2Cache,
             ExLlamaV2Cache_Q4,

@@ -1,8 +1,8 @@
 import re
 from enum import Enum
 
-import pytest
 from pydantic import BaseModel
+import pytest
 import transformers
 
 import outlines
@@ -13,9 +13,18 @@ from outlines.models.transformers import (
 )
 from outlines.types import Regex
 
+
 TEST_MODEL = "erwanf/gpt2-mini"
-TEST_MODEL_SEQ2SEQ = "hf-internal-testing/tiny-random-t5"
 TEST_MODEL_MAMBA = "hf-internal-testing/tiny-random-MambaForCausalLM"
+TEST_MODEL_BART = "sshleifer/bart-tiny-random"
+
+
+def test_transformers_instantiate_invalid():
+    with pytest.raises(ValueError):
+        outlines.from_transformers(
+            transformers.AutoModelForCausalLM.from_pretrained(TEST_MODEL),
+            int,
+        )
 
 
 def test_transformers_instantiate_simple():
@@ -79,13 +88,25 @@ def model():
     return model
 
 
+@pytest.fixture
+def model_bart():
+    model = outlines.from_transformers(
+        transformers.BartForConditionalGeneration.from_pretrained(TEST_MODEL_BART),
+        transformers.BartTokenizer.from_pretrained(TEST_MODEL_BART),
+    )
+    return model
+
+
 def test_transformers_simple(model):
     result = model.generate("Respond with one word. Not more.", None)
     assert isinstance(result, str)
 
 
-def test_transformers_call(model):
+def test_transformers_call(model, model_bart):
     result = model("Respond with one word. Not more.")
+    assert isinstance(result, str)
+
+    result = model_bart("Respond with one word. Not more.")
     assert isinstance(result, str)
 
 
