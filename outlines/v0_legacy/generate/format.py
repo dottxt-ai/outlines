@@ -18,7 +18,8 @@ def format(
     """Generate structured data that can be parsed as a Python type.
 
     This function is deprecated starting from v1.0.0. Do not use it.
-    Instead, use the `Generator` object instead as such for instance:
+    Support for it will be removed in v1.5.0.
+    Use the `Generator` object instead::
 
     ```python
     from outlines import Generator
@@ -47,7 +48,7 @@ def format(
     warnings.warn("""
         The `format` function is deprecated starting from v1.0.0.
         Do not use it. Support for it will be removed in v1.5.0.
-        Instead, use the `Generator` object instead as such:
+        Use the `Generator` object instead:
         ```python
         from outlines import Generator
         generator = Generator(model, int)
