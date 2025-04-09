@@ -5,17 +5,29 @@ title: ''
 
 # Outlines
 
-Outlines is a Python library maintained by [.TXT](https://dottxt.co) that guarantees structured output from 
-large language models. It ensures LLMs speak the language of your 
-application by making them follow specific formats such as JSON, regular expressions, or context-free grammars.
+Outlines is a Python library from [.TXT](https://dottxt.co) that guarantees structured output from 
+large language models. It ensures LLMs speak the language of your application by making them follow specific formats such as JSON, regular expressions, or context-free grammars.
 
-## Why use Outlines?
+> [!NOTE]
+> We need a "get started" button here that's super obvious
 
-- It's fast
-- Reliable LLM output
-- Best-in-class JSON schema feature support
-- Works with most popular inference backends like Transformers, vLLM, llama.cpp, etc.
-- Use any open-weight model
+{{< cards >}}
+  {{< card title="Get started" link="/docs/getting_started" >}}
+{{< /cards >}}
+
+## Features
+
+> [!NOTE]
+> These cards should have action/callout links to go places
+
+{{< cards >}}
+  {{< card title="Reliable" subtitle="Guaranteed schema compliance -- always valid JSON" icon="shield-check" >}}
+  {{< card title="Feature-rich" subtitle="Supports a large proportion of the JSON Schema spec, along with regex and context-free grammars" icon="puzzle" >}}
+  {{< card title="Fast" subtitle="Outlines has negligible runtime overhead, and fast compilation times" icon="lightning-bolt" >}}
+  {{< card title="Universal" subtitle="Outlines is a powered by Rust, and can be easily bound to other languages" icon="cog" >}}
+  {{< card title="Simple" subtitle="Outlines is a low-abstraction library. Write code the way you normally do with LLMs. No agent frameworks needed." icon="light-bulb" >}}
+  {{< card title="Powerful" subtitle="Manage prompt complexity with prompt templating" icon="search" >}}
+{{< /cards >}}
 
 ## Installation
 
@@ -91,3 +103,19 @@ Result:
 > Insert multiple choice example here
 
 ## Supported models
+
+> [!NOTE]
+> Provide full model list with links to docs about each model
+
+- vLLM
+- Transformers
+- OpenAI
+
+
+## About .txt
+
+Outlines is built with ❤️ by [.txt](https://dottxt.co). 
+
+.txt solves the critical problem of reliable structured output generation for large language models. Our commercially-licensed libraries ensure 100% compliance with JSON Schema, regular expressions and context-free grammars while adding only microseconds of latency. Unlike open-source alternatives, we offer superior reliability, performance, and enterprise support.
+
+Schedule a [demo call](https://cal.com/team/dottxt/sales) to learn more about how .txt can help you integrate LLMs into production environments without additional engineering resources.
