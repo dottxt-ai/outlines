@@ -13,6 +13,9 @@ from outlines.types.dsl import (
     between,
     one_or_more,
     zero_or_more,
+    # deprecated
+    repeat,
+    times,
 )
 
 # Python types
