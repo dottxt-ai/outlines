@@ -1,6 +1,7 @@
 <div align="center" style="margin-bottom: 1em;">
 
-<img src="./docs/assets/images/logo.png" alt="Outlines Logo" width=500></img>
+<img src="./docs/assets/images/logo-light-mode.svg#gh-light-mode-only" alt="Outlines Logo" width=500></img>
+<img src="./docs/assets/images/logo-dark-mode.svg#gh-dark-mode-only" alt="Outlines Logo" width=500></img>
 
 
  🗒️ *Make LLMs speak the language of every application.* 🗒️
@@ -48,10 +49,11 @@ Outlines  has new releases and features coming every week. Make sure to ⭐ star
 ## .txt company
 
 <div align="center">
-<img src="./docs/assets/images/dottxt.png" alt="Outlines Logo" width=100></img>
+<img src="./docs/assets/images/dottxt-light.svg#gh-light-mode-only" alt="dottxt logo" width=100></img>
+<img src="./docs/assets/images/dottxt-dark.svg#gh-dark-mode-only" alt="dottxt logo" width=100></img>
 </div>
 
-We started a company to keep pushing the boundaries of structured generation. Learn more about [.txt](https://twitter.com/dottxtai), and  [give our .json API a try](https://h1xbpbfsf0w.typeform.com/to/ZgBCvJHF) if you need a hosted solution ✨
+We started a company to keep pushing the boundaries of structured generation. Learn more about [.txt](https://dottxt.ai), and  [license our commercial product](https://h1xbpbfsf0w.typeform.com/to/ZgBCvJHF) if you need SOTA performance and quality ✨
 
 ## Structured generation
 
