@@ -25,6 +25,9 @@ from outlines.types.dsl import (
     exactly,
     regex,
     json_schema,
+    # deprecated
+    repeat,
+    times,
 )
 
 
@@ -250,6 +253,49 @@ def test_dsl_aliases():
 
     test = json_schema('{"type": "string"}')
     assert isinstance(test, JsonSchema)
+
+
+def test_dsl_repeat():
+    with pytest.warns(
+        DeprecationWarning,
+        match="The `repeat` function/method is deprecated",
+    ):
+        a = String("a")
+
+        # error missing min_count or max_count
+        with pytest.raises(
+            ValueError,
+            match="You must provide a value for at least `min_count` or "
+            "`max_count`",
+        ):
+            repeat(a, None, None)
+
+        # at_least
+        assert repeat(a, 2, None) == at_least(2, a)
+        assert repeat("a", 2, None) == at_least(2, "a")
+        assert a.repeat(2, None) == a.at_least(2)
+
+        # at_most
+        assert repeat(a, None, 2) == at_most(2, a)
+        assert repeat("a", None, 2) == at_most(2, "a")
+        assert a.repeat(None, 2) == a.at_most(2)
+
+        # between
+        assert repeat(a, 1, 2) == between(1, 2, a)
+        assert repeat("a", 1, 2) == between(1, 2, "a")
+        assert a.repeat(1, 2) == a.between(1, 2)
+
+
+def test_dsl_times():
+    with pytest.warns(
+        DeprecationWarning,
+        match="The `times` function/method is deprecated",
+    ):
+        a = String("a")
+
+        assert times(a, 2) == exactly(2, a)
+        assert times("a", 2) == exactly(2, "a")
+        assert a.times(2) == a.exactly(2)
 
 
 def test_dsl_term_pydantic_simple():
