@@ -1,0 +1,5 @@
+Objective: {{ objective }}
+Task: {{ task }}
+
+Please perform the task and provide a concise result in the following format:
+Result: [Your concise result here]

@@ -1,0 +1,7 @@
+Tasks: {{ tasks }}
+Next Task ID: {{ next_task_id }}
+
+Please prioritize the tasks based on their importance and urgency to achieve the objective.
+Provide the prioritized tasks in the following format:
+1. [Task ID]. [Task description]
+2. [Task ID]. [Task description]
