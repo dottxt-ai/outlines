@@ -87,19 +87,8 @@ samples: list[Example] = [
 # https://huggingface.co/mosaicml/mpt-7b-8k-instruct
 # Motivation: Reasonably large model that fits on a single GPU and has been fine-tuned for a larger context window
 model_name = "mosaicml/mpt-7b-8k-instruct"
-config = transformers.AutoConfig.from_pretrained(
-    "mosaicml/mpt-7b-8k-instruct", trust_remote_code=True
-)
-config.init_device = "meta"
 model = outlines.from_transformers(
-    transformers.AutoModelForCausalLM.from_pretrained(
-        model_name,
-        device="cuda",
-        config=config,
-        trust_remote_code=True,
-        torch_dtype=torch.bfloat16,
-        device_map={"": 0},
-    ),
+    transformers.AutoModelForCausalLM.from_pretrained(model_name),
     transformers.AutoTokenizer.from_pretrained(model_name),
 )
 
@@ -107,7 +96,7 @@ new_description = "I'm a laid-back lawyer who spends a lot of his free-time gami
 
 dating_profile_prompt = Template.from_file("prompts/dating_profile.txt")
 prompt = dating_profile_prompt(description=new_description, examples=samples)
-profile = model(prompt, outlines.json_schema(DatingProfile))  # type: ignore
+profile = model(prompt, outlines.json_schema(DatingProfile), max_tokens=500)  # type: ignore
 print(profile)
 
 # Sample generated profiles

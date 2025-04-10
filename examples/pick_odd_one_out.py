@@ -10,35 +10,37 @@ References
 
 """
 
+import json
+
 import openai
 
 import outlines
+from outlines import Generator
+from outlines.types import JsonSchema
 
 
-build_ooo_prompt = outlines.Template.from_string(
-    """
-    Pick the odd word out: skirt, dress, pen, jacket.
-    skirt is clothing, dress is clothing, pen is an object, jacket is clothing.
-    So the odd one is pen.
-
-    Pick the odd word out: Spain, France, German, England, Singapore.
-    Spain is a country, France is a country, German is a language, ...
-    So the odd one is German.
-
-    Pick the odd word out: {{ options | join(", ") }}.
-
-    """
-)
+build_ooo_prompt = outlines.Template.from_file("prompts/pick_odd_one_out.txt")
 
 options = ["sea", "mountains", "plains", "sock"]
+options_schema = JsonSchema({
+    "type": "object",
+    "properties": {
+        "result": {
+            "type": "string",
+            "enum": options
+        }
+    },
+    "required": ["result"]
+})
 
 model = outlines.from_openai(openai.OpenAI(), "gpt-4o-mini")
-gen_text = outlines.generate.text(model)
-gen_choice = outlines.generate.choice(model, options)
+gen_text = Generator(model)
+gen_choice = Generator(model, options_schema)
 
-prompt = build_ooo_prompt(options)
-reasoning = gen_text(prompt, stop_at=["Pick the odd word", "So the odd one"])
+prompt = build_ooo_prompt(options=options)
+reasoning = gen_text(prompt, stop=["Pick the odd word", "So the odd one"])
 prompt += reasoning
-result = gen_choice(prompt)
+raw_result = gen_choice(prompt)
+result = json.loads(raw_result)["result"]
 prompt += result
 print(result)
