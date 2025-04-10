@@ -1,0 +1,9 @@
+Pick the odd word out: skirt, dress, pen, jacket.
+skirt is clothing, dress is clothing, pen is an object, jacket is clothing.
+So the odd one is pen.
+
+Pick the odd word out: Spain, France, German, England, Singapore.
+Spain is a country, France is a country, German is a language, ...
+So the odd one is German.
+
+Pick the odd word out: {{ options | join(", ") }}.
