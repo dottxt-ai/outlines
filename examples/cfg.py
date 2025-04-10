@@ -1,7 +1,8 @@
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 import outlines
-from outlines.types import Cfg
+from outlines.types import CFG
+
 
 nlamb_grammar = r"""
     start: sentence
@@ -85,12 +86,12 @@ model = outlines.from_transformers(
 
 batch_size = 10
 for grammar in [nlamb_grammar, calc_grammar, dyck_grammar, json_grammar]:
-    generator = outlines.Generator(model, Cfg(grammar))
+    generator = outlines.Generator(model, CFG(grammar))
     sequences = generator([" "] * batch_size, max_tokens=model.model.config.n_positions)
     for seq in sequences:
         try:
-            parse = generator.fsm.parser.parse(seq)
+            parse = generator.logits_processor.guide.parser.parse(seq)
             assert parse is not None
             print("SUCCESS", seq)
-        except Exception:  # will also fail if goes over max_tokens / context window
+        except Exception:  # will also fail if goes over max_new_tokens / context window
             print("FAILURE", seq)

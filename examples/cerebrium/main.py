@@ -1,5 +1,7 @@
-import outlines
 from transformers import AutoModelForCausalLM, AutoTokenizer
+
+import outlines
+
 
 model = outlines.from_transformers(
     AutoModelForCausalLM.from_pretrained("mistralai/Mistral-7B-Instruct-v0.2"),

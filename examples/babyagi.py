@@ -77,11 +77,14 @@ def one_cycle(objective: str, task_list, next_task_id: int):
 
     task = task_list.popleft()
 
-    prompt = perform_task_ppt(objective, task)
+    prompt = perform_task_ppt(objective=objective, task=task)
     result = complete(prompt)
 
     prompt = create_tasks_ppt(
-        objective, first_task["task_name"], result, [first_task["task_name"]]
+        objective=objective,
+        task=first_task["task_name"],
+        result=result,
+        previous_tasks=[first_task["task_name"]],
     )
     new_tasks = complete(prompt)
 
@@ -92,7 +95,9 @@ def one_cycle(objective: str, task_list, next_task_id: int):
         task_list.append({"task_id": next_task_id, "task_name": task})
 
     prompt = prioritize_tasks_ppt(
-        objective, [task["task_name"] for task in task_list], next_task_id
+        objective=objective,
+        tasks=[task["task_name"] for task in task_list],
+        next_task_id=next_task_id,
     )
     prioritized_tasks = complete(prompt)
 
