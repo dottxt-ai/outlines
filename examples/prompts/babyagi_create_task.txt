@@ -1,0 +1,9 @@
+Objective: {{ objective }}
+Current Task: {{ task }}
+Result: {{ result }}
+Previous Tasks: {{ previous_tasks }}
+
+Based on the result, create a list of new tasks that will help achieve the objective.
+Please provide the tasks in the following format:
+1. [Task description]
+2. [Task description]
