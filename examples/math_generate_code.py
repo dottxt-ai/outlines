@@ -37,7 +37,7 @@ def execute_code(code):
     return result
 
 
-prompt = answer_with_code_prompt(question, examples)
+prompt = answer_with_code_prompt(question=question, examples=examples)
 model = outlines.from_openai(openai.OpenAI(), "gpt-4o-mini")
 answer = model(prompt)
 result = execute_code(answer)

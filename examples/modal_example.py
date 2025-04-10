@@ -60,7 +60,7 @@ schema = """{
 }"""
 
 
-@app.function(image=outlines_image, gpu=modal.gpu.A100(memory=80))
+@app.function(image=outlines_image, gpu="A100-40GB")
 def generate(
     prompt: str = "Amiri, a 53 year old warrior woman with a sword and leather armor.",
 ):
