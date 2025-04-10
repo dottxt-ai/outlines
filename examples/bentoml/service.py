@@ -76,7 +76,7 @@ class Outlines:
     ) -> t.Dict[str, t.Any]:
         import outlines
 
-        generator = outlines.generate.json(self.model, json_schema)
+        generator = outlines.Generator(self.model, outlines.json_schema(json_schema))
         character = generator(prompt)
 
         return character
