@@ -200,6 +200,7 @@ class Transformers:
         generation_parameters: GenerationParameters,
         logits_processor: Optional["OutlinesLogitsProcessor"],
         sampling_parameters: SamplingParameters,
+        tokenizer_parameters: Optional[dict] = None,
     ) -> Union[str, List[str], List[List[str]]]:
         """Generate text using `transformers`.
 
@@ -222,11 +223,8 @@ class Transformers:
         -------
         The generated text
         """
-        if isinstance(prompts, str):
-            # convert to 2d
-            input_ids, attention_mask = self.tokenizer.encode([prompts])
-        else:
-            input_ids, attention_mask = self.tokenizer.encode(prompts)
+        prompts = prompts if isinstance(prompts, list) else [prompts]
+        input_ids, attention_mask = self.tokenizer.encode(prompts, **tokenizer_parameters)
 
         inputs = {
             "input_ids": input_ids.to(self.model.device),
