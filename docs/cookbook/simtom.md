@@ -17,7 +17,7 @@ SimToM calls an LLM with two consecutive prompts:
 
 To implement SimToM with Outlines, we will need to:
 
-1. Write the prompts with [prompt functions](https://dottxt-ai.github.io/outlines/latest/reference/prompting/).
+1. Write the prompts with [prompt templates](https://dottxt-ai.github.io/outlines/latest/reference/prompting/).
 2. Define the JSON object each prompt will return using Pydantic.
 3. Generate responses with a Mistral model using the [transformers integration](https://dottxt-ai.github.io/outlines/latest/reference/models/transformers/).
 
@@ -30,29 +30,8 @@ The authors have shared their code, prompts and data in [this GitHub repository]
 ```python
 from outlines import Template
 
-
-perspective_taking = Template.from_string(
-    """<s>[INST] The following is a sequence of events about some characters, that takes place in multiple locations.
-    Your job is to output only the events that the specified character, {{character}}, knows about.
-
-    Here are a few rules:
-    1. A character knows about all events that they do.
-    2. If a character is in a certain room/location, that character knows about all other events that happens in the room. This includes other characters leaving or exiting the location, the locations of objects in that location, and whether somebody moves an object to another place.
-    3. If a character leaves a location, and is NOT in that location, they no longer know about any events that happen within that location. However, they can re-enter the location.
-
-    Story: {{story}}
-    What events does {{character}} know about? Only output the events according to the above rules, do not provide an explanation. [/INST]""" # noqa
-)
-
-simulation = Template.from_string(
-    """<s>[INST] {% for event in events %}
-    {{event}}
-    {% endfor %}
-    You are {{name}}.
-    Based on the above information, answer the following question:
-    {{question}}
-    You must choose one of the above choices, do not say there is not enough information. Answer with a single word, do not output anything else. [/INST]""" # noqa
-)
+perspective_taking = Template.from_file("prompt_templates/simtom_prospective_taking.txt")
+simulation = Template.from_file("prompt_templates/simtom_simulation.txt")
 ```
 
 ### JSON Structured Generation
@@ -65,12 +44,10 @@ We will need two Pydantic models for SimToM, one for each prompt:
 from pydantic import BaseModel, Field
 from typing import List
 
-
 class PerspectiveTaking(BaseModel):
     """This is for the first prompt."""
     character: str = Field(description="The character we extract the events for.")
     events: List[str] = Field(description="All events that the character knows about.")
-
 
 class Simulation(BaseModel):
     """This is for the second prompt."""
@@ -97,30 +74,37 @@ character = "Aria"
 We load `Mistral-7B-Instruct-v0.3`, create the prompt using the template we defined earlier, and generate a structured response. As a reminder, the goal of the first call is to get all the events a character, `Aria`, knows about.
 
 ```python
+import transformers
+import outlines
 # Load an LLM from Hugging Face
 MODEL_NAME = "mistral-community/Mistral-7B-Instruct-v0.3"
-model = outlines.models.transformers(MODEL_NAME, device="cuda")
+model = outlines.from_transformers(
+    transformers.AutoModelForCausalLM.from_pretrained(MODEL_NAME),
+    transformers.AutoTokenizer.from_pretrained(MODEL_NAME),
+)
 
 perspective_prompt = perspective_taking(story=story, character=character)
 
 # Call Mistral 7B with the first prompt
-generator = outlines.generate.json(model, PerspectiveTaking)
-perspective = generator(perspective_prompt)
+generator = outlines.Generator(model, PerspectiveTaking)
+perspective = generator(perspective_prompt, max_new_tokens=1024)
 
-print(perspective.model_dump())
+print(perspective)
 # {'character': 'Aria', 'events': ['1 Aria entered the front_yard.', '3 The grapefruit is in the green_bucket.', '4 Aria moved the grapefruit to the blue_container.']}
 ```
 
 Not bad! We will now generate the second prompt with those events.
 
 ```python
-sim_prompt = simulation(events=perspective.events, name=character, question=question)
+import json
+
+sim_prompt = simulation(events=json.loads(perspective)["events"], name=character, question=question)
 
 # Call Mistral 7B with the second prompt
-generator = outlines.generate.json(model, Simulation)
-result = generator(sim_prompt)
+generator = outlines.Generator(model, Simulation)
+result = generator(sim_prompt, max_new_tokens=1024)
 
-print(result.model_dump())
+print(result)
 # {'answer': 'green_bucket'}
 ```
 

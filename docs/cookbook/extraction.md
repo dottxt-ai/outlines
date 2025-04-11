@@ -7,16 +7,20 @@ Getting LLMs to output the extracted entities in a structured format can be chal
 As always, we start with initializing the model. We will be using a quantized version of Mistal-7B-v0.1 (we're GPU poor):
 
 ```python
+import transformers
 import outlines
 
-model = outlines.models.transformers("TheBloke/Mistral-7B-OpenOrca-AWQ", device="cuda")
+model_name = "microsoft/Phi-3-mini-4k-instruct"
+model = outlines.from_transformers(
+    transformers.AutoModelForCausalLM.from_pretrained(model_name, device_map="cuda"),
+    transformers.AutoTokenizer.from_pretrained(model_name),
+)
 ```
 
 And we will be using the following prompt template:
 
 ```python
 from outlines import Template
-
 
 take_order = Template.from_string(
     """You are the owner of a pizza parlor. Customers \
@@ -70,14 +74,14 @@ orders = [
     "Hi! I would like to order two pepperonni pizzas and would like them in 30mins.",
     "Is it possible to get 12 margheritas?"
 ]
-prompts = [take_order(order) for order in orders]
+prompts = [take_order(order=order) for order in orders]
 
-generator = outlines.generate.json(model, Order)
+generator = outlines.Generator(model, Order)
 
 results = generator(prompts)
 print(results)
-# [Order(pizza=<Pizza.pepperonni: 'Pepperoni'>, number=2),
-#  Order(pizza=<Pizza.margherita: 'Margherita'>, number=12)]
+# ['{"pizza": "Pepperoni", "number": 2}',
+# '{"pizza": "Margherita", "number": 12}']
 ```
 
 There are several ways you could improve this example:

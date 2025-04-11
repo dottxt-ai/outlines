@@ -4,7 +4,7 @@ from mlx_lm import load
 from pydantic import BaseModel, Field
 
 import outlines
-from outlines import Generator
+from outlines import Generator, Template
 
 
 # Load the model
@@ -19,31 +19,36 @@ class Event(BaseModel):
         default=None, description="date of the event if available in iso format"
     )
 
+# Load the prompt template from a string
+prompt_template = Template.from_string(
+    """
+    Today's date and time are {{ now }}
+    Given a user message, extract information of the event like date and time in iso format, location and title.
+    If the given date is relative, think step by step to find the right date.
+    Here is the message:
+    {{ message }}
+    """
+)
 
 # Get the current date and time
 now = datetime.now().strftime("%A %d %B %Y and it's %H:%M")
 
-# Define the prompt
-prompt = f"""
-Today's date and time are {now}
-Given a user message, extract information of the event like date and time in iso format, location and title.
-If the given date is relative, think step by step to find the right date.
-Here is the message:
-"""
-
 # Sample message
-message = """Hello Kitty, my grandmother will be here , I think it's better to postpone our
+message = """Hello Kitty, my grandmother will be here, I think it's better to postpone our
 appointment to review math lessons to next Friday at 2pm at the same place, 3 avenue des tanneurs, I think that one hour will be enough
 see you 😘 """
 
 # Create the generator
 generator = Generator(model, Event)
 
+# Create the prompt
+prompt = prompt_template(now=now, message=message)
+
 # Extract the event information
-event = generator(prompt + message)
+event = generator(prompt)
 
 # Print the current date and time
 print(f"Today: {now}")
 
-# Print the extracted event information in JSON format
-print(event.json())
+# Print the extracted event information
+print(event)

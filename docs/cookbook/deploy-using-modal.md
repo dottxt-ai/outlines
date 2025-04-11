@@ -68,7 +68,12 @@ When running longer Modal apps, it's recommended to download your language model
 # downloading models, setting up environment variables, etc.
 def import_model():
     import outlines
-    outlines.models.transformers(language_model)
+    import transformers
+
+    outlines.from_transformers(
+        transformers.AutoModelForCausalLM.from_pretrained(language_model),
+        transformers.AutoTokenizer.from_pretrained(language_model)
+    )
 
 # This line tells the container to run the import_model function when it starts.
 outlines_image = outlines_image.run_function(import_model)
@@ -134,19 +139,22 @@ def generate(
     # so we need to import the necessary libraries here. You should
     # do this with any other libraries you might need.
     import outlines
+    import transformers
+    from outlines.types import JsonSchema
 
     # Load the model into memory. The import_model function above
     # should have already downloaded the model, so this call
     # only loads the model into GPU memory.
-    model = outlines.models.transformers(
-        language_model, device="cuda"
+    outlines.from_transformers(
+        transformers.AutoModelForCausalLM.from_pretrained(language_model, device_map="cuda"),
+        transformers.AutoTokenizer.from_pretrained(language_model)
     )
 
     # Generate a character description based on the prompt.
     # We use the .json generation method -- we provide the
     # - model: the model we loaded above
     # - schema: the JSON schema we defined above
-    generator = outlines.generate.json(model, schema)
+    generator = outlines.Generator(model, JsonSchema(schema))
 
     # Make sure you wrap your prompt in instruction tags ([INST] and [/INST])
     # to indicate that the prompt is an instruction. Instruction tags can vary

@@ -2,8 +2,7 @@
 
 This is a condensed version of [Coding for Structured Generation with LLMs](https://blog.dottxt.co/coding-for-structured-generation.html).
 
-For this example we're going to be building an LLM program to generate **synthetic data** in the form of realistic looking phone numbers for Washington State. Using an LLM for this task *is a bit overkill* since we could just as easily accomplish this
-with a tool like [Faker](https://fakerjs.dev/), but this example still serves as a useful way to demonstrate a workflow for using structured generation.
+For this example we're going to be building an LLM program to generate **synthetic data** in the form of realistic looking phone numbers for Washington State. Using an LLM for this task *is a bit overkill* since we could just as easily accomplish this with a tool like [Faker](https://fakerjs.dev/), but this example still serves as a useful way to demonstrate a workflow for using structured generation.
 
 ## Unstructured approach
 
@@ -11,36 +10,30 @@ Before diving into how to use structure generation for this task let's start wit
 
 ```python
 import outlines
+import transformers
 
 model_name = 'microsoft/Phi-3-mini-4k-instruct'
-model = outlines.models.transformers(model_name)
+model = outlines.from_transformers(
+    transformers.AutoModelForCausalLM.from_pretrained(model_name),
+    transformers.AutoTokenizer.from_pretrained(model_name)
+)
 ```
 
 Next we need a prompt for this model. Since we're focusing on structured generation, we won't be engaging in any form of "prompt hacking" and will be leaving this prompt untouched for the rest of this example.
 
 ```python
-tokenizer = AutoTokenizer.from_pretrained(model_name)
-
-messages_phone = [
-            {"role": "user", "content": """
-            Please generate a realistic phone number for Washington State in the following format
-
-            (555) 555-5555
-
-            """}
-]
-
-# This allows us to properly format our prompt for
-# Phi-3 Mini's 'Instruct' interface.
-prompt_phone = tokenizer.apply_chat_template(messages_phone, tokenize=False)
+prompt_phone = """
+    Please generate a realistic phone number for Washington State in the following format
+    (555) 555-5555
+"""
 ```
 
 With our prompt ready we can now generate 10 example phone numbers
 
 ```python
-phone_generator_unstruct = outlines.generate.text(model)
-for _ in range(10):
-    print(phone_generator_unstruct(prompt_phone,max_tokens=12))
+phone_generator_unstruct = outlines.Generator(model)
+for _ in range(3):
+    print(phone_generator_unstruct(prompt_phone, max_new_tokens=12))
 ```
 
 > I'd be happy to help you generate a realistic phone\
@@ -81,7 +74,9 @@ For a simple example like this, we'll just be using a single phone number, for m
 The next step in the process is for use to define a simple regex that we feel correctly models our real data.
 
 ```python
-phone_regex_1 = r'\([0-9]{3}\) [0-9]{3}-[0-9]{4}'
+from outlines.types import Regex
+
+phone_regex_1 = Regex(r'\([0-9]{3}\) [0-9]{3}-[0-9]{4}')
 ```
 
 Next we need to validate this regex against our real data.
@@ -94,8 +89,8 @@ We'll start with a simple method of validation: just checking that our regex mat
 
 ```
 import re
-re.match(phone_regex_1, phone_number)
 
+re.match(phone_regex_1.pattern, phone_number)
 # <re.Match object; span=(0, 14), match='(206) 386-4636'>
 
 ```
@@ -107,8 +102,9 @@ Now that we have a match, we can move on to generating structured output!
 We're ready to see if structured generation can make an improvement over our initial unstructured approach:
 
 ```python
-phone_generator_v1 = outlines.generate.regex(model, phone_regex_1)
-for _ in range(10):
+phone_generator_v1 = outlines.Generator(model, phone_regex_1)
+
+for _ in range(3):
     print(phone_generator_v1(prompt_phone))
 ```
 > (206) 555-1234\
@@ -135,21 +131,21 @@ We've walked through the loop once, so we can go quickly now through each iterat
 We start by improving our structure:
 
 ```python
-phone_regex_2 = r'\([0-9]{3}\) [2-46-9]{3}-[02-9]{4}'
+phone_regex_2 = Regex(r'\([0-9]{3}\) [2-46-9]{3}-[02-9]{4}')
 ```
 
 Before rushing to another round of generation, let's validate this new regex. We'll add just a bit more sophistication over our last check:
 
 ```python
-re.match(phone_regex_2, phone_number)[0] == phone_number
+re.match(phone_regex_2.pattern, phone_number)[0] == phone_number
 # True
 ```
 Now that we've validated, let's generate with this new regex!
 
 ```python
-phone_generator_v2 = outlines.generate.regex(model,
-                                             phone_regex_2)
-for _ in range(10):
+phone_generator_v2 = outlines.Generator(model, phone_regex_2)
+
+for _ in range(3):
     print(phone_generator_v2(prompt_phone))
 ```
 
@@ -192,10 +188,10 @@ This prints out:
 Ah! We were missing the last digit, let's fix that and regenerate:
 
 ```python
-phone_regex_3_fixed = r'\([0-9]{3}\) [2-4][7-9][4-6]-[3-6][2-8][1-4][6-9]'
-phone_generator_v3 = outlines.generate.regex(model,
-                                             phone_regex_3_fixed)
-for _ in range(10):
+phone_regex_3_fixed = Regex(r'\([0-9]{3}\) [2-4][7-9][4-6]-[3-6][2-8][1-4][6-9]')
+phone_generator_v3 = outlines.Generator(model, phone_regex_3_fixed)
+
+for _ in range(3):
     print(phone_generator_v3(prompt_phone))
 ```
 
