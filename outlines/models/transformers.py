@@ -224,6 +224,8 @@ class Transformers:
         The generated text
         """
         prompts = prompts if isinstance(prompts, list) else [prompts]
+        tokenizer_parameters = tokenizer_parameters or {}
+
         input_ids, attention_mask = self.tokenizer.encode(prompts, **tokenizer_parameters)
 
         inputs = {
