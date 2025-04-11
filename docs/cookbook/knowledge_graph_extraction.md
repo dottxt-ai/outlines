@@ -8,20 +8,23 @@ We will use [llama.cpp](https://github.com/ggerganov/llama.cpp) using the [llama
 pip install llama-cpp-python
 ```
 
-We download the model weights by passing the name of the repository on the HuggingFace Hub, and the filenames (or glob pattern):
+To create an outlines `LlamaCpp` model, you first need to create a `Llama` object from the `llama-cpp-python` library. Then you can create the outlines model by calling `models.from_llamacpp` with the `Llama` object instance as argument. To create the `Llama` object, you need to provide the model weights by passing the name of the repository on the HuggingFace Hub, and the filenames or glob pattern (it will automatically download the weights from the hub):
+
 ```python
 import llama_cpp
-from outlines import generate, models
+import outlines
 
-model = models.llamacpp("NousResearch/Hermes-2-Pro-Llama-3-8B-GGUF",
-            "Hermes-2-Pro-Llama-3-8B-Q4_K_M.gguf",
-            tokenizer=llama_cpp.llama_tokenizer.LlamaHFTokenizer.from_pretrained(
-            "NousResearch/Hermes-2-Pro-Llama-3-8B"
-            ),
-            n_gpu_layers=-1,
-            flash_attn=True,
-            n_ctx=8192,
-            verbose=False)
+llm = llama_cpp.Llama(
+    "NousResearch/Hermes-2-Pro-Llama-3-8B-GGUF",
+    tokenizer=llama_cpp.llama_tokenizer.LlamaHFTokenizer.from_pretrained(
+        "NousResearch/Hermes-2-Pro-Llama-3-8B"
+    ),
+    n_gpu_layers=-1,
+    flash_attn=True,
+    n_ctx=8192,
+    verbose=False
+)
+model = outlines.from_llamacpp(llm)
 ```
 
 ??? note "(Optional) Store the model weights in a custom folder"
@@ -35,20 +38,9 @@ model = models.llamacpp("NousResearch/Hermes-2-Pro-Llama-3-8B-GGUF",
     We initialize the model:
 
     ```python
-    import llama_cpp
     from llama_cpp import Llama
-    from outlines import generate, models
 
-    llm = Llama(
-        "/path/to/model/Hermes-2-Pro-Llama-3-8B-Q4_K_M.gguf",
-        tokenizer=llama_cpp.llama_tokenizer.LlamaHFTokenizer.from_pretrained(
-            "NousResearch/Hermes-2-Pro-Llama-3-8B"
-        ),
-        n_gpu_layers=-1,
-        flash_attn=True,
-        n_ctx=8192,
-        verbose=False
-    )
+    llm = Llama("/path/to/model/Hermes-2-Pro-Llama-3-8B-Q4_K_M.gguf", ...)
     ```
 
 ## Knowledge Graph Extraction
@@ -92,17 +84,24 @@ schema = KnowledgeGraph.model_json_schema()
 We then need to adapt our prompt to the [Hermes prompt format for JSON schema](https://github.com/NousResearch/Hermes-Function-Calling?tab=readme-ov-file#prompt-format-for-json-mode--structured-outputs):
 
 ```python
-def generate_hermes_prompt(user_prompt):
-    return (
-        "<|im_start|>system\n"
-        "You are a world class AI model who answers questions in JSON "
-        f"Here's the json schema you must adhere to:\n<schema>\n{schema}\n</schema><|im_end|>\n"
-        "<|im_start|>user\n"
-        + user_prompt
-        + "<|im_end|>"
-        + "\n<|im_start|>assistant\n"
-        "<schema>"
-    )
+from outlines import Template
+
+generate_hermes_prompt = Template.from_string(
+    """
+    <|im_start|>system
+    You are a world class AI model who answers questions in JSON
+    Here's the json schema you must adhere to:
+    <schema>
+    {{ schema }}
+    </schema>
+    <|im_end|>
+    <|im_start|>user
+    {{ user_prompt }}
+    <|im_end|>
+    <|im_start|>assistant
+    <schema>
+    """
+)
 ```
 
 For a given user prompt, for example:
@@ -111,27 +110,26 @@ For a given user prompt, for example:
 user_prompt = "Alice loves Bob and she hates Charlie."
 ```
 
-We can use `generate.json` by passing the Pydantic class we previously defined, and call the generator with the Hermes prompt:
+We can use `outlines.Generator` by passing the Pydantic class we previously defined, and call the generator with the Hermes prompt:
 
 ```python
-from outlines import generate, models
+from outlines import Generator
 
-model = models.LlamaCpp(llm)
-generator = generate.json(model, KnowledgeGraph)
-prompt = generate_hermes_prompt(user_prompt)
+generator = Generator(model, KnowledgeGraph)
+prompt = generate_hermes_prompt(schema=schema, user_prompt=user_prompt)
 response = generator(prompt, max_tokens=1024, temperature=0, seed=42)
 ```
 
 We obtain the nodes and edges of the knowledge graph:
 
 ```python
-print(response.nodes)
-print(response.edges)
-# [Node(id=1, label='Alice', property='Person'),
-# Node(id=2, label='Bob', property='Person'),
-# Node(id=3, label='Charlie', property='Person')]
-# [Edge(source=1, target=2, label='love', property='Relationship'),
-# Edge(source=1, target=3, label='hate', property='Relationship')]
+print(response)
+# {"nodes":[{"id":1,"label":"Alice","property":"loves,hates"},
+# {"id":2,"label":"Bob","property":"loved_by"},
+# {"id":3,"label":"Charlie","property":"hated_by"}],
+# "edges":[{"source":1,"target":2,"label":"loves","property":"love"},
+# {"source":1,"target":3,"label":"hates","property":"hate"}]}
+
 ```
 
 ## (Optional) Visualizing the Knowledge Graph
@@ -142,10 +140,10 @@ We can use the [Graphviz library](https://graphviz.readthedocs.io/en/stable/) to
 from graphviz import Digraph
 
 dot = Digraph()
-for node in response.nodes:
-    dot.node(str(node.id), node.label, shape='circle', width='1', height='1')
-for edge in response.edges:
-    dot.edge(str(edge.source), str(edge.target), label=edge.label)
+for node in response["nodes"]:
+    dot.node(str(node["id"]), node["label"], shape='circle', width='1', height='1')
+for edge in response["edges"]:
+    dot.edge(str(edge["source"]), str(edge["target"]), label=edge["label"])
 
 dot.render('knowledge-graph.gv', view=True)
 ```

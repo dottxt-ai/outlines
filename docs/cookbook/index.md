@@ -16,3 +16,8 @@ This part of the documentation provides a few cookbooks that you can browse to g
 - [Vision-Language Models](atomic_caption.md): Use Outlines with vision-language models for tasks like image captioning and visual reasoning.
 - [Receipt Digitization](receipt-digitization.md): Extract information from a picture of a receipt using structured generation.
 - [Structured Generation from PDFs](read-pdfs.md): Use Outlines with vision-language models to read PDFs and produce structured output.
+- [Extract Event Details](extract_event_details.md): Use Outlines with MLX to extract key information from a text message related to an event.
+- [Generating Synthetic Phone Numbers](structured_generation_workflow.md): Use Outlines to create phone numbers that are valid for Washington State.
+- [Deploying Outlines using BentoML](deploy-using-bentoml.md): Deploy an Outlines model using BentoML.
+- [Deploying Outlines using Cerebras](deploy-using-cerebras.md): Deploy an Outlines model using Cerebras.
+- [Deploying Outlines using Modal](deploy-using-modal.md): Deploy an Outlines model using Modal.

@@ -26,16 +26,14 @@ Choose your language model. We'll use Phi-3 mini, which is small enough to run o
 ```python
 import outlines
 import torch
+import transformers
 
 model_name = 'microsoft/Phi-3-mini-4k-instruct'
-model = outlines.models.transformers(
-    model_name,
-    device='auto',
-    model_kwargs={
-        # To reduce memory usage, we'll use bfloat16
-        "torch_dtype": torch.bfloat16,
-    },
+tf_model = transformers.AutoModelForCausalLM.from_pretrained(
+    model_name, device_map="cuda", torch_dtype=torch.bfloat16
 )
+tf_tokenizer = transformers.AutoTokenizer.from_pretrained(model_name)
+model = outlines.from_transformers(tf_model, tf_tokenizer)
 ```
 
 ## Set up the data
@@ -156,7 +154,7 @@ year,revenue,operating_income,net_income,basic_earnings_per_share(
 \d{4},((-?\d+),?\d+|(-?\d+)),((-?\d+),?\d+|(-?\d+)),((-?\d+),?\d+|(-?\d+)),(-?\d+(?:\.\d{1,2})?)){,3}
 ```
 
-Pretty hairy, right? Thankfully, we have a simple function to construct this regex for you. The regex defines a header line, followed by a data line that repeats for each row of data we want to extract. Passing the regex to `outlines.generate.regex` will produce a function that will __always__ produce a CSV string that is consistent with the regex.
+Pretty hairy, right? Thankfully, we have a simple function to construct this regex for you. The regex defines a header line, followed by a data line that repeats for each row of data we want to extract. Passing the regex to `outlines.Generator` will produce a function that will __always__ produce a CSV string that is consistent with the regex.
 
 ## Prompting the model
 
@@ -234,12 +232,12 @@ def extract_financial_data_prompt(columns_to_extract, income_statement):
 
 Now that we have our prompt and regular expression, we can run the model.
 
-Construct our regex extractor function. We'll use a greedy sampler, which samples the most likely next token at each step. It's a simple sampler that is more reproducible than multinomial sampling.
+Construct our regex extractor function.
 
 ```python
-csv_extractor = outlines.generate.regex(
-    model, csv_regex, sampler=outlines.samplers.greedy()
-)
+from outlines.types import Regex
+
+csv_extractor = outlines.Generator(model, Regex(csv_regex))
 ```
 
 Provide the prompt to the model and run it:
@@ -247,7 +245,7 @@ Provide the prompt to the model and run it:
 ```python
 csv_data = csv_extractor(
     extract_financial_data_prompt(columns_to_extract, income_statement),
-    max_tokens=1024,
+    max_new_tokens=1024,
 )
 
 print(csv_data)

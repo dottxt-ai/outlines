@@ -36,7 +36,7 @@ provider = "aws"
 region = "us-east-1"
 
 [cerebrium.dependencies.pip]
-outline = "==0.0.37"
+outline = "==1.0.0"
 transformers = "==4.38.2"
 datasets = "==2.18.0"
 accelerate = "==0.27.2"
@@ -48,9 +48,14 @@ Running code in Cerebrium is like writing normal python with no special syntax. 
 
 ```python
 import outlines
+import transformers
+from outlines.types import JsonSchema
 
 
-model = outlines.models.transformers("microsoft/Phi-3-mini-4k-instruct")
+model = outlines.from_transformers(
+    transformers.AutoModelForCausalLM.from_pretrained("microsoft/Phi-3-mini-4k-instruct"),
+    transformers.AutoTokenizer.from_pretrained("microsoft/Phi-3-mini-4k-instruct")
+)
 
 schema = """{
     "title": "Character",
@@ -89,7 +94,7 @@ schema = """{
     }
 }"""
 
-generator = outlines.generate.json(model, schema)
+generator = outlines.Generator(model, JsonSchema(schema))
 ```
 
 On first deploy, it will download the model and store it on disk therefore for subsequent calls it will load the model from disk.

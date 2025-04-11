@@ -8,7 +8,7 @@ place, 3 avenue des tanneurs, one hour will be enough see you 😘
 ```
 
 Let see how to extract the event details from the message with the MLX
-library dedicated to  Apple Silicon processor  (M series).
+library dedicated to Apple Silicon processor (M series).
 
 ```python
 --8<-- "docs/cookbook/extract_event_details.py"
