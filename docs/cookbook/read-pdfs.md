@@ -46,17 +46,19 @@ We've tested this example with [Pixtral 12b](https://huggingface.co/mistral-comm
 To use Pixtral:
 
 ```python
-from transformers import LlavaForConditionalGeneration
+from transformers import LlavaForConditionalGeneration, LlavaProcessor
 model_name="mistral-community/pixtral-12b"
 model_class=LlavaForConditionalGeneration
+processor_class = LlavaProcessor
 ```
 
 To use Qwen-2-VL:
 
 ```python
-from transformers import Qwen2VLForConditionalGeneration
+from transformers import Qwen2VLForConditionalGeneration, AutoProcessor
 model_name = "Qwen/Qwen2-VL-7B-Instruct"
 model_class = Qwen2VLForConditionalGeneration
+processor_class = AutoProcessor
 ```
 
 You can load your model into memory with:
@@ -64,17 +66,12 @@ You can load your model into memory with:
 ```python
 # This loads the model into memory. On your first run,
 # it will have to download the model, which might take a while.
-model = outlines.models.transformers_vision(
-    model_name,
-    model_class=model_class,
-    model_kwargs={
-        "device_map": "auto",
-        "torch_dtype": torch.bfloat16,
-    },
-    processor_kwargs={
-        "device": "auto",
-    },
-)
+model_kwargs={"device_map": "auto", "torch_dtype": torch.bfloat16}
+processor_kwargs={"device_map": "cpu"}
+tf_model = model_class.from_pretrained(model_name, **model_kwargs)
+tf_processor = processor_class.from_pretrained(model_name, **processor_kwargs)
+
+model = outlines.from_transformers(tf_model, tf_processor)
 ```
 
 ## Convert the PDF to images
@@ -159,7 +156,7 @@ The structured output you can extract is exactly the same as everywhere else in 
 
 Suppose you wished to go through each page of the PDF, and extract the page description, key takeaways, and page number.
 
-You can do this by defining a JSON schema, and then using `outlines.generate.json` to extract the data.
+You can do this by defining a JSON schema, and then using `outlines.Generator` to extract the data.
 
 First, define the structure you want to extract:
 
@@ -170,7 +167,7 @@ class PageSummary(BaseModel):
     page_number: int
 ```
 
-Second, we need to set up the prompt. Adding special tokens can be tricky, so we use the transformers `AutoProcessor` to apply the special tokens for us. To do so, we specify a list of messages, where each message is a dictionary with a `role` and `content` key.
+Second, we need to set up the prompt. Adding special tokens can be tricky, so we use the transformers processor to apply the special tokens for us. To do so, we specify a list of messages, where each message is a dictionary with a `role` and `content` key.
 
 Images are denoted with `type: "image"`, and text is denoted with `type: "text"`.
 
@@ -191,16 +188,15 @@ messages = [
                 """
             },
 
-            # Don't need to pass in an image, since we do this
-            # when we call the generator function down below.
+            # This a placeholder, the actual image is passed in when
+            # we call the generator function down below.
             {"type": "image", "image": ""},
         ],
     }
 ]
 
 # Convert the messages to the final prompt
-processor = AutoProcessor.from_pretrained(model_name)
-instruction = processor.apply_chat_template(
+prompt = tf_processor.apply_chat_template(
     messages, tokenize=False, add_generation_prompt=True
 )
 ```
@@ -209,10 +205,10 @@ Now we iterate through each image, and extract the structured information:
 
 ```python
 # Page summarizer function
-page_summary_generator = outlines.generate.json(model, PageSummary)
+page_summary_generator = outlines.Generator(model, PageSummary)
 
 for image in images:
-    result = page_summary_generator(instruction, [image])
+    result = page_summary_generator({"text": prompt, "images": image})
     print(result)
 ```
 
@@ -225,19 +221,21 @@ arXiv identifiers are optionally followed by a version number, i.e. `arXiv:YYMM.
 We can use a regular expression to define this patter:
 
 ```python
-paper_regex = r'arXiv:\d{2}[01]\d\.\d{4,5}(v\d)?'
+from outlines.types import Regex
+
+paper_regex = Regex(r'arXiv:\d{2}[01]\d\.\d{4,5}(v\d)?')
 ```
 
 We can build an extractor function from the regex:
 
 ```python
-id_extractor = outlines.generate.regex(model, paper_regex)
+id_extractor = outlines.Generator(model, paper_regex)
 ```
 
 Now, we can extract the arxiv paper identifier from the first image:
 
 ```python
-arxiv_instruction = processor.apply_chat_template(
+arxiv_instruction = tf_processor.apply_chat_template(
     [
         {
             "role": "user",
@@ -256,7 +254,7 @@ arxiv_instruction = processor.apply_chat_template(
 )
 
 # Extract the arxiv paper identifier
-paper_id = id_extractor(arxiv_instruction, [images[0]])
+paper_id = id_extractor({"text": arxiv_instruction, "images": images[0]})
 ```
 
 As of the time of this writing, the arxiv paper identifier is
@@ -269,7 +267,9 @@ Your version number may be different, but the part before `vX` should match.
 
 ### Categorize the paper into one of several categories
 
-`outlines.generate.choice` allows the model to select one of several options. Suppose we wanted to categorize the paper into being about "language models", "economics", "structured generation", or "other".
+`outlines.Generator` also allows the model to select one of several options by providing a Literal type hint with the categories.
+
+Suppose we wanted to categorize the paper into being about "language models", "cell biology", or "other". We would then define the output type as `Literal["llms", "cell biology", "other"]`.
 
 Let's define a few categories we might be interested in:
 
@@ -284,7 +284,7 @@ categories = [
 Now we can construct the prompt:
 
 ```python
-categorization_instruction = processor.apply_chat_template(
+categorization_instruction = tf_processor.apply_chat_template(
     [
         {
             "role": "user",
@@ -310,14 +310,13 @@ categorization_instruction = processor.apply_chat_template(
 Now we can show the model the first page and extract the category:
 
 ```python
+from typing import Literal
+
 # Build the choice extractor
-categorizer = outlines.generate.choice(
-    model,
-    categories
-)
+categorizer = outlines.Generator(model, Literal["llms", "cell biology", "other"])
 
 # Categorize the paper
-category = categorizer(categorization_instruction, [images[0]])
+category = categorizer({"text": categorization_instruction, "images": images[0]})
 print(category)
 ```
 
@@ -332,12 +331,12 @@ llms
 You can provide multiple images to the model by
 
 1. Adding additional image messages
-2. Providing a list of images to the `generate` function
+2. Providing a list of images to the generator
 
 For example, to have two images, you can do:
 
 ```python
-two_image_prompt = processor.apply_chat_template(
+two_image_prompt = tf_processor.apply_chat_template(
     [
         {
             "role": "user",
@@ -355,17 +354,9 @@ two_image_prompt = processor.apply_chat_template(
 )
 
 # Pass two images to the model
-generator = outlines.generate.choice(
-    model,
-    ["hot dog", "not hot dog"]
-)
+generator = outlines.Generator(model, Literal["hot dog", "not hot dog"])
 
-result = generator(
-    two_image_prompt,
-
-    # Pass two images to the model
-    [images[0], images[1]]
-)
+result = generator({"text": two_image_prompt, "images": [images[0], images[1]]})
 print(result)
 ```
 
