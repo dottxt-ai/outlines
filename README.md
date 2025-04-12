@@ -1,6 +1,7 @@
 <div align="center" style="margin-bottom: 1em;">
 
-<a href="https://dottxt.ai"><img src="./docs/assets/images/logo.png" alt="Outlines Logo" width=300></img></a>
+<img src="./docs/assets/images/logo-light-mode.svg#gh-light-mode-only" alt="Outlines Logo" width=300></img>
+<img src="./docs/assets/images/logo-dark-mode.svg#gh-dark-mode-only" alt="Outlines Logo" width=300></img>
 
 
  🗒️ *Structured outputs for LLMs* 🗒️
@@ -55,6 +56,8 @@ Outlines guarantees structured outputs during generation — directly from any L
 
 
 ### The Outlines Philosophy
+
+<div align="center"><img src="./docs/assets/images/use_philosophy.png" width=300></img></div>
 
 Outlines follows a simple pattern that mirrors Python's own type system. Simply specify the desired output type, and Outlines will ensure your data matches that structure exactly:
 
@@ -606,7 +609,8 @@ print(few_shot_prompt)
 ## About .txt
 
 <div align="center">
-<img src="./docs/assets/images/dottxt.png" alt=".txt Logo" width=100></img>
+<img src="./docs/assets/images/dottxt-light.svg#gh-light-mode-only" alt="dottxt logo" width=100></img>
+<img src="./docs/assets/images/dottxt-dark.svg#gh-dark-mode-only" alt="dottxt logo" width=100></img>
 </div>
 
 Outlines is developed and maintained by [.txt](https://dottxt.co), a company dedicated to making LLMs more reliable for production applications.
