@@ -1,9 +1,9 @@
 <div align="center" style="margin-bottom: 1em;">
 
-<img src="./docs/assets/images/logo.png" alt="Outlines Logo" width=500></img>
+<img src="./docs/assets/images/logo.png" alt="Outlines Logo" width=300></img>
 
 
- 🗒️ *Make LLMs speak the language of every application.* 🗒️
+ 🗒️ *Structured outputs for LLMs* 🗒️
 
 Made with ❤👷️ by the team at [.txt](https://dottxt.co).
 
@@ -12,29 +12,415 @@ Made with ❤👷️ by the team at [.txt](https://dottxt.co).
 [![Downloads][downloads-badge]][pypistats]
 [![Discord][discord-badge]][discord]
 
-[Youtube channel][youtube-dottxt] | [.txt blog][blog-dottxt] | [Twitter][dottxt-twitter]
+[Quickstart](#quick-start)  [Documentation](#documentation) | [Youtube channel][youtube-dottxt] | [.txt blog][blog-dottxt] | [Twitter][dottxt-twitter]
 
 
 </div>
 
+## Why Outlines?
+
+LLMs are powerful — but their outputs are unpredictable.
+
+Most tools try to fix bad outputs *after* generation with parsing, regex, or fragile code.
+
+Outlines flips the approach.
+
+### It guarantees structured outputs *during* generation — directly from any LLM.
+
+- No token overhead
+- No provider lock-in
+- No fragile parsing
+
+Just clean, reliable data — ready to use.
 
 ``` bash
-pip install outlines
+pip install outlines  # Python 3.8+
 ```
 
-First time here? Go to our [setup guide](https://dottxt-ai.github.io/outlines/latest/welcome/)
+## The Outlines Philosophy
 
-## Features
+Outlines follows a simple pattern that mirrors Python's own type system:
 
-- 🤖 [Multiple model integrations](https://dottxt-ai.github.io/outlines/latest/installation): OpenAI, transformers, llama.cpp, mamba
-- 🔥 Fast [JSON generation](#efficient-json-generation-following-a-pydantic-model) following a JSON schema or a Pydantic model
-- 🚄 [Multiple choices](#multiple-choices), [type constraints](#type-constraint) and dynamic stopping
-- 📝 Generate text that follows a [regex](#efficient-regex-structured-generation) or a [context-free grammar](#using-context-free-grammars-to-guide-generation)
-- 🖍️ Simple and powerful prompting primitives based on the [Jinja templating engine](https://jinja.palletsprojects.com/)
-- 🚀 [Serve with vLLM](https://dottxt-ai.github.io/outlines/latest/reference/serve/vllm), with official Docker image, [`outlinesdev/outlines`](https://hub.docker.com/r/outlinesdev/outlines)!
+``` python
+
+result = model(prompt, output_type)
+```
+
+Just pass the type you want, and Outlines ensures you get data in that structure:
+
+- Need a yes/no answer? Pass `Literal["Yes", "No"]`
+- Need an integer? Pass `int`
+- Need a complex object? Pass a Pydantic model
+
+Instead of parsing text after generation, Outlines builds the structure directly into the generation process, guaranteeing valid outputs every time.
+
+## Quickstart
+
+``` python
+import outlines
+from typing import Literal
+
+model = outlines.from_openai("gpt-4")
+
+result = model("Is this email positive?", Literal["Yes", "No"])
+print(result)
+```
+
+## Real-world examples
+
+Here are production-ready examples showing how Outlines solves common problems:
+
+<details><summary><b>Customer Support Triage</b></summary>
+
+``` python
+import outlines
+from enum import Enum
+from pydantic import BaseModel
+from typing import List
+
+class TicketPriority(str, Enum):
+    low = "low"
+    medium = "medium"
+    high = "high"
+    urgent = "urgent"
+
+class ServiceTicket(BaseModel):
+    priority: TicketPriority
+    category: str
+    requires_manager: bool
+    summary: str
+    action_items: List[str]
+
+model = outlines.from_openai("gpt-4")
+
+customer_email = """
+Subject: URGENT - Cannot access my account after payment
+ 
+I paid for the premium plan 3 hours ago and still can't access any features.
+I've tried logging out and back in multiple times. This is unacceptable as I
+have a client presentation in an hour and need the analytics dashboard.
+Please fix this immediately or refund my payment.
+"""
+
+ticket = model(f"Analyze this customer email:\n\n{customer_email}", ServiceTicket)
+
+# Use structured data to route the ticket
+if ticket.priority == "urgent" or ticket.requires_manager:
+    alert_manager(ticket)
+```
+</details>
+
+<details><summary><b>E-commerce product categorization</b></summary>
+
+``` python
+import outlines
+from pydantic import BaseModel
+from typing import List, Optional
+
+class ProductCategory(BaseModel):
+    main_category: str
+    sub_category: str
+    attributes: List[str]
+    brand_match: Optional[str]
+
+model = outlines.from_vllm("http://localhost:8000")  # Running Mixtral
+
+# Process product descriptions in batches
+product_descriptions = [
+    "Apple iPhone 15 Pro Max 256GB Titanium, 6.7-inch Super Retina XDR display with ProMotion",
+    "Organic Cotton T-Shirt, Men's Medium, Navy Blue, 100% Sustainable Materials",
+    "KitchenAid Stand Mixer, 5 Quart, Red, 10-Speed Settings with Dough Hook Attachment"
+]
+
+# Get structured categorization for all products
+categories = model.generate_batch(
+    [f"Categorize this product: {desc}" for desc in product_descriptions],
+    ProductCategory
+)
+
+# Use categorization for inventory management
+for product, category in zip(product_descriptions, categories):
+    update_inventory(product, category.main_category, category.sub_category)
+```
+</details>
+
+<details><b><summary>Extracting data from medical notes</b></summary>
+```python
+import outlines
+import pandas as pd
+import json
+from typing import List, Dict
+
+# Sample unstructured medical notes
+medical_notes = [
+    """
+    Patient consulted on 04/15/2023. 37yo male presenting with persistent cough for 2 weeks. 
+    Temp: 99.8F, BP: 128/82, HR: 76. Patient reports taking Lisinopril 10mg daily for hypertension. 
+    Lungs clear on auscultation. No signs of pneumonia. Diagnosis: Acute bronchitis. 
+    Plan: Prescribed Benzonatate 200mg TID PRN for cough for 7 days. F/U in 1 week if symptoms persist.
+    """,
+    
+    """
+    Follow-up visit on 5-22-23. Female patient, 42 years old with history of migraines. Reports headaches 
+    have decreased from 4x/week to 1x/week since starting Topamax 50 mg BID. BP 118/74, pulse 68. 
+    Patient also takes Vitamin D 2000 IU daily and Magnesium 400mg QD. Assessment: Improving migraine disorder. 
+    Plan: Continue current regimen. Return in 3 months for evaluation.
+    """
+]
+
+# Define regex patterns for clinical data
+VITAL_PATTERN = r"(?:BP|Blood Pressure):\s*(\d{2,3}/\d{2,3})"
+MEDICATION_PATTERN = r"([A-Z][a-z]+(?:in|ol|ide|ate|ine|one|zole|pril|sartan|mab|nib|prazole|dipine|statin)[a-z]*)\s+(\d+(?:\.\d+)?)\s*(mg|mcg|g|IU|mEq)"
+DATE_PATTERN = r"(?:\d{1,2}[-/]\d{1,2}[-/]\d{2,4})|(?:\d{1,2}(?:st|nd|rd|th)? [A-Z][a-z]{2,8},? \d{4})"
+DIAGNOSIS_PATTERN = r"(?:Diagnosis|Assessment):(.+?)(?:\.|Plan|\n)"
+
+model = outlines.from_ollama("mistral")  # Or any other model
+
+def extract_structured_medical_data(notes: List[str]) -> List[Dict]:
+    """Extract structured medical data using LLM with regex constraints"""
+    all_records = []
+    
+    for note in notes:
+        record = {}
+        
+        # Extract date with context understanding
+        prompt = f"What is the date of the patient visit in this note? Extract only the date.\n\n{note}"
+        record["visit_date"] = model(prompt, outlines.Regex(DATE_PATTERN))
+        
+        # Extract vitals - LLM helps identify which values to extract when multiple exist
+        prompt = f"What is the patient's blood pressure reading in this note? Format as XXX/XX.\n\n{note}"
+        record["blood_pressure"] = model(prompt, outlines.Regex(VITAL_PATTERN))
+        record["blood_pressure"] = record["blood_pressure"].replace("BP:", "").replace("Blood Pressure:", "").strip()
+        
+        # Extract age and gender - LLM understands different formats
+        prompt = f"Extract the patient's age and gender from this note. Format as 'XX-year-old gender'.\n\n{note}"
+        record["patient"] = model(prompt, outlines.Regex(r"\d{1,3}(?:-|\s)?(?:year|y)(?:-|\s)?old\s(?:male|female|non-binary|transgender)"))
+        
+        # Extract medications - LLM understands context to identify actual medications
+        prompt = f"""
+        Extract all medications mentioned in this note, one at a time.
+        Include only name, dosage, and unit (like 'Lisinopril 10mg'). 
+        
+        Note:
+        {note}
+        
+        First medication:
+        """
+        medications = []
+        
+        # Multiple medications may exist, so we extract sequentially
+        for i in range(5):  # Assume maximum 5 medications
+            try:
+                medication = model(prompt, outlines.Regex(MEDICATION_PATTERN), max_tokens=20)
+                medications.append(medication)
+                prompt = "Next medication (if any):"
+            except Exception:
+                # No more medications found
+                break
+                
+        record["medications"] = medications
+        
+        # Extract diagnosis - LLM can understand the diagnosis even with complex formatting
+        prompt = f"What is the diagnosis or assessment for this patient?\n\n{note}"
+        diagnosis = model(prompt, outlines.Regex(DIAGNOSIS_PATTERN))
+        record["diagnosis"] = diagnosis.replace("Diagnosis:", "").replace("Assessment:", "").strip()
+        
+        # Use LLM to summarize the plan without regex - showing hybrid approach
+        prompt = f"What is the treatment plan for this patient? Summarize briefly.\n\n{note}"
+        record["plan"] = model(prompt, max_tokens=50)
+        
+        all_records.append(record)
+    
+    return all_records
+
+# Process all notes
+structured_data = extract_structured_medical_data(medical_notes)
+
+# Convert to DataFrame for analysis
+df = pd.DataFrame(structured_data)
+
+# Output as JSON
+print(json.dumps(structured_data, indent=2))
+
+# Use structured data for downstream tasks
+def analyze_medical_records(records):
+    """Example of using the extracted structured data"""
+    # Count patients by diagnosis
+    diagnosis_counts = {}
+    for record in records:
+        diagnosis = record["diagnosis"]
+        diagnosis_counts[diagnosis] = diagnosis_counts.get(diagnosis, 0) + 1
+    
+    # Find most common medications
+    all_meds = []
+    for record in records:
+        all_meds.extend(record["medications"])
+    
+    med_counts = {}
+    for med in all_meds:
+        med_name = med.split()[0]  # Extract just the name
+        med_counts[med_name] = med_counts.get(med_name, 0) + 1
+    
+    return {
+        "diagnosis_summary": diagnosis_counts,
+        "medication_summary": med_counts
+    }
+
+# Run analysis on structured data
+analysis = analyze_medical_records(structured_data)
+print("\nAnalysis Results:")
+print(json.dumps(analysis, indent=2))
+```
+</details>
+<details>
+<summary><b>Robust Information Extraction with Union Types</b></summary>
+
+```python
+import outlines
+from typing import Union, List, Literal
+from pydantic import BaseModel
+from enum import Enum
 
 
-Outlines  has new releases and features coming every week. Make sure to ⭐ star and 👀 watch this repository, follow [@dottxtai][dottxt-twitter] to stay up to date!
+class EventType(str, Enum):
+    conference = "conference"
+    webinar = "webinar"
+    workshop = "workshop"
+    meetup = "meetup"
+    other = "other"
+
+
+class EventInfo(BaseModel):
+    """Structured information about a tech event"""
+    name: str
+    date: str
+    location: str
+    event_type: EventType
+    topics: List[str]
+    registration_required: bool
+
+
+# Create a union type that can either be a structured EventInfo or "I don't know"
+EventResponse = Union[EventInfo, Literal["I don't know"]]
+
+# Sample event descriptions
+event_descriptions = [
+    # Complete information
+    """
+    Join us for DevCon 2023, the premier developer conference happening on November 15-17, 2023 
+    at the San Francisco Convention Center. Topics include AI/ML, cloud infrastructure, and web3. 
+    Registration is required.
+    """,
+    
+    # Insufficient information
+    """
+    Tech event next week. More details coming soon!
+    """
+]
+
+# Initialize model
+model = outlines.from_openai("gpt-3.5-turbo")
+
+# Process events
+results = []
+for description in event_descriptions:
+    prompt = f"Extract structured information about this tech event:\n\n{description}"
+    # Union type allows the model to return structured data or "I don't know"
+    result = model(prompt, EventResponse)
+    results.append(result)
+
+# Display results
+for i, result in enumerate(results):
+    print(f"Event {i+1}:")
+    if isinstance(result, str):
+        print(f"  {result}")
+    else:
+        # It's an EventInfo object
+        print(f"  Name: {result.name}")
+        print(f"  Type: {result.event_type}")
+        print(f"  Date: {result.date}")
+        print(f"  Topics: {', '.join(result.topics)}")
+    print()
+
+# Use structured data in downstream processing
+structured_count = sum(1 for r in results if isinstance(r, EventInfo))
+print(f"Successfully extracted data for {structured_count} of {len(results)} events")
+```
+</details>
+
+<details>
+<summary><b>Simple Document Classification with Literal</b></summary>
+
+```python
+import outlines
+from typing import Literal, List
+import pandas as pd
+
+# Define classification categories using Literal
+DocumentCategory = Literal[
+    "Financial Report", 
+    "Legal Contract", 
+    "Technical Documentation",
+    "Marketing Material",
+    "Personal Correspondence"
+]
+
+# Sample documents to classify
+documents = [
+    "Q3 Financial Summary: Revenue increased by 15% year-over-year to $12.4M. EBITDA margin improved to 23% compared to 19% in Q3 last year. Operating expenses...",
+    
+    "This agreement is made between Party A and Party B, hereinafter referred to as 'the Parties', on this day of...",
+    
+    "The API accepts POST requests with JSON payloads. Required parameters include 'user_id' and 'transaction_type'. The endpoint returns a 200 status code on success."
+]
+
+# Initialize model
+model = outlines.from_ollama("mistral")  # Or any model of your choice
+
+# Classify documents
+def classify_documents(texts: List[str]) -> List[DocumentCategory]:
+    results = []
+    
+    for text in texts:
+        prompt = f"Classify this document into exactly one category:\n\n{text[:300]}..."
+        # The model must return one of the predefined categories
+        category = model(prompt, DocumentCategory)
+        results.append(category)
+    
+    return results
+
+# Perform classification
+classifications = classify_documents(documents)
+
+# Create a simple results table
+results_df = pd.DataFrame({
+    "Document": [doc[:50] + "..." for doc in documents],
+    "Classification": classifications
+})
+
+print(results_df)
+
+# Count documents by category
+category_counts = pd.Series(classifications).value_counts()
+print("\nCategory Distribution:")
+print(category_counts)
+```
+</details>
+
+## Core Features
+
+| Feature | Description | Documentation |
+|---------|-------------|---------------|
+| **Universal Model Support** | Works with OpenAI, Anthropic, Ollama, vLLM, Transformers, llama.cpp | [Model Integrations →](https://dottxt-ai.github.io/outlines/latest/installation) |
+| **Multiple Choices** | Constrain outputs to predefined options | [Multiple Choices →](https://dottxt-ai.github.io/outlines/latest/guides/choice_generation) |
+| **Type Constraints** | Force outputs to be integers, floats, etc. | [Type Constraints →](https://dottxt-ai.github.io/outlines/latest/guides/format_generation) |
+| **Regex Generation** | Generate text following a regex pattern | [Regex Guide →](https://dottxt-ai.github.io/outlines/latest/guides/regex_generation) |
+| **JSON/Pydantic** | Generate outputs matching JSON schemas | [JSON Guide →](https://dottxt-ai.github.io/outlines/latest/guides/json_generation) |
+| **Grammars** | Enforce complex output structures | [Grammar Guide →](https://dottxt-ai.github.io/outlines/latest/guides/cfg_generation) |
+| **️Function Calls** | Infer structure from function signatures | [Function Guide →](https://dottxt-ai.github.io/outlines/latest/guides/function_generation) |
+
+## Who is using Outlines?
+
 
 ## Why should I use structured generation?
 
@@ -52,22 +438,6 @@ Outlines  has new releases and features coming every week. Make sure to ⭐ star
 </div>
 
 We started a company to keep pushing the boundaries of structured generation. Learn more about [.txt](https://twitter.com/dottxtai), and  [give our .json API a try](https://h1xbpbfsf0w.typeform.com/to/ZgBCvJHF) if you need a hosted solution ✨
-
-## Structured generation
-
-The first step towards reliability of systems that include large language models
-is to ensure that there is a well-defined interface between their output and
-user-defined code. **Outlines** provides ways to control the generation of
-language models to make their output more predictable.
-
-The following methods of structured generation are supported:
-
-- [Multiple choices](#multiple-choices)
-- [Type constraints](#type-constraint)
-- [Efficient regex-structured generation](#efficient-regex-structured-generation)
-- [Efficient JSON generation following a Pydantic model](#efficient-json-generation-following-a-pydantic-model)
-- [Using context-free grammars to guide generation](#using-context-free-grammars-to-guide-generation)
-- [Open functions](#open-functions)
 
 ### Chat template tokens
 
