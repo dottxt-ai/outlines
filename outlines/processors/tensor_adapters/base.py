@@ -1,4 +1,8 @@
 from abc import ABC, abstractmethod
+from typing import Any, Union, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import torch
 
 
 class TensorAdapter(ABC):
@@ -8,6 +12,11 @@ class TensorAdapter(ABC):
     manipulate tensors in different libraries. Concrete implementations of
     this class should provide specific implementations for each method as
     well as providing a library_name attribute.
+
+    TODO: Update the version of outlines-core used to receive plain arrays
+    instead of torch tensors. In the meantime, implementations of this class
+    must make sure that their `full_like` and `concatenate` methods can
+    handle torch tensors.
     """
     library_name: str
 
@@ -37,13 +46,20 @@ class TensorAdapter(ABC):
         ...
 
     @abstractmethod
-    def full_like(self, tensor, fill_value):
-        """Create a tensor with the same shape as the input tensor filled with a scalar value"""
+    def full_like(self, tensor: "torch.Tensor", fill_value):
+        """Create a tensor with the same shape as the input tensor filled
+        with a scalar value.
+        ATTENTION: This method receives a torch tensor regardless of the
+        library used.
+        """
         ...
 
     @abstractmethod
-    def concatenate(self, tensors):
-        """Concatenate a list of tensors along a specified dimension"""
+    def concatenate(self, tensors: list[Union["torch.Tensor", Any]]):
+        """Concatenate a list of tensors along a specified dimension.
+        ATTENTION: This method can either receive a list of torch tensors or
+        a list of tensors from the library used.
+        """
         ...
 
     @abstractmethod
