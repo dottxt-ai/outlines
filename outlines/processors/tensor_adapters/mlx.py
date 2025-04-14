@@ -27,10 +27,18 @@ class MLXTensorAdapter(TensorAdapter):
         return tensor.item()
 
     def full_like(self, tensor, fill_value):
-        return self.mlx.full(tensor.shape, fill_value, dtype=tensor.dtype)
+        # Compatible with receiving a torch tensor
+        return self.mlx.full(tensor.shape, fill_value)
 
     def concatenate(self, tensors):
-        return self.mlx.concat(tensors, axis=0)
+        # Can handle both torch and mlx tensors
+        return self.mlx.concatenate(
+            [
+                self.mlx.array(t) if not isinstance(t, self.mlx.array) else t
+                for t in tensors
+            ],
+            axis=0
+        )
 
     def get_device(self, tensor):
         return None
