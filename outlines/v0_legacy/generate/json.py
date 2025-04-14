@@ -94,7 +94,7 @@ def json(
         setattr(
             generator,
             'format_sequence',
-            lambda x: schema_object.parse_raw(x)
+            lambda x: schema_object.model_validate_json(x)
         )
     else:
         setattr(generator, 'format_sequence', lambda x: pyjson.loads(x))
@@ -117,7 +117,7 @@ def json_openai(
         schema = schema_object.model_json_schema()
         schema["additionalProperties"] = False
         schema = pyjson.dumps(schema)
-        format_sequence = lambda x: schema_object.parse_raw(x)
+        format_sequence = lambda x: schema_object.model_validate_json(x)
     elif isinstance(schema_object, str):
         schema = schema_object
         format_sequence = lambda x: pyjson.loads(x)
