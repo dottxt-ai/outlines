@@ -60,7 +60,7 @@ Outlines follows a simple pattern that mirrors Python's own type system. Simply 
 
 - For a yes/no response, use `Literal["Yes", "No"]`
 - For numerical values, use `int`
-- For complex objects, define a structure with a Pydantic model
+- For complex objects, define a structure with a [Pydantic model](https://docs.pydantic.dev/latest/)
 
 ## Quickstart
 
