@@ -6,7 +6,6 @@
 
  🗒️ *Structured outputs for LLMs* 🗒️
 
-
 Made with ❤👷️ by the team at [.txt](https://dottxt.co)
 <br>Trusted by NVIDIA, Cohere, HuggingFace, vLLM, etc.
 
@@ -21,6 +20,8 @@ Made with ❤👷️ by the team at [.txt](https://dottxt.co)
 [![Twitter][twitter-badge]][twitter]
 
 </div>
+
+Need a high-performance commercial solution for structured outputs? Email us at [contact@dottxt.co](mailto:contact@dottxt.co), or [schedule a call](https://cal.com/team/dottxt/sales).
 
 ## Table of Contents
 
