@@ -23,7 +23,9 @@ Made with ❤👷️ by the team at [.txt](https://dottxt.co).
 pip install outlines
 ```
 
-First time here? Go to our [setup guide](https://dottxt-ai.github.io/outlines/latest/welcome/)
+First time here? Go to our [setup guide](https://dottxt-ai.github.io/outlines/latest/welcome/)/
+
+Need a high-performance commercial solution for structured outputs? Email us at [contact@dottxt.co](mailto:contact@dottxt.co), or [schedule a call](https://cal.com/team/dottxt/sales) with us.
 
 ## Features
 
