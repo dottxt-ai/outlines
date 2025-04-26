@@ -1,68 +1,51 @@
 # vLLM
 
+## Prerequisites
 
-!!! Note "Installation"
+The Outlines `VLLM` model is inteded to be used along with a vllm instance running on a separate server (can be local or remote). Make sure you have a vllm server running before using the `VLLM` model. As the vllm client relies on the `openai` python sdk, you need to have an `openai` package installed. If you instead want to use the vllm offline inference mode, please refer to the [VLLMOffline model documentation](./vllm_offline.md).
 
-    You need to install the `vllm` library to use the vLLM integration: `pip install vllm`. The default installation only works on machines with a GPU, follow the [installation section][vllm-install-cpu] for instructions to install vLLM for CPU or ROCm.
+## Initialize the model
 
-    Consult the [vLLM documentation][vllm-docs] for detailed informations about how to initialize OpenAI clients and the available options.
-
-## Load the model
-
-Outlines supports models available via vLLM's offline batched inference interface. You can load a model using:
+To load the model, you can use the `from_vllm` function. The argument of the function is either an `OpenAI` or `AsyncOpenAI` instance from the `openai` library. Based on whether the `openai` instance is synchronous or asynchronous, you will receive a `VLLM` or `AsyncVLLM` model instance.
 
 ```python
+import openai
 import outlines
-from vllm import LLM
 
-model = outlines.from_vllm(LLM("microsoft/Phi-3-mini-4k-instruct"))
+sync_openai_client = openai.OpenAI(base_url="...")
+async_openai_client = openai.AsyncOpenAI(base_url="...")
+
+sync_model = outlines.from_vllm(sync_openai_client)
+print(type(sync_model)) # <class 'outlines.models.vllm.VLLM'>
+
+async_model = outlines.from_vllm(async_openai_client)
+print(type(async_model)) # <class 'outlines.models.vllm.AsyncVLLM'>
 ```
-
-Models are loaded from the [HuggingFace hub](https://huggingface.co/).
-
-
-!!! Warning "Device"
-
-    The default installation of vLLM only allows to load models on GPU. See the [installation instructions][vllm-install-cpu] to run models on CPU.
-
 
 ## Generate text
 
-To generate text, you can just call the model with a prompt as argument:
+To generate text, you can call the model with a prompt as argument and optionally an output type to rely on structured generation:
 
 ```python
-import outlines
-from vllm import LLM
-
-model = outlines.from_vllm(LLM("microsoft/Phi-3-mini-4k-instruct"))
-answer = model("Write a short story about a cat.")
-```
-
-You can also use structured generation with the `VLLM` model by providing an output type after the prompt:
-
-```python
-import outlines
-from vllm import LLM
 from pydantic import BaseModel
 
 class Character(BaseModel):
     name: str
 
-model = outlines.from_vllm(LLM("microsoft/Phi-3-mini-4k-instruct"))
-answer = model("Create a character.", output_type=Character)
+answer = sync_model("Create a character.", output_type=Character)
+answer = await async_model("Create a character.", output_type=Character)
 ```
 
-The VLLM model supports batch generation. To use it, you can pass a list of strings as prompt instead of a single string.
+The `VLLM` model supports also supports streaming.
+
+```python
+for chunk in sync_model.stream("Write a short story about a cat.", max_tokens=100):
+    print(chunk)
+```
 
 ## Optional parameters
 
-When calling the model, you can provide optional parameters on top of the prompt and the output type. Those will be passed on to the `LLM.generate` method of the `vllm` library. An optional parameter of particular interest is `sampling_params`, which is an instance of `SamplingParams`. You can find more information about it in the [vLLM documentation][https://docs.vllm.ai/en/latest/api/inference_params.html].
+When calling the model, you can provide optional parameters on top of the prompt and the output type. Those will be passed on to the `openai` client. An optional parameter of particular interest is `extra_body`, which is a dictionnary containing arguments that are specific to vLLM and are not part of the standard `openai` interface (see the [vLLM documentation][https://docs.vllm.ai/en/latest/serving/openai_compatible_server.html] on the OpenAI-compatible server for more information).
 
-!!! Warning
-
-    Streaming is not available for the offline vLLM integration.
-
-[vllm-docs]:https://docs.vllm.ai/en/latest/
-[vllm-install-cpu]: https://docs.vllm.ai/en/latest/getting_started/cpu-installation.html
-[vllm-install-rocm]: https://docs.vllm.ai/en/latest/getting_started/amd-installation.html
-[rocm-flash-attention]: https://github.com/ROCm/flash-attention/tree/flash_attention_for_rocm#amd-gpurocm-support
+[vllm-docs]: https://docs.vllm.ai/en/latest/
+[vllm-online-quickstart]: https://docs.vllm.ai/en/latest/getting_started/quickstart.html#quickstart-online
