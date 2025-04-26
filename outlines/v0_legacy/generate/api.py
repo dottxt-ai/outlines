@@ -9,13 +9,13 @@ from outlines.v0_legacy.models.exllamav2 import ExLlamaV2Model, exllamav2_params
 from outlines.v0_legacy.models.transformers import transformers_params_adapter
 from outlines.v0_legacy.models.transformers_vision import TransformersVision
 from outlines.v0_legacy.models.llamacpp import llamacpp_params_adapter
-from outlines.v0_legacy.models.vllm import vllm_params_adapter
+from outlines.v0_legacy.models.vllm_offline import vllm_offline_params_adapter
 from outlines.v0_legacy.models.mlxlm import mlxlm_params_adapter
 from outlines.models import (
     LlamaCpp,
     MLXLM,
     Transformers,
-    VLLM
+    VLLMOffline,
 )
 
 V0GeneratorModel = Union[
@@ -24,7 +24,7 @@ V0GeneratorModel = Union[
     MLXLM,
     Transformers,
     TransformersVision,
-    VLLM,
+    VLLMOffline,
 ]
 
 
@@ -64,8 +64,8 @@ class GeneratorV0Adapter:
 
         if isinstance(self.model, LlamaCpp):
             adapter_function = llamacpp_params_adapter
-        elif isinstance(self.model, VLLM): # pragma: no cover
-            adapter_function = vllm_params_adapter
+        elif isinstance(self.model, VLLMOffline): # pragma: no cover
+            adapter_function = vllm_offline_params_adapter
         elif isinstance(self.model, Transformers):
             adapter_function = transformers_params_adapter
         elif isinstance(self.model, ExLlamaV2Model): # pragma: no cover

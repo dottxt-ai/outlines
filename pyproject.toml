@@ -175,7 +175,7 @@ omit = [
     "outlines/models/gemini.py",
     "outlines/models/mlxlm.py",
     "outlines/models/openai.py",
-    "outlines/models/vllm.py",
+    "outlines/models/vllm_offline.py",
     "outlines/processors/tensor_adapters/mlx.py",
     "outlines/serve/serve.py",
     "outlines/v0_legacy/models/anthropic.py",
@@ -184,7 +184,7 @@ omit = [
     "outlines/v0_legacy/models/gemini.py",
     "outlines/v0_legacy/models/mlxlm.py",
     "outlines/v0_legacy/models/openai.py",
-    "outlines/v0_legacy/models/vllm.py",
+    "outlines/v0_legacy/models/vllm_offline.py",
     "tests/*",
 ]
 branch = true

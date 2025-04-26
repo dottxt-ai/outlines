@@ -1,6 +1,7 @@
 from typing import Any, Optional, Union
 
 from outlines.models import BlackBoxModel, SteerableModel
+from outlines.models.base import AsyncModel
 from outlines.processors import (
     CFGLogitsProcessor,
     GuideLogitsProcessor,
@@ -13,23 +14,14 @@ from outlines.types.dsl import python_types_to_terms, to_regex
 
 
 class BlackBoxGenerator:
-    """Represents a generator for which we don't control constrained generation.
-
-    This type of generator only accepts an output type as an argument defining
-    constrained generation. This output type is not modified and thus only
-    passed through to the model.
-    """
+    """Synchronous generator for which we don't control constrained generation."""
     output_type: Optional[Any]
 
     def __init__(self, model, output_type: Optional[Any]):
         self.model = model
         self.output_type = output_type
 
-        if isinstance(self.output_type, CFG):
-            raise NotImplementedError(
-                "CFG generation is not supported for API-based models"
-            )
-        elif isinstance(self.output_type, FSM):
+        if isinstance(self.output_type, FSM):
             raise NotImplementedError(
                 "FSM generation is not supported for API-based models"
             )
@@ -39,6 +31,29 @@ class BlackBoxGenerator:
 
     def stream(self, prompt, **inference_kwargs):
         return self.model.generate_stream(prompt, self.output_type, **inference_kwargs)
+
+
+class AsyncBlackBoxGenerator:
+    """Asynchronous generator for which we don't control constrained generation."""
+    output_type: Optional[Any]
+
+    def __init__(self, model, output_type: Optional[Any]):
+        self.model = model
+        self.output_type = output_type
+
+        if isinstance(self.output_type, FSM):
+            raise NotImplementedError(
+                "FSM generation is not supported for API-based models"
+            )
+
+    async def __call__(self, prompt, **inference_kwargs):
+        return await self.model.generate(prompt, self.output_type, **inference_kwargs)
+
+    async def stream(self, prompt, **inference_kwargs):
+        async for chunk in self.model.generate_stream(  # pragma: no cover
+            prompt, self.output_type, **inference_kwargs
+        ):
+            yield chunk
 
 
 class SteerableGenerator:
@@ -134,7 +149,10 @@ def Generator(
         if processor is not None:
             raise NotImplementedError("This model does not support logits processors")
         else:
-            return BlackBoxGenerator(model, output_type)
+            if isinstance(model, AsyncModel):
+                return AsyncBlackBoxGenerator(model, output_type)
+            else:
+                return BlackBoxGenerator(model, output_type)
     else:
         if processor is not None:
             return SteerableGenerator.from_processor(model, processor)
