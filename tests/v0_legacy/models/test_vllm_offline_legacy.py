@@ -12,7 +12,7 @@ except ImportError:
 
 from outlines import generate, models, samplers
 from outlines.v0_legacy.generate.api import GeneratorV0Adapter
-from outlines.v0_legacy.models.vllm import vllm_params_adapter
+from outlines.v0_legacy.models.vllm_offline import vllm_offline_params_adapter
 
 pytestmark = pytest.mark.skipif(
     not HAS_VLLM,
@@ -40,17 +40,17 @@ def test_vllm_legacy_init(model):
 
 def test_vllm_legacy_params_adapter_generation_params():
     # default
-    result = vllm_params_adapter(
+    result = vllm_offline_params_adapter(
         asdict(samplers.multinomial().sampling_params),
         {"stop_at": None, "seed": None, "max_tokens": None},
         {}
     )
-    assert result["sampling_params"].get("stop") is None
-    assert result["sampling_params"].get("seed") is None
-    assert result["sampling_params"].get("max_tokens") is None
+    assert result["sampling_params"].stop_strings is None
+    assert result["sampling_params"].seed is None
+    assert result["sampling_params"].max_tokens is None
 
     # max_tokens
-    result = vllm_params_adapter(
+    result = vllm_offline_params_adapter(
         asdict(samplers.multinomial().sampling_params),
         {"stop_at": None, "seed": None, "max_tokens": 2},
         {}
@@ -58,7 +58,7 @@ def test_vllm_legacy_params_adapter_generation_params():
     assert result["sampling_params"].max_tokens == 2
 
     # seed
-    result = vllm_params_adapter(
+    result = vllm_offline_params_adapter(
         asdict(samplers.multinomial().sampling_params),
         {"stop_at": None, "seed": 2, "max_tokens": None},
         {}
@@ -66,7 +66,7 @@ def test_vllm_legacy_params_adapter_generation_params():
     assert result["sampling_params"].seed == 2
 
     # stop_at str
-    result = vllm_params_adapter(
+    result = vllm_offline_params_adapter(
         asdict(samplers.multinomial().sampling_params),
         {"stop_at": "foo", "seed": None, "max_tokens": None},
         {}
@@ -74,7 +74,7 @@ def test_vllm_legacy_params_adapter_generation_params():
     assert result["sampling_params"].stop_strings == ["foo"]
 
     # stop_at list
-    result = vllm_params_adapter(
+    result = vllm_offline_params_adapter(
         asdict(samplers.multinomial().sampling_params),
         {"stop_at": ["foo", "bar"], "seed": None, "max_tokens": None},
         {}
@@ -84,7 +84,7 @@ def test_vllm_legacy_params_adapter_generation_params():
 
 def test_vllm_legacy_params_adapter_sampling_params():
     # default
-    result = vllm_params_adapter(
+    result = vllm_offline_params_adapter(
         asdict(samplers.multinomial().sampling_params),
         {"stop_at": None, "seed": None, "max_tokens": None},
         {}
@@ -95,7 +95,7 @@ def test_vllm_legacy_params_adapter_sampling_params():
     assert result["sampling_params"].temperature == 1.0
 
     # beam search
-    result = vllm_params_adapter(
+    result = vllm_offline_params_adapter(
         asdict(samplers.beam_search().sampling_params),
         {"stop_at": None, "seed": None, "max_tokens": None},
         {}
@@ -103,7 +103,7 @@ def test_vllm_legacy_params_adapter_sampling_params():
     assert result["sampling_params"].use_beam_search is True
 
     # num_samples
-    result = vllm_params_adapter(
+    result = vllm_offline_params_adapter(
         asdict(samplers.multinomial(samples=2).sampling_params),
         {"stop_at": None, "seed": None, "max_tokens": None},
         {}
@@ -112,7 +112,7 @@ def test_vllm_legacy_params_adapter_sampling_params():
     assert result["sampling_params"].best_of == 2
 
     # top_p
-    result = vllm_params_adapter(
+    result = vllm_offline_params_adapter(
         asdict(samplers.multinomial(top_p=0.5).sampling_params),
         {"stop_at": None, "seed": None, "max_tokens": None},
         {}
@@ -120,7 +120,7 @@ def test_vllm_legacy_params_adapter_sampling_params():
     assert result["sampling_params"].top_p == 0.5
 
     # top_k
-    result = vllm_params_adapter(
+    result = vllm_offline_params_adapter(
         asdict(samplers.multinomial(top_k=2).sampling_params),
         {"stop_at": None, "seed": None, "max_tokens": None},
         {}
@@ -128,7 +128,7 @@ def test_vllm_legacy_params_adapter_sampling_params():
     assert result["sampling_params"].top_k == 2
 
     # temperature
-    result = vllm_params_adapter(
+    result = vllm_offline_params_adapter(
         asdict(samplers.multinomial(temperature=0.5).sampling_params),
         {"stop_at": None, "seed": None, "max_tokens": None},
         {}
@@ -137,7 +137,7 @@ def test_vllm_legacy_params_adapter_sampling_params():
 
 
 def test_vllm_legacy_params_adapter_model_specific_params():
-    result = vllm_params_adapter(
+    result = vllm_offline_params_adapter(
         asdict(samplers.multinomial().sampling_params),
         {"stop_at": None, "seed": None, "max_tokens": None},
         {"use_tqdm": False}

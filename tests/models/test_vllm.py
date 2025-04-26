@@ -1,157 +1,215 @@
+import os
 import re
-from enum import Enum
+import warnings
+from typing import AsyncGenerator, Generator
 
 import pytest
-from pydantic import BaseModel
+from openai import AsyncOpenAI, OpenAI
 
-try:
-    from vllm import LLM, SamplingParams
-    HAS_VLLM = True
-except ImportError:
-    HAS_VLLM = False
+from outlines.models.vllm import VLLM, AsyncVLLM, from_vllm
+from outlines.types.dsl import CFG, Regex, JsonSchema
+from tests.test_utils.mock_openai_client import MockOpenAIClient, MockAsyncOpenAIClient
 
-import outlines
-from outlines.models.vllm import (
-    VLLM,
-    VLLMTypeAdapter,
-    from_vllm
+
+YES_NO_GRAMMAR = """
+?start: answer
+
+answer: "yes" | "no"
+"""
+
+
+# If the VLLM_SERVER_URL environment variable is set, use the real vLLM server
+# Otherwise, use the mock server
+vllm_server_url = os.environ.get("VLLM_SERVER_URL")
+vllm_model_name = os.environ.get(
+    "VLLM_MODEL_NAME", "microsoft/Phi-3-mini-4k-instruct"
 )
-from outlines.types import Regex
+if vllm_server_url:
+    openai_client = OpenAI(base_url=vllm_server_url)
+    async_openai_client = AsyncOpenAI(base_url=vllm_server_url)
+else:
+    warnings.warn("No VLLM server URL provided, using mock server")
+    openai_client = MockOpenAIClient()
+    async_openai_client = MockAsyncOpenAIClient()
+
+mock_responses = [
+    (
+        {
+            'messages': [
+                {'role': "user", 'content': 'Respond with a single word.'}
+            ],
+            'model': vllm_model_name,
+        },
+        "foo"
+    ),
+    (
+        {
+            'messages': [
+                {'role': "user", 'content': 'Respond with a single word.'}
+            ],
+            'model': vllm_model_name,
+            'stream': True
+        },
+        ["foo", "bar"]
+    ),
+    (
+        {
+            'messages': [
+                {'role': "user", 'content': 'Respond with a single word.'}
+            ],
+            'n': 2,
+            'model': vllm_model_name,
+        },
+        ["foo", "bar"]
+    ),
+    (
+        {
+            'messages': [{'role': "user", 'content': 'foo?'}],
+            'model': vllm_model_name,
+            'max_tokens': 10,
+            'extra_body': {
+            'guided_json': {
+                'type': 'object',
+                'properties': {
+                    'bar': {'type': 'string'}
+                }
+            },
+            }
+        },
+        '{"foo": "bar"}'
+    ),
+    (
+        {
+            'messages': [{'role': "user", 'content': 'foo?'}],
+            'model': vllm_model_name,
+            'max_tokens': 10,
+            'extra_body': {
+                'guided_regex': '([0-9]{3})',
+            },
+        },
+        "123"
+    ),
+    (
+        {
+            'messages': [{'role': "user", 'content': 'foo?'}],
+            'model': vllm_model_name,
+            'max_tokens': 10,
+            'extra_body': {
+                'guided_grammar': YES_NO_GRAMMAR,
+            },
+        },
+        "yes"
+    ),
+]
 
 
-TEST_MODEL = "erwanf/gpt2-mini"
+# If the VLLM_SERVER_URL environment variable is not set, add the mock
+# responses to the mock clients
+if not vllm_server_url:
+    async_openai_client.add_mock_responses(mock_responses)
+    openai_client.add_mock_responses(mock_responses)
 
-pytestmark = pytest.mark.skipif(
-    not HAS_VLLM,
-    reason="vLLM models can only be run on GPU."
-)
+
+@pytest.fixture
+def sync_model():
+    return VLLM(openai_client, model_name=vllm_model_name)
 
 
-def test_vllm_model_initialization():
-    model = from_vllm(LLM(TEST_MODEL))
+@pytest.fixture
+def async_model():
+    return AsyncVLLM(async_openai_client, model_name=vllm_model_name)
+
+
+def test_vllm_init():
+    model = from_vllm(OpenAI(base_url="http://localhost:11434"))
     assert isinstance(model, VLLM)
-    assert isinstance(model.model, LLM)
-    assert hasattr(model, "tokenizer")
-    assert isinstance(model.type_adapter, VLLMTypeAdapter)
-    assert model.tensor_library_name == "torch"
+
+    model = from_vllm(AsyncOpenAI(base_url="http://localhost:11434"))
+    assert isinstance(model, AsyncVLLM)
+
+    with pytest.raises(ValueError, match="Unsupported client type"):
+        from_vllm("foo")
 
 
-@pytest.fixture(scope="session")
-def model(tmp_path_factory):
-    model = outlines.from_vllm(LLM(TEST_MODEL))
-    return model
-
-
-def test_vllm_simple(model):
-    result = model.generate("Respond with one word. Not more.", None)
+def test_vllm_sync_simple_call(sync_model):
+    result = sync_model("Respond with a single word.",)
     assert isinstance(result, str)
 
 
-def test_vllm_call(model):
-    result = model("Respond with one word. Not more.")
+def test_vllm_sync_streaming(sync_model):
+    result = sync_model.stream("Respond with a single word.")
+    assert isinstance(result, Generator)
+    assert isinstance(next(result), str)
+
+
+def test_vllm_sync_multiple_samples(sync_model):
+    result = sync_model("Respond with a single word.", n=2)
+    assert isinstance(result, list)
+    assert len(result) == 2
+    assert isinstance(result[0], str)
+    assert isinstance(result[1], str)
+
+
+def test_vllm_sync_json(sync_model):
+    json_string = '{"type": "object", "properties": {"bar": {"type": "string"}}}'
+    result = sync_model("foo?", JsonSchema(json_string), max_tokens=10)
+    assert isinstance(result, str)
+    assert "bar" in result
+
+
+def test_vllm_sync_regex(sync_model):
+    result = sync_model("foo?", Regex(r"[0-9]{3}"), max_tokens=10)
+    assert isinstance(result, str)
+    assert re.match(r"[0-9]{3}", result)
+
+
+def test_vllm_sync_cfg(sync_model):
+    result = sync_model("foo?", CFG(YES_NO_GRAMMAR), max_tokens=10)
+    assert isinstance(result, str)
+    assert result in ["yes", "no"]
+
+
+@pytest.mark.asyncio
+async def test_vllm_async_simple_call(async_model):
+    result = await async_model("Respond with a single word.",)
     assert isinstance(result, str)
 
 
-def test_vllm_inference_kwargs(model):
-    result = model("Write a short story about a cat.", sampling_params=SamplingParams(max_tokens=2), use_tqdm=True)
+@pytest.mark.asyncio
+async def test_vllm_async_streaming(async_model):
+    result = async_model.stream("Respond with a single word.")
+    assert isinstance(result, AsyncGenerator)
+    async for chunk in result:
+        assert isinstance(chunk, str)
+        break  # Just check the first chunk
+
+
+@pytest.mark.asyncio
+async def test_vllm_async_multiple_samples(async_model):
+    result = await async_model("Respond with a single word.", n=2)
+    assert isinstance(result, list)
+    assert len(result) == 2
+    assert isinstance(result[0], str)
+    assert isinstance(result[1], str)
+
+
+@pytest.mark.asyncio
+async def test_vllm_async_json(async_model):
+    json_string = '{"type": "object", "properties": {"bar": {"type": "string"}}}'
+    result = await async_model("foo?", JsonSchema(json_string), max_tokens=10)
     assert isinstance(result, str)
-    assert len(result) <= 20
+    assert "bar" in result
 
 
-def test_vllm_invalid_inference_kwargs(model):
-    with pytest.raises(TypeError):
-        model("Respond with one word. Not more.", foo="bar")
-
-
-def test_vllm_regex(model):
-    result = model("Give a number between 0 and 9.", Regex(r"[0-9]"))
+@pytest.mark.asyncio
+async def test_vllm_async_regex(async_model):
+    result = await async_model("foo?", Regex(r"[0-9]{3}"), max_tokens=10)
     assert isinstance(result, str)
-    assert re.match(r"[0-9]", result)
+    assert re.match(r"[0-9]{3}", result)
 
 
-def test_vllm_json(model):
-    class Character(BaseModel):
-        name: str
-
-    result = model("Create a character with a name.", Character)
-    assert "name" in result
-
-
-def test_vllm_choice(model):
-    class Foo(Enum):
-        cat = "cat"
-        dog = "dog"
-
-    result = model("Cat or dog?", Foo)
-    assert result in ["cat", "dog"]
-
-
-def test_vllm_batch_samples(model):
-    result = model(
-        "Respond with one word. Not more.",
-        sampling_params=SamplingParams(n=2)
-    )
-    assert isinstance(result, list)
-    assert len(result) == 2
-
-    result = model(
-        ["Respond with one word. Not more.", "Respond with one word. Not more."]
-    )
-    assert isinstance(result, list)
-    assert len(result) == 2
-
-    result = model(
-        ["Respond with one word. Not more.", "Respond with one word. Not more."],
-        sampling_params=SamplingParams(n=2)
-    )
-    assert isinstance(result, list)
-    assert len(result) == 2
-    for item in result:
-        assert isinstance(item, list)
-        assert len(item) == 2
-
-
-def test_vllm_batch_samples_constrained(model):
-    class Foo(Enum):
-        cat = "cat"
-        dog = "dog"
-
-    result = model(
-        "Cat or dog?",
-        Foo,
-        sampling_params=SamplingParams(n=2)
-    )
-    assert isinstance(result, list)
-    assert len(result) == 2
-    assert result[0] in ["cat", "dog"]
-    assert result[1] in ["cat", "dog"]
-
-    result = model(
-        ["Cat or dog?", "Cat or dog?"],
-        Foo,
-    )
-    assert isinstance(result, list)
-    assert len(result) == 2
-    assert result[0] in ["cat", "dog"]
-    assert result[1] in ["cat", "dog"]
-
-    result = model(
-        ["Cat or dog?", "Cat or dog?"],
-        Foo,
-        sampling_params=SamplingParams(n=2)
-    )
-    assert isinstance(result, list)
-    assert len(result) == 2
-    for item in result:
-        assert isinstance(item, list)
-        assert len(item) == 2
-        assert item[0] in ["cat", "dog"]
-        assert item[1] in ["cat", "dog"]
-
-
-def test_vllm_streaming(model):
-    with pytest.raises(
-        NotImplementedError,
-        match="Streaming is not available for the vLLM integration."
-    ):
-        model.stream("Respond with one word. Not more.")
+@pytest.mark.asyncio
+async def test_vllm_async_cfg(async_model):
+    result = await async_model("foo?", CFG(YES_NO_GRAMMAR), max_tokens=10)
+    assert isinstance(result, str)
+    assert result in ["yes", "no"]
