@@ -35,7 +35,7 @@ from vllm.engine.async_llm_engine import AsyncLLMEngine
 from vllm.sampling_params import SamplingParams
 from vllm.utils import random_uuid
 
-from outlines.models.vllm import adapt_tokenizer
+from outlines.models.vllm_offline import adapt_tokenizer
 from outlines.processors import JSONLogitsProcessor, RegexLogitsProcessor
 
 TIMEOUT_KEEP_ALIVE = 5  # seconds.

@@ -4,7 +4,7 @@ import vllm
 from pydantic import BaseModel
 from transformers import AutoTokenizer
 
-from outlines.models.vllm import adapt_tokenizer
+from outlines.models.vllm_offline import adapt_tokenizer
 from outlines.processors import JSONLogitsProcessor
 
 

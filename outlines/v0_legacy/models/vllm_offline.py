@@ -3,10 +3,10 @@
 
 import warnings
 
-from outlines.models import VLLM
+from outlines.models import VLLMOffline
 
 
-def vllm_params_adapter(
+def vllm_offline_params_adapter(
     sampling_params: dict, generation_params: dict, kwargs: dict
 ) -> dict:
     """Adapt the parameters of the legacy generator for the `vllm` model
@@ -67,7 +67,7 @@ def vllm_params_adapter(
 
 
 def vllm(model_name: str, **vllm_model_params):
-    """Load a vLLM model.
+    """Load an offline vLLM model.
 
     Parameters
     ---------
@@ -81,13 +81,14 @@ def vllm(model_name: str, **vllm_model_params):
     warnings.warn("""
         The `vllm` function is deprecated starting from v1.0.0.
         Do not use it. Support for it will be removed in v1.5.0.
-        Instead, you should instantiate a `VLLM` model with the
-        `outlines.from_vllm` function that takes a vLLM model name as argument.
+        Instead, you should instantiate a `VLLMOffline` model with the
+        `outlines.from_vllm_offline` function that takes a vLLM model name as
+        argument.
         For example:
         ```python
         from vllm import LLM
-        from outlines import from_vllm
-        model = from_vllm(LLM("<model_name>"))
+        from outlines import from_vllm_offline
+        model = from_vllm_offline(LLM("<model_name>"))
         ```
         """,
         DeprecationWarning,
@@ -98,4 +99,4 @@ def vllm(model_name: str, **vllm_model_params):
 
     model = LLM(model_name, **vllm_model_params)
 
-    return VLLM(model)
+    return VLLMOffline(model)

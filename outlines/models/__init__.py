@@ -22,11 +22,12 @@ from .transformers import (
     TransformersMultiModal,
     from_transformers,
 )
-from .vllm import VLLM, from_vllm
+from .vllm_offline import VLLMOffline, from_vllm_offline
+from .vllm import AsyncVLLM, VLLM, from_vllm
 
 LogitsGenerator = Union[
-    Transformers, LlamaCpp, OpenAI, MLXLM, VLLM, Ollama
+    Transformers, LlamaCpp, OpenAI, MLXLM, VLLMOffline, Ollama
 ]
 
-SteerableModel = Union[LlamaCpp, Transformers, MLXLM, VLLM]
-BlackBoxModel = Union[OpenAI, Anthropic, Gemini, Ollama, Dottxt]
+SteerableModel = Union[LlamaCpp, Transformers, MLXLM, VLLMOffline]
+BlackBoxModel = Union[OpenAI, Anthropic, Gemini, Ollama, Dottxt, AsyncVLLM, VLLM]

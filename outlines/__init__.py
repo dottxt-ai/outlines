@@ -19,6 +19,7 @@ from outlines.models import (
     from_llamacpp,
     from_mlxlm,
     from_vllm,
+    from_vllm_offline,
 )
 from outlines.templates import Template, prompt
 from outlines.types import regex, json_schema, cfg

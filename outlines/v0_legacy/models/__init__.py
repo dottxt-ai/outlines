@@ -4,7 +4,7 @@ from .mlxlm import mlxlm
 from .openai import azure_openai, openai
 from .transformers import mamba, transformers
 from .transformers_vision import TransformersVision, transformers_vision
-from .vllm import vllm
+from .vllm_offline import vllm
 
 __all__ = [
     "ExLlamaV2Model",

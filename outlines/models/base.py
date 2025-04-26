@@ -38,7 +38,7 @@ class ModelTypeAdapter(ABC):
 
 
 class Model(ABC):
-    """Base class for all models.
+    """Base class for all synchronous models.
 
     This class defines a shared `__call__` method that can be used to call the
     model directly.
@@ -108,6 +108,91 @@ class Model(ABC):
 
     @abstractmethod
     def generate_stream(self, model_input, output_type=None, **inference_kwargs):
+        """Generate a stream of responses from the model.
+
+        The output_type argument contains a logits processor for local models
+        while it contains a type (Json, Enum...) for the API-based models.
+        This method is not intended to be used directly by end users.
+
+        """
+        ...
+
+
+class AsyncModel(ABC):
+    """Base class for all asynchronous models.
+
+    This class defines a shared `__call__` method that can be used to call the
+    model directly.
+    All models inheriting from this class must define a `type_adapter`
+    attribute of type `ModelTypeAdapter`. The methods of the `type_adapter`
+    attribute are used in the `generate` method to format the input and output
+    types received by the model.
+    Additionally, local models must define a `tensor_library_name` attribute.
+
+    """
+    type_adapter: ModelTypeAdapter
+    tensor_library_name: str
+
+    async def __call__(self, model_input, output_type=None, **inference_kwargs):
+        """Call the model.
+
+        Users can call the model directly, in which case we will create a
+        generator instance with the output type provided and call it.
+        Thus, those commands are equivalent:
+        ```python
+        generator = Generator(model, Foo)
+        await generator("prompt")
+        ```
+        and
+        ```python
+        await model("prompt", Foo)
+        ```
+
+        """
+        from outlines import Generator
+
+        generator = Generator(self, output_type)
+        return await generator(model_input, **inference_kwargs)
+
+    async def stream(self, model_input, output_type=None, **inference_kwargs):
+        """Stream a response from the model.
+
+        Users can use the `stream` method from the model directly, in which
+        case we will create a generator instance with the output type provided
+        and then invoke its `stream` method.
+        Thus, those commands are equivalent:
+        ```python
+        generator = Generator(model, Foo)
+        async for chunk in generator("prompt"):
+            print(chunk)
+        ```
+        and
+        ```python
+        async for chunk in model.stream("prompt", Foo):
+            print(chunk)
+        ```
+
+        """
+        from outlines import Generator
+
+        generator = Generator(self, output_type)
+
+        async for chunk in generator.stream(model_input, **inference_kwargs):  # pragma: no cover
+            yield chunk
+
+    @abstractmethod
+    async def generate(self, model_input, output_type=None, **inference_kwargs):
+        """Generate a response from the model.
+
+        The output_type argument contains a logits processor for local models
+        while it contains a type (Json, Enum...) for the API-based models.
+        This method is not intended to be used directly by end users.
+
+        """
+        ...
+
+    @abstractmethod
+    async def generate_stream(self, model_input, output_type=None, **inference_kwargs):
         """Generate a stream of responses from the model.
 
         The output_type argument contains a logits processor for local models

@@ -224,7 +224,7 @@ def test_regex_guide_caching():
             *mlx_lm.load("mlx-community/SmolLM-135M-Instruct-4bit")
         ))
     if HAS_VLLM:
-        models.append(outlines.from_vllm(vllm.LLM("TinyLlama/TinyLlama-1.1B-Chat-v1.0")))
+        models.append(outlines.from_vllm_offline(vllm.LLM("TinyLlama/TinyLlama-1.1B-Chat-v1.0")))
 
     for i, model in enumerate(models):
         # First call for each model should be a miss
