@@ -21,6 +21,7 @@ def json(
     schema_object: Union[str, object, Callable],
     sampler: Sampler = multinomial(),
     whitespace_pattern: Optional[str] = None,
+    ensure_ascii: bool = True,
 ) -> SequenceGeneratorAdapter:
     """
     Generate structured JSON data with a `Transformer` model based on a specified JSON Schema.
@@ -39,6 +40,9 @@ def json(
     whitespace_pattern
         Pattern to use for JSON syntactic whitespace (doesn't impact string literals)
         Example: allow only a single space or newline with `whitespace_pattern=r"[\n ]?"`
+    ensure_ascii
+        If True, all non-ASCII characters in the output are escaped with \uXXXX sequences.
+        If False, non-ASCII characters are output as-is.
 
     Returns
     -------
@@ -47,12 +51,12 @@ def json(
 
     """
     if isinstance(schema_object, type(BaseModel)):
-        schema = pyjson.dumps(schema_object.model_json_schema())
+        schema = pyjson.dumps(schema_object.model_json_schema(), ensure_ascii=ensure_ascii)
         regex_str = build_regex_from_schema(schema, whitespace_pattern)
         generator = regex(model, regex_str, sampler)
         generator.format_sequence = lambda x: schema_object.parse_raw(x)
     elif isinstance(schema_object, type(Enum)):
-        schema = pyjson.dumps(get_schema_from_enum(schema_object))
+        schema = pyjson.dumps(get_schema_from_enum(schema_object), ensure_ascii=ensure_ascii)
         regex_str = build_regex_from_schema(schema, whitespace_pattern)
         generator = regex(model, regex_str, sampler)
         generator.format_sequence = lambda x: pyjson.loads(x)
