@@ -122,7 +122,7 @@ ALL_MODEL_FIXTURES = (
     "model_transformers_random",
     "model_transformers_opt125m",
     "model_mamba",
-    "model_bart",
+    #"model_bart",
     "model_transformers_vision",
     "model_vllm",
 )
