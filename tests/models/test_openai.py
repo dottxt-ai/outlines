@@ -99,7 +99,7 @@ def test_openai_json_call_pydantic():
     # assert success for valid response
     with patched_openai(completion=completion) as model:
         generator = generate.json(model, Person)
-        assert generator("fastest person") == Person.parse_raw(completion)
+        assert generator("fastest person") == Person.model_validate_json(completion)
 
     # assert fail for non-json response
     with patched_openai(completion="usain bolt") as model:
