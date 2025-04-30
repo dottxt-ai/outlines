@@ -18,6 +18,7 @@ from outlines.models import (
     from_ollama,
     from_llamacpp,
     from_mlxlm,
+    from_sglang,
     from_tgi,
     from_vllm,
     from_vllm_offline,
