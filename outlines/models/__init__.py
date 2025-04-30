@@ -16,6 +16,7 @@ from .llamacpp import LlamaCpp, from_llamacpp
 from .mlxlm import MLXLM, from_mlxlm
 from .ollama import Ollama, from_ollama
 from .openai import from_openai, OpenAI
+from .sglang import from_sglang, SgLang, AsyncSgLang
 from .tgi import from_tgi, TGI, AsyncTGI
 from .transformers import (
     Transformers,
@@ -30,15 +31,17 @@ LogitsGenerator = Union[
     Transformers, LlamaCpp, OpenAI, MLXLM, VLLMOffline, Ollama
 ]
 
-SteerableModel = Union[LlamaCpp, Transformers, MLXLM, VLLMOffline]
+SteerableModel = Union[LlamaCpp, MLXLM, Transformers, VLLMOffline]
 BlackBoxModel = Union[
     Anthropic,
     AsyncTGI,
+    AsyncSgLang,
     AsyncVLLM,
     Dottxt,
     Gemini,
     Ollama,
     OpenAI,
     TGI,
+    SgLang,
     VLLM,
 ]

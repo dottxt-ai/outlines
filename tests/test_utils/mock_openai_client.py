@@ -5,7 +5,12 @@ from tests.test_utils.utils import hash_dict
 
 
 class MockChoice:
-    def __init__(self, content: str, finish_reason: str = "stop", refusal: Optional[str] = None):
+    def __init__(
+        self,
+        content: str,
+        finish_reason: str = "stop",
+        refusal: Optional[str] = None
+    ):
         self.message = MagicMock()
         self.message.content = content
         self.message.refusal = refusal
