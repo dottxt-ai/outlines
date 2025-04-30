@@ -1,20 +1,7 @@
-import hashlib
-import pickle
 from typing import List, Dict, Any, Optional
 from unittest.mock import MagicMock
 
-
-def hash_dict(d) -> str:
-    def make_hashable(obj):
-        if isinstance(obj, dict):
-            return frozenset((k, make_hashable(v)) for k, v in sorted(obj.items()))
-        if isinstance(obj, list):
-            return tuple(make_hashable(e) for e in obj)
-        return obj
-
-    hashable_obj = make_hashable(d)
-    pickled_obj = pickle.dumps(hashable_obj)
-    return hashlib.sha256(pickled_obj).hexdigest()
+from tests.test_utils.utils import hash_dict
 
 
 class MockChoice:
