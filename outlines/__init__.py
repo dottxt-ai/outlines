@@ -18,6 +18,7 @@ from outlines.models import (
     from_ollama,
     from_llamacpp,
     from_mlxlm,
+    from_tgi,
     from_vllm,
     from_vllm_offline,
 )
@@ -41,6 +42,7 @@ model_list = [
     "from_mlxlm",
     "from_ollama",
     "from_openai",
+    "from_tgi",
     "from_transformers",
     "from_vllm",
 ]
