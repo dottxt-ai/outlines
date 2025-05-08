@@ -34,69 +34,73 @@ theme:
 
 # Additional configuration
 extra:
-  social:
-    - icon: fontawesome/brands/github
-      link: https://github.com/dottxt-ai
-    - icon: fontawesome/brands/twitter
-      link: https://twitter.com/remilouf
-  generator: false
-  analytics:
-    provider: google
-    property: !ENV GOOGLE_ANALYTICS_KEY
-  version:
-    provider: mike
-    default: latest
-    alias: true
+    social:
+        - icon: fontawesome/brands/github
+          link: https://github.com/dottxt-ai
+        - icon: fontawesome/brands/twitter
+          link: https://twitter.com/remilouf
+    generator: false
+    analytics:
+        provider: google
+        property: !ENV GOOGLE_ANALYTICS_KEY
+    version:
+        provider: mike
+        default: latest
+        alias: true
 
 # Extensions
 markdown_extensions:
-  - admonition
-  - def_list
-  - attr_list
-  - md_in_html
-  - pymdownx.highlight:
-      anchor_linenums: true
-      line_spans: __span
-      pygments_lang_class: true
-      noclasses: True
-      pygments_style: nord
-  - pymdownx.superfences:
-      custom_fences:
-        - name: mermaid
-          class: mermaid
-          format: !!python/name:pymdownx.superfences.fence_code_format
-  - pymdownx.tabbed:
-      alternate_style: true
-  - pymdownx.inlinehilite
-  - pymdownx.details
-  - pymdownx.emoji:
-      emoji_index: !!python/name:material.extensions.emoji.twemoji
-      emoji_generator: !!python/name:material.extensions.emoji.to_svg
-  - pymdownx.snippets:
+    - admonition
+    - def_list
+    - attr_list
+    - md_in_html
+    - pymdownx.highlight:
+          anchor_linenums: true
+          line_spans: __span
+          pygments_lang_class: true
+          noclasses: True
+    - pymdownx.superfences:
+          custom_fences:
+              - name: mermaid
+                class: mermaid
+                format: !!python/name:pymdownx.superfences.fence_code_format
+    - pymdownx.tabbed:
+          alternate_style: true
+    - pymdownx.inlinehilite
+    - pymdownx.details
+    - pymdownx.emoji:
+          emoji_index: !!python/name:material.extensions.emoji.twemoji
+          emoji_generator: !!python/name:material.extensions.emoji.to_svg
+    - pymdownx.snippets:
 
 extra_css:
-  - stylesheets/extra.css
+    - stylesheets/extra.css
 
 plugins:
-  - blog
-  - mkdocstrings:
-      default_handler: python
-      handlers:
-        python:
-          options:
-            docstring_style: numpy
-            show_submodules: true
-  - search
-  - section-index
-  - social:
-      cards_layout_options:
-        color: #173a58
-  - git-committers:
-      repository: dottxt-ai/outlines
-      branch: main
-  - git-revision-date-localized:
-      enable_creation_date: true
-      type: timeago
+    - blog
+    - mkdocstrings:
+          default_handler: python
+          handlers:
+              python:
+                  options:
+                      docstring_style: numpy
+                      show_submodules: true
+    - search
+    - section-index
+    - social:
+          cards_layout_options:
+              color: #173a58
+    - redirects:
+          redirect_maps:
+              "welcome.md": "index.md"
+              "blog.md": "https://blog.dottxt.co"
+
+    # - git-committers:
+    #     repository: dottxt-ai/outlines
+    #     branch: main
+    # - git-revision-date-localized:
+    #     enable_creation_date: true
+    #     type: timeago
 
 nav:
   - Home: index.md
