@@ -20,6 +20,7 @@ class Application:
 
     Examples
     --------
+    ```python
     from pydantic import BaseModel
     from transformers import AutoModelForCausalLM, AutoTokenizer
     from outlines import models, Application
@@ -41,6 +42,7 @@ class Application:
 
     result = application(model, num=3)
     print(result)  # Expected output: { "result" : 6 }
+    ```
     """
     def __init__(self, template: Union[Template, Callable], output_type: Any):
         self.template = template
