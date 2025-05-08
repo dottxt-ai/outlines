@@ -16,12 +16,12 @@ large language models. It ensures LLMs speak the language of your application by
 
 <div class="grid cards" markdown>
 
-- :material-shield-check: __Reliable__ - Guaranteed schema compliance -- always valid JSON.
-- :material-puzzle: __Feature-rich__ - Supports a large proportion of the JSON Schema spec, along with regex and context-free grammars.
-- :material-lightning-bolt: __Fast__ - Outlines has negligible runtime overhead, and fast compilation times.
-- :material-cog: __Universal__ - Outlines is a powered by Rust, and can be easily bound to other languages.
-- :material-lightbulb: __Simple__ - Outlines is a low-abstraction library. Write code the way you normally do with LLMs. No agent frameworks needed.
-- :material-magnify: __Powerful__ - Manage prompt complexity with prompt templating.
+- :material-shield-check: **Reliable** - Guaranteed schema compliance -- always valid JSON.
+- :material-puzzle: **Feature-rich** - Supports a large proportion of the JSON Schema spec, along with regex and context-free grammars.
+- :material-lightning-bolt: **Fast** - Outlines has negligible runtime overhead, and fast compilation times.
+- :material-cog: **Universal** - Outlines is a powered by Rust, and can be easily bound to other languages.
+- :material-lightbulb: **Simple** - Outlines is a low-abstraction library. Write code the way you normally do with LLMs. No agent frameworks needed.
+- :material-magnify: **Powerful** - Manage prompt complexity with prompt templating.
 
 </div>
 
