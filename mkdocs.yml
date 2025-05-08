@@ -13,25 +13,24 @@ copyright: Copyright &copy; 2023- The Outlines Developers
 
 # Configuration
 theme:
-  name: material
-  custom_dir: docs/overrides
-  palette:
-    - scheme: default
-      primary: white
-  logo: assets/images/logo-square.svg
-  favicon: assets/images/logo-simple.png
-  icon:
-    repo: fontawesome/brands/github
-  features:
-    - content.code.copy
-    - navigation.expand
-    - navigation.tabs
-    - navigation.sections
-    - header.autohide
-    - announce.dismiss
-  font:
-    text: Inter
-    code: Source Code Pro
+    name: material
+    palette:
+        - scheme: default
+          primary: white
+    logo: assets/images/logo-square.svg
+    favicon: assets/images/logo-simple.png
+    icon:
+        repo: fontawesome/brands/github
+    features:
+        - content.code.copy
+        - navigation.expand
+        - navigation.tabs
+        - navigation.sections
+        - header.autohide
+        - announce.dismiss
+    font:
+        text: Inter
+        code: Source Code Pro
 
 # Additional configuration
 extra:
