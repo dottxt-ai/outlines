@@ -4,24 +4,62 @@ title: Installation
 
 # Installation
 
-You can install Outlines with `pip`:
+## Dependency Management
 
-```sh
+We recommend using modern Python packaging tools such as `uv` for managing python dependencies.
+
+### uv (Recommended)
+
+```bash
+# Install uv
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Create a virtual environment and install Outlines
+uv venv
+source .venv/bin/activate
+uv pip install outlines
+```
+
+or with basic pip:
+
+```bash
 pip install outlines
 ```
 
-Outlines supports OpenAI, Transformers, Mamba and llama.cpp, but **you will need to install them manually**:
+Outlines supports the following model types:
+
+- Transformers
+- OpenAI
+- llama.cpp
+- vLLM
+- dottxt
+- Anthropic
+- Ollama
+- mlx-lm
+- Google
+
+To use these model providers, you must install them manually, i.e.
 
 ```sh
 pip install openai
 pip install transformers datasets accelerate torch
 pip install llama-cpp-python
 pip install transformers torch
-pip install mamba_ssm transformers torch
 pip install vllm
+pip install dottxt
+pip install anthropic
+pip install ollama
+pip install mlx-lm
+pip install google-generativeai
 ```
 
 If you encounter any problems using Outlines with these libraries, take a look at their installation instructions. The installation of `openai` and `transformers` should be straightforward, but other libraries have specific hardware requirements.
+
+!!! warning "Hardware Requirements"
+
+    If you are using an offline inference tool (not a remote server), your model may require specific hardware. Please check the documentation for these libraries.
+
+    Some libraries like `vllm` and `llama-cpp-python` require specific hardware, such as a compatible GPU. `mlx-lm` is designed for Apple Silicon, so may not be appropriate for your use case if you are on a different platform.
 
 ## Optional Dependencies
 
