@@ -126,7 +126,7 @@ nav:
           - User Guide: user_guide/index.md
           - API Reference: reference/index.md
           - Examples: cookbook/index.md
-    - Documentation:
+    - Guide:
           - Introduction:
                 - Get started: getting_started/index.md
                 - Installation: installation.md
@@ -210,5 +210,3 @@ nav:
         - Versioning Guide 📌: community/versioning.md
 
     - Blog: https://blog.dottxt.co
-  
-
