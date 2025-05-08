@@ -112,13 +112,12 @@ plugins:
               "welcome.md": "index.md"
               "reference/chat_templating.md": "user_guide/chat_templating.md"
               "blog.md": "https://blog.dottxt.co"
-
-    # - git-committers:
-    #     repository: dottxt-ai/outlines
-    #     branch: main
-    # - git-revision-date-localized:
-    #     enable_creation_date: true
-    #     type: timeago
+    - git-committers:
+        repository: dottxt-ai/outlines
+        branch: main
+    - git-revision-date-localized:
+        enable_creation_date: true
+        type: timeago
 
 nav:
     - Home:
