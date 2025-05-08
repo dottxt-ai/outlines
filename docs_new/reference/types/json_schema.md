@@ -78,4 +78,4 @@ Outlines also supports:
 - Dataclasses
 - Direct JSON Schema objects
 
-For more detailed examples, see the [JSON Generation guide](/user_guide/structured_generation/json.md). 
+For more detailed examples, see the [JSON Generation guide](/user_guide/structured_generation/json.md).

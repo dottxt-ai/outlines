@@ -110,4 +110,4 @@ For more detailed examples, see the [Context-Free Grammar guide](/user_guide/str
 
 - Context-Free Grammar support in Outlines is experimental but powerful
 - Complex grammars may take longer to process
-- For simple structures, consider using regex or JSON schema instead 
+- For simple structures, consider using regex or JSON schema instead

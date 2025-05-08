@@ -55,7 +55,7 @@ Outlines is built with ❤️ by [.txt](https://dottxt.co).
 
 ## Who is using Outlines?
 
-Hundreds of organisations and the main LLM serving frameworks ([vLLM][vllm], [TGI][tgi], [LoRAX][lorax], [xinference][xinference], [SGLang][sglang]) use Outlines. 
+Hundreds of organisations and the main LLM serving frameworks ([vLLM][vllm], [TGI][tgi], [LoRAX][lorax], [xinference][xinference], [SGLang][sglang]) use Outlines.
 
 Prominent companies and organizations that use Outlines include:
 

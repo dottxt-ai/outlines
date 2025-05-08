@@ -11,5 +11,3 @@ Outlines allows you to generate structured outputs from LLMs. There are several 
 ### Pydantic models
 
 ### Context-free grammars
-
-

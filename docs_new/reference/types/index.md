@@ -33,4 +33,4 @@ Context-free grammars (CFGs) provide the most flexible way to define complex str
 
 ## How Output Types Work
 
-Internally, Outlines converts output type definitions into finite state machines (FSMs) that constrain the model's generation process. This happens automatically when you pass an output type to the `Generator` class. 
+Internally, Outlines converts output type definitions into finite state machines (FSMs) that constrain the model's generation process. This happens automatically when you pass an output type to the `Generator` class.

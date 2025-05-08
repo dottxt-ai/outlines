@@ -69,4 +69,4 @@ date_format = Regex(r"\d{4}-\d{2}-\d{2}")
 url_pattern = Regex(r"https?://[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(/[a-zA-Z0-9./_-]*)?")
 ```
 
-For more detailed examples, see the [Regular Expression guide](/user_guide/structured_generation/regex.md). 
+For more detailed examples, see the [Regular Expression guide](/user_guide/structured_generation/regex.md).
