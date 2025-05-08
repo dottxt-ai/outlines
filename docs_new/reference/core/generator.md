@@ -4,17 +4,33 @@ title: Generator API
 
 # Generator
 
-::: outlines.generator.Generator
 
-The `Generator` class is the core component of Outlines v1, replacing the various generate functions from v0.
+The `Generator` class is the core component of Outlines v1. `Generator` accepts a [model](/api/available_models) and an optional [output type](/api/types). If no output type is provided, the `Generator` will return unstructured text.
+
+!!! note
+
+    `Generator` is new as of Outlines v1, and replaces previous generator constructors:
+
+    - `generate.cfg`
+    - `generate.choice`
+    - `generate.format`
+    - `generate.fsm`
+    - `generate.json`
+    - `generate.regex`
+    - `generate.text`
 
 ## Basic Usage
 
 ```python
 from outlines import Generator, from_transformers
+import transformers
 
 # Initialize a model
-model = from_transformers(...)
+model_name = "HuggingFaceTB/SmolLM2-135M-Instruct"
+model = from_transformers(
+    transformers.AutoModelForCausalLM.from_pretrained(model_name),
+    transformers.AutoTokenizer.from_pretrained(model_name),
+)
 
 # Create a generator for plain text
 generator = Generator(model)
@@ -29,12 +45,20 @@ print(result)
 ```python
 from pydantic import BaseModel
 from outlines import Generator, from_transformers
+import transformers
 
 # Define a Pydantic model for structured output
 class BookRecommendation(BaseModel):
     title: str
     author: str
     year: int
+
+# Initialize a model
+model_name = "HuggingFaceTB/SmolLM2-135M-Instruct"
+model = from_transformers(
+    transformers.AutoModelForCausalLM.from_pretrained(model_name),
+    transformers.AutoTokenizer.from_pretrained(model_name),
+)
 
 # Create a generator for JSON output
 generator = Generator(model, BookRecommendation)
@@ -93,4 +117,6 @@ result = generator("Generate a person:")
 
 # Parse the result yourself
 person = Person.model_validate_json(result)
-``` 
+```
+
+::: outlines.generator.Generator

@@ -113,3 +113,4 @@ generator = Generator(model)
 description = generator(prompt)
 
 print(description)
+```

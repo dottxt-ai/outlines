@@ -4,8 +4,6 @@ title: Application API
 
 # Application
 
-::: outlines.applications.Application
-
 The `Application` class enables you to encapsulate a prompt template and an output type into a reusable component.
 
 ## Overview
@@ -73,4 +71,6 @@ print(f"{review.title} ({review.year}) - {review.rating}/10")
 ## Parameters
 
 - `prompt_template`: A template that defines the prompt structure
-- `output_type`: The type of output to generate 
+- `output_type`: The type of output to generate
+
+::: outlines.applications.Application
