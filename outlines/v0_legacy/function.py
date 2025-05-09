@@ -16,7 +16,7 @@ if TYPE_CHECKING: # pragma: no cover
 def function_warning():
     warnings.warn("""
         The `Function` class is deprecated starting from v1.0.0.
-        Do not use it. Support for it will be removed in v1.5.0.
+        Do not use it. Support for it will be removed in v1.1.0.
         Instead, you should use the `outlines.Application` class that
         implements a similar functionality.
         An `Application` is initialized with a prompt template and an

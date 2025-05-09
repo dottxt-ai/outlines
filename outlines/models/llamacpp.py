@@ -233,7 +233,7 @@ class LlamaCpp(Model):
     def load_lora(self, adapter_path: str):  # pragma: no cover
         warnings.warn("""
             The `load_lora` method is deprecated starting from v1.0.0.
-            Support for it will be removed in v1.5.0.
+            Support for it will be removed in v1.1.0.
             """,
             DeprecationWarning,
             stacklevel=2,

@@ -143,7 +143,7 @@ class VLLMOffline(Model):
     def load_lora(self, adapter_path: Optional[str]):
         warnings.warn("""
             The `load_lora` method is deprecated starting from v1.0.0.
-            Support for it will be removed in v1.5.0.
+            Support for it will be removed in v1.1.0.
             Please use the v1 of the `outlines` library by using the
             `outlines.from_vllm` function to create a `VLLM` model
             instance.
