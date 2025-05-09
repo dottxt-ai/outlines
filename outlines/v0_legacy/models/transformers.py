@@ -107,7 +107,7 @@ def transformers(
     """
     warnings.warn("""
         The `transformers` function is deprecated starting from v1.0.0.
-        Do not use it. Support for it will be removed in v1.5.0.
+        Do not use it. Support for it will be removed in v1.1.0.
         Instead, you should instantiate a `Transformers` model with the
         `outlines.from_transformers` function that takes a transformers model
         and a tokenizer as arguments. For example:
@@ -155,7 +155,7 @@ def mamba(
 ):
     warnings.warn("""
         The `mamba` function is deprecated starting from v1.0.0.
-        Do not use it. Support for it will be removed in v1.5.0.
+        Do not use it. Support for it will be removed in v1.1.0.
         Instead, you should instantiate a `Transformers` model with the
         `outlines.from_transformers` function that takes a transformers model
         and a tokenizer as arguments. For Mamba, you would use a mamba model

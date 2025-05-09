@@ -14,7 +14,7 @@ def regex(model, regex_str: str | Regex, sampler: Sampler = multinomial()):
     """Generate structured text in the language of a regular expression.
 
     This function is deprecated starting from v1.0.0. Do not use it.
-    Support for it will be removed in v1.5.0.
+    Support for it will be removed in v1.1.0.
     Use the `Generator` object instead:
 
     ```python
@@ -43,7 +43,7 @@ def regex(model, regex_str: str | Regex, sampler: Sampler = multinomial()):
     """
     warnings.warn("""
         The `regex` function is deprecated starting from v1.0.0.
-        Do not use it. Support for it will be removed in v1.5.0.
+        Do not use it. Support for it will be removed in v1.1.0.
         Use the `Generator` object instead:
         ```python
         from outlines import Generator

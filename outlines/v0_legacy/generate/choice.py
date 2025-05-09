@@ -24,7 +24,7 @@ def choice(
     """Generate a choice from a list of options.
 
     This function is deprecated starting from v1.0.0. Do not use it.
-    Support for it will be removed in v1.5.0.
+    Support for it will be removed in v1.1.0.
     Use the `Generator` object instead:
 
     ```python
@@ -53,7 +53,7 @@ def choice(
     """
     warnings.warn("""
         The `choice` function is deprecated starting from v1.0.0.
-        Do not use it. Support for it will be removed in v1.5.0.
+        Do not use it. Support for it will be removed in v1.1.0.
         Use the `Generator` object instead:
         ```python
         from outlines import Generator

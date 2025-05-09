@@ -80,7 +80,7 @@ def vllm(model_name: str, **vllm_model_params):
     """
     warnings.warn("""
         The `vllm` function is deprecated starting from v1.0.0.
-        Do not use it. Support for it will be removed in v1.5.0.
+        Do not use it. Support for it will be removed in v1.1.0.
         Instead, you should instantiate a `VLLMOffline` model with the
         `outlines.from_vllm_offline` function that takes a vLLM model name as
         argument.
