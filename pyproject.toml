@@ -77,12 +77,6 @@ test = [
     "sentencepiece",
 ]
 test-gpu=["outlines[test]", "vllm; sys_platform == 'linux'"]
-serve = [
-    "vllm>=0.3.0",
-    "uvicorn",
-    "fastapi",
-    "pydantic>=2.0",
-]
 
 [project.urls]
 homepage = "https://github.com/dottxt-ai/outlines"
@@ -150,8 +144,6 @@ module = [
     "requests.*",
     "responses.*",
     "vllm.*",
-    "uvicorn.*",
-    "fastapi.*",
     "iso3166.*",
     "airportsdata.*",
     "outlines_core.*",
@@ -177,7 +169,6 @@ omit = [
     "outlines/models/openai.py",
     "outlines/models/vllm_offline.py",
     "outlines/processors/tensor_adapters/mlx.py",
-    "outlines/serve/serve.py",
     "outlines/v0_legacy/models/anthropic.py",
     "outlines/v0_legacy/models/dottxt.py",
     "outlines/v0_legacy/models/exllamav2.py",
