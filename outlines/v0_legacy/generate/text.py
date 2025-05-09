@@ -19,7 +19,7 @@ def text(model, sampler: Sampler = multinomial()) -> Union[
     """Generate unconstrained text.
 
     This function is deprecated starting from v1.0.0. Do not use it.
-    Support for it will be removed in v1.5.0.
+    Support for it will be removed in v1.1.0.
     Use the `Generator` object instead:
 
     ```python
@@ -44,7 +44,7 @@ def text(model, sampler: Sampler = multinomial()) -> Union[
     """
     warnings.warn("""
         The `text` function is deprecated starting from v1.0.0.
-        Do not use it. Support for it will be removed in v1.5.0.
+        Do not use it. Support for it will be removed in v1.1.0.
         Use the `Generator` object instead:
         ```python
         from outlines import Generator

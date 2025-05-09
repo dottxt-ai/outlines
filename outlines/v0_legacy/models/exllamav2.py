@@ -64,7 +64,7 @@ class ExLlamaV2Model():
     ):
         warnings.warn("""
             The `ExLlamaV2Model` model is deprecated starting from v1.0.0.
-            Support for it will be removed in v1.5.0.
+            Support for it will be removed in v1.1.0.
             As the `exllamav2` library is not compatible with some key features
             of `outlines`, we decided to remove support for it.
             """,
