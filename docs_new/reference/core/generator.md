@@ -5,7 +5,7 @@ title: Generator API
 # Generator
 
 
-The `Generator` class is the core component of Outlines v1. `Generator` accepts a [model](/api/available_models) and an optional [output type](/api/types). If no output type is provided, the `Generator` will return unstructured text.
+The `Generator` class is the core component of Outlines v1. `Generator` accepts a [model](../reference/available_models) and an optional [output type](/api/types). If no output type is provided, the `Generator` will return unstructured text.
 
 !!! note
 

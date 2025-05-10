@@ -20,11 +20,11 @@ or the classic `pip`:
 pip install 'outlines[transformers]'
 ```
 
-For other backends, see the [installation guide](/installation).
+For other backends, see the [installation guide](../installation).
 
 ## Quick start
 
-Outlines wraps around a variety of LLM inference backends, described in the [installation guide](/installation). The following example shows how to use Outlines with HuggingFace's [`transformers` library](https://huggingface.co/docs/transformers/en/index).
+Outlines wraps around a variety of LLM inference backends, described in the [installation guide](../installation). The following example shows how to use Outlines with HuggingFace's [`transformers` library](https://huggingface.co/docs/transformers/en/index).
 
 === "Transformers"
 
