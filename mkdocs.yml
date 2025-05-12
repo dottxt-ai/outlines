@@ -120,10 +120,10 @@ plugins:
               "cookbook/deploy-using-bentoml.md": "examples/deploy-using-bentoml.md"
               "cookbook/deploy-using-cerebrium.md": "examples/deploy-using-cerebrium.md"
               "cookbook/deploy-using-modal.md": "examples/deploy-using-modal.md"
-              
+
               # Root files
               "quickstart.md": "getting_started/index.md"
-              
+
               # API to reference redirects
               "api/index.md": "reference/index.md"
               "api/json_schema.md": "reference/types/json_schema.md"
@@ -133,12 +133,12 @@ plugins:
               "api/guide.md": "reference/advanced/guide.md"
               "api/parsing.md": "reference/advanced/parsing.md"
               "api/models.md": "reference/available_models.md"
-              
+
               # API subdirectories to reference
               "api/types/": "reference/types/index.md"
               "api/core/": "reference/index.md"
               "api/advanced/": "reference/index.md"
-              
+
     - git-committers:
         repository: dottxt-ai/outlines
         branch: main
