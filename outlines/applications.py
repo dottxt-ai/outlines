@@ -1,4 +1,4 @@
-from typing import Any, Callable, Optional, Union
+from typing import Any, Callable, Dict, Optional, Union
 
 from outlines.generator import BlackBoxGenerator, Generator, SteerableGenerator
 from outlines.templates import Template
@@ -9,7 +9,8 @@ class Application:
     """
     Application is a class that encapsulates a prompt template and an
     output type. It can be called to generate a response by providing a
-    model and optional arguments used to create the prompt from the template.
+    model, the values to be substituted in the template in a dictionary
+    and optional inference parameters.
 
     Parameters
     ----------
@@ -40,7 +41,7 @@ class Application:
 
     application = Application(template, JsonType(OutputModel))
 
-    result = application(model, num=3)
+    result = application(model, {"num": 3}, max_new_tokens=20)
     print(result)  # Expected output: { "result" : 6 }
     ```
     """
@@ -50,16 +51,21 @@ class Application:
         self.model: Optional[Union[BlackBoxModel, SteerableModel]] = None
         self.generator: Optional[Union[BlackBoxGenerator, SteerableGenerator]] = None
 
-    def __call__(self, model: Union[BlackBoxModel, SteerableModel], *args, **kwargs):
+    def __call__(
+        self,
+        model: Union[BlackBoxModel, SteerableModel],
+        template_vars: Dict[str, Any],
+        **inference_kwargs
+    ):
         if model is None:
             raise ValueError("you must provide a model")
         # We save the generator to avoid creating a new one for each call.
         # If the model has changed since the last call, we create a new
         # generator.
-        elif model != self.model:
+        if model != self.model:
             self.model = model
             self.generator = Generator(model, self.output_type)
 
-        prompt = self.template(*args, **kwargs)
+        prompt = self.template(**template_vars)
         assert self.generator is not None
-        return self.generator(prompt)
+        return self.generator(prompt, **inference_kwargs)
