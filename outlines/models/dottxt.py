@@ -1,16 +1,18 @@
 """Integration with Dottxt's API."""
 
 import json
-from functools import singledispatchmethod
 from typing import Optional, TYPE_CHECKING
 
-from pydantic import BaseModel, TypeAdapter
-from typing_extensions import _TypedDictMeta  # type: ignore
+from pydantic import TypeAdapter
 
 from outlines.models.base import Model, ModelTypeAdapter
-from outlines.types import Regex, CFG, JsonSchema
-from outlines.types.utils import is_dataclass, is_typed_dict, is_pydantic_model, is_genson_schema_builder
-
+from outlines.types import CFG, JsonSchema, Regex
+from outlines.types.utils import (
+    is_dataclass,
+    is_genson_schema_builder,
+    is_pydantic_model,
+    is_typed_dict,
+)
 
 if TYPE_CHECKING:
     from dottxt import Dottxt as DottxtClient
@@ -31,27 +33,32 @@ class DottxtTypeAdapter(ModelTypeAdapter):
         if isinstance(model_input, str):
             return model_input
         raise TypeError(
-            f"The input type {model_input} is not available with Dottxt. The only available type is `str`."
+            f"The input type {model_input} is not available with Dottxt. "
+            "The only available type is `str`."
         )
 
     def format_output_type(self, output_type):
         """Format the output type to pass to the client.
 
-        TODO: `int`, `float` and other Python types could be supported via JSON Schema.
+        TODO: `int`, `float` and other Python types could be supported via
+        JSON Schema.
         """
 
         # Unsupported languages
         if output_type is None:
             raise TypeError(
-                "You must provide an output type. Dottxt only supports constrained generation."
+                "You must provide an output type. Dottxt only supports "
+                "constrained generation."
             )
         elif isinstance(output_type, Regex):
             raise TypeError(
-                "Regex-based structured outputs will soon be available with Dottxt. Use an open source model in the meantime."
+                "Regex-based structured outputs will soon be available with "
+                "Dottxt. Use an open source model in the meantime."
             )
         elif isinstance(output_type, CFG):
             raise TypeError(
-                "CFG-based structured outputs will soon be available with Dottxt. Use an open source model in the meantime."
+                "CFG-based structured outputs will soon be available with "
+                "Dottxt. Use an open source model in the meantime."
             )
 
         elif isinstance(output_type, JsonSchema):
@@ -87,7 +94,7 @@ class Dottxt(Model):
         self,
         client: "Dottxt",
         model_name: Optional[str] = None,
-        model_revision: str = "",
+        model_revision: Optional[str] = None,
     ):
         self.client = client
         self.model_name = model_name
@@ -98,8 +105,16 @@ class Dottxt(Model):
         prompt = self.type_adapter.format_input(model_input)
         json_schema = self.type_adapter.format_output_type(output_type)
 
-        if self.model_name:
+        if (
+            "model_name" not in inference_kwargs
+            and self.model_name is not None
+        ):
             inference_kwargs["model_name"] = self.model_name
+
+        if (
+            "model_revision" not in inference_kwargs
+            and self.model_revision is not None
+        ):
             inference_kwargs["model_revision"] = self.model_revision
 
         completion = self.client.json(
@@ -109,7 +124,9 @@ class Dottxt(Model):
         )
         return completion.data
 
-    def generate_stream(self, model_input, output_type=None, **inference_kwargs):
+    def generate_stream(
+        self, model_input, output_type=None, **inference_kwargs
+    ):
         raise NotImplementedError(
             "Dottxt does not support streaming. Call the model/generator for "
             + "regular generation instead."
@@ -119,6 +136,6 @@ class Dottxt(Model):
 def from_dottxt(
     client: "DottxtClient",
     model_name: Optional[str] = None,
-    model_revision: str = "",
+    model_revision: Optional[str] = None,
 ):
     return Dottxt(client, model_name, model_revision)

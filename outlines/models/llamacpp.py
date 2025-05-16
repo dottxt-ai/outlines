@@ -1,6 +1,14 @@
 import warnings
 from functools import singledispatchmethod
-from typing import TYPE_CHECKING, Dict, Iterator, List, Optional, Set, Tuple, Union
+from typing import (
+    TYPE_CHECKING,
+    Dict,
+    Iterator,
+    List,
+    Set,
+    Tuple,
+    Union,
+)
 
 from outlines.models.base import Model, ModelTypeAdapter
 from outlines.models.tokenizer import Tokenizer
@@ -21,7 +29,8 @@ class LlamaCppTokenizer(Tokenizer):
 
         self.tokenizer = model.tokenizer()
 
-        # TODO: Remove when https://github.com/ggerganov/llama.cpp/pull/5613 is resolved
+        # TODO: Remove when https://github.com/ggerganov/llama.cpp/pull/5613
+        # is resolved
         self._hf_tokenizer = None
         try:
             self.vocabulary = model.tokenizer_.hf_tokenizer.get_vocab()
@@ -35,7 +44,8 @@ class LlamaCppTokenizer(Tokenizer):
         # ensure stable ordering of vocabulary
         self.vocabulary = {
             tok: tok_id
-            for tok, tok_id in sorted(self.vocabulary.items(), key=lambda x: x[1])
+            for tok, tok_id
+            in sorted(self.vocabulary.items(), key=lambda x: x[1])
         }
 
         self._hash = None
@@ -45,14 +55,19 @@ class LlamaCppTokenizer(Tokenizer):
         return [decoded_bytes.decode("utf-8", errors="ignore")]
 
     def encode(
-        self, prompt: Union[str, List[str]], add_bos: bool = True, special: bool = True
+        self,
+        prompt: Union[str, List[str]],
+        add_bos: bool = True,
+        special: bool = True,
     ) -> Tuple[List[int], List[int]]:
         if isinstance(prompt, list):
             raise NotImplementedError(
                 "llama-cpp-python tokenizer doesn't support batch tokenization"
             )
         token_ids = self.tokenizer.tokenize(
-            prompt.encode("utf-8", errors="ignore"), add_bos=add_bos, special=special
+            prompt.encode("utf-8", errors="ignore"),
+            add_bos=add_bos,
+            special=special,
         )
         # generate attention mask, missing from llama-cpp-python
         attention_mask = [
@@ -65,7 +80,10 @@ class LlamaCppTokenizer(Tokenizer):
             from transformers.file_utils import SPIECE_UNDERLINE
 
             token_str = self._hf_tokenizer.convert_tokens_to_string([token])
-            if token.startswith(SPIECE_UNDERLINE) or token == "<0x20>": # pragma: no cover
+            if (
+                token.startswith(SPIECE_UNDERLINE)
+                or token == "<0x20>"
+            ):  # pragma: no cover
                 token_str = " " + token_str
             return token_str
         else:
@@ -163,8 +181,8 @@ class LlamaCpp(Model):
         output_type
             The logits processor to use when generating text.
         inference_kwargs
-            The inference kwargs that can be passed to the `Llama.__call__` method
-            in the `llama-cpp-python` library.
+            The inference kwargs that can be passed to the `Llama.__call__`
+            method in the `llama-cpp-python` library.
 
         Returns
         -------
@@ -173,7 +191,8 @@ class LlamaCpp(Model):
         """
         if isinstance(output_type, CFGLogitsProcessor):
             raise NotImplementedError(
-                "CFG generation is not supported for LlamaCpp due to bug in the llama_cpp tokenizer"
+                "CFG generation is not supported for LlamaCpp due to bug in "
+                "the llama_cpp tokenizer"
             )
 
         completion = self.model(
@@ -199,8 +218,8 @@ class LlamaCpp(Model):
         output_type
             The logits processor to use when generating text.
         inference_kwargs
-            The inference kwargs that can be passed to the `Llama.__call__` method
-            in the `llama-cpp-python` library.
+            The inference kwargs that can be passed to the `Llama.__call__`
+            method in the `llama-cpp-python` library.
 
         Returns
         -------
@@ -209,7 +228,8 @@ class LlamaCpp(Model):
         """
         if isinstance(output_type, CFGLogitsProcessor):
             raise NotImplementedError(
-                "CFG generation is not supported for LlamaCpp due to bug in the llama_cpp tokenizer"
+                "CFG generation is not supported for LlamaCpp due to bug in "
+                "the llama_cpp tokenizer"
             )
 
         generator = self.model(

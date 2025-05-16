@@ -16,7 +16,7 @@ from .llamacpp import LlamaCpp, from_llamacpp
 from .mlxlm import MLXLM, from_mlxlm
 from .ollama import Ollama, from_ollama
 from .openai import from_openai, OpenAI
-from .sglang import from_sglang, SgLang, AsyncSgLang
+from .sglang import from_sglang, SGLang, AsyncSgLang
 from .tgi import from_tgi, TGI, AsyncTGI
 from .transformers import (
     Transformers,
@@ -42,6 +42,6 @@ BlackBoxModel = Union[
     Ollama,
     OpenAI,
     TGI,
-    SgLang,
+    SGLang,
     VLLM,
 ]
