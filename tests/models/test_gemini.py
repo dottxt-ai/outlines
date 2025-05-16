@@ -5,11 +5,10 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Generator, Literal
 
-import google.generativeai as genai
 import pytest
-import requests
 from PIL import Image
-from pydantic import BaseModel
+from google.genai import Client
+from pydantic import BaseModel, ValidationError
 
 import outlines
 from outlines.models.gemini import Gemini
@@ -20,13 +19,12 @@ if sys.version_info >= (3, 12):
 else:
     from typing_extensions import TypedDict
 
-
 MODEL_NAME = "gemini-1.5-flash-latest"
 
 
 @pytest.fixture(scope="session")
 def model():
-    return Gemini(genai.GenerativeModel(MODEL_NAME))
+    return Gemini(Client(), MODEL_NAME)
 
 
 @pytest.fixture
@@ -44,16 +42,27 @@ def image():
     return image
 
 
-def test_gemini_wrong_inference_parameters(model):
-    with pytest.raises(TypeError, match="got an unexpected"):
-        model.generate("prompt", foo=10)
-
-
+@pytest.mark.api_call
 def test_gemini_init_from_client():
-    client = genai.GenerativeModel(MODEL_NAME)
+    client = Client()
+
+    # Without model name
     model = outlines.from_gemini(client)
     assert isinstance(model, Gemini)
     assert model.client == client
+    assert model.model_name is None
+
+    # With model name
+    model = outlines.from_gemini(client, MODEL_NAME)
+    assert isinstance(model, Gemini)
+    assert model.client == client
+    assert model.model_name == MODEL_NAME
+
+
+@pytest.mark.api_call
+def test_gemini_wrong_inference_parameters(model):
+    with pytest.raises(ValidationError):
+        model.generate("prompt", foo=10)
 
 
 @pytest.mark.api_call

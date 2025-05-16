@@ -63,7 +63,7 @@ test = [
     "openai>=1.0.0",
     "datasets",
     "anthropic",
-    "google-generativeai",
+    "google-genai",
     "transformers",
     "pillow",
     "jax",
