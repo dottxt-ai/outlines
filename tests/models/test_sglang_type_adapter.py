@@ -108,7 +108,7 @@ def test_sglang_type_adapter_output_type(
     assert type_adapter.format_output_type(None) == {}
     with pytest.warns(
         UserWarning,
-        match="SgLang grammar-based structured outputs expects an EBNF"
+        match="SGLang grammar-based structured outputs expects an EBNF"
     ):
         assert type_adapter.format_output_type(cfg_instance) == {
             "extra_body": {"ebnf": CFG_STRING}

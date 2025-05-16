@@ -138,14 +138,12 @@ class VLLM(Model):
         output_type_args = self.type_adapter.format_output_type(output_type)
         extra_body = inference_kwargs.pop("extra_body", {})
         extra_body.update(output_type_args)
-        model_name = (
-            inference_kwargs.pop("model", self.model_name)
-            or self.model_name
-        )
+
+        if "model" not in inference_kwargs and self.model_name is not None:
+            inference_kwargs["model"] = self.model_name
 
         client_args = {
             **messages,
-            "model": model_name,
             **inference_kwargs,
         }
         if extra_body:
@@ -244,21 +242,18 @@ class AsyncVLLM(AsyncModel):
         output_type_args = self.type_adapter.format_output_type(output_type)
         extra_body = inference_kwargs.pop("extra_body", {})
         extra_body.update(output_type_args)
-        model_name = (
-            inference_kwargs.pop("model", self.model_name)
-            or self.model_name
-        )
+
+        if "model" not in inference_kwargs and self.model_name is not None:
+            inference_kwargs["model"] = self.model_name
 
         client_args = {
             **messages,
-            "model": model_name,
             **inference_kwargs,
         }
         if extra_body:
             client_args["extra_body"] = extra_body
 
         return client_args
-
 
 
 def from_vllm(

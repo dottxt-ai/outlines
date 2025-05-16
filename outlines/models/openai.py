@@ -52,7 +52,8 @@ class OpenAITypeAdapter(ModelTypeAdapter):
         elif isinstance(model_input, Vision):
             return self.format_vision_model_input(model_input)
         raise TypeError(
-            f"The input type {input} is not available with OpenAI. The only available types are `str` and `Vision`."
+            f"The input type {input} is not available with OpenAI. "
+            "The only available types are `str` and `Vision`."
         )
 
     def format_str_model_input(self, model_input: str):
@@ -95,18 +96,22 @@ class OpenAITypeAdapter(ModelTypeAdapter):
         """Generate the `response_format` argument to the client based on the
         output type specified by the user.
 
-        TODO: `int`, `float` and other Python types could be supported via JSON Schema.
+        TODO: `int`, `float` and other Python types could be supported via
+        JSON Schema.
 
         """
 
         # Unsupported languages
         if isinstance(output_type, Regex):
             raise TypeError(
-                "Neither regex-based structured outputs nor the `pattern` keyword in Json Schema are available with OpenAI. Use an open source model or dottxt instead."
+                "Neither regex-based structured outputs nor the `pattern` keyword "
+                "in Json Schema are available with OpenAI. Use an open source "
+                "model or dottxt instead."
             )
         elif isinstance(output_type, CFG):
             raise TypeError(
-                "CFG-based structured outputs are not available with OpenAI. Use an open source model or dottxt instead."
+                "CFG-based structured outputs are not available with OpenAI. "
+                "Use an open source model or dottxt instead."
             )
 
         if output_type is None:
@@ -130,7 +135,8 @@ class OpenAITypeAdapter(ModelTypeAdapter):
         else:
             type_name = getattr(output_type, "__name__", output_type)
             raise TypeError(
-                f"The type `{type_name}` is not available with OpenAI. Use an open source model or dottxt instead."
+                f"The type `{type_name}` is not available with OpenAI. "
+                "Use an open source model or dottxt instead."
             )
 
     def format_json_output_type(self, schema: dict):
@@ -174,7 +180,7 @@ class OpenAI(Model):
     def __init__(
         self,
         client: Union["OpenAIClient", "AzureOpenAIClient"],
-        model_name: Union[str, "OpenAIConfig"],
+        model_name: Optional[Union[str, "OpenAIConfig"]] = None,
         **kwargs
     ):
         # legacy mode
@@ -199,8 +205,14 @@ class OpenAI(Model):
             DeprecationWarning,
             stacklevel=2,
             )
-            config = model_name if isinstance(model_name, OpenAIConfig) else kwargs.pop("config")
-            self.legacy_instance = OpenAILegacy(client, config, kwargs.get("system_prompt"))
+            config = (
+                model_name
+                if isinstance(model_name, OpenAIConfig)
+                else kwargs.pop("config")
+            )
+            self.legacy_instance = OpenAILegacy(
+                client, config, kwargs.get("system_prompt")
+            )
         # regular mode
         else:
             self.client = client
@@ -218,14 +230,20 @@ class OpenAI(Model):
         messages = self.type_adapter.format_input(model_input)
         response_format = self.type_adapter.format_output_type(output_type)
 
+        if "model" not in inference_kwargs and self.model_name is not None:
+            inference_kwargs["model"] = self.model_name
+
         try:
             result = self.client.chat.completions.create(
-                model=self.model_name, **messages, **response_format, **inference_kwargs
+                **messages,
+                **response_format,
+                **inference_kwargs,
             )
         except openai.BadRequestError as e:
             if e.body["message"].startswith("Invalid schema"):
                 raise TypeError(
-                    f"OpenAI does not support your schema: {e.body['message']}. Try a local model or dottxt instead."
+                    f"OpenAI does not support your schema: {e.body['message']}. "
+                    "Try a local model or dottxt instead."
                 )
             else:
                 raise e
@@ -250,8 +268,11 @@ class OpenAI(Model):
     ):
         messages = self.type_adapter.format_input(model_input)
         response_format = self.type_adapter.format_output_type(output_type)
+
+        if "model" not in inference_kwargs and self.model_name is not None:
+            inference_kwargs["model"] = self.model_name
+
         stream = self.client.chat.completions.create(
-            model=self.model_name,
             stream=True,
             **messages,
             **response_format,
@@ -294,7 +315,8 @@ class OpenAI(Model):
             return super().__repr__()
 
 def from_openai(
-    client: Union["OpenAIClient", "AzureOpenAIClient"], model_name: str
+    client: Union["OpenAIClient", "AzureOpenAIClient"],
+    model_name: Optional[str] = None,
 ) -> OpenAI:
     return OpenAI(client, model_name)
 

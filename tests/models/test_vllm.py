@@ -112,20 +112,53 @@ if not vllm_server_url:
 
 @pytest.fixture
 def sync_model():
-    return VLLM(openai_client, model_name=vllm_model_name)
+    return VLLM(openai_client, vllm_model_name)
+
+
+@pytest.fixture
+def sync_model_no_model_name():
+    return VLLM(openai_client)
 
 
 @pytest.fixture
 def async_model():
-    return AsyncVLLM(async_openai_client, model_name=vllm_model_name)
+    return AsyncVLLM(async_openai_client, vllm_model_name)
+
+
+@pytest.fixture
+def async_model_no_model_name():
+    return AsyncVLLM(async_openai_client)
 
 
 def test_vllm_init():
-    model = from_vllm(OpenAI(base_url="http://localhost:11434"))
-    assert isinstance(model, VLLM)
+    # We do not rely on the mock server here because we need an object
+    # of type OpenAI and AsyncOpenAI to test the init function.
+    openai_client = OpenAI(base_url="http://localhost:11434")
+    async_openai_client = AsyncOpenAI(base_url="http://localhost:11434")
 
-    model = from_vllm(AsyncOpenAI(base_url="http://localhost:11434"))
+    # Sync with model name
+    model = from_vllm(openai_client, vllm_model_name)
+    assert isinstance(model, VLLM)
+    assert model.client == openai_client
+    assert model.model_name == vllm_model_name
+
+    # Sync without model name
+    model = from_vllm(openai_client)
+    assert isinstance(model, VLLM)
+    assert model.client == openai_client
+    assert model.model_name is None
+
+    # Async with model name
+    model = from_vllm(async_openai_client, vllm_model_name)
     assert isinstance(model, AsyncVLLM)
+    assert model.client == async_openai_client
+    assert model.model_name == vllm_model_name
+
+    # Async without model name
+    model = from_vllm(async_openai_client)
+    assert isinstance(model, AsyncVLLM)
+    assert model.client == async_openai_client
+    assert model.model_name is None
 
     with pytest.raises(ValueError, match="Unsupported client type"):
         from_vllm("foo")
@@ -136,8 +169,11 @@ def test_vllm_sync_simple_call(sync_model):
     assert isinstance(result, str)
 
 
-def test_vllm_sync_streaming(sync_model):
-    result = sync_model.stream("Respond with a single word.")
+def test_vllm_sync_streaming(sync_model_no_model_name):
+    result = sync_model_no_model_name.stream(
+        "Respond with a single word.",
+        model=vllm_model_name,
+    )
     assert isinstance(result, Generator)
     assert isinstance(next(result), str)
 
@@ -176,8 +212,11 @@ async def test_vllm_async_simple_call(async_model):
 
 
 @pytest.mark.asyncio
-async def test_vllm_async_streaming(async_model):
-    result = async_model.stream("Respond with a single word.")
+async def test_vllm_async_streaming(async_model_no_model_name):
+    result = async_model_no_model_name.stream(
+        "Respond with a single word.",
+        model=vllm_model_name,
+    )
     assert isinstance(result, AsyncGenerator)
     async for chunk in result:
         assert isinstance(chunk, str)

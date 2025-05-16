@@ -1,4 +1,4 @@
-# ATTENTION: When running this test with an actual SgLang server, use the
+# ATTENTION: When running this test with an actual SGLang server, use the
 # llguidance backend (--grammar-backend llguidance)
 # The outlines backend does not support the EBNF grammar. The xgrammar
 # backend is slow and buggy.
@@ -11,7 +11,7 @@ from typing import AsyncGenerator, Generator
 import pytest
 from openai import AsyncOpenAI, OpenAI
 
-from outlines.models.sglang import SgLang, AsyncSgLang, from_sglang
+from outlines.models.sglang import SGLang, AsyncSgLang, from_sglang
 from outlines.types.dsl import CFG, Regex, JsonSchema
 from tests.test_utils.mock_openai_client import MockOpenAIClient, MockAsyncOpenAIClient
 
@@ -22,7 +22,7 @@ answer ::= "yes" | "no"
 """
 
 
-# If the SGLANG_SERVER_URL environment variable is set, use the real SgLang server
+# If the SGLANG_SERVER_URL environment variable is set, use the real SGLang server
 # Otherwise, use the mock server
 sglang_server_url = os.environ.get("SGLANG_SERVER_URL")
 sglang_model_name = os.environ.get(
@@ -32,7 +32,7 @@ if sglang_server_url:
     openai_client = OpenAI(base_url=sglang_server_url)
     async_openai_client = AsyncOpenAI(base_url=sglang_server_url)
 else:
-    warnings.warn("No SgLang server URL provided, using mock server")
+    warnings.warn("No SGLang server URL provided, using mock server")
     openai_client = MockOpenAIClient()
     async_openai_client = MockAsyncOpenAIClient()
 
@@ -120,7 +120,12 @@ if not sglang_server_url:
 
 @pytest.fixture
 def sync_model():
-    return SgLang(openai_client, model_name=sglang_model_name)
+    return SGLang(openai_client, model_name=sglang_model_name)
+
+
+@pytest.fixture
+def sync_model_no_model_name():
+    return SGLang(openai_client)
 
 
 @pytest.fixture
@@ -128,12 +133,40 @@ def async_model():
     return AsyncSgLang(async_openai_client, model_name=sglang_model_name)
 
 
-def test_sglang_init():
-    model = from_sglang(OpenAI(base_url="http://localhost:11434"))
-    assert isinstance(model, SgLang)
+@pytest.fixture
+def async_model_no_model_name():
+    return AsyncSgLang(async_openai_client)
 
-    model = from_sglang(AsyncOpenAI(base_url="http://localhost:11434"))
+
+def test_sglang_init():
+    # We do not rely on the mock server here because we need an object
+    # of type OpenAI and AsyncOpenAI to test the init function.
+    openai_client = OpenAI(base_url="http://localhost:11434")
+    async_openai_client = AsyncOpenAI(base_url="http://localhost:11434")
+
+    # Sync with model name
+    model = from_sglang(openai_client, sglang_model_name)
+    assert isinstance(model, SGLang)
+    assert model.client == openai_client
+    assert model.model_name == sglang_model_name
+
+    # Sync without model name
+    model = from_sglang(openai_client)
+    assert isinstance(model, SGLang)
+    assert model.client == openai_client
+    assert model.model_name is None
+
+    # Async with model name
+    model = from_sglang(async_openai_client, sglang_model_name)
     assert isinstance(model, AsyncSgLang)
+    assert model.client == async_openai_client
+    assert model.model_name == sglang_model_name
+
+    # Async without model name
+    model = from_sglang(async_openai_client)
+    assert isinstance(model, AsyncSgLang)
+    assert model.client == async_openai_client
+    assert model.model_name is None
 
     with pytest.raises(ValueError, match="Unsupported client type"):
         from_sglang("foo")
@@ -144,8 +177,11 @@ def test_sglang_sync_simple_call(sync_model):
     assert isinstance(result, str)
 
 
-def test_sglang_sync_streaming(sync_model):
-    result = sync_model.stream("Respond with a single word.")
+def test_sglang_sync_streaming(sync_model_no_model_name):
+    result = sync_model_no_model_name.stream(
+        "Respond with a single word.",
+        model=sglang_model_name,
+    )
     assert isinstance(result, Generator)
     assert isinstance(next(result), str)
 
@@ -177,7 +213,7 @@ def test_sglang_sync_regex(sync_model):
 def test_sglang_sync_cfg(sync_model):
     with pytest.warns(
         UserWarning,
-        match="SgLang grammar-based structured outputs expects an EBNF"
+        match="SGLang grammar-based structured outputs expects an EBNF"
     ):
         result = sync_model("foo?", CFG(EBNF_YES_NO_GRAMMAR), max_tokens=10)
         assert isinstance(result, str)
@@ -191,8 +227,11 @@ async def test_sglang_async_simple_call(async_model):
 
 
 @pytest.mark.asyncio
-async def test_sglang_async_streaming(async_model):
-    result = async_model.stream("Respond with a single word.")
+async def test_sglang_async_streaming(async_model_no_model_name):
+    result = async_model_no_model_name.stream(
+        "Respond with a single word.",
+        model=sglang_model_name,
+    )
     assert isinstance(result, AsyncGenerator)
     async for chunk in result:
         assert isinstance(chunk, str)

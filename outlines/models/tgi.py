@@ -141,7 +141,6 @@ class TGI(Model):
         output_type_args = self.type_adapter.format_output_type(output_type)
         inference_kwargs.update(output_type_args)
 
-
         client_args = {
             "prompt": prompt,
             **inference_kwargs,
