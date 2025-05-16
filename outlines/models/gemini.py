@@ -1,50 +1,44 @@
 """Integration with Gemini's API."""
 
-from enum import EnumMeta, Enum
 from typing import (
-    get_args,
-    get_origin,
-    Optional,
-    Union,
     Any,
+    Optional,
     TYPE_CHECKING,
-    Literal,
+    Union,
+    get_args,
 )
-
-from pydantic import BaseModel, TypeAdapter
-from typing_extensions import is_typeddict
 
 from outlines.models.base import Model, ModelTypeAdapter
 from outlines.templates import Vision
-from outlines.types import Regex, CFG, JsonSchema
+from outlines.types import CFG, JsonSchema, Regex
 from outlines.types.utils import (
     is_dataclass,
-    is_typed_dict,
-    is_pydantic_model,
-    is_genson_schema_builder,
     is_enum,
+    get_enum_from_literal,
+    is_genson_schema_builder,
     is_literal,
+    is_pydantic_model,
+    is_typed_dict,
     is_typing_list,
-    get_enum_from_literal
 )
 
 if TYPE_CHECKING:
-    from google.generativeai import GenerativeModel as GeminiClient
+    from google.genai import Client
 
 __all__ = ["Gemini", "from_gemini"]
 
 
 class GeminiTypeAdapter(ModelTypeAdapter):
-    """Type adapter for the Gemini clients.
+    """Type adapter for the Gemini client.
 
     `GeminiTypeAdapter` is responsible for preparing the arguments to Gemini's
-    `generate_content` methods: the input (prompt and possibly image), as well
-    as the output type (only JSON).
+    client `models.generate_content` method: the input (prompt and possibly
+    image), as well as the output type (either JSON or multiple choice).
 
     """
 
     def format_input(self, model_input):
-        """Generate the `messages` argument to pass to the client.
+        """Generate the `contents` argument to pass to the client.
 
         Argument
         --------
@@ -55,51 +49,66 @@ class GeminiTypeAdapter(ModelTypeAdapter):
         if isinstance(model_input, str):
             return {"contents": [model_input]}
         elif isinstance(model_input, Vision):
-            return {"contents": [model_input.prompt, model_input.image]}
+            from google.genai import types
+
+            image_part = types.Part.from_bytes(
+                data=model_input.image_str,
+                mime_type=model_input.image_format
+            ),
+            return {"contents": [model_input.prompt, image_part]}
         else:
             raise TypeError(
-                f"The input type {input} is not available with Gemini. The only available types are `str` and `Vision`."
+                f"The input type {input} is not available with Gemini. "
+                "The only available types are `str` and `Vision`."
             )
 
     def format_output_type(self, output_type):
-        # TODO: `int`, `float` and other Python types could be supported via JSON Schema.
-
-        # Unsupported languages
+        # Unsupported output pytes
         if isinstance(output_type, Regex):
             raise TypeError(
-                "Neither regex-based structured outputs nor the `pattern` keyword in Json Schema are available with Gemini. Use an open source model or dottxt instead."
+                "Neither regex-based structured outputs nor the `pattern` "
+                "keyword in Json Schema are available with Gemini. Use an "
+                "open source model or dottxt instead."
             )
         elif isinstance(output_type, CFG):
             raise TypeError(
-                "CFG-based structured outputs are not available with Gemini. Use an open source model or dottxt instead."
+                "CFG-based structured outputs are not available with Gemini. "
+                "Use an open source model or dottxt instead."
             )
         elif is_genson_schema_builder(output_type):
             raise TypeError(
-                "The Gemini SDK does not accept Genson schema builders as an input. Pass a Pydantic model, typed dict or dataclass instead."
+                "The Gemini SDK does not accept Genson schema builders as an "
+                "input. Pass a Pydantic model, typed dict or dataclass "
+                "instead."
             )
         elif isinstance(output_type, JsonSchema):
             raise TypeError(
-                "The Gemini SDK does not accept Json Schemas as an input. Pass a Pydantic model, typed dict or dataclass instead."
+                "The Gemini SDK does not accept Json Schemas as an input. "
+                "Pass a Pydantic model, typed dict or dataclass instead."
             )
 
         if output_type is None:
             return {}
-        # structured types
+
+        # Structured types
         elif is_dataclass(output_type):
             return self.format_json_output_type(output_type)
         elif is_typed_dict(output_type):
             return self.format_json_output_type(output_type)
         elif is_pydantic_model(output_type):
             return self.format_json_output_type(output_type)
-        # enum types
+
+        # List of structured types
+        elif is_typing_list(output_type):
+            return self.format_list_output_type(output_type)
+
+        # Multiple choice types
         elif is_enum(output_type):
             return self.format_enum_output_type(output_type)
         elif is_literal(output_type):
             enum = get_enum_from_literal(output_type)
             return self.format_enum_output_type(enum)
-        # list of objects
-        elif is_typing_list(output_type):
-            return self.format_list_output_type(output_type)
+
         else:
             type_name = getattr(output_type, "__name__", output_type)
             raise TypeError(
@@ -143,14 +152,16 @@ class GeminiTypeAdapter(ModelTypeAdapter):
                 )
 
         raise TypeError(
-            f"Gemini only supports homogenous lists: list[BaseModel], list[TypedDict] or list[dataclass]. "
+            f"Gemini only supports homogenous lists: "
+            "list[BaseModel], list[TypedDict] or list[dataclass]. "
             f"Got {output_type} instead."
         )
 
 
 class Gemini(Model):
-    def __init__(self, client: "GeminiClient"):
+    def __init__(self, client: "Client", model_name: Optional[str] = None):
         self.client = client
+        self.model_name = model_name
         self.type_adapter = GeminiTypeAdapter()
 
     def generate(
@@ -159,15 +170,13 @@ class Gemini(Model):
         output_type: Optional[Any] = None,
         **inference_kwargs,
     ):
-        import google.generativeai as genai
-
         contents = self.type_adapter.format_input(model_input)
-        generation_config = genai.GenerationConfig(
-            **self.type_adapter.format_output_type(output_type)
-        )
+        generation_config = self.type_adapter.format_output_type(output_type)
 
-        completion = self.client.generate_content(
-            generation_config=generation_config, **contents, **inference_kwargs
+        completion = self.client.models.generate_content(
+            **contents,
+            model=inference_kwargs.pop("model", self.model_name),
+            config={**generation_config, **inference_kwargs}
         )
 
         return completion.text
@@ -178,18 +187,13 @@ class Gemini(Model):
         output_type: Optional[Any] = None,
         **inference_kwargs,
     ):
-        import google.generativeai as genai
-
         contents = self.type_adapter.format_input(model_input)
-        generation_config = genai.GenerationConfig(
-            **self.type_adapter.format_output_type(output_type)
-        )
+        generation_config = self.type_adapter.format_output_type(output_type)
 
-        stream = self.client.generate_content(
-            generation_config=generation_config,
+        stream = self.client.models.generate_content_stream(
             **contents,
-            **inference_kwargs,
-            stream=True,
+            model=inference_kwargs.pop("model", self.model_name),
+            config={**generation_config, **inference_kwargs},
         )
 
         for chunk in stream:
@@ -197,5 +201,5 @@ class Gemini(Model):
                 yield chunk.text
 
 
-def from_gemini(client: "GeminiClient"):
-    return Gemini(client)
+def from_gemini(client: "Client", model_name: Optional[str] = None):
+    return Gemini(client, model_name)
