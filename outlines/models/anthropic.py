@@ -1,6 +1,6 @@
 """Integration with Anthropic's API."""
 
-from typing import Union, TYPE_CHECKING
+from typing import Optional, Union, TYPE_CHECKING
 
 from outlines.models.base import Model, ModelTypeAdapter
 from outlines.templates import Vision
@@ -36,7 +36,8 @@ class AnthropicTypeAdapter(ModelTypeAdapter):
         elif isinstance(model_input, Vision):
             return self.format_vision_model_input(model_input)
         raise TypeError(
-            f"The input type {input} is not available with Anthropic. The only available types are `str` and `Vision`."
+            f"The input type {input} is not available with Anthropic. "
+            "The only available types are `str` and `Vision`."
         )
 
     def format_str_model_input(self, model_input):
@@ -75,18 +76,24 @@ class AnthropicTypeAdapter(ModelTypeAdapter):
             return {}
         else:
             raise NotImplementedError(
-                f"The output type {output_type} is not available with Anthropic."
+                f"The output type {output_type} is not available with "
+                "Anthropic."
             )
 
 
 class Anthropic(Model):
-    def __init__(self, client: "AnthropicClient", model_name: str):
+    def __init__(
+        self, client: "AnthropicClient", model_name: Optional[str] = None
+    ):
         self.client = client
         self.model_name = model_name
         self.type_adapter = AnthropicTypeAdapter()
 
     def generate(
-        self, model_input: Union[str, Vision], output_type=None, **inference_kwargs
+        self,
+        model_input: Union[str, Vision],
+        output_type=None,
+        **inference_kwargs,
     ):
         messages = self.type_adapter.format_input(model_input)
 
@@ -95,15 +102,23 @@ class Anthropic(Model):
                 f"The type {output_type} is not available with Anthropic."
             )
 
+        if (
+            "model" not in inference_kwargs
+            and self.model_name is not None
+        ):
+            inference_kwargs["model"] = self.model_name
+
         completion = self.client.messages.create(
             **messages,
-            model=self.model_name,
             **inference_kwargs,
         )
         return completion.content[0].text
 
     def generate_stream(
-        self, model_input: Union[str, Vision], output_type=None, **inference_kwargs
+        self,
+        model_input: Union[str, Vision],
+        output_type=None,
+        **inference_kwargs,
     ):
         messages = self.type_adapter.format_input(model_input)
 
@@ -112,17 +127,27 @@ class Anthropic(Model):
                 f"The type {output_type} is not available with Anthropic."
             )
 
+        if (
+            "model" not in inference_kwargs
+            and self.model_name is not None
+        ):
+            inference_kwargs["model"] = self.model_name
+
         stream = self.client.messages.create(
             **messages,
-            model=self.model_name,
             stream=True,
             **inference_kwargs,
         )
 
         for chunk in stream:
-            if chunk.type == "content_block_delta" and chunk.delta.type == "text_delta":
+            if (
+                chunk.type == "content_block_delta"
+                and chunk.delta.type == "text_delta"
+            ):
                 yield chunk.delta.text
 
 
-def from_anthropic(client: "AnthropicClient", model_name: str) -> Anthropic:
+def from_anthropic(
+    client: "AnthropicClient", model_name: Optional[str] = None
+) -> Anthropic:
     return Anthropic(client, model_name)

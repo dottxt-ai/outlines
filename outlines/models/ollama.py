@@ -1,12 +1,16 @@
 import json
-from typing import Iterator, TYPE_CHECKING
+from typing import Iterator, Optional, TYPE_CHECKING
 
-from pydantic import BaseModel, TypeAdapter
-from typing_extensions import _TypedDictMeta  # type: ignore
+from pydantic import TypeAdapter
 
 from outlines.models.base import Model, ModelTypeAdapter
-from outlines.types import Regex, CFG, JsonSchema
-from outlines.types.utils import is_dataclass, is_typed_dict, is_pydantic_model, is_genson_schema_builder
+from outlines.types import CFG, JsonSchema, Regex
+from outlines.types.utils import (
+    is_dataclass,
+    is_genson_schema_builder,
+    is_pydantic_model,
+    is_typed_dict,
+)
 
 
 if TYPE_CHECKING:
@@ -38,16 +42,19 @@ class OllamaTypeAdapter(ModelTypeAdapter):
     def format_output_type(self, output_type):
         """Format the output type to pass to the client.
 
-        TODO: `int`, `float` and other Python types could be supported via JSON Schema.
+        TODO: `int`, `float` and other Python types could be supported via
+        JSON Schema.
         """
 
         if isinstance(output_type, Regex):
             raise TypeError(
-                "Regex-based structured outputs are not supported by Ollama. Use an open source model in the meantime."
+                "Regex-based structured outputs are not supported by Ollama. "
+                "Use an open source model in the meantime."
             )
         elif isinstance(output_type, CFG):
             raise TypeError(
-                "CFG-based structured outputs are not supported by Ollama. Use an open source model in the meantime."
+                "CFG-based structured outputs are not supported by Ollama. "
+                "Use an open source model in the meantime."
             )
 
         if output_type is None:
@@ -81,23 +88,33 @@ class Ollama(Model):
 
     """
 
-    def __init__(self, client: "OllamaClient", model_name: str):
+    def __init__(
+        self,client: "OllamaClient", model_name: Optional[str] = None,
+    ):
         self.client = client
         self.model_name = model_name
         self.type_adapter = OllamaTypeAdapter()
 
     def generate(self, model_input, output_type=None, **kwargs) -> str:
+
+        if "model" not in kwargs and self.model_name is not None:
+            kwargs["model"] = self.model_name
+
         response = self.client.generate(
-            model=self.model_name,
             prompt=self.type_adapter.format_input(model_input),
             format=self.type_adapter.format_output_type(output_type),
             **kwargs,
         )
         return response.response
 
-    def generate_stream(self, model_input, output_type=None, **kwargs) -> Iterator[str]:
+    def generate_stream(
+        self, model_input, output_type=None, **kwargs
+    ) -> Iterator[str]:
+
+        if "model" not in kwargs and self.model_name is not None:
+            kwargs["model"] = self.model_name
+
         response = self.client.generate(
-            model=self.model_name,
             prompt=self.type_adapter.format_input(model_input),
             format=self.type_adapter.format_output_type(output_type),
             stream=True,
@@ -107,5 +124,7 @@ class Ollama(Model):
             yield chunk.response
 
 
-def from_ollama(client: "OllamaClient", model_name: str) -> Ollama:
+def from_ollama(
+    client: "OllamaClient", model_name: Optional[str] = None
+) -> Ollama:
     return Ollama(client, model_name)

@@ -111,13 +111,6 @@ def test_openai_legacy_init():
     assert not hasattr(model, "model_name")
     assert not hasattr(model, "type_adapter")
 
-    # directly through the OpenAI class without config
-    with pytest.raises(TypeError):
-        models.OpenAI(
-            AsyncOpenAI(),
-            system_prompt="You are a helpful assistant.",
-        )
-
 
 def test_azure_openai_legacy_init():
     with pytest.warns(
