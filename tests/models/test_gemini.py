@@ -27,6 +27,11 @@ def model():
     return Gemini(Client(), MODEL_NAME)
 
 
+@pytest.fixture(scope="session")
+def model_no_model_name():
+    return Gemini(Client())
+
+
 @pytest.fixture
 def image():
     width, height = 1, 1
@@ -72,8 +77,11 @@ def test_gemini_simple_call(model):
 
 
 @pytest.mark.api_call
-def test_gemini_direct_call(model):
-    result = model("Respond with one word. Not more.")
+def test_gemini_direct_call(model_no_model_name):
+    result = model_no_model_name(
+        "Respond with one word. Not more.",
+        model=MODEL_NAME
+    )
     assert isinstance(result, str)
 
 
