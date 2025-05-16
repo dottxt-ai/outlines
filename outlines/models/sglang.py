@@ -42,7 +42,7 @@ class SgLangTypeAdapter(ModelTypeAdapter):
         term = python_types_to_terms(output_type)
         if isinstance(term, CFG):
             warnings.warn(
-                "SgLang grammar-based structured outputs expects an EBNF "
+                "SGLang grammar-based structured outputs expects an EBNF "
                 "grammar instead of a Lark grammar as is generally used in "
                 "Outlines. The grammar cannot be used as a structured output "
                 "type with an outlines backend, it is only compatible with "
@@ -57,11 +57,11 @@ class SgLangTypeAdapter(ModelTypeAdapter):
             return {"extra_body": {"regex": to_regex(term)}}
 
 
-class SgLang(Model):
+class SGLang(Model):
     """Represents a client to a `sglang` server."""
 
     def __init__(self, client, model_name: Optional[str] = None):
-        """Create a `SgLang` model instance.
+        """Create a `SGLang` model instance.
 
         Parameters
         ----------
@@ -102,7 +102,7 @@ class SgLang(Model):
         for message in messages:
             if message.refusal is not None:  # pragma: no cover
                 raise ValueError(
-                    f"The SgLang server refused to answer the request: "
+                    f"The SGLang server refused to answer the request: "
                     f"{message.refusal}"
                 )
 
@@ -140,18 +140,16 @@ class SgLang(Model):
                 yield chunk.choices[0].delta.content
 
     def _build_client_args(self, model_input, output_type, **inference_kwargs):
-        """Build the arguments to pass to the SgLang client."""
+        """Build the arguments to pass to the SGLang client."""
         messages = self.type_adapter.format_input(model_input)
         output_type_args = self.type_adapter.format_output_type(output_type)
         inference_kwargs.update(output_type_args)
-        model_name = (
-            inference_kwargs.pop("model", self.model_name)
-            or self.model_name
-        )
+
+        if "model" not in inference_kwargs and self.model_name is not None:
+            inference_kwargs["model"] = self.model_name
 
         client_args = {
             **messages,
-            "model": model_name,
             **inference_kwargs,
         }
 
@@ -242,18 +240,16 @@ class AsyncSgLang(AsyncModel):
                 yield chunk.choices[0].delta.content
 
     def _build_client_args(self, model_input, output_type, **inference_kwargs):
-        """Build the arguments to pass to the SgLang client."""
+        """Build the arguments to pass to the SGLang client."""
         messages = self.type_adapter.format_input(model_input)
         output_type_args = self.type_adapter.format_output_type(output_type)
         inference_kwargs.update(output_type_args)
-        model_name = (
-            inference_kwargs.pop("model", self.model_name)
-            or self.model_name
-        )
+
+        if "model" not in inference_kwargs and self.model_name is not None:
+            inference_kwargs["model"] = self.model_name
 
         client_args = {
             **messages,
-            "model": model_name,
             **inference_kwargs,
         }
 
@@ -263,11 +259,11 @@ class AsyncSgLang(AsyncModel):
 def from_sglang(
     client: Union["OpenAI", "AsyncOpenAI"],
     model_name: Optional[str] = None,
-) -> Union[SgLang, AsyncSgLang]:
+) -> Union[SGLang, AsyncSgLang]:
     from openai import AsyncOpenAI, OpenAI
 
     if isinstance(client, OpenAI):
-        return SgLang(client, model_name)
+        return SGLang(client, model_name)
     elif isinstance(client, AsyncOpenAI):
         return AsyncSgLang(client, model_name)
     else:
