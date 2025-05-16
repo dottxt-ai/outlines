@@ -1,13 +1,13 @@
 import io
-import json
 import pytest
 import sys
 from dataclasses import dataclass
 from enum import Enum, EnumMeta
-from typing import Literal, get_args
+from typing import Literal
 
 from PIL import Image
 from genson import SchemaBuilder
+from google.genai import types
 from pydantic import BaseModel
 
 from outlines import cfg, json_schema, regex
@@ -62,7 +62,11 @@ def test_gemini_type_adapter_input_text(adapter):
 def test_gemini_type_adapter_input_vision(adapter, image):
     input_message = Vision("hello", image)
     result = adapter.format_input(input_message)
-    assert result == {"contents": [input_message.prompt, input_message.image]}
+    image_part = types.Part.from_bytes(
+        data=input_message.image_str,
+        mime_type=input_message.image_format
+    ),
+    assert result == {"contents": [input_message.prompt, image_part]}
 
 
 def test_dottxt_type_adapter_input_invalid(adapter):
