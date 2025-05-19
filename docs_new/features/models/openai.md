@@ -1,0 +1,130 @@
+# OpenAI
+
+!!! Installation
+
+    You need to install the `openai` library to be able to use the OpenAI API in Outlines: `pip install openai`
+
+    You also need to have a OpenAI API key. This API key must either be set as an environment variable called `OPENAI_API_KEY` or be provided to the `sopenai.OpenAI` class when instantiating it.
+
+## Model Initialization
+
+To create a Gemini model instance, you can use the `from_openai` function. It takes 2 arguments:
+- `client`: an `openai.OpenAI` or `openai.AzureOpenAI` instance
+- `model_name`: the name of the model you want to use
+
+For instance:
+
+```python
+import outlines
+import openai
+
+# Create the client
+client = openai.OpenAI()
+
+# Create the model
+model = outlines.from_openai(
+    client,
+    "gpt-4o"
+)
+```
+
+Check the [OpenAI documentation](https://platform.openai.com/docs/models) for an up-to-date list of available models. As shown above, you can use Azure OpenAI in Outlines the same way you would use OpenAI, just provide an `openai.AzureOpenAI` instance to the Outlines model class.
+
+## Text Generation
+
+Once you've created your Outlines `OpenAI` model instance, you're all set to generate text with this provider. You can simply call the model with a prompt.
+
+For instance:
+
+```python
+import openai
+import outlines
+
+# Create the model
+model = outlines.from_openai(
+    openai.OpenAI(),
+    "gpt-4o"
+)
+
+# Call it to generate text
+response = model("What's the capital of Latvia?", max_tokens=20)
+print(response) # "Riga"
+```
+
+OpenAI supports streaming and vision inputs.
+
+For instance:
+
+```python
+import io
+import requests
+import PIL
+import openai
+from outlines
+from outlines.templates import Vision
+
+# Create the model
+model = outlines.from_openai(
+    openai.OpenAI(),
+    "gpt-4o"
+)
+
+# Function to get an image
+def get_image(url):
+    r = requests.get(url)
+    return PIL.Image.open(io.BytesIO(r.content))
+
+# Create the prompt
+prompt = Vision("Describe the image", get_image("https://picsum.photos/id/237/400/300"))
+
+# Stream the response
+for chunk in model.stream(prompt, max_tokens=50, stop="."):
+    print(chunk) # "This..."
+```
+
+## Structured Generation
+
+OpenAI provides supports for some forms of structured output: JSON schemas and JSON syntax. Regex, multiple choice and context-free grammars are not available.
+
+#### JSON Schema
+
+```python
+from typing import List
+import openai
+import outlines
+g
+class Character(BaseModel):
+    name: str
+    age: int
+    skills: List[str]
+
+# Create the model
+model = outlines.from_openai(openai.OpenAI(), "gpt-4o")
+
+# Call it with the ouput type to generate structured text
+result = model("Create a character", Character, top_p=0.1)
+print(result) # '{"name": "Evelyn", "age": 34, "skills": ["archery", "stealth", "alchemy"]}'
+```
+
+#### JSON Syntax
+
+What we mean by JSON syntax is what is sometimes called JSON mode, meaning that the model will return a valid JSON, but you do not get to specify its structure. To use this JSON mode, provide the `dict` type as an output type.
+
+```python
+from typing import List
+import openai
+import outlines
+
+# Create the model
+model = outlines.from_openai(openai.OpenAI(), "gpt-4o")
+
+# Call it with the ouput type to generate structured text
+result = model("Create a character", dict, temperature=0.5)
+print(result) # '{"first_name": "Henri", "last_name": "Smith", "height": "170"}'
+```
+
+## Inference arguments
+
+When calling the model, you can provide keyword arguments that will be passed down to the `chat.completions.create` method of the OpenAI client. Some of the most common arguments include `max_tokens`, `temperatute`, `stop` and `top_p`.
+
+See the [OpenAI API documentation](http://platform.openai.com/docs/api-reference/chat/create) for the full list of available arguments.
