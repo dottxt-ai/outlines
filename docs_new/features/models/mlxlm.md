@@ -1,0 +1,144 @@
+# mlx-lm
+
+Outlines provides an integration with [mlx-lm](https://github.com/ml-explore/mlx-examples/tree/main/llms), allowing models to be run quickly on Apple Silicon via the [mlx](https://ml-explore.github.io/mlx/build/html/index.html) library.
+
+!!! Note "Installation"
+
+    You need to install the `mlx` and `mlx-lm` libraries on a device which [supports Metal](https://support.apple.com/en-us/102894) to use the mlx-lm integration. To download the required libraries, run `pip install mlx mlx-lm`.
+
+## Model Initialization
+
+To create a MLXLM model instance, you can use the `from_mlxlm` function. It takes 2 arguments:
+- `model`: an `mlx.nn.Module` instance
+- `tokenizer`: a `transformers.PreTrainedTokenizer` instance
+
+However, we recommend you simply pass on the output of the `mlx_lm.load` function (it takes a model name as an argument).
+
+For instance:
+
+```python
+import outlines
+import mlx_lm
+
+# Create the model
+model = outlines.from_mlxlm(**mlx_lm.load("mlx-community/SmolLM-135M-Instruct-4bit"))
+```
+
+## Text Generation
+
+To generate text, you can simply call the model with a prompt. The `MLXLM` model also supports streaming.
+
+For instance:
+
+```python
+import outlines
+import mlx_lm
+
+# Load the model
+model = outlines.from_mlxlm(**mlx_lm.load("mlx-community/SmolLM-135M-Instruct-4bit"))
+
+# Stream text generation
+for chunk in model.stream("Write a short story about a cat.", max_tokens=100):
+    print(chunk)
+```
+
+## Structured Generation
+
+As a local model, `MLXLM` supports all forms of structured generation available in Outlines.
+
+### JSON Schema
+
+```python
+from pydantic import BaseModel
+import outlines
+import mlx_lm
+
+class Character(BaseModel):
+    name: str
+    age: int
+    skills: List[str]
+
+# Load the model
+model = outlines.from_mlxlm(**mlx_lm.load("mlx-community/SmolLM-135M-Instruct-4bit"))
+
+# Generate structured output
+result = model("Create a character.", output_type=Character)
+print(result) # '{"name": "Evelyn", "age": 34, "skills": ["archery", "stealth", "alchemy"]}'
+```
+
+### Multiple Choice
+
+```python
+from typing import Literal
+import outlines
+import mlx_lm
+
+output_type = Literal["Paris", "London", "Rome", "Berlin"]
+
+# Load the model
+model = outlines.from_mlxlm(**mlx_lm.load("mlx-community/SmolLM-135M-Instruct-4bit"))
+
+# Generate multiple choice output
+result = model("What is the capital of France?", output_type, max_tokens=20)
+print(result) # 'Paris'
+```
+
+### Regex
+
+```python
+from outlines.types import Regex
+import outlines
+import mlx_lm
+
+output_type = Regex(r"\d{3}-\d{2}-\d{4}")
+
+# Load the model
+model = outlines.from_mlxlm(**mlx_lm.load("mlx-community/SmolLM-135M-Instruct-4bit"))
+
+# Generate regex output
+result = model("Generate a fake social security number.", output_type, max_tokens=20)
+print(result) # 782-32-3789
+```
+
+### Context-Free Grammar
+
+```python
+from outlines.text import CFG
+import outlines
+import mlx_lm
+
+arithmetic_grammar = """
+?start: sum
+
+?sum: product
+| sum "+" product   -> add
+| sum "-" product   -> sub
+
+?product: atom
+| product "*" atom  -> mul
+| product "/" atom  -> div
+
+?atom: NUMBER           -> number
+| "-" atom         -> neg
+| "(" sum ")"
+
+%import common.NUMBER
+%import common.WS_INLINE
+
+%ignore WS_INLINE
+"""
+output_type = CFG(arithmetic_grammar)
+
+# Load the model
+model = outlines.from_mlxlm(**mlx_lm.load("mlx-community/SmolLM-135M-Instruct-4bit"))
+
+# Generate CFG output
+result = model("Write an addition.", output_type, max_tokens=20)
+print(result) # '23 + 48'
+```
+
+## Inference Parameters
+
+When calling the model, you can provide optional parameters on top of the prompt and the output type. These parameters will be passed on to the `mlx_lm.generate` function used to generate text.
+
+See the [MLXLM documentation](https://github.com/ml-explore/mlx-lm) for more information on inference parameters.

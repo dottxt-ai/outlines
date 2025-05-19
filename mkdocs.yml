@@ -98,7 +98,7 @@ plugins:
     - redirects:
           redirect_maps:
               "welcome.md": "index.md"
-              "reference/chat_templating.md": "user_guide/chat_templating.md"
+              "features/chat_templating.md": "user_guide/chat_templating.md"
               "blog.md": "https://blog.dottxt.co"
               "cookbook/index.md": "examples/index.md"
               "cookbook/classification.md": "examples/classification.md"
@@ -124,20 +124,10 @@ plugins:
               # Root files
               "quickstart.md": "getting_started/index.md"
 
-              # API to reference redirects
-              "api/index.md": "reference/index.md"
-              "api/json_schema.md": "reference/types/json_schema.md"
-              "api/regex.md": "reference/types/regex.md"
-              "api/applications.md": "reference/utility/application.md"
-              "api/templates.md": "reference/utility/template.md"
-              "api/guide.md": "reference/advanced/guide.md"
-              "api/parsing.md": "reference/advanced/parsing.md"
-              "api/models.md": "reference/available_models.md"
-
               # API subdirectories to reference
-              "api/types/": "reference/types/index.md"
-              "api/core/": "reference/index.md"
-              "api/advanced/": "reference/index.md"
+              "api/types/index.md": "features/types/index.md"
+              "api/core/index.md": "features/index.md"
+              "api/advanced/index.md": "features/index.md"
 
     - git-committers:
         repository: dottxt-ai/outlines
@@ -150,8 +140,9 @@ nav:
     - Home:
           - index.md
           - User Guide: user_guide/index.md
-          - API Reference: reference/index.md
+          - API Reference: features/index.md
           - Examples: examples/index.md
+
     - Guide:
           - Introduction:
                 - Get started: getting_started/index.md
@@ -173,38 +164,59 @@ nav:
                       - Templates: user_guide/prompting/templates.md
                 - Easy Regular Expressions: user_guide/regex_dsl.md
                 - Migrating to v1: user_guide/migration.md
-    - API Reference:
-          - Overview: reference/index.md
-          - Format types:
-                - Overview: reference/types/index.md
-                - JSON: reference/types/json_schema.md
-                - Regex: reference/types/regex.md
-                - Context-free grammars: reference/types/cfg.md
 
+    - Features:
           - Core:
-                - Generator: reference/core/generator.md
-
+                - Generator: features/core/generator.md
+                - Models: features/core/models.md
+                - Output Types: features/core/output_types.md
           - Supported Models:
-                - Anthropic: reference/models/anthropic.md
-                - Dottxt: reference/models/dottxt.md
-                - Gemini: reference/models/gemini.md
-                - Llamacpp: reference/models/llamacpp.md
-                - Mlx-lm: reference/models/mlxlm.md
-                - Ollama: reference/models/ollama.md
-                - OpenAI: reference/models/openai.md
-                - SgLang: reference/models/sglang.md
-                - TGI: reference/models/tgi.md
-                - Transformers: reference/models/transformers.md
-                - vLLM (online server): reference/models/vllm.md
-                - vLLM (offline): reference/models/vllm_offline.md
-
+                - features/models/index.md
+                - Anthropic: features/models/anthropic.md
+                - Dottxt: features/models/dottxt.md
+                - Gemini: features/models/gemini.md
+                - Llamacpp: features/models/llamacpp.md
+                - Mlx-lm: features/models/mlxlm.md
+                - Ollama: features/models/ollama.md
+                - OpenAI: features/models/openai.md
+                - SgLang: features/models/sglang.md
+                - TGI: features/models/tgi.md
+                - Transformers: features/models/transformers.md
+                - vLLM (online server): features/models/vllm.md
+                - vLLM (offline): features/models/vllm_offline.md
           - Utilities:
-                - Applications: reference/utility/application.md
-                - Template: reference/utility/template.md
-
+                - Application: features/utility/application.md
+                - Template: features/utility/template.md
+                - Regex DSL: features/utility/regex_dsl.md
           - Advanced:
-                - Guide: reference/advanced/guide.md
-                - Parsing: reference/advanced/parsing.md
+                - Logits Processors: features/advanced/logits_processors.md
+
+    - API Reference:
+          - Generator: api/generator.md
+          - Grammars: api/grammars.md
+          - Templates: api/template.md
+          - Applications: api/application.md
+          - Models:
+                - Base: api/models/base.md
+                - Anthropic: api/models/anthropic.md
+                - Dottxt: api/models/dottxt.md
+                - Gemini: api/models/gemini.md
+                - Llamacpp: api/models/llamacpp.md
+                - Mlx-lm: api/models/mlxlm.md
+                - Ollama: api/models/ollama.md
+                - OpenAI: api/models/openai.md
+                - SgLang: api/models/sglang.md
+                - TGI: api/models/tgi.md
+                - Transformers: api/models/transformers.md
+                - vLLM (online server): api/models/vllm.md
+                - vLLM (offline): api/models/vllm_offline.md
+          - Processors:
+                - Base: api/processors/base_logits_processor.md
+                - Guide: api/processors/guide.md
+                - Structured: api/processors/structured.md
+          - Types:
+                - DSL: api/types/dsl.md
+
     - Examples:
           - examples/index.md
           - Classification: examples/classification.md
