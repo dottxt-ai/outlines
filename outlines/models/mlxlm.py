@@ -67,7 +67,6 @@ class MLXLM(Model):
 
     This wrapper is used to convert the input and output types specified by the
     users at a higher level to arguments to the `mlx_lm` library.
-
     """
 
     tensor_library_name = "mlx"

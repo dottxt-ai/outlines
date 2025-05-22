@@ -15,9 +15,9 @@ from .gemini import Gemini, from_gemini
 from .llamacpp import LlamaCpp, from_llamacpp
 from .mlxlm import MLXLM, from_mlxlm
 from .ollama import Ollama, from_ollama
-from .openai import OpenAI, from_openai
-from .sglang import AsyncSGLang, SGLang, from_sglang
-from .tgi import AsyncTGI, TGI, from_tgi
+from .openai import from_openai, OpenAI
+from .sglang import from_sglang, SGLang, AsyncSGLang
+from .tgi import from_tgi, TGI, AsyncTGI
 from .transformers import (
     Transformers,
     TransformerTokenizer,
@@ -28,7 +28,7 @@ from .vllm_offline import VLLMOffline, from_vllm_offline
 from .vllm import AsyncVLLM, VLLM, from_vllm
 
 SteerableModel = Union[LlamaCpp, MLXLM, Transformers, VLLMOffline]
-BlackBoxModel = Union[
+SyncBlackBoxModel = Union[
     Anthropic,
     Dottxt,
     Gemini,
@@ -42,4 +42,8 @@ AsyncBlackBoxModel = Union[
     AsyncTGI,
     AsyncSGLang,
     AsyncVLLM,
+]
+BlackBoxModel = Union[
+    AsyncBlackBoxModel,
+    SyncBlackBoxModel,
 ]

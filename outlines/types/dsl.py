@@ -223,7 +223,6 @@ class Regex(Term):
 
     """
     pattern: str
-
     def _display_node(self) -> str:
         return f"Regex('{self.pattern}')"
 
@@ -242,7 +241,6 @@ class CFG(Term):
 
     """
     definition: str
-
     def _display_node(self) -> str:
         return f"CFG('{self.definition}')"
 
@@ -262,6 +260,7 @@ class CFG(Term):
         ----------
         path : str
             The path to the file containing the CFG definition.
+
         Returns
         -------
         CFG
@@ -370,11 +369,11 @@ class JsonSchema(Term):
         ----------
         path:
             The path to the file containing the JSON schema.
+
         Returns
         -------
         JsonSchema
             A JsonSchema instance.
-
         """
         with open(path, "r") as f:
             schema = json.load(f)
@@ -607,7 +606,6 @@ def python_types_to_terms(ptype: Any, recursion_depth: int = 0) -> Term:
     -------
     Term
         The corresponding DSL `Term` instance.
-
     """
     if recursion_depth > 10:
         raise RecursionError(
@@ -799,7 +797,6 @@ def to_regex(term: Term) -> str:
     -------
     str
         The regular expression as a string.
-
     """
     match term:
         case String():

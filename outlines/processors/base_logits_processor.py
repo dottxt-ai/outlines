@@ -13,12 +13,14 @@ TensorType = TypeVar('TensorType')
 
 class OutlinesLogitsProcessor:
     """Base class for logits processors.
+
     This class implements a shared `__call__` method is called by the models
     and returns the processed logits. It relies on the `process_logits` method
     that must be implemented by the subclasses to do the actual processing. The
     `tensor_adapter` attribute, created at initialization based on the
     tensor library name specified in the constructor, is used to manipulate the
     tensors using the appropriate library for the model (numpy, torch...).
+
     """
     tensor_adapter: TensorAdapterImplementation
 
@@ -30,6 +32,7 @@ class OutlinesLogitsProcessor:
             The name of the library to use to manipulate tensors. Possible
             values are "jax", "mlx", "numpy", "tensorflow" and "torch". You
             must choose the library that your model is using.
+
         """
         tensor_adapter_class = tensor_adapters.get(tensor_library_name)
         if tensor_adapter_class is None:
@@ -43,9 +46,11 @@ class OutlinesLogitsProcessor:
         self, input_ids: TensorType, logits: TensorType
     ) -> TensorType:
         """Main method to implement for logits processors subclasses.
+
         This method applies a mask on the logits to bias the generation.
         It is called by the `__call__` method that standardizes the shape of
         `input_ids` and `logits` to ensure they are 2D tensors.
+
         Elements to keep in mind when designing universal logits processors:
         - logits processors are only used once and never re-applied for a new
         sequence generator
@@ -53,16 +58,19 @@ class OutlinesLogitsProcessor:
         transformers prefix with input_ids
         - Some sampling methods, such as beam search, result in unstable
         sequence ordering in models like vLLM
+
         Parameters
         ----------
         input_ids
             The ids of the tokens of the existing sequences in a 2D tensor.
         logits
             The logits for the current generation step in a 2D tensor.
+
         Returns
         -------
         TensorType
             The processed logits as a 2D tensor.
+
         """
         ...
 
@@ -71,21 +79,25 @@ class OutlinesLogitsProcessor:
     ) -> TensorType:
         """Entrypoint for logits processors, this is the method that is
         called by the model.
+
         Because different models use different structures to store the
         input_ids and logits, we standardize their format to 2D tensors
         before calling the `process_logits` method. After processing, the
         logits are cast back to the original array library type before being
         returned.
+
         Parameters
         ----------
         input_ids
             The ids of the tokens of the existing sequences in a tensor.
         logits
             The logits for the current generation step in a tensor.
+
         Returns
         -------
         TensorType
             The processed logits as a tensor.
+
         """
         # if input_ids is 1D and logits is 2D with a single sequence,
         # reshape input_ids to 2D (needed for mlx-lm)

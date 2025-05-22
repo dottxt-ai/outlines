@@ -265,10 +265,10 @@ Outlines wraps around a variety of LLM inference backends, described in the [ins
     response = model("Create a character.", Person) # { "name": "John", "age": 30 }
     ```
 
-=== "SgLang"
+=== "SGLang"
 
     ```python
-    # SgLang
+    # SGLang
 
     import outlines
     from openai import OpenAI
@@ -280,8 +280,8 @@ Outlines wraps around a variety of LLM inference backends, described in the [ins
         name: str
         age: int
 
-    # You must have a separete SgLang server running
-    # Create an OpenAI client with the base URL of the SgLang server
+    # You must have a separete SGLang server running
+    # Create an OpenAI client with the base URL of the SGLang server
     openai_client = OpenAI(base_url="http://localhost:11434/v1")
 
     # Create an Outlines model

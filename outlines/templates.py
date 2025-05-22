@@ -1,3 +1,5 @@
+"""Create templates to easily build prompts."""
+
 import base64
 import functools
 import inspect
@@ -12,24 +14,33 @@ from typing import Any, Callable, Dict, Optional, Type, cast
 import warnings
 
 import jinja2
-from jinja2 import Environment, StrictUndefined
 from PIL import Image
-import pydantic
 from pydantic import BaseModel
 
 
 @dataclass
 class Vision:
-    """Represents the input for a vision model."""
+    """Contains the input for a vision model.
 
+    Provide an instance of this class as the `model_input` argument to a model
+    that supports vision.
+
+    Parameters
+    ----------
+    prompt
+        The prompt to use to generate the response.
+    image
+        The image to use to generate the response.
+    """
     prompt: str
     image: Image.Image
-
     def __post_init__(self):
         image = self.image
 
         if not image.format:
-            raise TypeError("Could not read the format of the image passed to the model.")
+            raise TypeError(
+                "Could not read the format of the image passed to the model."
+            )
 
         buffer = BytesIO()
         image.save(buffer, format=image.format)
@@ -54,7 +65,8 @@ class Template:
 
         Returns
         -------
-        The rendered template as a Python ``str``.
+        str
+            The rendered template as a Python string.
 
         """
         if self.signature is not None:
@@ -66,7 +78,8 @@ class Template:
 
     @classmethod
     def from_string(cls, content: str, filters: Dict[str, Callable] = {}):
-        """Create a `Template` instance from a string containing a Jinja template.
+        """Create a `Template` instance from a string containing a Jinja
+        template.
 
         Parameters
         ----------
@@ -75,16 +88,19 @@ class Template:
 
         Returns
         -------
-        An instance of the class with the provided content as a template.
+        Template
+            An instance of the class with the provided content as a template.
         """
         return cls(build_template_from_string(content, filters), None)
 
     @classmethod
     def from_file(cls, path: Path, filters: Dict[str, Callable] = {}):
-        """Create a `Template` instance from a file containing a Jinja template.
+        """Create a `Template` instance from a file containing a Jinja
+        template.
 
-        Note: This method does not allow to include and inheritance to reference files
-        that are outside the folder or subfolders of the file given to `from_file`.
+        Note: This method does not allow to include and inheritance to
+        reference files that are outside the folder or subfolders of the
+        file given to `from_file`.
 
         Parameters
         ----------
@@ -94,10 +110,13 @@ class Template:
         Returns
         -------
         Template
-            An instance of the Template class with the template loaded from the file.
+            An instance of the Template class with the template loaded
+            from the file.
         """
-        # We don't use a `Signature` here because it seems not feasible to infer one from a Jinja2 environment that is
-        # split across multiple files (since e.g. we support features like Jinja2 includes and template inheritance)
+        # We don't use a `Signature` here because it seems not feasible to
+        # infer one from a Jinja2 environment that is
+        # split across multiple files (since e.g. we support features like
+        # Jinja2 includes and template inheritance)
         return cls(build_template_from_file(path, filters), None)
 
 
@@ -231,8 +250,8 @@ def create_jinja_env(
 
     Users may pass additional filters, and/or override existing ones.
 
-    Arguments
-    ---------
+    Parameters
+    ----------
     loader
        An optional `BaseLoader` instance
     filters
@@ -345,8 +364,8 @@ def get_schema_dict(model: Dict):
     return json.dumps(model, indent=2)
 
 
-@get_schema.register(type(pydantic.BaseModel))
-def get_schema_pydantic(model: Type[pydantic.BaseModel]):
+@get_schema.register(type(BaseModel))
+def get_schema_pydantic(model: Type[BaseModel]):
     """Return the schema of a Pydantic model."""
     if hasattr(model, "model_json_schema"):
         def_key = "$defs"

@@ -1,5 +1,6 @@
 """Output types for structured generation and regex DSL."""
 
+import json
 from dataclasses import dataclass, is_dataclass
 from enum import Enum, EnumMeta
 from typing import Union

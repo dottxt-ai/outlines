@@ -123,6 +123,13 @@ class OpenAITypeAdapter(ModelTypeAdapter):
             The formatted output type to be passed to the client.
 
         """
+
+        Returns
+        -------
+        dict
+            The formatted output type to be passed to the client.
+
+        """
         # Unsupported languages
         if isinstance(output_type, Regex):
             raise TypeError(
@@ -409,7 +416,6 @@ def from_openai(
     -------
     OpenAI
         An Outlines `OpenAI` model instance.
-
     """
     return OpenAI(client, model_name)
 

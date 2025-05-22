@@ -190,7 +190,6 @@ class Transformers(Model):
     This wrapper is used to convert the input and output types specified by the
     users at a higher level to arguments to the `transformers` model and
     tokenizer.
-
     """
 
     def __init__(
@@ -415,7 +414,6 @@ class TransformersMultiModal(Transformers):
     This wrapper is used to convert the input and output types specified by the
     users at a higher level to arguments to the `transformers` model and
     processor.
-
     """
 
     def __init__(self, model: "PreTrainedModel", processor):

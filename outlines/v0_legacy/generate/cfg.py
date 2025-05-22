@@ -33,8 +33,8 @@ def cfg(
     You can then call the generator created with a prompt to generate text
     that matches the Context-Free Grammar.
 
-    Arguments
-    ---------
+    Parameters
+    ----------
     model:
         The Outlines v0 model to use to generate text.
     cfg_str:

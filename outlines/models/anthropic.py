@@ -222,6 +222,5 @@ def from_anthropic(
     -------
     Anthropic
         An Outlines `Anthropic` model instance.
-
     """
     return Anthropic(client, model_name)
