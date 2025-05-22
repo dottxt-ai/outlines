@@ -10,8 +10,8 @@ title: Welcome to Outlines!
 Outlines is a Python library from [.TXT](https://dottxt.co) that guarantees structured output from
 large language models. It ensures LLMs speak the language of your application by making them follow specific formats such as JSON, regular expressions, or context-free grammars.
 
-[Get started](/docs/getting_started){ .md-button .md-button--primary }
-[API Reference](/api/reference){ .md-button }
+[Get started](/getting_started){ .md-button .md-button--primary }
+[Features](/features){ .md-button }
 [Examples](/examples){ .md-button }
 [GitHub](https://github.com/yourusername/outlines){ .md-button }
 
