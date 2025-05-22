@@ -4,7 +4,7 @@ import pytest
 from dataclasses import dataclass
 
 from PIL import Image
-from outlines.models.sglang import SgLangTypeAdapter
+from outlines.models.sglang import SGLangTypeAdapter
 from outlines.types import CFG, JsonSchema
 
 from outlines import Vision
@@ -27,7 +27,7 @@ JSON_SCHEMA_STRING = """
 
 @pytest.fixture
 def type_adapter():
-    return SgLangTypeAdapter()
+    return SGLangTypeAdapter()
 
 @pytest.fixture
 def cfg_instance():

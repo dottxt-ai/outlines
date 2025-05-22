@@ -1,12 +1,12 @@
-# SgLang
+# SGLang
 
 ## Prerequisites
 
-The Outlines `SgLang` model is inteded to be used along with a separate sglang server (running either locally or remotely). Make sure you have an sglang server running before using the `SgLang` model. As the sglang client relies on the `openai` python sdk, you need to have the `openai` package installed.
+The Outlines `SGLang` model is inteded to be used along with a separate sglang server (running either locally or remotely). Make sure you have an sglang server running before using the `SGLang` model. As the sglang client relies on the `openai` python sdk, you need to have the `openai` package installed.
 
 ## Initialize the model
 
-To load the model, you can use the `from_sglang` function. The argument of the function is either an `OpenAI` or `AsyncOpenAI` instance from the `openai` library. Based on whether the `openai` instance is synchronous or asynchronous, you will receive a `SgLang` or `AsyncSgLang` model instance.
+To load the model, you can use the `from_sglang` function. The argument of the function is either an `OpenAI` or `AsyncOpenAI` instance from the `openai` library. Based on whether the `openai` instance is synchronous or asynchronous, you will receive a `SGLang` or `AsyncSGLang` model instance.
 
 ```python
 import openai
@@ -16,10 +16,10 @@ sync_openai_client = openai.OpenAI(base_url="...")
 async_openai_client = openai.AsyncOpenAI(base_url="...")
 
 sync_model = outlines.from_sglang(sync_openai_client, "qwen/qwen2.5-0.5b-instruct")
-print(type(sync_model)) # <class 'outlines.models.sglang.SgLang'>
+print(type(sync_model)) # <class 'outlines.models.sglang.SGLang'>
 
 async_model = outlines.from_sglang(async_openai_client, "qwen/qwen2.5-0.5b-instruct")
-print(type(async_model)) # <class 'outlines.models.sglang.AsyncSgLang'>
+print(type(async_model)) # <class 'outlines.models.sglang.AsyncSGLang'>
 ```
 
 ## Generate text
@@ -36,7 +36,7 @@ answer = sync_model("Create a character.", output_type=Character)
 answer = await async_model("Create a character.", output_type=Character)
 ```
 
-The `SgLang` model supports also supports streaming.
+The `SGLang` model supports also supports streaming.
 
 ```python
 for chunk in sync_model.stream("Write a short story about a cat.", max_tokens=100):

@@ -11,7 +11,7 @@ from typing import AsyncGenerator, Generator
 import pytest
 from openai import AsyncOpenAI, OpenAI
 
-from outlines.models.sglang import SGLang, AsyncSgLang, from_sglang
+from outlines.models.sglang import SGLang, AsyncSGLang, from_sglang
 from outlines.types.dsl import CFG, Regex, JsonSchema
 from tests.test_utils.mock_openai_client import MockOpenAIClient, MockAsyncOpenAIClient
 
@@ -130,12 +130,12 @@ def sync_model_no_model_name():
 
 @pytest.fixture
 def async_model():
-    return AsyncSgLang(async_openai_client, model_name=sglang_model_name)
+    return AsyncSGLang(async_openai_client, model_name=sglang_model_name)
 
 
 @pytest.fixture
 def async_model_no_model_name():
-    return AsyncSgLang(async_openai_client)
+    return AsyncSGLang(async_openai_client)
 
 
 def test_sglang_init():
@@ -158,13 +158,13 @@ def test_sglang_init():
 
     # Async with model name
     model = from_sglang(async_openai_client, sglang_model_name)
-    assert isinstance(model, AsyncSgLang)
+    assert isinstance(model, AsyncSGLang)
     assert model.client == async_openai_client
     assert model.model_name == sglang_model_name
 
     # Async without model name
     model = from_sglang(async_openai_client)
-    assert isinstance(model, AsyncSgLang)
+    assert isinstance(model, AsyncSGLang)
     assert model.client == async_openai_client
     assert model.model_name is None
 
