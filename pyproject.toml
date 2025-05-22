@@ -75,6 +75,7 @@ test = [
     "ollama",
     "dottxt",
     "sentencepiece",
+    "mkdocs_gen_files",
 ]
 test-gpu=["outlines[test]", "vllm; sys_platform == 'linux'"]
 
@@ -154,6 +155,7 @@ module = [
     "tensorflow.*",
     "tf-keras",
     "tf-keras.*",
+    "mkdocs_gen_files.*",
 ]
 ignore_missing_imports = true
 
