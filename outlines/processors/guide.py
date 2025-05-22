@@ -1,3 +1,8 @@
+"""Guides to control generation in steerable models.
+
+Logits processors rely on guides to control the generation process.
+"""
+
 import collections
 import copy
 import warnings

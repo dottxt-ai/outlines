@@ -1,16 +1,14 @@
 ### Legacy API: file exists for backward compatibility with v0
 ### Do not use it as an example of how to write new code
 
-from typing import TYPE_CHECKING, Optional
+from typing import Optional
 import warnings
 
 from outlines.models.transformers import (
     Transformers,
     TransformersMultiModalTypeAdapter,
 )
-
-if TYPE_CHECKING:
-    from outlines.processors import OutlinesLogitsProcessor
+from outlines.processors import OutlinesLogitsProcessor
 
 
 class TransformersVision(Transformers):
