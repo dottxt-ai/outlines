@@ -1,5 +1,5 @@
 ---
-title: Application API
+title: Application
 ---
 
 # Application
@@ -8,69 +8,36 @@ The `Application` class enables you to encapsulate a prompt template and an outp
 
 ## Overview
 
-An `Application` combines a prompt template with an output type, creating a reusable component that can be applied to different models.
+To create an `Application` instance, initiliaze the class with a prompt template and an output type. You can then call the application with a model and the variables defined in your template in a dictionary.
 
-## Basic Usage
-
-```python
-from outlines import Application, Template, from_transformers
-from typing import List
-
-# Create a template
-template = Template("""
-You are an expert classifier.
-Classify the following text into one of these categories: {categories}
-
-Text: {text}
-""")
-
-# Create an application with the template and output type
-classifier = Application(template, str)
-
-# Initialize a model
-model = from_transformers(...)
-
-# Use the application with specific parameters
-categories = ["Sports", "Politics", "Technology", "Entertainment"]
-result = classifier(model, categories=categories, text="Apple unveils new iPhone with AI capabilities")
-
-print(result)  # Expected output: "Technology"
-```
-
-## Structured Output
+For instance:
 
 ```python
-from pydantic import BaseModel
+from typing import Literal
+import transformers
 from outlines import Application, Template, from_transformers
 
-# Define a Pydantic model for structured output
-class MovieReview(BaseModel):
-    title: str
-    director: str
-    year: int
-    rating: float
-    review: str
-
 # Create a template
-template = Template("""
-Write a brief review of the movie {movie_title}.
-Include the director, year of release, and a rating out of 10.
-""")
+template_str = "Is {{ name }} a boy or a girl name?"""
+template = Template.from_string(template_str)
 
-# Create an application with the template and output type
-movie_reviewer = Application(template, MovieReview)
+# Create a model
+model = from_transformers(
+    transformers.AutoModelForCausalLM.from_pretrained("microsoft/Phi-3-mini-4k-instruct"),
+    transformers.AutoTokenizer.from_pretrained("microsoft/Phi-3-mini-4k-instruct")
+)
 
-# Use the application with a model
-result = movie_reviewer(model, movie_title="The Matrix")
-
-# Parse the result into a Pydantic model
-review = MovieReview.model_validate_json(result)
-print(f"{review.title} ({review.year}) - {review.rating}/10")
+# Create the application and call it to generate text
+application = Application(template, Literal["boy", "girl"])
+response = application(model, {"name": "Alice"}, max_new_tokens=10)
+print(response) # "girl"
 ```
 
-## Parameters
+Instead of providing an Outlines `Template` instance, you can provide a `Callable` that returns a string. The parameters of the callable are used as the variables of the template such that you must provide values for them in the dictionary when calling the application.
 
-- `prompt_template`: A template that defines the prompt structure
-- `output_type`: The type of output to generate
+For instance, the following function would be equivalent to the template defined above when used in an application:
 
-::: outlines.applications.Application
+```python
+def template(name: str) -> str:
+    return f"Is {name} a boy or a girl name?"
+```

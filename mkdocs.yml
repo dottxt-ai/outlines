@@ -206,7 +206,8 @@ nav:
                 - vLLM (offline): features/models/vllm_offline.md
 
           - Utilities:
-                - Applications: features/utility/application.md
+                - Application: features/utility/application.md
+                - Regex DSL: features/utility/regex_dsl.md
                 - Template: features/utility/template.md
 
           - Advanced:
