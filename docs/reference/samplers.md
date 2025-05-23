@@ -109,7 +109,6 @@ sampler = samplers.multinomial(3, top_k=10)
 
 You can ask Outlines to only consider the highest probability tokens such that their cumulative probability is greater than a threshold `p`. Specify the `top_p` keyword argument when initializing the sampler:
 
-
 ```python
 sampler = samplers.multinomial(3, top_p=0.95)
 ```
@@ -119,7 +118,6 @@ sampler = samplers.multinomial(3, top_p=0.95)
 Greedy sampling selects the token with the highest probability at each step. It's deterministic and always produces the same output for a given input.
 
 To use the greedy sampler, initialize the generator with the sampler:
-
 
 ```python
 from outlines import models, generate, samplers
@@ -136,7 +134,6 @@ print(answer)
 ```
 
 You cannot ask for multiple samples with the greedy sampler since it does not clear what the result should be. Only the most likely token can be returned.
-
 
 ## Beam Search
 

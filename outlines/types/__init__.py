@@ -1,19 +1,4 @@
-from enum import Enum
-
-from . import airports, countries, locale
-from outlines.types.dsl import (
-    Regex,
-    json_schema,
-    regex,
-    either,
-    optional,
-    exactly,
-    at_least,
-    at_most,
-    between,
-    one_or_more,
-    zero_or_more,
-)
+from outlines.types.dsl import Regex
 
 # Python types
 integer = Regex(r"[+-]?(0|[1-9][0-9]*)")
@@ -28,6 +13,18 @@ digit = Regex(r"\d")
 char = Regex(r"\w")
 newline = Regex(r"(\r\n|\r|\n)")  # Matched new lines on Linux, Windows & MacOS
 whitespace = Regex(r"\s")
+hex_str = Regex(r"(0x)?[a-fA-F0-9]+")
+uuid4 = Regex(
+    r"[a-fA-F0-9]{8}-"
+    r"[a-fA-F0-9]{4}-"
+    r"4[a-fA-F0-9]{3}-"
+    r"[89abAB][a-fA-F0-9]{3}-"
+    r"[a-fA-F0-9]{12}"
+)
+ipv4 = Regex(
+    r"((25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})\.){3}"
+    r"(25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})"
+)
 
 # Document-specific types
 sentence = Regex(r"[A-Z].*\s*[.!?]")
