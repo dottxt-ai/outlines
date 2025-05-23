@@ -29,7 +29,6 @@ Here are the localized types that are currently available:
 | Zip code | US | `ZipCode` | Generate US Zip(+4) codes |
 | Phone number  | US | `PhoneNumber` | Generate valid US phone numbers |
 
-
 You can use these types in Pydantic schemas for JSON-structured generation:
 
 ```python
@@ -72,9 +71,7 @@ print(result)
 # 334-253-2630
 ```
 
-
 We plan on adding many more custom types. If you have found yourself writing regular expressions to generate fields of a given type, or if you could benefit from more specific types don't hesite to [submit a PR](https://github.com/dottxt-ai/outlines/pulls) or [open an issue](https://github.com/dottxt-ai/outlines/issues/new/choose).
-
 
 [wiki-isbn]: https://en.wikipedia.org/wiki/ISBN#Check_digits
 [wiki-airport-iata]: https://en.wikipedia.org/wiki/IATA_airport_code

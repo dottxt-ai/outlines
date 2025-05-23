@@ -9,7 +9,6 @@ To create grammars for Outlines, a solid understanding of Lark grammars is neces
 - Read Lark's grammars documentations [here](https://lark-parser.readthedocs.io/en/latest/grammar.html).
 - Review Outlines' existing grammars [here](/outlines/grammars).
 
-
 # Compatibility With Outlines
 
 It's important to note that not all Lark grammars work with Outlines. Changes may be necessary to ensure compatability.
@@ -27,7 +26,6 @@ GrammarError: Reduce/Reduce collision in Terminal('B') between the following rul
 ### Regex Terminal Restrictions
 
 Outlines converts terminals to finite state machines using the [Interegular](https://github.com/MegaIng/interegular/) library. Not all regular expressions work with Interegular, mitigation is described in the subsections which follow.
-
 
 #### Avoid Lookarounds
 

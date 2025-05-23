@@ -13,6 +13,7 @@ import outlines
 
 model = outlines.models.transformers("microsoft/Phi-3-mini-4k-instruct", device="cuda")
 ```
+
 ### Text generator
 
 ```python
@@ -25,8 +26,8 @@ print(result)
 # Outlines also supports streaming output
 stream = generator.stream("What's 2+2?", max_tokens=4)
 for i in range(5):
-	token = next(stream)
-	print(repr(token))
+    token = next(stream)
+    print(repr(token))
 # '2'
 # '+'
 # '2'
@@ -160,7 +161,6 @@ print(result)
 # 5+5+5+5+5
 ```
 
-
 EBNF grammars can be cumbersome to write. This is why Outlines provides grammar definitions in the `outlines.grammars.` module
 
 ```python
@@ -175,7 +175,6 @@ print(result)
 ```
 
 The available grammars are listed [here](https://github.com/dottxt-ai/outlines/tree/main/outlines/grammars).
-
 
 ### [Regex-structured generation](./regex.md)
 
@@ -208,7 +207,6 @@ result = generator("What is 2+2?")
 print(result)
 # 4
 ```
-
 
 [jsonschema]: https://json-schema.org/learn/getting-started-step-by-step
 [pydantic]: https://docs.pydantic.dev/latest

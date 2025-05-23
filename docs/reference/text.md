@@ -5,7 +5,6 @@ Outlines provides a unified interface to generate text with many language models
 1. Instantiate a generator by calling `outlines.generate.text` with the model to be used.
 2. Call the generator with the prompt and (optionally) some generation parameters.
 
-
 ```python
 from outlines import models, generate
 
@@ -56,7 +55,6 @@ answer = generator("What is 2+2?", max_tokens=5)
 
 You can also ask the model to stop generating text after a given string has been generated, for instance a period or a line break. You can pass a string or a line of string for the `stop_at` argument:
 
-
 ```python
 from outlines import models, generate
 
@@ -68,7 +66,6 @@ answer = generator("What is 2+2?", stop_at=[".", "\n"])
 ```
 
 *The stopping string will be included in the response.*
-
 
 ### Seed the generation
 
