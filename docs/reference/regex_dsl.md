@@ -241,6 +241,9 @@ The DSL comes "batteries included" with types that represent common text constru
 - `char` represents a single character
 - `newline` represents a new line character
 - `whitespace` represents a white space
+- `hex_str` represents a hexadecimal string, optionally prefixed with "0x"
+- `uuid4` represents a UUID version 4 string in the format "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx"
+- `ipv4` represents an IPv4 address in the format "xxx.xxx.xxx.xxx" where each octet is between 0 and 255
 - `sentence` represents a sentence
 - `paragraph` reprensents a pagraph (one or more sentences separated by one or more line breaks)
 
