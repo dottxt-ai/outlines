@@ -235,8 +235,8 @@ The DSL comes "batteries included" with types that represent common text constru
 - `boolean` represents a boolean, "True" or "False" as recognized by `bool`
 - `number` represents a floating-point number recognize by Python's `float`
 - `date` represents a date as understood by `datetime.date`
-- `time` represents a time as undestood by `datetime.time`
-- `datetime` represents a time as understoof by `datetime.datetime`
+- `time` represents a time as understood by `datetime.time`
+- `datetime` represents a time as understood by `datetime.datetime`
 - `digit` represents a single digit
 - `char` represents a single character
 - `newline` represents a new line character
@@ -245,7 +245,7 @@ The DSL comes "batteries included" with types that represent common text constru
 - `uuid4` represents a UUID version 4 string in the format "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx"
 - `ipv4` represents an IPv4 address in the format "xxx.xxx.xxx.xxx" where each octet is between 0 and 255
 - `sentence` represents a sentence
-- `paragraph` reprensents a pagraph (one or more sentences separated by one or more line breaks)
+- `paragraph` represents a paragraph (one or more sentences separated by one or more line breaks)
 
 For instance you can describe the answers in the GSM8K dataset using the following pattern:
 
