@@ -1,19 +1,4 @@
-from enum import Enum
-
-from . import airports, countries, locale
-from outlines.types.dsl import (
-    Regex,
-    json_schema,
-    regex,
-    either,
-    optional,
-    exactly,
-    at_least,
-    at_most,
-    between,
-    one_or_more,
-    zero_or_more,
-)
+from outlines.types.dsl import Regex
 
 # Python types
 integer = Regex(r"[+-]?(0|[1-9][0-9]*)")

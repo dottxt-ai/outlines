@@ -14,7 +14,6 @@ from outlines.types.dsl import (
     Regex,
     Sequence,
     String,
-    Term,
     either,
     one_or_more,
     zero_or_more,
