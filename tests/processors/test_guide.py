@@ -34,7 +34,7 @@ def test_stop_at_eos():
 
     fsm = StopAtEOSGuide(MockTokenizer())
 
-    instruction = fsm.get_next_instruction(fsm.start_state)
+    instruction = fsm.get_next_instruction(fsm.initial_state)
     assert isinstance(instruction, Generate)
     assert instruction.tokens is None
 
@@ -42,9 +42,9 @@ def test_stop_at_eos():
     assert isinstance(instruction, Write)
     assert instruction.tokens == [2]
 
-    assert fsm.get_next_state(fsm.start_state, 2) == fsm.final_state
-    assert fsm.get_next_state(fsm.start_state, 1) == fsm.start_state
-    assert fsm.is_final_state(fsm.start_state) is False
+    assert fsm.get_next_state(fsm.initial_state, 2) == fsm.final_state
+    assert fsm.get_next_state(fsm.initial_state, 1) == fsm.initial_state
+    assert fsm.is_final_state(fsm.initial_state) is False
     assert fsm.is_final_state(fsm.final_state) is True
 
     assert isinstance(fsm.copy(), StopAtEOSGuide)

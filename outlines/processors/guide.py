@@ -1,7 +1,12 @@
+"""Guides to control generation in steerable models.
+
+Logits processors rely on guides to control the generation process.
+"""
+
 import collections
 import copy
 import warnings
-from typing import TYPE_CHECKING, Any, Generator, Union
+from typing import TYPE_CHECKING, Any, Generator, ValuesView, Union
 
 import torch
 from lark.indenter import DedentError
@@ -28,60 +33,106 @@ Instruction = Union[Write, Generate]
 class Guide(CoreGuide):
     """Base definition of a generation guide.
 
-    A generation guide defines the behavior of a finite-state machine that guides
-    a text generation procedure. Unlike the DFAs built from regular expressions
-    guides can also emit a `Write` instructions which tells the model that it can
-    append a sequence of tokens (or token word) instead of generating it.
+    A generation guide defines the behavior of a finite-state machine that
+    guides a text generation procedure. Unlike the DFAs built from regular
+    expressions guides, it can also emit a `Write` instructions which tells
+    the model that it can append a sequence of tokens (or token word) instead
+    of generating it.
 
     """
-
     initial_state: Any
 
 
 class StopAtEOSGuide(Guide):
     """Guide to generate tokens until the EOS token has been generated."""
-
     final_state = 1
-    start_state = 0  # TODO: remove start_state, use only initial_state
     initial_state = 0
 
     def __init__(self, tokenizer: "Tokenizer"):
-        """Initialize the generation guide.
-
-        model
-            The logit generator used to generate the next token.
+        """
+        Parameters
+        ----------
+        tokenizer
+            The tokenizer used to convert tokens to ids.
 
         """
         self.eos_token_id = tokenizer.eos_token_id
         self.vocabulary = tokenizer.vocabulary.values()
 
     def get_next_instruction(self, state: int) -> Instruction:
+        """Return the next instruction.
+
+        Parameters
+        ----------
+        state
+            The guide's current state.
+
+        Returns
+        -------
+        Instruction
+            An `Instruction` instance.
+
+        """
         if self.is_final_state(state):
             return Write([self.eos_token_id])
         return Generate(None)
 
     def get_next_state(self, state: int, token_id: int) -> int:
+        """Return the next state.
+
+        Parameters
+        ----------
+        state
+            The guide's current state.
+        token_id
+            The id of the token that was just generated.
+
+        Returns
+        -------
+        int
+            The next state.
+
+        """
         if token_id == self.eos_token_id or state == self.final_state:
             return self.final_state
 
         return self.initial_state
 
-    def is_final_state(self, state: int):
+    def is_final_state(self, state: int) -> bool:
+        """Return whether the given state is a final state.
+
+        Parameters
+        ----------
+        state
+            The guide's current state.
+
+        Returns
+        -------
+        bool
+            Whether the given state is a final state.
+
+        """
         return state == self.final_state
 
-    def copy(self):
+    def copy(self) -> "StopAtEOSGuide":
+        """Return itself as there is no need to copy."""
         return self
 
 
 @cache()
 def cached_create_states_mapping(regex_string, tokenizer, *args, **kwargs):
-    return uncached_create_states_mapping(regex_string, tokenizer, *args, **kwargs)
+    """Wrap the uncached create_states_mapping function in a cache."""
+    return uncached_create_states_mapping(
+        regex_string, tokenizer, *args, **kwargs
+    )
 
 
 class RegexGuide(CoreRegexGuide):
-    """
-    Guide to generate text in the language of a regular expression.
-    CoreRegexGuide with outlines cache
+    """Guide to generate text in the language of a regular expression.
+
+    This class is a wrapper around the CoreRegexGuide class that adds a cache
+    to the create_states_mapping function.
+
     """
 
     @classmethod
@@ -91,6 +142,23 @@ class RegexGuide(CoreRegexGuide):
         tokenizer,
         **kwargs,
     ):
+        """Create a RegexGuide from a regular expression.
+
+        Parameters
+        ----------
+        regex_string
+            The regular expression to generate text from.
+        tokenizer
+            The tokenizer to use to convert tokens to ids.
+        kwargs
+            Additional keyword arguments to pass to the CoreRegexGuide constructor.
+
+        Returns
+        -------
+        RegexGuide
+            A RegexGuide instance.
+
+        """
         return super().from_regex(
             regex_string,
             tokenizer,
@@ -103,15 +171,25 @@ CFGState = collections.namedtuple("CFGState", ["parser_state", "prev_token"])
 
 
 class CFGGuide(Guide):
-    """Guide to generate text that is in the language of a context-free Lark grammar."""
+    """Guide to generate text that is in the language of a context-free Lark
+    grammar.
 
-    def __init__(self, cfg_string: str, tokenizer):
+    """
+
+    def __init__(self, cfg_string: str, tokenizer: "Tokenizer"):
         """
-        Construct the PartialLark parser and set the empty initial_state (PartialParserState)
+        Parameters
+        ----------
+        cfg_string
+            The context-free grammar to generate text from.
+        tokenizer
+            The tokenizer to use to convert tokens to ids.
+
         """
         warnings.warn(
-            "Outlines' public *community-contributed* CFG structured generation is experimental. "
-            "Please review https://dottxt-ai.github.io/outlines/latest/reference/generation/cfg#disclaimer"
+            "Outlines' public *community-contributed* CFG structured generation "
+            "is experimental. Please review "
+            "https://dottxt-ai.github.io/outlines/latest/reference/generation/cfg#disclaimer"
         )
 
         self.cfg_string = cfg_string
@@ -144,7 +222,9 @@ class CFGGuide(Guide):
 
         Returns
         -------
-        A `Generate` instance that contains the model and the allowed token ids.
+        Instruction
+            A `Generate` instance that contains the model and the allowed token
+            ids.
 
         """
 
@@ -152,17 +232,21 @@ class CFGGuide(Guide):
             return Write(torch.tensor([self.eos_token_id]))
 
         valid_tokens = list(
-            self.iter_valid_token_ids(state, self.tokenizer.vocabulary.values())
+            self.iter_valid_token_ids(
+                state, self.tokenizer.vocabulary.values()
+            )
         )
+
         if len(valid_tokens) == 1:
             return Write(torch.tensor(valid_tokens))
+
         return Generate(torch.tensor(valid_tokens))
 
     def iter_valid_token_ids(
-        self, state: CFGState, candidate_token_ids: list
+        self, state: CFGState, candidate_token_ids: ValuesView[int]
     ) -> Generator[int, None, None]:
-        """
-        Iterate over the given token_ids and yield those that are valid for the current parser state.
+        """Iterate over the given token_ids and yield those that are valid for
+        the current parser state.
 
         Parameters
         ----------
@@ -175,6 +259,7 @@ class CFGGuide(Guide):
         ------
         int
             Valid token ids.
+
         """
         for token_id in candidate_token_ids:
             if token_id == self.eos_token_id:
@@ -194,9 +279,10 @@ class CFGGuide(Guide):
                     pass
 
     def get_next_state(self, state: CFGState, token_id: int) -> CFGState:
-        """
-        Update the state of the guide.
-        Decode the token_id, and calculate the new parser_state with the token applied.
+        """Update the state of the guide.
+
+        Decode the token_id, and calculate the new parser_state with the token
+        applied.
 
         Parameters
         ----------
@@ -207,7 +293,8 @@ class CFGGuide(Guide):
 
         Returns
         -------
-        The guides new PartialParserState
+        CFGState
+            The guides new PartialParserState
 
         """
         if state.parser_state is None or token_id == self.eos_token_id:
@@ -219,7 +306,8 @@ class CFGGuide(Guide):
     def _get_parser_state_token_applied(
         self, state: CFGState, token_id: int
     ) -> PartialParserState:
-        """
+        """Apply the given token_id to the parser state.
+
         Don't mutate `parser_state`, copy to protect
 
         Get the token string
@@ -227,6 +315,19 @@ class CFGGuide(Guide):
           - else: normalized (with possibly leading whitespace)
 
         Don't allow empty ("") tokens, raise ValueError
+
+        Parameters
+        ----------
+        state
+            The guide's current PartialParserState, or None if complete
+        token_id
+            The id of the token that was just generated.
+
+        Returns
+        -------
+        PartialParserState
+            The parser state with the token applied.
+
         """
         parser_state = copy.copy(state.parser_state)  # prevent side effects
 
@@ -250,12 +351,38 @@ class CFGGuide(Guide):
         return parser_state
 
     def is_final_state(self, state: CFGState) -> bool:
-        # TODO: remove this method, use can_terminate_state and must_terminate_state
-        # here and in RegexGuide per https://github.com/dottxt-ai/outlines/issues/885
+        """Return whether the given state is a final state.
+
+        Parameters
+        ----------
+        state
+            The guide's current state.
+
+        Returns
+        -------
+        bool
+            Whether the given state is a final state.
+
+        """
+        # TODO: remove this method, use can_terminate_state and
+        # must_terminate_state here and in RegexGuide per
+        # https://github.com/dottxt-ai/outlines/issues/885
         return self.can_terminate_state(state)
 
     def can_terminate_state(self, state: CFGState) -> bool:
-        """Generation is allowed to terminate"""
+        """Return whether generation is allowed to terminate.
+
+        Parameters
+        ----------
+        state
+            The guide's current state.
+
+        Returns
+        -------
+        bool
+            Whether generation is allowed to terminate.
+
+        """
         if state.parser_state is not None:
             try:
                 copy.copy(state.parser_state).feed_eof()
@@ -264,11 +391,32 @@ class CFGGuide(Guide):
         return True
 
     def must_terminate_state(self, state: CFGState) -> bool:
-        """Generation must terminate, no legal continuations"""
-        return state.parser_state is None or set(state.parser_state.accepts()).issubset(
-            {"$END"}
+        """Indicate whether generation must terminate as there are no legal
+        continuations.
+
+        Parameters
+        ----------
+        state
+            The guide's current state.
+
+        Returns
+        -------
+        bool
+            Whether generation must terminate.
+
+        """
+        return (
+            state.parser_state is None or
+            set(state.parser_state.accepts()).issubset({"$END"})
         )
 
     def copy(self) -> "CFGGuide":
-        """Create a copy of the Guide."""
+        """Create a copy of the Guide.
+
+        Returns
+        -------
+        CFGGuide
+            A copy of the Guide.
+
+        """
         return CFGGuide(self.cfg_string, self.tokenizer)
