@@ -1,3 +1,17 @@
+"""Regular expression DSL and output types for structured generation.
+
+This module contains elements related to three logical steps in the use of
+output types for structured generation:
+
+1. Definition of `Term` classes that contain output type definitions. That
+   includes both terms intended to be used by themselves such as `JsonSchema`
+   or `CFG` and terms that are part of the regular expression DSL such as
+   `Alternatives` or `KleeneStar` (and the related functions).
+2. Conversion of Python types into `Term` instances (`python_types_to_terms`).
+3. Conversion of a `Term` instance into a regular expression (`to_regex`).
+
+"""
+
 import json
 import re
 import sys
@@ -200,6 +214,14 @@ class String(Term):
 
 @dataclass
 class Regex(Term):
+    """Class representing a regular expression.
+
+    Parameters
+    ----------
+    pattern
+        The regular expression as a string.
+
+    """
     pattern: str
 
     def _display_node(self) -> str:
@@ -211,6 +233,14 @@ class Regex(Term):
 
 @dataclass
 class CFG(Term):
+    """Class representing a context-free grammar.
+
+    Parameters
+    ----------
+    definition
+        The definition of the context-free grammar as a string.
+
+    """
     definition: str
 
     def _display_node(self) -> str:
@@ -225,13 +255,18 @@ class CFG(Term):
         return self.definition == other.definition
 
     @classmethod
-    def from_file(cls, path: str):
+    def from_file(cls, path: str) -> "CFG":
         """Create a CFG instance from a file containing a CFG definition.
 
         Parameters
         ----------
         path : str
             The path to the file containing the CFG definition.
+        Returns
+        -------
+        CFG
+            A CFG instance.
+
         """
         with open(path, "r") as f:
             definition = f.read()
@@ -240,6 +275,15 @@ class CFG(Term):
 
 @dataclass
 class FSM(Term):
+    """Class representing a finite state machine.
+
+    Parameters
+    ----------
+    fsm
+        The finite state machine to store. This object must be an instance of
+        `interegular.fsm.FSM`.
+
+    """
     fsm: interegular.fsm.FSM
 
     def _display_node(self) -> str:
@@ -250,6 +294,13 @@ class FSM(Term):
 
 
 class JsonSchema(Term):
+    """Class representing a JSON schema.
+
+    The JSON schema object from which to instantiate the class can be a
+    dictionary, a string, a Pydantic model, a typed dict, a dataclass, or a
+    genSON schema builder.
+
+    """
     def __init__(
         self,
         schema: Union[
@@ -257,6 +308,15 @@ class JsonSchema(Term):
         ],
         whitespace_pattern: OptionalType[str] = None,
     ):
+        """
+        Parameters
+        ----------
+        schema
+            The object containing the JSON schema.
+        whitespace_pattern
+            The pattern to use to match whitespace characters.
+
+        """
         schema_str: str
 
         if is_dict_instance(schema):
@@ -302,14 +362,19 @@ class JsonSchema(Term):
             return self.schema == other.schema
 
     @classmethod
-    def from_file(cls, path: str):
+    def from_file(cls, path: str) -> "JsonSchema":
         """Create a JsonSchema instance from a .json file containing a JSON
         schema.
 
         Parameters
         ----------
-        path : str
+        path:
             The path to the file containing the JSON schema.
+        Returns
+        -------
+        JsonSchema
+            A JsonSchema instance.
+
         """
         with open(path, "r") as f:
             schema = json.load(f)
@@ -484,6 +549,7 @@ def either(*terms: Union[str, Term]):
 
     This factory function automatically translates string arguments
     into `String` objects.
+
     """
     terms = [String(arg) if isinstance(arg, str) else arg for arg in terms]
     return Alternatives(terms)
@@ -530,8 +596,8 @@ def one_or_more(term: Union[Term, str]) -> KleenePlus:
 def python_types_to_terms(ptype: Any, recursion_depth: int = 0) -> Term:
     """Convert Python types to Outlines DSL terms that constrain LLM output.
 
-    Arguments
-    ---------
+    Parameters
+    ----------
     ptype
         The Python type to convert
     recursion_depth
@@ -539,7 +605,9 @@ def python_types_to_terms(ptype: Any, recursion_depth: int = 0) -> Term:
 
     Returns
     -------
-    The corresponding DSL `Term` instance.
+    Term
+        The corresponding DSL `Term` instance.
+
     """
     if recursion_depth > 10:
         raise RecursionError(
@@ -721,6 +789,16 @@ def to_regex(term: Term) -> str:
     """Convert a term to a regular expression.
 
     We only consider self-contained terms that do not refer to another rule.
+
+    Parameters
+    ----------
+    term
+        The term to convert to a regular expression.
+
+    Returns
+    -------
+    str
+        The regular expression as a string.
 
     """
     match term:
