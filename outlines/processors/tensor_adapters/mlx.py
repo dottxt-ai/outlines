@@ -1,3 +1,5 @@
+"""Tensor adapter for the `mlx` library."""
+
 from outlines.processors.tensor_adapters.base import TensorAdapter
 
 

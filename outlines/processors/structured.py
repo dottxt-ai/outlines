@@ -1,4 +1,4 @@
-"""
+"""Logits processors for structured generation.
  _______________________________
 / Don't want to self-host?       \
 \\ Try .json at http://dottxt.co /
@@ -25,47 +25,55 @@ limitations under the License.
 """
 
 import math
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Type, Union, cast
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Type, Union
 
-from outlines_core.fsm.json_schema import build_regex_from_schema
 from pydantic import BaseModel
+from outlines_core.fsm.json_schema import build_regex_from_schema
 
-from outlines.processors.guide import CFGGuide, Guide, RegexGuide
+from outlines.processors.base_logits_processor import (
+    OutlinesLogitsProcessor,
+    TensorType
+)
+from outlines.processors.guide import (
+    CFGGuide,
+    Guide,
+    RegexGuide
+)
 from outlines.types import JsonSchema
-
-from .base_logits_processor import OutlinesLogitsProcessor, TensorType
 
 if TYPE_CHECKING:
     from outlines.models.tokenizer import Tokenizer
 
 
 class GuideLogitsProcessor(OutlinesLogitsProcessor):
-    """Bias generation using a finite
+    """Bias generation using a guide.
 
     Attributes
     ----------
     tokenizer
-        The tokenizer used to convert tokens to ids.
+        The outlines tokenizer used to convert tokens to ids.
     guide
-        The `outlines.processors.guide` which is used to bias the logits.
+        The outlines guide used to bias the logits.
     """
-
     tokenizer: "Tokenizer"
     guide: Guide
     _guide_states: Dict[int, Any]
     _seq_start_idx: Optional[int]
 
-    def __init__(self, tokenizer: "Tokenizer", guide: Guide, tensor_library_name: str):
-        """A Guide-based logits processor.
-
+    def __init__(
+        self, tokenizer: "Tokenizer", guide: Guide, tensor_library_name: str
+    ):
+        """
         Parameters
         ----------
         tokenizer
             The tokenizer used to convert tokens to ids.
         guide
-            The `outlines.processors.guide. which is used to bias the logits.
+            The `outlines.processors.guide.Guide` that is used to bias the
+            logits.
         tensor_library_name
             The name of the library to use to manipulate the tensors.
+
         """
         super().__init__(tensor_library_name=tensor_library_name)
         self.tokenizer = tokenizer
@@ -81,13 +89,15 @@ class GuideLogitsProcessor(OutlinesLogitsProcessor):
         Parameters
         ----------
         input_ids
-            The input token ids.
+            The ids of the tokens of the existing sequences.
         logits
-            The logits.
+            The logits for the current generation step.
 
         Returns
         -------
-        The biased logits.
+        TensorType
+            The biased logits.
+
         """
         if self._seq_start_idx is None:
             self._seq_start_idx = len(input_ids[0]) # type: ignore
@@ -141,14 +151,15 @@ class GuideLogitsProcessor(OutlinesLogitsProcessor):
 
 class RegexLogitsProcessor(GuideLogitsProcessor):
     """Bias generation based on a regular expression."""
+    guide: RegexGuide
+
     def __init__(
         self,
         regex_string: str,
         tokenizer: "Tokenizer",
         tensor_library_name: str,
     ):
-        """Compile the RegexGuide that drives the regex-guided generation.
-
+        """
         Parameters
         ----------
         regex_string
@@ -157,7 +168,10 @@ class RegexLogitsProcessor(GuideLogitsProcessor):
             An Outlines tokenizer.
         tensor_library_name
             The name of the library to use to manipulate the tensors.
+
         """
+        # Build a guide from the regex string and then pass it to the
+        # GuideLogitsProcessor superclass.
         guide = RegexGuide.from_regex(regex_string, tokenizer)
         super().__init__(tokenizer=tokenizer, guide=guide, tensor_library_name=tensor_library_name)
 
@@ -171,8 +185,7 @@ class JSONLogitsProcessor(RegexLogitsProcessor):
         tensor_library_name: str,
         whitespace_pattern: Optional[str] = None,
     ):
-        """Compile the Guide that drives the JSON-guided generation.
-
+        """
         Parameters
         ----------
         schema
@@ -185,48 +198,71 @@ class JSONLogitsProcessor(RegexLogitsProcessor):
             Pattern to use for JSON syntactic whitespace (doesn't impact string
             literals). For example, to allow only a single space or newline with
             `whitespace_pattern=r"[\n ]?"`.
+
         """
+        # Convert the JSON schema into a regex string and then pass it to the
+        # RegexLogitsProcessor superclass.
         schema_str = JsonSchema(schema).schema
         regex_string = build_regex_from_schema(schema_str, whitespace_pattern)
-        super().__init__(regex_string=regex_string, tokenizer=tokenizer, tensor_library_name=tensor_library_name)
+        super().__init__(
+            regex_string=regex_string,
+            tokenizer=tokenizer,
+            tensor_library_name=tensor_library_name
+        )
 
 
 class CFGLogitsProcessor(GuideLogitsProcessor):
-    """Bias generation based on a context-free grammar.
-
-    Attributes
-    ----------
-    tokenizer
-        The tokenizer used to convert tokens to ids.
-    guide
-        The `outlines.fsm.CFGGuide. which is used to bias the logits.
-    """
-
+    """Bias generation based on a context-free grammar."""
     guide: CFGGuide
 
-    def __init__(self, cfg_str: str, tokenizer: "Tokenizer", tensor_library_name: str):
-        """Compile the CFGGuide that drives the CFG-guided generation.
-
+    def __init__(
+        self, cfg_str: str, tokenizer: "Tokenizer", tensor_library_name: str
+    ):
+        """
         Parameters
         ----------
         cfg_str
-            A string that represents a grammar
+            A string that represents a grammar.
         tokenizer
             The tokenizer used to convert tokens to ids.
+        tensor_library_name
+            The name of the library to use to manipulate the tensors.
+
         """
+        # Build a guide from the CFG string and then pass it to the
+        # GuideLogitsProcessor superclass.
         cfg_guide = CFGGuide(cfg_string=cfg_str, tokenizer=tokenizer)
-        super().__init__(tokenizer=tokenizer, guide=cfg_guide, tensor_library_name=tensor_library_name)
+        super().__init__(
+            tokenizer=tokenizer,
+            guide=cfg_guide,
+            tensor_library_name=tensor_library_name
+        )
 
     def process_logits(
-        self, input_ids, logits
-    ):
-        """Same behavior as GuideLogitsProcessor, but uses rejection sampling"""
+        self, input_ids: TensorType, logits: TensorType
+    ) -> TensorType:
+        """Same behavior as GuideLogitsProcessor, but uses rejection
+        sampling.
+
+        Parameters
+        ----------
+        input_ids
+            The ids of the tokens of the existing sequences.
+        logits
+            The logits for the current generation step.
+
+        Returns
+        -------
+        TensorType
+            The biased logits.
+
+        """
         if self._seq_start_idx is None:
-            self._seq_start_idx = len(input_ids[0])
+            self._seq_start_idx = len(input_ids[0]) # type: ignore
 
         sequence_states: List = []  # vector of states corresponding to `input_ids`
 
-        for seq_ids in input_ids:
+        for seq_ids in input_ids: # type: ignore
             gen_ids = seq_ids[self._seq_start_idx :]
             curr_state_key = hash(tuple(self.tensor_adapter.to_list(gen_ids)))
 
@@ -241,9 +277,9 @@ class CFGLogitsProcessor(GuideLogitsProcessor):
         for i, guide_state in enumerate(sequence_states):
             first_legal_token = next(
                 self.guide.iter_valid_token_ids(
-                    guide_state, self.tensor_adapter.argsort_descending(logits[i])
+                    guide_state, self.tensor_adapter.argsort_descending(logits[i]) # type: ignore
                 )
             )
-            mask[i, [first_legal_token]] = logits[i, [first_legal_token]]
+            mask[i, [first_legal_token]] = logits[i, [first_legal_token]] # type: ignore
 
         return mask

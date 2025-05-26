@@ -1,3 +1,5 @@
+"""Tensor adapter for the `tensorflow` library."""
+
 from outlines.processors.tensor_adapters.base import TensorAdapter
 
 
