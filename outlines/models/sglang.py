@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     from openai import AsyncOpenAI, OpenAI
 
 
-class SgLangTypeAdapter(ModelTypeAdapter):
+class SGLangTypeAdapter(ModelTypeAdapter):
 
     def format_input(self, model_input):
         """Generate the prompt argument to pass to the client.
@@ -71,7 +71,7 @@ class SGLang(Model):
         """
         self.client = client
         self.model_name = model_name
-        self.type_adapter = SgLangTypeAdapter()
+        self.type_adapter = SGLangTypeAdapter()
 
     def generate(self, model_input, output_type, **inference_kwargs):
         """Generate text using the client.
@@ -156,11 +156,11 @@ class SGLang(Model):
         return client_args
 
 
-class AsyncSgLang(AsyncModel):
+class AsyncSGLang(AsyncModel):
     """Represents an async client to a `sglang` server."""
 
     def __init__(self, client, model_name: Optional[str] = None):
-        """Create an `AsyncSgLang` model instance.
+        """Create an `AsyncSGLang` model instance.
 
         Parameters
         ----------
@@ -170,7 +170,7 @@ class AsyncSgLang(AsyncModel):
         """
         self.client = client
         self.model_name = model_name
-        self.type_adapter = SgLangTypeAdapter()
+        self.type_adapter = SGLangTypeAdapter()
 
     async def generate(self, model_input, output_type, **inference_kwargs):
         """Generate text using `sglang`.
@@ -259,13 +259,13 @@ class AsyncSgLang(AsyncModel):
 def from_sglang(
     client: Union["OpenAI", "AsyncOpenAI"],
     model_name: Optional[str] = None,
-) -> Union[SGLang, AsyncSgLang]:
+) -> Union[SGLang, AsyncSGLang]:
     from openai import AsyncOpenAI, OpenAI
 
     if isinstance(client, OpenAI):
         return SGLang(client, model_name)
     elif isinstance(client, AsyncOpenAI):
-        return AsyncSgLang(client, model_name)
+        return AsyncSGLang(client, model_name)
     else:
         raise ValueError(
             f"Unsupported client type: {type(client)}.\n"
