@@ -1,3 +1,5 @@
+"""Utility functions for the types module."""
+
 import dataclasses
 import datetime
 import inspect
