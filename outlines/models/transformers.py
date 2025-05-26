@@ -230,8 +230,6 @@ class Transformers(Model):
         prompts, inputs = self._prepare_model_inputs(model_input, output_type)
         logits_processor = self.type_adapter.format_output_type(output_type)
 
-        print(inference_kwargs)
-
         generated_ids = self._generate_output_seq(
             prompts, inputs, logits_processor=logits_processor, **inference_kwargs
         )
