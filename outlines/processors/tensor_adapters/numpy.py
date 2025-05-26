@@ -1,3 +1,5 @@
+"""Tensor adapter for the `numpy` library."""
+
 from outlines.processors.tensor_adapters.base import TensorAdapter
 
 
