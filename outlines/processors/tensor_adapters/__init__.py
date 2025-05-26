@@ -1,3 +1,5 @@
+"""Library specific objects to manipulate tensors."""
+
 from typing import Union
 
 from .jax import JAXTensorAdapter
@@ -11,14 +13,14 @@ tensor_adapters = {
     "jax": JAXTensorAdapter,
     "mlx": MLXTensorAdapter,
     "numpy": NumpyTensorAdapter,
-    "torch": TorchTensorAdapter,
     "tensorflow": TensorFlowTensorAdapter,
+    "torch": TorchTensorAdapter,
 }
 
 TensorAdapterImplementation = Union[
     JAXTensorAdapter,
     MLXTensorAdapter,
     NumpyTensorAdapter,
-    TorchTensorAdapter,
     TensorFlowTensorAdapter,
+    TorchTensorAdapter,
 ]
