@@ -211,8 +211,7 @@ nav:
                 - Template: features/utility/template.md
 
           - Advanced:
-                - Guide: features/advanced/guide.md
-                - Parsing: features/advanced/parsing.md
+                - Logits Processors: features/advanced/logits_processors.md
 
     - API Reference: api_reference/
 
