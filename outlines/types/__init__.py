@@ -1,4 +1,19 @@
-from outlines.types.dsl import Regex
+from enum import Enum
+
+from outlines.types import airports, countries, locale
+from outlines.types.dsl import (
+    Regex,
+    json_schema,
+    regex,
+    either,
+    optional,
+    exactly,
+    at_least,
+    at_most,
+    between,
+    one_or_more,
+    zero_or_more,
+)
 
 # Python types
 integer = Regex(r"[+-]?(0|[1-9][0-9]*)")
@@ -46,3 +61,21 @@ email = Regex(
 isbn = Regex(
     r"(?:ISBN(?:-1[03])?:? )?(?=[0-9X]{10}$|(?=(?:[0-9]+[- ]){3})[- 0-9X]{13}$|97[89][0-9]{10}$|(?=(?:[0-9]+[- ]){4})[- 0-9]{17}$)(?:97[89][- ]?)?[0-9]{1,5}[- ]?[0-9]+[- ]?[0-9]+[- ]?[0-9X]"
 )
+
+__all__ = [
+    "Enum",
+    "Regex",
+    "json_schema",
+    "regex",
+    "either",
+    "optional",
+    "exactly",
+    "at_least",
+    "at_most",
+    "between",
+    "one_or_more",
+    "zero_or_more",
+    "airports",
+    "countries",
+    "locale",
+]
