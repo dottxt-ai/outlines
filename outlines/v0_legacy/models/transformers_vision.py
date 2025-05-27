@@ -9,9 +9,6 @@ from outlines.models.transformers import (
     TransformersMultiModalTypeAdapter,
 )
 
-if TYPE_CHECKING:
-    from outlines.processors import OutlinesLogitsProcessor
-
 
 class TransformersVision(Transformers):
     def __init__(self, model, tokenizer, processor):
