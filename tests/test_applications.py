@@ -1,39 +1,28 @@
-import pytest
+from typing import Any
 
 import jinja2
+import pytest
+import transformers
 
+from outlines import from_transformers
 from outlines.applications import Application
 from outlines.templates import Template
-from outlines.models import Model
-from typing import Any
 
 
 @pytest.fixture(scope="session")
 def model():
-    class MockModel(Model):
-        type_adapter = None
-
-        def generate(self, model_input: str, output_type=None, **kwargs) -> Any:
-            return model_input
-
-        def generate_stream(self, model_input: str, output_type=None, **kwargs) -> Any:
-            return model_input
-
-    return MockModel()
+    return from_transformers(
+        transformers.AutoModelForCausalLM.from_pretrained("gpt2"),
+        transformers.AutoTokenizer.from_pretrained("gpt2"),
+    )
 
 
 @pytest.fixture(scope="session")
 def another_model():
-    class MockModel(Model):
-        type_adapter = None
-
-        def generate(self, model_input: str, output_type=None, **kwargs) -> Any:
-            return model_input
-
-        def generate_stream(self, model_input: str, output_type=None, **kwargs) -> Any:
-            return model_input
-
-    return MockModel()
+    return from_transformers(
+        transformers.AutoModelForCausalLM.from_pretrained("gpt2"),
+        transformers.AutoTokenizer.from_pretrained("gpt2"),
+    )
 
 
 def test_application_initialization():
@@ -60,9 +49,9 @@ def test_application_template_call(model):
     template = Template.from_string("Test {{ value }}")
     output_type = None
     application = Application(template, output_type)
-    result = application(model, {"value": "example"}, foo="bar")
+    result = application(model, {"value": "example"}, max_new_tokens=10)
 
-    assert result == "Test example"
+    assert isinstance(result, str)
 
 
 def test_application_callable_call(model):
@@ -71,9 +60,9 @@ def test_application_callable_call(model):
 
     output_type = None
     application = Application(template, output_type)
-    result = application(model, {"value": "example"}, foo="bar")
+    result = application(model, {"value": "example"}, max_new_tokens=10)
 
-    assert result == "Test example"
+    assert isinstance(result, str)
 
 
 def test_application_template_error(model):
@@ -90,15 +79,15 @@ def test_application_generator_reuse(model, another_model):
     output_type = None
     application = Application(template, output_type)
 
-    application(model, {"value": "example"})
+    application(model, {"value": "example"}, max_new_tokens=10)
     first_generator = application.generator
     first_model = application.model
 
-    application(model, {"value": "example"})
+    application(model, {"value": "example"}, max_new_tokens=10)
     assert application.model == first_model
     assert application.generator == first_generator
 
-    application(another_model, {"value": "example"})
+    application(another_model, {"value": "example"}, max_new_tokens=10)
     assert application.model == another_model
     assert application.model != first_model
     assert application.generator != first_generator
