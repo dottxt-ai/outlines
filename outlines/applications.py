@@ -64,7 +64,7 @@ class Application:
         # generator.
         if model != self.model:
             self.model = model
-            self.generator = Generator(model, self.output_type)
+            self.generator = Generator(model, self.output_type)  # type: ignore
 
         prompt = self.template(**template_vars)
         assert self.generator is not None

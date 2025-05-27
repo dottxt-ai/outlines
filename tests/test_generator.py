@@ -207,6 +207,11 @@ async def test_async_black_box_generator_stream(black_box_async_model):
 # Generator
 
 
+def test_generator_init_no_model():
+    with pytest.raises(ValueError):
+        Generator(None, Literal["foo", "bar"])
+
+
 def test_generator_init_multiple_output_type(steerable_model, sample_processor):
     with pytest.raises(ValueError):
         Generator(steerable_model, Literal["foo", "bar"], processor=sample_processor)
