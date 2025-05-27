@@ -4,7 +4,16 @@ import copy
 import functools
 import json
 import warnings
-from typing import Callable, Dict, List, Optional, Union, TYPE_CHECKING
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Callable,
+    Dict,
+    Iterator,
+    List,
+    Optional,
+    Union,
+)
 from dataclasses import asdict, dataclass, field, replace
 
 from pydantic import BaseModel, TypeAdapter
@@ -22,7 +31,6 @@ from outlines.types.utils import (
 )
 from outlines.v0_legacy.base import vectorize
 
-
 if TYPE_CHECKING:
     from openai import OpenAI as OpenAIClient, AzureOpenAI as AzureOpenAIClient
 
@@ -30,7 +38,7 @@ __all__ = ["OpenAI", "from_openai"]
 
 
 class OpenAITypeAdapter(ModelTypeAdapter):
-    """Type adapter for the OpenAI clients.
+    """Type adapter for the `OpenAI` model.
 
     `OpenAITypeAdapter` is responsible for preparing the arguments to OpenAI's
     `completions.create` methods: the input (prompt and possibly image), as
@@ -38,13 +46,18 @@ class OpenAITypeAdapter(ModelTypeAdapter):
 
     """
 
-    def format_input(self, model_input):
+    def format_input(self, model_input: Union[str, Vision]) -> dict:
         """Generate the `messages` argument to pass to the client.
 
-        Argument
-        --------
+        Parameters
+        ----------
         model_input
-            The input passed by the user.
+            The input provided by the user.
+
+        Returns
+        -------
+        dict
+            The formatted input to be passed to the client.
 
         """
         if isinstance(model_input, str):
@@ -56,7 +69,7 @@ class OpenAITypeAdapter(ModelTypeAdapter):
             "The only available types are `str` and `Vision`."
         )
 
-    def format_str_model_input(self, model_input: str):
+    def format_str_model_input(self, model_input: str) -> dict:
         """Generate the `messages` argument to pass to the client when the user
         only passes a prompt.
 
@@ -70,7 +83,7 @@ class OpenAITypeAdapter(ModelTypeAdapter):
             ]
         }
 
-    def format_vision_model_input(self, model_input: Vision):
+    def format_vision_model_input(self, model_input: Vision) -> dict:
         """Generate the `messages` argument to pass to the client when the user
         passes a prompt and an image.
 
@@ -92,15 +105,24 @@ class OpenAITypeAdapter(ModelTypeAdapter):
             ]
         }
 
-    def format_output_type(self, output_type):
+    def format_output_type(self, output_type: Optional[Any] = None) -> dict:
         """Generate the `response_format` argument to the client based on the
         output type specified by the user.
 
         TODO: `int`, `float` and other Python types could be supported via
         JSON Schema.
 
-        """
+        Parameters
+        ----------
+        output_type
+            The output type provided by the user.
 
+        Returns
+        -------
+        dict
+            The formatted output type to be passed to the client.
+
+        """
         # Unsupported languages
         if isinstance(output_type, Regex):
             raise TypeError(
@@ -139,12 +161,11 @@ class OpenAITypeAdapter(ModelTypeAdapter):
                 "Use an open source model or dottxt instead."
             )
 
-    def format_json_output_type(self, schema: dict):
+    def format_json_output_type(self, schema: dict) -> dict:
         """Generate the `response_format` argument to the client when the user
         specified a `Json` output type.
 
         """
-
         # OpenAI requires `additionalProperties` to be set
         if "additionalProperties" not in schema:
             schema["additionalProperties"] = False
@@ -160,7 +181,7 @@ class OpenAITypeAdapter(ModelTypeAdapter):
             }
         }
 
-    def format_json_mode_type(self):
+    def format_json_mode_type(self) -> dict:
         """Generate the `response_format` argument to the client when the user
         specified the output type should be a JSON but without specifying the
         schema (also called "JSON mode").
@@ -183,6 +204,22 @@ class OpenAI(Model):
         model_name: Optional[Union[str, "OpenAIConfig"]] = None,
         **kwargs
     ):
+        """Initialize the OpenAI model.
+
+        To provide temporary backwards compatibility with Outlines v0,
+        the class can be instantiated with a `OpenAIConfig` instance as
+        a value for the `model_name` argument. This is deprecated and will
+        be removed in v1.1.0. Please provide a model name instead.
+
+        Parameters
+        ----------
+        client
+            The `openai.OpenAI` client.
+        model_name
+            The name of the model to use.
+
+        """
+
         # legacy mode
         if isinstance(model_name, OpenAIConfig) or kwargs.get("config"):
             warnings.warn("""
@@ -223,8 +260,27 @@ class OpenAI(Model):
         self,
         model_input: Union[str, Vision],
         output_type: Optional[Union[type[BaseModel], str]] = None,
-        **inference_kwargs,
-    ):
+        **inference_kwargs: Any,
+    ) -> Union[str, list[str]]:
+        """Generate text using OpenAI.
+
+        Parameters
+        ----------
+        model_input
+            The prompt based on which the model will generate a response.
+        output_type
+            The desired format of the response generated by the model. The
+            output type must be of a type that can be converted to a JSON
+            schema or an empty dictionary.
+        **inference_kwargs
+            Additional keyword arguments to pass to the client.
+
+        Returns
+        -------
+        Union[str, list[str]]
+            The text generated by the model.
+
+        """
         import openai
 
         messages = self.type_adapter.format_input(model_input)
@@ -265,7 +321,28 @@ class OpenAI(Model):
         model_input: Union[str, Vision],
         output_type: Optional[Union[type[BaseModel], str]] = None,
         **inference_kwargs,
-    ):
+    ) -> Iterator[str]:
+        """Stream text using OpenAI.
+
+        Parameters
+        ----------
+        model_input
+            The prompt based on which the model will generate a response.
+        output_type
+            The desired format of the response generated by the model. The
+            output type must be of a type that can be converted to a JSON
+            schema or an empty dictionary.
+        **inference_kwargs
+            Additional keyword arguments to pass to the client.
+
+        Returns
+        -------
+        Iterator[str]
+            An iterator that yields the text generated by the model.
+
+        """
+        import openai
+
         messages = self.type_adapter.format_input(model_input)
         response_format = self.type_adapter.format_output_type(output_type)
 
@@ -318,6 +395,22 @@ def from_openai(
     client: Union["OpenAIClient", "AzureOpenAIClient"],
     model_name: Optional[str] = None,
 ) -> OpenAI:
+    """Create an Outlines `OpenAI` model instance from an `openai.OpenAI`
+    client.
+
+    Parameters
+    ----------
+    client
+        An `openai.OpenAI` client instance.
+    model_name
+        The name of the model to use.
+
+    Returns
+    -------
+    OpenAI
+        An Outlines `OpenAI` model instance.
+
+    """
     return OpenAI(client, model_name)
 
 

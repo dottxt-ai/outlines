@@ -1,15 +1,22 @@
+"""Integration with the `transformers` library."""
+
 from functools import singledispatchmethod
-from typing import TYPE_CHECKING, List, Tuple, Union
+from typing import TYPE_CHECKING, Any, List, Optional, Tuple, Union
 
 from outlines.models.base import Model, ModelTypeAdapter
 from outlines.models.tokenizer import Tokenizer
+from outlines.processors import OutlinesLogitsProcessor
 
 if TYPE_CHECKING:
     import torch
-    from transformers import PreTrainedTokenizer, PreTrainedModel, ProcessorMixin
+    from transformers import (
+        PreTrainedTokenizer,
+        PreTrainedModel,
+        ProcessorMixin,
+        LogitsProcessorList,
+    )
 
-
-__all__ = ["Transformers", "from_transformers"]
+__all__ = ["Transformers", "TransformersMultiModal", "from_transformers"]
 
 
 def get_llama_tokenizer_types():
@@ -122,14 +129,21 @@ class TransformerTokenizer(Tokenizer):
 
 
 class TransformersTypeAdapter(ModelTypeAdapter):
+    """Type adapter for the `Transformers` model."""
+
     @singledispatchmethod
     def format_input(self, model_input):
         """Generate the prompt argument to pass to the model.
 
-        Argument
-        --------
+        Parameters
+        ----------
         model_input
             The input passed by the user.
+
+        Returns
+        -------
+        str
+            The formatted input to be passed to the model.
 
         """
         raise NotImplementedError(
@@ -138,20 +152,28 @@ class TransformersTypeAdapter(ModelTypeAdapter):
         )
 
     @format_input.register(str)
-    def format_str_input(self, model_input):
+    def format_str_input(self, model_input: str) -> str:
         return model_input
 
     @format_input.register(list)
-    def format_list_input(self, model_input):
+    def format_list_input(self, model_input: List[str]) -> List[str]:
         return model_input
 
-    def format_output_type(self, output_type):
+    def format_output_type(
+        self,
+        output_type: Optional[OutlinesLogitsProcessor] = None,
+    ) -> Optional["LogitsProcessorList"]:
         """Generate the logits processor argument to pass to the model.
 
-        Argument
-        --------
+        Parameters
+        ----------
         output_type
             The logits processor provided.
+
+        Returns
+        -------
+        Optional[LogitsProcessorList]
+            The logits processor to pass to the model.
 
         """
         from transformers import LogitsProcessorList
@@ -162,19 +184,21 @@ class TransformersTypeAdapter(ModelTypeAdapter):
 
 
 class Transformers(Model):
-    """Represents a `transformers` model."""
+    """Thin wrapper around a `transformers` model and a `transformers`
+    tokenizer.
+
+    This wrapper is used to convert the input and output types specified by the
+    users at a higher level to arguments to the `transformers` model and
+    tokenizer.
+
+    """
 
     def __init__(
         self,
         model: "PreTrainedModel",
         tokenizer: "PreTrainedTokenizer",
     ):
-        """Create a Transformers model instance.
-
-        `outlines` supports `PreTrainedModelForCausalLM`,
-        `PreTrainedMambaForCausalLM`, `PreTrainedModelForSeq2Seq` and any model
-        that implements the `transformers` model API.
-
+        """
         Parameters:
         ----------
         model
@@ -216,7 +240,12 @@ class Transformers(Model):
         else:
             self.tensor_library_name = "torch"
 
-    def _prepare_model_inputs(self, model_input, output_type):
+    def _prepare_model_inputs(
+        self,
+        model_input: Union[str, List[str], dict],
+        output_type: Optional[OutlinesLogitsProcessor] = None,
+    ) -> Tuple[Union[str, List[str]], dict]:
+        """Turn the user input into arguements to pass to the model"""
         prompts = self.type_adapter.format_input(model_input)
         input_ids, attention_mask = self.tokenizer.encode(prompts)
         inputs = {
@@ -226,9 +255,38 @@ class Transformers(Model):
 
         return prompts, inputs
 
-    def generate(self, model_input, output_type, **inference_kwargs):
+    def generate(
+        self,
+        model_input: Union[str, List[str], dict],
+        output_type: Optional[OutlinesLogitsProcessor] = None,
+        **inference_kwargs: Any,
+    ) -> Union[str, List[str]]:
+        """Generate text using `transformers`.
+
+        Parameters
+        ----------
+        model_input
+            The prompt based on which the model will generate a response. For
+            multi-modal models, the input should be a dictionary containing the
+            `text` key with a value of type `Union[str, List[str]]` and the
+            other keys required by the model.
+        output_type
+            The logits processor the model will use to constrain the format of
+            the generated text.
+        inference_kwargs
+            Additional keyword arguments to pass to the `generate` method
+            of the `transformers` model.
+
+        Returns
+        -------
+        Union[str, List[str]]
+            The text generated by the model.
+
+        """
         prompts, inputs = self._prepare_model_inputs(model_input, output_type)
         logits_processor = self.type_adapter.format_output_type(output_type)
+
+        print(inference_kwargs)
 
         generated_ids = self._generate_output_seq(
             prompts, inputs, logits_processor=logits_processor, **inference_kwargs
@@ -241,8 +299,10 @@ class Transformers(Model):
         return self._decode_generation(generated_ids)
 
     def generate_stream(self, model_input, output_type, **inference_kwargs):
-        """
+        """Not available for `transformers` models.
+
         TODO: implement following completion of https://github.com/huggingface/transformers/issues/30810
+
         """
         raise NotImplementedError(
             "Streaming is not implemented for Transformers models."
@@ -287,7 +347,7 @@ class Transformers(Model):
 
 
 class TransformersMultiModalTypeAdapter(ModelTypeAdapter):
-    """Type adapter for TransformersMultiModal models."""
+    """Type adapter for `TransformersMultiModal` model."""
 
     @singledispatchmethod
     def format_input(self, model_input):
@@ -297,6 +357,11 @@ class TransformersMultiModalTypeAdapter(ModelTypeAdapter):
         --------
         model_input
             The input passed by the user.
+
+        Returns
+        -------
+        dict
+            The formatted input to be passed to the model.
 
         """
         raise NotImplementedError(
@@ -311,7 +376,7 @@ class TransformersMultiModalTypeAdapter(ModelTypeAdapter):
         )
 
     @format_input.register(dict)
-    def format_list_input(self, model_input):
+    def format_list_input(self, model_input: dict) -> dict:
         if "text" not in model_input:
             raise ValueError(
                 "The input must contain the 'text' key along with the other "
@@ -319,13 +384,21 @@ class TransformersMultiModalTypeAdapter(ModelTypeAdapter):
             )
         return model_input
 
-    def format_output_type(self, output_type):
+    def format_output_type(
+        self,
+        output_type: Optional[OutlinesLogitsProcessor] = None,
+    ) -> Optional["LogitsProcessorList"]:
         """Generate the logits processor argument to pass to the model.
 
         Argument
         --------
         output_type
             The logits processor provided.
+
+        Returns
+        -------
+        Optional[LogitsProcessorList]
+            The logits processor to pass to the model.
 
         """
         from transformers import LogitsProcessorList
@@ -336,7 +409,14 @@ class TransformersMultiModalTypeAdapter(ModelTypeAdapter):
 
 
 class TransformersMultiModal(Transformers):
-    """Represents a `transformers` model with a vision processor."""
+    """Thin wrapper around a `transformers` model and a `transformers`
+    processor.
+
+    This wrapper is used to convert the input and output types specified by the
+    users at a higher level to arguments to the `transformers` model and
+    processor.
+
+    """
 
     def __init__(self, model: "PreTrainedModel", processor):
         """Create a TransformersMultiModal model instance
@@ -344,6 +424,14 @@ class TransformersMultiModal(Transformers):
         We rely on the `__init__` method of the `Transformers` class to handle
         most of the initialization and then add elements specific to vision
         models.
+
+        Parameters
+        ----------
+        model
+            A `PreTrainedModel`, or any model that is compatible with the
+            `transformers` API for models.
+        processor
+            A `ProcessorMixin` instance.
 
         """
         self.processor = processor
@@ -356,7 +444,12 @@ class TransformersMultiModal(Transformers):
 
         self.type_adapter = TransformersMultiModalTypeAdapter()
 
-    def _prepare_model_inputs(self, model_input, output_type):
+    def _prepare_model_inputs(
+        self,
+        model_input: Union[str, List[str], dict],
+        output_type: Optional[OutlinesLogitsProcessor] = None,
+    ) -> Tuple[Union[str, List[str]], dict]:
+        """Turn the user input into arguements to pass to the model"""
         model_input = self.type_adapter.format_input(model_input)
         inputs = self.processor(
             **model_input, padding=True, return_tensors="pt"
@@ -368,12 +461,31 @@ class TransformersMultiModal(Transformers):
 def from_transformers(
     model: "PreTrainedModel",
     tokenizer_or_processor: Union["PreTrainedTokenizer", "ProcessorMixin"],
-):
+) -> Union[Transformers, TransformersMultiModal]:
+    """Create an Outlines `Transformers` or `TransformersMultiModal` model
+    instance from a `PreTrainedModel` instance and a `PreTrainedTokenizer` or
+    `ProcessorMixin` instance.
+
+    `outlines` supports `PreTrainedModelForCausalLM`,
+    `PreTrainedMambaForCausalLM`, `PreTrainedModelForSeq2Seq` and any model
+    that implements the `transformers` model API.
+
+    Parameters
+    ----------
+    model
+        A `transformers.PreTrainedModel` instance.
+    tokenizer_or_processor
+        A `transformers.PreTrainedTokenizer` or
+        `transformers.ProcessorMixin` instance.
+
+    Returns
+    -------
+    Union[Transformers, TransformersMultiModal]
+        An Outlines `Transformers` or `TransformersMultiModal` model instance.
+
+    """
     from transformers import (
-        PreTrainedTokenizer,
-        PreTrainedTokenizerFast,
-        ProcessorMixin
-    )
+        PreTrainedTokenizer, PreTrainedTokenizerFast, ProcessorMixin)
 
     if isinstance(
         tokenizer_or_processor, (PreTrainedTokenizer, PreTrainedTokenizerFast)
