@@ -12,7 +12,6 @@ from outlines.types.dsl import (
     QuantifyMaximum,
     QuantifyMinimum,
     Sequence,
-    Alternatives,
     Optional,
     Term,
     to_regex,

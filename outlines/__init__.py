@@ -19,4 +19,5 @@ __all__ = [
     "Prompt",
     "vectorize",
     "grammars",
+    "Template",
 ]

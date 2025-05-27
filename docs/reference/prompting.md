@@ -179,7 +179,6 @@ information about the syntax of the templating language. The Jinja syntax is
 powerful, and we recommend you take some time to read their documentation if you
 are building complex prompts.
 
-
 ## Tools
 
 Several projects (e.g.[Toolformer](https://arxiv.org/abs/2302.04761), [ViperGPT](https://viper.cs.columbia.edu/), [AutoGPT](https://github.com/Significant-Gravitas/Auto-GPT), etc.) have shown that we can "teach" language models to use external functions by describing what these functions do in the prompt. In these projects the same information is often repeated twice: the function implementation, name, docstring, or arguments are copy-pasted in the prompt. This is cumbersome and error prone; you can directly pull this information from within an Outlines prompt function:
