@@ -180,11 +180,26 @@ nav:
                       - Templates: user_guide/prompting/templates.md
                 - Easy Regular Expressions: user_guide/regex_dsl.md
                 - Migrating to v1: user_guide/migration.md
+
     - Features:
           - Overview: features/index.md
 
           - Core:
-                - Generator: features/core/generator.md
+                - Models:
+                    - Overview: features/models/index.md
+                    - Anthropic: features/models/anthropic.md
+                    - Dottxt: features/models/dottxt.md
+                    - Gemini: features/models/gemini.md
+                    - Llamacpp: features/models/llamacpp.md
+                    - Mlx-lm: features/models/mlxlm.md
+                    - Ollama: features/models/ollama.md
+                    - OpenAI: features/models/openai.md
+                    - SGLang: features/models/sglang.md
+                    - TGI: features/models/tgi.md
+                    - Transformers: features/models/transformers.md
+                    - TransformersMultiModal: features/models/transformers_multimodal.md
+                    - vLLM (online server): features/models/vllm.md
+                    - vLLM (offline): features/models/vllm_offline.md
                 - Output Types:
                     - Overview: features/core/output_types.md
                     - Basic Types: features/core/output_types#basic-python-types
@@ -192,20 +207,7 @@ nav:
                     - JSON: features/core/output_types#json-schemas
                     - Regex: features/core/output_types#regex-patterns
                     - Context-free Grammars: features/core/output_types#context-free-grammars
-
-          - Supported Models:
-                - Anthropic: features/models/anthropic.md
-                - Dottxt: features/models/dottxt.md
-                - Gemini: features/models/gemini.md
-                - Llamacpp: features/models/llamacpp.md
-                - Mlx-lm: features/models/mlxlm.md
-                - Ollama: features/models/ollama.md
-                - OpenAI: features/models/openai.md
-                - SGLang: features/models/sglang.md
-                - TGI: features/models/tgi.md
-                - Transformers: features/models/transformers.md
-                - vLLM (online server): features/models/vllm.md
-                - vLLM (offline): features/models/vllm_offline.md
+                - Generator: features/core/generator.md
 
           - Utilities:
                 - Application: features/utility/application.md

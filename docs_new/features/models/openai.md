@@ -1,204 +1,134 @@
-# OpenAI and compatible APIs
+# OpenAI
 
 !!! Installation
 
-    You need to install the `openai` library to be able to use the OpenAI API in Outlines. Or alternatively:
+    You need to install the `openai` library to be able to use the OpenAI API in Outlines: `pip install openai`
 
-    ```bash
-    pip install "outlines[openai]"
-    ```
+    You also need to have an OpenAI API key. This API key must either be set as an environment variable called `OPENAI_API_KEY` or be provided to the `openai.OpenAI` class when instantiating it.
 
-## OpenAI models
+## Model Initialization
 
-Outlines supports models available via the OpenAI Chat API, e.g. GPT-4o, ChatGPT and GPT-4. You can initialize the model by passing the model name to `outlines.models.openai`:
+To create an OpenAI model instance, you can use the `from_openai` function. It takes 2 arguments:
 
-```python
-from outlines import models
+- `client`: an `openai.OpenAI` or `openai.AzureOpenAI` instance
+- `model_name`: the name of the model you want to use
 
-
-model = models.openai("gpt-4o-mini")
-model = models.openai("gpt-4o")
-```
-
-Check the [OpenAI documentation](https://platform.openai.com/docs/models/gpt-4o) for an up-to-date list of available models. You can pass any parameter you would pass to `openai.AsyncOpenAI` as keyword arguments:
+For instance:
 
 ```python
-import os
-from outlines import models
+import outlines
+import openai
 
+# Create the client
+client = openai.OpenAI()
 
-model = models.openai(
-    "gpt-4o-mini",
-    api_key=os.environ["OPENAI_API_KEY"]
+# Create the model
+model = outlines.from_openai(
+    client,
+    "gpt-4o"
 )
 ```
 
-The following table enumerates the possible parameters. Refer to the [OpenAI SDK's code](https://github.com/openai/openai-python/blob/54a5911f5215148a0bdeb10e2bcfb84f635a75b9/src/openai/_client.py) for an up-to-date list.
+Check the [OpenAI documentation](https://platform.openai.com/docs/models) for an up-to-date list of available models. As shown above, you can use Azure OpenAI in Outlines the same way you would use OpenAI, just provide an `openai.AzureOpenAI` instance to the Outlines model class.
 
-**Parameters:**
+## Text Generation
 
-| **Parameters** | **Type** | **Description** | **Default** |
-|----------------|:---------|:----------------|:------------|
-| `api_key` | `str` | OpenAI API key. Infered from `OPENAI_API_KEY` if not specified | `None` |
-| `organization` | `str` | OpenAI organization id. Infered from `OPENAI_ORG_ID` if not specified | `None` |
-| `project` | `str` | OpenAI project id. Infered from `OPENAI_PROJECT_ID` if not specified.| `None` |
-| `base_url` | `str | https.URL` | Base URL for the endpoint. Infered from `OPENAI_BASE_URL` if no specified. | `None` |
-| `timeout` | `float` | Request timeout.| `NOT_GIVEN` |
-| `max_retries` | `int` | Maximum number of retries for failing requests | `2` |
-| `default_headers` | `Mapping[str, str]` | Default HTTP headers | `None` |
-| `default_query` | `Mapping[str, str]` | Custom parameters added to the HTTP queries | `None` |
-| `http_client` | `https.AsyncClient` | User-specified `httpx` client | `None` |
+Once you've created your Outlines `OpenAI` model instance, you're all set to generate text with this provider. You can simply call the model with a prompt.
 
-## Azure OpenAI models
-
-Outlines also supports Azure OpenAI models:
+For instance:
 
 ```python
-from outlines import models
+import openai
+import outlines
 
-
-model = models.azure_openai(
-    "azure-deployment-name",
-    "gpt-4o-mini",
-    api_version="2024-07-18",
-    azure_endpoint="https://example-endpoint.openai.azure.com",
+# Create the model
+model = outlines.from_openai(
+    openai.OpenAI(),
+    "gpt-4o"
 )
+
+# Call it to generate text
+response = model("What's the capital of Latvia?", max_tokens=20)
+print(response) # 'Riga'
 ```
 
-!!! Question "Why do I need to specify model and deployment name?"
+OpenAI supports streaming and vision inputs.
 
-    The model name is needed to load the correct tokenizer for the model. The tokenizer is necessary for structured generation.
-
-
-You can pass any parameter you would pass to `openai.AsyncAzureOpenAI`. You can consult the [OpenAI SDK's code](https://github.com/openai/openai-python/blob/54a5911f5215148a0bdeb10e2bcfb84f635a75b9/src/openai/lib/azure.py) for an up-to-date list.
-
-**Parameters:**
-
-
-| **Parameters** | **Type** | **Description** | **Default** |
-|----------------|:---------|:----------------|:------------|
-| `azure_endpoint` | `str` | Azure endpoint, including the resource. Infered from `AZURE_OPENAI_ENDPOINT` if not specified | `None` |
-| `api_version` | `str` | API version. Infered from `AZURE_OPENAI_API_KEY` if not specified | `None` |
-| `api_key` | `str` | OpenAI API key. Infered from `OPENAI_API_KEY` if not specified | `None` |
-| `azure_ad_token` | `str` | Azure active directory token. Inference from `AZURE_OPENAI_AD_TOKEN` if not specified | `None` |
-| `azure_ad_token_provider` | `AzureADTokenProvider` | A function that returns an Azure Active Directory token | `None` |
-| `organization` | `str` | OpenAI organization id. Infered from `OPENAI_ORG_ID` if not specified | `None` |
-| `project` | `str` | OpenAI project id. Infered from `OPENAI_PROJECT_ID` if not specified.| `None` |
-| `base_url` | `str | https.URL` | Base URL for the endpoint. Infered from `OPENAI_BASE_URL` if not specified. | `None` |
-| `timeout` | `float` | Request timeout.| `NOT_GIVEN` |
-| `max_retries` | `int` | Maximum number of retries for failing requests | `2` |
-| `default_headers` | `Mapping[str, str]` | Default HTTP headers | `None` |
-| `default_query` | `Mapping[str, str]` | Custom parameters added to the HTTP queries | `None` |
-| `http_client` | `https.AsyncClient` | User-specified `httpx` client | `None` |
-
-## Models that follow the OpenAI standard
-
-Outlines supports models that follow the OpenAI standard. You will need to initialize the OpenAI client properly configured and pass it to `outlines.models.openai`
+For instance:
 
 ```python
-import os
-from openai import AsyncOpenAI
-from outlines import models
-from outlines.models.openai import OpenAIConfig
+import io
+import requests
+import PIL
+import openai
+import outlines
+from outlines.templates import Vision
 
-
-client = AsyncOpenAI(
-    api_key=os.environ.get("PROVIDER_KEY"),
-    base_url="http://other.provider.server.com"
+# Create the model
+model = outlines.from_openai(
+    openai.OpenAI(),
+    "gpt-4o"
 )
-config = OpenAIConfig("model_name")
-model = models.openai(client, config)
+
+# Function to get an image
+def get_image(url):
+    r = requests.get(url)
+    return PIL.Image.open(io.BytesIO(r.content))
+
+# Create the prompt
+prompt = Vision("Describe the image", get_image("https://picsum.photos/id/237/400/300"))
+
+# Stream the response
+for chunk in model.stream(prompt, max_tokens=50, stop="."):
+    print(chunk) # 'This...'
 ```
 
-!!! Warning
+## Structured Generation
 
-    You need to pass the async client to be able to do batch inference.
+OpenAI provides supports for some forms of structured output: JSON schemas and JSON syntax. To use it, call the model with an `output_type` on top of your prompt.
 
-## Structured Generation Support
-
-Outlines provides support for [OpenAI Structured Outputs](https://platform.openai.com/docs/guides/structured-outputs/json-mode) via `outlines.generate.json`, `outlines.generate.choice`
+#### JSON Schema
 
 ```python
-from pydantic import BaseModel, ConfigDict
-import outlines.models as models
-from outlines import generate
+from typing import List
+from pydantic import BaseModel
+import openai
+import outlines
 
-model = models.openai("gpt-4o-mini")
-
-class Person(BaseModel):
-    model_config = ConfigDict(extra='forbid')  # required for openai
-    first_name: str
-    last_name: str
+class Character(BaseModel):
+    name: str
     age: int
+    skills: List[str]
 
-generator = generate.json(model, Person)
-generator("current indian prime minister on january 1st 2023")
-# Person(first_name='Narendra', last_name='Modi', age=72)
+# Create the model
+model = outlines.from_openai(openai.OpenAI(), "gpt-4o")
 
-generator = generate.choice(model, ["Chicken", "Egg"])
-print(generator("Which came first?"))
-# Chicken
+# Call it with the output type to generate structured text
+result = model("Create a character", Character, top_p=0.1)
+print(result) # '{"name": "Evelyn", "age": 34, "skills": ["archery", "stealth", "alchemy"]}'
+print(Character.model_validate_json(result)) # name=Evelyn, age=34, skills=['archery', 'stealth', 'alchemy']
 ```
 
-!!! Warning
+#### JSON Syntax
 
-    Structured generation support only provided to OpenAI-compatible endpoints which conform to OpenAI's standard. Additionally, `generate.regex` and `generate.cfg` are not supported.
-
-
-## Advanced configuration
-
-For more advanced configuration option, such as support proxy, please consult the [OpenAI SDK's documentation](https://github.com/openai/openai-python):
-
+What we mean by JSON syntax is what is sometimes called JSON mode, meaning that the model will return a valid JSON, but you do not get to specify its structure. To use this JSON mode, provide the `dict` type as an output type.
 
 ```python
-from openai import AsyncOpenAI, DefaultHttpxClient
-from outlines import models
-from outlines.models.openai import OpenAIConfig
+import openai
+import outlines
 
+# Create the model
+model = outlines.from_openai(openai.OpenAI(), "gpt-4o")
 
-client = AsyncOpenAI(
-    base_url="http://my.test.server.example.com:8083",
-    http_client=DefaultHttpxClient(
-        proxies="http://my.test.proxy.example.com",
-        transport=httpx.HTTPTransport(local_address="0.0.0.0"),
-    ),
-)
-config = OpenAIConfig("model_name")
-model = models.openai(client, config)
+# Call it with the output type to generate structured text
+result = model("Create a character", dict, temperature=0.5)
+print(result) # '{"first_name": "Henri", "last_name": "Smith", "height": "170"}'
 ```
 
-It is possible to specify the values for `seed`, `presence_penalty`, `frequence_penalty`, `top_p` by passing an instance of `OpenAIConfig` when initializing the model:
+## Inference arguments
 
-```python
-from outlines.models.openai import OpenAIConfig
-from outlines import models
+When calling the model, you can provide keyword arguments that will be passed down to the `chat.completions.create` method of the OpenAI client. Some of the most common arguments include `max_tokens`, `temperature`, `stop` and `top_p`.
 
+Another keyword argument of interest is `n`. If set with an integer value superior to 1, OpenAI will generate several sample responses and you will receive a list of strings as a response to your model call.
 
-config = OpenAIConfig(
-    presence_penalty=1.,
-    frequency_penalty=1.,
-    top_p=.95,
-    seed=0,
-)
-model = models.openai("gpt-4o-mini", config)
-```
-
-## Monitoring API use
-
-It is important to be able to track your API usage when working with OpenAI's API. The number of prompt tokens and completion tokens is directly accessible via the model instance:
-
-```python
-from openai import AsyncOpenAI
-import outlines.models
-
-
-model = models.openai("gpt-4o")
-
-print(model.prompt_tokens)
-# 0
-
-print(model.completion_tokens)
-# 0
-```
-
-These numbers are updated every time you call the model.
+See the [OpenAI API documentation](http://platform.openai.com/docs/api-reference/chat/create) for the full list of available arguments.
