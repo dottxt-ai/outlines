@@ -1,148 +1,207 @@
-# transformers
+---
+title: Transformers
+---
 
+# Transformers
 
 !!! Installation
 
-    You need to install the `transformer`, `datasets` and `torch` libraries to be able to use these models in Outlines, or alternatively:
+    You need to install the `transformers` library to be able to use the `Transformers` model in Outlines: `pip install transformers`
 
-    ```bash
-    pip install "outlines[transformers]"
-    ```
+    See the [HuggingFace documentation](https://huggingface.co/docs/transformers/en/installation) for more information on installing `transformers` with CPU, GPU...
 
+## Model Initialization
 
-Outlines provides an integration with the `torch` implementation of causal models in the [transformers][transformers] library. You can initialize the model by passing its name:
+To load the model, you can use the `from_transformers` function. It takes 2 arguments:
 
-```python
-from outlines import models
+- `model`: a `transformers` model (created with `AutoModelForCausalLM` for instance)
+- `tokenizer_or_processor`: a `transformers` tokenizer (created with `AutoTokenizer` for instance, it must be an instance of either `PreTrainedTokenizer` or `PreTrainedTokenizerFast`)
 
-model = models.transformers("microsoft/Phi-3-mini-4k-instruct", device="cuda")
-```
-
-If you need more fine-grained control you can also initialize the model and tokenizer separately:
-
+For instance:
 
 ```python
+import outlines
 from transformers import AutoModelForCausalLM, AutoTokenizer
-from outlines import models
 
-llm = AutoModelForCausalLM.from_pretrained("gpt2", output_attentions=True)
-tokenizer = AutoTokenizer.from_pretrained("gpt2")
-model = models.Transformers(llm, tokenizer)
+# Create the transformers model and tokenizer
+hf_model = AutoModelForCausalLM.from_pretrained("microsoft/Phi-3-mini-4k-instruct")
+hf_tokenizer = AutoTokenizer.from_pretrained("microsoft/Phi-3-mini-4k-instruct")
+
+# Create the Outlines model
+model = outlines.from_transformers(hf_model, hf_tokenizer)
 ```
 
-## Using Logits Processors
+If you provide a processor instead of a tokenizer for the second argument of the `from_transformers` function, you would get a `TransformersMultiModal` instance. See the [TransformersMultiModal model documentation](./transformers_multimodal.md) for more information on using multimodal models in Outlines.
 
-There are two ways to use Outlines Structured Generation with HuggingFace Transformers:
+## Text Generation
 
-1. Use Outlines generation wrapper, `outlines.models.transformers`
-2. Use `OutlinesLogitsProcessor` with `transformers.AutoModelForCausalLM`
+To generate text, you can simply call the model with a prompt.
 
-Outlines supports a myriad of logits processors for structured generation. In these example, we will use the `RegexLogitsProcessor` which guarantees generated text matches the specified pattern.
-
-### Using `outlines.models.transformers`
+For instance:
 
 ```python
 import outlines
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
-time_regex_pattern = r"(0?[1-9]|1[0-2]):[0-5]\d\s?(am|pm)?"
+# Create model
+model = outlines.from_transformers(
+    AutoModelForCausalLM.from_pretrained("microsoft/Phi-3-mini-4k-instruct"),
+    AutoTokenizer.from_pretrained("microsoft/Phi-3-mini-4k-instruct")
+)
 
-model = outlines.models.transformers("microsoft/Phi-3-mini-4k-instruct", device="cuda")
-generator = outlines.generate.regex(model, time_regex_pattern)
-
-output = generator("The the best time to visit a dentist is at ")
-print(output)
-# 2:30 pm
+# Call it to generate text
+result = model("What's the capital of Latvia?", max_new_tokens=20)
+print(result) # 'Riga'
 ```
 
-### Using models initialized via the `transformers`  library
+The `Transformers` model also supports batch generation. To use it, provide a list of prompts instead of a single prompt. You will receive as result a list of completions. For instance:
 
 ```python
 import outlines
-import transformers
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
-
-model_uri = "microsoft/Phi-3-mini-4k-instruct"
-
-outlines_tokenizer = outlines.models.TransformerTokenizer(
-    transformers.AutoTokenizer.from_pretrained(model_uri)
-)
-phone_number_logits_processor = outlines.processors.RegexLogitsProcessor(
-    "\\+?[1-9][0-9]{7,14}",  # phone number pattern
-    outlines_tokenizer,
+# Create model
+model = outlines.from_transformers(
+    AutoModelForCausalLM.from_pretrained("microsoft/Phi-3-mini-4k-instruct"),
+    AutoTokenizer.from_pretrained("microsoft/Phi-3-mini-4k-instruct")
 )
 
-generator = transformers.pipeline('text-generation', model=model_uri)
+# Create a list of prompts that will be used in a single batch
+prompts = [
+    "What's the capital of Lithuania?",
+    "What's the capital of Latvia?",
+    "What's the capital of Estonia?"
+]
 
-output = generator(
-    "Jenny gave me her number it's ",
-	logits_processor=transformers.LogitsProcessorList([phone_number_logits_processor])
-)
-print(output)
-# [{'generated_text': "Jenny gave me her number it's 2125550182"}]
-# not quite 8675309 what we expected, but it is a valid phone number
+# Call it to generate text
+result = model(prompts, max_new_tokens=20)
+print(result) # ['Vilnius', 'Riga', 'Tallinn']
 ```
 
-[transformers]: https://github.com/huggingface/transformers
+## Structured Generation
 
+As a local model, `Transformers` supports all output types available in Outlines. Simply provide an `output_type` after the prompt when calling the model.
 
-## Alternative Model Classes
+### Simple Type
 
-`outlines.models.transformers` defaults to `transformers.AutoModelForCausalLM`, which is the appropriate class for most standard large language models, including Llama 3, Mistral, Phi-3, etc.
-
-However other variants with unique behavior can be used as well by passing the appropriate class.
-
-### Mamba
-
-[Mamba](https://github.com/state-spaces/mamba) is a transformers alternative which employs memory efficient, linear-time decoding.
-
-To use Mamba with outlines you must first install the necessary requirements:
-```
-pip install causal-conv1d>=1.2.0 mamba-ssm torch transformers
-```
-
-Then you can either create an Mamba-2 Outlines model via
 ```python
 import outlines
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
-model = outlines.models.mamba("state-spaces/mamba-2.8b-hf")
+output_type = int
+
+model = outlines.from_transformers(
+    AutoModelForCausalLM.from_pretrained("microsoft/Phi-3-mini-4k-instruct"),
+    AutoTokenizer.from_pretrained("microsoft/Phi-3-mini-4k-instruct")
+)
+
+result = model("How many countries are there in the world?", output_type, max_new_tokens=5)
+print(result) # '200'
 ```
 
-or explicitly with
+### JSON Schema
+
 ```python
 import outlines
-from transformers import MambaForCausalLM
+from transformers import AutoModelForCausalLM, AutoTokenizer
+from pydantic import BaseModel
+from typing import List
 
-model = outlines.models.transformers(
-    "state-spaces/mamba-2.8b-hf",
-    model_class=MambaForCausalLM
+class Character(BaseModel):
+    name: str
+    age: int
+    skills: List[str]
+
+model = outlines.from_transformers(
+    AutoModelForCausalLM.from_pretrained("microsoft/Phi-3-mini-4k-instruct"),
+    AutoTokenizer.from_pretrained("microsoft/Phi-3-mini-4k-instruct")
 )
+
+result = model("Create a character.", output_type=Character, max_new_tokens=200, repetition_penalty=0.5)
+print(result) # '{"name": "Evelyn", "age": 34, "skills": ["archery", "stealth", "alchemy"]}'
+print(Character.model_validate_json(result)) # name=Evelyn, age=34, skills=['archery', 'stealth', 'alchemy']
 ```
 
+### Multiple Choice
 
+```python
+from typing import Literal
+import outlines
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
-Read [`transformers`'s documentation](https://huggingface.co/docs/transformers/en/model_doc/mamba) for more information.
+output_type = Literal["Paris", "London", "Rome", "Berlin"]
 
-### Encoder-Decoder Models
+model = outlines.from_transformers(
+    AutoModelForCausalLM.from_pretrained("microsoft/Phi-3-mini-4k-instruct"),
+    AutoTokenizer.from_pretrained("microsoft/Phi-3-mini-4k-instruct")
+)
 
-You can use encoder-decoder (seq2seq) models like T5 and BART with Outlines.
+result = model("What is the capital of France?", output_type, max_new_tokens=10, temperature=0)
+print(result) # 'Paris'
+```
 
-Be cautious with model selection though, some models such as `t5-base` don't include certain characters (`{`) and you may get an error when trying to perform structured generation.
+### Regex
 
-T5 Example:
 ```python
 import outlines
-from transformers import AutoModelForSeq2SeqLM
+from transformers import AutoModelForCausalLM, AutoTokenizer
+from outlines.types import Regex
 
-model_pile_t5 = outlines.models.transformers(
-    model_name="EleutherAI/pile-t5-large",
-    model_class=AutoModelForSeq2SeqLM,
+output_type = Regex(r"\d{3}-\d{2}-\d{4}")
+
+model = outlines.from_transformers(
+    AutoModelForCausalLM.from_pretrained("microsoft/Phi-3-mini-4k-instruct"),
+    AutoTokenizer.from_pretrained("microsoft/Phi-3-mini-4k-instruct")
 )
+
+result = model("Generate a fake social security number.", output_type, max_new_tokens=20, top_p=0.5)
+print(result) # '782-32-3789'
 ```
 
-Bart Example:
+### Context-Free Grammar
+
 ```python
-model_bart = outlines.models.transformers(
-    model_name="facebook/bart-large",
-    model_class=AutoModelForSeq2SeqLM,
+import outlines
+from transformers import AutoModelForCausalLM, AutoTokenizer
+from outlines.text import CFG
+
+arithmetic_grammar = """
+?start: sum
+
+?sum: product
+| sum "+" product   -> add
+| sum "-" product   -> sub
+
+?product: atom
+| product "*" atom  -> mul
+| product "/" atom  -> div
+
+?atom: NUMBER           -> number
+| "-" atom         -> neg
+| "(" sum ")"
+
+%import common.NUMBER
+%import common.WS_INLINE
+
+%ignore WS_INLINE
+"""
+output_type = CFG(arithmetic_grammar)
+
+model = outlines.from_transformers(
+    AutoModelForCausalLM.from_pretrained("microsoft/Phi-3-mini-4k-instruct"),
+    AutoTokenizer.from_pretrained("microsoft/Phi-3-mini-4k-instruct")
 )
+
+result = model("Write an addition.", output_type, max_new_tokens=100)
+print(result) # '23 + 48'
 ```
+
+## Inference Arguments
+
+When calling the model, you can provide optional inference parameters on top of the prompt and the output type. These parameters will be passed on to the `generate` method of the `transformers` model. Some common inference arguments include `max_new_tokens`, `temperature`, `repetition_penalty` and `top_p`.
+
+See the [transformers documentation](https://huggingface.co/docs/transformers/en/main_classes/text_generation) for more information on inference parameters.
+
+!!! Warning
+
+    The `max_new_tokens` inference parameter has a default value of 20. This is insufficient for most tasks and will result in the generation output not respecting the output type (because the response is truncated). We recommend you always provide a value for this argument.
