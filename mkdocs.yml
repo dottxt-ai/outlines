@@ -98,7 +98,7 @@ plugins:
     - redirects:
           redirect_maps:
               "welcome.md": "index.md"
-              "reference/chat_templating.md": "user_guide/chat_templating.md"
+              "reference/chat_templating.md": "guide/chat_templating.md"
               "blog.md": "https://blog.dottxt.co"
               "cookbook/index.md": "examples/index.md"
               "cookbook/classification.md": "examples/classification.md"
@@ -155,32 +155,18 @@ plugins:
 nav:
     - Home:
           - index.md
-          - User Guide: user_guide/index.md
+          - User Guide: guide/index.md
           - Features: features/index.md
           - API Reference: api_reference/index.md
           - Examples: examples/index.md
 
     - Guide:
-          - Introduction:
-                - Get started: getting_started/index.md
-                - Installation: installation.md
-                - Licence: licence.md
-          - User Guide:
-                - The Basics: user_guide/index.md
-                - Selecting an Inference Engine: user_guide/selecting_an_inference_backend.md
-                - Unstructured Text Generation: user_guide/unstructured.md
-                - Structured Generation: user_guide/structured_generation/index.md
-                - Chat Templating for Instruct Models: user_guide/chat_templating.md
-                - Generation Formats:
-                      - JSON: user_guide/structured_generation/json.md
-                      - Regular expressions: user_guide/structured_generation/regex.md
-                      - Context-free grammars: user_guide/structured_generation/cfg.md
-                      - Multiple choice: user_guide/structured_generation/multiple_choice.md
-                - Prompting:
-                      - Applications: user_guide/prompting/applications.md
-                      - Templates: user_guide/prompting/templates.md
-                - Easy Regular Expressions: user_guide/regex_dsl.md
-                - Migrating to v1: user_guide/migration.md
+          - Getting Started: guide/getting_started.md
+          - Installation: guide/installation.md
+          - Migrating to v1: guide/migration.md
+          - Licence: licence.md
+          - Utility:
+                - Chat Templating for Instruct Models: guide/chat_templating.md
 
     - Features:
           - Overview: features/index.md
