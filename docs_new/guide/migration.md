@@ -4,7 +4,7 @@ Outlines 1.0 introduces some breaking changes that affect the way you use the li
 
 This guide will help you migrate your code to the new version.
 
-All previous functionality will be supported until Outlines version 1.5.0, but a warning message will be displayed to remind you to migrate your code and provide instructions to help you do so. Please migrate your code to the v1 as soon as possible.
+All previous functionality will be supported until Outlines version 1.1.0, but a warning message will be displayed to remind you to migrate your code and provide instructions to help you do so. Please migrate your code to the v1 as soon as possible.
 
 ## Removed or modified features
 - [Generate functions](#generate-functions)
@@ -18,7 +18,7 @@ All previous functionality will be supported until Outlines version 1.5.0, but a
 
 The whole `generate` module has been removed. That includes the functions `generate.cfg`, `generate.choice`, `generate.format`,`generate.fsm`, `generate.json`, `generate.regex` and `generate.text`.
 
-You should replace these functions by the `Generator` object along with the right output type as an argument (on top of the model). The output type can either be a python type or be an object from the `outlines.types` module. You can find more information about the output types in the [output types](TODO: link to the documentatoin on output types) guide.
+You should replace these functions by the [`Generator`](../features/core/generator.md) object along with the right output type as an argument (on top of the model). The output type can either be a python type or be an object from the `outlines.types` module. You can find more information about the output types in the [Output Types](../features/core/output_types.md) section of the features documentation.
 
 Associated v1 output types for each deprecated function:
 - `generate.cfg` -> `outlines.types.CFG`
@@ -52,7 +52,7 @@ generator = Generator(model, Literal["foo", "bar"])
 
 The model classes found in the `outlines.models` module are maintained but there are a few important changes to be aware of.
 
-The functions used to created a model have been replaced by equivalent functions named with a `from_` prefix. The function `outlines.models.transformers` has been replaced by `outlines.from_transformers` for instance. On top of this change of name, the arguments have been modified. You should refer to the [models documentation](TODO: link to the documentation on models) for more details, but the overall idea is that you now need to provide a model/client instance from the inference library the Outlines model is wrapping.
+The functions used to created a model have been replaced by equivalent functions named with a `from_` prefix. The function `outlines.models.transformers` has been replaced by `outlines.from_transformers` for instance. On top of this change of name, the arguments have been modified. You should refer to the [models documentation](../features/models/index.md) for more details, but the overall idea is that you now need to provide a model/client instance from the inference library the Outlines model is wrapping.
 
 For instance, instead of:
 
@@ -139,7 +139,7 @@ response = generator("foo", num_beams=2)
 
 ### Functions
 
-The `outlines.function` module has been removed. It is replaced by the `outlines.applications` module. An `Application` serves a similar purpose as a `Function`: it encapsulates a prompt template and an output type. A difference is that can `Application` is not instantiated with a model name. Instead, you should provide a model instance along with the prompt when calling it.
+The `outlines.function` module has been removed. It is replaced by the `outlines.applications` module. An [`Application`](../features/utility/application.md) serves a similar purpose as a `Function`: it encapsulates a prompt template and an output type. A difference is that can `Application` is not instantiated with a model name. Instead, you should provide a model instance along with the prompt when calling it.
 
 For instance, instead of:
 
@@ -214,6 +214,8 @@ result = generator("foo")
 result = Foo.model_validate_json(result) # parse the text into the Pydantic model instance
 print(result.bar)
 ```
+
+The [Output Types](../features/core/output_types.md) section of the features documentation includes extensive details on available output types.
 
 ### Inference arguments
 
