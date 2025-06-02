@@ -13,10 +13,6 @@ Each part of the version number (`major.minor.patch`) conveys information about 
 - **Minor Releases** introduce changes of substance to internal or unexposed functionality. These changes are well tested and intended to maintain compatability with existing use of core interfaces.
 - **Patch Releases** address bug fixes and incorporate low-risk changes to improve stability and performance.
 
-!!! note "Breaking Changes"
-
-    Outlines v1.0 introduced several breaking changes to the core interface. See [the migration guide](/user_guide/migration) for more details.
-
 ## Releases
 
 Releases along with release notes can be found on the [Outlines Releases GitHub Page](https://github.com/dottxt-ai/outlines/releases).

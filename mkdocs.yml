@@ -12,7 +12,7 @@ repo_url: https://github.com/dottxt-ai/outlines
 copyright: Copyright &copy; 2023- The Outlines Developers
 
 # Documentation directory
-docs_dir: docs_new
+docs_dir: docs
 
 # Configuration
 theme:
@@ -153,12 +153,7 @@ plugins:
         nav_file: SUMMARY.md
 
 nav:
-    - Home:
-          - index.md
-          - User Guide: guide/index.md
-          - Features: features/index.md
-          - API Reference: api_reference/index.md
-          - Examples: examples/index.md
+    - Home: index.md
 
     - Guide:
           - Getting Started: guide/getting_started.md
