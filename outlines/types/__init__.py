@@ -27,6 +27,9 @@ from outlines.types.dsl import (
     between,
     zero_or_more,
     one_or_more,
+    # deprecated
+    repeat,
+    times,
 )
 
 
