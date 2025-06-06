@@ -68,7 +68,7 @@ test = [
     "huggingface_hub",
     "openai>=1.0.0",
     "datasets",
-    "transformers",
+    "transformers<4.38.0",
     "pillow",
     "exllamav2",
     "jax",
