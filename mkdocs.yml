@@ -9,7 +9,7 @@ repo_name: dottxt-ai/outlines
 repo_url: https://github.com/dottxt-ai/outlines
 
 # Copyright
-copyright: Copyright &copy; 2023- The Outlines Developers
+copyright: Copyright &copy; 2025- The Outlines Developers
 
 # Documentation directory
 docs_dir: docs
@@ -28,7 +28,6 @@ theme:
         repo: fontawesome/brands/github
     features:
         - content.code.copy
-        - navigation.expand
         - navigation.tabs
         - navigation.sections
         - header.autohide
@@ -164,11 +163,9 @@ nav:
                 - Chat Templating for Instruct Models: guide/chat_templating.md
 
     - Features:
-          - Overview: features/index.md
-
+          - features/index.md
           - Core:
                 - Models:
-                    - Overview: features/models/index.md
                     - Anthropic: features/models/anthropic.md
                     - Dottxt: features/models/dottxt.md
                     - Gemini: features/models/gemini.md
@@ -194,7 +191,7 @@ nav:
           - Utilities:
                 - Application: features/utility/application.md
                 - Regex DSL: features/utility/regex_dsl.md
-                - Template: features/utility/template.md
+                - Prompt Templates: features/utility/template.md
 
           - Advanced:
                 - Logits Processors: features/advanced/logits_processors.md
