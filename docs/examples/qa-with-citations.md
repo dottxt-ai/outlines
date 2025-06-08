@@ -11,17 +11,19 @@ pip install llama-cpp-python
 We download the model weights by passing the name of the repository on the HuggingFace Hub, and the filenames (or glob pattern):
 ```python
 import llama_cpp
-from outlines import generate, models
+import outlines
 
-model = models.llamacpp("NousResearch/Hermes-2-Pro-Llama-3-8B-GGUF",
-            "Hermes-2-Pro-Llama-3-8B-Q4_K_M.gguf",
-            tokenizer=llama_cpp.llama_tokenizer.LlamaHFTokenizer.from_pretrained(
-            "NousResearch/Hermes-2-Pro-Llama-3-8B"
-            ),
-            n_gpu_layers=-1,
-            flash_attn=True,
-            n_ctx=8192,
-            verbose=False)
+llm = llama_cpp.Llama(
+    "NousResearch/Hermes-2-Pro-Llama-3-8B-GGUF",
+    tokenizer=llama_cpp.llama_tokenizer.LlamaHFTokenizer.from_pretrained(
+        "NousResearch/Hermes-2-Pro-Llama-3-8B"
+    ),
+    n_gpu_layers=-1,
+    flash_attn=True,
+    n_ctx=8192,
+    verbose=False
+)
+model = outlines.from_llamacpp(llm)
 ```
 
 ??? note "(Optional) Store the model weights in a custom folder"
@@ -35,20 +37,9 @@ model = models.llamacpp("NousResearch/Hermes-2-Pro-Llama-3-8B-GGUF",
     We initialize the model:
 
     ```python
-    import llama_cpp
     from llama_cpp import Llama
-    from outlines import generate, models
 
-    llm = Llama(
-        "/path/to/model/Hermes-2-Pro-Llama-3-8B-Q4_K_M.gguf",
-        tokenizer=llama_cpp.llama_tokenizer.LlamaHFTokenizer.from_pretrained(
-            "NousResearch/Hermes-2-Pro-Llama-3-8B"
-        ),
-        n_gpu_layers=-1,
-        flash_attn=True,
-        n_ctx=8192,
-        verbose=False
-    )
+    llm = Llama("/path/to/model/Hermes-2-Pro-Llama-3-8B-Q4_K_M.gguf", ...)
     ```
 
 ## Generate Synthetic Data
@@ -74,26 +65,28 @@ class Users(BaseModel):
     users: List[UserDetail]
 ```
 
-We can use a `generate.json` by passing this Pydantic class we just defined, and call the generator:
+We can use a `outlines.Generator` by passing this Pydantic class we just defined, and call the generator:
 
 ```python
-model = models.LlamaCpp(llm)
-generator = generate.json(model, Users)
+import json
+
+generator = outlines.Generator(model, Users)
 response = generator("Create 5 fake users", max_tokens=1024, temperature=0, seed=42)
-print(response.users)
-# [UserDetail(id=1, first_name='John', last_name='Doe', age=25),
-# UserDetail(id=2, first_name='Jane', last_name='Doe', age=30),
-# UserDetail(id=3, first_name='Bob', last_name='Smith', age=40),
-# UserDetail(id=4, first_name='Alice', last_name='Smith', age=35),
-# UserDetail(id=5, first_name='John', last_name='Smith', age=20)]
+response = json.loads(response)
+print(response['users'])
+# [{'id': 1, 'first_name': 'John', 'last_name': 'Doe', 'age': 25},
+# {'id': 2, 'first_name': 'Jane', 'last_name': 'Doe', 'age': 30},
+# {'id': 3, 'first_name': 'Bob', 'last_name': 'Smith', 'age': 40},
+# {'id': 4, 'first_name': 'Alice', 'last_name': 'Smith', 'age': 35},
+# {'id': 5, 'first_name': 'John', 'last_name': 'Smith', 'age': 20}]
 ```
 
 ```python
-for user in response.users:
-    print(user.first_name)
-    print(user.last_name)
-    print(user.age)
-    print(#####)
+for user in response['users']:
+    print(user['first_name'])
+    print(user['last_name'])
+    print(user['age'])
+    print("#####")
 # John
 # Doe
 # 25
@@ -135,23 +128,30 @@ schema = QuestionAnswer.model_json_schema()
 We then need to adapt our prompt to the [Hermes prompt format for JSON schema](https://github.com/NousResearch/Hermes-Function-Calling?tab=readme-ov-file#prompt-format-for-json-mode--structured-outputs):
 
 ```python
-def generate_hermes_prompt(question, context, schema=schema):
-    return (
-        "<|im_start|>system\n"
-        "You are a world class AI model who answers questions in JSON with correct and exact citations "
-        "extracted from the `Context`. "
-        f"Here's the json schema you must adhere to:\n<schema>\n{schema}\n</schema><|im_end|>\n"
-        "<|im_start|>user\n"
-        + "`Context`: "
-        + context
-        + "\n`Question`: "
-        + question + "<|im_end|>"
-        + "\n<|im_start|>assistant\n"
-        "<schema>"
-    )
+from outlines import Template
+
+hermes_prompt = Template.from_string(
+    """
+    <|im_start|>system
+    You are a world class AI model who answers questions in JSON with correct and exact citations
+    extracted from the `Context`.
+    Here's the json schema you must adhere to:
+    <schema>
+    {{ schema }}
+    </schema>
+    <|im_end|>
+    <|im_start|>user
+    `Context`:
+    {{ context }}
+    `Question`:
+    {{ question }}
+    <|im_end|>
+    <|im_start|>assistant
+    """
+)
 ```
 
-We can use `generate.json` by passing the Pydantic class we previously defined, and call the generator with Hermes prompt:
+We can use `outlines.Generator` by passing the Pydantic class we previously defined, and call the generator with Hermes prompt:
 
 ```python
 question = "What did the author do during college?"
@@ -161,11 +161,11 @@ I went to an arts high school but in university I studied Computational Mathemat
 As part of coop I worked at many companies including Stitchfix, Facebook.
 I also started the Data Science club at the University of Waterloo and I was the president of the club for 2 years.
 """
-generator = generate.json(model, QuestionAnswer)
-prompt = generate_hermes_prompt(question, context)
+generator = outlines.Generator(model, QuestionAnswer)
+prompt = hermes_prompt(question=question, context=context, schema=schema)
 response = generator(prompt, max_tokens=1024, temperature=0, seed=42)
 print(response)
-# QuestionAnswer(question='What did the author do during college?', answer='The author studied Computational Mathematics and physics in university and was also involved in starting the Data Science club, serving as its president for 2 years.', citations=['I went to an arts high school but in university I studied Computational Mathematics and physics.', 'I also started the Data Science club at the University of Waterloo and I was the president of the club for 2 years.'])
+# {"question": "What did the author do during college?", "answer": "The author studied Computational Mathematics and physics in university and was also involved in starting the Data Science club, serving as its president for 2 years.", "citations": ["I went to an arts high school but in university I studied Computational Mathematics and physics.", "I also started the Data Science club at the University of Waterloo and I was the president of the club for 2 years."]}
 ```
 
 We can do the same for a list of question-context pairs:
@@ -219,12 +219,13 @@ for question, context in [
     (question4, context4),
     (question5, context5),
 ]:
-    final_prompt = my_final_prompt(question, context)
-    generator = generate.json(model, QuestionAnswer)
-    response = generator(final_prompt, max_tokens=1024, temperature=0, seed=42)
-    display(question)
-    display(response.answer)
-    display(response.citations)
+    prompt = hermes_prompt(question=question, context=context, schema=schema)
+    generator = outlines.Generator(model, QuestionAnswer)
+    response = generator(prompt, max_tokens=1024, temperature=0, seed=42)
+    response = json.loads(response)
+    print(question)
+    print(response['answer'])
+    print(response['citations'])
     print("\n\n")
 
 # 'Where was John born?'

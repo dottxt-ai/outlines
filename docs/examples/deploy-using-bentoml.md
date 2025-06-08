@@ -119,14 +119,21 @@ class Outlines:
     bento_model_ref = bentoml.models.get(BENTO_MODEL_TAG)
 
     def __init__(self) -> None:
-
         import outlines
         import torch
-        self.model = outlines.models.transformers(
+        from transformers import AutoModelForCausalLM, AutoTokenizer
+
+        # Load tokenizer and model from the BentoML model reference path
+        hf_tokenizer = AutoTokenizer.from_pretrained(self.bento_model_ref.path)
+        hf_model = AutoModelForCausalLM.from_pretrained(
             self.bento_model_ref.path,
-            device="cuda",
-            model_kwargs={"torch_dtype": torch.float16},
+            torch_dtype=torch.float16,
+            low_cpu_mem_usage=True,
+            device_map="cuda"
         )
+
+        # Then use the loaded model with Outlines
+        self.model = outlines.from_transformers(hf_model, hf_tokenizer)
 
     ...
 ```
@@ -142,13 +149,14 @@ We then need to define an HTTP endpoint using `@bentoml.api` to decorate the met
         prompt: str = "Give me a character description.",
         json_schema: t.Optional[str] = DEFAULT_SCHEMA,
     ) -> t.Dict[str, t.Any]:
-
+        import json
         import outlines
+        from outlines.types import JsonSchema
 
-        generator = outlines.generate.json(self.model, json_schema)
+        generator = outlines.Generator(self.model, JsonSchema(json_schema))
         character = generator(prompt)
 
-        return character
+        return json.loads(character)
 ```
 
 Here `@bentoml.api` decorator defines `generate` as an HTTP endpoint that accepts a JSON request body with two fields: `prompt` and `json_schema` (optional, which allows HTTP clients to provide their own JSON schema). The type hints in the function signature will be used to validate incoming JSON requests. You can define as many HTTP endpoints as you want by using `@bentoml.api` to decorate other methods of `Outlines` class.
