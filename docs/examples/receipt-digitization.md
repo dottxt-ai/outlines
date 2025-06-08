@@ -38,18 +38,20 @@ If you want to use Qwen-2-VL, you can do the following:
 
 ```python
 # To use Qwen-2-VL:
-from transformers import Qwen2VLForConditionalGeneration
+from transformers import Qwen2VLForConditionalGeneration, AutoProcessor
 model_name = "Qwen/Qwen2-VL-7B-Instruct"
 model_class = Qwen2VLForConditionalGeneration
+processor_class = AutoProcessor
 ```
 
 If you want to use Pixtral, you can do the following:
 
 ```python
 # To use Pixtral:
-from transformers import LlavaForConditionalGeneration
+from transformers import LlavaForConditionalGeneration, LlavaProcessor
 model_name="mistral-community/pixtral-12b"
 model_class=LlavaForConditionalGeneration
+processor_class = LlavaProcessor
 ```
 
 ## Load the model
@@ -57,17 +59,12 @@ model_class=LlavaForConditionalGeneration
 Load the model into memory:
 
 ```python
-model = outlines.models.transformers_vision(
-    model_name,
-    model_class=model_class,
-    model_kwargs={
-        "device_map": "auto",
-        "torch_dtype": torch.bfloat16,
-    },
-    processor_kwargs={
-        "device": "cuda", # set to "cpu" if you don't have a GPU
-    },
-)
+model_kwargs={"device_map": "auto", "torch_dtype": torch.bfloat16}
+processor_kwargs={"device_map": "cuda"}
+tf_model = model_class.from_pretrained(model_name, **model_kwargs)
+tf_processor = processor_class.from_pretrained(model_name, **processor_kwargs)
+
+model = outlines.from_transformers(tf_model, tf_processor)
 ```
 
 ## Image processing
@@ -166,7 +163,7 @@ class ReceiptSummary(BaseModel):
 
 ## Prepare the prompt
 
-We'll use the `AutoProcessor` to convert the image and the text prompt into a format that the model can understand. Practically,
+We'll use the `tf_processor` to convert the image and the text prompt into a format that the model can understand. Practically,
 this is the code that adds user, system, assistant, and image tokens to the prompt.
 
 ```python
@@ -194,8 +191,7 @@ messages = [
 ]
 
 # Convert the messages to the final prompt
-processor = AutoProcessor.from_pretrained(model_name)
-prompt = processor.apply_chat_template(
+prompt = tf_processor.apply_chat_template(
     messages, tokenize=False, add_generation_prompt=True
 )
 ```
@@ -222,17 +218,13 @@ Return the information in the following JSON schema:
 
 ```python
 # Prepare a function to process receipts
-receipt_summary_generator = outlines.generate.json(
-    model,
-    ReceiptSummary,
-
-    # Greedy sampling is a good idea for numeric
-    # data extraction -- no randomness.
-    sampler=outlines.samplers.greedy()
-)
+receipt_summary_generator = outlines.Generator(model, ReceiptSummary)
 
 # Generate the receipt summary
-result = receipt_summary_generator(prompt, [image])
+result = receipt_summary_generator(
+    {"text": prompt, "images": image},
+    max_new_tokens=1024
+)
 print(result)
 ```
 
@@ -241,32 +233,31 @@ print(result)
 The output should look like this:
 
 ```
-ReceiptSummary(
-    store_name="Trader Joe's",
-    store_address='401 Bay Street, San Francisco, CA 94133',
-    store_number=0,
-    items=[
-        Item(name='BANANA EACH', quantity=7, price_per_unit=0.23, total_price=1.61),
-        Item(name='BAREBELLS CHOCOLATE DOUG', quantity=1, price_per_unit=2.29, total_price=2.29),
-        Item(name='BAREBELLS CREAMY CRISP', quantity=1, price_per_unit=2.29, total_price=2.29),
-        Item(name='BAREBELLS CHOCOLATE DOUG', quantity=1, price_per_unit=2.29, total_price=2.29),
-        Item(name='BAREBELLS CARAMEL CASHEW', quantity=2, price_per_unit=2.29, total_price=4.58),
-        Item(name='BAREBELLS CREAMY CRISP', quantity=1, price_per_unit=2.29, total_price=2.29),
-        Item(name='SPINDRIFT ORANGE MANGO 8', quantity=1, price_per_unit=7.49, total_price=7.49),
-        Item(name='Bottle Deposit', quantity=8, price_per_unit=0.05, total_price=0.4),
-        Item(name='MILK ORGANIC GALLON WHOL', quantity=1, price_per_unit=6.79, total_price=6.79),
-        Item(name='CLASSIC GREEK SALAD', quantity=1, price_per_unit=3.49, total_price=3.49),
-        Item(name='COBB SALAD', quantity=1, price_per_unit=5.99, total_price=5.99),
-        Item(name='PEPPER BELL RED XL EACH', quantity=1, price_per_unit=1.29, total_price=1.29),
-        Item(name='BAG FEE.', quantity=1, price_per_unit=0.25, total_price=0.25),
-        Item(name='BAG FEE.', quantity=1, price_per_unit=0.25, total_price=0.25)
-    ],
-    tax=0.68,
-    total=41.98,
-    date='2023-11-04',
-    payment_method='debit',
-
-)
+{
+  "store_name": "Trader Joe's",
+  "store_address": "401 Bay Street, San Francisco, CA 94133",
+  "store_number": 0,
+  "items": [
+    {"name": "BANANA EACH", "quantity": 7, "price_per_unit": 0.23, "total_price": 1.61},
+    {"name": "BAREBELLS CHOCOLATE DOUG", "quantity": 1, "price_per_unit": 2.29, "total_price": 2.29},
+    {"name": "BAREBELLS CREAMY CRISP", "quantity": 1, "price_per_unit": 2.29, "total_price": 2.29},
+    {"name": "BAREBELLS CHOCOLATE DOUG", "quantity": 1, "price_per_unit": 2.29, "total_price": 2.29},
+    {"name": "BAREBELLS CARAMEL CASHEW", "quantity": 2, "price_per_unit": 2.29, "total_price": 4.58},
+    {"name": "BAREBELLS CREAMY CRISP", "quantity": 1, "price_per_unit": 2.29, "total_price": 2.29},
+    {"name": "SPINDRIFT ORANGE MANGO 8", "quantity": 1, "price_per_unit": 7.49, "total_price": 7.49},
+    {"name": "Bottle Deposit", "quantity": 8, "price_per_unit": 0.05, "total_price": 0.4},
+    {"name": "MILK ORGANIC GALLON WHOL", "quantity": 1,"price_per_unit": 6.79,"total_price": 6.79},
+    {"name": "CLASSIC GREEK SALAD", "quantity": 1, "price_per_unit": 3.49, "total_price": 3.49},
+    {"name": "COBB SALAD", "quantity": 1, "price_per_unit": 5.99, "total_price": 5.99},
+    {"name": "PEPPER BELL RED XL EACH", "quantity": 1, "price_per_unit": 1.29, "total_price": 1.29},
+    {"name": "BAG FEE.", "quantity": 1, "price_per_unit": 0.25, "total_price": 0.25},
+    {"name": "BAG FEE.", "quantity": 1, "price_per_unit": 0.25, "total_price": 0.25},
+  ],
+  "tax": 0.68,
+  "total": 41.98,
+  "date": "2023-11-04",
+  "payment_method": "debit"
+}
 ```
 
 Voila! You've successfully extracted information from a receipt using an LLM.
@@ -284,13 +275,13 @@ class ReceiptSummary(BaseModel):
 which gives you a result like
 
 ```
-ReceiptSummary(
+{
     ...
-    roast="You must be a fan of Trader Joe's because you bought enough
+    "roast": "You must be a fan of Trader Joe's because you bought enough
     items to fill a small grocery bag and still had to pay for a bag fee.
     Maybe you should start using reusable bags to save some money and the
     environment."
-)
+}
 ```
 
 Qwen is not particularly funny, but worth a shot.

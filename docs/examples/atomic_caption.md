@@ -1,5 +1,6 @@
 # Vision-Language Models with Outlines
-This guide demonstrates how to use Outlines with vision-language models, leveraging the new transformers_vision module. Vision-language models can process both text and images, allowing for tasks like image captioning, visual question answering, and more.
+
+This guide demonstrates how to use Outlines with vision-language models, leveraging the outlines `TransformersMultiModal` model. Vision-language models can process both text and images, allowing for tasks like image captioning, visual question answering, and more.
 
 We will be using the Pixtral-12B model from Mistral to take advantage of some of its visual reasoning capabilities and a workflow to generate a multistage atomic caption.
 
@@ -11,17 +12,21 @@ pip install outlines transformers torch
 ```
 
 ### Initializing the Model
-We'll use the transformers_vision function to initialize our vision-language model. This function is specifically designed to handle models that can process both text and image inputs. Today we'll be using the Pixtral model with the llama tokenizer. (Currently the mistral tokenizer is pending support).
+We'll use the `outlines.from_transformers` function to initialize our vision-language model. For this function to return a vision multi-modal model we need to pass in a transformers model and a transformers processor that can handle both text and image inputs. Today we'll be using the Pixtral model with the AutoProcessor.
 
 ```python
+import outlines
 import torch
 from transformers import (
-    LlavaForConditionalGeneration,
+    AutoProcessor,
+    LlavaForConditionalGeneration
 )
+
 model_name="mistral-community/pixtral-12b" # original magnet model is able to be loaded without issue
 model_class=LlavaForConditionalGeneration
+processor_class=AutoProcessor
 
-def get_vision_model(model_name: str, model_class: VisionModel):
+def get_vision_model(model_name: str, model_class, processor_class):
     model_kwargs = {
         "torch_dtype": torch.bfloat16,
         "attn_implementation": "flash_attention_2",
@@ -31,28 +36,25 @@ def get_vision_model(model_name: str, model_class: VisionModel):
         "device": "cuda",
     }
 
-    model = outlines.models.transformers_vision(
-        model.model_name,
-        model_class=model.model_class,
-        model_kwargs=model_kwargs,
-        processor_kwargs=processor_kwargs,
+    model = outlines.from_transformers(
+        model_class.from_pretrained(model_name, **model_kwargs),
+        processor_class.from_pretrained(model_name, **processor_kwargs),
     )
     return model
-model = get_vision_model(model_name, model_class)
+model = get_vision_model(model_name, model_class, processor_class)
 ```
 
 ### Defining the Schema
-Next, we'll define a schema for the output we expect from our vision-language model. This schema will help structure the model's responses.
-
+Next, we'll define a schema for the output we expect from our vision multi-modal model. This schema will help structure the model's responses. We use the `outlines.Generator` object to create a generator for our schema that will then be called with our prompt and images.
 
 ```python
+from enum import Enum
 from pydantic import BaseModel, Field, confloat, constr
 from pydantic.types import StringConstraints, PositiveFloat
 from typing import List
 from typing_extensions import Annotated
 
-from enum import StrEnum
-class TagType(StrEnum):
+class TagType(Enum):
     ENTITY = "Entity"
     RELATIONSHIP = "Relationship"
     STYLE = "Style"
@@ -86,7 +88,7 @@ class ImageData(BaseModel):
     short_caption: Annotated[str, StringConstraints(min_length=10, max_length=150)]
     dense_caption: Annotated[str, StringConstraints(min_length=100, max_length=2048)]
 
-image_data_generator = outlines.generate.json(model, ImageData)
+image_data_generator = outlines.Generator(model, ImageData)
 ```
 
 This schema defines the structure for image tags, including categories like Entity, Relationship, Style, etc., as well as short and dense captions.
@@ -94,7 +96,6 @@ This schema defines the structure for image tags, including categories like Enti
 ### Preparing the Prompt
 
 We'll create a prompt that instructs the model on how to analyze the image and generate the structured output:
-
 
 ```python
 pixtral_instruction = """
@@ -131,30 +132,34 @@ pixtral_instruction = """
 </Examples>
 </TagCategories>
 <ShortCaption note="The short caption should be a concise single sentence caption of the image content with a maximum length of 100 characters.">
-<DenseCaption note="The dense caption should be a descriptive but grounded narrative paragraph of the image content with high quality narrative prose. It should incorporate elements from each of the tag categories to provide a broad dense caption">\n[IMG][/INST]
+<DenseCaption note="The dense caption should be a descriptive but grounded narrative paragraph of the image content with high quality narrative prose. It should incorporate elements from each of the tag categories to provide a broad dense caption">\n[IMG]<image>[/INST]
 """.strip()
 ```
 
-This prompt provides detailed instructions to the model on how to generate comprehensive tag lists, captions, and dense captions for image analysis. Because of the ordering of the instructions the original tag generation serves as a sort of visual grounding for the captioning task, reducing the amount of manual post processing required.
+This prompt provides detailed instructions to the model on how to generate comprehensive tag lists, captions, and dense captions for image analysis. Because of the ordering of the instructions the original tag generation serves as a sort of visual grounding for the captioning task, reducing the amount of manual post processing required. It's essential to include the <image> tag in the prompt at the location where the image will be inserted.
 
 ### Generating Structured Output
 Now we can use our model to generate structured output based on an input image:
 
 ```python
+from io import BytesIO
+from urllib.request import urlopen
+from PIL import Image
+
 def img_from_url(url):
     img_byte_stream = BytesIO(urlopen(url).read())
     return Image.open(img_byte_stream).convert("RGB")
 
 image_url="https://upload.wikimedia.org/wikipedia/commons/9/98/Aldrin_Apollo_11_original.jpg"
 image= img_from_url(image_url)
-result = image_data_generator(
-    pixtral_instruction,
-    [image]
-)
+result = image_data_generator({
+    "text": pixtral_instruction,
+    "images": image
+})
 print(result)
 ```
 
-This code loads an image from a URL, passes it to our vision-language model along with the instruction prompt, and generates a structured output based on the defined schema. We end up with an output like this, ready to be used for the next stage in your pipeline:
+This code loads an image from a URL, passes it to our vision multi-modal model along with the instruction prompt, and generates a structured output based on the defined schema. We end up with an output like this, ready to be used for the next stage in your pipeline:
 
 ```json
 {'tags_list': [{'tag': 'astronaut',
@@ -184,6 +189,6 @@ This code loads an image from a URL, passes it to our vision-language model alon
 ```
 
 ## Conclusion
-The transformers_vision module in Outlines provides a powerful way to work with vision-language models. It allows for structured generation of outputs that combine image analysis with natural language processing, opening up possibilities for complex tasks like detailed image captioning, visual question answering, and more.
+The `TransformersMultiModal` model in Outlines provides a powerful way to work with vision-language models. It allows for structured generation of outputs that combine image analysis with natural language processing, opening up possibilities for complex tasks like detailed image captioning, visual question answering, and more.
 
 By leveraging the capabilities of models like Pixtral-12B and the structured output generation of Outlines, you can create sophisticated applications that understand and describe visual content in a highly structured and customizable manner.
