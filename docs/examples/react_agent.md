@@ -15,17 +15,19 @@ pip install llama-cpp-python
 We download the model weights by passing the name of the repository on the HuggingFace Hub, and the filenames (or glob pattern):
 ```python
 import llama_cpp
-from outlines import generate, models
+import outlines
 
-model = models.llamacpp("NousResearch/Hermes-2-Pro-Llama-3-8B-GGUF",
-            "Hermes-2-Pro-Llama-3-8B-Q4_K_M.gguf",
-            tokenizer=llama_cpp.llama_tokenizer.LlamaHFTokenizer.from_pretrained(
-            "NousResearch/Hermes-2-Pro-Llama-3-8B"
-            ),
-            n_gpu_layers=-1,
-            flash_attn=True,
-            n_ctx=8192,
-            verbose=False)
+llm = llama_cpp.Llama(
+    "NousResearch/Hermes-2-Pro-Llama-3-8B-GGUF",
+    tokenizer=llama_cpp.llama_tokenizer.LlamaHFTokenizer.from_pretrained(
+        "NousResearch/Hermes-2-Pro-Llama-3-8B"
+    ),
+    n_gpu_layers=-1,
+    flash_attn=True,
+    n_ctx=8192,
+    verbose=False
+)
+model = outlines.from_llamacpp(llm)
 ```
 
 ??? note "(Optional) Store the model weights in a custom folder"
@@ -39,20 +41,9 @@ model = models.llamacpp("NousResearch/Hermes-2-Pro-Llama-3-8B-GGUF",
     We initialize the model:
 
     ```python
-    import llama_cpp
     from llama_cpp import Llama
-    from outlines import generate, models
 
-    llm = Llama(
-        "/path/to/model/Hermes-2-Pro-Llama-3-8B-Q4_K_M.gguf",
-        tokenizer=llama_cpp.llama_tokenizer.LlamaHFTokenizer.from_pretrained(
-            "NousResearch/Hermes-2-Pro-Llama-3-8B"
-        ),
-        n_gpu_layers=-1,
-        flash_attn=True,
-        n_ctx=8192,
-        verbose=False
-    )
+    llm = Llama("/path/to/model/Hermes-2-Pro-Llama-3-8B-Q4_K_M.gguf", ...)
     ```
 
 ## Build a ReAct agent
@@ -115,51 +106,16 @@ from typing import Union
 
 class Decision(BaseModel):
     Decision: Union[Reason_and_Act, Final_Answer]
-```
-
-We could generate a response using the json schema but we will use the regex and check that everything is working as expected:
-
-```python
-from outlines.fsm.json_schema import convert_json_schema_to_str
-from outlines_core.fsm.json_schema import build_regex_from_schema
 
 json_schema = Decision.model_json_schema()
-schema_str = convert_json_schema_to_str(json_schema=json_schema)
-regex_str = build_regex_from_schema(schema_str)
-print(regex_str)
-# '\\{[ ]?"Decision"[ ]?:[ ]?(\\{[ ]?"Scratchpad"[ ]?:[ ]?"([^"\\\\\\x00-\\x1F\\x7F-\\x9F]|\\\\["\\\\])*"[ ]?,[ ]?"Thought"[ ]?:[ ]?"([^"\\\\\\x00-\\x1F\\x7F-\\x9F]|\\\\["\\\\])*"[ ]?,[ ]?"Action"[ ]?:[ ]?("wikipedia"|"calculate")[ ]?,[ ]?"Action_Input"[ ]?:[ ]?"([^"\\\\\\x00-\\x1F\\x7F-\\x9F]|\\\\["\\\\])*"[ ]?\\}|\\{[ ]?"Scratchpad"[ ]?:[ ]?"([^"\\\\\\x00-\\x1F\\x7F-\\x9F]|\\\\["\\\\])*"[ ]?,[ ]?"Final_Answer"[ ]?:[ ]?"([^"\\\\\\x00-\\x1F\\x7F-\\x9F]|\\\\["\\\\])*"[ ]?\\})[ ]?\\}'
 ```
 
-We then need to adapt our prompt to the [Hermes prompt format for JSON schema](https://github.com/NousResearch/Hermes-Function-Calling?tab=readme-ov-file#prompt-format-for-json-mode--structured-outputs) and explain the agent logic:
+We then need to adapt our prompt to the [Hermes prompt format for JSON schema](https://github.com/NousResearch/Hermes-Function-Calling?tab=readme-ov-file#prompt-format-for-json-mode--structured-outputs) and explain the agent logic. We can load a template from a file for that:
 
 ```python
-import datetime
+from outlines import Template
 
-def generate_hermes_prompt(question, schema=""):
-    return (
-        "<|im_start|>system\n"
-        "You are a world class AI model who answers questions in JSON with correct Pydantic schema. "
-        f"Here's the json schema you must adhere to:\n<schema>\n{schema}\n</schema>\n"
-        "Today is " + datetime.datetime.today().strftime('%Y-%m-%d') + ".\n" +
-        "You run in a loop of Scratchpad, Thought, Action, Action Input, PAUSE, Observation. "
-        "At the end of the loop you output a Final Answer. "
-        "Use Scratchpad to store the information from the Observation useful to answer the question "
-        "Use Thought to describe your thoughts about the question you have been asked "
-        "and reflect carefully about the Observation if it exists. "
-        "Use Action to run one of the actions available to you. "
-        "Use Action Input to input the arguments of the selected action - then return PAUSE. "
-        "Observation will be the result of running those actions. "
-        "Your available actions are:\n"
-        "calculate:\n"
-        "e.g. calulate: 4**2 / 3\n"
-        "Runs a calculation and returns the number - uses Python so be sure to use floating point syntax if necessary\n"
-        "wikipedia:\n"
-        "e.g. wikipedia: Django\n"
-        "Returns a summary from searching Wikipedia\n"
-        "DO NOT TRY TO GUESS THE ANSWER. Begin! <|im_end|>"
-        "\n<|im_start|>user\n" + question + "<|im_end|>"
-        "\n<|im_start|>assistant\n"
-    )
+hermes_prompt = Template.from_file("prompt_templates/react_agent.txt")
 ```
 
 We define a ChatBot class
@@ -175,7 +131,7 @@ class ChatBot:
         return result
 
     def execute(self):
-        generator = generate.regex(model, regex_str)
+        generator = outlines.Generator(model, Decision)
         result = generator(self.prompt, max_tokens=1024, temperature=0, seed=42)
         return result
 ```
@@ -194,7 +150,11 @@ def query(question, max_turns=5):
     previous_actions = []
     while i < max_turns:
         i += 1
-        prompt = generate_hermes_prompt(question=question, schema=Decision.model_json_schema())
+        prompt = generate_hermes_prompt(
+            question=question,
+            schema=Decision.model_json_schema(),
+            today=datetime.datetime.today().strftime('%Y-%m-%d')
+        )
         bot = ChatBot(prompt=prompt)
         result = bot(next_prompt)
         json_result = json.loads(result)['Decision']

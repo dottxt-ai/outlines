@@ -3,6 +3,7 @@
 In this example we will see how we can use Outlines to generate synthetic data for a dating application. This example was originally contributed by [Vibhor Kumar](https://github.com/veezbo).
 
 ```python
+import json
 from dataclasses import dataclass
 from enum import Enum
 
@@ -132,20 +133,21 @@ samples: list[Example] = [
 We will use Mosaic's MPT-7B model (requires 13GB of GPU memory) which can fit on a single GPU with a reasonable context window. We initialize it with Outlines:
 
 ```python
+MODEL_NAME = "mosaicml/mpt-7b-8k-instruct"
+
 config = transformers.AutoConfig.from_pretrained(
-    "mosaicml/mpt-7b-8k-instruct", trust_remote_code=True
+    MODEL_NAME, trust_remote_code=True
 )
 config.init_device = "meta"
-model = outlines.models.transformers(
-    model_name="mosaicml/mpt-7b-8k-instruct",
-    device="cuda",
-    model_kwargs={
-        "config": config,
-        "trust_remote_code": True,
-        "torch_dtype": torch.bfloat16,
-        "device_map": {"": 0},
-    },
-)
+model_kwargs = {
+    "config": config,
+    "trust_remote_code": True,
+    "torch_dtype": torch.bfloat16,
+    "device_map": "cuda",
+}
+tf_model = transformers.AutoModelForCausalLM.from_pretrained(MODEL_NAME, **model_kwargs)
+tf_tokenizer = transformers.AutoTokenizer.from_pretrained(MODEL_NAME)
+model = outlines.from_transformers(tf_model, tokenizer=tf_tokenizer)
 ```
 
 ## JSON-structured generation of profiles
@@ -162,9 +164,9 @@ every few  months. I also like weddings because I get to wear those suits, and
 it's  a good excuse for a date. I watch the latest series because I'm paying,
 with my hard-earned money, for every streaming service."""
 
-prompt = dating_profile_prompt(new_description, samples)
-profile = outlines.generate.json(model, DatingProfile)(prompt)
-parsed_profile = DatingProfile.model_validate_json(profile)
+prompt = dating_profile_prompt(description=new_description, examples=samples)
+profile = model(prompt, DatingProfile)
+parsed_profile = DatingProfile.model_validate_json(json.loads(profile))
 ```
 
 ## Results

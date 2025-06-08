@@ -1,6 +1,6 @@
 # Large language models playing chess
 
-In this example we will make a Phi-2 model play chess against itself. On its own the model easily generates invalid moves, so we will give it a little help. At each step we will generate a regex that only matches valid move, and use it to help the model only generating valid moves.
+In this example we will make a Phi-3 model play chess against itself. On its own the model easily generates invalid moves, so we will give it a little help. At each step we will generate a regex that only matches valid move, and use it to help the model only generating valid moves.
 
 ## The chessboard
 
@@ -18,29 +18,33 @@ board = chess.Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
 
 ## The opponents
 
-Phi-2 will be playing against itself:
+Phi-3 will be playing against itself:
 
 ```python
-from outlines import models
+import transformers
+import outlines
 
-model = models.transformers("microsoft/Phi-3-mini-4k-instruct")
-
+model_name = "microsoft/Phi-3-mini-4k-instruct"
+model = outlines.from_transformers(
+    transformers.AutoModelForCausalLM.from_pretrained(model_name),
+    transformers.AutoTokenizer.from_pretrained(model_name),
+)
 ```
 
 ## A little help for the language model
 
-To make sure Phi-2 generates valid chess moves we will use Outline's regex-structured generation. We define a function that takes the current state of the board and returns a regex that matches all possible legal moves:
+To make sure Phi-3 generates valid chess moves we will use Outline's regex-structured generation. We define a function that takes the current state of the board and returns a regex that matches all possible legal moves:
 
 ```python
 import re
+from outlines.types.dsl import either, String
 
 def legal_moves_regex(board):
     """Build a regex that only matches valid moves."""
     legal_moves = list(board.legal_moves)
     legal_modes_str = [board.san(move) for move in legal_moves]
     legal_modes_str = [re.sub(r"[+#]", "", move) for move in legal_modes_str]
-    regex_pattern = "|".join(re.escape(move) for move in legal_modes_str)
-    regex_pattern = f"{regex_pattern}"
+    regex_pattern = either(*[String(move) for move in legal_modes_str])
     return regex_pattern
 ```
 
@@ -58,13 +62,11 @@ We update the prompt at each step so it reflects the state of the board after th
 ## Let's play
 
 ```python
-from outlines import generate
-
 board_state = " "
 turn_number = 0
 while not board.is_game_over():
     regex_pattern = legal_moves_regex(board)
-    structured = generate.regex(model, regex_pattern)(prompt + board_state)
+    structured = model(prompt + board_state, regex_pattern)
     move = board.parse_san(structured)
 
     if turn_number % 2 == 0 :  # It's White's turn
@@ -79,7 +81,7 @@ while not board.is_game_over():
     print(board_state)
 ```
 
-Interestingly enough, Phi-2 hates capturing.
+Interestingly enough, Phi-3 hates capturing.
 
 ```pgn
  e4 e5 1.Nf3 Ne7 3.b4 Nf5 5.Nc3 Ne7 7.Bb5 a6 9.Na4 b6 11.c3 Nec6 13.c4 a5 15.d4 Qg5 17.Nd2 Bb7 19.dxe5
