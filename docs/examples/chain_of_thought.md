@@ -11,20 +11,23 @@ We use [llama.cpp](https://github.com/ggerganov/llama.cpp) using the [llama-cpp-
 pip install llama-cpp-python
 ```
 
-We download the model weights by passing the name of the repository on the HuggingFace Hub, and the filenames (or glob pattern):
+To create an outlines `LlamaCpp` model, you first need to create a `Llama` object from the `llama-cpp-python` library. Then you can create the outlines model by calling `models.from_llamacpp` with the `Llama` object instance as argument. To create the `Llama` object, you need to provide the model weights by passing the name of the repository on the HuggingFace Hub, and the filenames or glob pattern (it will automatically download the weights from the hub):
+
 ```python
 import llama_cpp
-from outlines import generate, models
+import outlines
 
-model = models.llamacpp("NousResearch/Hermes-2-Pro-Llama-3-8B-GGUF",
-            "Hermes-2-Pro-Llama-3-8B-Q4_K_M.gguf",
-            tokenizer=llama_cpp.llama_tokenizer.LlamaHFTokenizer.from_pretrained(
-            "NousResearch/Hermes-2-Pro-Llama-3-8B"
-            ),
-            n_gpu_layers=-1,
-            flash_attn=True,
-            n_ctx=8192,
-            verbose=False)
+llm = llama_cpp.Llama(
+    "NousResearch/Hermes-2-Pro-Llama-3-8B-GGUF",
+    tokenizer=llama_cpp.llama_tokenizer.LlamaHFTokenizer.from_pretrained(
+        "NousResearch/Hermes-2-Pro-Llama-3-8B"
+    ),
+    n_gpu_layers=-1,
+    flash_attn=True,
+    n_ctx=8192,
+    verbose=False
+)
+model = outlines.from_llamacpp(llm)
 ```
 
 ??? note "(Optional) Store the model weights in a custom folder"
@@ -38,20 +41,9 @@ model = models.llamacpp("NousResearch/Hermes-2-Pro-Llama-3-8B-GGUF",
     We initialize the model:
 
     ```python
-    import llama_cpp
     from llama_cpp import Llama
-    from outlines import generate, models
 
-    llm = Llama(
-        "/path/to/model/Hermes-2-Pro-Llama-3-8B-Q4_K_M.gguf",
-        tokenizer=llama_cpp.llama_tokenizer.LlamaHFTokenizer.from_pretrained(
-            "NousResearch/Hermes-2-Pro-Llama-3-8B"
-        ),
-        n_gpu_layers=-1,
-        flash_attn=True,
-        n_ctx=8192,
-        verbose=False
-    )
+    llm = Llama("/path/to/model/Hermes-2-Pro-Llama-3-8B-Q4_K_M.gguf", ...)
     ```
 
 ## Chain of thought
@@ -77,30 +69,27 @@ class Reasoning(BaseModel):
 json_schema = Reasoning.model_json_schema()
 ```
 
-We could generate a response using the json schema but for a change we will use the regex:
-
-```python
-from outlines.fsm.json_schema import convert_json_schema_to_str
-from outlines_core.fsm.json_schema import build_regex_from_schema
-
-schema_str = convert_json_schema_to_str(json_schema=json_schema)
-regex_str = build_regex_from_schema(schema_str)
-```
-
 We then need to adapt our prompt to the [Hermes prompt format for JSON schema](https://github.com/NousResearch/Hermes-Function-Calling?tab=readme-ov-file#prompt-format-for-json-mode--structured-outputs):
 
 ```python
-def generate_hermes_prompt(user_prompt):
-    return (
-        "<|im_start|>system\n"
-        "You are a world class AI model who answers questions in JSON "
-        f"Here's the json schema you must adhere to:\n<schema>\n{json_schema}\n</schema><|im_end|>\n"
-        "<|im_start|>user\n"
-        + user_prompt
-        + "<|im_end|>"
-        + "\n<|im_start|>assistant\n"
-        "<schema>"
-    )
+from outlines import Template
+
+generate_hermes_prompt = Template.from_string(
+    """
+    <|im_start|>system
+    You are a world class AI model who answers questions in JSON
+    Here's the json schema you must adhere to:
+    <schema>
+    {{ json_schema }}
+    </schema>
+    <|im_end|>
+    <|im_start|>user
+    {{ user_prompt }}
+    <|im_end|>
+    <|im_start|>assistant
+    <schema>
+    """
+)
 ```
 
 For a given user prompt:
@@ -109,11 +98,11 @@ For a given user prompt:
 user_prompt = "9.11 and 9.9 -- which is bigger?"
 ```
 
-we can use `generate.regex` by passing the Pydantic class we previously defined, and call the generator with the Hermes prompt:
+We can use `outlines.Generator` with the Pydantic class we previously defined, and call the generator with the Hermes prompt:
 
 ```python
-generator = generate.regex(model, regex_str)
-prompt = generate_hermes_prompt(user_prompt)
+generator = outlines.Generator(model, regex_str)
+prompt = generate_hermes_prompt(json_schema=json_schema, user_prompt=user_prompt)
 response = generator(prompt, max_tokens=1024, temperature=0, seed=42)
 ```
 

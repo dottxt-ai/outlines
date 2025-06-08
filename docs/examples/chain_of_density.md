@@ -26,42 +26,12 @@ The prompt also asks the model to return a list of JSON objects that contain the
 
 ![Figure 2 in the paper](./images/chain_of_density.png)
 
-We can now implement the prompt provided in the paper:
+We can now implement the prompt provided in the paper. We stored the prompt template in a text file, and we can load it using the `Template` class:
 
 ```python
 from outlines import Template
 
-
-chain_of_density = Template.from_string(
-    """Article: {{ article }}
-
-    You will generate increasingly concise, entity-dense summaries of the above Article.
-
-    Repeat the following 2 steps 5 times.
-
-    Step 1. Identify 1-3 informative Entities ("; " delimited) from the Article which are missing from the previously generated summary.
-    Step 2. Write a new, denser summary of identical length which covers every entity and detail from the previous summary plus the Missing Entities.
-
-    A Missing Entity is:
-    - Relevant: to the main story.
-    - Specific: descriptive yet concise (5 words or fewer).
-    - Novel: not in the previous summary.
-    - Faithful: present in the Article.
-    - Anywhere: located anywhere in the Article.
-
-    Guidelines:
-    - The first summary should be long (4-5 sentences, ~80 words) yet highly non-specific, containing little information beyond the entities marked as missing. Use overly verbose language and fillers (e.g., "this article discusses") to reach ~80 words.
-    - Make every word count: rewrite the previous summary to improve flow and make space for additional entities.
-    - Make space with fusion, compression, and removal of uninformative phrases like "the article discusses".
-    - The summaries should become highly dense and concise yet self-contained, e.g., easily understood without the Article.
-    - Missing entities can appear anywhere in the new summary.
-    - Never drop entities from the previous summary. If space cannot be made, add fewer new entities.
-
-    Remember, use the exact same number of words for each summary.
-
-    Answer in JSON. The JSON should be a a dictionary with key "summaries" that contains a list (length 5) of dictionaries whose keys are "Missing_Entities" and "Denser_Summary".
-    """
-)
+chain_of_density = Template.from_file("prompt_templates/chain_of_density.txt")
 ```
 
 ??? Note
@@ -84,19 +54,26 @@ class Summaries(BaseModel):
     summaries: conlist(Summary, max_length=5, min_length=5)
 ```
 
-We now generate the prompt by passing the article we want to summarize to the template. We load a quantized version of Mistral-7B using the AutoAWQ library, and then use JSON-structured generation to generate the summaries:
+We now generate the prompt by passing the article we want to summarize to the prompt template previously loaded. We load a quantized version of Mistral-7B using the AutoAWQ library, and then use the `Summaries` schema to generate the summaries with structured generation:
 
 ```python
-model = outlines.models.transformers("TheBloke/Mistral-7B-OpenOrca-AWQ")
+import outlines
+import transformers
 
-prompt = chain_of_density(article)
-result = outlines.generate.json(model, Summaries)(prompt)
+MODEL_NAME = "TheBloke/Mistral-7B-OpenOrca-AWQ"
+
+model = outlines.from_transformers(
+    transformers.AutoModelForCausalLM.from_pretrained(MODEL_NAME),
+    transformers.AutoTokenizer.from_pretrained(MODEL_NAME)
+)
+prompt = chain_of_density(article=article)
+result = model(prompt, Summaries, max_new_tokens=2000)
 ```
 
 We can now check the results:
 
 ```python
-print(result.model_dump())
+print(result)
 # {'summaries': [
 #     {
 #       'missing_entities': 'English mathematician, cryptanalyst, philosopher',
