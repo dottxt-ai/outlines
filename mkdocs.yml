@@ -23,7 +23,7 @@ theme:
           scheme: default
           primary: white
     logo: assets/images/logo-square.svg
-    favicon: assets/images/logo-simple.png
+    favicon: assets/images/logo-square.png
     icon:
         repo: fontawesome/brands/github
     features:
