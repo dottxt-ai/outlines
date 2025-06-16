@@ -176,6 +176,7 @@ nav:
                     - Mlx-lm: features/models/mlxlm.md
                     - Ollama: features/models/ollama.md
                     - OpenAI: features/models/openai.md
+                    - OpenAI compatible API: features/models/openai_compatible.md
                     - SGLang: features/models/sglang.md
                     - TGI: features/models/tgi.md
                     - Transformers: features/models/transformers.md
