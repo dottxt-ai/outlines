@@ -9,7 +9,7 @@ import pytest
 from PIL import Image
 from pydantic import BaseModel
 from transformers import (
-    AutoModelForVision2Seq,
+    LlavaForConditionalGeneration,
     AutoProcessor,
 )
 
@@ -21,7 +21,7 @@ from outlines.models.transformers import (
 )
 from outlines.types import Regex
 
-TEST_MODEL = "HuggingFaceTB/SmolVLM-256M-Instruct"
+TEST_MODEL = "trl-internal-testing/tiny-LlavaForConditionalGeneration"
 IMAGE_URLS = [
     "https://upload.wikimedia.org/wikipedia/commons/2/25/Siam_lilacpoint.jpg",
     "https://upload.wikimedia.org/wikipedia/commons/7/71/2010-kodiak-bear-1.jpg",
@@ -40,14 +40,14 @@ def images():
 @pytest.fixture
 def model():
     return outlines.from_transformers(
-        AutoModelForVision2Seq.from_pretrained(TEST_MODEL),
+        LlavaForConditionalGeneration.from_pretrained(TEST_MODEL),
         AutoProcessor.from_pretrained(TEST_MODEL),
     )
 
 
 def test_transformers_vision_instantiate_simple():
     model = outlines.from_transformers(
-        AutoModelForVision2Seq.from_pretrained(TEST_MODEL),
+        LlavaForConditionalGeneration.from_pretrained(TEST_MODEL),
         AutoProcessor.from_pretrained(TEST_MODEL),
     )
     assert isinstance(model, TransformersMultiModal)

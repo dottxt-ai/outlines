@@ -26,7 +26,7 @@ def test_function_basic():
             fn = Function(
                 test_template,
                 Foo,
-                "hf-internal-testing/tiny-random-GPTJForCausalLM",
+                "erwanf/gpt2-mini",
             )
 
             assert fn.generator is None
