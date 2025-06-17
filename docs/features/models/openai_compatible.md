@@ -29,7 +29,7 @@ model = outlines.from_openai(client, "model-name")
 !!! Warning "API-Specific Parameters"
 
     Some providers require additional parameters in the API request for structured generation to work properly. These are typically passed as extra arguments when calling the model.
-    
+
     For example, some providers may need special parameters in the request body to enable guided generation or specify constraints. Always consult your provider's documentation for structured generation requirements.
 
 ## Popular OpenAI-Compatible Providers
