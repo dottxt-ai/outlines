@@ -16,7 +16,7 @@ from outlines.types import Regex
 
 TEST_MODEL = "erwanf/gpt2-mini"
 TEST_MODEL_MAMBA = "hf-internal-testing/tiny-random-MambaForCausalLM"
-TEST_MODEL_BART = "sshleifer/bart-tiny-random"
+TEST_MODEL_BART = "trl-internal-testing/tiny-BartModel"
 
 
 def test_transformers_instantiate_invalid():

@@ -6,6 +6,10 @@ Many inference providers offer OpenAI-compatible APIs, allowing you to use the f
 
 OpenAI-compatible APIs implement the same REST endpoints and request/response formats as OpenAI's API, but serve different models or run on different infrastructure. This allows you to use the `openai` Python library with any compatible provider by simply changing the `base_url`.
 
+!!! Installation
+
+    You need to install the `openai` library to be able to use the OpenAI-compatible APIs in Outlines. Install all optional dependencies of the `OpenAI` model with: `pip install outlines[openai]`.
+
 ## General Usage Pattern
 
 The standard approach is to use the OpenAI SDK with a custom base URL:

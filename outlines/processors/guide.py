@@ -8,7 +8,6 @@ import copy
 import warnings
 from typing import TYPE_CHECKING, Any, Generator, ValuesView, Union
 
-import torch
 from lark.indenter import DedentError
 from lark.lexer import UnexpectedCharacters, UnexpectedToken
 from outlines_core.fsm.guide import Generate
@@ -227,6 +226,7 @@ class CFGGuide(Guide):
             ids.
 
         """
+        import torch
 
         if state.parser_state is None:
             return Write(torch.tensor([self.eos_token_id]))

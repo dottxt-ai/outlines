@@ -6,10 +6,10 @@ title: Ollama
 
 !!! Installation
 
-    To be able to use Ollama in Outlines, you must install both Ollama and the `ollama` python sdk.
+    To be able to use Ollama in Outlines, you must install both Ollama and the optional dependency libraries of the model.
 
     - To download Ollama: https://ollama.com/download
-    - To install the ollama python sdk: `pip install ollama`
+    - To install the ollama python sdk: `pip install outlines[ollama]`
 
     Consult the [`ollama` documentation](https://github.com/ollama/ollama-python) for detailed information on installation and client initialization.
 
