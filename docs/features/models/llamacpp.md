@@ -8,7 +8,7 @@ Outlines provides an integration with [Llama.cpp](https://github.com/ggerganov/l
 
 !!! Installation
 
-    You need to install the `llama-cpp-python` library to use the llama.cpp integration: `pip install llama-cpp-python`
+    You need to install the `llama-cpp-python` library to use the llama.cpp integration. Install all optional dependencies of the `LlamaCpp` model with: `pip install outlines[llamacpp]`.
 
     See the [llama-cpp-python Github page](https://github.com/abetlen/llama-cpp-python?tab=readme-ov-file#supported-backends) for instructions on installing with CUDA, Metal, ROCm and other backends.
 
@@ -25,8 +25,8 @@ from llama_cpp import Llama
 
 model = outlines.from_llamacpp(
     Llama.from_pretrained(
-        repo_id="M4-ai/TinyMistral-248M-v2-Instruct-GGUF",
-        filename="TinyMistral-248M-v2-Instruct.Q4_K_M.gguf",
+        repo_id="TheBloke/Mistral-7B-Instruct-v0.2-GGUF",
+        filename="mistral-7b-instruct-v0.2.Q5_K_M.gguf",
     )
 )
 ```
@@ -44,8 +44,8 @@ from llama_cpp import Llama
 # Create the model
 model = outlines.from_llamacpp(
     Llama.from_pretrained(
-        repo_id="M4-ai/TinyMistral-248M-v2-Instruct-GGUF",
-        filename="TinyMistral-248M-v2-Instruct.Q4_K_M.gguf",
+        repo_id="TheBloke/Mistral-7B-Instruct-v0.2-GGUF",
+        filename="mistral-7b-instruct-v0.2.Q5_K_M.gguf",
     )
 )
 
@@ -63,8 +63,8 @@ from llama_cpp import Llama
 # Create the model
 model = outlines.from_llamacpp(
     Llama.from_pretrained(
-        repo_id="M4-ai/TinyMistral-248M-v2-Instruct-GGUF",
-        filename="TinyMistral-248M-v2-Instruct.Q4_K_M.gguf",
+        repo_id="TheBloke/Mistral-7B-Instruct-v0.2-GGUF",
+        filename="mistral-7b-instruct-v0.2.Q5_K_M.gguf",
     )
 )
 
@@ -87,8 +87,8 @@ output_type = int
 
 model = outlines.from_llamacpp(
     Llama.from_pretrained(
-        repo_id="M4-ai/TinyMistral-248M-v2-Instruct-GGUF",
-        filename="TinyMistral-248M-v2-Instruct.Q4_K_M.gguf",
+        repo_id="TheBloke/Mistral-7B-Instruct-v0.2-GGUF",
+        filename="mistral-7b-instruct-v0.2.Q5_K_M.gguf",
     )
 )
 
@@ -111,12 +111,12 @@ class Character(BaseModel):
 
 model = outlines.from_llamacpp(
     Llama.from_pretrained(
-        repo_id="M4-ai/TinyMistral-248M-v2-Instruct-GGUF",
-        filename="TinyMistral-248M-v2-Instruct.Q4_K_M.gguf",
+        repo_id="TheBloke/Mistral-7B-Instruct-v0.2-GGUF",
+        filename="mistral-7b-instruct-v0.2.Q5_K_M.gguf",
     )
 )
 
-result = model("Create a character.", output_type=Character)
+result = model("Create a character.", output_type=Character, max_tokens=200)
 print(result) # '{"name": "Evelyn", "age": 34, "skills": ["archery", "stealth", "alchemy"]}'
 print(Character.model_validate_json(result)) # name=Evelyn, age=34, skills=['archery', 'stealth', 'alchemy']
 ```
@@ -132,8 +132,8 @@ output_type = Literal["Paris", "London", "Rome", "Berlin"]
 
 model = outlines.from_llamacpp(
     Llama.from_pretrained(
-        repo_id="M4-ai/TinyMistral-248M-v2-Instruct-GGUF",
-        filename="TinyMistral-248M-v2-Instruct.Q4_K_M.gguf",
+        repo_id="TheBloke/Mistral-7B-Instruct-v0.2-GGUF",
+        filename="mistral-7b-instruct-v0.2.Q5_K_M.gguf",
     )
 )
 
@@ -152,8 +152,8 @@ output_type = Regex(r"\d{3}-\d{2}-\d{4}")
 
 model = outlines.from_llamacpp(
     Llama.from_pretrained(
-        repo_id="M4-ai/TinyMistral-248M-v2-Instruct-GGUF",
-        filename="TinyMistral-248M-v2-Instruct.Q4_K_M.gguf",
+        repo_id="TheBloke/Mistral-7B-Instruct-v0.2-GGUF",
+        filename="mistral-7b-instruct-v0.2.Q5_K_M.gguf",
     )
 )
 

@@ -6,7 +6,7 @@ title: SGLang
 
 ## Prerequisites
 
-The Outlines `SGLang` model is intended to be used along with an SGLang instance running on a separate server (can be local or remote). Make sure you have a SGLang server running and accessible before using the `SGLang` model. As the SGLang client relies on the `openai` python sdk, you need to have the `openai` package installed: `pip install openai`.
+The Outlines `SGLang` model is intended to be used along with an SGLang instance running on a separate server (can be local or remote). Make sure you have a SGLang server running and accessible before using the `SGLang` model. As the SGLang client relies on the `openai` python sdk, you need to have the `openai` package installed. Install all optional dependencies of the `SGLang` model with: `pip install outlines[sglang]`.
 
 When launching your SGLang server, you can specify the backend engine to use for structured generation through the `grammar-backend` cli argument. Add `--grammar-backend outlines` to your command to use Outlines instead of the default engine.
 
@@ -147,7 +147,7 @@ SGLang supports grammars, but expects an EBNF format instead of the Lark format 
 ```python
 import openai
 import outlines
-from outlines.text import CFG
+from outlines.types import CFG
 
 ebnf_grammar = """
 root ::= answer

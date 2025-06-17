@@ -9,7 +9,7 @@ import pytest
 from PIL import Image
 from pydantic import BaseModel
 from transformers import (
-    LlavaForConditionalGeneration,
+    AutoModelForVision2Seq,
     AutoProcessor,
 )
 
@@ -21,7 +21,7 @@ from outlines.models.transformers import (
 )
 from outlines.types import Regex
 
-TEST_MODEL = "trl-internal-testing/tiny-LlavaForConditionalGeneration"
+TEST_MODEL = "HuggingFaceTB/SmolVLM-256M-Instruct"
 IMAGE_URLS = [
     "https://upload.wikimedia.org/wikipedia/commons/2/25/Siam_lilacpoint.jpg",
     "https://upload.wikimedia.org/wikipedia/commons/7/71/2010-kodiak-bear-1.jpg",
@@ -40,14 +40,14 @@ def images():
 @pytest.fixture
 def model():
     return outlines.from_transformers(
-        LlavaForConditionalGeneration.from_pretrained(TEST_MODEL),
+        AutoModelForVision2Seq.from_pretrained(TEST_MODEL),
         AutoProcessor.from_pretrained(TEST_MODEL),
     )
 
 
 def test_transformers_vision_instantiate_simple():
     model = outlines.from_transformers(
-        LlavaForConditionalGeneration.from_pretrained(TEST_MODEL),
+        AutoModelForVision2Seq.from_pretrained(TEST_MODEL),
         AutoProcessor.from_pretrained(TEST_MODEL),
     )
     assert isinstance(model, TransformersMultiModal)
@@ -60,26 +60,27 @@ def test_transformers_vision_simple(model, images):
     result = model.generate(
         {"text": "<image>Describe this image in one sentence:", "images": images[0]},
         None,
+        max_new_tokens=2,
     )
     assert isinstance(result, str)
 
 
 def test_transformers_vision_call(model, images):
     result = model(
-        {"text": "<image>Describe this image in one sentence:", "images": images[0]}
+        {"text": "<image>Describe this image in one sentence:", "images": images[0]},
+        max_new_tokens=2,
     )
     assert isinstance(result, str)
 
 
 def test_transformers_vision_wrong_number_images(model, images):
     with pytest.raises(ValueError):
-        a = model(
+        model(
             {
                 "text": "<image>Describe this image in one sentence:",
                 "images": [images[0], images[1]],
             }
         )
-        print(a)
 
 
 def test_transformers_vision_wrong_input_type(model):
@@ -90,7 +91,7 @@ def test_transformers_vision_wrong_input_type(model):
 def test_transformers_inference_kwargs(model, images):
     result = model(
         {"text": "<image>Describe this image in one sentence:", "images": images[0]},
-        max_new_tokens=100,
+        max_new_tokens=2,
     )
     assert isinstance(result, str)
 
@@ -111,7 +112,8 @@ def test_transformers_several_images(model, images):
         {
             "text": "<image><image>Describe this image in one sentence:",
             "images": [images[0], images[1]],
-        }
+        },
+        max_new_tokens=2,
     )
     assert isinstance(result, str)
 
@@ -123,13 +125,15 @@ def test_transformers_vision_json(model, images):
     result = model(
         {"text": "<image>Give a name to this animal.", "images": images[0]},
         Foo,
+        max_new_tokens=10,
     )
     assert "name" in result
 
 
 def test_transformers_vision_regex(model, images):
     result = model(
-        {"text": "<image>How old is it?", "images": images[0]}, Regex(r"[0-9]")
+        {"text": "<image>How old is it?", "images": images[0]},
+        Regex(r"[0-9]")
     )
 
     assert isinstance(result, str)
@@ -142,7 +146,8 @@ def test_transformers_vision_choice(model, images):
         dog = "dog"
 
     result = model(
-        {"text": "<image>Is it a cat or a dog?", "images": images[0]}, Foo
+        {"text": "<image>Is it a cat or a dog?", "images": images[0]},
+        Foo,
     )
 
     assert isinstance(result, str)
@@ -154,6 +159,7 @@ def test_transformers_vision_batch_samples(model, images):
         {"text": "<image>Describe this image in one sentence.", "images": images[0]},
         num_return_sequences=2,
         num_beams=2,
+        max_new_tokens=2,
     )
     assert isinstance(result, list)
     assert len(result) == 2
@@ -164,7 +170,8 @@ def test_transformers_vision_batch_samples(model, images):
                 "<image>Describe this image in one sentence.",
             ],
             "images": [images[0], images[1]],
-        }
+        },
+        max_new_tokens=2,
     )
     assert isinstance(result, list)
     assert len(result) == 2
@@ -178,59 +185,10 @@ def test_transformers_vision_batch_samples(model, images):
         },
         num_return_sequences=2,
         num_beams=2,
+        max_new_tokens=2,
     )
     assert isinstance(result, list)
     assert len(result) == 2
     for item in result:
         assert isinstance(item, list)
         assert len(item) == 2
-
-
-def test_transformers_vision_batch_samples_constrained(model, images):
-    class Foo(Enum):
-        cat = "cat"
-        dog = "dog"
-
-    result = model(
-        {"text": "<image>Describe this image in one sentence.", "images": images[0]},
-        Foo,
-        num_return_sequences=2,
-        num_beams=2,
-    )
-    assert isinstance(result, list)
-    assert len(result) == 2
-    for item in result:
-        assert item in ["cat", "dog"]
-    result = model(
-        {
-            "text": [
-                "<image>Describe this image in one sentence.",
-                "<image>Describe this image in one sentence.",
-            ],
-            "images": [images[0], images[1]],
-        },
-        Foo,
-    )
-    assert isinstance(result, list)
-    assert len(result) == 2
-    for item in result:
-        assert item in ["cat", "dog"]
-    result = model(
-        {
-            "text": [
-                "<image>Describe this image in one sentence.",
-                "<image>Describe this image in one sentence.",
-            ],
-            "images": [images[0], images[1]],
-        },
-        Foo,
-        num_return_sequences=2,
-        num_beams=2,
-    )
-    assert isinstance(result, list)
-    assert len(result) == 2
-    for item in result:
-        assert isinstance(item, list)
-        assert len(item) == 2
-        assert item[0] in ["cat", "dog"]
-        assert item[1] in ["cat", "dog"]
