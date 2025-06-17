@@ -8,7 +8,9 @@ Outlines provides an integration with [mlx-lm](https://github.com/ml-explore/mlx
 
 !!! Note "Installation"
 
-    You need to install the `mlx` and `mlx-lm` libraries on a device which [supports Metal](https://support.apple.com/en-us/102894) to use the mlx-lm integration. To download the required libraries, run `pip install mlx mlx-lm`.
+    You need a device that [supports Metal](https://support.apple.com/en-us/102894) to use the mlx-lm integration.
+
+    You need to install the `mlx` and `mlx-lm` libraries to be able to use mlx in Outlines. Install all optional dependencies of the `MLXLM` model with: `pip install outlines[mlxlm]`.
 
 ## Model Initialization
 
@@ -27,7 +29,7 @@ import mlx_lm
 
 # Create the model
 model = outlines.from_mlxlm(
-    **mlx_lm.load("mlx-community/SmolLM-135M-Instruct-4bit")
+    *mlx_lm.load("mlx-community/SmolLM-135M-Instruct-4bit")
 )
 ```
 
@@ -43,7 +45,7 @@ import mlx_lm
 
 # Load the model
 model = outlines.from_mlxlm(
-    **mlx_lm.load("mlx-community/SmolLM-135M-Instruct-4bit")
+    *mlx_lm.load("mlx-community/SmolLM-135M-Instruct-4bit")
 )
 
 # Call it to generate text
@@ -59,7 +61,7 @@ import mlx_lm
 
 # Load the model
 model = outlines.from_mlxlm(
-    **mlx_lm.load("mlx-community/SmolLM-135M-Instruct-4bit")
+    *mlx_lm.load("mlx-community/SmolLM-135M-Instruct-4bit")
 )
 
 # Stream text
@@ -80,7 +82,7 @@ import mlx_lm
 output_type = int
 
 model = outlines.from_mlxlm(
-    **mlx_lm.load("mlx-community/SmolLM-135M-Instruct-4bit")
+    *mlx_lm.load("mlx-community/SmolLM-135M-Instruct-4bit")
 )
 
 result = model("How many countries are there in the world?", output_type)
@@ -101,7 +103,7 @@ class Character(BaseModel):
     skills: List[str]
 
 model = outlines.from_mlxlm(
-    **mlx_lm.load("mlx-community/SmolLM-135M-Instruct-4bit")
+    *mlx_lm.load("mlx-community/SmolLM-135M-Instruct-4bit")
 )
 
 result = model("Create a character.", output_type=Character)
@@ -119,7 +121,7 @@ import mlx_lm
 output_type = Literal["Paris", "London", "Rome", "Berlin"]
 
 model = outlines.from_mlxlm(
-    **mlx_lm.load("mlx-community/SmolLM-135M-Instruct-4bit")
+    *mlx_lm.load("mlx-community/SmolLM-135M-Instruct-4bit")
 )
 
 result = model("What is the capital of France?", output_type)
@@ -136,7 +138,7 @@ import mlx_lm
 output_type = Regex(r"\d{3}-\d{2}-\d{4}")
 
 model = outlines.from_mlxlm(
-    **mlx_lm.load("mlx-community/SmolLM-135M-Instruct-4bit")
+    *mlx_lm.load("mlx-community/SmolLM-135M-Instruct-4bit")
 )
 
 result = model("Generate a fake social security number.", output_type)
@@ -146,7 +148,7 @@ print(result) # '782-32-3789'
 ### Context-Free Grammar
 
 ```python
-from outlines.text import CFG
+from outlines.types import CFG
 import outlines
 import mlx_lm
 
@@ -173,7 +175,7 @@ arithmetic_grammar = """
 output_type = CFG(arithmetic_grammar)
 
 model = outlines.from_mlxlm(
-    **mlx_lm.load("mlx-community/SmolLM-135M-Instruct-4bit")
+    *mlx_lm.load("mlx-community/SmolLM-135M-Instruct-4bit")
 )
 
 result = model("Write an addition.", output_type, max_tokens=20)

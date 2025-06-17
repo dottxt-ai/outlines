@@ -6,7 +6,7 @@ title: Transformers
 
 !!! Installation
 
-    You need to install the `transformers` library to be able to use the `Transformers` model in Outlines: `pip install transformers`
+    You need to install the `transformers` library to be able to use the Transformers in Outlines. Install all optional dependencies of the `Transformers` model with: `pip install outlines[transformers]`.
 
     See the [HuggingFace documentation](https://huggingface.co/docs/transformers/en/installation) for more information on installing `transformers` with CPU, GPU...
 
@@ -163,7 +163,7 @@ print(result) # '782-32-3789'
 ```python
 import outlines
 from transformers import AutoModelForCausalLM, AutoTokenizer
-from outlines.text import CFG
+from outlines.types import CFG
 
 arithmetic_grammar = """
 ?start: sum

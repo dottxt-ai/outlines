@@ -2,7 +2,7 @@
 
 !!! Installation
 
-    You need to install the `openai` library to be able to use the OpenAI API in Outlines: `pip install openai`
+    You need to install the `openai` library to be able to use the OpenAI API in Outlines. Install all optional dependencies of the `OpenAI` model with: `pip install outlines[openai]`.
 
     You also need to have an OpenAI API key. This API key must either be set as an environment variable called `OPENAI_API_KEY` or be provided to the `openai.OpenAI` class when instantiating it.
 
@@ -104,7 +104,7 @@ class Character(BaseModel):
 model = outlines.from_openai(openai.OpenAI(), "gpt-4o")
 
 # Call it with the output type to generate structured text
-result = model("Create a character", Character, top_p=0.1)
+result = model("Create a character, use the json format.", Character, top_p=0.1)
 print(result) # '{"name": "Evelyn", "age": 34, "skills": ["archery", "stealth", "alchemy"]}'
 print(Character.model_validate_json(result)) # name=Evelyn, age=34, skills=['archery', 'stealth', 'alchemy']
 ```
@@ -121,7 +121,7 @@ import outlines
 model = outlines.from_openai(openai.OpenAI(), "gpt-4o")
 
 # Call it with the output type to generate structured text
-result = model("Create a character", dict, temperature=0.5)
+result = model("Create a character, use the json format.", dict, temperature=0.5)
 print(result) # '{"first_name": "Henri", "last_name": "Smith", "height": "170"}'
 ```
 
