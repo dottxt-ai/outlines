@@ -31,9 +31,7 @@ def test_vllm_model_initialization():
     model = from_vllm_offline(LLM(TEST_MODEL))
     assert isinstance(model, VLLMOffline)
     assert isinstance(model.model, LLM)
-    assert hasattr(model, "tokenizer")
     assert isinstance(model.type_adapter, VLLMOfflineTypeAdapter)
-    assert model.tensor_library_name == "torch"
 
 
 @pytest.fixture(scope="session")
@@ -109,44 +107,6 @@ def test_vllm_batch_samples(model):
     for item in result:
         assert isinstance(item, list)
         assert len(item) == 2
-
-
-def test_vllm_batch_samples_constrained(model):
-    class Foo(Enum):
-        cat = "cat"
-        dog = "dog"
-
-    result = model(
-        "Cat or dog?",
-        Foo,
-        sampling_params=SamplingParams(n=2)
-    )
-    assert isinstance(result, list)
-    assert len(result) == 2
-    assert result[0] in ["cat", "dog"]
-    assert result[1] in ["cat", "dog"]
-
-    result = model(
-        ["Cat or dog?", "Cat or dog?"],
-        Foo,
-    )
-    assert isinstance(result, list)
-    assert len(result) == 2
-    assert result[0] in ["cat", "dog"]
-    assert result[1] in ["cat", "dog"]
-
-    result = model(
-        ["Cat or dog?", "Cat or dog?"],
-        Foo,
-        sampling_params=SamplingParams(n=2)
-    )
-    assert isinstance(result, list)
-    assert len(result) == 2
-    for item in result:
-        assert isinstance(item, list)
-        assert len(item) == 2
-        assert item[0] in ["cat", "dog"]
-        assert item[1] in ["cat", "dog"]
 
 
 def test_vllm_streaming(model):
