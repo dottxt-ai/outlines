@@ -4,8 +4,6 @@
 import warnings
 from typing import Optional
 
-from transformers import set_seed
-
 from outlines.models import Transformers
 
 
@@ -15,6 +13,8 @@ def transformers_params_adapter(
     """Adapt the parameters of the legacy generator for the `transformers` model
     to the new `Generator` API.
     """
+    from transformers import set_seed
+
     # generation_params
     if (
         generation_params.get("stop_at") is not None

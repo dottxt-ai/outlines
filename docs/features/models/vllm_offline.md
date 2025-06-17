@@ -8,7 +8,9 @@ Outlines provides an integration with [vLLM](https://docs.vllm.ai/en/latest/) us
 
 !!! Note "Installation"
 
-    You need to install the `vllm` library to be able to use the `VLLMOffline` model: `pip install vllm`.
+    You need to install the `vllm` library to be able to use the `VLLMOffline` model: `pip install vllm`. Due to a library version conflict between outlines and vllm, you MUST install `vllm` before installing `outlines`.
+
+    When installing `outlines` (after having first installed `vllm`), you may encounter the following error: `ERROR: pip's dependency resolver does not currently take into account all the packages that are installed`. You can safely ignore it.
 
     See the [vLLM documentation](https://docs.vllm.ai/en/latest/getting_started/installation/index.html) for instructions on how to install vLLM for CPU, ROCm...
 
@@ -42,7 +44,7 @@ For instance:
 
 ```python
 import outlines
-from vllm import LLM
+from vllm import LLM, SamplingParams
 
 # Create the model
 model = outlines.from_vllm_offline(
@@ -50,7 +52,7 @@ model = outlines.from_vllm_offline(
 )
 
 # Call it to generate text
-result = model("What's the capital of Latvia?", max_tokens=20)
+result = model("What's the capital of Latvia?", sampling_params=SamplingParams(max_tokens=20))
 print(result) # 'Riga'
 ```
 
@@ -78,7 +80,7 @@ print(result) # '200'
 
 ```python
 import outlines
-from vllm import LLM
+from vllm import LLM, SamplingParams
 from typing import List
 from pydantic import BaseModel
 
@@ -91,7 +93,7 @@ model = outlines.from_vllm_offline(
     LLM("microsoft/Phi-3-mini-4k-instruct")
 )
 
-result = model("Create a character.", output_type=Character, frequency_penalty=1.5)
+result = model("Create a character.", output_type=Character, sampling_params=SamplingParams(frequency_penalty=1.5, max_tokens=200))
 print(result) # '{"name": "Evelyn", "age": 34, "skills": ["archery", "stealth", "alchemy"]}'
 print(Character.model_validate_json(result)) # name=Evelyn, age=34, skills=['archery', 'stealth', 'alchemy']
 ```
@@ -101,7 +103,7 @@ print(Character.model_validate_json(result)) # name=Evelyn, age=34, skills=['arc
 ```python
 from typing import Literal
 import outlines
-from vllm import LLM
+from vllm import LLM, SamplingParams
 
 output_type = Literal["Paris", "London", "Rome", "Berlin"]
 
@@ -109,7 +111,7 @@ model = outlines.from_vllm_offline(
     LLM("microsoft/Phi-3-mini-4k-instruct")
 )
 
-result = model("What is the capital of France?", output_type, temperature=0)
+result = model("What is the capital of France?", output_type, sampling_params=SamplingParams(temperature=0))
 print(result) # 'Paris'
 ```
 
@@ -117,7 +119,7 @@ print(result) # 'Paris'
 
 ```python
 import outlines
-from vllm import LLM
+from vllm import LLM, SamplingParams
 from outlines.types import Regex
 
 output_type = Regex(r"\d{3}-\d{2}-\d{4}")
@@ -126,7 +128,7 @@ model = outlines.from_vllm_offline(
     LLM("microsoft/Phi-3-mini-4k-instruct")
 )
 
-result = model("Generate a fake social security number.", output_type, top_p=0.1)
+result = model("Generate a fake social security number.", output_type, sampling_params=SamplingParams(top_p=0.1))
 print(result) # '782-32-3789'
 ```
 
@@ -134,8 +136,8 @@ print(result) # '782-32-3789'
 
 ```python
 import outlines
-from vllm import LLM
-from outlines.text import CFG
+from vllm import LLM, SamplingParams
+from outlines.types import CFG
 
 arithmetic_grammar = """
 ?start: sum
@@ -169,6 +171,6 @@ print(result) # '23 + 48'
 
 ## Inference Arguments
 
-When calling the model, you can provide optional parameters on top of the prompt and the output type. Those will be passed on to the `generate` method of the `LLM` model instance. An inference argument of particular interest is `sampling_params`. Its value must be a `SamplingParams` instance containing parameters such as `max_tokens` or `temperature`.
+When calling the model, you can provide optional parameters on top of the prompt and the output type. Those will be passed on to the `generate` method of the `LLM` model instance. An argument of particular interest is `sampling_params`. It takes as a value a `vllm.SamplingParams` instance containing parameters such as max_tokens or temperature.
 
 See the [vLLM documentation](https://docs.vllm.ai/en/latest/api/vllm/sampling_params.html#vllm.sampling_params.SamplingParams) on sampling parameters for more information on inference parameters.

@@ -33,45 +33,65 @@ class vectorize:
     """
 
     def __init__(self, func: Callable, signature: Optional[str] = None):
-        # imports are in the __init__ as numpy is an optional dependency
-        import numpy as np
-        self.np = np
-        # Import required functions based on NumPy version
-        np_major_version = int(np.__version__.split(".")[0])
-        if np_major_version >= 2:
-            from numpy.lib._function_base_impl import (
-                _calculate_shapes,
-                _parse_gufunc_signature,
-                _parse_input_dimensions,
-                _update_dim_sizes,
-            )
-        else: # pragma: no cover
-            from numpy.lib.function_base import (
-                _calculate_shapes,
-                _parse_gufunc_signature,
-                _parse_input_dimensions,
-                _update_dim_sizes,
-            )
-        self._calculate_shapes = _calculate_shapes
-        self._parse_gufunc_signature = _parse_gufunc_signature
-        self._parse_input_dimensions = _parse_input_dimensions
-        self._update_dim_sizes = _update_dim_sizes
-        #
+        self.setup_numpy(signature)
         self.func = func
         self.signature = signature
         self.is_coroutine_fn = inspect.iscoroutinefunction(func)
 
         functools.update_wrapper(self, func)
 
-        if signature is not None:
-            # Parse the signature string into a Python data structure.
-            # For instance "(m),(s)->(s,m)" becomes `([(m,),(s,)],[(s,m)])`.
-            self._in_and_out_core_dimensions = self._parse_gufunc_signature(signature)
-        else:
+    def setup_numpy(self, signature: Optional[str] = None):
+        """Setup NumPy and import required functions based on NumPy version.
+
+        As numpy is an optional dependency only needed for the legacy OpenAI
+        model, we put the import in a try block to make sure no error is raised
+        if it's not installed.
+        """
+        try:
+            import numpy as np
+            self.np = np
+            # Import required functions based on NumPy version
+            np_major_version = int(np.__version__.split(".")[0])
+            if np_major_version >= 2:
+                from numpy.lib._function_base_impl import (
+                    _calculate_shapes,
+                    _parse_gufunc_signature,
+                    _parse_input_dimensions,
+                    _update_dim_sizes,
+                )
+            else: # pragma: no cover
+                from numpy.lib.function_base import (
+                    _calculate_shapes,
+                    _parse_gufunc_signature,
+                    _parse_input_dimensions,
+                    _update_dim_sizes,
+                )
+            self._calculate_shapes = _calculate_shapes
+            self._parse_gufunc_signature = _parse_gufunc_signature
+            self._parse_input_dimensions = _parse_input_dimensions
+            self._update_dim_sizes = _update_dim_sizes
+            if signature is not None:
+                # Parse the signature string into a Python data structure.
+                # For instance "(m),(s)->(s,m)" becomes `([(m,),(s,)],[(s,m)])`.
+                self._in_and_out_core_dimensions = self._parse_gufunc_signature(signature)
+            else:
+                self._in_and_out_core_dimensions = None
+        except (ModuleNotFoundError, ImportError):
+            self.np = None
+            self._calculate_shapes = None
+            self._parse_gufunc_signature = None
+            self._parse_input_dimensions = None
+            self._update_dim_sizes = None
             self._in_and_out_core_dimensions = None
 
     def __call__(self, *args, **kwargs):
         """Call the vectorized function."""
+        # Raise an error ourselves if NumPy is not installed.
+        if not self.np:
+            raise ImportError(
+                "NumPy is required to use the legacy version of the OpenAI "
+                "model."
+            )
         if not args and not kwargs:
             return self.call_thunk()
         elif self.signature is not None:

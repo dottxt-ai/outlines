@@ -41,10 +41,22 @@ dependencies = [
    "airportsdata",
    "outlines_core==0.1.26",
    "genson",
+   "torch",
 ]
 dynamic = ["version"]
 
 [project.optional-dependencies]
+anthropic = ["anthropic"]
+dottxt = ["dottxt"]
+gemini = ["google-genai"]
+llamacpp = ["huggingface-hub", "llama-cpp-python"]
+mlxlm = ["datasets", "mlx", "mlx-lm"]
+ollama = ["ollama"]
+openai = ["openai"]
+sglang = ["openai"]
+tgi = ["huggingface_hub"]
+transformers = ["accelerate", "datasets", "transformers"]
+vllm = ["openai"]
 test = [
     "pre-commit",
     "pytest",
