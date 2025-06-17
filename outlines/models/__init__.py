@@ -27,7 +27,7 @@ from .transformers import (
 from .vllm_offline import VLLMOffline, from_vllm_offline
 from .vllm import AsyncVLLM, VLLM, from_vllm
 
-SteerableModel = Union[LlamaCpp, MLXLM, Transformers, VLLMOffline]
+SteerableModel = Union[LlamaCpp, MLXLM, Transformers]
 BlackBoxModel = Union[
     Anthropic,
     Dottxt,
@@ -37,6 +37,7 @@ BlackBoxModel = Union[
     SGLang,
     TGI,
     VLLM,
+    VLLMOffline,
 ]
 AsyncBlackBoxModel = Union[
     AsyncTGI,

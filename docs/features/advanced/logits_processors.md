@@ -14,12 +14,11 @@ Processors can be used to:
 
 Outlines uses logits processors with steerable models — models that run locally and allow fine-grained control over the generation process. When using such models in Outlines, the output type provided is turned into a logits processor that is then passed to the inference engine.
 
-There are four models that support logits processors:
+There are three models that support logits processors:
 
 - LlamaCpp
 - MLXLM
 - Transformers
-- VLLMOffline
 
 Instead of providing an output type that will be turned into a logits processor, it is possible to directly provide a logits processor. To do so, you must create a `Generator` instance using the `processor` keyword argument. You cannot directly call the model with a logits processor.
 

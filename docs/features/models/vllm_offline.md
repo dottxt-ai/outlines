@@ -30,6 +30,10 @@ model = outlines.from_vllm_offline(
 )
 ```
 
+!!! Note
+
+    When initializing the `vllm.LLM` object, you can specify a `guided_decoding_backend` to choose what library will be used by vLLM to constrain the generation. Consult the [vLLM documentation](https://docs.vllm.ai/en/v0.8.2/features/structured_outputs.html) on structured output for the list of possible values.
+
 ## Text Generation
 
 To generate text, you can simply call the model with a prompt.
@@ -52,7 +56,7 @@ print(result) # 'Riga'
 
 ## Structured Generation
 
-As a local model, `VLLMOffline` supports all output types available in Outlines. Simply provide an `output_type` after the prompt when calling the model.
+The `VLLMOffline` model supports all output types available in Outlines. Simply provide an `output_type` after the prompt when calling the model.
 
 ### Simple Type
 
@@ -165,6 +169,6 @@ print(result) # '23 + 48'
 
 ## Inference Arguments
 
-When calling the model, you can provide optional parameters on top of the prompt and the output type. Those will be passed on to the `generate` method of the `LLM` model instance. Some common inference arguments include `max_tokens`, `temperature`, `frequency_penalty` and `top_p`.
+When calling the model, you can provide optional parameters on top of the prompt and the output type. Those will be passed on to the `generate` method of the `LLM` model instance. An inference argument of particular interest is `sampling_params`. Its value must be a `SamplingParams` instance containing parameters such as `max_tokens` or `temperature`.
 
 See the [vLLM documentation](https://docs.vllm.ai/en/latest/api/vllm/sampling_params.html#vllm.sampling_params.SamplingParams) on sampling parameters for more information on inference parameters.
