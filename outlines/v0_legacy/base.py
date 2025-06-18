@@ -76,7 +76,7 @@ class vectorize:
                 self._in_and_out_core_dimensions = self._parse_gufunc_signature(signature)
             else:
                 self._in_and_out_core_dimensions = None
-        except (ModuleNotFoundError, ImportError):
+        except (ModuleNotFoundError, ImportError): # pragma: no cover
             self.np = None
             self._calculate_shapes = None
             self._parse_gufunc_signature = None
@@ -87,7 +87,7 @@ class vectorize:
     def __call__(self, *args, **kwargs):
         """Call the vectorized function."""
         # Raise an error ourselves if NumPy is not installed.
-        if not self.np:
+        if not self.np: # pragma: no cover
             raise ImportError(
                 "NumPy is required to use the legacy version of the OpenAI "
                 "model."
