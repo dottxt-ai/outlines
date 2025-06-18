@@ -1,7 +1,7 @@
 from outlines_core.fsm.json_schema import build_regex_from_schema
 
 from outlines.caching import cache_disabled
-from outlines.fsm.guide import RegexGuide
+from outlines.processors.guide import RegexGuide
 
 from .common import setup_tokenizer  # noqa: E402
 

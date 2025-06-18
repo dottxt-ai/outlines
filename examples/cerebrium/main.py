@@ -1,6 +1,13 @@
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
 import outlines
 
-model = outlines.models.transformers("mistralai/Mistral-7B-Instruct-v0.2")
+
+model = outlines.from_transformers(
+    AutoModelForCausalLM.from_pretrained("mistralai/Mistral-7B-Instruct-v0.2"),
+    AutoTokenizer.from_pretrained("mistralai/Mistral-7B-Instruct-v0.2"),
+)
+
 
 schema = {
     "title": "Character",
@@ -29,14 +36,13 @@ schema = {
     },
 }
 
-generator = outlines.generate.json(model, schema)
-
 
 def generate(
     prompt: str = "Amiri, a 53 year old warrior woman with a sword and leather armor.",
 ):
-    character = generator(
-        f"<s>[INST]Give me a character description. Describe {prompt}.[/INST]"
+    character = model(
+        f"<s>[INST]Give me a character description. Describe {prompt}.[/INST]",
+        outlines.json_schema(schema),
     )
 
     print(character)
