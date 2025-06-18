@@ -1,0 +1,22 @@
+@font-face {
+    font-family: "Source Code Pro Custom", monospace;
+    src: url(https://fonts.googleapis.com/css2?family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&display=swap);
+}
+
+:root > * {
+    /* Accent color shades */
+    /* --md-accent-fg-color: #d36237;
+    --md-accent-fg-color--transparent: #d36237;
+    --md-accent-bg-color: hsla(0, 0%, 100%, 1);
+    --md-accent-bg-color--light: hsla(0, 0%, 100%, 0.7); */
+
+    /* Primary color shades */
+    /* --md-accent-fg-color: hsla(#d36237, 1);
+    --md-accent-fg-color--transparent: hsla(#d36237, 0.1);
+    --md-accent-bg-color: #d36237
+    --md-accent-bg-color--light: hsla(#d36237, 0.7); */
+
+    --md-text-font-family: "Inter";
+    --md-code-font: "Source Code Pro Custom";
+    /* --md-typeset-a-color: #d36237; /*this is the brand color */
+}
