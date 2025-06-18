@@ -11,12 +11,14 @@ References
 
 """
 
+import json
+
 import requests  # type: ignore
+from openai import OpenAI
 
 import outlines
-from outlines import Template
-import outlines.generate as generate
-import outlines.models as models
+from outlines import Generator, Template
+from outlines.types import JsonSchema
 
 
 build_reAct_prompt = Template.from_string(
@@ -47,32 +49,56 @@ def search_wikipedia(query: str):
     return ".".join(list(page.values())[0]["extract"].split(".")[:2])
 
 
-prompt = build_reAct_prompt("Where is Apple Computers headquarted? ")
-model = models.openai("gpt-4o-mini")
+prompt = build_reAct_prompt(question="Where is Apple Computers headquarted? ")
+model = outlines.from_openai(OpenAI(), "gpt-4o-mini")
 
-mode_generator = generate.choice(model, choices=["Tho", "Act"])
-action_generator = generate.choice(model, choices=["Search", "Finish"])
-text_generator = generate.text(model)
+# Define JSON schemas for mode and action
+mode_schema = JsonSchema({
+    "type": "object",
+    "properties": {
+        "result": {
+            "type": "string",
+            "enum": ["Tho", "Act"]
+        }
+    },
+    "required": ["result"]
+})
+action_schema = JsonSchema({
+    "type": "object",
+    "properties": {
+        "result": {
+            "type": "string",
+            "enum": ["Search", "Finish"]
+        }
+    },
+    "required": ["result"]
+})
+
+mode_generator = Generator(model, mode_schema)
+action_generator = Generator(model, action_schema)
+text_generator = Generator(model)
 
 for i in range(1, 10):
-    mode = mode_generator(prompt, max_tokens=128)
-    prompt = add_mode(i, mode, "", prompt)
+    mode_output = mode_generator(prompt, max_tokens=128)
+    mode = json.loads(mode_output)["result"]  # Extract the result from the JSON output
+    prompt = add_mode(i=i, mode=mode, result="", prompt=prompt)
 
     if mode == "Tho":
-        thought = text_generator(prompt, stop_at="\n", max_tokens=128)
+        thought = text_generator(prompt, stop="\n", max_tokens=128)
         prompt += f"{thought}"
     elif mode == "Act":
-        action = action_generator(prompt, max_tokens=128)
+        action_output = action_generator(prompt, max_tokens=128)
+        action = json.loads(action_output)["result"]  # Extract the result from the JSON output
         prompt += f"{action} '"
 
-        subject = text_generator(prompt, stop_at=["'"], max_tokens=128)
+        subject = text_generator(prompt, stop=["'"], max_tokens=128)
         # Apple Computers headquartered
         subject = " ".join(subject.split()[:2])
         prompt += f"{subject}'"
 
         if action == "Search":
             result = search_wikipedia(subject)
-            prompt = add_mode(i, "Obs", result, prompt)
+            prompt = add_mode(i=i, mode="Obs", result=result, prompt=prompt)
         else:
             break
 

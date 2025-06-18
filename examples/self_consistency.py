@@ -1,9 +1,9 @@
 import re
 
 import numpy as np
+import openai
 
 import outlines
-import outlines.models as models
 from outlines import Template
 
 examples = [
@@ -44,21 +44,12 @@ examples = [
 question = "When I was 6 my sister was half my age. Now I’m 70 how old is my sister?"
 
 
-few_shots = Template.from_string(
-    """
-    {% for example in examples %}
-    Q: {{ example.question }}
-    A: {{ example.answer }}
-    {% endfor %}
-    Q: {{ question }}
-    A:
-    """
-)
+few_shots = Template.from_file("prompts/self_consistency.txt")
 
-model = models.openai("gpt-4o-mini")
-generator = outlines.generate.text(model)
-prompt = few_shots(question, examples)
-answers = generator(prompt, samples=10)
+model = outlines.from_openai(openai.OpenAI(), "gpt-4o-mini")
+generator = outlines.Generator(model)
+prompt = few_shots(question=question, examples=examples)
+answers = generator(prompt, n=10)
 
 digits = []
 for answer in answers:
@@ -71,7 +62,7 @@ for answer in answers:
         print(f"Could not parse the completion: '{answer}'")
 
 unique_digits, counts = np.unique(digits, return_counts=True)
-results = {d: c for d, c in zip(unique_digits, counts)}
+results = {int(d): int(c) for d, c in zip(unique_digits, counts)}
 print(results)
 
 max_count = max(results.values())

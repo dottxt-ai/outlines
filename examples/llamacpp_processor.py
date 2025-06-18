@@ -3,7 +3,7 @@ from enum import Enum
 from llama_cpp import Llama, LogitsProcessorList
 from pydantic import BaseModel, constr
 
-from outlines.generate.processors import JSONLogitsProcessor
+from outlines.processors import JSONLogitsProcessor
 from outlines.models.llamacpp import LlamaCppTokenizer
 
 
@@ -36,7 +36,7 @@ if __name__ == "__main__":
 
     prompt = "Instruct: You are a leading role play gamer. You have seen thousands of different characters and their attributes.\nPlease return a JSON object with common attributes of an RPG character. Give me a character description\nOutput:"
 
-    logits_processor = JSONLogitsProcessor(Character, tokenizer)
+    logits_processor = JSONLogitsProcessor(Character, tokenizer, tensor_library_name="numpy")
 
     json_str = llama.create_completion(
         prompt,

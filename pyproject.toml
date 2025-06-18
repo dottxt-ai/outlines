@@ -28,36 +28,42 @@ dependencies = [
    "jinja2",
    "lark",
    "nest_asyncio",
-   "numpy",
    "cloudpickle",
    "diskcache",
    "pydantic>=2.0",
    "referencing",
    "jsonschema",
    "requests",
+   "pillow",
    "tqdm",
    "typing_extensions",
    "iso3166",
    "airportsdata",
-   "torch",
    "outlines_core==0.1.26",
    "genson",
+   "torch",
 ]
 dynamic = ["version"]
 
 [project.optional-dependencies]
-vllm = ["vllm", "transformers", "numpy<2"]
-transformers = ["transformers", "accelerate", "datasets", "numpy<2"]
-mlxlm = ["mlx-lm", "datasets"]
+anthropic = ["anthropic"]
+dottxt = ["dottxt"]
+gemini = ["google-genai"]
+llamacpp = ["huggingface-hub", "llama-cpp-python"]
+mlxlm = ["datasets", "mlx", "mlx-lm"]
+ollama = ["ollama"]
 openai = ["openai"]
-llamacpp = ["llama-cpp-python", "transformers", "datasets", "numpy<2"]
-exllamav2 = ["exllamav2"]
+sglang = ["openai"]
+tgi = ["huggingface_hub"]
+transformers = ["accelerate", "datasets", "transformers"]
+vllm = ["openai"]
 test = [
     "pre-commit",
     "pytest",
     "pytest-benchmark",
     "pytest-cov",
     "pytest-mock",
+    "pytest-asyncio",
     "coverage[toml]>=5.1",
     "diff-cover",
     "accelerate",
@@ -68,18 +74,22 @@ test = [
     "huggingface_hub",
     "openai>=1.0.0",
     "datasets",
-    "transformers",
+    "anthropic",
+    "google-genai",
+    "transformers<=4.52.1",
     "pillow",
-    "exllamav2",
     "jax",
+    "flax",
+    "numpy>=2.0.0,<2.2.0",
+    "torch",
+    "tensorflow",
+    "tf-keras",
+    "ollama",
+    "dottxt",
+    "sentencepiece",
+    "mkdocs_gen_files",
 ]
 test-gpu=["outlines[test]", "vllm; sys_platform == 'linux'"]
-serve = [
-    "vllm>=0.3.0",
-    "uvicorn",
-    "fastapi",
-    "pydantic>=2.0",
-]
 
 [project.urls]
 homepage = "https://github.com/dottxt-ai/outlines"
@@ -108,6 +118,8 @@ filterwarnings = [
     "ignore::FutureWarning:huggingface_hub.*",
     "ignore::UserWarning",
     "ignore::DeprecationWarning:pyairports.*",
+    "ignore::DeprecationWarning:jax.*",
+    "ignore::DeprecationWarning:flax.*",
 ]
 
 [tool.mypy]
@@ -116,13 +128,13 @@ enable_incomplete_feature = ["Unpack"]
 
 [[tool.mypy.overrides]]
 module = [
-    "exllamav2.*",
     "jax",
     "jaxlib",
     "jax.numpy",
     "jinja2",
     "jsonschema.*",
-    "openai.*",
+    "anthropic.*",
+    "google.*",
     "mamba_ssm.*",
     "mlx_lm.*",
     "mlx.*",
@@ -141,36 +153,55 @@ module = [
     "lark.*",
     "interegular.*",
     "datasets.*",
+    "openai.*",
     "requests.*",
     "responses.*",
     "vllm.*",
-    "uvicorn.*",
-    "fastapi.*",
     "iso3166.*",
     "airportsdata.*",
     "outlines_core.*",
     "genson",
+    "ollama.*",
+    "dottxt.*",
+    "tensorflow",
+    "tensorflow.*",
+    "tf-keras",
+    "tf-keras.*",
+    "mkdocs_gen_files.*",
 ]
 ignore_missing_imports = true
 
 [tool.coverage.run]
+# we omit the files that require a GPU or Apple Silicon
+# as well as the models that make API calls
 omit = [
     "outlines/_version.py",
+    "outlines/models/anthropic.py",
+    "outlines/models/dottxt.py",
+    "outlines/models/gemini.py",
+    "outlines/models/mlxlm.py",
+    "outlines/models/openai.py",
+    "outlines/models/vllm_offline.py",
+    "outlines/processors/tensor_adapters/mlx.py",
+    "outlines/v0_legacy/models/anthropic.py",
+    "outlines/v0_legacy/models/dottxt.py",
+    "outlines/v0_legacy/models/exllamav2.py",
+    "outlines/v0_legacy/models/gemini.py",
+    "outlines/v0_legacy/models/mlxlm.py",
+    "outlines/v0_legacy/models/openai.py",
+    "outlines/v0_legacy/models/vllm_offline.py",
     "tests/*",
 ]
 branch = true
 relative_files = true
 
 [tool.coverage.report]
-omit = [
-    "tests/*",
-]
+show_missing = true
 exclude_lines = [
     "pragma: no cover",
     "if TYPE_CHECKING:",
     "\\.\\.\\.",
 ]
-show_missing = true
 
 [tool.diff_cover]
 compare_branch = "origin/main"

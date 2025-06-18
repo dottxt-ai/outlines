@@ -8,12 +8,39 @@ codebase.
 
 from typing import Union
 
-from .exllamav2 import ExLlamaV2Model, exl2
-from .llamacpp import LlamaCpp, llamacpp
-from .mlxlm import MLXLM, mlxlm
-from .openai import OpenAI, azure_openai, openai
-from .transformers import Transformers, TransformerTokenizer, mamba, transformers
-from .transformers_vision import TransformersVision, transformers_vision
-from .vllm import VLLM, vllm
+from .anthropic import Anthropic, from_anthropic
+from .base import Model, ModelTypeAdapter
+from .dottxt import Dottxt, from_dottxt
+from .gemini import Gemini, from_gemini
+from .llamacpp import LlamaCpp, from_llamacpp
+from .mlxlm import MLXLM, from_mlxlm
+from .ollama import Ollama, from_ollama
+from .openai import OpenAI, from_openai
+from .sglang import AsyncSGLang, SGLang, from_sglang
+from .tgi import AsyncTGI, TGI, from_tgi
+from .transformers import (
+    Transformers,
+    TransformerTokenizer,
+    TransformersMultiModal,
+    from_transformers,
+)
+from .vllm_offline import VLLMOffline, from_vllm_offline
+from .vllm import AsyncVLLM, VLLM, from_vllm
 
-LogitsGenerator = Union[Transformers, LlamaCpp, OpenAI, ExLlamaV2Model, MLXLM, VLLM]
+SteerableModel = Union[LlamaCpp, MLXLM, Transformers]
+BlackBoxModel = Union[
+    Anthropic,
+    Dottxt,
+    Gemini,
+    Ollama,
+    OpenAI,
+    SGLang,
+    TGI,
+    VLLM,
+    VLLMOffline,
+]
+AsyncBlackBoxModel = Union[
+    AsyncTGI,
+    AsyncSGLang,
+    AsyncVLLM,
+]
