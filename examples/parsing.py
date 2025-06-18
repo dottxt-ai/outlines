@@ -36,6 +36,7 @@ parser = PartialLark.open_from_package(
     start="file_input",
 )
 
+
 class ParserLogitsProcessor(LogitsProcessor):
     """Bias invalid token scores according to a running parse state."""
 

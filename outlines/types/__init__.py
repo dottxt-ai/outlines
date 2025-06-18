@@ -1,40 +1,21 @@
-"""Output types for structured generation and regex DSL."""
-
-from dataclasses import dataclass, is_dataclass
-from enum import Enum, EnumMeta
-from typing import Union
-
-from jsonschema import Draft202012Validator as Validator
-from jsonschema.exceptions import SchemaError
-from pydantic import BaseModel, TypeAdapter
-from typing_extensions import _TypedDictMeta  # type: ignore
+from enum import Enum
 
 from . import airports, countries, locale
 from outlines.types.dsl import (
     Regex,
-    CFG,
-    FSM,
-    JsonSchema,
-    regex,
-    cfg,
-    fsm,
     json_schema,
-    optional,
+    regex,
     either,
+    optional,
     exactly,
     at_least,
     at_most,
     between,
-    zero_or_more,
     one_or_more,
-    # deprecated
-    repeat,
-    times,
+    zero_or_more,
 )
 
-
 # Python types
-string = Regex(r'"[^"]*"')
 integer = Regex(r"[+-]?(0|[1-9][0-9]*)")
 boolean = Regex("(True|False)")
 number = Regex(rf"{integer.pattern}(\.[0-9]+)?([eE][+-][0-9]+)?")

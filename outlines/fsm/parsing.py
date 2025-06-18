@@ -1,5 +1,3 @@
-"""Build a parser from a grammar to create a finite state machine."""
-
 from copy import copy, deepcopy
 from dataclasses import dataclass
 from functools import lru_cache

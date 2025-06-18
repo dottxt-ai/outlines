@@ -1,9 +1,7 @@
-from typing import Dict, Hashable, List, Protocol, Set, Tuple, Union, TYPE_CHECKING
+from typing import Dict, Hashable, List, Protocol, Set, Tuple, Union
 
-
-if TYPE_CHECKING:
-    import numpy as np
-    from numpy.typing import NDArray
+import numpy as np
+from numpy.typing import NDArray
 
 
 class Tokenizer(Hashable, Protocol):
@@ -15,11 +13,11 @@ class Tokenizer(Hashable, Protocol):
 
     def encode(
         self, prompt: Union[str, List[str]]
-    ) -> "Tuple['NDArray[np.int64]', 'NDArray[np.int64]']":
+    ) -> Tuple[NDArray[np.int64], NDArray[np.int64]]:
         """Translate the input prompts into arrays of token ids and attention mask."""
         ...
 
-    def decode(self, token_ids: "NDArray[np.int64]") -> List[str]:
+    def decode(self, token_ids: NDArray[np.int64]) -> List[str]:
         """Translate an array of token ids to a string or list of strings."""
         ...
 

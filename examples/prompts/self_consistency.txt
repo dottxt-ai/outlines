@@ -1,6 +1,0 @@
-{% for example in examples %}
-Q: {{ example.question }}
-A: {{ example.answer }}
-{% endfor %}
-Q: {{ question }}
-A:

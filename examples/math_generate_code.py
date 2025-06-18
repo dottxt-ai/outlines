@@ -1,10 +1,8 @@
 """Example from https://dust.tt/spolu/a/d12ac33169"""
 
-import openai
-
 import outlines
+import outlines.models as models
 from outlines import Template
-
 
 examples = [
     {"question": "What is 37593 * 67?", "code": "37593 * 67"},
@@ -37,8 +35,8 @@ def execute_code(code):
     return result
 
 
-prompt = answer_with_code_prompt(question=question, examples=examples)
-model = outlines.from_openai(openai.OpenAI(), "gpt-4o-mini")
-answer = model(prompt)
+prompt = answer_with_code_prompt(question, examples)
+model = models.openai("gpt-4o-mini")
+answer = outlines.generate.text(model)(prompt)
 result = execute_code(answer)
 print(f"It takes Carla {result:.0f} minutes to download the file.")

@@ -1,7 +1,4 @@
-from typing import Literal
-
 from beam import Image, endpoint, env
-
 
 if env.is_remote():
     import outlines
@@ -9,13 +6,9 @@ if env.is_remote():
 
 # Pre-load models when the container first starts
 def load_models():
-    from transformers import AutoModelForCausalLM, AutoTokenizer
     import outlines
 
-    model = outlines.models.from_transformers(
-        AutoModelForCausalLM.from_pretrained("microsoft/Phi-3-mini-4k-instruct"),
-        AutoTokenizer.from_pretrained("microsoft/Phi-3-mini-4k-instruct"),
-    )
+    model = outlines.models.transformers("microsoft/Phi-3-mini-4k-instruct")
     return model
 
 
@@ -41,6 +34,6 @@ def predict(context, **inputs):
     # Unpack cached model from context
     model = context.on_start_value
     # Inference
-    generator = outlines.Generator(model, Literal["Positive", "Negative"])
+    generator = outlines.generate.choice(model, ["Positive", "Negative"])
     answer = generator(prompt)
     return {"answer": answer}
