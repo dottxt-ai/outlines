@@ -1,19 +1,9 @@
 import os
 import tempfile
 import unittest
-from importlib import reload
 
 import diskcache
 import pytest
-from diskcache import Cache, UNKNOWN
-from outlines.caching import CloudpickleDisk
-
-
-@pytest.fixture
-def temp_dir():
-    """Create a temporary directory for testing."""
-    directory = tempfile.mkdtemp()
-    yield directory
 
 
 @pytest.fixture
@@ -198,24 +188,3 @@ def test_cache_disabled_decorator(test_cache):
     # scope has exited, cache is enabled again
     fn()
     assert mock.call_count == 2
-
-
-@pytest.fixture
-def temp_cache_dir():
-    import os
-    import tempfile
-
-    import outlines.caching
-    import outlines.processors.guide
-
-    with tempfile.TemporaryDirectory() as tempdir:
-        os.environ["OUTLINES_CACHE_DIR"] = tempdir
-        outlines.caching.get_cache.cache_clear()
-        reload(outlines)
-        reload(outlines.processors.guide)
-        cache_status = outlines.caching._caching_enabled
-        try:
-            outlines.caching._caching_enabled = True
-            yield
-        finally:
-            outlines.caching._caching_enabled = cache_status

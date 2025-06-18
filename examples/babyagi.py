@@ -8,14 +8,13 @@ The original repo can be found at https://github.com/yoheinakajima/babyagi
 from collections import deque
 from typing import Deque, List
 
-from openai import OpenAI
-
 import outlines
+import outlines.models as models
 from outlines import Template
 
 
-model = outlines.from_openai(OpenAI(), "gpt-4o-mini")
-complete = outlines.Generator(model)
+model = models.openai("gpt-4o-mini")
+complete = outlines.generate.text(model)
 
 ## Load the prompts
 perform_task_ppt = Template.from_file("prompts/babyagi_perform_task.txt")
@@ -77,14 +76,11 @@ def one_cycle(objective: str, task_list, next_task_id: int):
 
     task = task_list.popleft()
 
-    prompt = perform_task_ppt(objective=objective, task=task)
+    prompt = perform_task_ppt(objective, task)
     result = complete(prompt)
 
     prompt = create_tasks_ppt(
-        objective=objective,
-        task=first_task["task_name"],
-        result=result,
-        previous_tasks=[first_task["task_name"]],
+        objective, first_task["task_name"], result, [first_task["task_name"]]
     )
     new_tasks = complete(prompt)
 
@@ -95,9 +91,7 @@ def one_cycle(objective: str, task_list, next_task_id: int):
         task_list.append({"task_id": next_task_id, "task_name": task})
 
     prompt = prioritize_tasks_ppt(
-        objective=objective,
-        tasks=[task["task_name"] for task in task_list],
-        next_task_id=next_task_id,
+        objective, [task["task_name"] for task in task_list], next_task_id
     )
     prioritized_tasks = complete(prompt)
 

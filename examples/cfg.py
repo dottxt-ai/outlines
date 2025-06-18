@@ -1,8 +1,5 @@
-from transformers import AutoModelForCausalLM, AutoTokenizer
-
-import outlines
-from outlines.types import CFG
-
+import outlines.generate as generate
+import outlines.models as models
 
 nlamb_grammar = r"""
     start: sentence
@@ -78,20 +75,15 @@ json_grammar = r"""
     %ignore WS
 """
 
-model_name = "hf-internal-testing/tiny-random-gpt2"
-model = outlines.from_transformers(
-    AutoModelForCausalLM.from_pretrained(model_name),
-    AutoTokenizer.from_pretrained(model_name),
-)
-
+model = models.transformers("hf-internal-testing/tiny-random-gpt2")
 batch_size = 10
 for grammar in [nlamb_grammar, calc_grammar, dyck_grammar, json_grammar]:
-    generator = outlines.Generator(model, CFG(grammar))
-    sequences = generator([" "] * batch_size, max_tokens=model.model.config.n_positions)
+    generator = generate.cfg(model, grammar, max_tokens=model.model.config.n_positions)
+    sequences = generator([" "] * batch_size)
     for seq in sequences:
         try:
-            parse = generator.logits_processor.guide.parser.parse(seq)
+            parse = generator.fsm.parser.parse(seq)
             assert parse is not None
             print("SUCCESS", seq)
-        except Exception:  # will also fail if goes over max_new_tokens / context window
+        except Exception:  # will also fail if goes over max_tokens / context window
             print("FAILURE", seq)

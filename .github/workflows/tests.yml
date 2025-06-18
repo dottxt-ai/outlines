@@ -2,7 +2,7 @@ name: Tests
 
 on:
   pull_request:
-    branches: [main,v1.0]
+    branches: [main]
   push:
     branches: [main]
 
@@ -29,11 +29,6 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Install Ollama
-      run: |
-        curl -fsSL https://ollama.com/install.sh | sh
-        ollama --version
-        ollama pull tinyllama
     - name: Set up test environment
       run: |
         python -m pip install --upgrade pip
@@ -51,7 +46,7 @@ jobs:
         echo "::set-output name=id::$MATRIX_ID"
     - name: Run tests
       run: |
-        uv run pytest -x --cov=outlines -m 'not api_call'
+        uv run pytest -x --cov=outlines
       env:
         COVERAGE_FILE: .coverage.${{ steps.matrix-id.outputs.id }}
     - name: Upload coverage data
@@ -87,30 +82,16 @@ jobs:
         with:
           name: coverage-data
 
-      - name: Determine base branch for comparison
-        id: base-branch
+      - name: Fetch main for coverage diff
         run: |
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            # For PRs, use the remote tracking branch
-            COMPARE_BRANCH="origin/${{ github.base_ref }}"
-            echo "COMPARE_BRANCH=$COMPARE_BRANCH" >> $GITHUB_ENV
-          else
-            # For push events, compare against the parent commit
-            COMPARE_BRANCH="${{ github.event.before }}"
-            echo "COMPARE_BRANCH=$COMPARE_BRANCH" >> $GITHUB_ENV
-          fi
-          echo "Using $COMPARE_BRANCH for coverage comparison"
-
-      - name: Fetch base branch for coverage diff
-        run: |
-          git fetch --no-tags --prune origin ${COMPARE_BRANCH#origin/}
+          git fetch --no-tags --prune origin main
 
       - name: Combine coverage & fail if it's <100%.
         run: |
           python -m coverage combine
           python -m coverage html --skip-covered --skip-empty
           python -m coverage xml
-          diff-cover coverage.xml --compare-branch=$COMPARE_BRANCH --markdown-report=coverage.md --fail-under=100 || (cat coverage.md >> $GITHUB_STEP_SUMMARY && exit 1)
+          diff-cover coverage.xml --markdown-report=coverage.md --fail-under=100 || (cat coverage.md >> $GITHUB_STEP_SUMMARY && exit 1)
 
       - name: Upload HTML report if check failed.
         uses: actions/upload-artifact@v4

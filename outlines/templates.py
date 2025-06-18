@@ -1,6 +1,3 @@
-"""Create templates to easily build prompts."""
-
-import base64
 import functools
 import inspect
 import json
@@ -8,46 +5,12 @@ import os
 import re
 import textwrap
 from dataclasses import dataclass
-from io import BytesIO
 from pathlib import Path
 from typing import Any, Callable, Dict, Optional, Type, cast
 import warnings
 
 import jinja2
-from PIL import Image
-from pydantic import BaseModel
-
-
-@dataclass
-class Vision:
-    """Contains the input for a vision model.
-
-    Provide an instance of this class as the `model_input` argument to a model
-    that supports vision.
-
-    Parameters
-    ----------
-    prompt
-        The prompt to use to generate the response.
-    image
-        The image to use to generate the response.
-
-    """
-    prompt: str
-    image: Image.Image
-
-    def __post_init__(self):
-        image = self.image
-
-        if not image.format:
-            raise TypeError(
-                "Could not read the format of the image passed to the model."
-            )
-
-        buffer = BytesIO()
-        image.save(buffer, format=image.format)
-        self.image_str = base64.b64encode(buffer.getvalue()).decode("utf-8")
-        self.image_format = f"image/{image.format.lower()}"
+import pydantic
 
 
 @dataclass
@@ -58,6 +21,7 @@ class Template:
     template can be accessed by callers.
 
     """
+
     template: jinja2.Template
     signature: Optional[inspect.Signature]
 
@@ -66,8 +30,7 @@ class Template:
 
         Returns
         -------
-        str
-            The rendered template as a Python string.
+        The rendered template as a Python ``str``.
 
         """
         if self.signature is not None:
@@ -79,8 +42,7 @@ class Template:
 
     @classmethod
     def from_string(cls, content: str, filters: Dict[str, Callable] = {}):
-        """Create a `Template` instance from a string containing a Jinja
-        template.
+        """Create a `Template` instance from a string containing a Jinja template.
 
         Parameters
         ----------
@@ -89,20 +51,16 @@ class Template:
 
         Returns
         -------
-        Template
-            An instance of the class with the provided content as a template.
-
+        An instance of the class with the provided content as a template.
         """
         return cls(build_template_from_string(content, filters), None)
 
     @classmethod
     def from_file(cls, path: Path, filters: Dict[str, Callable] = {}):
-        """Create a `Template` instance from a file containing a Jinja
-        template.
+        """Create a `Template` instance from a file containing a Jinja template.
 
-        Note: This method does not allow to include and inheritance to
-        reference files that are outside the folder or subfolders of the file
-        given to `from_file`.
+        Note: This method does not allow to include and inheritance to reference files
+        that are outside the folder or subfolders of the file given to `from_file`.
 
         Parameters
         ----------
@@ -112,14 +70,10 @@ class Template:
         Returns
         -------
         Template
-            An instance of the Template class with the template loaded from the
-            file.
-
+            An instance of the Template class with the template loaded from the file.
         """
-        # We don't use a `Signature` here because it seems not feasible to
-        # infer one from a Jinja2 environment that is
-        # split across multiple files (since e.g. we support features like
-        # Jinja2 includes and template inheritance)
+        # We don't use a `Signature` here because it seems not feasible to infer one from a Jinja2 environment that is
+        # split across multiple files (since e.g. we support features like Jinja2 includes and template inheritance)
         return cls(build_template_from_file(path, filters), None)
 
 
@@ -249,12 +203,12 @@ def create_jinja_env(
     - `source`: get a function's source code
     - `signature`: get a function's signature
     - `args`: get a function's arguments
-    - `schema`: display a JSON Schema
+    - `schema`: isplay a JSON Schema
 
     Users may pass additional filters, and/or override existing ones.
 
-    Parameters
-    ----------
+    Arguments
+    ---------
     loader
        An optional `BaseLoader` instance
     filters
@@ -333,7 +287,7 @@ def get_fn_source(fn: Callable):
     re_search = re.search(re.compile(r"(\bdef\b.*)", re.DOTALL), source)
     if re_search is not None:
         source = re_search.group(0)
-    else:  # pragma: no cover
+    else:
         raise TypeError("Could not read the function's source code")
 
     return source
@@ -346,7 +300,7 @@ def get_fn_signature(fn: Callable):
 
     source = textwrap.dedent(inspect.getsource(fn))
     re_search = re.search(re.compile(r"\(([^)]+)\)"), source)
-    if re_search is None:  # pragma: no cover
+    if re_search is None:
         signature = ""
     else:
         signature = re_search.group(1)
@@ -367,9 +321,12 @@ def get_schema_dict(model: Dict):
     return json.dumps(model, indent=2)
 
 
-@get_schema.register(type(BaseModel))
-def get_schema_pydantic(model: Type[BaseModel]):
+@get_schema.register(type(pydantic.BaseModel))
+def get_schema_pydantic(model: Type[pydantic.BaseModel]):
     """Return the schema of a Pydantic model."""
+    if not isinstance(model, type(pydantic.BaseModel)):
+        raise TypeError("The `schema` filter only applies to Pydantic models.")
+
     if hasattr(model, "model_json_schema"):
         def_key = "$defs"
         raw_schema = model.model_json_schema()
