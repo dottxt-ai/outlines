@@ -20,3 +20,73 @@
     --md-code-font: "Source Code Pro Custom";
     /* --md-typeset-a-color: #d36237; /*this is the brand color */
 }
+
+/* Nord theme code block styling */
+.highlight pre,
+.md-typeset pre code,
+.md-typeset .highlight pre,
+.md-typeset .highlighttable pre {
+    background-color: #2E3440 !important; /* Nord's darkest blue (nord0) */
+    border-radius: 0.5rem !important; /* Rounded corners */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important; /* Subtle shadow */
+}
+
+/* Ensure inline code also uses appropriate background */
+.md-typeset code {
+    background-color: #3B4252; /* Nord's slightly lighter shade (nord1) */
+    color: #D8DEE9; /* Nord's snow storm shade for better contrast */
+    border-radius: 0.2rem; /* Smaller radius for inline code */
+    padding: 0.1em 0.3em; /* Add some padding for better appearance */
+}
+
+/* Override code block container background */
+.md-typeset .highlight,
+.md-typeset .highlighttable {
+    background-color: #2E3440 !important;
+    border-radius: 0.5rem !important;
+    overflow: hidden; /* Ensure child elements respect rounded corners */
+}
+
+/* Ensure proper spacing and shadow for the entire code block */
+.md-typeset pre {
+    margin: 1em 0 !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+}
+
+/* Style the copy button with Nord snow grey */
+.md-clipboard {
+    color: #D8DEE9 !important; /* Nord snow storm */
+}
+
+.md-clipboard:hover {
+    color: #ECEFF4 !important; /* Brighter snow storm on hover */
+}
+
+.md-clipboard:after {
+    color: #D8DEE9 !important;
+}
+
+/* Style scrollbars with Nord colors */
+.md-typeset pre::-webkit-scrollbar {
+    height: 0.4rem;
+    width: 0.4rem;
+}
+
+.md-typeset pre::-webkit-scrollbar-track {
+    background-color: #3B4252; /* Nord1 */
+}
+
+.md-typeset pre::-webkit-scrollbar-thumb {
+    background-color: #4C566A; /* Nord3 */
+    border-radius: 0.2rem;
+}
+
+.md-typeset pre::-webkit-scrollbar-thumb:hover {
+    background-color: #D8DEE9; /* Nord snow storm on hover */
+}
+
+/* Firefox scrollbar styling */
+.md-typeset pre {
+    scrollbar-width: thin;
+    scrollbar-color: #4C566A #3B4252;
+}

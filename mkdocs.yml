@@ -64,6 +64,7 @@ markdown_extensions:
           line_spans: __span
           pygments_lang_class: true
           noclasses: True
+          pygments_style: nord
     - pymdownx.superfences:
           custom_fences:
               - name: mermaid
