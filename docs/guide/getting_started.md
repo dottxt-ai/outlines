@@ -129,7 +129,7 @@ For a quick start, you can find below an example of how to initialize all suppor
     import outlines
     from openai import OpenAI
 
-    # You must have a separete SgLang server running
+    # You must have a separate SgLang server running
     # Create an OpenAI client with the base URL of the SgLang server
     openai_client = OpenAI(base_url="http://localhost:11434/v1")
 
@@ -145,7 +145,7 @@ For a quick start, you can find below an example of how to initialize all suppor
     import outlines
     from huggingface_hub import InferenceClient
 
-    # You must have a separete TGI server running
+    # You must have a separate TGI server running
     # Create an InferenceClient client with the base URL of the TGI server
     tgi_client = InferenceClient("http://localhost:8080")
 
@@ -189,7 +189,7 @@ For a quick start, you can find below an example of how to initialize all suppor
     import outlines
     from openai import OpenAI
 
-    # You must have a separete vLLM server running
+    # You must have a separate vLLM server running
     # Create an OpenAI client with the base URL of the VLLM server
     openai_client = OpenAI(base_url="http://localhost:11434/v1")
 
@@ -231,7 +231,7 @@ Supported output types can be organized in 5 categories:
 - [Regex](../../features/core/output_types#regex-patterns): through the Outlines's `Regex` object
 - [Context-free Grammarq](../../features/core/output_types#context-free-grammars): through the Outlines's `CFG` object
 
-Consult the section on [Output Types](../../features/core/output_types.md) in the features documention for more detailed information on all supported types for each output type category.
+Consult the section on [Output Types](../../features/core/output_types.md) in the features documentation for more detailed information on all supported types for each output type category.
 
 In the meantime, you can find below examples of using each of the five output type categories:
 
@@ -280,7 +280,7 @@ In the meantime, you can find below examples of using each of the five output ty
     # Generate a character
     result = model("Create a character", Character)
     print(result) # '{"name": "Aurora", "birth_date": "1990-06-15", "skills": ["Stealth", "Diplomacy"]}'
-    print(Characte.model_validate_json(result);) # name=Aurora birth_date=datetime.date(1990, 6, 15) skills=['Stealth', 'Diplomacy']
+    print(Character.model_validate_json(result);) # name=Aurora birth_date=datetime.date(1990, 6, 15) skills=['Stealth', 'Diplomacy']
     ```
 
 === "Regex"
