@@ -90,3 +90,108 @@
     scrollbar-width: thin;
     scrollbar-color: #4C566A #3B4252;
 }
+
+/* Better visual hierarchy with bolder headings */
+.md-typeset h1 {
+    font-weight: 700;
+    font-size: 2.2rem;
+    line-height: 1.2;
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    color: #1a1a1a;
+}
+
+.md-typeset h2 {
+    font-weight: 600;
+    font-size: 1.75rem;
+    line-height: 1.3;
+    margin-top: 2.5rem;
+    margin-bottom: 1.25rem;
+    color: #2a2a2a;
+    border-bottom: 2px solid #e0e0e0;
+    padding-bottom: 0.4rem;
+}
+
+.md-typeset h3 {
+    font-weight: 600;
+    font-size: 1.35rem;
+    line-height: 1.3;
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+    color: #333;
+}
+
+.md-typeset h4 {
+    font-weight: 500;
+    font-size: 1.15rem;
+    line-height: 1.3;
+    margin-top: 1.75rem;
+    margin-bottom: 0.6rem;
+    color: #444;
+}
+
+.md-typeset h5 {
+    font-weight: 500;
+    font-size: 1.05rem;
+    line-height: 1.4;
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+    color: #555;
+}
+
+.md-typeset h6 {
+    font-weight: 500;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    margin-top: 1.25rem;
+    margin-bottom: 0.5rem;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Improve paragraph spacing for better readability */
+.md-typeset p {
+    line-height: 1.55;
+    margin-bottom: 1rem;
+}
+
+/* Make navigation items bolder */
+.md-nav__link {
+    font-weight: 400;
+}
+
+.md-nav__link--active,
+.md-nav__link:hover {
+    font-weight: 600;
+    color: #1a1a1a;
+}
+
+/* Improve list spacing */
+.md-typeset ul,
+.md-typeset ol {
+    margin-bottom: 1.5rem;
+}
+
+.md-typeset li {
+    line-height: 1.55;
+    margin-bottom: 0.4rem;
+}
+
+/* Make important elements stand out */
+.md-typeset strong {
+    font-weight: 600;
+    color: #1a1a1a;
+}
+
+/* Better spacing for code blocks in relation to text */
+.md-typeset pre {
+    margin: 1.5em 0 !important;
+}
+
+/* Improve table headers */
+.md-typeset table th {
+    font-weight: 600;
+    background-color: #f5f5f5;
+    color: #1a1a1a;
+}
