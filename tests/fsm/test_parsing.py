@@ -248,7 +248,7 @@ def _reconstruct_fsms(fsm, fsms_to_trans_finals):
                 for symbol in fsm.alphabet.by_transition.get(trans, [])
             }
             if symbols:
-                # NOTE: THIS RECONSTRUCTOR DOESNT WORK FOR MORE THAN ONE TRANSITION PER SYMBOL
+                # NOTE: THIS RECONSTRUCTOR DOESN'T WORK FOR MORE THAN ONE TRANSITION PER SYMBOL
                 assert len(symbols) == 1
                 symbol = list(symbols)[0]
                 alphabet[symbol] = trans_id
