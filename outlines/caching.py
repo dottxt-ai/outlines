@@ -57,7 +57,7 @@ def get_cache():
     xdg_cache_home = os.environ.get("XDG_CACHE_HOME")
     home_dir = os.path.normpath(os.path.expanduser("~"))
     if outlines_cache_dir:
-        # OUTLINES_CACHE_DIR takes precendence
+        # OUTLINES_CACHE_DIR takes precedence
         cache_dir = outlines_cache_dir
     elif xdg_cache_home:  # pragma: no cover
         cache_dir = os.path.join(xdg_cache_home, ".cache", "outlines")
