@@ -69,9 +69,77 @@ for chunk in model.stream("Write a short story about a cat.", max_tokens=100):
     print(chunk) # 'In ...'
 ```
 
+## Asynchronous Calls
+
+SGLang supports asynchronous operations by passing an `AsyncOpenAI` client instead of a regular `OpenAI` client. This returns an `AsyncSGLang` model instance that supports async/await patterns.
+
+### Basic Async Generation
+
+```python
+import asyncio
+import openai
+import outlines
+
+async def generate_text():
+    async_client = openai.AsyncOpenAI(base_url="http://localhost:11434")
+    async_model = outlines.from_sglang(async_client)
+
+    result = await async_model("Write a haiku about Python.", max_tokens=50)
+    print(result)
+
+asyncio.run(generate_text())
+```
+
+### Async Streaming
+
+The async model also supports streaming with async iteration:
+
+```python
+import asyncio
+import openai
+import outlines
+
+async def stream_text():
+    async_client = openai.AsyncOpenAI(base_url="http://localhost:11434")
+    async_model = outlines.from_sglang(async_client)
+
+    async for chunk in async_model.stream("Tell me a story about a robot.", max_tokens=100):
+        print(chunk, end="")
+
+asyncio.run(stream_text())
+```
+
+### Concurrent Async Requests
+
+One of the main benefits of async calls is the ability to make multiple concurrent requests:
+
+```python
+import asyncio
+import openai
+import outlines
+
+async def generate_multiple():
+    async_client = openai.AsyncOpenAI(base_url="http://localhost:11434")
+    async_model = outlines.from_sglang(async_client)
+
+    prompts = [
+        "Write a tagline for a coffee shop.",
+        "Write a tagline for a bookstore.",
+        "Write a tagline for a gym."
+    ]
+
+    tasks = [async_model(prompt, max_tokens=30) for prompt in prompts]
+    results = await asyncio.gather(*tasks)
+
+    for prompt, result in zip(prompts, results):
+        print(f"{prompt}\n{result}\n")
+
+asyncio.run(generate_multiple())
+```
+
 ## Structured Generation
 
-SGLang supports all output types available in Outlines (context-free grammars with caveats though, see the subsection below for more details). Simply provide an `output_type` after the prompt when calling the model.
+SGLang supports all output types available in Outlines (context-free grammars with caveats though, see the subsection below for more details). Simply provide an `output_type` after the prompt when calling the model. All structured generation features work with both synchronous and asynchronous models.
 
 ### Simple Type
 
@@ -160,6 +228,33 @@ model = outlines.from_sglang(openai_client)
 
 result = model("Is the weather good today?", output_type)
 print(result) # 'yes'
+```
+
+### Async Structured Generation
+
+All structured generation features work seamlessly with async models:
+
+```python
+import asyncio
+import openai
+import outlines
+from typing import List
+from pydantic import BaseModel
+
+class User(BaseModel):
+    name: str
+    email: str
+    age: int
+
+async def generate_user():
+    async_client = openai.AsyncOpenAI(base_url="http://localhost:11434")
+    async_model = outlines.from_sglang(async_client)
+
+    result = await async_model("Generate a random user profile.", output_type=User)
+    user = User.model_validate_json(result)
+    print(f"Name: {user.name}, Email: {user.email}, Age: {user.age}")
+
+asyncio.run(generate_user())
 ```
 
 ## Inference Arguments
