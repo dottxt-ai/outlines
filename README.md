@@ -30,7 +30,6 @@ Need a high-performance commercial solution for structured outputs? Email us at 
 - [Real-World Examples](#real-world-examples)
   - [🙋‍♂️ Customer Support Triage](#customer-support-triage)
   - [📦 E-commerce Product Categorization](#e-commerce-product-categorization)
-  - [💊 Pull Medication Data from Unstructured Notes](#pull-medication-data-from-unstructured-notes)
   - [📊 Parse Event Details with Incomplete Data](#parse-event-details-with-incomplete-data)
   - [🗂️ Categorize Documents into Predefined Types](#categorize-documents-into-predefined-types)
   - [📅 Schedule a Meeting with Function Calling](#schedule-a-meeting-with-function-calling)
@@ -551,7 +550,7 @@ Analyze the sentiment of the following {{ content_type }}:
 Provide your analysis as either "Positive", "Negative", or "Neutral".
 <|im_end>
 <|im_start>assistant
-"""
+""")
 
 # 2. Generate prompts with different parameters
 review = "This restaurant exceeded all my expectations. Fantastic service!"
@@ -585,27 +584,27 @@ print(few_shot_prompt)
 
 | Model type | Description | Documentation |
 |---------|-------------|:-------------:|
-| **Server Support** | vLLM and Ollama | [Server Integrations →](https://dottxt-ai.github.io/outlines/latest/installation) |
-| **Local Model Support** | transformers and llama.cpp | [Model Integrations →](https://dottxt-ai.github.io/outlines/latest/installation) |
-| **API Support** | OpenAI and Gemini | [API Integrations →](https://dottxt-ai.github.io/outlines/latest/installation) |
+| **Server Support** | vLLM and Ollama | [Server Integrations →](https://dottxt-ai.github.io/outlines/latest/features/models/) |
+| **Local Model Support** | transformers and llama.cpp | [Model Integrations →](https://dottxt-ai.github.io/outlines/latest/features/models/) |
+| **API Support** | OpenAI and Gemini | [API Integrations →](https://dottxt-ai.github.io/outlines/latest/features/models/) |
 
 ## Core Features
 
 | Feature | Description | Documentation |
 |---------|-------------|:-------------:|
-| **Multiple Choices** | Constrain outputs to predefined options | [Multiple Choices →](https://dottxt-ai.github.io/outlines/latest/guides/choice_generation) |
-| **️Function Calls** | Infer structure from function signatures | [Function Guide →](https://dottxt-ai.github.io/outlines/latest/guides/function_generation) |
-| **JSON/Pydantic** | Generate outputs matching JSON schemas | [JSON Guide →](https://dottxt-ai.github.io/outlines/latest/guides/json_generation) |
-| **Regular Expressions** | Generate text following a regex pattern | [Regex Guide →](https://dottxt-ai.github.io/outlines/latest/guides/regex_generation) |
-| **Grammars** | Enforce complex output structures | [Grammar Guide →](https://dottxt-ai.github.io/outlines/latest/guides/cfg_generation) |
+| **Multiple Choices** | Constrain outputs to predefined options | [Multiple Choices Guide →](https://dottxt-ai.github.io/outlines/latest/features/core/output_types/#multiple-choices) |
+| **Function Calls** | Infer structure from function signatures | [Function Guide →](https://dottxt-ai.github.io/outlines/latest/features/core/output_types/#json-schemas) |
+| **JSON/Pydantic** | Generate outputs matching JSON schemas | [JSON Guide →](https://dottxt-ai.github.io/outlines/latest/features/core/output_types/#json-schemas) |
+| **Regular Expressions** | Generate text following a regex pattern | [Regex Guide →](https://dottxt-ai.github.io/outlines/latest/features/core/output_types/#regex-patterns) |
+| **Grammars** | Enforce complex output structures | [Grammar Guide →](https://dottxt-ai.github.io/outlines/latest/features/core/output_types/#context-free-grammars) |
 
 ## Other Features
 
 | Feature | Description | Documentation |
 |---------|-------------|:-------------:|
-| **Prompt templates** | Separate complex prompts from code | |
-| **Custome types** | Intuitive interface to build complex types | |
-| **Applications** | Encapsulate templates and types into functions | |
+| **Prompt templates** | Separate complex prompts from code | [Template Guide →](https://dottxt-ai.github.io/outlines/latest/features/utility/template/) |
+| **Custome types** | Intuitive interface to build complex types | [Python Types Guide →](https://dottxt-ai.github.io/outlines/latest/features/core/output_types/#basic-python-types) |
+| **Applications** | Encapsulate templates and types into functions | [Application Guide →](https://dottxt-ai.github.io/outlines/latest/features/utility/application/) |
 
 ## About .txt
 
