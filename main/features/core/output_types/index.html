@@ -3860,7 +3860,7 @@
 <p>With an Outlines model, you can generate text that respects the type hints above by providing those as the output type:</p>
 <div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>model(<span style="color: #BA2121">&quot;How many minutes are there in one hour&quot;</span>, <span style="color: #008000">int</span>) <span style="color: #3D7B7B; font-style: italic"># &quot;60&quot;</span>
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>model(<span style="color: #BA2121">&quot;Pizza or burger&quot;</span>, Literal[<span style="color: #BA2121">&quot;pizza&quot;</span>, <span style="color: #BA2121">&quot;burger&quot;</span>]) <span style="color: #3D7B7B; font-style: italic"># &quot;pizza&quot;</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>model(<span style="color: #BA2121">&quot;Create a character&quot;</span>, Character, max_new_tokens<span style="color: #666">=100</span>) <span style="color: #3D7B7B; font-style: italic"># &#39;{&quot;name&quot;: &quot;James&quot;, &quot;birth_date&quot;: &quot;1980-05-10)&quot;, &quot;skills&quot;: [&quot;archery&quot;, &quot;negociation&quot;]}&#39;</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>model(<span style="color: #BA2121">&quot;Create a character&quot;</span>, Character, max_new_tokens<span style="color: #666">=100</span>) <span style="color: #3D7B7B; font-style: italic"># &#39;{&quot;name&quot;: &quot;James&quot;, &quot;birth_date&quot;: &quot;1980-05-10)&quot;, &quot;skills&quot;: [&quot;archery&quot;, &quot;negotiation&quot;]}&#39;</span>
 </span></code></pre></div>
 <p>An important difference with function type hints though is that an Outlines generator always returns a string.
 You have to cast the response into the type you want yourself.</p>
@@ -3873,7 +3873,7 @@ You have to cast the response into the type you want yourself.</p>
 <h2 id="output-type-categories">Output Type Categories</h2>
 <p>We can group possible output types in several categories based on the use case they correspond to. While most of those types are native python or types coming from well-known third-party libraries, there are three Outlines-specific types: <code>JsonSchema</code>, <code>Regex</code> and <code>CFG</code>. Their use is explained below.</p>
 <h3 id="basic-python-types">Basic Python Types</h3>
-<p>The most straightfoward form of structed generation is to return an answer that conforms to a given basic type such as an int or a python list. You can use the basic Python types and the types from the <code>typing</code> library. For instance:</p>
+<p>The most straightforward form of structured generation is to return an answer that conforms to a given basic type such as an int or a python list. You can use the basic Python types and the types from the <code>typing</code> library. For instance:</p>
 <div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">typing</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> Dict
 </span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
 </span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>output_type <span style="color: #666">=</span> <span style="color: #008000">float</span> <span style="color: #3D7B7B; font-style: italic"># example of valid value: &quot;0.05&quot;</span>
@@ -3885,7 +3885,7 @@ You have to cast the response into the type you want yourself.</p>
 </span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
 </span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>output_type <span style="color: #666">=</span> Dict[<span style="color: #008000">str</span>, Union[<span style="color: #008000">int</span>, <span style="color: #008000">str</span>, List[Tuple[<span style="color: #008000">str</span>, Optional[<span style="color: #008000">float</span>]]]]]
 </span></code></pre></div>
-<p>Values created with this output type would be dictionnaries with string as keys and values made of either an integer, a string or a list of two elements tuples: a string and either a float or None. Example of a valid response for text generated with this output type (it would be contained in a string):</p>
+<p>Values created with this output type would be dictionaries with string as keys and values made of either an integer, a string or a list of two elements tuples: a string and either a float or None. Example of a valid response for text generated with this output type (it would be contained in a string):</p>
 <div class="language-json highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>{
 </span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span style="color: #BBB">    </span><span style="color: #008000; font-weight: bold">&quot;name&quot;</span>:<span style="color: #BBB"> </span><span style="color: #BA2121">&quot;Alice&quot;</span>,
 </span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span style="color: #BBB">    </span><span style="color: #008000; font-weight: bold">&quot;age&quot;</span>:<span style="color: #BBB"> </span><span style="color: #666">30</span>,
@@ -3930,7 +3930,7 @@ You have to cast the response into the type you want yourself.</p>
 </span><span id="__span-7-13"><a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a>output_type <span style="color: #666">=</span> character
 </span></code></pre></div>
 <p>There are two other JSON schema formats that require Outlines-specific classes: JSON schema strings and dictionaries.</p>
-<p>As those are contained in regular Python strings or dictionnaries, the associated output format would be ambiguous if they were to be provided directly. As a result, Outlines requires them to be wrapped in a <code>outlines.types.JsonSchema</code> object. For instance:</p>
+<p>As those are contained in regular Python strings or dictionaries, the associated output format would be ambiguous if they were to be provided directly. As a result, Outlines requires them to be wrapped in a <code>outlines.types.JsonSchema</code> object. For instance:</p>
 <div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">outlines.types</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> JsonSchema
 </span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>
 </span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>schema_string <span style="color: #666">=</span> <span style="color: #BA2121">&#39;{&quot;type&quot;: &quot;object&quot;, &quot;properties&quot;: {&quot;answer&quot;: {&quot;type&quot;: &quot;number&quot;}}}&#39;</span>
@@ -3993,7 +3993,7 @@ You have to cast the response into the type you want yourself.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="June 2, 2025 16:58:11 UTC"><span class="timeago" datetime="2025-06-02T16:58:11+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="June 2, 2025 16:58:11 UTC">2025-06-02</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="June 19, 2025 15:52:44 UTC"><span class="timeago" datetime="2025-06-19T15:52:44+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="June 19, 2025 15:52:44 UTC">2025-06-19</span>
   </span>
 
     
@@ -4008,39 +4008,6 @@ You have to cast the response into the type you want yourself.</p>
 
     
     
-    
-      
-  <span class="md-source-file__fact">
-    
-      
-  <span class="md-icon" title="Contributors">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33s1.71.11 2.5.33c1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2"/></svg>
-  </span>
-  <span>GitHub</span>
-
-    
-    <nav>
-      
-        <a href="https://github.com/RobinPicard" class="md-author" title="@RobinPicard">
-          
-          <img src="https://avatars.githubusercontent.com/u/83579270?v=4&size=72" alt="RobinPicard">
-        </a>
-      
-        <a href="https://github.com/rlouf" class="md-author" title="@rlouf">
-          
-          <img src="https://avatars.githubusercontent.com/u/3885044?v=4&size=72" alt="rlouf">
-        </a>
-      
-        <a href="https://github.com/web-flow" class="md-author" title="@web-flow">
-          
-          <img src="https://avatars.githubusercontent.com/u/19864447?v=4&size=72" alt="web-flow">
-        </a>
-      
-      
-      
-    </nav>
-  </span>
-
     
   </aside>
 
