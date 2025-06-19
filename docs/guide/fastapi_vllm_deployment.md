@@ -4,17 +4,13 @@ title: Deploying with FastAPI
 
 # Deploying with FastAPI
 
-This guide demonstrates how to build a FastAPI application that leverages Outlines' async integration with vLLM. We'll create a customer support API that can intelligently categorize tickets and generate structured responses.
+This guide demonstrates how to build a FastAPI application that leverages Outlines' async integration with vLLM. We create a customer support API that can intelligently categorize tickets and generate structured responses.
 
 ## Prerequisites
 
-Before starting, ensure you have:
+Before starting, ensure you have a vLLM server running (locally or remotely) and the following packages installed:
 
-1. A vLLM server running (locally or remotely)
-2. Python 3.8+ installed
-3. The following packages installed:
-
-```bash
+```shell
 pip install fastapi uvicorn outlines openai pydantic
 ```
 
@@ -58,7 +54,33 @@ class SupportResponse(BaseModel):
     closing: str
 ```
 
-### Step 2: Create the FastAPI Application
+### Step 2: Define the prompts
+
+Let us now write the prompts that we will be using in our application, using Jinja 2's templating language. We separate them from the application implementation so they are easier to modify and version.
+
+```ascii
+{# prompts/categorize.txt #}
+Analyze this customer support ticket:
+
+Customer ID: {{ customer_id }}
+Message: {{ message }}
+
+Extract the category, priority, and other relevant information.
+```
+
+```ascii
+{# prompts/respond.txt #}
+Generate a professional customer support response.
+
+Customer Message: {{ message }}
+Category: {{ category }}
+Priority: {{  priority }}
+Customer Sentiment: {{ customer_sentiment }}
+
+Create a helpful, empathetic response that addresses their concerns.
+```
+
+### Step 3: Create the FastAPI Application
 
 Now let's create our FastAPI application with async vLLM integration:
 
@@ -69,7 +91,7 @@ from contextlib import asynccontextmanager
 from typing import Optional
 
 import openai
-import outlines
+from outlines import models, Template
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
@@ -83,6 +105,8 @@ class TicketRequest(BaseModel):
 # Global model instance
 async_model = None
 
+# The lifespan function is a FastAPI construct
+# used to define startup and shutdown logic for the API.
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Initialize the async vLLM model on startup."""
@@ -92,7 +116,7 @@ async def lifespan(app: FastAPI):
         base_url="http://localhost:8000/v1",  # Adjust to your vLLM server URL
         api_key="dummy"  # vLLM doesn't require a real API key
     )
-    async_model = outlines.from_vllm(client)
+    async_model = models.from_vllm(client)
 
     yield
 
@@ -107,38 +131,23 @@ app = FastAPI(
 )
 
 
-@app.get("/health")
-async def health_check():
-    """Check if the service is running and vLLM is accessible."""
-    if async_model is None:
-        raise HTTPException(status_code=503, detail="Model not initialized")
-    return {"status": "healthy"}
-
-
 @app.post("/analyze-ticket", response_model=TicketAnalysis)
 async def analyze_ticket(request: TicketRequest):
     """Analyze a customer support ticket and extract structured information."""
     if async_model is None:
         raise HTTPException(status_code=503, detail="Model not initialized")
 
-    prompt = f"""Analyze this customer support ticket:
-
-Customer ID: {request.customer_id}
-Message: {request.message}
-
-Extract the category, priority, and other relevant information."""
+    template = Template.from_file("prompts/categorize.txt")
+    prompt = template(
+        customer_id=request.customer_id,
+        message=request.message
+    )
 
     try:
-        # Use async model with structured output
-        result = await async_model(
-            prompt,
-            output_type=TicketAnalysis,
-            max_tokens=500,
-            temperature=0.1
-        )
-
-        # Parse and return the result
+        # Generate and parse a structured response
+        result = await async_model(prompt, TicketAnalysis, max_tokens=5000)
         analysis = TicketAnalysis.model_validate_json(result)
+
         return analysis
 
     except Exception as e:
@@ -154,25 +163,19 @@ async def generate_response(
     if async_model is None:
         raise HTTPException(status_code=503, detail="Model not initialized")
 
-    prompt = f"""Generate a professional customer support response.
-
-Customer Message: {request.message}
-Category: {analysis.category}
-Priority: {analysis.priority}
-Customer Sentiment: {analysis.customer_sentiment}
-
-Create a helpful, empathetic response that addresses their concerns."""
+    template = Template.from_file("prompts/respond.txt")
+    prompt = template(
+        message=request.message,
+        category=analysis.category,
+        priority=analysis.priority,
+        customer_sentiment=analysis.customer_sentiment
+    )
 
     try:
-        # Generate structured response
-        result = await async_model(
-            prompt,
-            output_type=SupportResponse,
-            max_tokens=800,
-            temperature=0.7
-        )
-
+        # Generate and parse a structured response
+        result = await async_model(prompt, SupportResponse, max_tokens=800)
         response = SupportResponse.model_validate_json(result)
+
         return response
 
     except Exception as e:
@@ -183,8 +186,7 @@ Create a helpful, empathetic response that addresses their concerns."""
 
 ### Step 1: Start your vLLM server
 
-```bash
-# Example: Start vLLM with a model
+```shell
 python -m vllm.entrypoints.openai.api_server \
     --model meta-llama/Llama-2-7b-chat-hf \
     --port 8000
@@ -192,19 +194,15 @@ python -m vllm.entrypoints.openai.api_server \
 
 ### Step 2: Run the FastAPI application
 
-```bash
-# Development
+```shell
 uvicorn main:app --reload --host 0.0.0.0 --port 8080
-
-# Production with multiple workers
-uvicorn main:app --workers 4 --host 0.0.0.0 --port 8080
 ```
 
 ## Testing the API
 
 ### Example 1: Analyze a support ticket
 
-```bash
+```shell
 curl -X POST "http://localhost:8080/analyze-ticket" \
   -H "Content-Type: application/json" \
   -d '{
@@ -214,6 +212,7 @@ curl -X POST "http://localhost:8080/analyze-ticket" \
 ```
 
 Expected response:
+
 ```json
 {
   "category": "billing",
@@ -227,7 +226,7 @@ Expected response:
 
 ### Example 2: Generate a support response
 
-```bash
+```shell
 # First, get the analysis
 ANALYSIS=$(curl -s -X POST "http://localhost:8080/analyze-ticket" \
   -H "Content-Type: application/json" \
@@ -248,7 +247,7 @@ curl -X POST "http://localhost:8080/generate-response" \
   }"
 ```
 
-By combining FastAPI's async capabilities with Outlines' structured generation, you can build robust APIs that leverage large language models while maintaining high performance and reliability.
+By combining FastAPI's async capabilities with Outlines' structured generation, you can build robust APIs that leverage large language models.
 
 ## Using Alternative Backends: SGLang and TGI
 
@@ -268,7 +267,7 @@ async def lifespan(app: FastAPI):
         base_url="http://localhost:30000/v1",  # SGLang server URL
         api_key="dummy"
     )
-    async_model = outlines.from_sglang(client)
+    async_model = models.from_sglang(client)
 
     yield
 
@@ -276,7 +275,8 @@ async def lifespan(app: FastAPI):
 ```
 
 Start your SGLang server with:
-```bash
+
+```shell
 python -m sglang.launch_server \
     --model-path meta-llama/Llama-2-7b-chat-hf \
     --port 30000
@@ -297,7 +297,7 @@ async def lifespan(app: FastAPI):
     client = huggingface_hub.AsyncInferenceClient(
         "http://localhost:8080"  # TGI server URL
     )
-    async_model = outlines.from_tgi(client)
+    async_model = models.from_tgi(client)
 
     yield
 
@@ -305,7 +305,8 @@ async def lifespan(app: FastAPI):
 ```
 
 Start your TGI server with:
-```bash
+
+```shell
 docker run --gpus all -p 8080:80 \
     ghcr.io/huggingface/text-generation-inference:latest \
     --model-id meta-llama/Llama-2-7b-chat-hf
