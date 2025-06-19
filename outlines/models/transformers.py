@@ -245,7 +245,7 @@ class Transformers(Model):
         model_input: Union[str, List[str], dict],
         output_type: Optional[OutlinesLogitsProcessor] = None,
     ) -> Tuple[Union[str, List[str]], dict]:
-        """Turn the user input into arguements to pass to the model"""
+        """Turn the user input into arguments to pass to the model"""
         prompts = self.type_adapter.format_input(model_input)
         input_ids, attention_mask = self.tokenizer.encode(prompts)
         inputs = {
@@ -447,7 +447,7 @@ class TransformersMultiModal(Transformers):
         model_input: Union[str, List[str], dict],
         output_type: Optional[OutlinesLogitsProcessor] = None,
     ) -> Tuple[Union[str, List[str]], dict]:
-        """Turn the user input into arguements to pass to the model"""
+        """Turn the user input into arguments to pass to the model"""
         model_input = self.type_adapter.format_input(model_input)
         inputs = self.processor(
             **model_input, padding=True, return_tensors="pt"
