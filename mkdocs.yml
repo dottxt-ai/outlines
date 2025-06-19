@@ -98,46 +98,6 @@ plugins:
     - redirects:
           redirect_maps:
               "welcome.md": "index.md"
-              "reference/chat_templating.md": "guide/chat_templating.md"
-              "blog.md": "https://blog.dottxt.co"
-              "cookbook/index.md": "examples/index.md"
-              "cookbook/classification.md": "examples/classification.md"
-              "cookbook/extraction.md": "examples/extraction.md"
-              "cookbook/dating_profiles.md": "examples/dating_profiles.md"
-              "cookbook/chain_of_density.md": "examples/chain_of_density.md"
-              "cookbook/models_playing_chess.md": "examples/models_playing_chess.md"
-              "cookbook/simtom.md": "examples/simtom.md"
-              "cookbook/qa-with-citations.md": "examples/qa-with-citations.md"
-              "cookbook/knowledge_graph_extraction.md": "examples/knowledge_graph_extraction.md"
-              "cookbook/structured_generation_workflow.md": "examples/structured_generation_workflow.md"
-              "cookbook/chain_of_thought.md": "examples/chain_of_thought.md"
-              "cookbook/react_agent.md": "examples/react_agent.md"
-              "cookbook/atomic_caption.md": "examples/atomic_caption.md"
-              "cookbook/read-pdfs.md": "examples/read-pdfs.md"
-              "cookbook/earnings-reports.md": "examples/earnings-reports.md"
-              "cookbook/receipt-digitization.md": "examples/receipt-digitization.md"
-              "cookbook/extract_event_details.md": "examples/extract_event_details.md"
-              "cookbook/deploy-using-bentoml.md": "examples/deploy-using-bentoml.md"
-              "cookbook/deploy-using-cerebrium.md": "examples/deploy-using-cerebrium.md"
-              "cookbook/deploy-using-modal.md": "examples/deploy-using-modal.md"
-
-              # Root files
-              "quickstart.md": "getting_started/index.md"
-
-              # API to features redirects
-              "api/index.md": "features/index.md"
-              "api/json_schema.md": "features/types/json_schema.md"
-              "api/regex.md": "features/types/regex.md"
-              "api/applications.md": "features/utility/application.md"
-              "api/templates.md": "features/utility/template.md"
-              "api/guide.md": "features/advanced/guide.md"
-              "api/parsing.md": "features/advanced/parsing.md"
-              "api/models.md": "features/available_models.md"
-
-              # API subdirectories to features
-              "api/types/": "features/types/index.md"
-              "api/core/": "features/index.md"
-              "api/advanced/": "features/index.md"
 
     - git-committers:
         repository: dottxt-ai/outlines

@@ -7,8 +7,8 @@ hide:
 #
 
 <figure markdown>
-![](/assets/images/logo-light-mode.svg#only-light){ width="500" }
-![](/assets/images/logo-dark-mode.svg#only-dark){ width="500" }
+![](assets/images/logo-light-mode.svg#only-light){ width="500" }
+![](assets/images/logo-dark-mode.svg#only-dark){ width="500" }
 </figure>
 
 LLMs are powerful but their outputs are unpredictable. Most solutions attempt to fix bad outputs after generation using parsing, regex, or fragile code that breaks easily.
@@ -71,16 +71,18 @@ pip install outlines
 
 ## Supported inference APIs, libraries & servers
 
-- [vLLM](reference/models/vllm.md)
-- [Transformers](reference/models/transformers.md)
-- [llama.cpp](reference/models/llamacpp.md)
-- [Ollama](reference/models/ollama.md)
-- [MLX-LM](reference/models/mlxlm.md)
-- [SgLang](reference/models/sglang.md)
-- [TGI](reference/models/tgi.md)
-- [OpenAI](reference/models/openai.md)
-- [Anthropic](reference/models/anthropic.md)
-- [Gemini](reference/models/gemini.md)
+- [vLLM](features/models/vllm.md)
+- [vLLM offline](features/models/vllm_offline.md)
+- [Transformers](features/models/transformers.md)
+- [llama.cpp](features/models/llamacpp.md)
+- [Ollama](features/models/ollama.md)
+- [MLX-LM](features/models/mlxlm.md)
+- [SgLang](features/models/sglang.md)
+- [TGI](features/models/tgi.md)
+- [OpenAI](features/models/openai.md)
+- [Anthropic](features/models/anthropic.md)
+- [Gemini](features/models/gemini.md)
+- [Dottxt](features/models/dottxt.md)
 
 ## Who is using Outlines?
 
