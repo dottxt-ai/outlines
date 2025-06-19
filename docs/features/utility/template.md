@@ -65,7 +65,7 @@ print(prompt)
 
 ## Custom Filters
 
-You can add custom filters to your Outlines template to extend the templating functionality. To do so, provide as second argument a dictionnary with filter names as keys and filter functions as values. The filter can then be used in your jinja2 template following the regular syntax. When rendering a prompt, the function will be applied to the associated variable.
+You can add custom filters to your Outlines template to extend the templating functionality. To do so, provide as second argument a dictionary with filter names as keys and filter functions as values. The filter can then be used in your jinja2 template following the regular syntax. When rendering a prompt, the function will be applied to the associated variable.
 
 For instance:
 

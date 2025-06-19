@@ -31,7 +31,7 @@ model = outlines.from_transformers(hf_model, hf_processor)
 
 ## Model Input
 
-Instead of a string or a list of strings (for batch generation), you should provide a dictionnary or a list of dictionnaries as a prompt when calling the `TransformersMultiModal` model. The dictionnary should contain key-value pairs for all elements required by your processor. `text`, that contains the text prompt, is the only mandatory field. The format of that argument is:
+Instead of a string or a list of strings (for batch generation), you should provide a dictionary or a list of dictionaries as a prompt when calling the `TransformersMultiModal` model. The dictionary should contain key-value pairs for all elements required by your processor. `text`, that contains the text prompt, is the only mandatory field. The format of that argument is:
 
 ```python
 {

@@ -172,7 +172,7 @@ class GeminiTypeAdapter(ModelTypeAdapter):
                 )
 
         raise TypeError(
-            f"Gemini only supports homogenous lists: "
+            f"Gemini only supports homogeneous lists: "
             "list[BaseModel], list[TypedDict] or list[dataclass]. "
             f"Got {output_type} instead."
         )

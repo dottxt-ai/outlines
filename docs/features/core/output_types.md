@@ -49,7 +49,7 @@ With an Outlines model, you can generate text that respects the type hints above
 ```python
 model("How many minutes are there in one hour", int) # "60"
 model("Pizza or burger", Literal["pizza", "burger"]) # "pizza"
-model("Create a character", Character, max_new_tokens=100) # '{"name": "James", "birth_date": "1980-05-10)", "skills": ["archery", "negociation"]}'
+model("Create a character", Character, max_new_tokens=100) # '{"name": "James", "birth_date": "1980-05-10)", "skills": ["archery", "negotiation"]}'
 ```
 
 An important difference with function type hints though is that an Outlines generator always returns a string.
@@ -70,7 +70,7 @@ We can group possible output types in several categories based on the use case t
 
 ### Basic Python Types
 
-The most straightfoward form of structed generation is to return an answer that conforms to a given basic type such as an int or a python list. You can use the basic Python types and the types from the `typing` library. For instance:
+The most straightforward form of structured generation is to return an answer that conforms to a given basic type such as an int or a python list. You can use the basic Python types and the types from the `typing` library. For instance:
 
 ```python
 from typing import Dict
@@ -88,7 +88,7 @@ from typing import Dict, List, Optional, Tuple, Union
 output_type = Dict[str, Union[int, str, List[Tuple[str, Optional[float]]]]]
 ```
 
-Values created with this output type would be dictionnaries with string as keys and values made of either an integer, a string or a list of two elements tuples: a string and either a float or None. Example of a valid response for text generated with this output type (it would be contained in a string):
+Values created with this output type would be dictionaries with string as keys and values made of either an integer, a string or a list of two elements tuples: a string and either a float or None. Example of a valid response for text generated with this output type (it would be contained in a string):
 
 ```json
 {
@@ -145,7 +145,7 @@ output_type = character
 
 There are two other JSON schema formats that require Outlines-specific classes: JSON schema strings and dictionaries.
 
-As those are contained in regular Python strings or dictionnaries, the associated output format would be ambiguous if they were to be provided directly. As a result, Outlines requires them to be wrapped in a `outlines.types.JsonSchema` object. For instance:
+As those are contained in regular Python strings or dictionaries, the associated output format would be ambiguous if they were to be provided directly. As a result, Outlines requires them to be wrapped in a `outlines.types.JsonSchema` object. For instance:
 
 ```python
 from outlines.types import JsonSchema

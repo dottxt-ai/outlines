@@ -240,7 +240,7 @@ The DSL comes "batteries included" with types that represent common text constru
 - `boolean` represents a boolean, "True" or "False" as recognized by `bool`
 - `number` represents a floating-point number recognize by Python's `float`
 - `date` represents a date as understood by `datetime.date`
-- `time` represents a time as undestood by `datetime.time`
+- `time` represents a time as understood by `datetime.time`
 - `datetime` represents a time as understoof by `datetime.datetime`
 - `digit` represents a single digit
 - `char` represents a single character
