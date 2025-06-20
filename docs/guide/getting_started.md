@@ -8,13 +8,13 @@ title: Getting Started
 
 We recommend using `uv` to install Outlines. You can find `uv` installation instructions [here](https://github.com/astral-sh/uv).
 
-```bash
+```shell
 uv pip install 'outlines[transformers]'
 ```
 
 or the classic `pip`:
 
-```bash
+```shell
 pip install 'outlines[transformers]'
 ```
 

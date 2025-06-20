@@ -17,7 +17,7 @@ This cookbook demonstrates how to
 
 You'll need to install these dependencies:
 
-```bash
+```shell
 pip install outlines pillow transformers torch==2.4.0 pdf2image
 
 # Optional, but makes the output look nicer

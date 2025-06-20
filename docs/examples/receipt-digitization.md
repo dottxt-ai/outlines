@@ -4,7 +4,7 @@
 
 You'll need to install the dependencies:
 
-```bash
+```shell
 pip install outlines torch==2.4.0 transformers accelerate pillow rich
 ```
 

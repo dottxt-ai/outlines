@@ -12,7 +12,7 @@ The example is a smaller subset of a full demo found [here](https://github.com/d
 
 Install outlines and required dependencies:
 
-```bash
+```shell
 # Later versions of torch can have difficulty with certain CUDA drivers.
 # We recommend using 2.4.0 for now, but you may wish to experiment with
 # other versions.

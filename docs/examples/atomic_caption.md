@@ -7,7 +7,7 @@ We will be using the Pixtral-12B model from Mistral to take advantage of some of
 ## Setup
 First, we need to install the necessary dependencies. In addition to Outlines, we'll need to install the transformers library and any specific requirements for the vision-language model we'll be using.
 
-```bash
+```shell
 pip install outlines transformers torch
 ```
 

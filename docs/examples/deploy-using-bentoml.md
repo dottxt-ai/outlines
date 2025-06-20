@@ -8,7 +8,7 @@ In this guide, we will show you how to use BentoML to run programs written with 
 
 First we need to download an LLM (Mistral-7B-v0.1 in this example and you can use any other LLM) and import the model into BentoML's [Model Store](https://docs.bentoml.com/en/latest/guides/model-store.html). Let's install BentoML and other dependencies from PyPi (preferably in a virtual environment):
 
-```bash
+```shell
 pip install -r requirements.txt
 ```
 
@@ -45,7 +45,7 @@ if __name__ == "__main__":
 
 You can verify the download is successful by running:
 
-```bash
+```shell
 $ bentoml models list
 
 Tag                                          Module  Size        Creation Time
@@ -167,7 +167,7 @@ Now you can save the above code to `service.py` (or use [this implementation](ht
 
 Then you can run a server locally by:
 
-```bash
+```shell
 bentoml serve .
 ```
 
@@ -177,7 +177,7 @@ The server is now active at <http://localhost:3000>. You can interact with it us
 
 <summary>CURL</summary>
 
-```bash
+```shell
 curl -X 'POST' \
   'http://localhost:3000/generate' \
   -H 'accept: application/json' \
@@ -207,7 +207,7 @@ with bentoml.SyncHTTPClient("http://localhost:3000") as client:
 
 Expected output:
 
-```bash
+```shell
 {
   "name": "Aura",
   "age": 15,
@@ -223,7 +223,7 @@ After the Service is ready, you can deploy it to [BentoCloud](https://docs.bento
 
 Make sure you have [logged in to BentoCloud](https://docs.bentoml.com/en/latest/bentocloud/how-tos/manage-access-token.html), then run the following command to deploy it.
 
-```bash
+```shell
 bentoml deploy .
 ```
 

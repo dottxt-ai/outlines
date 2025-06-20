@@ -10,7 +10,7 @@ We recommend using modern Python packaging tools such as `uv` for managing pytho
 
 ### uv (Recommended)
 
-```bash
+```shell
 # Install uv
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
@@ -22,7 +22,7 @@ uv pip install outlines
 
 or with basic pip:
 
-```bash
+```shell
 pip install outlines
 ```
 

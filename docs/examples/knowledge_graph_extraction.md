@@ -4,7 +4,7 @@ In this guide, we use [outlines](https://dottxt-ai.github.io/outlines/) to extra
 
 We will use [llama.cpp](https://github.com/ggerganov/llama.cpp) using the [llama-cpp-python](https://github.com/abetlen/llama-cpp-python) library. Outlines supports llama-cpp-python, but we need to install it ourselves:
 
-```bash
+```shell
 pip install llama-cpp-python
 ```
 
@@ -31,7 +31,7 @@ model = outlines.from_llamacpp(llm)
 
     By default the model weights are downloaded to the hub cache but if we want so store the weights in a custom folder, we pull a quantized GGUF model [Hermes-2-Pro-Llama-3-8B](https://huggingface.co/NousResearch/Hermes-2-Theta-Llama-3-8B-GGUF) by [NousResearch](https://nousresearch.com/) from [HuggingFace](https://huggingface.co/):
 
-    ```bash
+    ```shell
     wget https://hf.co/NousResearch/Hermes-2-Pro-Llama-3-8B-GGUF/resolve/main/Hermes-2-Pro-Llama-3-8B-Q4_K_M.gguf
     ```
 
