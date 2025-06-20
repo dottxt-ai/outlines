@@ -45,6 +45,8 @@ print(result) # '200'
 
 ## Features Matrix
 
+In alphabetical order:
+
 | | [Anthropic](../../models/anthropic) | [Dottxt](../../models/dottxt) | [Gemini](../../models/gemini) | [LlamaCpp](../../models/llamacpp) | [MLXLM](../../models/mlxlm) | [Ollama](../../models/ollama) | [OpenAI](../../models/openai) | [SGLang](../../models/sglang) | [TGI](../../models/tgi) | [Transformers](../../models/transformers) | [Transformers MultiModal](../../models/transformers_multimodal) | [VLLM](../../models/vllm) | [VLLMOffline](../../models/vllm_offline) |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | **Output Types** | | | | | | | | | | | | | |
@@ -63,7 +65,7 @@ print(result) # '200'
 
 Models can be divided into two categories: local models and server-based models.
 
-In the case of local models, the text generation happens within the inference library object used to instantite the model. This gives Outlines direct access to the generation process (through a logits processor) and means all structured generation output types are available.
+In the case of local models, the text generation happens within the inference library object used to instantiate the model. This gives Outlines direct access to the generation process (through a logits processor) and means all structured generation output types are available.
 
 The local models available are the following:
 

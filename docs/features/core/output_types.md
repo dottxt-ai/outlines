@@ -13,7 +13,7 @@ Outlines models accept a __prompt__ and an __output type__ when they are invoked
 Output types can be from the general Python ecosystem, including:
 - Most native Python types, such as `int` or `str`
 - Types from the `typing` module, such as `Literal`, `List`, `Dict`, `Enum`, etc
-- Types from popular theird party libraries such as Pydantic or GenSON.
+- Types from popular third party libraries such as Pydantic or GenSON.
 
 Outlines also provides special classes for certain output structures (more details below):
 - JSON schemas with `JsonSchema`
@@ -164,7 +164,7 @@ output_type = JsonSchema(schema_dict)
 
 ### Regex Patterns
 
-Outlines provides support for text generation constrained by regular expressions. Since regular expressions are expressed as simple raw string literals, regex strings must wrapped in an `outlines.types.Regex` object to clarify the expected return type.
+Outlines provides support for text generation constrained by regular expressions. Since regular expressions are expressed as simple raw string literals, regex strings must wrapped in an `outlines.types.Regex` object.
 
 ```python
 from outlines.types import Regex

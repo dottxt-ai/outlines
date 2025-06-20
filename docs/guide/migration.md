@@ -4,7 +4,7 @@ Outlines 1.0 introduces some breaking changes that affect the way you use the li
 
 This guide will help you migrate your code to the new version.
 
-All previous functionality will be supported until Outlines version 1.1.0, but a warning message will be displayed to remind you to migrate your code and provide instructions to help you do so. Please migrate your code to the v1 as soon as possible.
+All previous functionalities will be supported until Outlines version 1.1.0, but a warning message will be displayed to remind you to migrate your code and provide instructions to help you do so. Please migrate your code to the v1 as soon as possible.
 
 ## Removed or modified features
 - [Generate functions](#generate-functions)
