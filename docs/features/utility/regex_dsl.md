@@ -329,7 +329,7 @@ print(pattern)
 
 *Expected Output:*
 
-```
+```ascii
 └── Sequence
     ├── String('a')
     ├── KleenePlus(+)

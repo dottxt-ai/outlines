@@ -8,7 +8,7 @@ This section presents in details the different features of Outlines.
 - [Output Types](./core/output_types.md)
 - [Generators](./core/generator.md)
 
-## Utility
+## Utilities
 
 - [Applications](./utility/application.md)
 - [Templates](./utility/templates.md)

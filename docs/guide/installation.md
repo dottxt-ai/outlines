@@ -20,7 +20,7 @@ source .venv/bin/activate
 uv pip install outlines
 ```
 
-or with basic pip:
+or with pip:
 
 ```shell
 pip install outlines

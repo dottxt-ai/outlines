@@ -28,73 +28,18 @@ The full list of available models along with detailed explanation on how to use 
 
 For a quick start, you can find below an example of how to initialize all supported models in Outlines:
 
-=== "Anthropic"
+=== "vLLM"
 
     ```python
     import outlines
-    from anthropic import Anthropic
+    from openai import OpenAI
 
-    # Create an Anthropic client
-    anthropic_client = Anthropic()
+    # You must have a separate vLLM server running
+    # Create an OpenAI client with the base URL of the VLLM server
+    openai_client = OpenAI(base_url="http://localhost:11434/v1")
 
     # Create an Outlines model
-    model = outlines.from_anthropic(anthropic_client, "claude-3-haiku-20240307")
-    ```
-
-=== "Dottxt"
-
-    ```python
-    import outlines
-    from dottxt.client import Dottxt
-
-    # Create an Dottxt client
-    dottxt_client = Dottxt()
-
-    # Create an Outlines model
-    model = outlines.from_dottxt(dottxt_client)
-    ```
-
-=== "Gemini"
-
-    ```python
-    import outlines
-    from google.generativeai import GenerativeModel
-
-    # Create a Gemini client
-    gemini_client = GenerativeModel()
-
-    # Create an Outlines model
-    model = outlines.from_gemini(gemini_client, "gemini-1-5-flash")
-    ```
-
-=== "llama.cpp"
-
-    ```python
-    import outlines
-    from llama_cpp import Llama
-
-    # Model to use, it will be downloaded from the HuggingFace hub
-    repo_id = "TheBloke/Llama-2-13B-chat-GGUF"
-    file_name = "llama-2-13b-chat.Q4_K_M.gguf"
-
-    # Create a Llama.cpp model
-    llama_cpp_model = Llama.from_pretrained(repo_id, file_name)
-
-    # Create an Outlines model
-    model = outlines.from_llamacpp(llama_cpp_model)
-    ```
-
-=== "mlx-lm"
-
-    ```python
-    import outlines
-    import mlx_lm
-
-    # Create an MLXLM model with the output of mlx_lm.load
-    # The model will be downloaded from the HuggingFace hub
-    model = outlines.from_mlxlm(
-        **mlx_lm.load("mlx-community/SmolLM-135M-Instruct-4bit")
-    )
+    model = outlines.from_vllm(openai_client, "microsoft/Phi-3-mini-4k-instruct")
     ```
 
 === "Ollama"
@@ -121,6 +66,67 @@ For a quick start, you can find below an example of how to initialize all suppor
 
     # Create an Outlines model
     model = outlines.from_openai(openai_client, "gpt-4o")
+    ```
+
+=== "Transformers"
+
+    ```python
+    import outlines
+    from transformers
+
+    # Define the model you want to use
+    model_name = "HuggingFaceTB/SmolLM2-135M-Instruct"
+
+    # Create a HuggingFace model and tokenizer
+    hf_model = transformers.AutoModelForCausalLM.from_pretrained(model_name)
+    hf_tokenizer = transformers.AutoTokenizer.from_pretrained(model_name)
+
+    # Create an Outlines model
+    model = outlines.from_transformers(hf_model, hf_tokenizer)
+    ```
+
+
+=== "llama.cpp"
+
+    ```python
+    import outlines
+    from llama_cpp import Llama
+
+    # Model to use, it will be downloaded from the HuggingFace hub
+    repo_id = "TheBloke/Llama-2-13B-chat-GGUF"
+    file_name = "llama-2-13b-chat.Q4_K_M.gguf"
+
+    # Create a Llama.cpp model
+    llama_cpp_model = Llama.from_pretrained(repo_id, file_name)
+
+    # Create an Outlines model
+    model = outlines.from_llamacpp(llama_cpp_model)
+    ```
+
+=== "Gemini"
+
+    ```python
+    import outlines
+    from google.generativeai import GenerativeModel
+
+    # Create a Gemini client
+    gemini_client = GenerativeModel()
+
+    # Create an Outlines model
+    model = outlines.from_gemini(gemini_client, "gemini-1-5-flash")
+    ```
+
+=== "mlx-lm"
+
+    ```python
+    import outlines
+    import mlx_lm
+
+    # Create an MLXLM model with the output of mlx_lm.load
+    # The model will be downloaded from the HuggingFace hub
+    model = outlines.from_mlxlm(
+        **mlx_lm.load("mlx-community/SmolLM-135M-Instruct-4bit")
+    )
     ```
 
 === "SgLang"
@@ -153,23 +159,6 @@ For a quick start, you can find below an example of how to initialize all suppor
     model = outlines.from_tgi(tgi_client)
     ```
 
-=== "Transformers"
-
-    ```python
-    import outlines
-    from transformers
-
-    # Define the model you want to use
-    model_name = "HuggingFaceTB/SmolLM2-135M-Instruct"
-
-    # Create a HuggingFace model and tokenizer
-    hf_model = transformers.AutoModelForCausalLM.from_pretrained(model_name)
-    hf_tokenizer = transformers.AutoTokenizer.from_pretrained(model_name)
-
-    # Create an Outlines model
-    model = outlines.from_transformers(hf_model, hf_tokenizer)
-    ```
-
 === "vLLM (offline)"
 
     ```python
@@ -183,19 +172,6 @@ For a quick start, you can find below an example of how to initialize all suppor
     model = outlines.from_vllm_offline(vllm_model)
     ```
 
-=== "vLLM (online)"
-
-    ```python
-    import outlines
-    from openai import OpenAI
-
-    # You must have a separate vLLM server running
-    # Create an OpenAI client with the base URL of the VLLM server
-    openai_client = OpenAI(base_url="http://localhost:11434/v1")
-
-    # Create an Outlines model
-    model = outlines.from_vllm(openai_client, "microsoft/Phi-3-mini-4k-instruct")
-    ```
 
 ## Generating Text
 
@@ -221,7 +197,7 @@ for chunk in model.streaming("Write a short story about a cat.")
 
 ## Structured Generation
 
-Outlines follows a simple pattern that mirrors Python's own type system for structured output. Simply specify the desired output type as you would when using type hinting with a function, and Outlines will ensure your data matches that structure exactly.
+Outlines follows a simple pattern that mirrors Python's own type system for structured outputs. Simply specify the desired output type as you would when using type hinting with a function, and Outlines will ensure your data matches that structure exactly.
 
 Supported output types can be organized in 5 categories:
 
@@ -235,7 +211,7 @@ Consult the section on [Output Types](../../features/core/output_types.md) in th
 
 In the meantime, you can find below examples of using each of the five output type categories:
 
-=== "Basic Yypes"
+=== "Basic Types"
 
     ```python
     model = <your_model_as_defined_above>
@@ -332,7 +308,7 @@ In the meantime, you can find below examples of using each of the five output ty
     print(result) # '2 + 3'
     ```
 
-It's important to note that not all output types are available for all models due to limitations in the underline inference libraries. The [Models](../features/models/index.md) section of the features documentation includes a features matrix to easily visualize output type availabilities.
+It's important to note that not all output types are available for all models due to limitations in the underlying inference engines. The [Models](../features/models/index.md) section of the features documentation includes a features matrix that summarize the availability of output types.
 
 ## Generators
 
