@@ -571,12 +571,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../licence/" class="md-nav__link">
+      <a href="../../guide/fastapi_vllm_deployment/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Licence
+    Deploying with FastAPI
     
   </span>
   
@@ -586,51 +586,6 @@
   
 
               
-            
-              
-                
-  
-  
-  
-  
-    
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_5" >
-        
-          
-          <label class="md-nav__link" for="__nav_2_5" id="__nav_2_5_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    Utility
-    
-  </span>
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_5">
-            <span class="md-nav__icon md-icon"></span>
-            Utility
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
             
               
                 
@@ -650,14 +605,6 @@
   
 
       </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
     </li>
   
 
@@ -3702,13 +3649,13 @@
 <h1 id="summarize-documents-using-chain-of-density-prompting">Summarize documents using Chain of Density prompting</h1>
 <p>A good summary should be informative, concise and clear. While large language models are generally good at summarizing documents, their summaries tend to be long and contain redundant information; their information density tends to be on the lower end. This is where <a href="https://arxiv.org/abs/2309.04269">chain of Density</a>, a new prompting technique, comes in. In this example we will show how one can implement chain of density with a few lines of code using Outlines, leveraging both Outline's prompt templating and its structured generation capabilities.</p>
 <p>The article we will try to summarize is the first three paragraphs of the <a href="https://en.wikipedia.org/wiki/Alan_Turing">Alan Turing page on Wikipedia</a>:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>article <span style="color: #666">=</span> <span style="color: #BA2121">&quot;&quot;&quot;</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span style="color: #BA2121">Alan Mathison Turing OBE FRS (/ˈtjʊərɪŋ/; 23 June 1912 – 7 June 1954) was an English mathematician, computer scientist, logician, cryptanalyst, philosopher and theoretical biologist.[5] Turing was highly influential in the development of theoretical computer science, providing a formalisation of the concepts of algorithm and computation with the Turing machine, which can be considered a model of a general-purpose computer.[6][7][8] He is widely considered to be the father of theoretical computer science and artificial intelligence.[9]</span>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span style="color: #D8DEE9">article</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">&quot;&quot;&quot;</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span style="color: #A3BE8C">Alan Mathison Turing OBE FRS (/ˈtjʊərɪŋ/; 23 June 1912 – 7 June 1954) was an English mathematician, computer scientist, logician, cryptanalyst, philosopher and theoretical biologist.[5] Turing was highly influential in the development of theoretical computer science, providing a formalisation of the concepts of algorithm and computation with the Turing machine, which can be considered a model of a general-purpose computer.[6][7][8] He is widely considered to be the father of theoretical computer science and artificial intelligence.[9]</span>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span style="color: #BA2121">Born in Maida Vale, London, Turing was raised in southern England. He graduated at King&#39;s College, Cambridge, with a degree in mathematics. Whilst he was a fellow at Cambridge, he published a proof demonstrating that some purely mathematical yes–no questions can never be answered by computation. He defined a Turing machine and proved that the halting problem for Turing machines is undecidable. In 1938, he obtained his PhD from the Department of Mathematics at Princeton University. During the Second World War, Turing worked for the Government Code and Cypher School at Bletchley Park, Britain&#39;s codebreaking centre that produced Ultra intelligence. For a time he led Hut 8, the section that was responsible for German naval cryptanalysis. Here, he devised a number of techniques for speeding the breaking of German ciphers, including improvements to the pre-war Polish bomba method, an electromechanical machine that could find settings for the Enigma machine. Turing played a crucial role in cracking intercepted coded messages that enabled the Allies to defeat the Axis powers in many crucial engagements, including the Battle of the Atlantic.[10][11]</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span style="color: #A3BE8C">Born in Maida Vale, London, Turing was raised in southern England. He graduated at King&#39;s College, Cambridge, with a degree in mathematics. Whilst he was a fellow at Cambridge, he published a proof demonstrating that some purely mathematical yes–no questions can never be answered by computation. He defined a Turing machine and proved that the halting problem for Turing machines is undecidable. In 1938, he obtained his PhD from the Department of Mathematics at Princeton University. During the Second World War, Turing worked for the Government Code and Cypher School at Bletchley Park, Britain&#39;s codebreaking centre that produced Ultra intelligence. For a time he led Hut 8, the section that was responsible for German naval cryptanalysis. Here, he devised a number of techniques for speeding the breaking of German ciphers, including improvements to the pre-war Polish bomba method, an electromechanical machine that could find settings for the Enigma machine. Turing played a crucial role in cracking intercepted coded messages that enabled the Allies to defeat the Axis powers in many crucial engagements, including the Battle of the Atlantic.[10][11]</span>
 </span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span style="color: #BA2121">After the war, Turing worked at the National Physical Laboratory, where he designed the Automatic Computing Engine, one of the first designs for a stored-program computer. In 1948, Turing joined Max Newman&#39;s Computing Machine Laboratory at the Victoria University of Manchester, where he helped develop the Manchester computers[12] and became interested in mathematical biology. He wrote a paper on the chemical basis of morphogenesis[1] and predicted oscillating chemical reactions such as the Belousov–Zhabotinsky reaction, first observed in the 1960s. Despite these accomplishments, Turing was never fully recognised in Britain during his lifetime because much of his work was covered by the Official Secrets Act.[13]</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span style="color: #BA2121">&quot;&quot;&quot;</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span style="color: #A3BE8C">After the war, Turing worked at the National Physical Laboratory, where he designed the Automatic Computing Engine, one of the first designs for a stored-program computer. In 1948, Turing joined Max Newman&#39;s Computing Machine Laboratory at the Victoria University of Manchester, where he helped develop the Manchester computers[12] and became interested in mathematical biology. He wrote a paper on the chemical basis of morphogenesis[1] and predicted oscillating chemical reactions such as the Belousov–Zhabotinsky reaction, first observed in the 1960s. Despite these accomplishments, Turing was never fully recognised in Britain during his lifetime because much of his work was covered by the Official Secrets Act.[13]</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span style="color: #A3BE8C">&quot;&quot;&quot;</span>
 </span></code></pre></div>
 <h2 id="how-chain-of-density-works">How Chain Of Density works</h2>
 <p>Chain Of Density starts with asking the model to generate a first long and non-specific summary. Then it asks the model to generate 4 extra summaries by proceeding in the following way:</p>
@@ -3720,9 +3667,9 @@
 <p>The prompt also asks the model to return a list of JSON objects that contain the missing entities and the new summary. This is where structured generation will come in handy :) The paper provides the prompt and an example:</p>
 <p><img alt="Figure 2 in the paper" src="../images/chain_of_density.png" /></p>
 <p>We can now implement the prompt provided in the paper. We stored the prompt template in a text file, and we can load it using the <code>Template</code> class:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">outlines</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> Template
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">Template</span>
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>chain_of_density <span style="color: #666">=</span> Template<span style="color: #666">.</span>from_file(<span style="color: #BA2121">&quot;prompt_templates/chain_of_density.txt&quot;</span>)
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span style="color: #D8DEE9">chain_of_density</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">Template</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_file</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;prompt_templates/chain_of_density.txt&quot;</span><span style="color: #ECEFF4">)</span>
 </span></code></pre></div>
 <details class="note">
 <summary>Note</summary>
@@ -3730,52 +3677,52 @@
 </details>
 <h2 id="outlines-implementation">Outlines implementation</h2>
 <p>We will use Outline's JSON-structured generation to ensure that the model's output is consistent with the format specified in the prompt. We start with defining the JSON objects that the model is asked to return using Pydantic. One JSON object that contains a list of <code>Summary</code> objects that contain the missing entities and new summary:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">pydantic</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> BaseModel, conlist
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">pydantic</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">BaseModel</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">conlist</span>
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span style="color: #008000; font-weight: bold">class</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">Summary</span>(BaseModel):
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    missing_entities: <span style="color: #008000">str</span>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    denser_summary: <span style="color: #008000">str</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span style="color: #81A1C1; font-weight: bold">class</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">Summary</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">BaseModel</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span style="color: #D8DEE9">missing_entities</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">str</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span style="color: #D8DEE9">denser_summary</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">str</span>
 </span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span style="color: #008000; font-weight: bold">class</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">Summaries</span>(BaseModel):
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    summaries: conlist(Summary, max_length<span style="color: #666">=5</span>, min_length<span style="color: #666">=5</span>)
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span style="color: #81A1C1; font-weight: bold">class</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">Summaries</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">BaseModel</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span style="color: #D8DEE9">summaries</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">conlist</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">Summary</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">max_length</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #B48EAD">5</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">min_length</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #B48EAD">5</span><span style="color: #ECEFF4">)</span>
 </span></code></pre></div>
 <p>We now generate the prompt by passing the article we want to summarize to the prompt template previously loaded. We load a quantized version of Mistral-7B using the AutoAWQ library, and then use the <code>Summaries</code> schema to generate the summaries with structured generation:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span style="color: #008000; font-weight: bold">import</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">outlines</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span style="color: #008000; font-weight: bold">import</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">transformers</span>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">transformers</span>
 </span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>MODEL_NAME <span style="color: #666">=</span> <span style="color: #BA2121">&quot;TheBloke/Mistral-7B-OpenOrca-AWQ&quot;</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span style="color: #D8DEE9">MODEL_NAME</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">&quot;TheBloke/Mistral-7B-OpenOrca-AWQ&quot;</span>
 </span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>
-</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>model <span style="color: #666">=</span> outlines<span style="color: #666">.</span>from_transformers(
-</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    transformers<span style="color: #666">.</span>AutoModelForCausalLM<span style="color: #666">.</span>from_pretrained(MODEL_NAME),
-</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    transformers<span style="color: #666">.</span>AutoTokenizer<span style="color: #666">.</span>from_pretrained(MODEL_NAME)
-</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>)
-</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>prompt <span style="color: #666">=</span> chain_of_density(article<span style="color: #666">=</span>article)
-</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>result <span style="color: #666">=</span> model(prompt, Summaries, max_new_tokens<span style="color: #666">=2000</span>)
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span style="color: #D8DEE9">model</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">outlines</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_transformers</span><span style="color: #ECEFF4">(</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span style="color: #D8DEE9">transformers</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">AutoModelForCausalLM</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_pretrained</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">MODEL_NAME</span><span style="color: #ECEFF4">),</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span style="color: #D8DEE9">transformers</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">AutoTokenizer</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_pretrained</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">MODEL_NAME</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span style="color: #ECEFF4">)</span>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span style="color: #D8DEE9">prompt</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">chain_of_density</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">article</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #D8DEE9">article</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span style="color: #D8DEE9">result</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">prompt</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">Summaries</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">max_new_tokens</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #B48EAD">2000</span><span style="color: #ECEFF4">)</span>
 </span></code></pre></div>
 <p>We can now check the results:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span style="color: #008000">print</span>(result)
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span style="color: #3D7B7B; font-style: italic"># {&#39;summaries&#39;: [</span>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span style="color: #3D7B7B; font-style: italic">#     {</span>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span style="color: #3D7B7B; font-style: italic">#       &#39;missing_entities&#39;: &#39;English mathematician, cryptanalyst, philosopher&#39;,</span>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span style="color: #3D7B7B; font-style: italic">#       &#39;denser_summary&#39;: &#39;Alan Mathison Turing was an English mathematician, cryptanalyst, philosopher.&#39;</span>
-</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span style="color: #3D7B7B; font-style: italic">#     },</span>
-</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span style="color: #3D7B7B; font-style: italic">#     {</span>
-</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span style="color: #3D7B7B; font-style: italic">#       &#39;missing_entities&#39;: &#39;&#39;,</span>
-</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span style="color: #3D7B7B; font-style: italic">#       &#39;denser_summary&#39;: &quot;Alan Mathison Turing was an English mathematician who was a crucial figure in WW2&#39;s Bletchley Park codebreaking centre and designed one of the first computers.&quot;</span>
-</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span style="color: #3D7B7B; font-style: italic">#     },</span>
-</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span style="color: #3D7B7B; font-style: italic">#     {</span>
-</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span style="color: #3D7B7B; font-style: italic">#       &#39;missing_entities&#39;: &#39;cryptanalyst, studied, biology, father&#39;,</span>
-</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span style="color: #3D7B7B; font-style: italic">#       &#39;denser_summary&#39;: &#39;Alan Mathison Turing was an English cryptanalyst, studied theoretical computer science, and contributed to mathematical biology.&#39;</span>
-</span><span id="__span-4-14"><a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span style="color: #3D7B7B; font-style: italic">#     },</span>
-</span><span id="__span-4-15"><a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span style="color: #3D7B7B; font-style: italic">#     {</span>
-</span><span id="__span-4-16"><a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a><span style="color: #3D7B7B; font-style: italic">#       &#39;missing_entities&#39;: &#39;biology, morphogenesis, chemical&#39;,</span>
-</span><span id="__span-4-17"><a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a><span style="color: #3D7B7B; font-style: italic">#       &#39;denser_summary&#39;: &#39;Alan Mathison Turing was an English cryptanalyst, studied theoretical computer science, and predicted chemical reactions in morphogenesis.</span>
-</span><span id="__span-4-18"><a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a><span style="color: #3D7B7B; font-style: italic">#     &#39;},</span>
-</span><span id="__span-4-19"><a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a><span style="color: #3D7B7B; font-style: italic">#     {</span>
-</span><span id="__span-4-20"><a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a><span style="color: #3D7B7B; font-style: italic">#       &#39;missing_entities&#39;: &#39;&#39;,</span>
-</span><span id="__span-4-21"><a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a><span style="color: #3D7B7B; font-style: italic">#       &#39;denser_summary&#39;: &#39;Alan Mathison Turing was an English cryptanalyst, developed computer science, and made strides in mathematical biology research.&#39;</span>
-</span><span id="__span-4-22"><a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a><span style="color: #3D7B7B; font-style: italic">#       }</span>
-</span><span id="__span-4-23"><a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a><span style="color: #3D7B7B; font-style: italic"># ]}</span>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">result</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span style="color: #616E87; font-style: italic"># {&#39;summaries&#39;: [</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span style="color: #616E87; font-style: italic">#     {</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span style="color: #616E87; font-style: italic">#       &#39;missing_entities&#39;: &#39;English mathematician, cryptanalyst, philosopher&#39;,</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span style="color: #616E87; font-style: italic">#       &#39;denser_summary&#39;: &#39;Alan Mathison Turing was an English mathematician, cryptanalyst, philosopher.&#39;</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span style="color: #616E87; font-style: italic">#     },</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span style="color: #616E87; font-style: italic">#     {</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span style="color: #616E87; font-style: italic">#       &#39;missing_entities&#39;: &#39;&#39;,</span>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span style="color: #616E87; font-style: italic">#       &#39;denser_summary&#39;: &quot;Alan Mathison Turing was an English mathematician who was a crucial figure in WW2&#39;s Bletchley Park codebreaking centre and designed one of the first computers.&quot;</span>
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span style="color: #616E87; font-style: italic">#     },</span>
+</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span style="color: #616E87; font-style: italic">#     {</span>
+</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span style="color: #616E87; font-style: italic">#       &#39;missing_entities&#39;: &#39;cryptanalyst, studied, biology, father&#39;,</span>
+</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span style="color: #616E87; font-style: italic">#       &#39;denser_summary&#39;: &#39;Alan Mathison Turing was an English cryptanalyst, studied theoretical computer science, and contributed to mathematical biology.&#39;</span>
+</span><span id="__span-4-14"><a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span style="color: #616E87; font-style: italic">#     },</span>
+</span><span id="__span-4-15"><a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span style="color: #616E87; font-style: italic">#     {</span>
+</span><span id="__span-4-16"><a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a><span style="color: #616E87; font-style: italic">#       &#39;missing_entities&#39;: &#39;biology, morphogenesis, chemical&#39;,</span>
+</span><span id="__span-4-17"><a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a><span style="color: #616E87; font-style: italic">#       &#39;denser_summary&#39;: &#39;Alan Mathison Turing was an English cryptanalyst, studied theoretical computer science, and predicted chemical reactions in morphogenesis.</span>
+</span><span id="__span-4-18"><a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a><span style="color: #616E87; font-style: italic">#     &#39;},</span>
+</span><span id="__span-4-19"><a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a><span style="color: #616E87; font-style: italic">#     {</span>
+</span><span id="__span-4-20"><a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a><span style="color: #616E87; font-style: italic">#       &#39;missing_entities&#39;: &#39;&#39;,</span>
+</span><span id="__span-4-21"><a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a><span style="color: #616E87; font-style: italic">#       &#39;denser_summary&#39;: &#39;Alan Mathison Turing was an English cryptanalyst, developed computer science, and made strides in mathematical biology research.&#39;</span>
+</span><span id="__span-4-22"><a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a><span style="color: #616E87; font-style: italic">#       }</span>
+</span><span id="__span-4-23"><a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a><span style="color: #616E87; font-style: italic"># ]}</span>
 </span></code></pre></div>
 <p>Not bad, considering we used a smallish model to generate the summary! Chain of Density seems to be a very effective prompting technique to generate dense summaries, even with small quantized models. Its implementation in Outlines is also very short.</p>
 <p>Note that this is the first article I tried and it worked out of the box. Try it out on other articles, and please share the results on Twitter, or by opening <a href="https://github.com/dottxt-ai/outlines/discussions/categories/show-and-tell">a new discussion</a> on the Outlines repository!</p>

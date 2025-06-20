@@ -571,12 +571,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../licence/" class="md-nav__link">
+      <a href="../../guide/fastapi_vllm_deployment/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Licence
+    Deploying with FastAPI
     
   </span>
   
@@ -586,51 +586,6 @@
   
 
               
-            
-              
-                
-  
-  
-  
-  
-    
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_5" >
-        
-          
-          <label class="md-nav__link" for="__nav_2_5" id="__nav_2_5_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    Utility
-    
-  </span>
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_5">
-            <span class="md-nav__icon md-icon"></span>
-            Utility
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
             
               
                 
@@ -650,14 +605,6 @@
   
 
       </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
     </li>
   
 
@@ -3740,155 +3687,155 @@
 <p>In this guide, we will show you how to use BentoML to run programs written with Outlines on GPU locally and in <a href="https://www.bentoml.com/">BentoCloud</a>, an AI Inference Platform for enterprise AI teams. The example source code in this guide is also available in the <a href="https://github.com/dottxt-ai/outlines/blob/main/examples/bentoml/">examples/bentoml/</a> directory.</p>
 <h2 id="import-a-model">Import a model</h2>
 <p>First we need to download an LLM (Mistral-7B-v0.1 in this example and you can use any other LLM) and import the model into BentoML's <a href="https://docs.bentoml.com/en/latest/guides/model-store.html">Model Store</a>. Let's install BentoML and other dependencies from PyPi (preferably in a virtual environment):</p>
-<div class="language-bash highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pip<span style="color: #BBB"> </span>install<span style="color: #BBB"> </span>-r<span style="color: #BBB"> </span>requirements.txt
+<div class="language-shell highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pip<span style="color: #D8DEE9"> </span>install<span style="color: #D8DEE9"> </span>-r<span style="color: #D8DEE9"> </span>requirements.txt
 </span></code></pre></div>
 <p>Then save the code snippet below as <code>import_model.py</code> and run <code>python import_model.py</code>.</p>
 <p><strong>Note</strong>: You need to accept related conditions on <a href="https://huggingface.co/mistralai/Mistral-7B-v0.1">Hugging Face</a> first to gain access to Mistral-7B-v0.1.</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span style="color: #008000; font-weight: bold">import</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">bentoml</span>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">bentoml</span>
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>MODEL_ID <span style="color: #666">=</span> <span style="color: #BA2121">&quot;mistralai/Mistral-7B-v0.1&quot;</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>BENTO_MODEL_TAG <span style="color: #666">=</span> MODEL_ID<span style="color: #666">.</span>lower()<span style="color: #666">.</span>replace(<span style="color: #BA2121">&quot;/&quot;</span>, <span style="color: #BA2121">&quot;--&quot;</span>)
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span style="color: #D8DEE9">MODEL_ID</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">&quot;mistralai/Mistral-7B-v0.1&quot;</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span style="color: #D8DEE9">BENTO_MODEL_TAG</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">MODEL_ID</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">lower</span><span style="color: #ECEFF4">()</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">replace</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;/&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;--&quot;</span><span style="color: #ECEFF4">)</span>
 </span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span style="color: #008000; font-weight: bold">def</span><span style="color: #BBB"> </span><span style="color: #00F">import_model</span>(model_id, bento_model_tag):
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">import_model</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">model_id</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">bento_model_tag</span><span style="color: #ECEFF4">):</span>
 </span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span style="color: #008000; font-weight: bold">import</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">torch</span>
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>    <span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">transformers</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> AutoModelForCausalLM, AutoTokenizer
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">torch</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>    <span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">transformers</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">AutoModelForCausalLM</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">AutoTokenizer</span>
 </span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>
-</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    tokenizer <span style="color: #666">=</span> AutoTokenizer<span style="color: #666">.</span>from_pretrained(MODEL_ID)
-</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>    model <span style="color: #666">=</span> AutoModelForCausalLM<span style="color: #666">.</span>from_pretrained(
-</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>        MODEL_ID,
-</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>        torch_dtype<span style="color: #666">=</span>torch<span style="color: #666">.</span>float16,
-</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>        low_cpu_mem_usage<span style="color: #666">=</span><span style="color: #008000; font-weight: bold">True</span>,
-</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>    )
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    <span style="color: #D8DEE9">tokenizer</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">AutoTokenizer</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_pretrained</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">MODEL_ID</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>    <span style="color: #D8DEE9">model</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">AutoModelForCausalLM</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_pretrained</span><span style="color: #ECEFF4">(</span>
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>        <span style="color: #D8DEE9">MODEL_ID</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>        <span style="color: #D8DEE9">torch_dtype</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #D8DEE9">torch</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">float16</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>        <span style="color: #D8DEE9">low_cpu_mem_usage</span><span style="color: #81A1C1; font-weight: bold">=True</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>    <span style="color: #ECEFF4">)</span>
 </span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>
-</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>    <span style="color: #008000; font-weight: bold">with</span> bentoml<span style="color: #666">.</span>models<span style="color: #666">.</span>create(bento_model_tag) <span style="color: #008000; font-weight: bold">as</span> bento_model_ref:
-</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>        tokenizer<span style="color: #666">.</span>save_pretrained(bento_model_ref<span style="color: #666">.</span>path)
-</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>        model<span style="color: #666">.</span>save_pretrained(bento_model_ref<span style="color: #666">.</span>path)
+</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>    <span style="color: #81A1C1; font-weight: bold">with</span> <span style="color: #D8DEE9">bentoml</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">models</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">create</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">bento_model_tag</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">as</span> <span style="color: #D8DEE9">bento_model_ref</span><span style="color: #ECEFF4">:</span>
+</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>        <span style="color: #D8DEE9">tokenizer</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">save_pretrained</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">bento_model_ref</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">path</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>        <span style="color: #D8DEE9">model</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">save_pretrained</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">bento_model_ref</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">path</span><span style="color: #ECEFF4">)</span>
 </span><span id="__span-1-21"><a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>
 </span><span id="__span-1-22"><a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>
-</span><span id="__span-1-23"><a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a><span style="color: #008000; font-weight: bold">if</span> <span style="color: #19177C">__name__</span> <span style="color: #666">==</span> <span style="color: #BA2121">&quot;__main__&quot;</span>:
-</span><span id="__span-1-24"><a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a>    import_model(MODEL_ID, BENTO_MODEL_TAG)
+</span><span id="__span-1-23"><a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a><span style="color: #81A1C1; font-weight: bold">if</span> <span style="color: #D8DEE9">__name__</span> <span style="color: #81A1C1; font-weight: bold">==</span> <span style="color: #A3BE8C">&quot;__main__&quot;</span><span style="color: #ECEFF4">:</span>
+</span><span id="__span-1-24"><a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a>    <span style="color: #D8DEE9">import_model</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">MODEL_ID</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">BENTO_MODEL_TAG</span><span style="color: #ECEFF4">)</span>
 </span></code></pre></div>
 <p>You can verify the download is successful by running:</p>
-<div class="language-bash highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>$<span style="color: #BBB"> </span>bentoml<span style="color: #BBB"> </span>models<span style="color: #BBB"> </span>list
+<div class="language-shell highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>$<span style="color: #D8DEE9"> </span>bentoml<span style="color: #D8DEE9"> </span>models<span style="color: #D8DEE9"> </span>list
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>Tag<span style="color: #BBB">                                          </span>Module<span style="color: #BBB">  </span>Size<span style="color: #BBB">        </span>Creation<span style="color: #BBB"> </span>Time
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>mistralai--mistral-7b-v0.1:m7lmf5ac2cmubnnz<span style="color: #BBB">          </span><span style="color: #666">13</span>.49<span style="color: #BBB"> </span>GiB<span style="color: #BBB">   </span><span style="color: #666">2024</span>-04-25<span style="color: #BBB"> </span><span style="color: #666">06</span>:52:39
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>Tag<span style="color: #D8DEE9">                                          </span>Module<span style="color: #D8DEE9">  </span>Size<span style="color: #D8DEE9">        </span>Creation<span style="color: #D8DEE9"> </span>Time
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>mistralai--mistral-7b-v0.1:m7lmf5ac2cmubnnz<span style="color: #D8DEE9">          </span><span style="color: #B48EAD">13</span>.49<span style="color: #D8DEE9"> </span>GiB<span style="color: #D8DEE9">   </span><span style="color: #B48EAD">2024</span>-04-25<span style="color: #D8DEE9"> </span><span style="color: #B48EAD">06</span>:52:39
 </span></code></pre></div>
 <h2 id="define-a-bentoml-service">Define a BentoML Service</h2>
 <p>As the model is ready, we can define a <a href="https://docs.bentoml.com/en/latest/guides/services.html">BentoML Service</a> to wrap the capabilities of the model.</p>
 <p>We will run the JSON-structured generation example <a href="https://github.com/dottxt-ai/outlines?tab=readme-ov-file#efficient-json-generation-following-a-json-schema">in the README</a>, with the following schema:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>DEFAULT_SCHEMA <span style="color: #666">=</span> <span style="color: #BA2121">&quot;&quot;&quot;{</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span style="color: #BA2121">    &quot;title&quot;: &quot;Character&quot;,</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span style="color: #BA2121">    &quot;type&quot;: &quot;object&quot;,</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span style="color: #BA2121">    &quot;properties&quot;: {</span>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span style="color: #BA2121">        &quot;name&quot;: {</span>
-</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span style="color: #BA2121">            &quot;title&quot;: &quot;Name&quot;,</span>
-</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span style="color: #BA2121">            &quot;maxLength&quot;: 10,</span>
-</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span style="color: #BA2121">            &quot;type&quot;: &quot;string&quot;</span>
-</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span style="color: #BA2121">        },</span>
-</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span style="color: #BA2121">        &quot;age&quot;: {</span>
-</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span style="color: #BA2121">            &quot;title&quot;: &quot;Age&quot;,</span>
-</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span style="color: #BA2121">            &quot;type&quot;: &quot;integer&quot;</span>
-</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span style="color: #BA2121">        },</span>
-</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span style="color: #BA2121">        &quot;armor&quot;: {&quot;$ref&quot;: &quot;#/definitions/Armor&quot;},</span>
-</span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span style="color: #BA2121">        &quot;weapon&quot;: {&quot;$ref&quot;: &quot;#/definitions/Weapon&quot;},</span>
-</span><span id="__span-3-16"><a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a><span style="color: #BA2121">        &quot;strength&quot;: {</span>
-</span><span id="__span-3-17"><a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a><span style="color: #BA2121">            &quot;title&quot;: &quot;Strength&quot;,</span>
-</span><span id="__span-3-18"><a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a><span style="color: #BA2121">            &quot;type&quot;: &quot;integer&quot;</span>
-</span><span id="__span-3-19"><a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a><span style="color: #BA2121">        }</span>
-</span><span id="__span-3-20"><a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a><span style="color: #BA2121">    },</span>
-</span><span id="__span-3-21"><a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a><span style="color: #BA2121">    &quot;required&quot;: [&quot;name&quot;, &quot;age&quot;, &quot;armor&quot;, &quot;weapon&quot;, &quot;strength&quot;],</span>
-</span><span id="__span-3-22"><a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a><span style="color: #BA2121">    &quot;definitions&quot;: {</span>
-</span><span id="__span-3-23"><a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a><span style="color: #BA2121">        &quot;Armor&quot;: {</span>
-</span><span id="__span-3-24"><a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a><span style="color: #BA2121">            &quot;title&quot;: &quot;Armor&quot;,</span>
-</span><span id="__span-3-25"><a id="__codelineno-3-25" name="__codelineno-3-25" href="#__codelineno-3-25"></a><span style="color: #BA2121">            &quot;description&quot;: &quot;An enumeration.&quot;,</span>
-</span><span id="__span-3-26"><a id="__codelineno-3-26" name="__codelineno-3-26" href="#__codelineno-3-26"></a><span style="color: #BA2121">            &quot;enum&quot;: [&quot;leather&quot;, &quot;chainmail&quot;, &quot;plate&quot;],</span>
-</span><span id="__span-3-27"><a id="__codelineno-3-27" name="__codelineno-3-27" href="#__codelineno-3-27"></a><span style="color: #BA2121">            &quot;type&quot;: &quot;string&quot;</span>
-</span><span id="__span-3-28"><a id="__codelineno-3-28" name="__codelineno-3-28" href="#__codelineno-3-28"></a><span style="color: #BA2121">        },</span>
-</span><span id="__span-3-29"><a id="__codelineno-3-29" name="__codelineno-3-29" href="#__codelineno-3-29"></a><span style="color: #BA2121">        &quot;Weapon&quot;: {</span>
-</span><span id="__span-3-30"><a id="__codelineno-3-30" name="__codelineno-3-30" href="#__codelineno-3-30"></a><span style="color: #BA2121">            &quot;title&quot;: &quot;Weapon&quot;,</span>
-</span><span id="__span-3-31"><a id="__codelineno-3-31" name="__codelineno-3-31" href="#__codelineno-3-31"></a><span style="color: #BA2121">            &quot;description&quot;: &quot;An enumeration.&quot;,</span>
-</span><span id="__span-3-32"><a id="__codelineno-3-32" name="__codelineno-3-32" href="#__codelineno-3-32"></a><span style="color: #BA2121">            &quot;enum&quot;: [&quot;sword&quot;, &quot;axe&quot;, &quot;mace&quot;, &quot;spear&quot;, &quot;bow&quot;, &quot;crossbow&quot;],</span>
-</span><span id="__span-3-33"><a id="__codelineno-3-33" name="__codelineno-3-33" href="#__codelineno-3-33"></a><span style="color: #BA2121">            &quot;type&quot;: &quot;string&quot;</span>
-</span><span id="__span-3-34"><a id="__codelineno-3-34" name="__codelineno-3-34" href="#__codelineno-3-34"></a><span style="color: #BA2121">        }</span>
-</span><span id="__span-3-35"><a id="__codelineno-3-35" name="__codelineno-3-35" href="#__codelineno-3-35"></a><span style="color: #BA2121">    }</span>
-</span><span id="__span-3-36"><a id="__codelineno-3-36" name="__codelineno-3-36" href="#__codelineno-3-36"></a><span style="color: #BA2121">}&quot;&quot;&quot;</span>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span style="color: #D8DEE9">DEFAULT_SCHEMA</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">&quot;&quot;&quot;{</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span style="color: #A3BE8C">    &quot;title&quot;: &quot;Character&quot;,</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span style="color: #A3BE8C">    &quot;type&quot;: &quot;object&quot;,</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span style="color: #A3BE8C">    &quot;properties&quot;: {</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span style="color: #A3BE8C">        &quot;name&quot;: {</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span style="color: #A3BE8C">            &quot;title&quot;: &quot;Name&quot;,</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span style="color: #A3BE8C">            &quot;maxLength&quot;: 10,</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span style="color: #A3BE8C">            &quot;type&quot;: &quot;string&quot;</span>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span style="color: #A3BE8C">        },</span>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span style="color: #A3BE8C">        &quot;age&quot;: {</span>
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span style="color: #A3BE8C">            &quot;title&quot;: &quot;Age&quot;,</span>
+</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span style="color: #A3BE8C">            &quot;type&quot;: &quot;integer&quot;</span>
+</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span style="color: #A3BE8C">        },</span>
+</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span style="color: #A3BE8C">        &quot;armor&quot;: {&quot;$ref&quot;: &quot;#/definitions/Armor&quot;},</span>
+</span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span style="color: #A3BE8C">        &quot;weapon&quot;: {&quot;$ref&quot;: &quot;#/definitions/Weapon&quot;},</span>
+</span><span id="__span-3-16"><a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a><span style="color: #A3BE8C">        &quot;strength&quot;: {</span>
+</span><span id="__span-3-17"><a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a><span style="color: #A3BE8C">            &quot;title&quot;: &quot;Strength&quot;,</span>
+</span><span id="__span-3-18"><a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a><span style="color: #A3BE8C">            &quot;type&quot;: &quot;integer&quot;</span>
+</span><span id="__span-3-19"><a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a><span style="color: #A3BE8C">        }</span>
+</span><span id="__span-3-20"><a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a><span style="color: #A3BE8C">    },</span>
+</span><span id="__span-3-21"><a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a><span style="color: #A3BE8C">    &quot;required&quot;: [&quot;name&quot;, &quot;age&quot;, &quot;armor&quot;, &quot;weapon&quot;, &quot;strength&quot;],</span>
+</span><span id="__span-3-22"><a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a><span style="color: #A3BE8C">    &quot;definitions&quot;: {</span>
+</span><span id="__span-3-23"><a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a><span style="color: #A3BE8C">        &quot;Armor&quot;: {</span>
+</span><span id="__span-3-24"><a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a><span style="color: #A3BE8C">            &quot;title&quot;: &quot;Armor&quot;,</span>
+</span><span id="__span-3-25"><a id="__codelineno-3-25" name="__codelineno-3-25" href="#__codelineno-3-25"></a><span style="color: #A3BE8C">            &quot;description&quot;: &quot;An enumeration.&quot;,</span>
+</span><span id="__span-3-26"><a id="__codelineno-3-26" name="__codelineno-3-26" href="#__codelineno-3-26"></a><span style="color: #A3BE8C">            &quot;enum&quot;: [&quot;leather&quot;, &quot;chainmail&quot;, &quot;plate&quot;],</span>
+</span><span id="__span-3-27"><a id="__codelineno-3-27" name="__codelineno-3-27" href="#__codelineno-3-27"></a><span style="color: #A3BE8C">            &quot;type&quot;: &quot;string&quot;</span>
+</span><span id="__span-3-28"><a id="__codelineno-3-28" name="__codelineno-3-28" href="#__codelineno-3-28"></a><span style="color: #A3BE8C">        },</span>
+</span><span id="__span-3-29"><a id="__codelineno-3-29" name="__codelineno-3-29" href="#__codelineno-3-29"></a><span style="color: #A3BE8C">        &quot;Weapon&quot;: {</span>
+</span><span id="__span-3-30"><a id="__codelineno-3-30" name="__codelineno-3-30" href="#__codelineno-3-30"></a><span style="color: #A3BE8C">            &quot;title&quot;: &quot;Weapon&quot;,</span>
+</span><span id="__span-3-31"><a id="__codelineno-3-31" name="__codelineno-3-31" href="#__codelineno-3-31"></a><span style="color: #A3BE8C">            &quot;description&quot;: &quot;An enumeration.&quot;,</span>
+</span><span id="__span-3-32"><a id="__codelineno-3-32" name="__codelineno-3-32" href="#__codelineno-3-32"></a><span style="color: #A3BE8C">            &quot;enum&quot;: [&quot;sword&quot;, &quot;axe&quot;, &quot;mace&quot;, &quot;spear&quot;, &quot;bow&quot;, &quot;crossbow&quot;],</span>
+</span><span id="__span-3-33"><a id="__codelineno-3-33" name="__codelineno-3-33" href="#__codelineno-3-33"></a><span style="color: #A3BE8C">            &quot;type&quot;: &quot;string&quot;</span>
+</span><span id="__span-3-34"><a id="__codelineno-3-34" name="__codelineno-3-34" href="#__codelineno-3-34"></a><span style="color: #A3BE8C">        }</span>
+</span><span id="__span-3-35"><a id="__codelineno-3-35" name="__codelineno-3-35" href="#__codelineno-3-35"></a><span style="color: #A3BE8C">    }</span>
+</span><span id="__span-3-36"><a id="__codelineno-3-36" name="__codelineno-3-36" href="#__codelineno-3-36"></a><span style="color: #A3BE8C">}&quot;&quot;&quot;</span>
 </span></code></pre></div>
 <p>First, we need to define a BentoML service by decorating an ordinary class (<code>Outlines</code> here) with <code>@bentoml.service</code> decorator. We pass to this decorator some configuration and GPU on which we want this service to run in BentoCloud (here an L4 with 24GB memory):</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span style="color: #008000; font-weight: bold">import</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">typing</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">as</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">t</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span style="color: #008000; font-weight: bold">import</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">bentoml</span>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">typing</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">as</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">t</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">bentoml</span>
 </span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">import_model</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> BENTO_MODEL_TAG
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">import_model</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">BENTO_MODEL_TAG</span>
 </span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>
-</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span style="color: #A2F">@bentoml</span><span style="color: #666">.</span>service(
-</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>    traffic<span style="color: #666">=</span>{
-</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>        <span style="color: #BA2121">&quot;timeout&quot;</span>: <span style="color: #666">300</span>,
-</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>    },
-</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>    resources<span style="color: #666">=</span>{
-</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>        <span style="color: #BA2121">&quot;gpu&quot;</span>: <span style="color: #666">1</span>,
-</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>        <span style="color: #BA2121">&quot;gpu_type&quot;</span>: <span style="color: #BA2121">&quot;nvidia-l4&quot;</span>,
-</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>    },
-</span><span id="__span-4-14"><a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>)
-</span><span id="__span-4-15"><a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span style="color: #008000; font-weight: bold">class</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">Outlines</span>:
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span style="color: #D08770">@bentoml</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">service</span><span style="color: #ECEFF4">(</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>    <span style="color: #D8DEE9">traffic</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #ECEFF4">{</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>        <span style="color: #A3BE8C">&quot;timeout&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #B48EAD">300</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>    <span style="color: #ECEFF4">},</span>
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>    <span style="color: #D8DEE9">resources</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #ECEFF4">{</span>
+</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>        <span style="color: #A3BE8C">&quot;gpu&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #B48EAD">1</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>        <span style="color: #A3BE8C">&quot;gpu_type&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;nvidia-l4&quot;</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>    <span style="color: #ECEFF4">},</span>
+</span><span id="__span-4-14"><a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span style="color: #ECEFF4">)</span>
+</span><span id="__span-4-15"><a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span style="color: #81A1C1; font-weight: bold">class</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">Outlines</span><span style="color: #ECEFF4">:</span>
 </span><span id="__span-4-16"><a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a>
-</span><span id="__span-4-17"><a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a>    bento_model_ref <span style="color: #666">=</span> bentoml<span style="color: #666">.</span>models<span style="color: #666">.</span>get(BENTO_MODEL_TAG)
+</span><span id="__span-4-17"><a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a>    <span style="color: #D8DEE9">bento_model_ref</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">bentoml</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">models</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">get</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">BENTO_MODEL_TAG</span><span style="color: #ECEFF4">)</span>
 </span><span id="__span-4-18"><a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a>
-</span><span id="__span-4-19"><a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a>    <span style="color: #008000; font-weight: bold">def</span><span style="color: #BBB"> </span><span style="color: #00F">__init__</span>(<span style="color: #008000">self</span>) <span style="color: #666">-&gt;</span> <span style="color: #008000; font-weight: bold">None</span>:
-</span><span id="__span-4-20"><a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a>        <span style="color: #008000; font-weight: bold">import</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">outlines</span>
-</span><span id="__span-4-21"><a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a>        <span style="color: #008000; font-weight: bold">import</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">torch</span>
-</span><span id="__span-4-22"><a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a>        <span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">transformers</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> AutoModelForCausalLM, AutoTokenizer
+</span><span id="__span-4-19"><a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a>    <span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">__init__</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">self</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #81A1C1; font-weight: bold">None</span><span style="color: #ECEFF4">:</span>
+</span><span id="__span-4-20"><a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a>        <span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines</span>
+</span><span id="__span-4-21"><a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a>        <span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">torch</span>
+</span><span id="__span-4-22"><a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a>        <span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">transformers</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">AutoModelForCausalLM</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">AutoTokenizer</span>
 </span><span id="__span-4-23"><a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a>
-</span><span id="__span-4-24"><a id="__codelineno-4-24" name="__codelineno-4-24" href="#__codelineno-4-24"></a>        <span style="color: #3D7B7B; font-style: italic"># Load tokenizer and model from the BentoML model reference path</span>
-</span><span id="__span-4-25"><a id="__codelineno-4-25" name="__codelineno-4-25" href="#__codelineno-4-25"></a>        hf_tokenizer <span style="color: #666">=</span> AutoTokenizer<span style="color: #666">.</span>from_pretrained(<span style="color: #008000">self</span><span style="color: #666">.</span>bento_model_ref<span style="color: #666">.</span>path)
-</span><span id="__span-4-26"><a id="__codelineno-4-26" name="__codelineno-4-26" href="#__codelineno-4-26"></a>        hf_model <span style="color: #666">=</span> AutoModelForCausalLM<span style="color: #666">.</span>from_pretrained(
-</span><span id="__span-4-27"><a id="__codelineno-4-27" name="__codelineno-4-27" href="#__codelineno-4-27"></a>            <span style="color: #008000">self</span><span style="color: #666">.</span>bento_model_ref<span style="color: #666">.</span>path,
-</span><span id="__span-4-28"><a id="__codelineno-4-28" name="__codelineno-4-28" href="#__codelineno-4-28"></a>            torch_dtype<span style="color: #666">=</span>torch<span style="color: #666">.</span>float16,
-</span><span id="__span-4-29"><a id="__codelineno-4-29" name="__codelineno-4-29" href="#__codelineno-4-29"></a>            low_cpu_mem_usage<span style="color: #666">=</span><span style="color: #008000; font-weight: bold">True</span>,
-</span><span id="__span-4-30"><a id="__codelineno-4-30" name="__codelineno-4-30" href="#__codelineno-4-30"></a>            device_map<span style="color: #666">=</span><span style="color: #BA2121">&quot;cuda&quot;</span>
-</span><span id="__span-4-31"><a id="__codelineno-4-31" name="__codelineno-4-31" href="#__codelineno-4-31"></a>        )
+</span><span id="__span-4-24"><a id="__codelineno-4-24" name="__codelineno-4-24" href="#__codelineno-4-24"></a>        <span style="color: #616E87; font-style: italic"># Load tokenizer and model from the BentoML model reference path</span>
+</span><span id="__span-4-25"><a id="__codelineno-4-25" name="__codelineno-4-25" href="#__codelineno-4-25"></a>        <span style="color: #D8DEE9">hf_tokenizer</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">AutoTokenizer</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_pretrained</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">self</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">bento_model_ref</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">path</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-4-26"><a id="__codelineno-4-26" name="__codelineno-4-26" href="#__codelineno-4-26"></a>        <span style="color: #D8DEE9">hf_model</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">AutoModelForCausalLM</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_pretrained</span><span style="color: #ECEFF4">(</span>
+</span><span id="__span-4-27"><a id="__codelineno-4-27" name="__codelineno-4-27" href="#__codelineno-4-27"></a>            <span style="color: #81A1C1">self</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">bento_model_ref</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">path</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-4-28"><a id="__codelineno-4-28" name="__codelineno-4-28" href="#__codelineno-4-28"></a>            <span style="color: #D8DEE9">torch_dtype</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #D8DEE9">torch</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">float16</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-4-29"><a id="__codelineno-4-29" name="__codelineno-4-29" href="#__codelineno-4-29"></a>            <span style="color: #D8DEE9">low_cpu_mem_usage</span><span style="color: #81A1C1; font-weight: bold">=True</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-4-30"><a id="__codelineno-4-30" name="__codelineno-4-30" href="#__codelineno-4-30"></a>            <span style="color: #D8DEE9">device_map</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #A3BE8C">&quot;cuda&quot;</span>
+</span><span id="__span-4-31"><a id="__codelineno-4-31" name="__codelineno-4-31" href="#__codelineno-4-31"></a>        <span style="color: #ECEFF4">)</span>
 </span><span id="__span-4-32"><a id="__codelineno-4-32" name="__codelineno-4-32" href="#__codelineno-4-32"></a>
-</span><span id="__span-4-33"><a id="__codelineno-4-33" name="__codelineno-4-33" href="#__codelineno-4-33"></a>        <span style="color: #3D7B7B; font-style: italic"># Then use the loaded model with Outlines</span>
-</span><span id="__span-4-34"><a id="__codelineno-4-34" name="__codelineno-4-34" href="#__codelineno-4-34"></a>        <span style="color: #008000">self</span><span style="color: #666">.</span>model <span style="color: #666">=</span> outlines<span style="color: #666">.</span>from_transformers(hf_model, hf_tokenizer)
+</span><span id="__span-4-33"><a id="__codelineno-4-33" name="__codelineno-4-33" href="#__codelineno-4-33"></a>        <span style="color: #616E87; font-style: italic"># Then use the loaded model with Outlines</span>
+</span><span id="__span-4-34"><a id="__codelineno-4-34" name="__codelineno-4-34" href="#__codelineno-4-34"></a>        <span style="color: #81A1C1">self</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">model</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">outlines</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_transformers</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">hf_model</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">hf_tokenizer</span><span style="color: #ECEFF4">)</span>
 </span><span id="__span-4-35"><a id="__codelineno-4-35" name="__codelineno-4-35" href="#__codelineno-4-35"></a>
-</span><span id="__span-4-36"><a id="__codelineno-4-36" name="__codelineno-4-36" href="#__codelineno-4-36"></a>    <span style="color: #666">...</span>
+</span><span id="__span-4-36"><a id="__codelineno-4-36" name="__codelineno-4-36" href="#__codelineno-4-36"></a>    <span style="color: #81A1C1; font-weight: bold">...</span>
 </span></code></pre></div>
 <p>We then need to define an HTTP endpoint using <code>@bentoml.api</code> to decorate the method <code>generate</code> of <code>Outlines</code> class:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>    <span style="color: #666">...</span>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>    <span style="color: #81A1C1; font-weight: bold">...</span>
 </span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>    <span style="color: #A2F">@bentoml</span><span style="color: #666">.</span>api
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    <span style="color: #008000; font-weight: bold">async</span> <span style="color: #008000; font-weight: bold">def</span><span style="color: #BBB"> </span><span style="color: #00F">generate</span>(
-</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>        <span style="color: #008000">self</span>,
-</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>        prompt: <span style="color: #008000">str</span> <span style="color: #666">=</span> <span style="color: #BA2121">&quot;Give me a character description.&quot;</span>,
-</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>        json_schema: t<span style="color: #666">.</span>Optional[<span style="color: #008000">str</span>] <span style="color: #666">=</span> DEFAULT_SCHEMA,
-</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>    ) <span style="color: #666">-&gt;</span> t<span style="color: #666">.</span>Dict[<span style="color: #008000">str</span>, t<span style="color: #666">.</span>Any]:
-</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>        <span style="color: #008000; font-weight: bold">import</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">json</span>
-</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>        <span style="color: #008000; font-weight: bold">import</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">outlines</span>
-</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>        <span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">outlines.types</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> JsonSchema
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>    <span style="color: #D08770">@bentoml</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">api</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    <span style="color: #81A1C1; font-weight: bold">async</span> <span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">generate</span><span style="color: #ECEFF4">(</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>        <span style="color: #81A1C1">self</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>        <span style="color: #D8DEE9">prompt</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">str</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">&quot;Give me a character description.&quot;</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>        <span style="color: #D8DEE9">json_schema</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">t</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">Optional</span><span style="color: #ECEFF4">[</span><span style="color: #81A1C1">str</span><span style="color: #ECEFF4">]</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">DEFAULT_SCHEMA</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>    <span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #D8DEE9">t</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">Dict</span><span style="color: #ECEFF4">[</span><span style="color: #81A1C1">str</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">t</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">Any</span><span style="color: #ECEFF4">]:</span>
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>        <span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">json</span>
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>        <span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines</span>
+</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>        <span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines.types</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">JsonSchema</span>
 </span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>
-</span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>        generator <span style="color: #666">=</span> outlines<span style="color: #666">.</span>Generator(<span style="color: #008000">self</span><span style="color: #666">.</span>model, JsonSchema(json_schema))
-</span><span id="__span-5-14"><a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>        character <span style="color: #666">=</span> generator(prompt)
+</span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>        <span style="color: #D8DEE9">generator</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">outlines</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">Generator</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">self</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">JsonSchema</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">json_schema</span><span style="color: #ECEFF4">))</span>
+</span><span id="__span-5-14"><a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>        <span style="color: #D8DEE9">character</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">generator</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">prompt</span><span style="color: #ECEFF4">)</span>
 </span><span id="__span-5-15"><a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>
-</span><span id="__span-5-16"><a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a>        <span style="color: #008000; font-weight: bold">return</span> json<span style="color: #666">.</span>loads(character)
+</span><span id="__span-5-16"><a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a>        <span style="color: #81A1C1; font-weight: bold">return</span> <span style="color: #D8DEE9">json</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">loads</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">character</span><span style="color: #ECEFF4">)</span>
 </span></code></pre></div>
 <p>Here <code>@bentoml.api</code> decorator defines <code>generate</code> as an HTTP endpoint that accepts a JSON request body with two fields: <code>prompt</code> and <code>json_schema</code> (optional, which allows HTTP clients to provide their own JSON schema). The type hints in the function signature will be used to validate incoming JSON requests. You can define as many HTTP endpoints as you want by using <code>@bentoml.api</code> to decorate other methods of <code>Outlines</code> class.</p>
 <p>Now you can save the above code to <code>service.py</code> (or use <a href="https://github.com/dottxt-ai/outlines/blob/main/examples/bentoml/">this implementation</a>), and run the code using the BentoML CLI.</p>
 <h2 id="run-locally-for-testing-and-debugging">Run locally for testing and debugging</h2>
 <p>Then you can run a server locally by:</p>
-<div class="language-bash highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>bentoml<span style="color: #BBB"> </span>serve<span style="color: #BBB"> </span>.
+<div class="language-shell highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>bentoml<span style="color: #D8DEE9"> </span>serve<span style="color: #D8DEE9"> </span>.
 </span></code></pre></div>
 <p>The server is now active at <a href="http://localhost:3000">http://localhost:3000</a>. You can interact with it using the Swagger UI or in other different ways:</p>
 <details>
 
 <summary>CURL</summary>
 
-<div class="language-bash highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>curl<span style="color: #BBB"> </span>-X<span style="color: #BBB"> </span><span style="color: #BA2121">&#39;POST&#39;</span><span style="color: #BBB"> </span><span style="color: #AA5D1F; font-weight: bold">\</span>
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span style="color: #BBB">  </span><span style="color: #BA2121">&#39;http://localhost:3000/generate&#39;</span><span style="color: #BBB"> </span><span style="color: #AA5D1F; font-weight: bold">\</span>
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span style="color: #BBB">  </span>-H<span style="color: #BBB"> </span><span style="color: #BA2121">&#39;accept: application/json&#39;</span><span style="color: #BBB"> </span><span style="color: #AA5D1F; font-weight: bold">\</span>
-</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span style="color: #BBB">  </span>-H<span style="color: #BBB"> </span><span style="color: #BA2121">&#39;Content-Type: application/json&#39;</span><span style="color: #BBB"> </span><span style="color: #AA5D1F; font-weight: bold">\</span>
-</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span style="color: #BBB">  </span>-d<span style="color: #BBB"> </span><span style="color: #BA2121">&#39;{</span>
-</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span style="color: #BA2121">  &quot;prompt&quot;: &quot;Give me a character description.&quot;</span>
-</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span style="color: #BA2121">}&#39;</span>
+<div class="language-shell highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>curl<span style="color: #D8DEE9"> </span>-X<span style="color: #D8DEE9"> </span><span style="color: #A3BE8C">&#39;POST&#39;</span><span style="color: #D8DEE9"> </span><span style="color: #EBCB8B">\</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span style="color: #D8DEE9">  </span><span style="color: #A3BE8C">&#39;http://localhost:3000/generate&#39;</span><span style="color: #D8DEE9"> </span><span style="color: #EBCB8B">\</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span style="color: #D8DEE9">  </span>-H<span style="color: #D8DEE9"> </span><span style="color: #A3BE8C">&#39;accept: application/json&#39;</span><span style="color: #D8DEE9"> </span><span style="color: #EBCB8B">\</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span style="color: #D8DEE9">  </span>-H<span style="color: #D8DEE9"> </span><span style="color: #A3BE8C">&#39;Content-Type: application/json&#39;</span><span style="color: #D8DEE9"> </span><span style="color: #EBCB8B">\</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span style="color: #D8DEE9">  </span>-d<span style="color: #D8DEE9"> </span><span style="color: #A3BE8C">&#39;{</span>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span style="color: #A3BE8C">  &quot;prompt&quot;: &quot;Give me a character description.&quot;</span>
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span style="color: #A3BE8C">}&#39;</span>
 </span></code></pre></div>
 
 </details>
@@ -3897,30 +3844,30 @@
 
 <summary>Python client</summary>
 
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span style="color: #008000; font-weight: bold">import</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">bentoml</span>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">bentoml</span>
 </span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>
-</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span style="color: #008000; font-weight: bold">with</span> bentoml<span style="color: #666">.</span>SyncHTTPClient(<span style="color: #BA2121">&quot;http://localhost:3000&quot;</span>) <span style="color: #008000; font-weight: bold">as</span> client:
-</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>    response <span style="color: #666">=</span> client<span style="color: #666">.</span>generate(
-</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>        prompt<span style="color: #666">=</span><span style="color: #BA2121">&quot;Give me a character description&quot;</span>
-</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>    )
-</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>    <span style="color: #008000">print</span>(response)
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span style="color: #81A1C1; font-weight: bold">with</span> <span style="color: #D8DEE9">bentoml</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">SyncHTTPClient</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;http://localhost:3000&quot;</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">as</span> <span style="color: #D8DEE9">client</span><span style="color: #ECEFF4">:</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>    <span style="color: #D8DEE9">response</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">client</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">generate</span><span style="color: #ECEFF4">(</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>        <span style="color: #D8DEE9">prompt</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #A3BE8C">&quot;Give me a character description&quot;</span>
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>    <span style="color: #ECEFF4">)</span>
+</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>    <span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">response</span><span style="color: #ECEFF4">)</span>
 </span></code></pre></div>
 
 </details>
 
 <p>Expected output:</p>
-<div class="language-bash highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span style="color: #666">{</span>
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span style="color: #BBB">  </span><span style="color: #BA2121">&quot;name&quot;</span>:<span style="color: #BBB"> </span><span style="color: #BA2121">&quot;Aura&quot;</span>,
-</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span style="color: #BBB">  </span><span style="color: #BA2121">&quot;age&quot;</span>:<span style="color: #BBB"> </span><span style="color: #666">15</span>,
-</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span style="color: #BBB">  </span><span style="color: #BA2121">&quot;armor&quot;</span>:<span style="color: #BBB"> </span><span style="color: #BA2121">&quot;plate&quot;</span>,
-</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span style="color: #BBB">  </span><span style="color: #BA2121">&quot;weapon&quot;</span>:<span style="color: #BBB"> </span><span style="color: #BA2121">&quot;sword&quot;</span>,
-</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span style="color: #BBB">  </span><span style="color: #BA2121">&quot;strength&quot;</span>:<span style="color: #BBB"> </span><span style="color: #666">20</span>
-</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span style="color: #666">}</span>
+<div class="language-shell highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span style="color: #81A1C1; font-weight: bold">{</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span style="color: #D8DEE9">  </span><span style="color: #A3BE8C">&quot;name&quot;</span>:<span style="color: #D8DEE9"> </span><span style="color: #A3BE8C">&quot;Aura&quot;</span>,
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span style="color: #D8DEE9">  </span><span style="color: #A3BE8C">&quot;age&quot;</span>:<span style="color: #D8DEE9"> </span><span style="color: #B48EAD">15</span>,
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span style="color: #D8DEE9">  </span><span style="color: #A3BE8C">&quot;armor&quot;</span>:<span style="color: #D8DEE9"> </span><span style="color: #A3BE8C">&quot;plate&quot;</span>,
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span style="color: #D8DEE9">  </span><span style="color: #A3BE8C">&quot;weapon&quot;</span>:<span style="color: #D8DEE9"> </span><span style="color: #A3BE8C">&quot;sword&quot;</span>,
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span style="color: #D8DEE9">  </span><span style="color: #A3BE8C">&quot;strength&quot;</span>:<span style="color: #D8DEE9"> </span><span style="color: #B48EAD">20</span>
+</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span style="color: #81A1C1; font-weight: bold">}</span>
 </span></code></pre></div>
 <h2 id="deploy-to-bentocloud">Deploy to BentoCloud</h2>
 <p>After the Service is ready, you can deploy it to <a href="https://docs.bentoml.com/en/latest/bentocloud/get-started.html">BentoCloud</a> for better management and scalability. <a href="https://cloud.bentoml.com/signup">Sign up</a> if you haven't got a BentoCloud account.</p>
 <p>Make sure you have <a href="https://docs.bentoml.com/en/latest/bentocloud/how-tos/manage-access-token.html">logged in to BentoCloud</a>, then run the following command to deploy it.</p>
-<div class="language-bash highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>bentoml<span style="color: #BBB"> </span>deploy<span style="color: #BBB"> </span>.
+<div class="language-shell highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>bentoml<span style="color: #D8DEE9"> </span>deploy<span style="color: #D8DEE9"> </span>.
 </span></code></pre></div>
 <p>Once the application is up and running on BentoCloud, you can access it via the exposed URL.</p>
 <p><strong>Note</strong>: For custom deployment in your own infrastructure, use <a href="https://docs.bentoml.com/en/latest/guides/containerization.html">BentoML to generate an OCI-compliant image</a>.</p>
@@ -3946,7 +3893,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="June 8, 2025 07:43:07 UTC"><span class="timeago" datetime="2025-06-08T07:43:07+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="June 8, 2025 07:43:07 UTC">2025-06-08</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="June 20, 2025 11:51:24 UTC"><span class="timeago" datetime="2025-06-20T11:51:24+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="June 20, 2025 11:51:24 UTC">2025-06-20</span>
   </span>
 
     
@@ -3974,14 +3921,14 @@
     
     <nav>
       
-        <a href="https://github.com/RobinPicard" class="md-author" title="@RobinPicard">
-          
-          <img src="https://avatars.githubusercontent.com/u/83579270?v=4&size=72" alt="RobinPicard">
-        </a>
-      
         <a href="https://github.com/rlouf" class="md-author" title="@rlouf">
           
           <img src="https://avatars.githubusercontent.com/u/3885044?v=4&size=72" alt="rlouf">
+        </a>
+      
+        <a href="https://github.com/RobinPicard" class="md-author" title="@RobinPicard">
+          
+          <img src="https://avatars.githubusercontent.com/u/83579270?v=4&size=72" alt="RobinPicard">
         </a>
       
         <a href="https://github.com/web-flow" class="md-author" title="@web-flow">

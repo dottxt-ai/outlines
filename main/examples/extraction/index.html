@@ -571,12 +571,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../licence/" class="md-nav__link">
+      <a href="../../guide/fastapi_vllm_deployment/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Licence
+    Deploying with FastAPI
     
   </span>
   
@@ -586,51 +586,6 @@
   
 
               
-            
-              
-                
-  
-  
-  
-  
-    
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_5" >
-        
-          
-          <label class="md-nav__link" for="__nav_2_5" id="__nav_2_5_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    Utility
-    
-  </span>
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_5">
-            <span class="md-nav__icon md-icon"></span>
-            Utility
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
             
               
                 
@@ -650,14 +605,6 @@
   
 
       </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
     </li>
   
 
@@ -3627,72 +3574,72 @@
 <p>Named Entity Extraction is a fundamental problem in NLP. It involves identifying and categorizing named entities within a document: people, organization, dates, places, etc. It is usually the first step in a more complex NLP worklow. Here we will use the example of a pizza restaurant that receives orders via their website and need to identify the number and types of pizzas that are being ordered.</p>
 <p>Getting LLMs to output the extracted entities in a structured format can be challenging. In this tutorial we will see how we can use Outlines' JSON-structured generation to extract entities from a document and return them in a valid JSON data structure 100% of the time.</p>
 <p>As always, we start with initializing the model. We will be using a quantized version of Mistal-7B-v0.1 (we're GPU poor):</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span style="color: #008000; font-weight: bold">import</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">transformers</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span style="color: #008000; font-weight: bold">import</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">outlines</span>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">transformers</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines</span>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>model_name <span style="color: #666">=</span> <span style="color: #BA2121">&quot;microsoft/Phi-3-mini-4k-instruct&quot;</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>model <span style="color: #666">=</span> outlines<span style="color: #666">.</span>from_transformers(
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    transformers<span style="color: #666">.</span>AutoModelForCausalLM<span style="color: #666">.</span>from_pretrained(model_name, device_map<span style="color: #666">=</span><span style="color: #BA2121">&quot;cuda&quot;</span>),
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    transformers<span style="color: #666">.</span>AutoTokenizer<span style="color: #666">.</span>from_pretrained(model_name),
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>)
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span style="color: #D8DEE9">model_name</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">&quot;microsoft/Phi-3-mini-4k-instruct&quot;</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span style="color: #D8DEE9">model</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">outlines</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_transformers</span><span style="color: #ECEFF4">(</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span style="color: #D8DEE9">transformers</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">AutoModelForCausalLM</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_pretrained</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">model_name</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">device_map</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #A3BE8C">&quot;cuda&quot;</span><span style="color: #ECEFF4">),</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span style="color: #D8DEE9">transformers</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">AutoTokenizer</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_pretrained</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">model_name</span><span style="color: #ECEFF4">),</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span style="color: #ECEFF4">)</span>
 </span></code></pre></div>
 <p>And we will be using the following prompt template:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">outlines</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> Template
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">Template</span>
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>take_order <span style="color: #666">=</span> Template<span style="color: #666">.</span>from_string(
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span style="color: #BBB">    </span><span style="color: #BA2121; font-style: italic">&quot;&quot;&quot;You are the owner of a pizza parlor. Customers \</span>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span style="color: #BA2121; font-style: italic">    send you orders from which you need to extract:</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span style="color: #D8DEE9">take_order</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">Template</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_string</span><span style="color: #ECEFF4">(</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">&quot;&quot;&quot;You are the owner of a pizza parlor. Customers \</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span style="color: #616E87">    send you orders from which you need to extract:</span>
 </span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span style="color: #BA2121; font-style: italic">    1. The pizza that is ordered</span>
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span style="color: #BA2121; font-style: italic">    2. The number of pizzas</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span style="color: #616E87">    1. The pizza that is ordered</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span style="color: #616E87">    2. The number of pizzas</span>
 </span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>
-</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span style="color: #BA2121; font-style: italic">    # EXAMPLE</span>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span style="color: #616E87">    # EXAMPLE</span>
 </span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>
-</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span style="color: #BA2121; font-style: italic">    ORDER: I would like one Margherita pizza</span>
-</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span style="color: #BA2121; font-style: italic">    RESULT: {&quot;pizza&quot;: &quot;Margherita&quot;, &quot;number&quot;: 1}</span>
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span style="color: #616E87">    ORDER: I would like one Margherita pizza</span>
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span style="color: #616E87">    RESULT: {&quot;pizza&quot;: &quot;Margherita&quot;, &quot;number&quot;: 1}</span>
 </span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>
-</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span style="color: #BA2121; font-style: italic">    # OUTPUT INSTRUCTIONS</span>
+</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span style="color: #616E87">    # OUTPUT INSTRUCTIONS</span>
 </span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>
-</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span style="color: #BA2121; font-style: italic">    Answer in valid JSON. Here are the different objects relevant for the output:</span>
+</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span style="color: #616E87">    Answer in valid JSON. Here are the different objects relevant for the output:</span>
 </span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>
-</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span style="color: #BA2121; font-style: italic">    Order:</span>
-</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a><span style="color: #BA2121; font-style: italic">        pizza (str): name of the pizza</span>
-</span><span id="__span-1-21"><a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a><span style="color: #BA2121; font-style: italic">        number (int): number of pizzas</span>
+</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span style="color: #616E87">    Order:</span>
+</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a><span style="color: #616E87">        pizza (str): name of the pizza</span>
+</span><span id="__span-1-21"><a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a><span style="color: #616E87">        number (int): number of pizzas</span>
 </span><span id="__span-1-22"><a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a>
-</span><span id="__span-1-23"><a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a><span style="color: #BA2121; font-style: italic">    Return a valid JSON of type &quot;Order&quot;</span>
+</span><span id="__span-1-23"><a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a><span style="color: #616E87">    Return a valid JSON of type &quot;Order&quot;</span>
 </span><span id="__span-1-24"><a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a>
-</span><span id="__span-1-25"><a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a><span style="color: #BA2121; font-style: italic">    # OUTPUT</span>
+</span><span id="__span-1-25"><a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a><span style="color: #616E87">    # OUTPUT</span>
 </span><span id="__span-1-26"><a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a>
-</span><span id="__span-1-27"><a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a><span style="color: #BA2121; font-style: italic">    ORDER: {{ order }}</span>
-</span><span id="__span-1-28"><a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a><span style="color: #BA2121; font-style: italic">    RESULT: &quot;&quot;&quot;</span>
-</span><span id="__span-1-29"><a id="__codelineno-1-29" name="__codelineno-1-29" href="#__codelineno-1-29"></a>)
+</span><span id="__span-1-27"><a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a><span style="color: #616E87">    ORDER: {{ order }}</span>
+</span><span id="__span-1-28"><a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a><span style="color: #616E87">    RESULT: &quot;&quot;&quot;</span>
+</span><span id="__span-1-29"><a id="__codelineno-1-29" name="__codelineno-1-29" href="#__codelineno-1-29"></a><span style="color: #ECEFF4">)</span>
 </span></code></pre></div>
 <p>We now define our data model using Pydantic:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">enum</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> Enum
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">pydantic</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> BaseModel
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">enum</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">Enum</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">pydantic</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">BaseModel</span>
 </span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span style="color: #008000; font-weight: bold">class</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">Pizza</span>(<span style="color: #008000">str</span>, Enum):
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    margherita <span style="color: #666">=</span> <span style="color: #BA2121">&quot;Margherita&quot;</span>
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    pepperonni <span style="color: #666">=</span> <span style="color: #BA2121">&quot;Pepperoni&quot;</span>
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    calzone <span style="color: #666">=</span> <span style="color: #BA2121">&quot;Calzone&quot;</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span style="color: #81A1C1; font-weight: bold">class</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">Pizza</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">str</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">Enum</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>    <span style="color: #D8DEE9">margherita</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">&quot;Margherita&quot;</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span style="color: #D8DEE9">pepperonni</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">&quot;Pepperoni&quot;</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span style="color: #D8DEE9">calzone</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">&quot;Calzone&quot;</span>
 </span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>
-</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span style="color: #008000; font-weight: bold">class</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">Order</span>(BaseModel):
-</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>    pizza: Pizza
-</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>    number: <span style="color: #008000">int</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span style="color: #81A1C1; font-weight: bold">class</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">Order</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">BaseModel</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>    <span style="color: #D8DEE9">pizza</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">Pizza</span>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>    <span style="color: #D8DEE9">number</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">int</span>
 </span></code></pre></div>
 <p>We can now define our generator and call it on several incoming orders:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>orders <span style="color: #666">=</span> [
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span style="color: #BA2121">&quot;Hi! I would like to order two pepperonni pizzas and would like them in 30mins.&quot;</span>,
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span style="color: #BA2121">&quot;Is it possible to get 12 margheritas?&quot;</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>]
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>prompts <span style="color: #666">=</span> [take_order(order<span style="color: #666">=</span>order) <span style="color: #008000; font-weight: bold">for</span> order <span style="color: #A2F; font-weight: bold">in</span> orders]
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span style="color: #D8DEE9">orders</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #ECEFF4">[</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span style="color: #A3BE8C">&quot;Hi! I would like to order two pepperonni pizzas and would like them in 30mins.&quot;</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span style="color: #A3BE8C">&quot;Is it possible to get 12 margheritas?&quot;</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span style="color: #ECEFF4">]</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span style="color: #D8DEE9">prompts</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #ECEFF4">[</span><span style="color: #D8DEE9">take_order</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">order</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #D8DEE9">order</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">for</span> <span style="color: #D8DEE9">order</span> <span style="color: #81A1C1; font-weight: bold">in</span> <span style="color: #D8DEE9">orders</span><span style="color: #ECEFF4">]</span>
 </span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>
-</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>generator <span style="color: #666">=</span> outlines<span style="color: #666">.</span>Generator(model, Order)
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span style="color: #D8DEE9">generator</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">outlines</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">Generator</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">Order</span><span style="color: #ECEFF4">)</span>
 </span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>
-</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>results <span style="color: #666">=</span> generator(prompts)
-</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span style="color: #008000">print</span>(results)
-</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span style="color: #3D7B7B; font-style: italic"># [&#39;{&quot;pizza&quot;: &quot;Pepperoni&quot;, &quot;number&quot;: 2}&#39;,</span>
-</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span style="color: #3D7B7B; font-style: italic"># &#39;{&quot;pizza&quot;: &quot;Margherita&quot;, &quot;number&quot;: 12}&#39;]</span>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span style="color: #D8DEE9">results</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">generator</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">prompts</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">results</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span style="color: #616E87; font-style: italic"># [&#39;{&quot;pizza&quot;: &quot;Pepperoni&quot;, &quot;number&quot;: 2}&#39;,</span>
+</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span style="color: #616E87; font-style: italic"># &#39;{&quot;pizza&quot;: &quot;Margherita&quot;, &quot;number&quot;: 12}&#39;]</span>
 </span></code></pre></div>
 <p>There are several ways you could improve this example:</p>
 <ul>

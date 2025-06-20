@@ -571,12 +571,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../licence/" class="md-nav__link">
+      <a href="../../guide/fastapi_vllm_deployment/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Licence
+    Deploying with FastAPI
     
   </span>
   
@@ -586,51 +586,6 @@
   
 
               
-            
-              
-                
-  
-  
-  
-  
-    
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_5" >
-        
-          
-          <label class="md-nav__link" for="__nav_2_5" id="__nav_2_5_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    Utility
-    
-  </span>
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_5">
-            <span class="md-nav__icon md-icon"></span>
-            Utility
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
             
               
                 
@@ -650,14 +605,6 @@
   
 
       </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
     </li>
   
 
@@ -3796,58 +3743,58 @@
 <p>The example is a smaller subset of a full demo found <a href="https://github.com/dottxt-ai/demos/tree/main/earnings-reports">here</a>. The demo contains the full set of pre-processing steps needed to convert raw HTML into a structured CSV file, and tests the results across three company's 10k reports.</p>
 <h2 id="setup">Setup</h2>
 <p>Install outlines and required dependencies:</p>
-<div class="language-bash highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span style="color: #3D7B7B; font-style: italic"># Later versions of torch can have difficulty with certain CUDA drivers.</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span style="color: #3D7B7B; font-style: italic"># We recommend using 2.4.0 for now, but you may wish to experiment with</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span style="color: #3D7B7B; font-style: italic"># other versions.</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>pip<span style="color: #BBB"> </span>install<span style="color: #BBB"> </span>outlines<span style="color: #BBB"> </span>pandas<span style="color: #BBB"> </span>transformers<span style="color: #BBB"> </span><span style="color: #19177C">torch</span><span style="color: #666">==2</span>.4.0<span style="color: #BBB"> </span>accelerate
+<div class="language-shell highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span style="color: #616E87; font-style: italic"># Later versions of torch can have difficulty with certain CUDA drivers.</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span style="color: #616E87; font-style: italic"># We recommend using 2.4.0 for now, but you may wish to experiment with</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span style="color: #616E87; font-style: italic"># other versions.</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>pip<span style="color: #D8DEE9"> </span>install<span style="color: #D8DEE9"> </span>outlines<span style="color: #D8DEE9"> </span>pandas<span style="color: #D8DEE9"> </span>transformers<span style="color: #D8DEE9"> torch</span><span style="color: #81A1C1; font-weight: bold">==</span><span style="color: #B48EAD">2</span>.4.0<span style="color: #D8DEE9"> </span>accelerate
 </span></code></pre></div>
 <h2 id="load-the-model">Load the model</h2>
 <p>Choose your language model. We'll use Phi-3 mini, which is small enough to run on reasonably small machines.</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span style="color: #008000; font-weight: bold">import</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">outlines</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span style="color: #008000; font-weight: bold">import</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">torch</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span style="color: #008000; font-weight: bold">import</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">transformers</span>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">torch</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">transformers</span>
 </span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>model_name <span style="color: #666">=</span> <span style="color: #BA2121">&#39;microsoft/Phi-3-mini-4k-instruct&#39;</span>
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>tf_model <span style="color: #666">=</span> transformers<span style="color: #666">.</span>AutoModelForCausalLM<span style="color: #666">.</span>from_pretrained(
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    model_name, device_map<span style="color: #666">=</span><span style="color: #BA2121">&quot;cuda&quot;</span>, torch_dtype<span style="color: #666">=</span>torch<span style="color: #666">.</span>bfloat16
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>)
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>tf_tokenizer <span style="color: #666">=</span> transformers<span style="color: #666">.</span>AutoTokenizer<span style="color: #666">.</span>from_pretrained(model_name)
-</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>model <span style="color: #666">=</span> outlines<span style="color: #666">.</span>from_transformers(tf_model, tf_tokenizer)
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span style="color: #D8DEE9">model_name</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">&#39;microsoft/Phi-3-mini-4k-instruct&#39;</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span style="color: #D8DEE9">tf_model</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">transformers</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">AutoModelForCausalLM</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_pretrained</span><span style="color: #ECEFF4">(</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span style="color: #D8DEE9">model_name</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">device_map</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #A3BE8C">&quot;cuda&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">torch_dtype</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #D8DEE9">torch</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">bfloat16</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span style="color: #ECEFF4">)</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span style="color: #D8DEE9">tf_tokenizer</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">transformers</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">AutoTokenizer</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_pretrained</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">model_name</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span style="color: #D8DEE9">model</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">outlines</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_transformers</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">tf_model</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">tf_tokenizer</span><span style="color: #ECEFF4">)</span>
 </span></code></pre></div>
 <h2 id="set-up-the-data">Set up the data</h2>
 <p>For brevity, we've attached the markdown version of Nvidia's 10k report. The <a href="https://github.com/dottxt-ai/demos/tree/main/earnings-reports">full demonstration</a> processes the raw HTML version of the report to these markdown tables. Pages are filtered by whether they seem to contain income statements, and then compacted into the string you see below.</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>income_statement <span style="color: #666">=</span> <span style="color: #BA2121">&quot;&quot;&quot;</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span style="color: #BA2121">Table of ContentsNVIDIA Corporation and SubsidiariesConsolidated Statements of Income(In millions, except per share data)</span>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span style="color: #D8DEE9">income_statement</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">&quot;&quot;&quot;</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span style="color: #A3BE8C">Table of ContentsNVIDIA Corporation and SubsidiariesConsolidated Statements of Income(In millions, except per share data)</span>
 </span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span style="color: #BA2121">|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |</span>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span style="color: #BA2121">| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |</span>
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span style="color: #BA2121">|  | | | Year Ended | | | | | | | | | | | | | | |</span>
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span style="color: #BA2121">|  | | | Jan 28, 2024 | | |  | | | Jan 29, 2023 | | |  | | | Jan 30, 2022 | | |</span>
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span style="color: #BA2121">| Revenue | | | $ | 60,922 |  |  | | | $ | 26,974 |  |  | | | $ | 26,914 |  |</span>
-</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span style="color: #BA2121">| Cost of revenue | | | 16,621 | |  |  | | | 11,618 | |  |  | | | 9,439 | |  |</span>
-</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span style="color: #BA2121">| Gross profit | | | 44,301 | |  |  | | | 15,356 | |  |  | | | 17,475 | |  |</span>
-</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span style="color: #BA2121">| Operating expenses | | |  | | |  | | |  | | |  | | |  | | |</span>
-</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span style="color: #BA2121">| Research and development | | | 8,675 | |  |  | | | 7,339 | |  |  | | | 5,268 | |  |</span>
-</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span style="color: #BA2121">| Sales, general and administrative | | | 2,654 | |  |  | | | 2,440 | |  |  | | | 2,166 | |  |</span>
-</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span style="color: #BA2121">| Acquisition termination cost | | |  | |  |  | | | 1,353 | |  |  | | |  | |  |</span>
-</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span style="color: #BA2121">| Total operating expenses | | | 11,329 | |  |  | | | 11,132 | |  |  | | | 7,434 | |  |</span>
-</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span style="color: #BA2121">| Operating income | | | 32,972 | |  |  | | | 4,224 | |  |  | | | 10,041 | |  |</span>
-</span><span id="__span-2-17"><a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a><span style="color: #BA2121">| Interest income | | | 866 | |  |  | | | 267 | |  |  | | | 29 | |  |</span>
-</span><span id="__span-2-18"><a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a><span style="color: #BA2121">| Interest expense | | | (257) | |  |  | | | (262) | |  |  | | | (236) | |  |</span>
-</span><span id="__span-2-19"><a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a><span style="color: #BA2121">| Other, net | | | 237 | |  |  | | | (48) | |  |  | | | 107 | |  |</span>
-</span><span id="__span-2-20"><a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a><span style="color: #BA2121">| Other income (expense), net | | | 846 | |  |  | | | (43) | |  |  | | | (100) | |  |</span>
-</span><span id="__span-2-21"><a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a><span style="color: #BA2121">| Income before income tax | | | 33,818 | |  |  | | | 4,181 | |  |  | | | 9,941 | |  |</span>
-</span><span id="__span-2-22"><a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a><span style="color: #BA2121">| Income tax expense (benefit) | | | 4,058 | |  |  | | | (187) | |  |  | | | 189 | |  |</span>
-</span><span id="__span-2-23"><a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a><span style="color: #BA2121">| Net income | | | $ | 29,760 |  |  | | | $ | 4,368 |  |  | | | $ | 9,752 |  |</span>
-</span><span id="__span-2-24"><a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a><span style="color: #BA2121">|  | | |  | | |  | | |  | | |  | | |  | | |</span>
-</span><span id="__span-2-25"><a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a><span style="color: #BA2121">| Net income per share: | | |  | | |  | | |  | | |  | | |  | | |</span>
-</span><span id="__span-2-26"><a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a><span style="color: #BA2121">| Basic | | | $ | 12\.05 |  |  | | | $ | 1\.76 |  |  | | | $ | 3\.91 |  |</span>
-</span><span id="__span-2-27"><a id="__codelineno-2-27" name="__codelineno-2-27" href="#__codelineno-2-27"></a><span style="color: #BA2121">| Diluted | | | $ | 11\.93 |  |  | | | $ | 1\.74 |  |  | | | $ | 3\.85 |  |</span>
-</span><span id="__span-2-28"><a id="__codelineno-2-28" name="__codelineno-2-28" href="#__codelineno-2-28"></a><span style="color: #BA2121">|  | | |  | | |  | | |  | | |  | | |  | | |</span>
-</span><span id="__span-2-29"><a id="__codelineno-2-29" name="__codelineno-2-29" href="#__codelineno-2-29"></a><span style="color: #BA2121">| Weighted average shares used in per share computation: | | |  | | |  | | |  | | |  | | |  | | |</span>
-</span><span id="__span-2-30"><a id="__codelineno-2-30" name="__codelineno-2-30" href="#__codelineno-2-30"></a><span style="color: #BA2121">| Basic | | | 2,469 | |  |  | | | 2,487 | |  |  | | | 2,496 | |  |</span>
-</span><span id="__span-2-31"><a id="__codelineno-2-31" name="__codelineno-2-31" href="#__codelineno-2-31"></a><span style="color: #BA2121">| Diluted | | | 2,494 | |  |  | | | 2,507 | |  |  | | | 2,535 | |  |</span>
-</span><span id="__span-2-32"><a id="__codelineno-2-32" name="__codelineno-2-32" href="#__codelineno-2-32"></a><span style="color: #BA2121">&quot;&quot;&quot;</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span style="color: #A3BE8C">|  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span style="color: #A3BE8C">| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span style="color: #A3BE8C">|  | | | Year Ended | | | | | | | | | | | | | | |</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span style="color: #A3BE8C">|  | | | Jan 28, 2024 | | |  | | | Jan 29, 2023 | | |  | | | Jan 30, 2022 | | |</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span style="color: #A3BE8C">| Revenue | | | $ | 60,922 |  |  | | | $ | 26,974 |  |  | | | $ | 26,914 |  |</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span style="color: #A3BE8C">| Cost of revenue | | | 16,621 | |  |  | | | 11,618 | |  |  | | | 9,439 | |  |</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span style="color: #A3BE8C">| Gross profit | | | 44,301 | |  |  | | | 15,356 | |  |  | | | 17,475 | |  |</span>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span style="color: #A3BE8C">| Operating expenses | | |  | | |  | | |  | | |  | | |  | | |</span>
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span style="color: #A3BE8C">| Research and development | | | 8,675 | |  |  | | | 7,339 | |  |  | | | 5,268 | |  |</span>
+</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span style="color: #A3BE8C">| Sales, general and administrative | | | 2,654 | |  |  | | | 2,440 | |  |  | | | 2,166 | |  |</span>
+</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span style="color: #A3BE8C">| Acquisition termination cost | | |  | |  |  | | | 1,353 | |  |  | | |  | |  |</span>
+</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span style="color: #A3BE8C">| Total operating expenses | | | 11,329 | |  |  | | | 11,132 | |  |  | | | 7,434 | |  |</span>
+</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span style="color: #A3BE8C">| Operating income | | | 32,972 | |  |  | | | 4,224 | |  |  | | | 10,041 | |  |</span>
+</span><span id="__span-2-17"><a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a><span style="color: #A3BE8C">| Interest income | | | 866 | |  |  | | | 267 | |  |  | | | 29 | |  |</span>
+</span><span id="__span-2-18"><a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a><span style="color: #A3BE8C">| Interest expense | | | (257) | |  |  | | | (262) | |  |  | | | (236) | |  |</span>
+</span><span id="__span-2-19"><a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a><span style="color: #A3BE8C">| Other, net | | | 237 | |  |  | | | (48) | |  |  | | | 107 | |  |</span>
+</span><span id="__span-2-20"><a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a><span style="color: #A3BE8C">| Other income (expense), net | | | 846 | |  |  | | | (43) | |  |  | | | (100) | |  |</span>
+</span><span id="__span-2-21"><a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a><span style="color: #A3BE8C">| Income before income tax | | | 33,818 | |  |  | | | 4,181 | |  |  | | | 9,941 | |  |</span>
+</span><span id="__span-2-22"><a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a><span style="color: #A3BE8C">| Income tax expense (benefit) | | | 4,058 | |  |  | | | (187) | |  |  | | | 189 | |  |</span>
+</span><span id="__span-2-23"><a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a><span style="color: #A3BE8C">| Net income | | | $ | 29,760 |  |  | | | $ | 4,368 |  |  | | | $ | 9,752 |  |</span>
+</span><span id="__span-2-24"><a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a><span style="color: #A3BE8C">|  | | |  | | |  | | |  | | |  | | |  | | |</span>
+</span><span id="__span-2-25"><a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a><span style="color: #A3BE8C">| Net income per share: | | |  | | |  | | |  | | |  | | |  | | |</span>
+</span><span id="__span-2-26"><a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a><span style="color: #A3BE8C">| Basic | | | $ | 12\.05 |  |  | | | $ | 1\.76 |  |  | | | $ | 3\.91 |  |</span>
+</span><span id="__span-2-27"><a id="__codelineno-2-27" name="__codelineno-2-27" href="#__codelineno-2-27"></a><span style="color: #A3BE8C">| Diluted | | | $ | 11\.93 |  |  | | | $ | 1\.74 |  |  | | | $ | 3\.85 |  |</span>
+</span><span id="__span-2-28"><a id="__codelineno-2-28" name="__codelineno-2-28" href="#__codelineno-2-28"></a><span style="color: #A3BE8C">|  | | |  | | |  | | |  | | |  | | |  | | |</span>
+</span><span id="__span-2-29"><a id="__codelineno-2-29" name="__codelineno-2-29" href="#__codelineno-2-29"></a><span style="color: #A3BE8C">| Weighted average shares used in per share computation: | | |  | | |  | | |  | | |  | | |  | | |</span>
+</span><span id="__span-2-30"><a id="__codelineno-2-30" name="__codelineno-2-30" href="#__codelineno-2-30"></a><span style="color: #A3BE8C">| Basic | | | 2,469 | |  |  | | | 2,487 | |  |  | | | 2,496 | |  |</span>
+</span><span id="__span-2-31"><a id="__codelineno-2-31" name="__codelineno-2-31" href="#__codelineno-2-31"></a><span style="color: #A3BE8C">| Diluted | | | 2,494 | |  |  | | | 2,507 | |  |  | | | 2,535 | |  |</span>
+</span><span id="__span-2-32"><a id="__codelineno-2-32" name="__codelineno-2-32" href="#__codelineno-2-32"></a><span style="color: #A3BE8C">&quot;&quot;&quot;</span>
 </span></code></pre></div>
 <p>The markdown tables extracted from the earnings reports can vary widely in row names, column counts, data types, etc. The advantage of LLMs here is that we can define the data we want in terms of the data types, and the LLM will output the data in the desired format.</p>
 <p>For comparison, here is how the income statement looks in the original HTML:</p>
@@ -3855,18 +3802,18 @@
 <h2 id="define-the-data-we-want">Define the data we want</h2>
 <p>Outlines is often used for JSON output, but it can also be used for CSV. We know the columns we want to extract, and we know the data types of the columns. Year for example is always a four-digit number, revenue is a number with commas, and so on.</p>
 <p>We can define a regex pattern for each column type:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span style="color: #3D7B7B; font-style: italic"># Define the column type regex patterns</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>column_types <span style="color: #666">=</span> {
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span style="color: #3D7B7B; font-style: italic"># Year is always a four-digit number</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span style="color: #BA2121">&quot;year&quot;</span>: <span style="color: #BA2121">r&quot;\d</span><span style="color: #A45A77; font-weight: bold">{4}</span><span style="color: #BA2121">&quot;</span>,
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span style="color: #616E87; font-style: italic"># Define the column type regex patterns</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span style="color: #D8DEE9">column_types</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #ECEFF4">{</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    <span style="color: #616E87; font-style: italic"># Year is always a four-digit number</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span style="color: #A3BE8C">&quot;year&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">r&quot;\d{4}&quot;</span><span style="color: #ECEFF4">,</span>
 </span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>
-</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span style="color: #3D7B7B; font-style: italic"># Revenue, operating income, and net income are always numbers with commas.</span>
-</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span style="color: #3D7B7B; font-style: italic"># This regex permits integers that may begin with a minus sign, and may have</span>
-</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span style="color: #3D7B7B; font-style: italic"># commas separating the thousands, millions, etc.</span>
-</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>    <span style="color: #BA2121">&quot;integer_comma&quot;</span>: <span style="color: #BA2121">r&quot;((-?\d+),?\d+|(-?\d+))&quot;</span>,
-</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>    <span style="color: #3D7B7B; font-style: italic"># Number is currently not used, but it represents a number with up to two decimal places.</span>
-</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>    <span style="color: #BA2121">&quot;number&quot;</span>: <span style="color: #BA2121">r&quot;(-?\d+(?:\.\d{1,2})?)&quot;</span>,
-</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>}
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span style="color: #616E87; font-style: italic"># Revenue, operating income, and net income are always numbers with commas.</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span style="color: #616E87; font-style: italic"># This regex permits integers that may begin with a minus sign, and may have</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span style="color: #616E87; font-style: italic"># commas separating the thousands, millions, etc.</span>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>    <span style="color: #A3BE8C">&quot;integer_comma&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">r&quot;((-?\d+),?\d+|(-?\d+))&quot;</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>    <span style="color: #616E87; font-style: italic"># Number is currently not used, but it represents a number with up to two decimal places.</span>
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>    <span style="color: #A3BE8C">&quot;number&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">r&quot;(-?\d+(?:\.\d{1,2})?)&quot;</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span style="color: #ECEFF4">}</span>
 </span></code></pre></div>
 <p>Next, let's choose the columns we want to extract. We want</p>
 <ul>
@@ -3875,132 +3822,132 @@
 <li>Operating income, a number with commas</li>
 <li>Net income, a number with commas</li>
 </ul>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span style="color: #3D7B7B; font-style: italic"># Define the columns to extract, and their data types.</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>columns_to_extract <span style="color: #666">=</span> {
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>    <span style="color: #BA2121">&quot;year&quot;</span>: <span style="color: #BA2121">&quot;year&quot;</span>,
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span style="color: #BA2121">&quot;revenue&quot;</span>: <span style="color: #BA2121">&quot;integer_comma&quot;</span>,
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span style="color: #BA2121">&quot;operating_income&quot;</span>: <span style="color: #BA2121">&quot;integer_comma&quot;</span>,
-</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    <span style="color: #BA2121">&quot;net_income&quot;</span>: <span style="color: #BA2121">&quot;integer_comma&quot;</span>,
-</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>}
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span style="color: #616E87; font-style: italic"># Define the columns to extract, and their data types.</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span style="color: #D8DEE9">columns_to_extract</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #ECEFF4">{</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>    <span style="color: #A3BE8C">&quot;year&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;year&quot;</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span style="color: #A3BE8C">&quot;revenue&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;integer_comma&quot;</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span style="color: #A3BE8C">&quot;operating_income&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;integer_comma&quot;</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    <span style="color: #A3BE8C">&quot;net_income&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;integer_comma&quot;</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span style="color: #ECEFF4">}</span>
 </span></code></pre></div>
 <p>You can modify <code>column_type_regex</code> to match the data types of the columns you want to extract.  Adding a new financial metric to extract is as simple as adding a new key/value pair to <code>columns_to_extract</code>:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>columns_to_extract[<span style="color: #BA2121">&quot;diluted_earnings_per_share&quot;</span>] <span style="color: #666">=</span> <span style="color: #BA2121">&quot;number&quot;</span>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span style="color: #D8DEE9">columns_to_extract</span><span style="color: #ECEFF4">[</span><span style="color: #A3BE8C">&quot;diluted_earnings_per_share&quot;</span><span style="color: #ECEFF4">]</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">&quot;number&quot;</span>
 </span></code></pre></div>
 <p>Additional columns are not well tested for accuracy, so use with caution.</p>
 <h2 id="create-the-regex-describing-the-data-we-want">Create the regex describing the data we want</h2>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span style="color: #3D7B7B; font-style: italic"># Create the header line. This is the requested column names</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span style="color: #3D7B7B; font-style: italic"># separated by commas, i.e. &quot;year,revenue,...&quot;</span>
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>header <span style="color: #666">=</span> <span style="color: #BA2121">&quot;,&quot;</span><span style="color: #666">.</span>join(columns_to_extract<span style="color: #666">.</span>keys())
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span style="color: #616E87; font-style: italic"># Create the header line. This is the requested column names</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span style="color: #616E87; font-style: italic"># separated by commas, i.e. &quot;year,revenue,...&quot;</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span style="color: #D8DEE9">header</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">&quot;,&quot;</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">join</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">columns_to_extract</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">keys</span><span style="color: #ECEFF4">())</span>
 </span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>
-</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span style="color: #3D7B7B; font-style: italic"># Create the data capture patterns. These are the regex patterns</span>
-</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span style="color: #3D7B7B; font-style: italic"># that will be used to capture the data in each column</span>
-</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>data_patterns <span style="color: #666">=</span> [column_types[dtype] <span style="color: #008000; font-weight: bold">for</span> dtype <span style="color: #A2F; font-weight: bold">in</span> columns_to_extract<span style="color: #666">.</span>values()]
-</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>data_line <span style="color: #666">=</span> <span style="color: #BA2121">&quot;,&quot;</span><span style="color: #666">.</span>join(data_patterns)
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span style="color: #616E87; font-style: italic"># Create the data capture patterns. These are the regex patterns</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span style="color: #616E87; font-style: italic"># that will be used to capture the data in each column</span>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span style="color: #D8DEE9">data_patterns</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #ECEFF4">[</span><span style="color: #D8DEE9">column_types</span><span style="color: #ECEFF4">[</span><span style="color: #D8DEE9">dtype</span><span style="color: #ECEFF4">]</span> <span style="color: #81A1C1; font-weight: bold">for</span> <span style="color: #D8DEE9">dtype</span> <span style="color: #81A1C1; font-weight: bold">in</span> <span style="color: #D8DEE9">columns_to_extract</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">values</span><span style="color: #ECEFF4">()]</span>
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span style="color: #D8DEE9">data_line</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">&quot;,&quot;</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">join</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">data_patterns</span><span style="color: #ECEFF4">)</span>
 </span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>
-</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span style="color: #3D7B7B; font-style: italic"># Our final regex pattern.</span>
-</span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>max_rows <span style="color: #666">=</span> <span style="color: #666">3</span> <span style="color: #3D7B7B; font-style: italic"># We expect 3 rows of data, firms usually report 3 years of income statements</span>
-</span><span id="__span-6-12"><a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>csv_regex <span style="color: #666">=</span> <span style="color: #BA2121">f&quot;</span><span style="color: #A45A77; font-weight: bold">{</span>header<span style="color: #A45A77; font-weight: bold">}</span><span style="color: #BA2121">(</span><span style="color: #AA5D1F; font-weight: bold">\n</span><span style="color: #A45A77; font-weight: bold">{</span>data_line<span style="color: #A45A77; font-weight: bold">}</span><span style="color: #BA2121">)</span><span style="color: #AA5D1F; font-weight: bold">{{</span><span style="color: #BA2121">,</span><span style="color: #A45A77; font-weight: bold">{</span>max_rows<span style="color: #A45A77; font-weight: bold">}</span><span style="color: #AA5D1F; font-weight: bold">}}\n\n</span><span style="color: #BA2121">&quot;</span>
+</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span style="color: #616E87; font-style: italic"># Our final regex pattern.</span>
+</span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span style="color: #D8DEE9">max_rows</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #B48EAD">3</span> <span style="color: #616E87; font-style: italic"># We expect 3 rows of data, firms usually report 3 years of income statements</span>
+</span><span id="__span-6-12"><a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a><span style="color: #D8DEE9">csv_regex</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">f&quot;{</span><span style="color: #D8DEE9">header</span><span style="color: #A3BE8C">}(</span><span style="color: #EBCB8B">\n</span><span style="color: #A3BE8C">{</span><span style="color: #D8DEE9">data_line</span><span style="color: #A3BE8C">})</span><span style="color: #EBCB8B">{{</span><span style="color: #A3BE8C">,{</span><span style="color: #D8DEE9">max_rows</span><span style="color: #A3BE8C">}</span><span style="color: #EBCB8B">}}\n\n</span><span style="color: #A3BE8C">&quot;</span>
 </span><span id="__span-6-13"><a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a>
-</span><span id="__span-6-14"><a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a><span style="color: #008000">print</span>(csv_regex)
+</span><span id="__span-6-14"><a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">csv_regex</span><span style="color: #ECEFF4">)</span>
 </span></code></pre></div>
 <p>which gives us</p>
-<div class="language-text highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>year,revenue,operating_income,net_income,basic_earnings_per_share(
+<div class="language-text highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>year,revenue,operating_income,net_income,basic_earnings_per_share(
 </span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>\d{4},((-?\d+),?\d+|(-?\d+)),((-?\d+),?\d+|(-?\d+)),((-?\d+),?\d+|(-?\d+)),(-?\d+(?:\.\d{1,2})?)){,3}
 </span></code></pre></div>
 <p>Pretty hairy, right? Thankfully, we have a simple function to construct this regex for you. The regex defines a header line, followed by a data line that repeats for each row of data we want to extract. Passing the regex to <code>outlines.Generator</code> will produce a function that will <strong>always</strong> produce a CSV string that is consistent with the regex.</p>
 <h2 id="prompting-the-model">Prompting the model</h2>
 <p>Outlines does not add system or instruction tokens by default, so we need to use <code>transformers.AutoTokenizer</code> to add them for whatever model we're using.</p>
-<p><div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">transformers</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> AutoTokenizer
+<p><div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">transformers</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">AutoTokenizer</span>
 </span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>
-</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>tokenizer <span style="color: #666">=</span> AutoTokenizer<span style="color: #666">.</span>from_pretrained(model_name)
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span style="color: #D8DEE9">tokenizer</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">AutoTokenizer</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_pretrained</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">model_name</span><span style="color: #ECEFF4">)</span>
 </span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>
-</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span style="color: #008000; font-weight: bold">def</span><span style="color: #BBB"> </span><span style="color: #00F">add_instruction</span>(prompt):
-</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>    <span style="color: #008000; font-weight: bold">return</span> tokenizer<span style="color: #666">.</span>apply_chat_template([{<span style="color: #BA2121">&quot;role&quot;</span>: <span style="color: #BA2121">&quot;user&quot;</span>, <span style="color: #BA2121">&quot;content&quot;</span>: prompt}], tokenize<span style="color: #666">=</span><span style="color: #008000; font-weight: bold">False</span>, add_generation_prompt<span style="color: #666">=</span><span style="color: #008000; font-weight: bold">True</span>)
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">add_instruction</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">prompt</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>    <span style="color: #81A1C1; font-weight: bold">return</span> <span style="color: #D8DEE9">tokenizer</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">apply_chat_template</span><span style="color: #ECEFF4">([{</span><span style="color: #A3BE8C">&quot;role&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;user&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;content&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">prompt</span><span style="color: #ECEFF4">}],</span> <span style="color: #D8DEE9">tokenize</span><span style="color: #81A1C1; font-weight: bold">=False</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">add_generation_prompt</span><span style="color: #81A1C1; font-weight: bold">=True</span><span style="color: #ECEFF4">)</span>
 </span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>
-</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span style="color: #008000">print</span>(add_instruction(<span style="color: #BA2121">&quot;Howdy&quot;</span>))
+</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">add_instruction</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;Howdy&quot;</span><span style="color: #ECEFF4">))</span>
 </span></code></pre></div>
-<div class="language-text highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>&lt;|user|&gt;
+<div class="language-text highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>&lt;|user|&gt;
 </span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>Howdy&lt;|end|&gt;
 </span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>&lt;|assistant|&gt;
 </span></code></pre></div></p>
 <p>Our prompt roughly describes the task we want the model to perform, and a few pieces of information it may need to know about income statements.</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span style="color: #008000; font-weight: bold">def</span><span style="color: #BBB"> </span><span style="color: #00F">extract_financial_data_prompt</span>(columns_to_extract, income_statement):
-</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>    user_prompt <span style="color: #666">=</span> <span style="color: #BA2121">f&quot;&quot;&quot;</span>
-</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span style="color: #BA2121">    Extract annual financial data from this set of pages. Pages</span>
-</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span style="color: #BA2121">    are from a 10k filing and were chosen because they may contain</span>
-</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span style="color: #BA2121">    a comprehensive income statement. Note that selected pages may</span>
-</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span style="color: #BA2121">    be incorrectly extracted, so you should verify that you are extracting</span>
-</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span style="color: #BA2121">    from the comprehensive income statement and not some other financial</span>
-</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span style="color: #BA2121">    statement.</span>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">extract_financial_data_prompt</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">columns_to_extract</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">income_statement</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>    <span style="color: #D8DEE9">user_prompt</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">f&quot;&quot;&quot;</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span style="color: #A3BE8C">    Extract annual financial data from this set of pages. Pages</span>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span style="color: #A3BE8C">    are from a 10k filing and were chosen because they may contain</span>
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span style="color: #A3BE8C">    a comprehensive income statement. Note that selected pages may</span>
+</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span style="color: #A3BE8C">    be incorrectly extracted, so you should verify that you are extracting</span>
+</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span style="color: #A3BE8C">    from the comprehensive income statement and not some other financial</span>
+</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span style="color: #A3BE8C">    statement.</span>
 </span><span id="__span-10-9"><a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>
-</span><span id="__span-10-10"><a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a><span style="color: #BA2121">    Create a row for each year available in the income statement with the</span>
-</span><span id="__span-10-11"><a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a><span style="color: #BA2121">    following columns: </span><span style="color: #A45A77; font-weight: bold">{</span><span style="color: #BA2121">&#39;, &#39;</span><span style="color: #666">.</span>join(columns_to_extract<span style="color: #666">.</span>keys())<span style="color: #A45A77; font-weight: bold">}</span><span style="color: #BA2121">. Firms typically report the</span>
-</span><span id="__span-10-12"><a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a><span style="color: #BA2121">    most recent 3 years of data, but this can vary.</span>
+</span><span id="__span-10-10"><a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a><span style="color: #A3BE8C">    Create a row for each year available in the income statement with the</span>
+</span><span id="__span-10-11"><a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a><span style="color: #A3BE8C">    following columns: {&#39;, &#39;</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">join</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">columns_to_extract</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">keys</span><span style="color: #ECEFF4">())</span><span style="color: #A3BE8C">}. Firms typically report the</span>
+</span><span id="__span-10-12"><a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a><span style="color: #A3BE8C">    most recent 3 years of data, but this can vary.</span>
 </span><span id="__span-10-13"><a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a>
-</span><span id="__span-10-14"><a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a><span style="color: #BA2121">    Each column has types: </span><span style="color: #A45A77; font-weight: bold">{</span><span style="color: #BA2121">&#39;, &#39;</span><span style="color: #666">.</span>join(columns_to_extract<span style="color: #666">.</span>values())<span style="color: #A45A77; font-weight: bold">}</span><span style="color: #BA2121">.</span>
+</span><span id="__span-10-14"><a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a><span style="color: #A3BE8C">    Each column has types: {&#39;, &#39;</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">join</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">columns_to_extract</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">values</span><span style="color: #ECEFF4">())</span><span style="color: #A3BE8C">}.</span>
 </span><span id="__span-10-15"><a id="__codelineno-10-15" name="__codelineno-10-15" href="#__codelineno-10-15"></a>
-</span><span id="__span-10-16"><a id="__codelineno-10-16" name="__codelineno-10-16" href="#__codelineno-10-16"></a><span style="color: #BA2121">    # Relevant pages:</span>
+</span><span id="__span-10-16"><a id="__codelineno-10-16" name="__codelineno-10-16" href="#__codelineno-10-16"></a><span style="color: #A3BE8C">    # Relevant pages:</span>
 </span><span id="__span-10-17"><a id="__codelineno-10-17" name="__codelineno-10-17" href="#__codelineno-10-17"></a>
-</span><span id="__span-10-18"><a id="__codelineno-10-18" name="__codelineno-10-18" href="#__codelineno-10-18"></a><span style="color: #BA2121">    </span><span style="color: #A45A77; font-weight: bold">{</span>income_statement<span style="color: #A45A77; font-weight: bold">}</span>
+</span><span id="__span-10-18"><a id="__codelineno-10-18" name="__codelineno-10-18" href="#__codelineno-10-18"></a><span style="color: #A3BE8C">    {</span><span style="color: #D8DEE9">income_statement</span><span style="color: #A3BE8C">}</span>
 </span><span id="__span-10-19"><a id="__codelineno-10-19" name="__codelineno-10-19" href="#__codelineno-10-19"></a>
-</span><span id="__span-10-20"><a id="__codelineno-10-20" name="__codelineno-10-20" href="#__codelineno-10-20"></a><span style="color: #BA2121">    # Key instructions:</span>
+</span><span id="__span-10-20"><a id="__codelineno-10-20" name="__codelineno-10-20" href="#__codelineno-10-20"></a><span style="color: #A3BE8C">    # Key instructions:</span>
 </span><span id="__span-10-21"><a id="__codelineno-10-21" name="__codelineno-10-21" href="#__codelineno-10-21"></a>
-</span><span id="__span-10-22"><a id="__codelineno-10-22" name="__codelineno-10-22" href="#__codelineno-10-22"></a><span style="color: #BA2121">    1. Look ONLY at the &quot;Consolidated Statements of Income&quot; table</span>
-</span><span id="__span-10-23"><a id="__codelineno-10-23" name="__codelineno-10-23" href="#__codelineno-10-23"></a><span style="color: #BA2121">    2. For operating income, look for &quot;Income from operations&quot; or &quot;Operating income&quot;</span>
-</span><span id="__span-10-24"><a id="__codelineno-10-24" name="__codelineno-10-24" href="#__codelineno-10-24"></a><span style="color: #BA2121">    3. For net income, use the TOTAL net income figure, not amounts allocated to specific share classes</span>
-</span><span id="__span-10-25"><a id="__codelineno-10-25" name="__codelineno-10-25" href="#__codelineno-10-25"></a><span style="color: #BA2121">    4. Use NULL for missing values</span>
-</span><span id="__span-10-26"><a id="__codelineno-10-26" name="__codelineno-10-26" href="#__codelineno-10-26"></a><span style="color: #BA2121">    5. Operating income must be less than revenue</span>
-</span><span id="__span-10-27"><a id="__codelineno-10-27" name="__codelineno-10-27" href="#__codelineno-10-27"></a><span style="color: #BA2121">    6. Net income must be less than operating income</span>
-</span><span id="__span-10-28"><a id="__codelineno-10-28" name="__codelineno-10-28" href="#__codelineno-10-28"></a><span style="color: #BA2121">    7. Ignore segment breakdowns, quarterly data, or per-share amounts</span>
+</span><span id="__span-10-22"><a id="__codelineno-10-22" name="__codelineno-10-22" href="#__codelineno-10-22"></a><span style="color: #A3BE8C">    1. Look ONLY at the &quot;Consolidated Statements of Income&quot; table</span>
+</span><span id="__span-10-23"><a id="__codelineno-10-23" name="__codelineno-10-23" href="#__codelineno-10-23"></a><span style="color: #A3BE8C">    2. For operating income, look for &quot;Income from operations&quot; or &quot;Operating income&quot;</span>
+</span><span id="__span-10-24"><a id="__codelineno-10-24" name="__codelineno-10-24" href="#__codelineno-10-24"></a><span style="color: #A3BE8C">    3. For net income, use the TOTAL net income figure, not amounts allocated to specific share classes</span>
+</span><span id="__span-10-25"><a id="__codelineno-10-25" name="__codelineno-10-25" href="#__codelineno-10-25"></a><span style="color: #A3BE8C">    4. Use NULL for missing values</span>
+</span><span id="__span-10-26"><a id="__codelineno-10-26" name="__codelineno-10-26" href="#__codelineno-10-26"></a><span style="color: #A3BE8C">    5. Operating income must be less than revenue</span>
+</span><span id="__span-10-27"><a id="__codelineno-10-27" name="__codelineno-10-27" href="#__codelineno-10-27"></a><span style="color: #A3BE8C">    6. Net income must be less than operating income</span>
+</span><span id="__span-10-28"><a id="__codelineno-10-28" name="__codelineno-10-28" href="#__codelineno-10-28"></a><span style="color: #A3BE8C">    7. Ignore segment breakdowns, quarterly data, or per-share amounts</span>
 </span><span id="__span-10-29"><a id="__codelineno-10-29" name="__codelineno-10-29" href="#__codelineno-10-29"></a>
-</span><span id="__span-10-30"><a id="__codelineno-10-30" name="__codelineno-10-30" href="#__codelineno-10-30"></a><span style="color: #BA2121">    # Output format:</span>
+</span><span id="__span-10-30"><a id="__codelineno-10-30" name="__codelineno-10-30" href="#__codelineno-10-30"></a><span style="color: #A3BE8C">    # Output format:</span>
 </span><span id="__span-10-31"><a id="__codelineno-10-31" name="__codelineno-10-31" href="#__codelineno-10-31"></a>
-</span><span id="__span-10-32"><a id="__codelineno-10-32" name="__codelineno-10-32" href="#__codelineno-10-32"></a><span style="color: #BA2121">    - CSV format with headers: </span><span style="color: #A45A77; font-weight: bold">{</span><span style="color: #BA2121">&#39;,&#39;</span><span style="color: #666">.</span>join(columns_to_extract<span style="color: #666">.</span>keys())<span style="color: #A45A77; font-weight: bold">}</span>
-</span><span id="__span-10-33"><a id="__codelineno-10-33" name="__codelineno-10-33" href="#__codelineno-10-33"></a><span style="color: #BA2121">    - Use NULL for missing values</span>
-</span><span id="__span-10-34"><a id="__codelineno-10-34" name="__codelineno-10-34" href="#__codelineno-10-34"></a><span style="color: #BA2121">    - If no data are found, do not create a row.</span>
-</span><span id="__span-10-35"><a id="__codelineno-10-35" name="__codelineno-10-35" href="#__codelineno-10-35"></a><span style="color: #BA2121">    - Enter two newline characters to terminate the CSV when no more data are found.</span>
+</span><span id="__span-10-32"><a id="__codelineno-10-32" name="__codelineno-10-32" href="#__codelineno-10-32"></a><span style="color: #A3BE8C">    - CSV format with headers: {&#39;,&#39;</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">join</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">columns_to_extract</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">keys</span><span style="color: #ECEFF4">())</span><span style="color: #A3BE8C">}</span>
+</span><span id="__span-10-33"><a id="__codelineno-10-33" name="__codelineno-10-33" href="#__codelineno-10-33"></a><span style="color: #A3BE8C">    - Use NULL for missing values</span>
+</span><span id="__span-10-34"><a id="__codelineno-10-34" name="__codelineno-10-34" href="#__codelineno-10-34"></a><span style="color: #A3BE8C">    - If no data are found, do not create a row.</span>
+</span><span id="__span-10-35"><a id="__codelineno-10-35" name="__codelineno-10-35" href="#__codelineno-10-35"></a><span style="color: #A3BE8C">    - Enter two newline characters to terminate the CSV when no more data are found.</span>
 </span><span id="__span-10-36"><a id="__codelineno-10-36" name="__codelineno-10-36" href="#__codelineno-10-36"></a>
-</span><span id="__span-10-37"><a id="__codelineno-10-37" name="__codelineno-10-37" href="#__codelineno-10-37"></a><span style="color: #BA2121">    # Definitions:</span>
-</span><span id="__span-10-38"><a id="__codelineno-10-38" name="__codelineno-10-38" href="#__codelineno-10-38"></a><span style="color: #BA2121">    - Revenue: Total sales of goods and services. Usually this is at the top of the</span>
-</span><span id="__span-10-39"><a id="__codelineno-10-39" name="__codelineno-10-39" href="#__codelineno-10-39"></a><span style="color: #BA2121">    income statement.</span>
-</span><span id="__span-10-40"><a id="__codelineno-10-40" name="__codelineno-10-40" href="#__codelineno-10-40"></a><span style="color: #BA2121">    - Operating income: Revenue minus operating expenses for the entire company. This is revenue</span>
-</span><span id="__span-10-41"><a id="__codelineno-10-41" name="__codelineno-10-41" href="#__codelineno-10-41"></a><span style="color: #BA2121">    minus costs. Operating income is also called operating profit, EBIT, or income from</span>
-</span><span id="__span-10-42"><a id="__codelineno-10-42" name="__codelineno-10-42" href="#__codelineno-10-42"></a><span style="color: #BA2121">    operations.</span>
-</span><span id="__span-10-43"><a id="__codelineno-10-43" name="__codelineno-10-43" href="#__codelineno-10-43"></a><span style="color: #BA2121">    - Net income: Operating income minus taxes. This is the bottom line of the</span>
-</span><span id="__span-10-44"><a id="__codelineno-10-44" name="__codelineno-10-44" href="#__codelineno-10-44"></a><span style="color: #BA2121">    income statement.</span>
-</span><span id="__span-10-45"><a id="__codelineno-10-45" name="__codelineno-10-45" href="#__codelineno-10-45"></a><span style="color: #BA2121">    &quot;&quot;&quot;</span>
+</span><span id="__span-10-37"><a id="__codelineno-10-37" name="__codelineno-10-37" href="#__codelineno-10-37"></a><span style="color: #A3BE8C">    # Definitions:</span>
+</span><span id="__span-10-38"><a id="__codelineno-10-38" name="__codelineno-10-38" href="#__codelineno-10-38"></a><span style="color: #A3BE8C">    - Revenue: Total sales of goods and services. Usually this is at the top of the</span>
+</span><span id="__span-10-39"><a id="__codelineno-10-39" name="__codelineno-10-39" href="#__codelineno-10-39"></a><span style="color: #A3BE8C">    income statement.</span>
+</span><span id="__span-10-40"><a id="__codelineno-10-40" name="__codelineno-10-40" href="#__codelineno-10-40"></a><span style="color: #A3BE8C">    - Operating income: Revenue minus operating expenses for the entire company. This is revenue</span>
+</span><span id="__span-10-41"><a id="__codelineno-10-41" name="__codelineno-10-41" href="#__codelineno-10-41"></a><span style="color: #A3BE8C">    minus costs. Operating income is also called operating profit, EBIT, or income from</span>
+</span><span id="__span-10-42"><a id="__codelineno-10-42" name="__codelineno-10-42" href="#__codelineno-10-42"></a><span style="color: #A3BE8C">    operations.</span>
+</span><span id="__span-10-43"><a id="__codelineno-10-43" name="__codelineno-10-43" href="#__codelineno-10-43"></a><span style="color: #A3BE8C">    - Net income: Operating income minus taxes. This is the bottom line of the</span>
+</span><span id="__span-10-44"><a id="__codelineno-10-44" name="__codelineno-10-44" href="#__codelineno-10-44"></a><span style="color: #A3BE8C">    income statement.</span>
+</span><span id="__span-10-45"><a id="__codelineno-10-45" name="__codelineno-10-45" href="#__codelineno-10-45"></a><span style="color: #A3BE8C">    &quot;&quot;&quot;</span>
 </span><span id="__span-10-46"><a id="__codelineno-10-46" name="__codelineno-10-46" href="#__codelineno-10-46"></a>
-</span><span id="__span-10-47"><a id="__codelineno-10-47" name="__codelineno-10-47" href="#__codelineno-10-47"></a>    <span style="color: #008000; font-weight: bold">return</span> add_instruction(user_prompt)
+</span><span id="__span-10-47"><a id="__codelineno-10-47" name="__codelineno-10-47" href="#__codelineno-10-47"></a>    <span style="color: #81A1C1; font-weight: bold">return</span> <span style="color: #D8DEE9">add_instruction</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">user_prompt</span><span style="color: #ECEFF4">)</span>
 </span></code></pre></div>
 <h2 id="running-the-model">Running the model</h2>
 <p>Now that we have our prompt and regular expression, we can run the model.</p>
 <p>Construct our regex extractor function.</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">outlines.types</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> Regex
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines.types</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">Regex</span>
 </span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>
-</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>csv_extractor <span style="color: #666">=</span> outlines<span style="color: #666">.</span>Generator(model, Regex(csv_regex))
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span style="color: #D8DEE9">csv_extractor</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">outlines</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">Generator</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">Regex</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">csv_regex</span><span style="color: #ECEFF4">))</span>
 </span></code></pre></div>
 <p>Provide the prompt to the model and run it:</p>
-<p><div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>csv_data <span style="color: #666">=</span> csv_extractor(
-</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>    extract_financial_data_prompt(columns_to_extract, income_statement),
-</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>    max_new_tokens<span style="color: #666">=1024</span>,
-</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>)
+<p><div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span style="color: #D8DEE9">csv_data</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">csv_extractor</span><span style="color: #ECEFF4">(</span>
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>    <span style="color: #D8DEE9">extract_financial_data_prompt</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">columns_to_extract</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">income_statement</span><span style="color: #ECEFF4">),</span>
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>    <span style="color: #D8DEE9">max_new_tokens</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #B48EAD">1024</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span style="color: #ECEFF4">)</span>
 </span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>
-</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span style="color: #008000">print</span>(csv_data)
+</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">csv_data</span><span style="color: #ECEFF4">)</span>
 </span></code></pre></div>
-<div class="language-text highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>year,revenue,operating_income,net_income
+<div class="language-text highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>year,revenue,operating_income,net_income
 </span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>2024,60922,32972,29760
 </span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>2023,26974,4224,4368
 </span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>2022,26914,10041,9752
 </span></code></pre></div></p>
 <p>Voila! We've extracted the financial data from the income statement, and it's correct upon inspection.</p>
 <p>You can even load this into a <code>pandas</code> DataFrame for further analysis:</p>
-<p><div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span style="color: #008000; font-weight: bold">import</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">pandas</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">as</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">pd</span>
-</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">io</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> StringIO
+<p><div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">pandas</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">as</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">pd</span>
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">io</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">StringIO</span>
 </span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>
-</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>df <span style="color: #666">=</span> pd<span style="color: #666">.</span>read_csv(StringIO(csv_data))
-</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span style="color: #008000">print</span>(df)
+</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span style="color: #D8DEE9">df</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">pd</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">read_csv</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">StringIO</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">csv_data</span><span style="color: #ECEFF4">))</span>
+</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">df</span><span style="color: #ECEFF4">)</span>
 </span></code></pre></div>
-<div class="language-text highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>   year  revenue  operating_income  net_income
+<div class="language-text highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>   year  revenue  operating_income  net_income
 </span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>0  2024    60922             32972       29760
 </span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>1  2023    26974              4224        4368
 </span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>2  2022    26914             10041        9752
@@ -4027,7 +3974,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="June 8, 2025 07:43:07 UTC"><span class="timeago" datetime="2025-06-08T07:43:07+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="June 8, 2025 07:43:07 UTC">2025-06-08</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="June 20, 2025 11:51:24 UTC"><span class="timeago" datetime="2025-06-20T11:51:24+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="June 20, 2025 11:51:24 UTC">2025-06-20</span>
   </span>
 
     
@@ -4055,14 +4002,14 @@
     
     <nav>
       
-        <a href="https://github.com/RobinPicard" class="md-author" title="@RobinPicard">
-          
-          <img src="https://avatars.githubusercontent.com/u/83579270?v=4&size=72" alt="RobinPicard">
-        </a>
-      
         <a href="https://github.com/rlouf" class="md-author" title="@rlouf">
           
           <img src="https://avatars.githubusercontent.com/u/3885044?v=4&size=72" alt="rlouf">
+        </a>
+      
+        <a href="https://github.com/RobinPicard" class="md-author" title="@RobinPicard">
+          
+          <img src="https://avatars.githubusercontent.com/u/83579270?v=4&size=72" alt="RobinPicard">
         </a>
       
         <a href="https://github.com/web-flow" class="md-author" title="@web-flow">

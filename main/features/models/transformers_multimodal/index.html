@@ -571,12 +571,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../licence/" class="md-nav__link">
+      <a href="../../../guide/fastapi_vllm_deployment/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Licence
+    Deploying with FastAPI
     
   </span>
   
@@ -586,51 +586,6 @@
   
 
               
-            
-              
-                
-  
-  
-  
-  
-    
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_5" >
-        
-          
-          <label class="md-nav__link" for="__nav_2_5" id="__nav_2_5_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    Utility
-    
-  </span>
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_5">
-            <span class="md-nav__icon md-icon"></span>
-            Utility
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
             
               
                 
@@ -650,14 +605,6 @@
   
 
       </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
     </li>
   
 
@@ -3715,62 +3662,62 @@
 <li><code>tokenizer_or_processor</code>: a <code>transformers</code> processor (created with <code>AutoProcessor</code> for instance, it must be an instance of <code>ProcessorMixin</code>)</li>
 </ul>
 <p>For instance:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span style="color: #008000; font-weight: bold">import</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">outlines</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">transformers</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> AutoModelForCausalLM, AutoProcessor
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">transformers</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">AutoModelForCausalLM</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">AutoProcessor</span>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span style="color: #3D7B7B; font-style: italic"># Create the transformers model and processor</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>hf_model <span style="color: #666">=</span> AutoModelForCausalLM<span style="color: #666">.</span>from_pretrained(<span style="color: #BA2121">&quot;microsoft/Phi-3-mini-4k-instruct&quot;</span>)
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>hf_processor <span style="color: #666">=</span> AutoProcessor<span style="color: #666">.</span>from_pretrained(<span style="color: #BA2121">&quot;microsoft/Phi-3-mini-4k-instruct&quot;</span>)
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span style="color: #616E87; font-style: italic"># Create the transformers model and processor</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span style="color: #D8DEE9">hf_model</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">AutoModelForCausalLM</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_pretrained</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;microsoft/Phi-3-mini-4k-instruct&quot;</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span style="color: #D8DEE9">hf_processor</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">AutoProcessor</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_pretrained</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;microsoft/Phi-3-mini-4k-instruct&quot;</span><span style="color: #ECEFF4">)</span>
 </span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span style="color: #3D7B7B; font-style: italic"># Create the Outlines model</span>
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>model <span style="color: #666">=</span> outlines<span style="color: #666">.</span>from_transformers(hf_model, hf_processor)
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span style="color: #616E87; font-style: italic"># Create the Outlines model</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span style="color: #D8DEE9">model</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">outlines</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_transformers</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">hf_model</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">hf_processor</span><span style="color: #ECEFF4">)</span>
 </span></code></pre></div>
 <h2 id="model-input">Model Input</h2>
 <p>Instead of a string or a list of strings (for batch generation), you should provide a dictionary or a list of dictionaries as a prompt when calling the <code>TransformersMultiModal</code> model. The dictionary should contain key-value pairs for all elements required by your processor. <code>text</code>, that contains the text prompt, is the only mandatory field. The format of that argument is:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>{
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span style="color: #BA2121">&quot;text&quot;</span>: Union[<span style="color: #008000">str</span>, List[<span style="color: #008000">str</span>]]
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span style="color: #BA2121">&quot;&lt;other_keys_depending_on_your_processor&gt;&quot;</span>: Union[Any, List[Any]]
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>}
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span style="color: #ECEFF4">{</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span style="color: #A3BE8C">&quot;text&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">Union</span><span style="color: #ECEFF4">[</span><span style="color: #81A1C1">str</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">List</span><span style="color: #ECEFF4">[</span><span style="color: #81A1C1">str</span><span style="color: #ECEFF4">]]</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span style="color: #A3BE8C">&quot;&lt;other_keys_depending_on_your_processor&gt;&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">Union</span><span style="color: #ECEFF4">[</span><span style="color: #D8DEE9">Any</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">List</span><span style="color: #ECEFF4">[</span><span style="color: #D8DEE9">Any</span><span style="color: #ECEFF4">]]</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span style="color: #ECEFF4">}</span>
 </span></code></pre></div>
 <p>Some common keys to include for processors are <code>images</code> for vision models or <code>audios</code> for audio models. The value for those keys would respectively be an image object and an audio file (or lists of those if there are several assets or if you are using batch generation).</p>
 <p>Here's an example of using a vision multimodal model:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">io</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> BytesIO
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">urllib.request</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> urlopen
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">io</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">BytesIO</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">urllib.request</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">urlopen</span>
 </span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">PIL</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> Image
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">pydantic</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> BaseModel
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">transformers</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> (
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    LlavaForConditionalGeneration,
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    AutoProcessor,
-</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>)
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">PIL</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">Image</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">pydantic</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">BaseModel</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">transformers</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #ECEFF4">(</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span style="color: #D8DEE9">LlavaForConditionalGeneration</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span style="color: #D8DEE9">AutoProcessor</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span style="color: #ECEFF4">)</span>
 </span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>
-</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span style="color: #008000; font-weight: bold">import</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">outlines</span>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines</span>
 </span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>
-</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>TEST_MODEL <span style="color: #666">=</span> <span style="color: #BA2121">&quot;trl-internal-testing/tiny-LlavaForConditionalGeneration&quot;</span>
-</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>IMAGE_URL <span style="color: #666">=</span> <span style="color: #BA2121">&quot;https://upload.wikimedia.org/wikipedia/commons/2/25/Siam_lilacpoint.jpg&quot;</span>
+</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span style="color: #D8DEE9">TEST_MODEL</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">&quot;trl-internal-testing/tiny-LlavaForConditionalGeneration&quot;</span>
+</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span style="color: #D8DEE9">IMAGE_URL</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">&quot;https://upload.wikimedia.org/wikipedia/commons/2/25/Siam_lilacpoint.jpg&quot;</span>
 </span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>
-</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span style="color: #008000; font-weight: bold">class</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">Animal</span>(BaseModel):
-</span><span id="__span-2-17"><a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>    specie: <span style="color: #008000">str</span>
-</span><span id="__span-2-18"><a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a>    color: <span style="color: #008000">str</span>
-</span><span id="__span-2-19"><a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a>    weight: <span style="color: #008000">int</span>
+</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span style="color: #81A1C1; font-weight: bold">class</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">Animal</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">BaseModel</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-2-17"><a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>    <span style="color: #D8DEE9">specie</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">str</span>
+</span><span id="__span-2-18"><a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a>    <span style="color: #D8DEE9">color</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">str</span>
+</span><span id="__span-2-19"><a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a>    <span style="color: #D8DEE9">weight</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">int</span>
 </span><span id="__span-2-20"><a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a>
-</span><span id="__span-2-21"><a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a><span style="color: #008000; font-weight: bold">def</span><span style="color: #BBB"> </span><span style="color: #00F">get_image_from_url</span>():
-</span><span id="__span-2-22"><a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a>    img_byte_stream <span style="color: #666">=</span> BytesIO(urlopen(IMAGE_URL)<span style="color: #666">.</span>read())
-</span><span id="__span-2-23"><a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a>    <span style="color: #008000; font-weight: bold">return</span> Image<span style="color: #666">.</span>open(img_byte_stream)<span style="color: #666">.</span>convert(<span style="color: #BA2121">&quot;RGB&quot;</span>)
+</span><span id="__span-2-21"><a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a><span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">get_image_from_url</span><span style="color: #ECEFF4">():</span>
+</span><span id="__span-2-22"><a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a>    <span style="color: #D8DEE9">img_byte_stream</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">BytesIO</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">urlopen</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">IMAGE_URL</span><span style="color: #ECEFF4">)</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">read</span><span style="color: #ECEFF4">())</span>
+</span><span id="__span-2-23"><a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a>    <span style="color: #81A1C1; font-weight: bold">return</span> <span style="color: #D8DEE9">Image</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">open</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">img_byte_stream</span><span style="color: #ECEFF4">)</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">convert</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;RGB&quot;</span><span style="color: #ECEFF4">)</span>
 </span><span id="__span-2-24"><a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a>
-</span><span id="__span-2-25"><a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a><span style="color: #3D7B7B; font-style: italic"># Create a model</span>
-</span><span id="__span-2-26"><a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a>model <span style="color: #666">=</span> outlines<span style="color: #666">.</span>from_transformers(
-</span><span id="__span-2-27"><a id="__codelineno-2-27" name="__codelineno-2-27" href="#__codelineno-2-27"></a>    LlavaForConditionalGeneration<span style="color: #666">.</span>from_pretrained(TEST_MODEL),
-</span><span id="__span-2-28"><a id="__codelineno-2-28" name="__codelineno-2-28" href="#__codelineno-2-28"></a>    AutoProcessor<span style="color: #666">.</span>from_pretrained(TEST_MODEL),
-</span><span id="__span-2-29"><a id="__codelineno-2-29" name="__codelineno-2-29" href="#__codelineno-2-29"></a>)
+</span><span id="__span-2-25"><a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a><span style="color: #616E87; font-style: italic"># Create a model</span>
+</span><span id="__span-2-26"><a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a><span style="color: #D8DEE9">model</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">outlines</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_transformers</span><span style="color: #ECEFF4">(</span>
+</span><span id="__span-2-27"><a id="__codelineno-2-27" name="__codelineno-2-27" href="#__codelineno-2-27"></a>    <span style="color: #D8DEE9">LlavaForConditionalGeneration</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_pretrained</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">TEST_MODEL</span><span style="color: #ECEFF4">),</span>
+</span><span id="__span-2-28"><a id="__codelineno-2-28" name="__codelineno-2-28" href="#__codelineno-2-28"></a>    <span style="color: #D8DEE9">AutoProcessor</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_pretrained</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">TEST_MODEL</span><span style="color: #ECEFF4">),</span>
+</span><span id="__span-2-29"><a id="__codelineno-2-29" name="__codelineno-2-29" href="#__codelineno-2-29"></a><span style="color: #ECEFF4">)</span>
 </span><span id="__span-2-30"><a id="__codelineno-2-30" name="__codelineno-2-30" href="#__codelineno-2-30"></a>
-</span><span id="__span-2-31"><a id="__codelineno-2-31" name="__codelineno-2-31" href="#__codelineno-2-31"></a><span style="color: #3D7B7B; font-style: italic"># Call it with a model input dict containing a text prompt and an image + an output type</span>
-</span><span id="__span-2-32"><a id="__codelineno-2-32" name="__codelineno-2-32" href="#__codelineno-2-32"></a>result <span style="color: #666">=</span> model(
-</span><span id="__span-2-33"><a id="__codelineno-2-33" name="__codelineno-2-33" href="#__codelineno-2-33"></a>    {<span style="color: #BA2121">&quot;text&quot;</span>: <span style="color: #BA2121">&quot;&lt;image&gt;Describe this animal.&quot;</span>, <span style="color: #BA2121">&quot;images&quot;</span>: get_image_from_url(IMAGE_URL)},
-</span><span id="__span-2-34"><a id="__codelineno-2-34" name="__codelineno-2-34" href="#__codelineno-2-34"></a>    Animal,
-</span><span id="__span-2-35"><a id="__codelineno-2-35" name="__codelineno-2-35" href="#__codelineno-2-35"></a>)
-</span><span id="__span-2-36"><a id="__codelineno-2-36" name="__codelineno-2-36" href="#__codelineno-2-36"></a><span style="color: #008000">print</span>(result) <span style="color: #3D7B7B; font-style: italic"># &#39;{&quot;specie&quot;: &quot;cat&quot;, &quot;color&quot;: &quot;white&quot;, &quot;weight&quot;: 4}&#39;</span>
-</span><span id="__span-2-37"><a id="__codelineno-2-37" name="__codelineno-2-37" href="#__codelineno-2-37"></a><span style="color: #008000">print</span>(Animal<span style="color: #666">.</span>model_validate_json(result)) <span style="color: #3D7B7B; font-style: italic"># specie=cat, color=white, weight=4</span>
+</span><span id="__span-2-31"><a id="__codelineno-2-31" name="__codelineno-2-31" href="#__codelineno-2-31"></a><span style="color: #616E87; font-style: italic"># Call it with a model input dict containing a text prompt and an image + an output type</span>
+</span><span id="__span-2-32"><a id="__codelineno-2-32" name="__codelineno-2-32" href="#__codelineno-2-32"></a><span style="color: #D8DEE9">result</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">(</span>
+</span><span id="__span-2-33"><a id="__codelineno-2-33" name="__codelineno-2-33" href="#__codelineno-2-33"></a>    <span style="color: #ECEFF4">{</span><span style="color: #A3BE8C">&quot;text&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;&lt;image&gt;Describe this animal.&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;images&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">get_image_from_url</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">IMAGE_URL</span><span style="color: #ECEFF4">)},</span>
+</span><span id="__span-2-34"><a id="__codelineno-2-34" name="__codelineno-2-34" href="#__codelineno-2-34"></a>    <span style="color: #D8DEE9">Animal</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-2-35"><a id="__codelineno-2-35" name="__codelineno-2-35" href="#__codelineno-2-35"></a><span style="color: #ECEFF4">)</span>
+</span><span id="__span-2-36"><a id="__codelineno-2-36" name="__codelineno-2-36" href="#__codelineno-2-36"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">result</span><span style="color: #ECEFF4">)</span> <span style="color: #616E87; font-style: italic"># &#39;{&quot;specie&quot;: &quot;cat&quot;, &quot;color&quot;: &quot;white&quot;, &quot;weight&quot;: 4}&#39;</span>
+</span><span id="__span-2-37"><a id="__codelineno-2-37" name="__codelineno-2-37" href="#__codelineno-2-37"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">Animal</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">model_validate_json</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">result</span><span style="color: #ECEFF4">))</span> <span style="color: #616E87; font-style: italic"># specie=cat, color=white, weight=4</span>
 </span></code></pre></div>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
@@ -3813,6 +3760,44 @@
 
     
     
+    
+      
+  <span class="md-source-file__fact">
+    
+      
+  <span class="md-icon" title="Contributors">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33s1.71.11 2.5.33c1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2"/></svg>
+  </span>
+  <span>GitHub</span>
+
+    
+    <nav>
+      
+        <a href="https://github.com/sukrucildirr" class="md-author" title="@sukrucildirr">
+          
+          <img src="https://avatars.githubusercontent.com/u/32969880?v=4&size=72" alt="sukrucildirr">
+        </a>
+      
+        <a href="https://github.com/web-flow" class="md-author" title="@web-flow">
+          
+          <img src="https://avatars.githubusercontent.com/u/19864447?v=4&size=72" alt="web-flow">
+        </a>
+      
+        <a href="https://github.com/RobinPicard" class="md-author" title="@RobinPicard">
+          
+          <img src="https://avatars.githubusercontent.com/u/83579270?v=4&size=72" alt="RobinPicard">
+        </a>
+      
+        <a href="https://github.com/rlouf" class="md-author" title="@rlouf">
+          
+          <img src="https://avatars.githubusercontent.com/u/3885044?v=4&size=72" alt="rlouf">
+        </a>
+      
+      
+      
+    </nav>
+  </span>
+
     
   </aside>
 

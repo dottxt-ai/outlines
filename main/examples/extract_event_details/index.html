@@ -566,12 +566,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../licence/" class="md-nav__link">
+      <a href="../../guide/fastapi_vllm_deployment/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Licence
+    Deploying with FastAPI
     
   </span>
   
@@ -581,51 +581,6 @@
   
 
               
-            
-              
-                
-  
-  
-  
-  
-    
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_5" >
-        
-          
-          <label class="md-nav__link" for="__nav_2_5" id="__nav_2_5_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    Utility
-    
-  </span>
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_5">
-            <span class="md-nav__icon md-icon"></span>
-            Utility
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
             
               
                 
@@ -645,14 +600,6 @@
   
 
       </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
     </li>
   
 
@@ -3618,23 +3565,23 @@
 
 <p>This recipe demonstrates how to use the <code>outlines</code> library to extract structured event details from a text message.
 We will extract the title, location, and start date and time from messages like the following:</p>
-<div class="language-text highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Hello Kitty, my grandmother will be here, I think it&#39;s better to postpone
+<div class="language-text highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Hello Kitty, my grandmother will be here, I think it&#39;s better to postpone
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>our appointment to review math lessons to next Monday at 2pm at the same
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>place, 3 avenue des tanneurs, one hour will be enough see you 😘
 </span></code></pre></div>
 <p>Let see how to extract the event details from the message with the MLX
 library dedicated to Apple Silicon processor (M series).</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>
 </span></code></pre></div>
 <p>The output will be:</p>
-<div class="language-text highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>Today: Saturday 16 November 2024 and it&#39;s 10:55
+<div class="language-text highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>Today: Saturday 16 November 2024 and it&#39;s 10:55
 </span></code></pre></div>
 <p>and the extracted event information will be:</p>
-<div class="language-json highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>{
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span style="color: #BBB">  </span><span style="color: #008000; font-weight: bold">&quot;title&quot;</span>:<span style="color: #BA2121">&quot;Math Review&quot;</span>,
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span style="color: #BBB">  </span><span style="color: #008000; font-weight: bold">&quot;location&quot;</span>:<span style="color: #BA2121">&quot;3 avenue des tanneurs&quot;</span>,
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span style="color: #BBB">  </span><span style="color: #008000; font-weight: bold">&quot;start&quot;</span>:<span style="color: #BA2121">&quot;2024-11-22T14:00:00Z&quot;</span>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>}
+<div class="language-json highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span style="color: #ECEFF4">{</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span style="color: #D8DEE9">  </span><span style="color: #81A1C1">&quot;title&quot;</span><span style="color: #ECEFF4">:</span><span style="color: #A3BE8C">&quot;Math Review&quot;</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span style="color: #D8DEE9">  </span><span style="color: #81A1C1">&quot;location&quot;</span><span style="color: #ECEFF4">:</span><span style="color: #A3BE8C">&quot;3 avenue des tanneurs&quot;</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span style="color: #D8DEE9">  </span><span style="color: #81A1C1">&quot;start&quot;</span><span style="color: #ECEFF4">:</span><span style="color: #A3BE8C">&quot;2024-11-22T14:00:00Z&quot;</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span style="color: #ECEFF4">}</span>
 </span></code></pre></div>
 <p>To find out more about this use case, we recommend the project developped by <a href="https://x.com/JRudoler">Joseph Rudoler</a> the <a href="https://github.com/jrudoler/ics-generator">ICS Generator</a></p>
 

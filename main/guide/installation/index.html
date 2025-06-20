@@ -667,12 +667,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../licence/" class="md-nav__link">
+      <a href="../fastapi_vllm_deployment/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Licence
+    Deploying with FastAPI
     
   </span>
   
@@ -682,54 +682,6 @@
   
 
               
-            
-              
-                
-  
-  
-  
-  
-    
-    
-    
-    
-      
-      
-        
-          
-          
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_5" >
-        
-          
-          <label class="md-nav__link" for="__nav_2_5" id="__nav_2_5_label" tabindex="">
-            
-  
-  
-  <span class="md-ellipsis">
-    Utility
-    
-  </span>
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_5">
-            <span class="md-nav__icon md-icon"></span>
-            Utility
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
             
               
                 
@@ -749,14 +701,6 @@
   
 
       </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
     </li>
   
 
@@ -3769,16 +3713,16 @@
 <h2 id="dependency-management">Dependency Management</h2>
 <p>We recommend using modern Python packaging tools such as <code>uv</code> for managing python dependencies.</p>
 <h3 id="uv-recommended">uv (Recommended)</h3>
-<div class="language-bash highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span style="color: #3D7B7B; font-style: italic"># Install uv</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>curl<span style="color: #BBB"> </span>-LsSf<span style="color: #BBB"> </span>https://astral.sh/uv/install.sh<span style="color: #BBB"> </span>|<span style="color: #BBB"> </span>sh
+<div class="language-shell highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span style="color: #616E87; font-style: italic"># Install uv</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>curl<span style="color: #D8DEE9"> </span>-LsSf<span style="color: #D8DEE9"> </span>https://astral.sh/uv/install.sh<span style="color: #D8DEE9"> </span><span style="color: #ECEFF4">|</span><span style="color: #D8DEE9"> </span>sh
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span style="color: #3D7B7B; font-style: italic"># Create a virtual environment and install Outlines</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>uv<span style="color: #BBB"> </span>venv
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span style="color: #008000">source</span><span style="color: #BBB"> </span>.venv/bin/activate
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>uv<span style="color: #BBB"> </span>pip<span style="color: #BBB"> </span>install<span style="color: #BBB"> </span>outlines
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span style="color: #616E87; font-style: italic"># Create a virtual environment and install Outlines</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>uv<span style="color: #D8DEE9"> </span>venv
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span style="color: #81A1C1">source</span><span style="color: #D8DEE9"> </span>.venv/bin/activate
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>uv<span style="color: #D8DEE9"> </span>pip<span style="color: #D8DEE9"> </span>install<span style="color: #D8DEE9"> </span>outlines
 </span></code></pre></div>
-<p>or with basic pip:</p>
-<div class="language-bash highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>pip<span style="color: #BBB"> </span>install<span style="color: #BBB"> </span>outlines
+<p>or with pip:</p>
+<div class="language-shell highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>pip<span style="color: #D8DEE9"> </span>install<span style="color: #D8DEE9"> </span>outlines
 </span></code></pre></div>
 <h2 id="optional-dependencies">Optional Dependencies</h2>
 <p>To use Outlines models, you need to install the Python libraries for the associated inference engines/clients. Such libraries are not part of the general installation as you should only install the libraries needed for the specific models you want to use.</p>
@@ -3806,7 +3750,7 @@
 </div>
 <h2 id="bleeding-edge">Bleeding Edge</h2>
 <p>You can install the latest version of Outlines from the repository's <code>main</code> branch:</p>
-<div class="language-sh highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>pip<span style="color: #BBB"> </span>install<span style="color: #BBB"> </span>git+https://github.com/dottxt-ai/outlines.git@main
+<div class="language-sh highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>pip<span style="color: #D8DEE9"> </span>install<span style="color: #D8DEE9"> </span>git+https://github.com/dottxt-ai/outlines.git@main
 </span></code></pre></div>
 <p>This can be useful, for instance, when a fix has been merged but not yet released.</p>
 <h2 id="installing-for-development">Installing for Development</h2>
@@ -3833,7 +3777,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="June 2, 2025 16:58:11 UTC"><span class="timeago" datetime="2025-06-02T16:58:11+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="June 2, 2025 16:58:11 UTC">2025-06-02</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="June 20, 2025 12:04:38 UTC"><span class="timeago" datetime="2025-06-20T12:04:38+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="June 20, 2025 12:04:38 UTC">2025-06-20</span>
   </span>
 
     
@@ -3848,39 +3792,6 @@
 
     
     
-    
-      
-  <span class="md-source-file__fact">
-    
-      
-  <span class="md-icon" title="Contributors">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33s1.71.11 2.5.33c1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2"/></svg>
-  </span>
-  <span>GitHub</span>
-
-    
-    <nav>
-      
-        <a href="https://github.com/RobinPicard" class="md-author" title="@RobinPicard">
-          
-          <img src="https://avatars.githubusercontent.com/u/83579270?v=4&size=72" alt="RobinPicard">
-        </a>
-      
-        <a href="https://github.com/rlouf" class="md-author" title="@rlouf">
-          
-          <img src="https://avatars.githubusercontent.com/u/3885044?v=4&size=72" alt="rlouf">
-        </a>
-      
-        <a href="https://github.com/web-flow" class="md-author" title="@web-flow">
-          
-          <img src="https://avatars.githubusercontent.com/u/19864447?v=4&size=72" alt="web-flow">
-        </a>
-      
-      
-      
-    </nav>
-  </span>
-
     
   </aside>
 

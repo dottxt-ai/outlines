@@ -571,12 +571,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../licence/" class="md-nav__link">
+      <a href="../../guide/fastapi_vllm_deployment/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Licence
+    Deploying with FastAPI
     
   </span>
   
@@ -586,51 +586,6 @@
   
 
               
-            
-              
-                
-  
-  
-  
-  
-    
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_5" >
-        
-          
-          <label class="md-nav__link" for="__nav_2_5" id="__nav_2_5_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    Utility
-    
-  </span>
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_5">
-            <span class="md-nav__icon md-icon"></span>
-            Utility
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
             
               
                 
@@ -650,14 +605,6 @@
   
 
       </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
     </li>
   
 
@@ -3842,25 +3789,25 @@
 <p>For this example we're going to be building an LLM program to generate <strong>synthetic data</strong> in the form of realistic looking phone numbers for Washington State. Using an LLM for this task <em>is a bit overkill</em> since we could just as easily accomplish this with a tool like <a href="https://fakerjs.dev/">Faker</a>, but this example still serves as a useful way to demonstrate a workflow for using structured generation.</p>
 <h2 id="unstructured-approach">Unstructured approach</h2>
 <p>Before diving into how to use structure generation for this task let's start with an unstructured example. We begin by loading our model:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span style="color: #008000; font-weight: bold">import</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">outlines</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span style="color: #008000; font-weight: bold">import</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">transformers</span>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">transformers</span>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>model_name <span style="color: #666">=</span> <span style="color: #BA2121">&#39;microsoft/Phi-3-mini-4k-instruct&#39;</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>model <span style="color: #666">=</span> outlines<span style="color: #666">.</span>from_transformers(
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    transformers<span style="color: #666">.</span>AutoModelForCausalLM<span style="color: #666">.</span>from_pretrained(model_name),
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    transformers<span style="color: #666">.</span>AutoTokenizer<span style="color: #666">.</span>from_pretrained(model_name)
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>)
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span style="color: #D8DEE9">model_name</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">&#39;microsoft/Phi-3-mini-4k-instruct&#39;</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span style="color: #D8DEE9">model</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">outlines</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_transformers</span><span style="color: #ECEFF4">(</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span style="color: #D8DEE9">transformers</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">AutoModelForCausalLM</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_pretrained</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">model_name</span><span style="color: #ECEFF4">),</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span style="color: #D8DEE9">transformers</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">AutoTokenizer</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_pretrained</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">model_name</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span style="color: #ECEFF4">)</span>
 </span></code></pre></div>
 <p>Next we need a prompt for this model. Since we're focusing on structured generation, we won't be engaging in any form of "prompt hacking" and will be leaving this prompt untouched for the rest of this example.</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>prompt_phone <span style="color: #666">=</span> <span style="color: #BA2121">&quot;&quot;&quot;</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span style="color: #BA2121">    Please generate a realistic phone number for Washington State in the following format</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span style="color: #BA2121">    (555) 555-5555</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span style="color: #BA2121">&quot;&quot;&quot;</span>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span style="color: #D8DEE9">prompt_phone</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">&quot;&quot;&quot;</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span style="color: #A3BE8C">    Please generate a realistic phone number for Washington State in the following format</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span style="color: #A3BE8C">    (555) 555-5555</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span style="color: #A3BE8C">&quot;&quot;&quot;</span>
 </span></code></pre></div>
 <p>With our prompt ready we can now generate 10 example phone numbers</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>phone_generator_unstruct <span style="color: #666">=</span> outlines<span style="color: #666">.</span>Generator(model)
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span style="color: #008000; font-weight: bold">for</span> _ <span style="color: #A2F; font-weight: bold">in</span> <span style="color: #008000">range</span>(<span style="color: #666">3</span>):
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span style="color: #008000">print</span>(phone_generator_unstruct(prompt_phone, max_new_tokens<span style="color: #666">=12</span>))
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span style="color: #D8DEE9">phone_generator_unstruct</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">outlines</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">Generator</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span style="color: #81A1C1; font-weight: bold">for</span> <span style="color: #D8DEE9">_</span> <span style="color: #81A1C1; font-weight: bold">in</span> <span style="color: #81A1C1">range</span><span style="color: #ECEFF4">(</span><span style="color: #B48EAD">3</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">phone_generator_unstruct</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">prompt_phone</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">max_new_tokens</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #B48EAD">12</span><span style="color: #ECEFF4">))</span>
 </span></code></pre></div>
 <blockquote>
 <p>I'd be happy to help you generate a realistic phone\
@@ -3882,20 +3829,20 @@ Based on the format you provided, a realistic phone number for\</p>
 <p>Let's step through this:</p>
 <h3 id="real-example">Real example</h3>
 <p>We start with a real example phone number, in this case for the Seattle Public Library, that we can use to verify the structure we are creating.</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>phone_number <span style="color: #666">=</span> <span style="color: #BA2121">&quot;(206) 386-4636&quot;</span>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span style="color: #D8DEE9">phone_number</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">&quot;(206) 386-4636&quot;</span>
 </span></code></pre></div>
 <p>For a simple example like this, we'll just be using a single phone number, for more complex examples it can be helpful to have more examples.</p>
 <h3 id="draft-structure">Draft Structure</h3>
 <p>The next step in the process is for use to define a simple regex that we feel correctly models our real data.</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">outlines.types</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> Regex
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines.types</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">Regex</span>
 </span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>phone_regex_1 <span style="color: #666">=</span> Regex(<span style="color: #BA2121">r&#39;\([0-9]</span><span style="color: #A45A77; font-weight: bold">{3}</span><span style="color: #BA2121">\) [0-9]</span><span style="color: #A45A77; font-weight: bold">{3}</span><span style="color: #BA2121">-[0-9]</span><span style="color: #A45A77; font-weight: bold">{4}</span><span style="color: #BA2121">&#39;</span>)
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span style="color: #D8DEE9">phone_regex_1</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">Regex</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">r&#39;\([0-9]{3}\) [0-9]{3}-[0-9]{4}&#39;</span><span style="color: #ECEFF4">)</span>
 </span></code></pre></div>
 <p>Next we need to validate this regex against our real data.</p>
 <h3 id="validate-by-matching-examples">Validate by matching examples</h3>
 <p>Whenever writing non-trivial code with structured generation it is <em>essential</em> that you first validate the code against your real data example(s).</p>
 <p>We'll start with a simple method of validation: just checking that our regex matches the data.</p>
-<div class="language-text highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>import re
+<div class="language-text highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>import re
 </span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
 </span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>re.match(phone_regex_1.pattern, phone_number)
 </span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a># &lt;re.Match object; span=(0, 14), match=&#39;(206) 386-4636&#39;&gt;
@@ -3903,10 +3850,10 @@ Based on the format you provided, a realistic phone number for\</p>
 <p>Now that we have a match, we can move on to generating structured output!</p>
 <h3 id="generate-structure">Generate Structure</h3>
 <p>We're ready to see if structured generation can make an improvement over our initial unstructured approach:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>phone_generator_v1 <span style="color: #666">=</span> outlines<span style="color: #666">.</span>Generator(model, phone_regex_1)
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span style="color: #D8DEE9">phone_generator_v1</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">outlines</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">Generator</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">phone_regex_1</span><span style="color: #ECEFF4">)</span>
 </span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span style="color: #008000; font-weight: bold">for</span> _ <span style="color: #A2F; font-weight: bold">in</span> <span style="color: #008000">range</span>(<span style="color: #666">3</span>):
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>    <span style="color: #008000">print</span>(phone_generator_v1(prompt_phone))
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span style="color: #81A1C1; font-weight: bold">for</span> <span style="color: #D8DEE9">_</span> <span style="color: #81A1C1; font-weight: bold">in</span> <span style="color: #81A1C1">range</span><span style="color: #ECEFF4">(</span><span style="color: #B48EAD">3</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>    <span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">phone_generator_v1</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">prompt_phone</span><span style="color: #ECEFF4">))</span>
 </span></code></pre></div>
 <blockquote>
 <p>(206) 555-1234\
@@ -3926,17 +3873,17 @@ Based on the format you provided, a realistic phone number for\</p>
 <h2 id="iteration">Iteration</h2>
 <p>We've walked through the loop once, so we can go quickly now through each iteration.</p>
 <p>We start by improving our structure:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>phone_regex_2 <span style="color: #666">=</span> Regex(<span style="color: #BA2121">r&#39;\([0-9]</span><span style="color: #A45A77; font-weight: bold">{3}</span><span style="color: #BA2121">\) [2-46-9]</span><span style="color: #A45A77; font-weight: bold">{3}</span><span style="color: #BA2121">-[02-9]</span><span style="color: #A45A77; font-weight: bold">{4}</span><span style="color: #BA2121">&#39;</span>)
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span style="color: #D8DEE9">phone_regex_2</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">Regex</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">r&#39;\([0-9]{3}\) [2-46-9]{3}-[02-9]{4}&#39;</span><span style="color: #ECEFF4">)</span>
 </span></code></pre></div>
 <p>Before rushing to another round of generation, let's validate this new regex. We'll add just a bit more sophistication over our last check:</p>
-<p><div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>re<span style="color: #666">.</span>match(phone_regex_2<span style="color: #666">.</span>pattern, phone_number)[<span style="color: #666">0</span>] <span style="color: #666">==</span> phone_number
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span style="color: #3D7B7B; font-style: italic"># True</span>
+<p><div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span style="color: #D8DEE9">re</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">match</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">phone_regex_2</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">pattern</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">phone_number</span><span style="color: #ECEFF4">)[</span><span style="color: #B48EAD">0</span><span style="color: #ECEFF4">]</span> <span style="color: #81A1C1; font-weight: bold">==</span> <span style="color: #D8DEE9">phone_number</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span style="color: #616E87; font-style: italic"># True</span>
 </span></code></pre></div>
 Now that we've validated, let's generate with this new regex!</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>phone_generator_v2 <span style="color: #666">=</span> outlines<span style="color: #666">.</span>Generator(model, phone_regex_2)
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span style="color: #D8DEE9">phone_generator_v2</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">outlines</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">Generator</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">phone_regex_2</span><span style="color: #ECEFF4">)</span>
 </span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>
-</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span style="color: #008000; font-weight: bold">for</span> _ <span style="color: #A2F; font-weight: bold">in</span> <span style="color: #008000">range</span>(<span style="color: #666">3</span>):
-</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>    <span style="color: #008000">print</span>(phone_generator_v2(prompt_phone))
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span style="color: #81A1C1; font-weight: bold">for</span> <span style="color: #D8DEE9">_</span> <span style="color: #81A1C1; font-weight: bold">in</span> <span style="color: #81A1C1">range</span><span style="color: #ECEFF4">(</span><span style="color: #B48EAD">3</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>    <span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">phone_generator_v2</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">prompt_phone</span><span style="color: #ECEFF4">))</span>
 </span></code></pre></div>
 <blockquote>
 <p>(206) 867-5309\
@@ -3953,28 +3900,28 @@ Now that we've validated, let's generate with this new regex!</p>
 <p>Better, but I don't like those repeated sequences. Like good software developers, let's iterate again!</p>
 <h2 id="reiteration-with-debugging">Reiteration - with debugging</h2>
 <p>Here's a fancier regex that should give us more interesting results:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>phone_regex_3_error <span style="color: #666">=</span> <span style="color: #BA2121">r&#39;\([0-9]</span><span style="color: #A45A77; font-weight: bold">{3}</span><span style="color: #BA2121">\) [2-4][7-9][4-6]-[3-6][2-8][1-4]&#39;</span>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span style="color: #D8DEE9">phone_regex_3_error</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">r&#39;\([0-9]{3}\) [2-4][7-9][4-6]-[3-6][2-8][1-4]&#39;</span>
 </span></code></pre></div>
 <p>This looks good to me, but there's a subtle bug, that's why we <em>always</em> need to validate our structure against real data. This time we'll make our validator do a bit more work to verify the correct string is matched:</p>
-<p><div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span style="color: #008000; font-weight: bold">if</span> <span style="color: #A2F; font-weight: bold">not</span> re<span style="color: #666">.</span>match(phone_regex_3_error, phone_number):
-</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>    <span style="color: #008000">print</span>(<span style="color: #BA2121">&quot;Regex fails match&quot;</span>)
-</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span style="color: #008000; font-weight: bold">else</span>:
-</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>    matched_string <span style="color: #666">=</span> re<span style="color: #666">.</span>match(phone_regex_3_error, phone_number)[<span style="color: #666">0</span>]
-</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>    <span style="color: #008000; font-weight: bold">if</span> matched_string <span style="color: #666">==</span> phone_number:
-</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>    <span style="color: #008000">print</span>(<span style="color: #BA2121">&quot;Successful match&quot;</span>)
-</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>    <span style="color: #008000; font-weight: bold">else</span>:
-</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>    <span style="color: #008000">print</span>(<span style="color: #BA2121">f&quot;Error </span><span style="color: #A45A77; font-weight: bold">{</span>matched_string<span style="color: #A45A77; font-weight: bold">}</span><span style="color: #BA2121"> != </span><span style="color: #A45A77; font-weight: bold">{</span>phone_number<span style="color: #A45A77; font-weight: bold">}</span><span style="color: #BA2121">&quot;</span>)
+<p><div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span style="color: #81A1C1; font-weight: bold">if</span> <span style="color: #81A1C1; font-weight: bold">not</span> <span style="color: #D8DEE9">re</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">match</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">phone_regex_3_error</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">phone_number</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>    <span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;Regex fails match&quot;</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span style="color: #81A1C1; font-weight: bold">else</span><span style="color: #ECEFF4">:</span>
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>    <span style="color: #D8DEE9">matched_string</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">re</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">match</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">phone_regex_3_error</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">phone_number</span><span style="color: #ECEFF4">)[</span><span style="color: #B48EAD">0</span><span style="color: #ECEFF4">]</span>
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>    <span style="color: #81A1C1; font-weight: bold">if</span> <span style="color: #D8DEE9">matched_string</span> <span style="color: #81A1C1; font-weight: bold">==</span> <span style="color: #D8DEE9">phone_number</span><span style="color: #ECEFF4">:</span>
+</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>    <span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;Successful match&quot;</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>    <span style="color: #81A1C1; font-weight: bold">else</span><span style="color: #ECEFF4">:</span>
+</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>    <span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">f&quot;Error {</span><span style="color: #D8DEE9">matched_string</span><span style="color: #A3BE8C">} != {</span><span style="color: #D8DEE9">phone_number</span><span style="color: #A3BE8C">}&quot;</span><span style="color: #ECEFF4">)</span>
 </span></code></pre></div>
 This prints out:</p>
 <blockquote>
 <p>Error (206) 386-463 != (206) 386-4636</p>
 </blockquote>
 <p>Ah! We were missing the last digit, let's fix that and regenerate:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>phone_regex_3_fixed <span style="color: #666">=</span> Regex(<span style="color: #BA2121">r&#39;\([0-9]</span><span style="color: #A45A77; font-weight: bold">{3}</span><span style="color: #BA2121">\) [2-4][7-9][4-6]-[3-6][2-8][1-4][6-9]&#39;</span>)
-</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>phone_generator_v3 <span style="color: #666">=</span> outlines<span style="color: #666">.</span>Generator(model, phone_regex_3_fixed)
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span style="color: #D8DEE9">phone_regex_3_fixed</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">Regex</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">r&#39;\([0-9]{3}\) [2-4][7-9][4-6]-[3-6][2-8][1-4][6-9]&#39;</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span style="color: #D8DEE9">phone_generator_v3</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">outlines</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">Generator</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">phone_regex_3_fixed</span><span style="color: #ECEFF4">)</span>
 </span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>
-</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span style="color: #008000; font-weight: bold">for</span> _ <span style="color: #A2F; font-weight: bold">in</span> <span style="color: #008000">range</span>(<span style="color: #666">3</span>):
-</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>    <span style="color: #008000">print</span>(phone_generator_v3(prompt_phone))
+</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span style="color: #81A1C1; font-weight: bold">for</span> <span style="color: #D8DEE9">_</span> <span style="color: #81A1C1; font-weight: bold">in</span> <span style="color: #81A1C1">range</span><span style="color: #ECEFF4">(</span><span style="color: #B48EAD">3</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>    <span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">phone_generator_v3</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">prompt_phone</span><span style="color: #ECEFF4">))</span>
 </span></code></pre></div>
 <blockquote>
 <p>(206) 494-3216\

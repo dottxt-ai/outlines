@@ -571,12 +571,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../licence/" class="md-nav__link">
+      <a href="../../../guide/fastapi_vllm_deployment/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Licence
+    Deploying with FastAPI
     
   </span>
   
@@ -586,51 +586,6 @@
   
 
               
-            
-              
-                
-  
-  
-  
-  
-    
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_5" >
-        
-          
-          <label class="md-nav__link" for="__nav_2_5" id="__nav_2_5_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    Utility
-    
-  </span>
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_5">
-            <span class="md-nav__icon md-icon"></span>
-            Utility
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
             
               
                 
@@ -650,14 +605,6 @@
   
 
       </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
     </li>
   
 
@@ -3832,78 +3779,78 @@
 <p>Output types can be from the general Python ecosystem, including:
 - Most native Python types, such as <code>int</code> or <code>str</code>
 - Types from the <code>typing</code> module, such as <code>Literal</code>, <code>List</code>, <code>Dict</code>, <code>Enum</code>, etc
-- Types from popular theird party libraries such as Pydantic or GenSON.</p>
+- Types from popular third party libraries such as Pydantic or GenSON.</p>
 <p>Outlines also provides special classes for certain output structures (more details below):
 - JSON schemas with <code>JsonSchema</code>
 - Regular expressions with <code>Regex</code>
 - Context-free grammars with <code>CFG</code></p>
 <p>The general idea is that you should provide as an output type what you would give as the type hint of the return type of a function.</p>
 <p>Consider the following functions for instance:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">datetime</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> date
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">typing</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> Dict, List, Literal, Union
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">pydantic</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> BaseModel
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">datetime</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">date</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">typing</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">Dict</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">List</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">Literal</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">Union</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">pydantic</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">BaseModel</span>
 </span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span style="color: #008000; font-weight: bold">class</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">Character</span>(BaseModel):
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    name: <span style="color: #008000">str</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    birth_date: date
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    skills: Union[Dict, List[<span style="color: #008000">str</span>]]
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span style="color: #81A1C1; font-weight: bold">class</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">Character</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">BaseModel</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span style="color: #D8DEE9">name</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">str</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    <span style="color: #D8DEE9">birth_date</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">date</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span style="color: #D8DEE9">skills</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">Union</span><span style="color: #ECEFF4">[</span><span style="color: #D8DEE9">Dict</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">List</span><span style="color: #ECEFF4">[</span><span style="color: #81A1C1">str</span><span style="color: #ECEFF4">]]</span>
 </span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span style="color: #008000; font-weight: bold">def</span><span style="color: #BBB"> </span><span style="color: #00F">give_int</span>() <span style="color: #666">-&gt;</span> <span style="color: #008000">int</span>:
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    <span style="color: #666">...</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">give_int</span><span style="color: #ECEFF4">()</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #81A1C1">int</span><span style="color: #ECEFF4">:</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    <span style="color: #81A1C1; font-weight: bold">...</span>
 </span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>
-</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span style="color: #008000; font-weight: bold">def</span><span style="color: #BBB"> </span><span style="color: #00F">pizza_or_burger</span>() <span style="color: #666">-&gt;</span> Literal[<span style="color: #BA2121">&quot;pizza&quot;</span>, <span style="color: #BA2121">&quot;burger&quot;</span>]:
-</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>    <span style="color: #666">...</span>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">pizza_or_burger</span><span style="color: #ECEFF4">()</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #D8DEE9">Literal</span><span style="color: #ECEFF4">[</span><span style="color: #A3BE8C">&quot;pizza&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;burger&quot;</span><span style="color: #ECEFF4">]:</span>
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>    <span style="color: #81A1C1; font-weight: bold">...</span>
 </span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>
-</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span style="color: #008000; font-weight: bold">def</span><span style="color: #BBB"> </span><span style="color: #00F">create_character</span>() <span style="color: #666">-&gt;</span> Character:
-</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>    <span style="color: #666">...</span>
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">create_character</span><span style="color: #ECEFF4">()</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #D8DEE9">Character</span><span style="color: #ECEFF4">:</span>
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>    <span style="color: #81A1C1; font-weight: bold">...</span>
 </span></code></pre></div>
 <p>With an Outlines model, you can generate text that respects the type hints above by providing those as the output type:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>model(<span style="color: #BA2121">&quot;How many minutes are there in one hour&quot;</span>, <span style="color: #008000">int</span>) <span style="color: #3D7B7B; font-style: italic"># &quot;60&quot;</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>model(<span style="color: #BA2121">&quot;Pizza or burger&quot;</span>, Literal[<span style="color: #BA2121">&quot;pizza&quot;</span>, <span style="color: #BA2121">&quot;burger&quot;</span>]) <span style="color: #3D7B7B; font-style: italic"># &quot;pizza&quot;</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>model(<span style="color: #BA2121">&quot;Create a character&quot;</span>, Character, max_new_tokens<span style="color: #666">=100</span>) <span style="color: #3D7B7B; font-style: italic"># &#39;{&quot;name&quot;: &quot;James&quot;, &quot;birth_date&quot;: &quot;1980-05-10)&quot;, &quot;skills&quot;: [&quot;archery&quot;, &quot;negotiation&quot;]}&#39;</span>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;How many minutes are there in one hour&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #81A1C1">int</span><span style="color: #ECEFF4">)</span> <span style="color: #616E87; font-style: italic"># &quot;60&quot;</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;Pizza or burger&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">Literal</span><span style="color: #ECEFF4">[</span><span style="color: #A3BE8C">&quot;pizza&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;burger&quot;</span><span style="color: #ECEFF4">])</span> <span style="color: #616E87; font-style: italic"># &quot;pizza&quot;</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;Create a character&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">Character</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">max_new_tokens</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #B48EAD">100</span><span style="color: #ECEFF4">)</span> <span style="color: #616E87; font-style: italic"># &#39;{&quot;name&quot;: &quot;James&quot;, &quot;birth_date&quot;: &quot;1980-05-10)&quot;, &quot;skills&quot;: [&quot;archery&quot;, &quot;negotiation&quot;]}&#39;</span>
 </span></code></pre></div>
 <p>An important difference with function type hints though is that an Outlines generator always returns a string.
 You have to cast the response into the type you want yourself.</p>
 <p>For instance:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>result <span style="color: #666">=</span> model(<span style="color: #BA2121">&quot;Create a character&quot;</span>, Character, max_new_tokens<span style="color: #666">=100</span>)
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>casted_result <span style="color: #666">=</span> Character<span style="color: #666">.</span>model_validate_json(result)
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span style="color: #008000">print</span>(result) <span style="color: #3D7B7B; font-style: italic"># &#39;{&quot;name&quot;: &quot;Aurora&quot;, &quot;birth_date&quot;: &quot;1990-06-15&quot;, &quot;skills&quot;: [&quot;Stealth&quot;, &quot;Diplomacy&quot;]}&#39;</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span style="color: #008000">print</span>(casted_result) <span style="color: #3D7B7B; font-style: italic"># name=Aurora birth_date=datetime.date(1990, 6, 15) skills=[&#39;Stealth&#39;, &#39;Diplomacy&#39;]</span>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span style="color: #D8DEE9">result</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;Create a character&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">Character</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">max_new_tokens</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #B48EAD">100</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span style="color: #D8DEE9">casted_result</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">Character</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">model_validate_json</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">result</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">result</span><span style="color: #ECEFF4">)</span> <span style="color: #616E87; font-style: italic"># &#39;{&quot;name&quot;: &quot;Aurora&quot;, &quot;birth_date&quot;: &quot;1990-06-15&quot;, &quot;skills&quot;: [&quot;Stealth&quot;, &quot;Diplomacy&quot;]}&#39;</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">casted_result</span><span style="color: #ECEFF4">)</span> <span style="color: #616E87; font-style: italic"># name=Aurora birth_date=datetime.date(1990, 6, 15) skills=[&#39;Stealth&#39;, &#39;Diplomacy&#39;]</span>
 </span></code></pre></div>
 <h2 id="output-type-categories">Output Type Categories</h2>
 <p>We can group possible output types in several categories based on the use case they correspond to. While most of those types are native python or types coming from well-known third-party libraries, there are three Outlines-specific types: <code>JsonSchema</code>, <code>Regex</code> and <code>CFG</code>. Their use is explained below.</p>
 <h3 id="basic-python-types">Basic Python Types</h3>
 <p>The most straightforward form of structured generation is to return an answer that conforms to a given basic type such as an int or a python list. You can use the basic Python types and the types from the <code>typing</code> library. For instance:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">typing</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> Dict
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">typing</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">Dict</span>
 </span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>output_type <span style="color: #666">=</span> <span style="color: #008000">float</span> <span style="color: #3D7B7B; font-style: italic"># example of valid value: &quot;0.05&quot;</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>output_type <span style="color: #666">=</span> <span style="color: #008000">bool</span> <span style="color: #3D7B7B; font-style: italic"># example of valid value: &quot;True&quot;</span>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>output_type <span style="color: #666">=</span> Dict[<span style="color: #008000">int</span>, <span style="color: #008000">str</span>] <span style="color: #3D7B7B; font-style: italic"># example of valid value: &quot;{1: &#39;hello&#39;, 2: &#39;there&#39;}&quot;</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span style="color: #D8DEE9">output_type</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #81A1C1">float</span> <span style="color: #616E87; font-style: italic"># example of valid value: &quot;0.05&quot;</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span style="color: #D8DEE9">output_type</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #81A1C1">bool</span> <span style="color: #616E87; font-style: italic"># example of valid value: &quot;True&quot;</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span style="color: #D8DEE9">output_type</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">Dict</span><span style="color: #ECEFF4">[</span><span style="color: #81A1C1">int</span><span style="color: #ECEFF4">,</span> <span style="color: #81A1C1">str</span><span style="color: #ECEFF4">]</span> <span style="color: #616E87; font-style: italic"># example of valid value: &quot;{1: &#39;hello&#39;, 2: &#39;there&#39;}&quot;</span>
 </span></code></pre></div>
 <p>You can combine types to create more complex response formats by relying on collection types and types such as <code>Union</code> and <code>Optional</code>. Let's consider for instance the output type below used to represent semi-structured data:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">typing</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> Dict, List, Optional, Tuple, Union
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">typing</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">Dict</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">List</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">Optional</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">Tuple</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">Union</span>
 </span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>output_type <span style="color: #666">=</span> Dict[<span style="color: #008000">str</span>, Union[<span style="color: #008000">int</span>, <span style="color: #008000">str</span>, List[Tuple[<span style="color: #008000">str</span>, Optional[<span style="color: #008000">float</span>]]]]]
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span style="color: #D8DEE9">output_type</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">Dict</span><span style="color: #ECEFF4">[</span><span style="color: #81A1C1">str</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">Union</span><span style="color: #ECEFF4">[</span><span style="color: #81A1C1">int</span><span style="color: #ECEFF4">,</span> <span style="color: #81A1C1">str</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">List</span><span style="color: #ECEFF4">[</span><span style="color: #D8DEE9">Tuple</span><span style="color: #ECEFF4">[</span><span style="color: #81A1C1">str</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">Optional</span><span style="color: #ECEFF4">[</span><span style="color: #81A1C1">float</span><span style="color: #ECEFF4">]]]]]</span>
 </span></code></pre></div>
 <p>Values created with this output type would be dictionaries with string as keys and values made of either an integer, a string or a list of two elements tuples: a string and either a float or None. Example of a valid response for text generated with this output type (it would be contained in a string):</p>
-<div class="language-json highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>{
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span style="color: #BBB">    </span><span style="color: #008000; font-weight: bold">&quot;name&quot;</span>:<span style="color: #BBB"> </span><span style="color: #BA2121">&quot;Alice&quot;</span>,
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span style="color: #BBB">    </span><span style="color: #008000; font-weight: bold">&quot;age&quot;</span>:<span style="color: #BBB"> </span><span style="color: #666">30</span>,
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span style="color: #BBB">    </span><span style="color: #008000; font-weight: bold">&quot;metrics&quot;</span>:<span style="color: #BBB"> </span>[<span style="border: 1px solid #F00">(</span><span style="color: #BA2121">&quot;engagement&quot;</span>,<span style="color: #BBB"> </span><span style="color: #666">0.85</span><span style="border: 1px solid #F00">)</span>,<span style="color: #BBB"> </span><span style="border: 1px solid #F00">(</span><span style="color: #BA2121">&quot;satisfaction&quot;</span>,<span style="color: #BBB"> </span><span style="border: 1px solid #F00">No</span><span style="color: #008000; font-weight: bold">ne</span><span style="border: 1px solid #F00">)</span>]
-</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>}
+<div class="language-json highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span style="color: #ECEFF4">{</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span style="color: #D8DEE9">    </span><span style="color: #81A1C1">&quot;name&quot;</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #A3BE8C">&quot;Alice&quot;</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span style="color: #D8DEE9">    </span><span style="color: #81A1C1">&quot;age&quot;</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #B48EAD">30</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span style="color: #D8DEE9">    </span><span style="color: #81A1C1">&quot;metrics&quot;</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #ECEFF4">[</span><span style="color: #BF616A">(</span><span style="color: #A3BE8C">&quot;engagement&quot;</span><span style="color: #ECEFF4">,</span><span style="color: #D8DEE9"> </span><span style="color: #B48EAD">0.85</span><span style="color: #BF616A">)</span><span style="color: #ECEFF4">,</span><span style="color: #D8DEE9"> </span><span style="color: #BF616A">(</span><span style="color: #A3BE8C">&quot;satisfaction&quot;</span><span style="color: #ECEFF4">,</span><span style="color: #D8DEE9"> </span><span style="color: #BF616A">No</span><span style="color: #81A1C1; font-weight: bold">ne</span><span style="color: #BF616A">)</span><span style="color: #ECEFF4">]</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span style="color: #ECEFF4">}</span>
 </span></code></pre></div>
 <h3 id="multiple-choices">Multiple Choices</h3>
 <p>Outlines supports multiple choice classification by using the <code>Literal</code> or <code>Enum</code> output types. For instance:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">enum</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> Enum
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">typing</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> Literal
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">enum</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">Enum</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">typing</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">Literal</span>
 </span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span style="color: #008000; font-weight: bold">class</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">PizzaOrBurger</span>(Enum):
-</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>    pizza <span style="color: #666">=</span> <span style="color: #BA2121">&quot;pizza</span>
-</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>    burger <span style="color: #666">=</span> <span style="color: #BA2121">&quot;burger</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span style="color: #81A1C1; font-weight: bold">class</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">PizzaOrBurger</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">Enum</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>    <span style="color: #D8DEE9">pizza</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">&quot;pizza</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>    <span style="color: #D8DEE9">burger</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">&quot;burger</span>
 </span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>
-</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span style="color: #3D7B7B; font-style: italic"># Equivalent multiple-choice output types</span>
-</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>output_type <span style="color: #666">=</span> Literal[<span style="color: #BA2121">&quot;pizza&quot;</span>, <span style="color: #BA2121">&quot;burger&quot;</span>]
-</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>output_type <span style="color: #666">=</span> PizzaOrBurger
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span style="color: #616E87; font-style: italic"># Equivalent multiple-choice output types</span>
+</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span style="color: #D8DEE9">output_type</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">Literal</span><span style="color: #ECEFF4">[</span><span style="color: #A3BE8C">&quot;pizza&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;burger&quot;</span><span style="color: #ECEFF4">]</span>
+</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span style="color: #D8DEE9">output_type</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">PizzaOrBurger</span>
 </span></code></pre></div>
 <h3 id="json-schemas">JSON Schemas</h3>
 <p>Multiple different common Python types are often used to store information equivalent to a JSON schema. The following can be used in Outlines to generate text that respects a JSON schema:</p>
@@ -3915,58 +3862,58 @@ You have to cast the response into the type you want yourself.</p>
 <li>A Callable (the parameters are turned into the keys and the type hinting is used to define the types of the values)</li>
 </ul>
 <p>For instance:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">dataclasses</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> dataclass
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">dataclasses</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">dataclass</span>
 </span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span style="color: #A2F">@dataclass</span>
-</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span style="color: #008000; font-weight: bold">class</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">Character</span>:
-</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>    name: <span style="color: #008000">str</span>
-</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>    age: <span style="color: #008000">int</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span style="color: #D08770">@dataclass</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span style="color: #81A1C1; font-weight: bold">class</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">Character</span><span style="color: #ECEFF4">:</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>    <span style="color: #D8DEE9">name</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">str</span>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>    <span style="color: #D8DEE9">age</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">int</span>
 </span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>
-</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>ouput_type <span style="color: #666">=</span> Character
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span style="color: #D8DEE9">ouput_type</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">Character</span>
 </span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>
-</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span style="color: #008000; font-weight: bold">def</span><span style="color: #BBB"> </span><span style="color: #00F">character</span>(name: <span style="color: #008000">str</span>, age: <span style="color: #008000">int</span>):
-</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>    <span style="color: #008000; font-weight: bold">return</span> <span style="color: #008000; font-weight: bold">None</span>
+</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">character</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">name</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">str</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">age</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">int</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>    <span style="color: #81A1C1; font-weight: bold">return</span> <span style="color: #81A1C1; font-weight: bold">None</span>
 </span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>
-</span><span id="__span-7-13"><a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a>output_type <span style="color: #666">=</span> character
+</span><span id="__span-7-13"><a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a><span style="color: #D8DEE9">output_type</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">character</span>
 </span></code></pre></div>
 <p>There are two other JSON schema formats that require Outlines-specific classes: JSON schema strings and dictionaries.</p>
 <p>As those are contained in regular Python strings or dictionaries, the associated output format would be ambiguous if they were to be provided directly. As a result, Outlines requires them to be wrapped in a <code>outlines.types.JsonSchema</code> object. For instance:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">outlines.types</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> JsonSchema
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines.types</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">JsonSchema</span>
 </span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>
-</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>schema_string <span style="color: #666">=</span> <span style="color: #BA2121">&#39;{&quot;type&quot;: &quot;object&quot;, &quot;properties&quot;: {&quot;answer&quot;: {&quot;type&quot;: &quot;number&quot;}}}&#39;</span>
-</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>output_type <span style="color: #666">=</span> JsonSchema(schema_string)
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span style="color: #D8DEE9">schema_string</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">&#39;{&quot;type&quot;: &quot;object&quot;, &quot;properties&quot;: {&quot;answer&quot;: {&quot;type&quot;: &quot;number&quot;}}}&#39;</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span style="color: #D8DEE9">output_type</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">JsonSchema</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">schema_string</span><span style="color: #ECEFF4">)</span>
 </span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>
-</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>schema_dict <span style="color: #666">=</span> {
-</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>    <span style="color: #BA2121">&quot;type&quot;</span>: <span style="color: #BA2121">&quot;object&quot;</span>,
-</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>    <span style="color: #BA2121">&quot;properties&quot;</span>: {
-</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>        <span style="color: #BA2121">&quot;answer&quot;</span>: {<span style="color: #BA2121">&quot;type&quot;</span>: <span style="color: #BA2121">&quot;number&quot;</span>}
-</span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>    }
-</span><span id="__span-8-11"><a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>}
-</span><span id="__span-8-12"><a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a>output_type <span style="color: #666">=</span> JsonSchema(schema_dict)
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span style="color: #D8DEE9">schema_dict</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #ECEFF4">{</span>
+</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>    <span style="color: #A3BE8C">&quot;type&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;object&quot;</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>    <span style="color: #A3BE8C">&quot;properties&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #ECEFF4">{</span>
+</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>        <span style="color: #A3BE8C">&quot;answer&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #ECEFF4">{</span><span style="color: #A3BE8C">&quot;type&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;number&quot;</span><span style="color: #ECEFF4">}</span>
+</span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>    <span style="color: #ECEFF4">}</span>
+</span><span id="__span-8-11"><a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a><span style="color: #ECEFF4">}</span>
+</span><span id="__span-8-12"><a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a><span style="color: #D8DEE9">output_type</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">JsonSchema</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">schema_dict</span><span style="color: #ECEFF4">)</span>
 </span></code></pre></div>
 <h3 id="regex-patterns">Regex Patterns</h3>
-<p>Outlines provides support for text generation constrained by regular expressions. Since regular expressions are expressed as simple raw string literals, regex strings must wrapped in an <code>outlines.types.Regex</code> object to clarify the expected return type.</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">outlines.types</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> Regex
+<p>Outlines provides support for text generation constrained by regular expressions. Since regular expressions are expressed as simple raw string literals, regex strings must wrapped in an <code>outlines.types.Regex</code> object.</p>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines.types</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">Regex</span>
 </span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>
-</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>regex <span style="color: #666">=</span> <span style="color: #BA2121">r&quot;[0-9]</span><span style="color: #A45A77; font-weight: bold">{3}</span><span style="color: #BA2121">&quot;</span>
-</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>output_type <span style="color: #666">=</span> Regex(regex)
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span style="color: #D8DEE9">regex</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">r&quot;[0-9]{3}&quot;</span>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span style="color: #D8DEE9">output_type</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">Regex</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">regex</span><span style="color: #ECEFF4">)</span>
 </span></code></pre></div>
 <p>The <code>outlines.types</code> module contains a few common regex patterns stored in variables you can import and directly use as output types. Common patterns include a sentence, an email address and an <a href="https://en.wikipedia.org/wiki/ISBN">ISBN reference</a>. For instance:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">outlines.types</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> sentence
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines.types</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">sentence</span>
 </span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>
-</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span style="color: #008000">print</span>(<span style="color: #008000">type</span>(sentence)) <span style="color: #3D7B7B; font-style: italic"># outlines.types.dsl.Regex</span>
-</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span style="color: #008000">print</span>(sentence<span style="color: #666">.</span>pattern) <span style="color: #3D7B7B; font-style: italic"># [A-Z].*\s*[.!?]</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">type</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">sentence</span><span style="color: #ECEFF4">))</span> <span style="color: #616E87; font-style: italic"># outlines.types.dsl.Regex</span>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">sentence</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">pattern</span><span style="color: #ECEFF4">)</span> <span style="color: #616E87; font-style: italic"># [A-Z].*\s*[.!?]</span>
 </span></code></pre></div>
 <p>To help you create complex regex patterns yourself, you can use the Outlines <a href="../../utility/regex_dsl">regex DSL</a>.</p>
 <h3 id="context-free-grammars">Context-Free Grammars</h3>
 <p>Outlines allows you to generate text that respects the syntax of a context-free grammar. Context-free grammars are defined using <a href="https://lark-parser.readthedocs.io/en/latest/index.html">Lark</a>, a grammar language. Since grammars are expressed as a string, Large CFG strings should be be wrapped in an <code>outlines.types.CFG</code> object. For instance:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">outlines.types</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> CFG
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines.types</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">CFG</span>
 </span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>
-</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>grammar_string <span style="color: #666">=</span> <span style="color: #BA2121">&quot;&quot;&quot;</span>
-</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span style="color: #BA2121">    start: expr</span>
-</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span style="color: #BA2121">    expr: &quot;{&quot; expr &quot;}&quot; | &quot;[&quot; expr &quot;]&quot; |</span>
-</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span style="color: #BA2121">&quot;&quot;&quot;</span>
-</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>output_type <span style="color: #666">=</span> CFG(grammar_string)
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span style="color: #D8DEE9">grammar_string</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">&quot;&quot;&quot;</span>
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span style="color: #A3BE8C">    start: expr</span>
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span style="color: #A3BE8C">    expr: &quot;{&quot; expr &quot;}&quot; | &quot;[&quot; expr &quot;]&quot; |</span>
+</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span style="color: #A3BE8C">&quot;&quot;&quot;</span>
+</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span style="color: #D8DEE9">output_type</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">CFG</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">grammar_string</span><span style="color: #ECEFF4">)</span>
 </span></code></pre></div>
 <p>You can find a few Lark grammar examples in the <a href="../../../api_reference/grammars/">grammars module</a>.</p>
 <h2 id="output-type-availability">Output type availability</h2>
@@ -3993,7 +3940,7 @@ You have to cast the response into the type you want yourself.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="June 19, 2025 15:52:44 UTC"><span class="timeago" datetime="2025-06-19T15:52:44+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="June 19, 2025 15:52:44 UTC">2025-06-19</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="June 20, 2025 12:04:38 UTC"><span class="timeago" datetime="2025-06-20T12:04:38+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="June 20, 2025 12:04:38 UTC">2025-06-20</span>
   </span>
 
     

@@ -571,12 +571,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../licence/" class="md-nav__link">
+      <a href="../../guide/fastapi_vllm_deployment/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Licence
+    Deploying with FastAPI
     
   </span>
   
@@ -586,51 +586,6 @@
   
 
               
-            
-              
-                
-  
-  
-  
-  
-    
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_5" >
-        
-          
-          <label class="md-nav__link" for="__nav_2_5" id="__nav_2_5_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    Utility
-    
-  </span>
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_5">
-            <span class="md-nav__icon md-icon"></span>
-            Utility
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
             
               
                 
@@ -650,14 +605,6 @@
   
 
       </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
     </li>
   
 
@@ -3785,69 +3732,69 @@
 <p>Let's dive into it!</p>
 <h3 id="using-prompt-templates">Using Prompt Templates</h3>
 <p>The authors have shared their code, prompts and data in <a href="https://github.com/shawnsihyunlee/simulatedtom">this GitHub repository</a>. Below, we define in Outlines the prompts they used for the ToMI dataset:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">outlines</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> Template
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">Template</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>perspective_taking <span style="color: #666">=</span> Template<span style="color: #666">.</span>from_file(<span style="color: #BA2121">&quot;prompt_templates/simtom_prospective_taking.txt&quot;</span>)
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>simulation <span style="color: #666">=</span> Template<span style="color: #666">.</span>from_file(<span style="color: #BA2121">&quot;prompt_templates/simtom_simulation.txt&quot;</span>)
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span style="color: #D8DEE9">perspective_taking</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">Template</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_file</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;prompt_templates/simtom_prospective_taking.txt&quot;</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span style="color: #D8DEE9">simulation</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">Template</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_file</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;prompt_templates/simtom_simulation.txt&quot;</span><span style="color: #ECEFF4">)</span>
 </span></code></pre></div>
 <h3 id="json-structured-generation">JSON Structured Generation</h3>
 <p>Outlines guarantees that the LLM will return a valid JSON object, which we can specify as a Pydantic model.</p>
 <p>We will need two Pydantic models for SimToM, one for each prompt:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">pydantic</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> BaseModel, Field
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">typing</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> List
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">pydantic</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">BaseModel</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">Field</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">typing</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">List</span>
 </span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span style="color: #008000; font-weight: bold">class</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">PerspectiveTaking</span>(BaseModel):
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span style="color: #BBB">    </span><span style="color: #BA2121; font-style: italic">&quot;&quot;&quot;This is for the first prompt.&quot;&quot;&quot;</span>
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    character: <span style="color: #008000">str</span> <span style="color: #666">=</span> Field(description<span style="color: #666">=</span><span style="color: #BA2121">&quot;The character we extract the events for.&quot;</span>)
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    events: List[<span style="color: #008000">str</span>] <span style="color: #666">=</span> Field(description<span style="color: #666">=</span><span style="color: #BA2121">&quot;All events that the character knows about.&quot;</span>)
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span style="color: #81A1C1; font-weight: bold">class</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">PerspectiveTaking</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">BaseModel</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">&quot;&quot;&quot;This is for the first prompt.&quot;&quot;&quot;</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span style="color: #D8DEE9">character</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">str</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">Field</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">description</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #A3BE8C">&quot;The character we extract the events for.&quot;</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span style="color: #D8DEE9">events</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">List</span><span style="color: #ECEFF4">[</span><span style="color: #81A1C1">str</span><span style="color: #ECEFF4">]</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">Field</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">description</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #A3BE8C">&quot;All events that the character knows about.&quot;</span><span style="color: #ECEFF4">)</span>
 </span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span style="color: #008000; font-weight: bold">class</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">Simulation</span>(BaseModel):
-</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span style="color: #BBB">    </span><span style="color: #BA2121; font-style: italic">&quot;&quot;&quot;This is for the second prompt.&quot;&quot;&quot;</span>
-</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    answer: <span style="color: #008000">str</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span style="color: #81A1C1; font-weight: bold">class</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">Simulation</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">BaseModel</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">&quot;&quot;&quot;This is for the second prompt.&quot;&quot;&quot;</span>
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    <span style="color: #D8DEE9">answer</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">str</span>
 </span></code></pre></div>
 <h3 id="calling-an-llm">Calling an LLM</h3>
 <p>Let's try SimToM with an example from the ToMI dataset:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>story <span style="color: #666">=</span> <span style="color: #BA2121">&quot;&quot;&quot;</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span style="color: #BA2121">1 Aria entered the front_yard.</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span style="color: #BA2121">2 Aiden entered the front_yard.</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span style="color: #BA2121">3 The grapefruit is in the green_bucket.</span>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span style="color: #BA2121">4 Aria moved the grapefruit to the blue_container.</span>
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span style="color: #BA2121">5 Aiden exited the front_yard.</span>
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span style="color: #BA2121">6 Noah entered the playroom.</span>
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span style="color: #BA2121">&quot;&quot;&quot;</span>
-</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>question <span style="color: #666">=</span> <span style="color: #BA2121">&quot;7 Where was the grapefruit at the beginning?&quot;</span>
-</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>character <span style="color: #666">=</span> <span style="color: #BA2121">&quot;Aria&quot;</span>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span style="color: #D8DEE9">story</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">&quot;&quot;&quot;</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span style="color: #A3BE8C">1 Aria entered the front_yard.</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span style="color: #A3BE8C">2 Aiden entered the front_yard.</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span style="color: #A3BE8C">3 The grapefruit is in the green_bucket.</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span style="color: #A3BE8C">4 Aria moved the grapefruit to the blue_container.</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span style="color: #A3BE8C">5 Aiden exited the front_yard.</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span style="color: #A3BE8C">6 Noah entered the playroom.</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span style="color: #A3BE8C">&quot;&quot;&quot;</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span style="color: #D8DEE9">question</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">&quot;7 Where was the grapefruit at the beginning?&quot;</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span style="color: #D8DEE9">character</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">&quot;Aria&quot;</span>
 </span></code></pre></div>
 <p>We load <code>Mistral-7B-Instruct-v0.3</code>, create the prompt using the template we defined earlier, and generate a structured response. As a reminder, the goal of the first call is to get all the events a character, <code>Aria</code>, knows about.</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span style="color: #008000; font-weight: bold">import</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">transformers</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span style="color: #008000; font-weight: bold">import</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">outlines</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span style="color: #3D7B7B; font-style: italic"># Load an LLM from Hugging Face</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>MODEL_NAME <span style="color: #666">=</span> <span style="color: #BA2121">&quot;mistral-community/Mistral-7B-Instruct-v0.3&quot;</span>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>model <span style="color: #666">=</span> outlines<span style="color: #666">.</span>from_transformers(
-</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    transformers<span style="color: #666">.</span>AutoModelForCausalLM<span style="color: #666">.</span>from_pretrained(MODEL_NAME),
-</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    transformers<span style="color: #666">.</span>AutoTokenizer<span style="color: #666">.</span>from_pretrained(MODEL_NAME),
-</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>)
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">transformers</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span style="color: #616E87; font-style: italic"># Load an LLM from Hugging Face</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span style="color: #D8DEE9">MODEL_NAME</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">&quot;mistral-community/Mistral-7B-Instruct-v0.3&quot;</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span style="color: #D8DEE9">model</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">outlines</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_transformers</span><span style="color: #ECEFF4">(</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span style="color: #D8DEE9">transformers</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">AutoModelForCausalLM</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_pretrained</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">MODEL_NAME</span><span style="color: #ECEFF4">),</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span style="color: #D8DEE9">transformers</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">AutoTokenizer</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_pretrained</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">MODEL_NAME</span><span style="color: #ECEFF4">),</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span style="color: #ECEFF4">)</span>
 </span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>
-</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>perspective_prompt <span style="color: #666">=</span> perspective_taking(story<span style="color: #666">=</span>story, character<span style="color: #666">=</span>character)
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span style="color: #D8DEE9">perspective_prompt</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">perspective_taking</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">story</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #D8DEE9">story</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">character</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #D8DEE9">character</span><span style="color: #ECEFF4">)</span>
 </span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>
-</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span style="color: #3D7B7B; font-style: italic"># Call Mistral 7B with the first prompt</span>
-</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>generator <span style="color: #666">=</span> outlines<span style="color: #666">.</span>Generator(model, PerspectiveTaking)
-</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>perspective <span style="color: #666">=</span> generator(perspective_prompt, max_new_tokens<span style="color: #666">=1024</span>)
+</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span style="color: #616E87; font-style: italic"># Call Mistral 7B with the first prompt</span>
+</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span style="color: #D8DEE9">generator</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">outlines</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">Generator</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">PerspectiveTaking</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span style="color: #D8DEE9">perspective</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">generator</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">perspective_prompt</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">max_new_tokens</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #B48EAD">1024</span><span style="color: #ECEFF4">)</span>
 </span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>
-</span><span id="__span-3-16"><a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a><span style="color: #008000">print</span>(perspective)
-</span><span id="__span-3-17"><a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a><span style="color: #3D7B7B; font-style: italic"># {&#39;character&#39;: &#39;Aria&#39;, &#39;events&#39;: [&#39;1 Aria entered the front_yard.&#39;, &#39;3 The grapefruit is in the green_bucket.&#39;, &#39;4 Aria moved the grapefruit to the blue_container.&#39;]}</span>
+</span><span id="__span-3-16"><a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">perspective</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-3-17"><a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a><span style="color: #616E87; font-style: italic"># {&#39;character&#39;: &#39;Aria&#39;, &#39;events&#39;: [&#39;1 Aria entered the front_yard.&#39;, &#39;3 The grapefruit is in the green_bucket.&#39;, &#39;4 Aria moved the grapefruit to the blue_container.&#39;]}</span>
 </span></code></pre></div>
 <p>Not bad! We will now generate the second prompt with those events.</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span style="color: #008000; font-weight: bold">import</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">json</span>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">json</span>
 </span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>sim_prompt <span style="color: #666">=</span> simulation(events<span style="color: #666">=</span>json<span style="color: #666">.</span>loads(perspective)[<span style="color: #BA2121">&quot;events&quot;</span>], name<span style="color: #666">=</span>character, question<span style="color: #666">=</span>question)
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span style="color: #D8DEE9">sim_prompt</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">simulation</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">events</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #D8DEE9">json</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">loads</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">perspective</span><span style="color: #ECEFF4">)[</span><span style="color: #A3BE8C">&quot;events&quot;</span><span style="color: #ECEFF4">],</span> <span style="color: #D8DEE9">name</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #D8DEE9">character</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">question</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #D8DEE9">question</span><span style="color: #ECEFF4">)</span>
 </span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span style="color: #3D7B7B; font-style: italic"># Call Mistral 7B with the second prompt</span>
-</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>generator <span style="color: #666">=</span> outlines<span style="color: #666">.</span>Generator(model, Simulation)
-</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>result <span style="color: #666">=</span> generator(sim_prompt, max_new_tokens<span style="color: #666">=1024</span>)
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span style="color: #616E87; font-style: italic"># Call Mistral 7B with the second prompt</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span style="color: #D8DEE9">generator</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">outlines</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">Generator</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">Simulation</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span style="color: #D8DEE9">result</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">generator</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">sim_prompt</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">max_new_tokens</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #B48EAD">1024</span><span style="color: #ECEFF4">)</span>
 </span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>
-</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span style="color: #008000">print</span>(result)
-</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span style="color: #3D7B7B; font-style: italic"># {&#39;answer&#39;: &#39;green_bucket&#39;}</span>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">result</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span style="color: #616E87; font-style: italic"># {&#39;answer&#39;: &#39;green_bucket&#39;}</span>
 </span></code></pre></div>
 <p>And this is it! SimToM could be useful in agentic workflows, where agents must act based on what they know, not all available information. One caveat of SimToM is that the perspective-taking step may remove important information, leading to wrong results. As the authors note in their paper, it can feature as a simple and effective baseline for evaluating LLMs on Theory of Mind reasoning tasks.</p>
 

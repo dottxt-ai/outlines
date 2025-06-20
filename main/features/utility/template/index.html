@@ -571,12 +571,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../licence/" class="md-nav__link">
+      <a href="../../../guide/fastapi_vllm_deployment/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Licence
+    Deploying with FastAPI
     
   </span>
   
@@ -586,51 +586,6 @@
   
 
               
-            
-              
-                
-  
-  
-  
-  
-    
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_5" >
-        
-          
-          <label class="md-nav__link" for="__nav_2_5" id="__nav_2_5_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    Utility
-    
-  </span>
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_5">
-            <span class="md-nav__icon md-icon"></span>
-            Utility
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
             
               
                 
@@ -650,14 +605,6 @@
   
 
       </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
     </li>
   
 
@@ -3731,62 +3678,62 @@
 - <code>from_file</code>: Creates a template from a file containing a Jinja2 template</p>
 <p>After creating a template, you can call it with the variables required by the template as keyword arguments.</p>
 <p>For instance:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">outlines</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> Template
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">Template</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span style="color: #3D7B7B; font-style: italic"># Create a template from a string</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>template_str <span style="color: #666">=</span> <span style="color: #BA2121">&quot;&quot;&quot;</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span style="color: #BA2121">Hello, {{ name }}!</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span style="color: #BA2121">The weather today is {{ weather }}.</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span style="color: #BA2121">&quot;&quot;&quot;</span>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>template <span style="color: #666">=</span> Template<span style="color: #666">.</span>from_string(template_str)
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span style="color: #616E87; font-style: italic"># Create a template from a string</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span style="color: #D8DEE9">template_str</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">&quot;&quot;&quot;</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span style="color: #A3BE8C">Hello, {{ name }}!</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span style="color: #A3BE8C">The weather today is {{ weather }}.</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span style="color: #A3BE8C">&quot;&quot;&quot;</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span style="color: #D8DEE9">template</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">Template</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_string</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">template_str</span><span style="color: #ECEFF4">)</span>
 </span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span style="color: #3D7B7B; font-style: italic"># Create a template from a file, assuming the content of template_str is put into a file</span>
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>template <span style="color: #666">=</span> Template<span style="color: #666">.</span>from_file(<span style="color: #BA2121">&quot;path_to/my_file.txt&quot;</span>)
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span style="color: #616E87; font-style: italic"># Create a template from a file, assuming the content of template_str is put into a file</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span style="color: #D8DEE9">template</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">Template</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_file</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;path_to/my_file.txt&quot;</span><span style="color: #ECEFF4">)</span>
 </span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>
-</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span style="color: #3D7B7B; font-style: italic"># Call the template to render the prompt</span>
-</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>prompt: <span style="color: #008000">str</span> <span style="color: #666">=</span> template(name<span style="color: #666">=</span><span style="color: #BA2121">&quot;Alice&quot;</span>, weather<span style="color: #666">=</span><span style="color: #BA2121">&quot;sunny&quot;</span>)
-</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span style="color: #008000">print</span>(prompt)  <span style="color: #3D7B7B; font-style: italic"># &quot;Hello, Alice!\nThe weather today is sunny.&quot;</span>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span style="color: #616E87; font-style: italic"># Call the template to render the prompt</span>
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span style="color: #D8DEE9">prompt</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">str</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">template</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">name</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #A3BE8C">&quot;Alice&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">weather</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #A3BE8C">&quot;sunny&quot;</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">prompt</span><span style="color: #ECEFF4">)</span>  <span style="color: #616E87; font-style: italic"># &quot;Hello, Alice!\nThe weather today is sunny.&quot;</span>
 </span></code></pre></div>
 <h2 id="composite-templates">Composite Templates</h2>
 <p>Templates can be nested and composed to create complex prompt structures:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">outlines</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> Template
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">Template</span>
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span style="color: #3D7B7B; font-style: italic"># Create component templates</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>user_template <span style="color: #666">=</span> Template<span style="color: #666">.</span>from_string(<span style="color: #BA2121">&quot;User: {{ query }}&quot;</span>)
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>system_template <span style="color: #666">=</span> Template<span style="color: #666">.</span>from_string(<span style="color: #BA2121">&quot;System: {{ instruction }}&quot;</span>)
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span style="color: #616E87; font-style: italic"># Create component templates</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span style="color: #D8DEE9">user_template</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">Template</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_string</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;User: {{ query }}&quot;</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span style="color: #D8DEE9">system_template</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">Template</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_string</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;System: {{ instruction }}&quot;</span><span style="color: #ECEFF4">)</span>
 </span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span style="color: #3D7B7B; font-style: italic"># Create a composite template</span>
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>chat_template <span style="color: #666">=</span> Template<span style="color: #666">.</span>from_string(<span style="color: #BA2121">&quot;&quot;&quot;</span>
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span style="color: #BA2121">{{ system }}</span>
-</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span style="color: #BA2121">{{ user }}</span>
-</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span style="color: #BA2121">&quot;&quot;&quot;</span>)
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span style="color: #616E87; font-style: italic"># Create a composite template</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span style="color: #D8DEE9">chat_template</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">Template</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_string</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;&quot;&quot;</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span style="color: #A3BE8C">{{ system }}</span>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span style="color: #A3BE8C">{{ user }}</span>
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span style="color: #A3BE8C">&quot;&quot;&quot;</span><span style="color: #ECEFF4">)</span>
 </span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>
-</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span style="color: #3D7B7B; font-style: italic"># Fill in nested templates</span>
-</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>prompt <span style="color: #666">=</span> chat_template(
-</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>    system<span style="color: #666">=</span>system_template(instruction<span style="color: #666">=</span><span style="color: #BA2121">&quot;You are a helpful assistant.&quot;</span>),
-</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>    user<span style="color: #666">=</span>user_template(query<span style="color: #666">=</span><span style="color: #BA2121">&quot;What is machine learning?&quot;</span>)
-</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>)
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span style="color: #616E87; font-style: italic"># Fill in nested templates</span>
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span style="color: #D8DEE9">prompt</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">chat_template</span><span style="color: #ECEFF4">(</span>
+</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>    <span style="color: #D8DEE9">system</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #D8DEE9">system_template</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">instruction</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #A3BE8C">&quot;You are a helpful assistant.&quot;</span><span style="color: #ECEFF4">),</span>
+</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>    <span style="color: #D8DEE9">user</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #D8DEE9">user_template</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">query</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #A3BE8C">&quot;What is machine learning?&quot;</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span style="color: #ECEFF4">)</span>
 </span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>
-</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span style="color: #008000">print</span>(prompt)
-</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a><span style="color: #3D7B7B; font-style: italic"># System: You are a helpful assistant.</span>
-</span><span id="__span-1-21"><a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a><span style="color: #3D7B7B; font-style: italic">#</span>
-</span><span id="__span-1-22"><a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a><span style="color: #3D7B7B; font-style: italic"># User: What is machine learning?</span>
+</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">prompt</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a><span style="color: #616E87; font-style: italic"># System: You are a helpful assistant.</span>
+</span><span id="__span-1-21"><a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a><span style="color: #616E87; font-style: italic">#</span>
+</span><span id="__span-1-22"><a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a><span style="color: #616E87; font-style: italic"># User: What is machine learning?</span>
 </span></code></pre></div>
 <h2 id="custom-filters">Custom Filters</h2>
 <p>You can add custom filters to your Outlines template to extend the templating functionality. To do so, provide as second argument a dictionary with filter names as keys and filter functions as values. The filter can then be used in your jinja2 template following the regular syntax. When rendering a prompt, the function will be applied to the associated variable.</p>
 <p>For instance:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">outlines</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> Template
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">Template</span>
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span style="color: #008000; font-weight: bold">def</span><span style="color: #BBB"> </span><span style="color: #00F">uppercase</span>(text: <span style="color: #008000">str</span>) <span style="color: #666">-&gt;</span> <span style="color: #008000">str</span>:
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span style="color: #008000; font-weight: bold">return</span> text<span style="color: #666">.</span>upper()
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">uppercase</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">text</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">str</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #81A1C1">str</span><span style="color: #ECEFF4">:</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span style="color: #81A1C1; font-weight: bold">return</span> <span style="color: #D8DEE9">text</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">upper</span><span style="color: #ECEFF4">()</span>
 </span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span style="color: #3D7B7B; font-style: italic"># Add custom filter when creating template</span>
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>template <span style="color: #666">=</span> Template<span style="color: #666">.</span>from_string(
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span style="color: #BA2121">&quot;Hello {{ name | uppercase }}!&quot;</span>,
-</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>    filters<span style="color: #666">=</span>{<span style="color: #BA2121">&quot;uppercase&quot;</span>: uppercase}
-</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>)
-</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>prompt <span style="color: #666">=</span> template(name<span style="color: #666">=</span><span style="color: #BA2121">&quot;alice&quot;</span>)
-</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span style="color: #008000">print</span>(prompt)  <span style="color: #3D7B7B; font-style: italic"># &quot;Hello ALICE!&quot;</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span style="color: #616E87; font-style: italic"># Add custom filter when creating template</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span style="color: #D8DEE9">template</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">Template</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_string</span><span style="color: #ECEFF4">(</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span style="color: #A3BE8C">&quot;Hello {{ name | uppercase }}!&quot;</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>    <span style="color: #D8DEE9">filters</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #ECEFF4">{</span><span style="color: #A3BE8C">&quot;uppercase&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">uppercase</span><span style="color: #ECEFF4">}</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span style="color: #ECEFF4">)</span>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span style="color: #D8DEE9">prompt</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">template</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">name</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #A3BE8C">&quot;alice&quot;</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">prompt</span><span style="color: #ECEFF4">)</span>  <span style="color: #616E87; font-style: italic"># &quot;Hello ALICE!&quot;</span>
 </span></code></pre></div>
 
 
@@ -3825,6 +3772,44 @@
 
     
     
+    
+      
+  <span class="md-source-file__fact">
+    
+      
+  <span class="md-icon" title="Contributors">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33s1.71.11 2.5.33c1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2"/></svg>
+  </span>
+  <span>GitHub</span>
+
+    
+    <nav>
+      
+        <a href="https://github.com/sukrucildirr" class="md-author" title="@sukrucildirr">
+          
+          <img src="https://avatars.githubusercontent.com/u/32969880?v=4&size=72" alt="sukrucildirr">
+        </a>
+      
+        <a href="https://github.com/web-flow" class="md-author" title="@web-flow">
+          
+          <img src="https://avatars.githubusercontent.com/u/19864447?v=4&size=72" alt="web-flow">
+        </a>
+      
+        <a href="https://github.com/RobinPicard" class="md-author" title="@RobinPicard">
+          
+          <img src="https://avatars.githubusercontent.com/u/83579270?v=4&size=72" alt="RobinPicard">
+        </a>
+      
+        <a href="https://github.com/rlouf" class="md-author" title="@rlouf">
+          
+          <img src="https://avatars.githubusercontent.com/u/3885044?v=4&size=72" alt="rlouf">
+        </a>
+      
+      
+      
+    </nav>
+  </span>
+
     
   </aside>
 

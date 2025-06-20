@@ -571,12 +571,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../licence/" class="md-nav__link">
+      <a href="../../guide/fastapi_vllm_deployment/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Licence
+    Deploying with FastAPI
     
   </span>
   
@@ -586,51 +586,6 @@
   
 
               
-            
-              
-                
-  
-  
-  
-  
-    
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_5" >
-        
-          
-          <label class="md-nav__link" for="__nav_2_5" id="__nav_2_5_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    Utility
-    
-  </span>
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_5">
-            <span class="md-nav__icon md-icon"></span>
-            Utility
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
             
               
                 
@@ -650,14 +605,6 @@
   
 
       </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
     </li>
   
 
@@ -3757,64 +3704,64 @@
 <p>In this example we will make a Phi-3 model play chess against itself. On its own the model easily generates invalid moves, so we will give it a little help. At each step we will generate a regex that only matches valid move, and use it to help the model only generating valid moves.</p>
 <h2 id="the-chessboard">The chessboard</h2>
 <p>The game will be played on a standard checkboard. We will use the <code>chess</code> <a href="https://github.com/niklasf/python-chess">library</a> to track the opponents' moves, and check that the moves are valid.</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span style="color: #666">%</span>pip install outlines <span style="color: #666">-</span>q
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span style="color: #666">%</span>pip install chess <span style="color: #666">-</span>q
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span style="color: #666">%</span>pip install transformers accelerate einops <span style="color: #666">-</span>q
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span style="color: #81A1C1; font-weight: bold">%</span><span style="color: #D8DEE9">pip</span> <span style="color: #D8DEE9">install</span> <span style="color: #D8DEE9">outlines</span> <span style="color: #81A1C1; font-weight: bold">-</span><span style="color: #D8DEE9">q</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span style="color: #81A1C1; font-weight: bold">%</span><span style="color: #D8DEE9">pip</span> <span style="color: #D8DEE9">install</span> <span style="color: #D8DEE9">chess</span> <span style="color: #81A1C1; font-weight: bold">-</span><span style="color: #D8DEE9">q</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span style="color: #81A1C1; font-weight: bold">%</span><span style="color: #D8DEE9">pip</span> <span style="color: #D8DEE9">install</span> <span style="color: #D8DEE9">transformers</span> <span style="color: #D8DEE9">accelerate</span> <span style="color: #D8DEE9">einops</span> <span style="color: #81A1C1; font-weight: bold">-</span><span style="color: #D8DEE9">q</span>
 </span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span style="color: #008000; font-weight: bold">import</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">chess</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">chess</span>
 </span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>board <span style="color: #666">=</span> chess<span style="color: #666">.</span>Board(<span style="color: #BA2121">&quot;rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1&quot;</span>)
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span style="color: #D8DEE9">board</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">chess</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">Board</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1&quot;</span><span style="color: #ECEFF4">)</span>
 </span></code></pre></div>
 <h2 id="the-opponents">The opponents</h2>
 <p>Phi-3 will be playing against itself:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span style="color: #008000; font-weight: bold">import</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">transformers</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span style="color: #008000; font-weight: bold">import</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">outlines</span>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">transformers</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines</span>
 </span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>model_name <span style="color: #666">=</span> <span style="color: #BA2121">&quot;microsoft/Phi-3-mini-4k-instruct&quot;</span>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>model <span style="color: #666">=</span> outlines<span style="color: #666">.</span>from_transformers(
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    transformers<span style="color: #666">.</span>AutoModelForCausalLM<span style="color: #666">.</span>from_pretrained(model_name),
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    transformers<span style="color: #666">.</span>AutoTokenizer<span style="color: #666">.</span>from_pretrained(model_name),
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>)
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span style="color: #D8DEE9">model_name</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">&quot;microsoft/Phi-3-mini-4k-instruct&quot;</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span style="color: #D8DEE9">model</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">outlines</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_transformers</span><span style="color: #ECEFF4">(</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span style="color: #D8DEE9">transformers</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">AutoModelForCausalLM</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_pretrained</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">model_name</span><span style="color: #ECEFF4">),</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span style="color: #D8DEE9">transformers</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">AutoTokenizer</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_pretrained</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">model_name</span><span style="color: #ECEFF4">),</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span style="color: #ECEFF4">)</span>
 </span></code></pre></div>
 <h2 id="a-little-help-for-the-language-model">A little help for the language model</h2>
 <p>To make sure Phi-3 generates valid chess moves we will use Outline's regex-structured generation. We define a function that takes the current state of the board and returns a regex that matches all possible legal moves:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span style="color: #008000; font-weight: bold">import</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">re</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">outlines.types.dsl</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> either, String
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">re</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines.types.dsl</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">either</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">String</span>
 </span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span style="color: #008000; font-weight: bold">def</span><span style="color: #BBB"> </span><span style="color: #00F">legal_moves_regex</span>(board):
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span style="color: #BBB">    </span><span style="color: #BA2121; font-style: italic">&quot;&quot;&quot;Build a regex that only matches valid moves.&quot;&quot;&quot;</span>
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    legal_moves <span style="color: #666">=</span> <span style="color: #008000">list</span>(board<span style="color: #666">.</span>legal_moves)
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    legal_modes_str <span style="color: #666">=</span> [board<span style="color: #666">.</span>san(move) <span style="color: #008000; font-weight: bold">for</span> move <span style="color: #A2F; font-weight: bold">in</span> legal_moves]
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    legal_modes_str <span style="color: #666">=</span> [re<span style="color: #666">.</span>sub(<span style="color: #BA2121">r&quot;[+#]&quot;</span>, <span style="color: #BA2121">&quot;&quot;</span>, move) <span style="color: #008000; font-weight: bold">for</span> move <span style="color: #A2F; font-weight: bold">in</span> legal_modes_str]
-</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>    regex_pattern <span style="color: #666">=</span> either(<span style="color: #666">*</span>[String(move) <span style="color: #008000; font-weight: bold">for</span> move <span style="color: #A2F; font-weight: bold">in</span> legal_modes_str])
-</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>    <span style="color: #008000; font-weight: bold">return</span> regex_pattern
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">legal_moves_regex</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">board</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">&quot;&quot;&quot;Build a regex that only matches valid moves.&quot;&quot;&quot;</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span style="color: #D8DEE9">legal_moves</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #81A1C1">list</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">board</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">legal_moves</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span style="color: #D8DEE9">legal_modes_str</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #ECEFF4">[</span><span style="color: #D8DEE9">board</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">san</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">move</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">for</span> <span style="color: #D8DEE9">move</span> <span style="color: #81A1C1; font-weight: bold">in</span> <span style="color: #D8DEE9">legal_moves</span><span style="color: #ECEFF4">]</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span style="color: #D8DEE9">legal_modes_str</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #ECEFF4">[</span><span style="color: #D8DEE9">re</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">sub</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">r&quot;[+#]&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">move</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">for</span> <span style="color: #D8DEE9">move</span> <span style="color: #81A1C1; font-weight: bold">in</span> <span style="color: #D8DEE9">legal_modes_str</span><span style="color: #ECEFF4">]</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>    <span style="color: #D8DEE9">regex_pattern</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">either</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1; font-weight: bold">*</span><span style="color: #ECEFF4">[</span><span style="color: #D8DEE9">String</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">move</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">for</span> <span style="color: #D8DEE9">move</span> <span style="color: #81A1C1; font-weight: bold">in</span> <span style="color: #D8DEE9">legal_modes_str</span><span style="color: #ECEFF4">])</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>    <span style="color: #81A1C1; font-weight: bold">return</span> <span style="color: #D8DEE9">regex_pattern</span>
 </span></code></pre></div>
 <h2 id="prompting-the-language-model">Prompting the language model</h2>
 <p>The prompt corresponds to the current state of the board, so we start with:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>prompt <span style="color: #666">=</span> <span style="color: #BA2121">&quot;Let&#39;s play Chess. Moves: &quot;</span>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span style="color: #D8DEE9">prompt</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">&quot;Let&#39;s play Chess. Moves: &quot;</span>
 </span></code></pre></div>
 <p>We update the prompt at each step so it reflects the state of the board after the previous move.</p>
 <h2 id="lets-play">Let's play</h2>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>board_state <span style="color: #666">=</span> <span style="color: #BA2121">&quot; &quot;</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>turn_number <span style="color: #666">=</span> <span style="color: #666">0</span>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span style="color: #008000; font-weight: bold">while</span> <span style="color: #A2F; font-weight: bold">not</span> board<span style="color: #666">.</span>is_game_over():
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    regex_pattern <span style="color: #666">=</span> legal_moves_regex(board)
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    structured <span style="color: #666">=</span> model(prompt <span style="color: #666">+</span> board_state, regex_pattern)
-</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    move <span style="color: #666">=</span> board<span style="color: #666">.</span>parse_san(structured)
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span style="color: #D8DEE9">board_state</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">&quot; &quot;</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span style="color: #D8DEE9">turn_number</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #B48EAD">0</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span style="color: #81A1C1; font-weight: bold">while</span> <span style="color: #81A1C1; font-weight: bold">not</span> <span style="color: #D8DEE9">board</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">is_game_over</span><span style="color: #ECEFF4">():</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span style="color: #D8DEE9">regex_pattern</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">legal_moves_regex</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">board</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span style="color: #D8DEE9">structured</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">prompt</span> <span style="color: #81A1C1; font-weight: bold">+</span> <span style="color: #D8DEE9">board_state</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">regex_pattern</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    <span style="color: #D8DEE9">move</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">board</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">parse_san</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">structured</span><span style="color: #ECEFF4">)</span>
 </span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>
-</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>    <span style="color: #008000; font-weight: bold">if</span> turn_number <span style="color: #666">%</span> <span style="color: #666">2</span> <span style="color: #666">==</span> <span style="color: #666">0</span> :  <span style="color: #3D7B7B; font-style: italic"># It&#39;s White&#39;s turn</span>
-</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>        board_state <span style="color: #666">+=</span> board<span style="color: #666">.</span>san(move) <span style="color: #666">+</span> <span style="color: #BA2121">&quot; &quot;</span>
-</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>    <span style="color: #008000; font-weight: bold">else</span>:
-</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>        board_state <span style="color: #666">+=</span> board<span style="color: #666">.</span>san(move) <span style="color: #666">+</span> <span style="color: #BA2121">&quot; &quot;</span> <span style="color: #666">+</span> <span style="color: #008000">str</span>(turn_number) <span style="color: #666">+</span> <span style="color: #BA2121">&quot;.&quot;</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>    <span style="color: #81A1C1; font-weight: bold">if</span> <span style="color: #D8DEE9">turn_number</span> <span style="color: #81A1C1; font-weight: bold">%</span> <span style="color: #B48EAD">2</span> <span style="color: #81A1C1; font-weight: bold">==</span> <span style="color: #B48EAD">0</span> <span style="color: #ECEFF4">:</span>  <span style="color: #616E87; font-style: italic"># It&#39;s White&#39;s turn</span>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>        <span style="color: #D8DEE9">board_state</span> <span style="color: #81A1C1; font-weight: bold">+=</span> <span style="color: #D8DEE9">board</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">san</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">move</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">+</span> <span style="color: #A3BE8C">&quot; &quot;</span>
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>    <span style="color: #81A1C1; font-weight: bold">else</span><span style="color: #ECEFF4">:</span>
+</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>        <span style="color: #D8DEE9">board_state</span> <span style="color: #81A1C1; font-weight: bold">+=</span> <span style="color: #D8DEE9">board</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">san</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">move</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">+</span> <span style="color: #A3BE8C">&quot; &quot;</span> <span style="color: #81A1C1; font-weight: bold">+</span> <span style="color: #81A1C1">str</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">turn_number</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">+</span> <span style="color: #A3BE8C">&quot;.&quot;</span>
 </span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>
-</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>    turn_number <span style="color: #666">+=</span> <span style="color: #666">1</span>
+</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>    <span style="color: #D8DEE9">turn_number</span> <span style="color: #81A1C1; font-weight: bold">+=</span> <span style="color: #B48EAD">1</span>
 </span><span id="__span-4-14"><a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>
-</span><span id="__span-4-15"><a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a>    board<span style="color: #666">.</span>push(move)
+</span><span id="__span-4-15"><a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a>    <span style="color: #D8DEE9">board</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">push</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">move</span><span style="color: #ECEFF4">)</span>
 </span><span id="__span-4-16"><a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a>
-</span><span id="__span-4-17"><a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a>    <span style="color: #008000">print</span>(board_state)
+</span><span id="__span-4-17"><a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a>    <span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">board_state</span><span style="color: #ECEFF4">)</span>
 </span></code></pre></div>
 <p>Interestingly enough, Phi-3 hates capturing.</p>
-<div class="language-text highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a> e4 e5 1.Nf3 Ne7 3.b4 Nf5 5.Nc3 Ne7 7.Bb5 a6 9.Na4 b6 11.c3 Nec6 13.c4 a5 15.d4 Qg5 17.Nd2 Bb7 19.dxe5
+<div class="language-text highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a> e4 e5 1.Nf3 Ne7 3.b4 Nf5 5.Nc3 Ne7 7.Bb5 a6 9.Na4 b6 11.c3 Nec6 13.c4 a5 15.d4 Qg5 17.Nd2 Bb7 19.dxe5
 </span></code></pre></div>
 <p><em>This example was originally authored by <a href="https://x.com/903124S">@903124S</a> in <a href="https://gist.github.com/903124/cfbefa24da95e2316e0d5e8ef8ed360d">this gist</a>.</em></p>
 

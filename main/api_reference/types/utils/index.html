@@ -571,12 +571,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../licence/" class="md-nav__link">
+      <a href="../../../guide/fastapi_vllm_deployment/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Licence
+    Deploying with FastAPI
     
   </span>
   
@@ -586,51 +586,6 @@
   
 
               
-            
-              
-                
-  
-  
-  
-  
-    
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_5" >
-        
-          
-          <label class="md-nav__link" for="__nav_2_5" id="__nav_2_5_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    Utility
-    
-  </span>
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_5">
-            <span class="md-nav__icon md-icon"></span>
-            Utility
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
             
               
                 
@@ -650,14 +605,6 @@
   
 
       </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
     </li>
   
 
@@ -3735,7 +3682,7 @@
 
 
 <h2 id="outlines.types.utils.get_schema_from_signature" class="doc doc-heading">
-            <code class="highlight language-python">get_schema_from_signature(fn)</code>
+            <code class="highlight language-python"><span style="color: #D8DEE9">get_schema_from_signature</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">fn</span><span style="color: #ECEFF4">)</span></code>
 
 </h2>
 
@@ -3749,57 +3696,57 @@ to <code>fn</code> using the ** unpacking syntax.</p>
 
             <details class="quote">
               <summary>Source code in <code>outlines/types/utils.py</code></summary>
-              <div class="language-python highlight" style="background: #f8f8f8"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span style="color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-166">166</a></span>
-<span style="color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-167">167</a></span>
-<span style="color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-168">168</a></span>
-<span style="color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-169">169</a></span>
-<span style="color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-170">170</a></span>
-<span style="color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-171">171</a></span>
-<span style="color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-172">172</a></span>
-<span style="color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-173">173</a></span>
-<span style="color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-174">174</a></span>
-<span style="color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-175">175</a></span>
-<span style="color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-176">176</a></span>
-<span style="color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-177">177</a></span>
-<span style="color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-178">178</a></span>
-<span style="color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-179">179</a></span>
-<span style="color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-180">180</a></span>
-<span style="color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-181">181</a></span>
-<span style="color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-182">182</a></span>
-<span style="color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-183">183</a></span>
-<span style="color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-184">184</a></span>
-<span style="color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-185">185</a></span>
-<span style="color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-186">186</a></span>
-<span style="color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-187">187</a></span>
-<span style="color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-188">188</a></span>
-<span style="color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-189">189</a></span>
-<span style="color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-190">190</a></span>
-<span style="color: inherit; background-color: transparent; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-191">191</a></span></pre></div></td><td class="code"><div><pre style="line-height: 125%;"><span></span><code><span id="__span-0-166"><a id="__codelineno-0-166" name="__codelineno-0-166"></a><span style="color: #008000; font-weight: bold">def</span><span style="color: #BBB"> </span><span style="color: #00F">get_schema_from_signature</span>(fn: Callable) <span style="color: #666">-&gt;</span> <span style="color: #008000">dict</span>:
-</span><span id="__span-0-167"><a id="__codelineno-0-167" name="__codelineno-0-167"></a><span style="color: #BBB">    </span><span style="color: #BA2121; font-style: italic">&quot;&quot;&quot;Turn a function signature into a JSON schema.</span>
+              <div class="language-python highlight" style="background: #2E3440"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-166">166</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-167">167</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-168">168</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-169">169</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-170">170</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-171">171</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-172">172</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-173">173</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-174">174</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-175">175</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-176">176</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-177">177</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-178">178</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-179">179</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-180">180</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-181">181</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-182">182</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-183">183</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-184">184</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-185">185</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-186">186</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-187">187</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-188">188</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-189">189</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-190">190</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-191">191</a></span></pre></div></td><td class="code"><div><pre style="line-height: 125%;"><span></span><code><span id="__span-0-166"><a id="__codelineno-0-166" name="__codelineno-0-166"></a><span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">get_schema_from_signature</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">fn</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">Callable</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #81A1C1">dict</span><span style="color: #ECEFF4">:</span>
+</span><span id="__span-0-167"><a id="__codelineno-0-167" name="__codelineno-0-167"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">&quot;&quot;&quot;Turn a function signature into a JSON schema.</span>
 </span><span id="__span-0-168"><a id="__codelineno-0-168" name="__codelineno-0-168"></a>
-</span><span id="__span-0-169"><a id="__codelineno-0-169" name="__codelineno-0-169"></a><span style="color: #BA2121; font-style: italic">    Every JSON object valid to the output JSON Schema can be passed</span>
-</span><span id="__span-0-170"><a id="__codelineno-0-170" name="__codelineno-0-170"></a><span style="color: #BA2121; font-style: italic">    to `fn` using the ** unpacking syntax.</span>
+</span><span id="__span-0-169"><a id="__codelineno-0-169" name="__codelineno-0-169"></a><span style="color: #616E87">    Every JSON object valid to the output JSON Schema can be passed</span>
+</span><span id="__span-0-170"><a id="__codelineno-0-170" name="__codelineno-0-170"></a><span style="color: #616E87">    to `fn` using the ** unpacking syntax.</span>
 </span><span id="__span-0-171"><a id="__codelineno-0-171" name="__codelineno-0-171"></a>
-</span><span id="__span-0-172"><a id="__codelineno-0-172" name="__codelineno-0-172"></a><span style="color: #BA2121; font-style: italic">    &quot;&quot;&quot;</span>
-</span><span id="__span-0-173"><a id="__codelineno-0-173" name="__codelineno-0-173"></a>    signature <span style="color: #666">=</span> inspect<span style="color: #666">.</span>signature(fn)
-</span><span id="__span-0-174"><a id="__codelineno-0-174" name="__codelineno-0-174"></a>    arguments <span style="color: #666">=</span> {}
-</span><span id="__span-0-175"><a id="__codelineno-0-175" name="__codelineno-0-175"></a>    <span style="color: #008000; font-weight: bold">for</span> name, arg <span style="color: #A2F; font-weight: bold">in</span> signature<span style="color: #666">.</span>parameters<span style="color: #666">.</span>items():
-</span><span id="__span-0-176"><a id="__codelineno-0-176" name="__codelineno-0-176"></a>        <span style="color: #008000; font-weight: bold">if</span> arg<span style="color: #666">.</span>annotation <span style="color: #666">==</span> inspect<span style="color: #666">.</span>_empty:
-</span><span id="__span-0-177"><a id="__codelineno-0-177" name="__codelineno-0-177"></a>            <span style="color: #008000; font-weight: bold">raise</span> <span style="color: #CB3F38; font-weight: bold">ValueError</span>(<span style="color: #BA2121">&quot;Each argument must have a type annotation&quot;</span>)
-</span><span id="__span-0-178"><a id="__codelineno-0-178" name="__codelineno-0-178"></a>        <span style="color: #008000; font-weight: bold">else</span>:
-</span><span id="__span-0-179"><a id="__codelineno-0-179" name="__codelineno-0-179"></a>            arguments[name] <span style="color: #666">=</span> (arg<span style="color: #666">.</span>annotation, <span style="color: #666">...</span>)
+</span><span id="__span-0-172"><a id="__codelineno-0-172" name="__codelineno-0-172"></a><span style="color: #616E87">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-173"><a id="__codelineno-0-173" name="__codelineno-0-173"></a>    <span style="color: #D8DEE9">signature</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">inspect</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">signature</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">fn</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-0-174"><a id="__codelineno-0-174" name="__codelineno-0-174"></a>    <span style="color: #D8DEE9">arguments</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #ECEFF4">{}</span>
+</span><span id="__span-0-175"><a id="__codelineno-0-175" name="__codelineno-0-175"></a>    <span style="color: #81A1C1; font-weight: bold">for</span> <span style="color: #D8DEE9">name</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">arg</span> <span style="color: #81A1C1; font-weight: bold">in</span> <span style="color: #D8DEE9">signature</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">parameters</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">items</span><span style="color: #ECEFF4">():</span>
+</span><span id="__span-0-176"><a id="__codelineno-0-176" name="__codelineno-0-176"></a>        <span style="color: #81A1C1; font-weight: bold">if</span> <span style="color: #D8DEE9">arg</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">annotation</span> <span style="color: #81A1C1; font-weight: bold">==</span> <span style="color: #D8DEE9">inspect</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">_empty</span><span style="color: #ECEFF4">:</span>
+</span><span id="__span-0-177"><a id="__codelineno-0-177" name="__codelineno-0-177"></a>            <span style="color: #81A1C1; font-weight: bold">raise</span> <span style="color: #BF616A">ValueError</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;Each argument must have a type annotation&quot;</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-0-178"><a id="__codelineno-0-178" name="__codelineno-0-178"></a>        <span style="color: #81A1C1; font-weight: bold">else</span><span style="color: #ECEFF4">:</span>
+</span><span id="__span-0-179"><a id="__codelineno-0-179" name="__codelineno-0-179"></a>            <span style="color: #D8DEE9">arguments</span><span style="color: #ECEFF4">[</span><span style="color: #D8DEE9">name</span><span style="color: #ECEFF4">]</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">arg</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">annotation</span><span style="color: #ECEFF4">,</span> <span style="color: #81A1C1; font-weight: bold">...</span><span style="color: #ECEFF4">)</span>
 </span><span id="__span-0-180"><a id="__codelineno-0-180" name="__codelineno-0-180"></a>
-</span><span id="__span-0-181"><a id="__codelineno-0-181" name="__codelineno-0-181"></a>    <span style="color: #008000; font-weight: bold">try</span>:
-</span><span id="__span-0-182"><a id="__codelineno-0-182" name="__codelineno-0-182"></a>        fn_name <span style="color: #666">=</span> fn<span style="color: #666">.</span><span style="color: #19177C">__name__</span>
-</span><span id="__span-0-183"><a id="__codelineno-0-183" name="__codelineno-0-183"></a>    <span style="color: #008000; font-weight: bold">except</span> <span style="color: #CB3F38; font-weight: bold">Exception</span> <span style="color: #008000; font-weight: bold">as</span> e:
-</span><span id="__span-0-184"><a id="__codelineno-0-184" name="__codelineno-0-184"></a>        fn_name <span style="color: #666">=</span> <span style="color: #BA2121">&quot;Arguments&quot;</span>
-</span><span id="__span-0-185"><a id="__codelineno-0-185" name="__codelineno-0-185"></a>        warnings<span style="color: #666">.</span>warn(
-</span><span id="__span-0-186"><a id="__codelineno-0-186" name="__codelineno-0-186"></a>            <span style="color: #BA2121">f&quot;The function name could not be determined. Using default name &#39;Arguments&#39; instead. For debugging, here is exact error:</span><span style="color: #AA5D1F; font-weight: bold">\n</span><span style="color: #A45A77; font-weight: bold">{</span>e<span style="color: #A45A77; font-weight: bold">}</span><span style="color: #BA2121">&quot;</span>,
-</span><span id="__span-0-187"><a id="__codelineno-0-187" name="__codelineno-0-187"></a>            category<span style="color: #666">=</span><span style="color: #CB3F38; font-weight: bold">UserWarning</span>,
-</span><span id="__span-0-188"><a id="__codelineno-0-188" name="__codelineno-0-188"></a>        )
-</span><span id="__span-0-189"><a id="__codelineno-0-189" name="__codelineno-0-189"></a>    model <span style="color: #666">=</span> create_model(fn_name, <span style="color: #666">**</span>arguments)
+</span><span id="__span-0-181"><a id="__codelineno-0-181" name="__codelineno-0-181"></a>    <span style="color: #81A1C1; font-weight: bold">try</span><span style="color: #ECEFF4">:</span>
+</span><span id="__span-0-182"><a id="__codelineno-0-182" name="__codelineno-0-182"></a>        <span style="color: #D8DEE9">fn_name</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">fn</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">__name__</span>
+</span><span id="__span-0-183"><a id="__codelineno-0-183" name="__codelineno-0-183"></a>    <span style="color: #81A1C1; font-weight: bold">except</span> <span style="color: #BF616A">Exception</span> <span style="color: #81A1C1; font-weight: bold">as</span> <span style="color: #D8DEE9">e</span><span style="color: #ECEFF4">:</span>
+</span><span id="__span-0-184"><a id="__codelineno-0-184" name="__codelineno-0-184"></a>        <span style="color: #D8DEE9">fn_name</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">&quot;Arguments&quot;</span>
+</span><span id="__span-0-185"><a id="__codelineno-0-185" name="__codelineno-0-185"></a>        <span style="color: #D8DEE9">warnings</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">warn</span><span style="color: #ECEFF4">(</span>
+</span><span id="__span-0-186"><a id="__codelineno-0-186" name="__codelineno-0-186"></a>            <span style="color: #A3BE8C">f&quot;The function name could not be determined. Using default name &#39;Arguments&#39; instead. For debugging, here is exact error:</span><span style="color: #EBCB8B">\n</span><span style="color: #A3BE8C">{</span><span style="color: #D8DEE9">e</span><span style="color: #A3BE8C">}&quot;</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-0-187"><a id="__codelineno-0-187" name="__codelineno-0-187"></a>            <span style="color: #D8DEE9">category</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #BF616A">UserWarning</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-0-188"><a id="__codelineno-0-188" name="__codelineno-0-188"></a>        <span style="color: #ECEFF4">)</span>
+</span><span id="__span-0-189"><a id="__codelineno-0-189" name="__codelineno-0-189"></a>    <span style="color: #D8DEE9">model</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">create_model</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">fn_name</span><span style="color: #ECEFF4">,</span> <span style="color: #81A1C1; font-weight: bold">**</span><span style="color: #D8DEE9">arguments</span><span style="color: #ECEFF4">)</span>
 </span><span id="__span-0-190"><a id="__codelineno-0-190" name="__codelineno-0-190"></a>
-</span><span id="__span-0-191"><a id="__codelineno-0-191" name="__codelineno-0-191"></a>    <span style="color: #008000; font-weight: bold">return</span> model<span style="color: #666">.</span>model_json_schema()
+</span><span id="__span-0-191"><a id="__codelineno-0-191" name="__codelineno-0-191"></a>    <span style="color: #81A1C1; font-weight: bold">return</span> <span style="color: #D8DEE9">model</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">model_json_schema</span><span style="color: #ECEFF4">()</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -3835,7 +3782,7 @@ to <code>fn</code> using the ** unpacking syntax.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="June 19, 2025 15:53:29 UTC"><span class="timeago" datetime="2025-06-19T15:53:29+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="June 19, 2025 15:53:29 UTC">2025-06-19</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="June 20, 2025 13:00:20 UTC"><span class="timeago" datetime="2025-06-20T13:00:20+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="June 20, 2025 13:00:20 UTC">2025-06-20</span>
   </span>
 
     
@@ -3845,7 +3792,7 @@ to <code>fn</code> using the ** unpacking syntax.</p>
     <span class="md-icon" title="Created">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="June 19, 2025 15:53:29 UTC"><span class="timeago" datetime="2025-06-19T15:53:29+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="June 19, 2025 15:53:29 UTC">2025-06-19</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="June 20, 2025 13:00:20 UTC"><span class="timeago" datetime="2025-06-20T13:00:20+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="June 20, 2025 13:00:20 UTC">2025-06-20</span>
   </span>
 
     

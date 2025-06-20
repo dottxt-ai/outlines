@@ -571,12 +571,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../licence/" class="md-nav__link">
+      <a href="../../guide/fastapi_vllm_deployment/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Licence
+    Deploying with FastAPI
     
   </span>
   
@@ -586,51 +586,6 @@
   
 
               
-            
-              
-                
-  
-  
-  
-  
-    
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_5" >
-        
-          
-          <label class="md-nav__link" for="__nav_2_5" id="__nav_2_5_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    Utility
-    
-  </span>
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_5">
-            <span class="md-nav__icon md-icon"></span>
-            Utility
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
             
               
                 
@@ -650,14 +605,6 @@
   
 
       </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
     </li>
   
 
@@ -3864,95 +3811,95 @@
 <h1 id="receipt-data-extraction-with-vlms">Receipt Data Extraction with VLMs</h1>
 <h2 id="setup">Setup</h2>
 <p>You'll need to install the dependencies:</p>
-<div class="language-bash highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pip<span style="color: #BBB"> </span>install<span style="color: #BBB"> </span>outlines<span style="color: #BBB"> </span><span style="color: #19177C">torch</span><span style="color: #666">==2</span>.4.0<span style="color: #BBB"> </span>transformers<span style="color: #BBB"> </span>accelerate<span style="color: #BBB"> </span>pillow<span style="color: #BBB"> </span>rich
+<div class="language-shell highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pip<span style="color: #D8DEE9"> </span>install<span style="color: #D8DEE9"> </span>outlines<span style="color: #D8DEE9"> torch</span><span style="color: #81A1C1; font-weight: bold">==</span><span style="color: #B48EAD">2</span>.4.0<span style="color: #D8DEE9"> </span>transformers<span style="color: #D8DEE9"> </span>accelerate<span style="color: #D8DEE9"> </span>pillow<span style="color: #D8DEE9"> </span>rich
 </span></code></pre></div>
 <h2 id="import-libraries">Import libraries</h2>
 <p>Load all the necessary libraries:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span style="color: #3D7B7B; font-style: italic"># LLM stuff</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span style="color: #008000; font-weight: bold">import</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">outlines</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span style="color: #008000; font-weight: bold">import</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">torch</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">transformers</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> AutoProcessor
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">pydantic</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> BaseModel, Field
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">typing</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> Literal, Optional, List
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span style="color: #616E87; font-style: italic"># LLM stuff</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">torch</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">transformers</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">AutoProcessor</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">pydantic</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">BaseModel</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">Field</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">typing</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">Literal</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">Optional</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">List</span>
 </span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span style="color: #3D7B7B; font-style: italic"># Image stuff</span>
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">PIL</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> Image
-</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span style="color: #008000; font-weight: bold">import</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">requests</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span style="color: #616E87; font-style: italic"># Image stuff</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">PIL</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">Image</span>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">requests</span>
 </span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>
-</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span style="color: #3D7B7B; font-style: italic"># Rich for pretty printing</span>
-</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">rich</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> <span style="color: #008000">print</span>
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span style="color: #616E87; font-style: italic"># Rich for pretty printing</span>
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">rich</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #81A1C1">print</span>
 </span></code></pre></div>
 <h2 id="choose-a-model">Choose a model</h2>
 <p>This example has been tested with <code>mistral-community/pixtral-12b</code> (<a href="https://huggingface.co/mistral-community/pixtral-12b">HF link</a>) and <code>Qwen/Qwen2-VL-7B-Instruct</code> (<a href="https://huggingface.co/Qwen/Qwen2-VL-7B-Instruct">HF link</a>).</p>
 <p>We recommend Qwen-2-VL as we have found it to be more accurate than Pixtral.</p>
 <p>If you want to use Qwen-2-VL, you can do the following:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span style="color: #3D7B7B; font-style: italic"># To use Qwen-2-VL:</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">transformers</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> Qwen2VLForConditionalGeneration, AutoProcessor
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>model_name <span style="color: #666">=</span> <span style="color: #BA2121">&quot;Qwen/Qwen2-VL-7B-Instruct&quot;</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>model_class <span style="color: #666">=</span> Qwen2VLForConditionalGeneration
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>processor_class <span style="color: #666">=</span> AutoProcessor
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span style="color: #616E87; font-style: italic"># To use Qwen-2-VL:</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">transformers</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">Qwen2VLForConditionalGeneration</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">AutoProcessor</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span style="color: #D8DEE9">model_name</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">&quot;Qwen/Qwen2-VL-7B-Instruct&quot;</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span style="color: #D8DEE9">model_class</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">Qwen2VLForConditionalGeneration</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span style="color: #D8DEE9">processor_class</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">AutoProcessor</span>
 </span></code></pre></div>
 <p>If you want to use Pixtral, you can do the following:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span style="color: #3D7B7B; font-style: italic"># To use Pixtral:</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">transformers</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> LlavaForConditionalGeneration, LlavaProcessor
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>model_name<span style="color: #666">=</span><span style="color: #BA2121">&quot;mistral-community/pixtral-12b&quot;</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>model_class<span style="color: #666">=</span>LlavaForConditionalGeneration
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>processor_class <span style="color: #666">=</span> LlavaProcessor
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span style="color: #616E87; font-style: italic"># To use Pixtral:</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">transformers</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">LlavaForConditionalGeneration</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">LlavaProcessor</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span style="color: #D8DEE9">model_name</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #A3BE8C">&quot;mistral-community/pixtral-12b&quot;</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span style="color: #D8DEE9">model_class</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #D8DEE9">LlavaForConditionalGeneration</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span style="color: #D8DEE9">processor_class</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">LlavaProcessor</span>
 </span></code></pre></div>
 <h2 id="load-the-model">Load the model</h2>
 <p>Load the model into memory:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>model_kwargs<span style="color: #666">=</span>{<span style="color: #BA2121">&quot;device_map&quot;</span>: <span style="color: #BA2121">&quot;auto&quot;</span>, <span style="color: #BA2121">&quot;torch_dtype&quot;</span>: torch<span style="color: #666">.</span>bfloat16}
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>processor_kwargs<span style="color: #666">=</span>{<span style="color: #BA2121">&quot;device_map&quot;</span>: <span style="color: #BA2121">&quot;cuda&quot;</span>}
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>tf_model <span style="color: #666">=</span> model_class<span style="color: #666">.</span>from_pretrained(model_name, <span style="color: #666">**</span>model_kwargs)
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>tf_processor <span style="color: #666">=</span> processor_class<span style="color: #666">.</span>from_pretrained(model_name, <span style="color: #666">**</span>processor_kwargs)
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span style="color: #D8DEE9">model_kwargs</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #ECEFF4">{</span><span style="color: #A3BE8C">&quot;device_map&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;auto&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;torch_dtype&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">torch</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">bfloat16</span><span style="color: #ECEFF4">}</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span style="color: #D8DEE9">processor_kwargs</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #ECEFF4">{</span><span style="color: #A3BE8C">&quot;device_map&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;cuda&quot;</span><span style="color: #ECEFF4">}</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span style="color: #D8DEE9">tf_model</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">model_class</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_pretrained</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">model_name</span><span style="color: #ECEFF4">,</span> <span style="color: #81A1C1; font-weight: bold">**</span><span style="color: #D8DEE9">model_kwargs</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span style="color: #D8DEE9">tf_processor</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">processor_class</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_pretrained</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">model_name</span><span style="color: #ECEFF4">,</span> <span style="color: #81A1C1; font-weight: bold">**</span><span style="color: #D8DEE9">processor_kwargs</span><span style="color: #ECEFF4">)</span>
 </span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>
-</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>model <span style="color: #666">=</span> outlines<span style="color: #666">.</span>from_transformers(tf_model, tf_processor)
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span style="color: #D8DEE9">model</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">outlines</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_transformers</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">tf_model</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">tf_processor</span><span style="color: #ECEFF4">)</span>
 </span></code></pre></div>
 <h2 id="image-processing">Image processing</h2>
 <p>Images can be quite large. In GPU-poor environments, you may need to resize the image to a smaller size.</p>
 <p>Here's a helper function to do that:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span style="color: #008000; font-weight: bold">def</span><span style="color: #BBB"> </span><span style="color: #00F">load_and_resize_image</span>(image_path, max_size<span style="color: #666">=1024</span>):
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span style="color: #BBB">    </span><span style="color: #BA2121; font-style: italic">&quot;&quot;&quot;</span>
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span style="color: #BA2121; font-style: italic">    Load and resize an image while maintaining aspect ratio</span>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">load_and_resize_image</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">image_path</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">max_size</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #B48EAD">1024</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">&quot;&quot;&quot;</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span style="color: #616E87">    Load and resize an image while maintaining aspect ratio</span>
 </span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>
-</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span style="color: #BA2121; font-style: italic">    Args:</span>
-</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span style="color: #BA2121; font-style: italic">        image_path: Path to the image file</span>
-</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span style="color: #BA2121; font-style: italic">        max_size: Maximum dimension (width or height) of the output image</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span style="color: #616E87">    Args:</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span style="color: #616E87">        image_path: Path to the image file</span>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span style="color: #616E87">        max_size: Maximum dimension (width or height) of the output image</span>
 </span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>
-</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span style="color: #BA2121; font-style: italic">    Returns:</span>
-</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span style="color: #BA2121; font-style: italic">        PIL Image: Resized image</span>
-</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span style="color: #BA2121; font-style: italic">    &quot;&quot;&quot;</span>
-</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>    image <span style="color: #666">=</span> Image<span style="color: #666">.</span>open(image_path)
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span style="color: #616E87">    Returns:</span>
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span style="color: #616E87">        PIL Image: Resized image</span>
+</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span style="color: #616E87">    &quot;&quot;&quot;</span>
+</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>    <span style="color: #D8DEE9">image</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">Image</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">open</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">image_path</span><span style="color: #ECEFF4">)</span>
 </span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>
-</span><span id="__span-5-14"><a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>    <span style="color: #3D7B7B; font-style: italic"># Get current dimensions</span>
-</span><span id="__span-5-15"><a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>    width, height <span style="color: #666">=</span> image<span style="color: #666">.</span>size
+</span><span id="__span-5-14"><a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>    <span style="color: #616E87; font-style: italic"># Get current dimensions</span>
+</span><span id="__span-5-15"><a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>    <span style="color: #D8DEE9">width</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">height</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">image</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">size</span>
 </span><span id="__span-5-16"><a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a>
-</span><span id="__span-5-17"><a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a>    <span style="color: #3D7B7B; font-style: italic"># Calculate scaling factor</span>
-</span><span id="__span-5-18"><a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a>    scale <span style="color: #666">=</span> <span style="color: #008000">min</span>(max_size <span style="color: #666">/</span> width, max_size <span style="color: #666">/</span> height)
+</span><span id="__span-5-17"><a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a>    <span style="color: #616E87; font-style: italic"># Calculate scaling factor</span>
+</span><span id="__span-5-18"><a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a>    <span style="color: #D8DEE9">scale</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #81A1C1">min</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">max_size</span> <span style="color: #81A1C1; font-weight: bold">/</span> <span style="color: #D8DEE9">width</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">max_size</span> <span style="color: #81A1C1; font-weight: bold">/</span> <span style="color: #D8DEE9">height</span><span style="color: #ECEFF4">)</span>
 </span><span id="__span-5-19"><a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a>
-</span><span id="__span-5-20"><a id="__codelineno-5-20" name="__codelineno-5-20" href="#__codelineno-5-20"></a>    <span style="color: #3D7B7B; font-style: italic"># Only resize if image is larger than max_size</span>
-</span><span id="__span-5-21"><a id="__codelineno-5-21" name="__codelineno-5-21" href="#__codelineno-5-21"></a>    <span style="color: #008000; font-weight: bold">if</span> scale <span style="color: #666">&lt;</span> <span style="color: #666">1</span>:
-</span><span id="__span-5-22"><a id="__codelineno-5-22" name="__codelineno-5-22" href="#__codelineno-5-22"></a>        new_width <span style="color: #666">=</span> <span style="color: #008000">int</span>(width <span style="color: #666">*</span> scale)
-</span><span id="__span-5-23"><a id="__codelineno-5-23" name="__codelineno-5-23" href="#__codelineno-5-23"></a>        new_height <span style="color: #666">=</span> <span style="color: #008000">int</span>(height <span style="color: #666">*</span> scale)
-</span><span id="__span-5-24"><a id="__codelineno-5-24" name="__codelineno-5-24" href="#__codelineno-5-24"></a>        image <span style="color: #666">=</span> image<span style="color: #666">.</span>resize((new_width, new_height), Image<span style="color: #666">.</span>Resampling<span style="color: #666">.</span>LANCZOS)
+</span><span id="__span-5-20"><a id="__codelineno-5-20" name="__codelineno-5-20" href="#__codelineno-5-20"></a>    <span style="color: #616E87; font-style: italic"># Only resize if image is larger than max_size</span>
+</span><span id="__span-5-21"><a id="__codelineno-5-21" name="__codelineno-5-21" href="#__codelineno-5-21"></a>    <span style="color: #81A1C1; font-weight: bold">if</span> <span style="color: #D8DEE9">scale</span> <span style="color: #81A1C1; font-weight: bold">&lt;</span> <span style="color: #B48EAD">1</span><span style="color: #ECEFF4">:</span>
+</span><span id="__span-5-22"><a id="__codelineno-5-22" name="__codelineno-5-22" href="#__codelineno-5-22"></a>        <span style="color: #D8DEE9">new_width</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #81A1C1">int</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">width</span> <span style="color: #81A1C1; font-weight: bold">*</span> <span style="color: #D8DEE9">scale</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-5-23"><a id="__codelineno-5-23" name="__codelineno-5-23" href="#__codelineno-5-23"></a>        <span style="color: #D8DEE9">new_height</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #81A1C1">int</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">height</span> <span style="color: #81A1C1; font-weight: bold">*</span> <span style="color: #D8DEE9">scale</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-5-24"><a id="__codelineno-5-24" name="__codelineno-5-24" href="#__codelineno-5-24"></a>        <span style="color: #D8DEE9">image</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">image</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">resize</span><span style="color: #ECEFF4">((</span><span style="color: #D8DEE9">new_width</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">new_height</span><span style="color: #ECEFF4">),</span> <span style="color: #D8DEE9">Image</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">Resampling</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">LANCZOS</span><span style="color: #ECEFF4">)</span>
 </span><span id="__span-5-25"><a id="__codelineno-5-25" name="__codelineno-5-25" href="#__codelineno-5-25"></a>
-</span><span id="__span-5-26"><a id="__codelineno-5-26" name="__codelineno-5-26" href="#__codelineno-5-26"></a>    <span style="color: #008000; font-weight: bold">return</span> image
+</span><span id="__span-5-26"><a id="__codelineno-5-26" name="__codelineno-5-26" href="#__codelineno-5-26"></a>    <span style="color: #81A1C1; font-weight: bold">return</span> <span style="color: #D8DEE9">image</span>
 </span></code></pre></div>
 <p>You can change the resolution of the image by changing the <code>max_size</code> argument. Small max sizes will make the image more blurry, but processing will be faster and require less memory.</p>
 <h2 id="load-an-image">Load an image</h2>
 <p>Load an image and resize it. We've provided a sample image of a Trader Joe's receipt, but you can use any image you'd like.</p>
 <p>Here's what the image looks like:</p>
 <p><img alt="Trader Joe's receipt" src="../images/trader-joes-receipt.jpg" /></p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span style="color: #3D7B7B; font-style: italic"># Path to the image</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>image_path <span style="color: #666">=</span> <span style="color: #BA2121">&quot;https://raw.githubusercontent.com/dottxt-ai/outlines/refs/heads/main/docs/cookbook/images/trader-joes-receipt.jpg&quot;</span>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span style="color: #616E87; font-style: italic"># Path to the image</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span style="color: #D8DEE9">image_path</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">&quot;https://raw.githubusercontent.com/dottxt-ai/outlines/refs/heads/main/docs/cookbook/images/trader-joes-receipt.jpg&quot;</span>
 </span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span style="color: #3D7B7B; font-style: italic"># Download the image</span>
-</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>response <span style="color: #666">=</span> requests<span style="color: #666">.</span>get(image_path)
-</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span style="color: #008000; font-weight: bold">with</span> <span style="color: #008000">open</span>(<span style="color: #BA2121">&quot;receipt.png&quot;</span>, <span style="color: #BA2121">&quot;wb&quot;</span>) <span style="color: #008000; font-weight: bold">as</span> f:
-</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>    f<span style="color: #666">.</span>write(response<span style="color: #666">.</span>content)
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span style="color: #616E87; font-style: italic"># Download the image</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span style="color: #D8DEE9">response</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">requests</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">get</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">image_path</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span style="color: #81A1C1; font-weight: bold">with</span> <span style="color: #81A1C1">open</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;receipt.png&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;wb&quot;</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">as</span> <span style="color: #D8DEE9">f</span><span style="color: #ECEFF4">:</span>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>    <span style="color: #D8DEE9">f</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">write</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">response</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">content</span><span style="color: #ECEFF4">)</span>
 </span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>
-</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span style="color: #3D7B7B; font-style: italic"># Load + resize the image</span>
-</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>image <span style="color: #666">=</span> load_and_resize_image(<span style="color: #BA2121">&quot;receipt.png&quot;</span>)
+</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span style="color: #616E87; font-style: italic"># Load + resize the image</span>
+</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span style="color: #D8DEE9">image</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">load_and_resize_image</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;receipt.png&quot;</span><span style="color: #ECEFF4">)</span>
 </span></code></pre></div>
 <h2 id="define-the-output-structure">Define the output structure</h2>
 <p>We'll define a Pydantic model to describe the data we want to extract from the image.</p>
@@ -3968,56 +3915,56 @@
 <li>The payment method</li>
 </ul>
 <p>Most fields are optional, as not all receipts contain all information.</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span style="color: #008000; font-weight: bold">class</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">Item</span>(BaseModel):
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>    name: <span style="color: #008000">str</span>
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>    quantity: Optional[<span style="color: #008000">int</span>]
-</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>    price_per_unit: Optional[<span style="color: #008000">float</span>]
-</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>    total_price: Optional[<span style="color: #008000">float</span>]
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span style="color: #81A1C1; font-weight: bold">class</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">Item</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">BaseModel</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>    <span style="color: #D8DEE9">name</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">str</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>    <span style="color: #D8DEE9">quantity</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">Optional</span><span style="color: #ECEFF4">[</span><span style="color: #81A1C1">int</span><span style="color: #ECEFF4">]</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>    <span style="color: #D8DEE9">price_per_unit</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">Optional</span><span style="color: #ECEFF4">[</span><span style="color: #81A1C1">float</span><span style="color: #ECEFF4">]</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>    <span style="color: #D8DEE9">total_price</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">Optional</span><span style="color: #ECEFF4">[</span><span style="color: #81A1C1">float</span><span style="color: #ECEFF4">]</span>
 </span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>
-</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span style="color: #008000; font-weight: bold">class</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">ReceiptSummary</span>(BaseModel):
-</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>    store_name: <span style="color: #008000">str</span>
-</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>    store_address: <span style="color: #008000">str</span>
-</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>    store_number: Optional[<span style="color: #008000">int</span>]
-</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>    items: List[Item]
-</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>    tax: Optional[<span style="color: #008000">float</span>]
-</span><span id="__span-7-13"><a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a>    total: Optional[<span style="color: #008000">float</span>]
-</span><span id="__span-7-14"><a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a>    <span style="color: #3D7B7B; font-style: italic"># Date is in the format YYYY-MM-DD. We can apply a regex pattern to ensure it&#39;s formatted correctly.</span>
-</span><span id="__span-7-15"><a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a>    date: Optional[<span style="color: #008000">str</span>] <span style="color: #666">=</span> Field(pattern<span style="color: #666">=</span><span style="color: #BA2121">r&#39;\d</span><span style="color: #A45A77; font-weight: bold">{4}</span><span style="color: #BA2121">-\d</span><span style="color: #A45A77; font-weight: bold">{2}</span><span style="color: #BA2121">-\d</span><span style="color: #A45A77; font-weight: bold">{2}</span><span style="color: #BA2121">&#39;</span>, description<span style="color: #666">=</span><span style="color: #BA2121">&quot;Date in the format YYYY-MM-DD&quot;</span>)
-</span><span id="__span-7-16"><a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a>    payment_method: Literal[<span style="color: #BA2121">&quot;cash&quot;</span>, <span style="color: #BA2121">&quot;credit&quot;</span>, <span style="color: #BA2121">&quot;debit&quot;</span>, <span style="color: #BA2121">&quot;check&quot;</span>, <span style="color: #BA2121">&quot;other&quot;</span>]
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span style="color: #81A1C1; font-weight: bold">class</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">ReceiptSummary</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">BaseModel</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>    <span style="color: #D8DEE9">store_name</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">str</span>
+</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>    <span style="color: #D8DEE9">store_address</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">str</span>
+</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>    <span style="color: #D8DEE9">store_number</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">Optional</span><span style="color: #ECEFF4">[</span><span style="color: #81A1C1">int</span><span style="color: #ECEFF4">]</span>
+</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>    <span style="color: #D8DEE9">items</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">List</span><span style="color: #ECEFF4">[</span><span style="color: #D8DEE9">Item</span><span style="color: #ECEFF4">]</span>
+</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>    <span style="color: #D8DEE9">tax</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">Optional</span><span style="color: #ECEFF4">[</span><span style="color: #81A1C1">float</span><span style="color: #ECEFF4">]</span>
+</span><span id="__span-7-13"><a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a>    <span style="color: #D8DEE9">total</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">Optional</span><span style="color: #ECEFF4">[</span><span style="color: #81A1C1">float</span><span style="color: #ECEFF4">]</span>
+</span><span id="__span-7-14"><a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a>    <span style="color: #616E87; font-style: italic"># Date is in the format YYYY-MM-DD. We can apply a regex pattern to ensure it&#39;s formatted correctly.</span>
+</span><span id="__span-7-15"><a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a>    <span style="color: #D8DEE9">date</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">Optional</span><span style="color: #ECEFF4">[</span><span style="color: #81A1C1">str</span><span style="color: #ECEFF4">]</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">Field</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">pattern</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #A3BE8C">r&#39;\d{4}-\d{2}-\d{2}&#39;</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">description</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #A3BE8C">&quot;Date in the format YYYY-MM-DD&quot;</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-7-16"><a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a>    <span style="color: #D8DEE9">payment_method</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">Literal</span><span style="color: #ECEFF4">[</span><span style="color: #A3BE8C">&quot;cash&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;credit&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;debit&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;check&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;other&quot;</span><span style="color: #ECEFF4">]</span>
 </span></code></pre></div>
 <h2 id="prepare-the-prompt">Prepare the prompt</h2>
 <p>We'll use the <code>tf_processor</code> to convert the image and the text prompt into a format that the model can understand. Practically,
 this is the code that adds user, system, assistant, and image tokens to the prompt.</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span style="color: #3D7B7B; font-style: italic"># Set up the content you want to send to the model</span>
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>messages <span style="color: #666">=</span> [
-</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>    {
-</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>        <span style="color: #BA2121">&quot;role&quot;</span>: <span style="color: #BA2121">&quot;user&quot;</span>,
-</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>        <span style="color: #BA2121">&quot;content&quot;</span>: [
-</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>            {
-</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>                <span style="color: #3D7B7B; font-style: italic"># The image is provided as a PIL Image object</span>
-</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>                <span style="color: #BA2121">&quot;type&quot;</span>: <span style="color: #BA2121">&quot;image&quot;</span>,
-</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>                <span style="color: #BA2121">&quot;image&quot;</span>: image,
-</span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>            },
-</span><span id="__span-8-11"><a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>            {
-</span><span id="__span-8-12"><a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a>                <span style="color: #BA2121">&quot;type&quot;</span>: <span style="color: #BA2121">&quot;text&quot;</span>,
-</span><span id="__span-8-13"><a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a>                <span style="color: #BA2121">&quot;text&quot;</span>: <span style="color: #BA2121">f&quot;&quot;&quot;You are an expert at extracting information from receipts.</span>
-</span><span id="__span-8-14"><a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a><span style="color: #BA2121">                Please extract the information from the receipt. Be as detailed as possible --</span>
-</span><span id="__span-8-15"><a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a><span style="color: #BA2121">                missing or misreporting information is a crime.</span>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span style="color: #616E87; font-style: italic"># Set up the content you want to send to the model</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span style="color: #D8DEE9">messages</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #ECEFF4">[</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>    <span style="color: #ECEFF4">{</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>        <span style="color: #A3BE8C">&quot;role&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;user&quot;</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>        <span style="color: #A3BE8C">&quot;content&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #ECEFF4">[</span>
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>            <span style="color: #ECEFF4">{</span>
+</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>                <span style="color: #616E87; font-style: italic"># The image is provided as a PIL Image object</span>
+</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>                <span style="color: #A3BE8C">&quot;type&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;image&quot;</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>                <span style="color: #A3BE8C">&quot;image&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">image</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>            <span style="color: #ECEFF4">},</span>
+</span><span id="__span-8-11"><a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>            <span style="color: #ECEFF4">{</span>
+</span><span id="__span-8-12"><a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a>                <span style="color: #A3BE8C">&quot;type&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;text&quot;</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-8-13"><a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a>                <span style="color: #A3BE8C">&quot;text&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">f&quot;&quot;&quot;You are an expert at extracting information from receipts.</span>
+</span><span id="__span-8-14"><a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a><span style="color: #A3BE8C">                Please extract the information from the receipt. Be as detailed as possible --</span>
+</span><span id="__span-8-15"><a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a><span style="color: #A3BE8C">                missing or misreporting information is a crime.</span>
 </span><span id="__span-8-16"><a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a>
-</span><span id="__span-8-17"><a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a><span style="color: #BA2121">                Return the information in the following JSON schema:</span>
-</span><span id="__span-8-18"><a id="__codelineno-8-18" name="__codelineno-8-18" href="#__codelineno-8-18"></a><span style="color: #BA2121">                </span><span style="color: #A45A77; font-weight: bold">{</span>ReceiptSummary<span style="color: #666">.</span>model_json_schema()<span style="color: #A45A77; font-weight: bold">}</span>
-</span><span id="__span-8-19"><a id="__codelineno-8-19" name="__codelineno-8-19" href="#__codelineno-8-19"></a><span style="color: #BA2121">            &quot;&quot;&quot;</span>},
-</span><span id="__span-8-20"><a id="__codelineno-8-20" name="__codelineno-8-20" href="#__codelineno-8-20"></a>        ],
-</span><span id="__span-8-21"><a id="__codelineno-8-21" name="__codelineno-8-21" href="#__codelineno-8-21"></a>    }
-</span><span id="__span-8-22"><a id="__codelineno-8-22" name="__codelineno-8-22" href="#__codelineno-8-22"></a>]
+</span><span id="__span-8-17"><a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a><span style="color: #A3BE8C">                Return the information in the following JSON schema:</span>
+</span><span id="__span-8-18"><a id="__codelineno-8-18" name="__codelineno-8-18" href="#__codelineno-8-18"></a><span style="color: #A3BE8C">                {</span><span style="color: #D8DEE9">ReceiptSummary</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">model_json_schema</span><span style="color: #ECEFF4">()</span><span style="color: #A3BE8C">}</span>
+</span><span id="__span-8-19"><a id="__codelineno-8-19" name="__codelineno-8-19" href="#__codelineno-8-19"></a><span style="color: #A3BE8C">            &quot;&quot;&quot;</span><span style="color: #ECEFF4">},</span>
+</span><span id="__span-8-20"><a id="__codelineno-8-20" name="__codelineno-8-20" href="#__codelineno-8-20"></a>        <span style="color: #ECEFF4">],</span>
+</span><span id="__span-8-21"><a id="__codelineno-8-21" name="__codelineno-8-21" href="#__codelineno-8-21"></a>    <span style="color: #ECEFF4">}</span>
+</span><span id="__span-8-22"><a id="__codelineno-8-22" name="__codelineno-8-22" href="#__codelineno-8-22"></a><span style="color: #ECEFF4">]</span>
 </span><span id="__span-8-23"><a id="__codelineno-8-23" name="__codelineno-8-23" href="#__codelineno-8-23"></a>
-</span><span id="__span-8-24"><a id="__codelineno-8-24" name="__codelineno-8-24" href="#__codelineno-8-24"></a><span style="color: #3D7B7B; font-style: italic"># Convert the messages to the final prompt</span>
-</span><span id="__span-8-25"><a id="__codelineno-8-25" name="__codelineno-8-25" href="#__codelineno-8-25"></a>prompt <span style="color: #666">=</span> tf_processor<span style="color: #666">.</span>apply_chat_template(
-</span><span id="__span-8-26"><a id="__codelineno-8-26" name="__codelineno-8-26" href="#__codelineno-8-26"></a>    messages, tokenize<span style="color: #666">=</span><span style="color: #008000; font-weight: bold">False</span>, add_generation_prompt<span style="color: #666">=</span><span style="color: #008000; font-weight: bold">True</span>
-</span><span id="__span-8-27"><a id="__codelineno-8-27" name="__codelineno-8-27" href="#__codelineno-8-27"></a>)
+</span><span id="__span-8-24"><a id="__codelineno-8-24" name="__codelineno-8-24" href="#__codelineno-8-24"></a><span style="color: #616E87; font-style: italic"># Convert the messages to the final prompt</span>
+</span><span id="__span-8-25"><a id="__codelineno-8-25" name="__codelineno-8-25" href="#__codelineno-8-25"></a><span style="color: #D8DEE9">prompt</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">tf_processor</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">apply_chat_template</span><span style="color: #ECEFF4">(</span>
+</span><span id="__span-8-26"><a id="__codelineno-8-26" name="__codelineno-8-26" href="#__codelineno-8-26"></a>    <span style="color: #D8DEE9">messages</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">tokenize</span><span style="color: #81A1C1; font-weight: bold">=False</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">add_generation_prompt</span><span style="color: #81A1C1; font-weight: bold">=True</span>
+</span><span id="__span-8-27"><a id="__codelineno-8-27" name="__codelineno-8-27" href="#__codelineno-8-27"></a><span style="color: #ECEFF4">)</span>
 </span></code></pre></div>
 <p>If you are curious, the final prompt that is sent to the model looks (roughly) like this:</p>
-<div class="language-text highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>&lt;|im_start|&gt;system
+<div class="language-text highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>&lt;|im_start|&gt;system
 </span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>You are a helpful assistant.&lt;|im_end|&gt;
 </span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>&lt;|im_start|&gt;user
 </span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>&lt;|vision_start|&gt;&lt;|image_pad|&gt;&lt;|vision_end|&gt;
@@ -4032,19 +3979,19 @@ this is the code that adds user, system, assistant, and image tokens to the prom
 </span><span id="__span-9-13"><a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a>&lt;|im_start|&gt;assistant
 </span></code></pre></div>
 <h2 id="run-the-model">Run the model</h2>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span style="color: #3D7B7B; font-style: italic"># Prepare a function to process receipts</span>
-</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>receipt_summary_generator <span style="color: #666">=</span> outlines<span style="color: #666">.</span>Generator(model, ReceiptSummary)
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span style="color: #616E87; font-style: italic"># Prepare a function to process receipts</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span style="color: #D8DEE9">receipt_summary_generator</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">outlines</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">Generator</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">ReceiptSummary</span><span style="color: #ECEFF4">)</span>
 </span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>
-</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span style="color: #3D7B7B; font-style: italic"># Generate the receipt summary</span>
-</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>result <span style="color: #666">=</span> receipt_summary_generator(
-</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>    {<span style="color: #BA2121">&quot;text&quot;</span>: prompt, <span style="color: #BA2121">&quot;images&quot;</span>: image},
-</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>    max_new_tokens<span style="color: #666">=1024</span>
-</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>)
-</span><span id="__span-10-9"><a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a><span style="color: #008000">print</span>(result)
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span style="color: #616E87; font-style: italic"># Generate the receipt summary</span>
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span style="color: #D8DEE9">result</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">receipt_summary_generator</span><span style="color: #ECEFF4">(</span>
+</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>    <span style="color: #ECEFF4">{</span><span style="color: #A3BE8C">&quot;text&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">prompt</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;images&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">image</span><span style="color: #ECEFF4">},</span>
+</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>    <span style="color: #D8DEE9">max_new_tokens</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #B48EAD">1024</span>
+</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span style="color: #ECEFF4">)</span>
+</span><span id="__span-10-9"><a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">result</span><span style="color: #ECEFF4">)</span>
 </span></code></pre></div>
 <h2 id="output">Output</h2>
 <p>The output should look like this:</p>
-<div class="language-text highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>{
+<div class="language-text highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>{
 </span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>  &quot;store_name&quot;: &quot;Trader Joe&#39;s&quot;,
 </span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>  &quot;store_address&quot;: &quot;401 Bay Street, San Francisco, CA 94133&quot;,
 </span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>  &quot;store_number&quot;: 0,
@@ -4073,12 +4020,12 @@ this is the code that adds user, system, assistant, and image tokens to the prom
 <p>Voila! You've successfully extracted information from a receipt using an LLM.</p>
 <h2 id="bonus-roasting-the-user-for-their-receipt">Bonus: roasting the user for their receipt</h2>
 <p>You can roast the user for their receipt by adding a <code>roast</code> field to the end of the  <code>ReceiptSummary</code> model.</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span style="color: #008000; font-weight: bold">class</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">ReceiptSummary</span>(BaseModel):
-</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>    <span style="color: #666">...</span>
-</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>    roast: <span style="color: #008000">str</span>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span style="color: #81A1C1; font-weight: bold">class</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">ReceiptSummary</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">BaseModel</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>    <span style="color: #81A1C1; font-weight: bold">...</span>
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>    <span style="color: #D8DEE9">roast</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">str</span>
 </span></code></pre></div>
 <p>which gives you a result like</p>
-<div class="language-text highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>{
+<div class="language-text highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>{
 </span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>    ...
 </span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>    &quot;roast&quot;: &quot;You must be a fan of Trader Joe&#39;s because you bought enough
 </span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>    items to fill a small grocery bag and still had to pay for a bag fee.
@@ -4109,7 +4056,7 @@ this is the code that adds user, system, assistant, and image tokens to the prom
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="June 8, 2025 07:43:07 UTC"><span class="timeago" datetime="2025-06-08T07:43:07+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="June 8, 2025 07:43:07 UTC">2025-06-08</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="June 20, 2025 11:51:24 UTC"><span class="timeago" datetime="2025-06-20T11:51:24+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="June 20, 2025 11:51:24 UTC">2025-06-20</span>
   </span>
 
     
@@ -4124,39 +4071,6 @@ this is the code that adds user, system, assistant, and image tokens to the prom
 
     
     
-    
-      
-  <span class="md-source-file__fact">
-    
-      
-  <span class="md-icon" title="Contributors">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33s1.71.11 2.5.33c1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2"/></svg>
-  </span>
-  <span>GitHub</span>
-
-    
-    <nav>
-      
-        <a href="https://github.com/RobinPicard" class="md-author" title="@RobinPicard">
-          
-          <img src="https://avatars.githubusercontent.com/u/83579270?v=4&size=72" alt="RobinPicard">
-        </a>
-      
-        <a href="https://github.com/rlouf" class="md-author" title="@rlouf">
-          
-          <img src="https://avatars.githubusercontent.com/u/3885044?v=4&size=72" alt="rlouf">
-        </a>
-      
-        <a href="https://github.com/web-flow" class="md-author" title="@web-flow">
-          
-          <img src="https://avatars.githubusercontent.com/u/19864447?v=4&size=72" alt="web-flow">
-        </a>
-      
-      
-      
-    </nav>
-  </span>
-
     
   </aside>
 

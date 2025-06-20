@@ -571,12 +571,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../licence/" class="md-nav__link">
+      <a href="../../guide/fastapi_vllm_deployment/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Licence
+    Deploying with FastAPI
     
   </span>
   
@@ -586,51 +586,6 @@
   
 
               
-            
-              
-                
-  
-  
-  
-  
-    
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_5" >
-        
-          
-          <label class="md-nav__link" for="__nav_2_5" id="__nav_2_5_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    Utility
-    
-  </span>
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_5">
-            <span class="md-nav__icon md-icon"></span>
-            Utility
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
             
               
                 
@@ -650,14 +605,6 @@
   
 
       </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
     </li>
   
 
@@ -3849,107 +3796,107 @@
 </ol>
 <h2 id="dependencies">Dependencies</h2>
 <p>You'll need to install these dependencies:</p>
-<div class="language-bash highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pip<span style="color: #BBB"> </span>install<span style="color: #BBB"> </span>outlines<span style="color: #BBB"> </span>pillow<span style="color: #BBB"> </span>transformers<span style="color: #BBB"> </span><span style="color: #19177C">torch</span><span style="color: #666">==2</span>.4.0<span style="color: #BBB"> </span>pdf2image
+<div class="language-shell highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pip<span style="color: #D8DEE9"> </span>install<span style="color: #D8DEE9"> </span>outlines<span style="color: #D8DEE9"> </span>pillow<span style="color: #D8DEE9"> </span>transformers<span style="color: #D8DEE9"> torch</span><span style="color: #81A1C1; font-weight: bold">==</span><span style="color: #B48EAD">2</span>.4.0<span style="color: #D8DEE9"> </span>pdf2image
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span style="color: #3D7B7B; font-style: italic"># Optional, but makes the output look nicer</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>pip<span style="color: #BBB"> </span>install<span style="color: #BBB"> </span>rich
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span style="color: #616E87; font-style: italic"># Optional, but makes the output look nicer</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>pip<span style="color: #D8DEE9"> </span>install<span style="color: #D8DEE9"> </span>rich
 </span></code></pre></div>
 <h2 id="import-the-necessary-libraries">Import the necessary libraries</h2>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">PIL</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> Image
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span style="color: #008000; font-weight: bold">import</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">outlines</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span style="color: #008000; font-weight: bold">import</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">torch</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">transformers</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> AutoProcessor
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">pydantic</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> BaseModel
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">typing</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> List, Optional
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">pdf2image</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> convert_from_path
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span style="color: #008000; font-weight: bold">import</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">os</span>
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">rich</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> <span style="color: #008000">print</span>
-</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span style="color: #008000; font-weight: bold">import</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">requests</span>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">PIL</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">Image</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">torch</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">transformers</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">AutoProcessor</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">pydantic</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">BaseModel</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">typing</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">List</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">Optional</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">pdf2image</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">convert_from_path</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">os</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">rich</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #81A1C1">print</span>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">requests</span>
 </span></code></pre></div>
 <h2 id="choose-a-model">Choose a model</h2>
 <p>We've tested this example with <a href="https://huggingface.co/mistral-community/pixtral-12b">Pixtral 12b</a> and <a href="https://huggingface.co/Qwen/Qwen2-VL-7B-Instruct">Qwen2-VL-7B-Instruct</a>.</p>
 <p>To use Pixtral:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">transformers</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> LlavaForConditionalGeneration, LlavaProcessor
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>model_name<span style="color: #666">=</span><span style="color: #BA2121">&quot;mistral-community/pixtral-12b&quot;</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>model_class<span style="color: #666">=</span>LlavaForConditionalGeneration
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>processor_class <span style="color: #666">=</span> LlavaProcessor
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">transformers</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">LlavaForConditionalGeneration</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">LlavaProcessor</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span style="color: #D8DEE9">model_name</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #A3BE8C">&quot;mistral-community/pixtral-12b&quot;</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span style="color: #D8DEE9">model_class</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #D8DEE9">LlavaForConditionalGeneration</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span style="color: #D8DEE9">processor_class</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">LlavaProcessor</span>
 </span></code></pre></div>
 <p>To use Qwen-2-VL:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">transformers</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> Qwen2VLForConditionalGeneration, AutoProcessor
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>model_name <span style="color: #666">=</span> <span style="color: #BA2121">&quot;Qwen/Qwen2-VL-7B-Instruct&quot;</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>model_class <span style="color: #666">=</span> Qwen2VLForConditionalGeneration
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>processor_class <span style="color: #666">=</span> AutoProcessor
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">transformers</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">Qwen2VLForConditionalGeneration</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">AutoProcessor</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span style="color: #D8DEE9">model_name</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">&quot;Qwen/Qwen2-VL-7B-Instruct&quot;</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span style="color: #D8DEE9">model_class</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">Qwen2VLForConditionalGeneration</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span style="color: #D8DEE9">processor_class</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">AutoProcessor</span>
 </span></code></pre></div>
 <p>You can load your model into memory with:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span style="color: #3D7B7B; font-style: italic"># This loads the model into memory. On your first run,</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span style="color: #3D7B7B; font-style: italic"># it will have to download the model, which might take a while.</span>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>model_kwargs<span style="color: #666">=</span>{<span style="color: #BA2121">&quot;device_map&quot;</span>: <span style="color: #BA2121">&quot;auto&quot;</span>, <span style="color: #BA2121">&quot;torch_dtype&quot;</span>: torch<span style="color: #666">.</span>bfloat16}
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>processor_kwargs<span style="color: #666">=</span>{<span style="color: #BA2121">&quot;device_map&quot;</span>: <span style="color: #BA2121">&quot;cpu&quot;</span>}
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>tf_model <span style="color: #666">=</span> model_class<span style="color: #666">.</span>from_pretrained(model_name, <span style="color: #666">**</span>model_kwargs)
-</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>tf_processor <span style="color: #666">=</span> processor_class<span style="color: #666">.</span>from_pretrained(model_name, <span style="color: #666">**</span>processor_kwargs)
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span style="color: #616E87; font-style: italic"># This loads the model into memory. On your first run,</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span style="color: #616E87; font-style: italic"># it will have to download the model, which might take a while.</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span style="color: #D8DEE9">model_kwargs</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #ECEFF4">{</span><span style="color: #A3BE8C">&quot;device_map&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;auto&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;torch_dtype&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">torch</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">bfloat16</span><span style="color: #ECEFF4">}</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span style="color: #D8DEE9">processor_kwargs</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #ECEFF4">{</span><span style="color: #A3BE8C">&quot;device_map&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;cpu&quot;</span><span style="color: #ECEFF4">}</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span style="color: #D8DEE9">tf_model</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">model_class</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_pretrained</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">model_name</span><span style="color: #ECEFF4">,</span> <span style="color: #81A1C1; font-weight: bold">**</span><span style="color: #D8DEE9">model_kwargs</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span style="color: #D8DEE9">tf_processor</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">processor_class</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_pretrained</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">model_name</span><span style="color: #ECEFF4">,</span> <span style="color: #81A1C1; font-weight: bold">**</span><span style="color: #D8DEE9">processor_kwargs</span><span style="color: #ECEFF4">)</span>
 </span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>
-</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>model <span style="color: #666">=</span> outlines<span style="color: #666">.</span>from_transformers(tf_model, tf_processor)
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span style="color: #D8DEE9">model</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">outlines</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_transformers</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">tf_model</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">tf_processor</span><span style="color: #ECEFF4">)</span>
 </span></code></pre></div>
 <h2 id="convert-the-pdf-to-images">Convert the PDF to images</h2>
 <p>We'll use the <code>pdf2image</code> library to convert each page of the PDF to an image.</p>
 <p><code>convert_pdf_to_images</code> is a convenience function that converts each page of the PDF to an image, and optionally saves the images to disk when <code>output_dir</code> is provided.</p>
 <p>Note: the <code>dpi</code> argument is important. It controls the resolution of the images. High DPI images are higher quality and may yield better results,
 but they are also larger, slower to process, and require more memory.</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">pdf2image</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> convert_from_path
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">PIL</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> Image
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span style="color: #008000; font-weight: bold">import</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">os</span>
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">typing</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> List, Optional
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">pdf2image</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">convert_from_path</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">PIL</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">Image</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">os</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">typing</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">List</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">Optional</span>
 </span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>
-</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span style="color: #008000; font-weight: bold">def</span><span style="color: #BBB"> </span><span style="color: #00F">convert_pdf_to_images</span>(
-</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>    pdf_path: <span style="color: #008000">str</span>,
-</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>    output_dir: Optional[<span style="color: #008000">str</span>] <span style="color: #666">=</span> <span style="color: #008000; font-weight: bold">None</span>,
-</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>    dpi: <span style="color: #008000">int</span> <span style="color: #666">=</span> <span style="color: #666">120</span>,
-</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>    fmt: <span style="color: #008000">str</span> <span style="color: #666">=</span> <span style="color: #BA2121">&#39;PNG&#39;</span>
-</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>) <span style="color: #666">-&gt;</span> List[Image<span style="color: #666">.</span>Image]:
-</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span style="color: #BBB">    </span><span style="color: #BA2121; font-style: italic">&quot;&quot;&quot;</span>
-</span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span style="color: #BA2121; font-style: italic">    Convert a PDF file to a list of PIL Image objects.</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">convert_pdf_to_images</span><span style="color: #ECEFF4">(</span>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>    <span style="color: #D8DEE9">pdf_path</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">str</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>    <span style="color: #D8DEE9">output_dir</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">Optional</span><span style="color: #ECEFF4">[</span><span style="color: #81A1C1">str</span><span style="color: #ECEFF4">]</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #81A1C1; font-weight: bold">None</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>    <span style="color: #D8DEE9">dpi</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">int</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #B48EAD">120</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>    <span style="color: #D8DEE9">fmt</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">str</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">&#39;PNG&#39;</span>
+</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #D8DEE9">List</span><span style="color: #ECEFF4">[</span><span style="color: #D8DEE9">Image</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">Image</span><span style="color: #ECEFF4">]:</span>
+</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">&quot;&quot;&quot;</span>
+</span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span style="color: #616E87">    Convert a PDF file to a list of PIL Image objects.</span>
 </span><span id="__span-5-14"><a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>
-</span><span id="__span-5-15"><a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a><span style="color: #BA2121; font-style: italic">    Args:</span>
-</span><span id="__span-5-16"><a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a><span style="color: #BA2121; font-style: italic">        pdf_path: Path to the PDF file</span>
-</span><span id="__span-5-17"><a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a><span style="color: #BA2121; font-style: italic">        output_dir: Optional directory to save the images</span>
-</span><span id="__span-5-18"><a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a><span style="color: #BA2121; font-style: italic">        dpi: Resolution for the conversion. High DPI is high quality, but also slow and memory intensive.</span>
-</span><span id="__span-5-19"><a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a><span style="color: #BA2121; font-style: italic">        fmt: Output format (PNG recommended for quality)</span>
+</span><span id="__span-5-15"><a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a><span style="color: #616E87">    Args:</span>
+</span><span id="__span-5-16"><a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a><span style="color: #616E87">        pdf_path: Path to the PDF file</span>
+</span><span id="__span-5-17"><a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a><span style="color: #616E87">        output_dir: Optional directory to save the images</span>
+</span><span id="__span-5-18"><a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a><span style="color: #616E87">        dpi: Resolution for the conversion. High DPI is high quality, but also slow and memory intensive.</span>
+</span><span id="__span-5-19"><a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a><span style="color: #616E87">        fmt: Output format (PNG recommended for quality)</span>
 </span><span id="__span-5-20"><a id="__codelineno-5-20" name="__codelineno-5-20" href="#__codelineno-5-20"></a>
-</span><span id="__span-5-21"><a id="__codelineno-5-21" name="__codelineno-5-21" href="#__codelineno-5-21"></a><span style="color: #BA2121; font-style: italic">    Returns:</span>
-</span><span id="__span-5-22"><a id="__codelineno-5-22" name="__codelineno-5-22" href="#__codelineno-5-22"></a><span style="color: #BA2121; font-style: italic">        List of PIL Image objects</span>
-</span><span id="__span-5-23"><a id="__codelineno-5-23" name="__codelineno-5-23" href="#__codelineno-5-23"></a><span style="color: #BA2121; font-style: italic">    &quot;&quot;&quot;</span>
-</span><span id="__span-5-24"><a id="__codelineno-5-24" name="__codelineno-5-24" href="#__codelineno-5-24"></a>    <span style="color: #3D7B7B; font-style: italic"># Convert PDF to list of images</span>
-</span><span id="__span-5-25"><a id="__codelineno-5-25" name="__codelineno-5-25" href="#__codelineno-5-25"></a>    images <span style="color: #666">=</span> convert_from_path(
-</span><span id="__span-5-26"><a id="__codelineno-5-26" name="__codelineno-5-26" href="#__codelineno-5-26"></a>        pdf_path,
-</span><span id="__span-5-27"><a id="__codelineno-5-27" name="__codelineno-5-27" href="#__codelineno-5-27"></a>        dpi<span style="color: #666">=</span>dpi,
-</span><span id="__span-5-28"><a id="__codelineno-5-28" name="__codelineno-5-28" href="#__codelineno-5-28"></a>        fmt<span style="color: #666">=</span>fmt
-</span><span id="__span-5-29"><a id="__codelineno-5-29" name="__codelineno-5-29" href="#__codelineno-5-29"></a>    )
+</span><span id="__span-5-21"><a id="__codelineno-5-21" name="__codelineno-5-21" href="#__codelineno-5-21"></a><span style="color: #616E87">    Returns:</span>
+</span><span id="__span-5-22"><a id="__codelineno-5-22" name="__codelineno-5-22" href="#__codelineno-5-22"></a><span style="color: #616E87">        List of PIL Image objects</span>
+</span><span id="__span-5-23"><a id="__codelineno-5-23" name="__codelineno-5-23" href="#__codelineno-5-23"></a><span style="color: #616E87">    &quot;&quot;&quot;</span>
+</span><span id="__span-5-24"><a id="__codelineno-5-24" name="__codelineno-5-24" href="#__codelineno-5-24"></a>    <span style="color: #616E87; font-style: italic"># Convert PDF to list of images</span>
+</span><span id="__span-5-25"><a id="__codelineno-5-25" name="__codelineno-5-25" href="#__codelineno-5-25"></a>    <span style="color: #D8DEE9">images</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">convert_from_path</span><span style="color: #ECEFF4">(</span>
+</span><span id="__span-5-26"><a id="__codelineno-5-26" name="__codelineno-5-26" href="#__codelineno-5-26"></a>        <span style="color: #D8DEE9">pdf_path</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-5-27"><a id="__codelineno-5-27" name="__codelineno-5-27" href="#__codelineno-5-27"></a>        <span style="color: #D8DEE9">dpi</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #D8DEE9">dpi</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-5-28"><a id="__codelineno-5-28" name="__codelineno-5-28" href="#__codelineno-5-28"></a>        <span style="color: #D8DEE9">fmt</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #D8DEE9">fmt</span>
+</span><span id="__span-5-29"><a id="__codelineno-5-29" name="__codelineno-5-29" href="#__codelineno-5-29"></a>    <span style="color: #ECEFF4">)</span>
 </span><span id="__span-5-30"><a id="__codelineno-5-30" name="__codelineno-5-30" href="#__codelineno-5-30"></a>
-</span><span id="__span-5-31"><a id="__codelineno-5-31" name="__codelineno-5-31" href="#__codelineno-5-31"></a>    <span style="color: #3D7B7B; font-style: italic"># Optionally save images</span>
-</span><span id="__span-5-32"><a id="__codelineno-5-32" name="__codelineno-5-32" href="#__codelineno-5-32"></a>    <span style="color: #008000; font-weight: bold">if</span> output_dir:
-</span><span id="__span-5-33"><a id="__codelineno-5-33" name="__codelineno-5-33" href="#__codelineno-5-33"></a>        os<span style="color: #666">.</span>makedirs(output_dir, exist_ok<span style="color: #666">=</span><span style="color: #008000; font-weight: bold">True</span>)
-</span><span id="__span-5-34"><a id="__codelineno-5-34" name="__codelineno-5-34" href="#__codelineno-5-34"></a>        <span style="color: #008000; font-weight: bold">for</span> i, image <span style="color: #A2F; font-weight: bold">in</span> <span style="color: #008000">enumerate</span>(images):
-</span><span id="__span-5-35"><a id="__codelineno-5-35" name="__codelineno-5-35" href="#__codelineno-5-35"></a>            image<span style="color: #666">.</span>save(os<span style="color: #666">.</span>path<span style="color: #666">.</span>join(output_dir, <span style="color: #BA2121">f&#39;page_</span><span style="color: #A45A77; font-weight: bold">{</span>i<span style="color: #666">+1</span><span style="color: #A45A77; font-weight: bold">}</span><span style="color: #BA2121">.</span><span style="color: #A45A77; font-weight: bold">{</span>fmt<span style="color: #666">.</span>lower()<span style="color: #A45A77; font-weight: bold">}</span><span style="color: #BA2121">&#39;</span>))
+</span><span id="__span-5-31"><a id="__codelineno-5-31" name="__codelineno-5-31" href="#__codelineno-5-31"></a>    <span style="color: #616E87; font-style: italic"># Optionally save images</span>
+</span><span id="__span-5-32"><a id="__codelineno-5-32" name="__codelineno-5-32" href="#__codelineno-5-32"></a>    <span style="color: #81A1C1; font-weight: bold">if</span> <span style="color: #D8DEE9">output_dir</span><span style="color: #ECEFF4">:</span>
+</span><span id="__span-5-33"><a id="__codelineno-5-33" name="__codelineno-5-33" href="#__codelineno-5-33"></a>        <span style="color: #D8DEE9">os</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">makedirs</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">output_dir</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">exist_ok</span><span style="color: #81A1C1; font-weight: bold">=True</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-5-34"><a id="__codelineno-5-34" name="__codelineno-5-34" href="#__codelineno-5-34"></a>        <span style="color: #81A1C1; font-weight: bold">for</span> <span style="color: #D8DEE9">i</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">image</span> <span style="color: #81A1C1; font-weight: bold">in</span> <span style="color: #81A1C1">enumerate</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">images</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-5-35"><a id="__codelineno-5-35" name="__codelineno-5-35" href="#__codelineno-5-35"></a>            <span style="color: #D8DEE9">image</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">save</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">os</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">path</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">join</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">output_dir</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">f&#39;page_{</span><span style="color: #D8DEE9">i</span><span style="color: #81A1C1; font-weight: bold">+</span><span style="color: #B48EAD">1</span><span style="color: #A3BE8C">}.{</span><span style="color: #D8DEE9">fmt</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">lower</span><span style="color: #ECEFF4">()</span><span style="color: #A3BE8C">}&#39;</span><span style="color: #ECEFF4">))</span>
 </span><span id="__span-5-36"><a id="__codelineno-5-36" name="__codelineno-5-36" href="#__codelineno-5-36"></a>
-</span><span id="__span-5-37"><a id="__codelineno-5-37" name="__codelineno-5-37" href="#__codelineno-5-37"></a>    <span style="color: #008000; font-weight: bold">return</span> images
+</span><span id="__span-5-37"><a id="__codelineno-5-37" name="__codelineno-5-37" href="#__codelineno-5-37"></a>    <span style="color: #81A1C1; font-weight: bold">return</span> <span style="color: #D8DEE9">images</span>
 </span></code></pre></div>
 <p>We're going to use the <a href="https://arxiv.org/pdf/2307.09702">Louf &amp; Willard paper</a> that described the method that Outlines uses for structured generation.</p>
 <p>To download the PDF, run:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span style="color: #3D7B7B; font-style: italic"># Download the PDF file</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>pdf_url <span style="color: #666">=</span> <span style="color: #BA2121">&quot;https://arxiv.org/pdf/2307.09702&quot;</span>
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>response <span style="color: #666">=</span> requests<span style="color: #666">.</span>get(pdf_url)
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span style="color: #616E87; font-style: italic"># Download the PDF file</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span style="color: #D8DEE9">pdf_url</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">&quot;https://arxiv.org/pdf/2307.09702&quot;</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span style="color: #D8DEE9">response</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">requests</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">get</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">pdf_url</span><span style="color: #ECEFF4">)</span>
 </span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>
-</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span style="color: #3D7B7B; font-style: italic"># Save the PDF locally</span>
-</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span style="color: #008000; font-weight: bold">with</span> <span style="color: #008000">open</span>(<span style="color: #BA2121">&quot;louf-willard.pdf&quot;</span>, <span style="color: #BA2121">&quot;wb&quot;</span>) <span style="color: #008000; font-weight: bold">as</span> f:
-</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>    f<span style="color: #666">.</span>write(response<span style="color: #666">.</span>content)
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span style="color: #616E87; font-style: italic"># Save the PDF locally</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span style="color: #81A1C1; font-weight: bold">with</span> <span style="color: #81A1C1">open</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;louf-willard.pdf&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;wb&quot;</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">as</span> <span style="color: #D8DEE9">f</span><span style="color: #ECEFF4">:</span>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>    <span style="color: #D8DEE9">f</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">write</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">response</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">content</span><span style="color: #ECEFF4">)</span>
 </span></code></pre></div>
 <p>Now, we can convert the PDF to a list of images:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span style="color: #3D7B7B; font-style: italic"># Load the pdf</span>
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>images <span style="color: #666">=</span> convert_pdf_to_images(
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>    <span style="color: #BA2121">&quot;louf-willard.pdf&quot;</span>,
-</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>    dpi<span style="color: #666">=120</span>,
-</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>    output_dir<span style="color: #666">=</span><span style="color: #BA2121">&quot;output_images&quot;</span>
-</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>)
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span style="color: #616E87; font-style: italic"># Load the pdf</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span style="color: #D8DEE9">images</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">convert_pdf_to_images</span><span style="color: #ECEFF4">(</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>    <span style="color: #A3BE8C">&quot;louf-willard.pdf&quot;</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>    <span style="color: #D8DEE9">dpi</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #B48EAD">120</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>    <span style="color: #D8DEE9">output_dir</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #A3BE8C">&quot;output_images&quot;</span>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span style="color: #ECEFF4">)</span>
 </span></code></pre></div>
 <h2 id="extract-structured-information-from-the-images">Extract structured information from the images</h2>
 <p>The structured output you can extract is exactly the same as everywhere else in Outlines -- you can use regular expressions, JSON schemas, selecting from a list of options, etc.</p>
@@ -3957,131 +3904,131 @@ but they are also larger, slower to process, and require more memory.</p>
 <p>Suppose you wished to go through each page of the PDF, and extract the page description, key takeaways, and page number.</p>
 <p>You can do this by defining a JSON schema, and then using <code>outlines.Generator</code> to extract the data.</p>
 <p>First, define the structure you want to extract:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span style="color: #008000; font-weight: bold">class</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">PageSummary</span>(BaseModel):
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>    description: <span style="color: #008000">str</span>
-</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>    key_takeaways: List[<span style="color: #008000">str</span>]
-</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>    page_number: <span style="color: #008000">int</span>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span style="color: #81A1C1; font-weight: bold">class</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">PageSummary</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">BaseModel</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>    <span style="color: #D8DEE9">description</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">str</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>    <span style="color: #D8DEE9">key_takeaways</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">List</span><span style="color: #ECEFF4">[</span><span style="color: #81A1C1">str</span><span style="color: #ECEFF4">]</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>    <span style="color: #D8DEE9">page_number</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">int</span>
 </span></code></pre></div>
 <p>Second, we need to set up the prompt. Adding special tokens can be tricky, so we use the transformers processor to apply the special tokens for us. To do so, we specify a list of messages, where each message is a dictionary with a <code>role</code> and <code>content</code> key.</p>
 <p>Images are denoted with <code>type: "image"</code>, and text is denoted with <code>type: "text"</code>.</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>messages <span style="color: #666">=</span> [
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>    {
-</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>        <span style="color: #BA2121">&quot;role&quot;</span>: <span style="color: #BA2121">&quot;user&quot;</span>,
-</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>        <span style="color: #BA2121">&quot;content&quot;</span>: [
-</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>            <span style="color: #3D7B7B; font-style: italic"># The text you&#39;re passing to the model --</span>
-</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>            <span style="color: #3D7B7B; font-style: italic"># this is where you do your standard prompting.</span>
-</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>            {<span style="color: #BA2121">&quot;type&quot;</span>: <span style="color: #BA2121">&quot;text&quot;</span>, <span style="color: #BA2121">&quot;text&quot;</span>: <span style="color: #BA2121">f&quot;&quot;&quot;</span>
-</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span style="color: #BA2121">                Describe the page in a way that is easy for a PhD student to understand.</span>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span style="color: #D8DEE9">messages</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #ECEFF4">[</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>    <span style="color: #ECEFF4">{</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>        <span style="color: #A3BE8C">&quot;role&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;user&quot;</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>        <span style="color: #A3BE8C">&quot;content&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #ECEFF4">[</span>
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>            <span style="color: #616E87; font-style: italic"># The text you&#39;re passing to the model --</span>
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>            <span style="color: #616E87; font-style: italic"># this is where you do your standard prompting.</span>
+</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>            <span style="color: #ECEFF4">{</span><span style="color: #A3BE8C">&quot;type&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;text&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;text&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">f&quot;&quot;&quot;</span>
+</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span style="color: #A3BE8C">                Describe the page in a way that is easy for a PhD student to understand.</span>
 </span><span id="__span-9-9"><a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>
-</span><span id="__span-9-10"><a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span style="color: #BA2121">                Return the information in the following JSON schema:</span>
-</span><span id="__span-9-11"><a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a><span style="color: #BA2121">                </span><span style="color: #A45A77; font-weight: bold">{</span>PageSummary<span style="color: #666">.</span>model_json_schema()<span style="color: #A45A77; font-weight: bold">}</span>
+</span><span id="__span-9-10"><a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span style="color: #A3BE8C">                Return the information in the following JSON schema:</span>
+</span><span id="__span-9-11"><a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a><span style="color: #A3BE8C">                {</span><span style="color: #D8DEE9">PageSummary</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">model_json_schema</span><span style="color: #ECEFF4">()</span><span style="color: #A3BE8C">}</span>
 </span><span id="__span-9-12"><a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a>
-</span><span id="__span-9-13"><a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a><span style="color: #BA2121">                Here is the page:</span>
-</span><span id="__span-9-14"><a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a><span style="color: #BA2121">                &quot;&quot;&quot;</span>
-</span><span id="__span-9-15"><a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a>            },
+</span><span id="__span-9-13"><a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a><span style="color: #A3BE8C">                Here is the page:</span>
+</span><span id="__span-9-14"><a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a><span style="color: #A3BE8C">                &quot;&quot;&quot;</span>
+</span><span id="__span-9-15"><a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a>            <span style="color: #ECEFF4">},</span>
 </span><span id="__span-9-16"><a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a>
-</span><span id="__span-9-17"><a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a>            <span style="color: #3D7B7B; font-style: italic"># This a placeholder, the actual image is passed in when</span>
-</span><span id="__span-9-18"><a id="__codelineno-9-18" name="__codelineno-9-18" href="#__codelineno-9-18"></a>            <span style="color: #3D7B7B; font-style: italic"># we call the generator function down below.</span>
-</span><span id="__span-9-19"><a id="__codelineno-9-19" name="__codelineno-9-19" href="#__codelineno-9-19"></a>            {<span style="color: #BA2121">&quot;type&quot;</span>: <span style="color: #BA2121">&quot;image&quot;</span>, <span style="color: #BA2121">&quot;image&quot;</span>: <span style="color: #BA2121">&quot;&quot;</span>},
-</span><span id="__span-9-20"><a id="__codelineno-9-20" name="__codelineno-9-20" href="#__codelineno-9-20"></a>        ],
-</span><span id="__span-9-21"><a id="__codelineno-9-21" name="__codelineno-9-21" href="#__codelineno-9-21"></a>    }
-</span><span id="__span-9-22"><a id="__codelineno-9-22" name="__codelineno-9-22" href="#__codelineno-9-22"></a>]
+</span><span id="__span-9-17"><a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a>            <span style="color: #616E87; font-style: italic"># This a placeholder, the actual image is passed in when</span>
+</span><span id="__span-9-18"><a id="__codelineno-9-18" name="__codelineno-9-18" href="#__codelineno-9-18"></a>            <span style="color: #616E87; font-style: italic"># we call the generator function down below.</span>
+</span><span id="__span-9-19"><a id="__codelineno-9-19" name="__codelineno-9-19" href="#__codelineno-9-19"></a>            <span style="color: #ECEFF4">{</span><span style="color: #A3BE8C">&quot;type&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;image&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;image&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;&quot;</span><span style="color: #ECEFF4">},</span>
+</span><span id="__span-9-20"><a id="__codelineno-9-20" name="__codelineno-9-20" href="#__codelineno-9-20"></a>        <span style="color: #ECEFF4">],</span>
+</span><span id="__span-9-21"><a id="__codelineno-9-21" name="__codelineno-9-21" href="#__codelineno-9-21"></a>    <span style="color: #ECEFF4">}</span>
+</span><span id="__span-9-22"><a id="__codelineno-9-22" name="__codelineno-9-22" href="#__codelineno-9-22"></a><span style="color: #ECEFF4">]</span>
 </span><span id="__span-9-23"><a id="__codelineno-9-23" name="__codelineno-9-23" href="#__codelineno-9-23"></a>
-</span><span id="__span-9-24"><a id="__codelineno-9-24" name="__codelineno-9-24" href="#__codelineno-9-24"></a><span style="color: #3D7B7B; font-style: italic"># Convert the messages to the final prompt</span>
-</span><span id="__span-9-25"><a id="__codelineno-9-25" name="__codelineno-9-25" href="#__codelineno-9-25"></a>prompt <span style="color: #666">=</span> tf_processor<span style="color: #666">.</span>apply_chat_template(
-</span><span id="__span-9-26"><a id="__codelineno-9-26" name="__codelineno-9-26" href="#__codelineno-9-26"></a>    messages, tokenize<span style="color: #666">=</span><span style="color: #008000; font-weight: bold">False</span>, add_generation_prompt<span style="color: #666">=</span><span style="color: #008000; font-weight: bold">True</span>
-</span><span id="__span-9-27"><a id="__codelineno-9-27" name="__codelineno-9-27" href="#__codelineno-9-27"></a>)
+</span><span id="__span-9-24"><a id="__codelineno-9-24" name="__codelineno-9-24" href="#__codelineno-9-24"></a><span style="color: #616E87; font-style: italic"># Convert the messages to the final prompt</span>
+</span><span id="__span-9-25"><a id="__codelineno-9-25" name="__codelineno-9-25" href="#__codelineno-9-25"></a><span style="color: #D8DEE9">prompt</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">tf_processor</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">apply_chat_template</span><span style="color: #ECEFF4">(</span>
+</span><span id="__span-9-26"><a id="__codelineno-9-26" name="__codelineno-9-26" href="#__codelineno-9-26"></a>    <span style="color: #D8DEE9">messages</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">tokenize</span><span style="color: #81A1C1; font-weight: bold">=False</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">add_generation_prompt</span><span style="color: #81A1C1; font-weight: bold">=True</span>
+</span><span id="__span-9-27"><a id="__codelineno-9-27" name="__codelineno-9-27" href="#__codelineno-9-27"></a><span style="color: #ECEFF4">)</span>
 </span></code></pre></div>
 <p>Now we iterate through each image, and extract the structured information:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span style="color: #3D7B7B; font-style: italic"># Page summarizer function</span>
-</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>page_summary_generator <span style="color: #666">=</span> outlines<span style="color: #666">.</span>Generator(model, PageSummary)
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span style="color: #616E87; font-style: italic"># Page summarizer function</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span style="color: #D8DEE9">page_summary_generator</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">outlines</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">Generator</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">PageSummary</span><span style="color: #ECEFF4">)</span>
 </span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>
-</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span style="color: #008000; font-weight: bold">for</span> image <span style="color: #A2F; font-weight: bold">in</span> images:
-</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>    result <span style="color: #666">=</span> page_summary_generator({<span style="color: #BA2121">&quot;text&quot;</span>: prompt, <span style="color: #BA2121">&quot;images&quot;</span>: image})
-</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>    <span style="color: #008000">print</span>(result)
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span style="color: #81A1C1; font-weight: bold">for</span> <span style="color: #D8DEE9">image</span> <span style="color: #81A1C1; font-weight: bold">in</span> <span style="color: #D8DEE9">images</span><span style="color: #ECEFF4">:</span>
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>    <span style="color: #D8DEE9">result</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">page_summary_generator</span><span style="color: #ECEFF4">({</span><span style="color: #A3BE8C">&quot;text&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">prompt</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;images&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">image</span><span style="color: #ECEFF4">})</span>
+</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>    <span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">result</span><span style="color: #ECEFF4">)</span>
 </span></code></pre></div>
 <h3 id="regular-expressions-to-extract-the-arxiv-paper-identifier">Regular expressions to extract the arxiv paper identifier</h3>
 <p>The <a href="https://info.arxiv.org/help/arxiv_identifier.html">arXiv paper identifier</a> is a unique identifier for each paper. These identifiers have the format <code>arXiv:YYMM.NNNNN</code> (five end digits) or <code>arXiv:YYMM.NNNN</code> (four end digits). arXiv identifiers are typically watermarked on papers uploaded to arXiv.</p>
 <p>arXiv identifiers are optionally followed by a version number, i.e. <code>arXiv:YYMM.NNNNNvX</code>.</p>
 <p>We can use a regular expression to define this patter:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">outlines.types</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> Regex
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines.types</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">Regex</span>
 </span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>
-</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>paper_regex <span style="color: #666">=</span> Regex(<span style="color: #BA2121">r&#39;arXiv:\d</span><span style="color: #A45A77; font-weight: bold">{2}</span><span style="color: #BA2121">[01]\d\.\d{4,5}(v\d)?&#39;</span>)
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span style="color: #D8DEE9">paper_regex</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">Regex</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">r&#39;arXiv:\d{2}[01]\d\.\d{4,5}(v\d)?&#39;</span><span style="color: #ECEFF4">)</span>
 </span></code></pre></div>
 <p>We can build an extractor function from the regex:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>id_extractor <span style="color: #666">=</span> outlines<span style="color: #666">.</span>Generator(model, paper_regex)
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span style="color: #D8DEE9">id_extractor</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">outlines</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">Generator</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">paper_regex</span><span style="color: #ECEFF4">)</span>
 </span></code></pre></div>
 <p>Now, we can extract the arxiv paper identifier from the first image:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>arxiv_instruction <span style="color: #666">=</span> tf_processor<span style="color: #666">.</span>apply_chat_template(
-</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>    [
-</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>        {
-</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>            <span style="color: #BA2121">&quot;role&quot;</span>: <span style="color: #BA2121">&quot;user&quot;</span>,
-</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>            <span style="color: #BA2121">&quot;content&quot;</span>: [
-</span><span id="__span-13-6"><a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>                {<span style="color: #BA2121">&quot;type&quot;</span>: <span style="color: #BA2121">&quot;text&quot;</span>, <span style="color: #BA2121">&quot;text&quot;</span>: <span style="color: #BA2121">f&quot;&quot;&quot;</span>
-</span><span id="__span-13-7"><a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a><span style="color: #BA2121">                Extract the arxiv paper identifier from the page.</span>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span style="color: #D8DEE9">arxiv_instruction</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">tf_processor</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">apply_chat_template</span><span style="color: #ECEFF4">(</span>
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>    <span style="color: #ECEFF4">[</span>
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>        <span style="color: #ECEFF4">{</span>
+</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>            <span style="color: #A3BE8C">&quot;role&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;user&quot;</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>            <span style="color: #A3BE8C">&quot;content&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #ECEFF4">[</span>
+</span><span id="__span-13-6"><a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>                <span style="color: #ECEFF4">{</span><span style="color: #A3BE8C">&quot;type&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;text&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;text&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">f&quot;&quot;&quot;</span>
+</span><span id="__span-13-7"><a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a><span style="color: #A3BE8C">                Extract the arxiv paper identifier from the page.</span>
 </span><span id="__span-13-8"><a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a>
-</span><span id="__span-13-9"><a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a><span style="color: #BA2121">                Here is the page:</span>
-</span><span id="__span-13-10"><a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a><span style="color: #BA2121">                &quot;&quot;&quot;</span>},
-</span><span id="__span-13-11"><a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a>                {<span style="color: #BA2121">&quot;type&quot;</span>: <span style="color: #BA2121">&quot;image&quot;</span>, <span style="color: #BA2121">&quot;image&quot;</span>: <span style="color: #BA2121">&quot;&quot;</span>},
-</span><span id="__span-13-12"><a id="__codelineno-13-12" name="__codelineno-13-12" href="#__codelineno-13-12"></a>            ],
-</span><span id="__span-13-13"><a id="__codelineno-13-13" name="__codelineno-13-13" href="#__codelineno-13-13"></a>        }
-</span><span id="__span-13-14"><a id="__codelineno-13-14" name="__codelineno-13-14" href="#__codelineno-13-14"></a>    ],
-</span><span id="__span-13-15"><a id="__codelineno-13-15" name="__codelineno-13-15" href="#__codelineno-13-15"></a>    tokenize<span style="color: #666">=</span><span style="color: #008000; font-weight: bold">False</span>,
-</span><span id="__span-13-16"><a id="__codelineno-13-16" name="__codelineno-13-16" href="#__codelineno-13-16"></a>    add_generation_prompt<span style="color: #666">=</span><span style="color: #008000; font-weight: bold">True</span>
-</span><span id="__span-13-17"><a id="__codelineno-13-17" name="__codelineno-13-17" href="#__codelineno-13-17"></a>)
+</span><span id="__span-13-9"><a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a><span style="color: #A3BE8C">                Here is the page:</span>
+</span><span id="__span-13-10"><a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a><span style="color: #A3BE8C">                &quot;&quot;&quot;</span><span style="color: #ECEFF4">},</span>
+</span><span id="__span-13-11"><a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a>                <span style="color: #ECEFF4">{</span><span style="color: #A3BE8C">&quot;type&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;image&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;image&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;&quot;</span><span style="color: #ECEFF4">},</span>
+</span><span id="__span-13-12"><a id="__codelineno-13-12" name="__codelineno-13-12" href="#__codelineno-13-12"></a>            <span style="color: #ECEFF4">],</span>
+</span><span id="__span-13-13"><a id="__codelineno-13-13" name="__codelineno-13-13" href="#__codelineno-13-13"></a>        <span style="color: #ECEFF4">}</span>
+</span><span id="__span-13-14"><a id="__codelineno-13-14" name="__codelineno-13-14" href="#__codelineno-13-14"></a>    <span style="color: #ECEFF4">],</span>
+</span><span id="__span-13-15"><a id="__codelineno-13-15" name="__codelineno-13-15" href="#__codelineno-13-15"></a>    <span style="color: #D8DEE9">tokenize</span><span style="color: #81A1C1; font-weight: bold">=False</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-13-16"><a id="__codelineno-13-16" name="__codelineno-13-16" href="#__codelineno-13-16"></a>    <span style="color: #D8DEE9">add_generation_prompt</span><span style="color: #81A1C1; font-weight: bold">=True</span>
+</span><span id="__span-13-17"><a id="__codelineno-13-17" name="__codelineno-13-17" href="#__codelineno-13-17"></a><span style="color: #ECEFF4">)</span>
 </span><span id="__span-13-18"><a id="__codelineno-13-18" name="__codelineno-13-18" href="#__codelineno-13-18"></a>
-</span><span id="__span-13-19"><a id="__codelineno-13-19" name="__codelineno-13-19" href="#__codelineno-13-19"></a><span style="color: #3D7B7B; font-style: italic"># Extract the arxiv paper identifier</span>
-</span><span id="__span-13-20"><a id="__codelineno-13-20" name="__codelineno-13-20" href="#__codelineno-13-20"></a>paper_id <span style="color: #666">=</span> id_extractor({<span style="color: #BA2121">&quot;text&quot;</span>: arxiv_instruction, <span style="color: #BA2121">&quot;images&quot;</span>: images[<span style="color: #666">0</span>]})
+</span><span id="__span-13-19"><a id="__codelineno-13-19" name="__codelineno-13-19" href="#__codelineno-13-19"></a><span style="color: #616E87; font-style: italic"># Extract the arxiv paper identifier</span>
+</span><span id="__span-13-20"><a id="__codelineno-13-20" name="__codelineno-13-20" href="#__codelineno-13-20"></a><span style="color: #D8DEE9">paper_id</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">id_extractor</span><span style="color: #ECEFF4">({</span><span style="color: #A3BE8C">&quot;text&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">arxiv_instruction</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;images&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">images</span><span style="color: #ECEFF4">[</span><span style="color: #B48EAD">0</span><span style="color: #ECEFF4">]})</span>
 </span></code></pre></div>
 <p>As of the time of this writing, the arxiv paper identifier is</p>
-<div class="language-text highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>arXiv:2307.09702v4
+<div class="language-text highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>arXiv:2307.09702v4
 </span></code></pre></div>
 <p>Your version number may be different, but the part before <code>vX</code> should match.</p>
 <h3 id="categorize-the-paper-into-one-of-several-categories">Categorize the paper into one of several categories</h3>
 <p><code>outlines.Generator</code> also allows the model to select one of several options by providing a Literal type hint with the categories.</p>
 <p>Suppose we wanted to categorize the paper into being about "language models", "cell biology", or "other". We would then define the output type as <code>Literal["llms", "cell biology", "other"]</code>.</p>
 <p>Let's define a few categories we might be interested in:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>categories <span style="color: #666">=</span> [
-</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>    <span style="color: #BA2121">&quot;llms&quot;</span>,
-</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>    <span style="color: #BA2121">&quot;cell biology&quot;</span>,
-</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>    <span style="color: #BA2121">&quot;other&quot;</span>
-</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>]
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span style="color: #D8DEE9">categories</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #ECEFF4">[</span>
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>    <span style="color: #A3BE8C">&quot;llms&quot;</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>    <span style="color: #A3BE8C">&quot;cell biology&quot;</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>    <span style="color: #A3BE8C">&quot;other&quot;</span>
+</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span style="color: #ECEFF4">]</span>
 </span></code></pre></div>
 <p>Now we can construct the prompt:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>categorization_instruction <span style="color: #666">=</span> tf_processor<span style="color: #666">.</span>apply_chat_template(
-</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>    [
-</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>        {
-</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>            <span style="color: #BA2121">&quot;role&quot;</span>: <span style="color: #BA2121">&quot;user&quot;</span>,
-</span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>            <span style="color: #BA2121">&quot;content&quot;</span>: [
-</span><span id="__span-16-6"><a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a>                {<span style="color: #BA2121">&quot;type&quot;</span>: <span style="color: #BA2121">&quot;text&quot;</span>, <span style="color: #BA2121">&quot;text&quot;</span>: <span style="color: #BA2121">f&quot;&quot;&quot;</span>
-</span><span id="__span-16-7"><a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a><span style="color: #BA2121">                Please choose one of the following categories</span>
-</span><span id="__span-16-8"><a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a><span style="color: #BA2121">                that best describes the paper.</span>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span style="color: #D8DEE9">categorization_instruction</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">tf_processor</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">apply_chat_template</span><span style="color: #ECEFF4">(</span>
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>    <span style="color: #ECEFF4">[</span>
+</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>        <span style="color: #ECEFF4">{</span>
+</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>            <span style="color: #A3BE8C">&quot;role&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;user&quot;</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>            <span style="color: #A3BE8C">&quot;content&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #ECEFF4">[</span>
+</span><span id="__span-16-6"><a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a>                <span style="color: #ECEFF4">{</span><span style="color: #A3BE8C">&quot;type&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;text&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;text&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">f&quot;&quot;&quot;</span>
+</span><span id="__span-16-7"><a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a><span style="color: #A3BE8C">                Please choose one of the following categories</span>
+</span><span id="__span-16-8"><a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a><span style="color: #A3BE8C">                that best describes the paper.</span>
 </span><span id="__span-16-9"><a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a>
-</span><span id="__span-16-10"><a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a><span style="color: #BA2121">                </span><span style="color: #A45A77; font-weight: bold">{</span>categories<span style="color: #A45A77; font-weight: bold">}</span>
+</span><span id="__span-16-10"><a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a><span style="color: #A3BE8C">                {</span><span style="color: #D8DEE9">categories</span><span style="color: #A3BE8C">}</span>
 </span><span id="__span-16-11"><a id="__codelineno-16-11" name="__codelineno-16-11" href="#__codelineno-16-11"></a>
-</span><span id="__span-16-12"><a id="__codelineno-16-12" name="__codelineno-16-12" href="#__codelineno-16-12"></a><span style="color: #BA2121">                Here is the paper:</span>
-</span><span id="__span-16-13"><a id="__codelineno-16-13" name="__codelineno-16-13" href="#__codelineno-16-13"></a><span style="color: #BA2121">                &quot;&quot;&quot;</span>},
+</span><span id="__span-16-12"><a id="__codelineno-16-12" name="__codelineno-16-12" href="#__codelineno-16-12"></a><span style="color: #A3BE8C">                Here is the paper:</span>
+</span><span id="__span-16-13"><a id="__codelineno-16-13" name="__codelineno-16-13" href="#__codelineno-16-13"></a><span style="color: #A3BE8C">                &quot;&quot;&quot;</span><span style="color: #ECEFF4">},</span>
 </span><span id="__span-16-14"><a id="__codelineno-16-14" name="__codelineno-16-14" href="#__codelineno-16-14"></a>
-</span><span id="__span-16-15"><a id="__codelineno-16-15" name="__codelineno-16-15" href="#__codelineno-16-15"></a>                {<span style="color: #BA2121">&quot;type&quot;</span>: <span style="color: #BA2121">&quot;image&quot;</span>, <span style="color: #BA2121">&quot;image&quot;</span>: <span style="color: #BA2121">&quot;&quot;</span>},
-</span><span id="__span-16-16"><a id="__codelineno-16-16" name="__codelineno-16-16" href="#__codelineno-16-16"></a>            ],
-</span><span id="__span-16-17"><a id="__codelineno-16-17" name="__codelineno-16-17" href="#__codelineno-16-17"></a>        }
-</span><span id="__span-16-18"><a id="__codelineno-16-18" name="__codelineno-16-18" href="#__codelineno-16-18"></a>    ],
-</span><span id="__span-16-19"><a id="__codelineno-16-19" name="__codelineno-16-19" href="#__codelineno-16-19"></a>    tokenize<span style="color: #666">=</span><span style="color: #008000; font-weight: bold">False</span>,
-</span><span id="__span-16-20"><a id="__codelineno-16-20" name="__codelineno-16-20" href="#__codelineno-16-20"></a>    add_generation_prompt<span style="color: #666">=</span><span style="color: #008000; font-weight: bold">True</span>
-</span><span id="__span-16-21"><a id="__codelineno-16-21" name="__codelineno-16-21" href="#__codelineno-16-21"></a>)
+</span><span id="__span-16-15"><a id="__codelineno-16-15" name="__codelineno-16-15" href="#__codelineno-16-15"></a>                <span style="color: #ECEFF4">{</span><span style="color: #A3BE8C">&quot;type&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;image&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;image&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;&quot;</span><span style="color: #ECEFF4">},</span>
+</span><span id="__span-16-16"><a id="__codelineno-16-16" name="__codelineno-16-16" href="#__codelineno-16-16"></a>            <span style="color: #ECEFF4">],</span>
+</span><span id="__span-16-17"><a id="__codelineno-16-17" name="__codelineno-16-17" href="#__codelineno-16-17"></a>        <span style="color: #ECEFF4">}</span>
+</span><span id="__span-16-18"><a id="__codelineno-16-18" name="__codelineno-16-18" href="#__codelineno-16-18"></a>    <span style="color: #ECEFF4">],</span>
+</span><span id="__span-16-19"><a id="__codelineno-16-19" name="__codelineno-16-19" href="#__codelineno-16-19"></a>    <span style="color: #D8DEE9">tokenize</span><span style="color: #81A1C1; font-weight: bold">=False</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-16-20"><a id="__codelineno-16-20" name="__codelineno-16-20" href="#__codelineno-16-20"></a>    <span style="color: #D8DEE9">add_generation_prompt</span><span style="color: #81A1C1; font-weight: bold">=True</span>
+</span><span id="__span-16-21"><a id="__codelineno-16-21" name="__codelineno-16-21" href="#__codelineno-16-21"></a><span style="color: #ECEFF4">)</span>
 </span></code></pre></div>
 <p>Now we can show the model the first page and extract the category:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">typing</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> Literal
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">typing</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">Literal</span>
 </span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>
-</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span style="color: #3D7B7B; font-style: italic"># Build the choice extractor</span>
-</span><span id="__span-17-4"><a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a>categorizer <span style="color: #666">=</span> outlines<span style="color: #666">.</span>Generator(model, Literal[<span style="color: #BA2121">&quot;llms&quot;</span>, <span style="color: #BA2121">&quot;cell biology&quot;</span>, <span style="color: #BA2121">&quot;other&quot;</span>])
+</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span style="color: #616E87; font-style: italic"># Build the choice extractor</span>
+</span><span id="__span-17-4"><a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span style="color: #D8DEE9">categorizer</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">outlines</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">Generator</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">Literal</span><span style="color: #ECEFF4">[</span><span style="color: #A3BE8C">&quot;llms&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;cell biology&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;other&quot;</span><span style="color: #ECEFF4">])</span>
 </span><span id="__span-17-5"><a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a>
-</span><span id="__span-17-6"><a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a><span style="color: #3D7B7B; font-style: italic"># Categorize the paper</span>
-</span><span id="__span-17-7"><a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a>category <span style="color: #666">=</span> categorizer({<span style="color: #BA2121">&quot;text&quot;</span>: categorization_instruction, <span style="color: #BA2121">&quot;images&quot;</span>: images[<span style="color: #666">0</span>]})
-</span><span id="__span-17-8"><a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a><span style="color: #008000">print</span>(category)
+</span><span id="__span-17-6"><a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a><span style="color: #616E87; font-style: italic"># Categorize the paper</span>
+</span><span id="__span-17-7"><a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a><span style="color: #D8DEE9">category</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">categorizer</span><span style="color: #ECEFF4">({</span><span style="color: #A3BE8C">&quot;text&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">categorization_instruction</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;images&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">images</span><span style="color: #ECEFF4">[</span><span style="color: #B48EAD">0</span><span style="color: #ECEFF4">]})</span>
+</span><span id="__span-17-8"><a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">category</span><span style="color: #ECEFF4">)</span>
 </span></code></pre></div>
 <p>Which should return:</p>
-<div class="language-text highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>llms
+<div class="language-text highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>llms
 </span></code></pre></div>
 <h2 id="additional-notes">Additional notes</h2>
 <p>You can provide multiple images to the model by</p>
@@ -4090,31 +4037,31 @@ but they are also larger, slower to process, and require more memory.</p>
 <li>Providing a list of images to the generator</li>
 </ol>
 <p>For example, to have two images, you can do:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>two_image_prompt <span style="color: #666">=</span> tf_processor<span style="color: #666">.</span>apply_chat_template(
-</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>    [
-</span><span id="__span-19-3"><a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a>        {
-</span><span id="__span-19-4"><a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a>            <span style="color: #BA2121">&quot;role&quot;</span>: <span style="color: #BA2121">&quot;user&quot;</span>,
-</span><span id="__span-19-5"><a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>            <span style="color: #BA2121">&quot;content&quot;</span>: [
-</span><span id="__span-19-6"><a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a>                {<span style="color: #BA2121">&quot;type&quot;</span>: <span style="color: #BA2121">&quot;text&quot;</span>, <span style="color: #BA2121">&quot;text&quot;</span>: <span style="color: #BA2121">&quot;are both of these images of hot dogs?&quot;</span>},
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span style="color: #D8DEE9">two_image_prompt</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">tf_processor</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">apply_chat_template</span><span style="color: #ECEFF4">(</span>
+</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>    <span style="color: #ECEFF4">[</span>
+</span><span id="__span-19-3"><a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a>        <span style="color: #ECEFF4">{</span>
+</span><span id="__span-19-4"><a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a>            <span style="color: #A3BE8C">&quot;role&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;user&quot;</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-19-5"><a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>            <span style="color: #A3BE8C">&quot;content&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #ECEFF4">[</span>
+</span><span id="__span-19-6"><a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a>                <span style="color: #ECEFF4">{</span><span style="color: #A3BE8C">&quot;type&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;text&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;text&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;are both of these images of hot dogs?&quot;</span><span style="color: #ECEFF4">},</span>
 </span><span id="__span-19-7"><a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a>
-</span><span id="__span-19-8"><a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a>                <span style="color: #3D7B7B; font-style: italic"># Tell the model there are two images</span>
-</span><span id="__span-19-9"><a id="__codelineno-19-9" name="__codelineno-19-9" href="#__codelineno-19-9"></a>                {<span style="color: #BA2121">&quot;type&quot;</span>: <span style="color: #BA2121">&quot;image&quot;</span>, <span style="color: #BA2121">&quot;image&quot;</span>: <span style="color: #BA2121">&quot;&quot;</span>},
-</span><span id="__span-19-10"><a id="__codelineno-19-10" name="__codelineno-19-10" href="#__codelineno-19-10"></a>                {<span style="color: #BA2121">&quot;type&quot;</span>: <span style="color: #BA2121">&quot;image&quot;</span>, <span style="color: #BA2121">&quot;image&quot;</span>: <span style="color: #BA2121">&quot;&quot;</span>},
-</span><span id="__span-19-11"><a id="__codelineno-19-11" name="__codelineno-19-11" href="#__codelineno-19-11"></a>            ],
-</span><span id="__span-19-12"><a id="__codelineno-19-12" name="__codelineno-19-12" href="#__codelineno-19-12"></a>        }
-</span><span id="__span-19-13"><a id="__codelineno-19-13" name="__codelineno-19-13" href="#__codelineno-19-13"></a>    ],
-</span><span id="__span-19-14"><a id="__codelineno-19-14" name="__codelineno-19-14" href="#__codelineno-19-14"></a>    tokenize<span style="color: #666">=</span><span style="color: #008000; font-weight: bold">False</span>,
-</span><span id="__span-19-15"><a id="__codelineno-19-15" name="__codelineno-19-15" href="#__codelineno-19-15"></a>    add_generation_prompt<span style="color: #666">=</span><span style="color: #008000; font-weight: bold">True</span>
-</span><span id="__span-19-16"><a id="__codelineno-19-16" name="__codelineno-19-16" href="#__codelineno-19-16"></a>)
+</span><span id="__span-19-8"><a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a>                <span style="color: #616E87; font-style: italic"># Tell the model there are two images</span>
+</span><span id="__span-19-9"><a id="__codelineno-19-9" name="__codelineno-19-9" href="#__codelineno-19-9"></a>                <span style="color: #ECEFF4">{</span><span style="color: #A3BE8C">&quot;type&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;image&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;image&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;&quot;</span><span style="color: #ECEFF4">},</span>
+</span><span id="__span-19-10"><a id="__codelineno-19-10" name="__codelineno-19-10" href="#__codelineno-19-10"></a>                <span style="color: #ECEFF4">{</span><span style="color: #A3BE8C">&quot;type&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;image&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;image&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;&quot;</span><span style="color: #ECEFF4">},</span>
+</span><span id="__span-19-11"><a id="__codelineno-19-11" name="__codelineno-19-11" href="#__codelineno-19-11"></a>            <span style="color: #ECEFF4">],</span>
+</span><span id="__span-19-12"><a id="__codelineno-19-12" name="__codelineno-19-12" href="#__codelineno-19-12"></a>        <span style="color: #ECEFF4">}</span>
+</span><span id="__span-19-13"><a id="__codelineno-19-13" name="__codelineno-19-13" href="#__codelineno-19-13"></a>    <span style="color: #ECEFF4">],</span>
+</span><span id="__span-19-14"><a id="__codelineno-19-14" name="__codelineno-19-14" href="#__codelineno-19-14"></a>    <span style="color: #D8DEE9">tokenize</span><span style="color: #81A1C1; font-weight: bold">=False</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-19-15"><a id="__codelineno-19-15" name="__codelineno-19-15" href="#__codelineno-19-15"></a>    <span style="color: #D8DEE9">add_generation_prompt</span><span style="color: #81A1C1; font-weight: bold">=True</span>
+</span><span id="__span-19-16"><a id="__codelineno-19-16" name="__codelineno-19-16" href="#__codelineno-19-16"></a><span style="color: #ECEFF4">)</span>
 </span><span id="__span-19-17"><a id="__codelineno-19-17" name="__codelineno-19-17" href="#__codelineno-19-17"></a>
-</span><span id="__span-19-18"><a id="__codelineno-19-18" name="__codelineno-19-18" href="#__codelineno-19-18"></a><span style="color: #3D7B7B; font-style: italic"># Pass two images to the model</span>
-</span><span id="__span-19-19"><a id="__codelineno-19-19" name="__codelineno-19-19" href="#__codelineno-19-19"></a>generator <span style="color: #666">=</span> outlines<span style="color: #666">.</span>Generator(model, Literal[<span style="color: #BA2121">&quot;hot dog&quot;</span>, <span style="color: #BA2121">&quot;not hot dog&quot;</span>])
+</span><span id="__span-19-18"><a id="__codelineno-19-18" name="__codelineno-19-18" href="#__codelineno-19-18"></a><span style="color: #616E87; font-style: italic"># Pass two images to the model</span>
+</span><span id="__span-19-19"><a id="__codelineno-19-19" name="__codelineno-19-19" href="#__codelineno-19-19"></a><span style="color: #D8DEE9">generator</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">outlines</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">Generator</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">Literal</span><span style="color: #ECEFF4">[</span><span style="color: #A3BE8C">&quot;hot dog&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;not hot dog&quot;</span><span style="color: #ECEFF4">])</span>
 </span><span id="__span-19-20"><a id="__codelineno-19-20" name="__codelineno-19-20" href="#__codelineno-19-20"></a>
-</span><span id="__span-19-21"><a id="__codelineno-19-21" name="__codelineno-19-21" href="#__codelineno-19-21"></a>result <span style="color: #666">=</span> generator({<span style="color: #BA2121">&quot;text&quot;</span>: two_image_prompt, <span style="color: #BA2121">&quot;images&quot;</span>: [images[<span style="color: #666">0</span>], images[<span style="color: #666">1</span>]]})
-</span><span id="__span-19-22"><a id="__codelineno-19-22" name="__codelineno-19-22" href="#__codelineno-19-22"></a><span style="color: #008000">print</span>(result)
+</span><span id="__span-19-21"><a id="__codelineno-19-21" name="__codelineno-19-21" href="#__codelineno-19-21"></a><span style="color: #D8DEE9">result</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">generator</span><span style="color: #ECEFF4">({</span><span style="color: #A3BE8C">&quot;text&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">two_image_prompt</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;images&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #ECEFF4">[</span><span style="color: #D8DEE9">images</span><span style="color: #ECEFF4">[</span><span style="color: #B48EAD">0</span><span style="color: #ECEFF4">],</span> <span style="color: #D8DEE9">images</span><span style="color: #ECEFF4">[</span><span style="color: #B48EAD">1</span><span style="color: #ECEFF4">]]})</span>
+</span><span id="__span-19-22"><a id="__codelineno-19-22" name="__codelineno-19-22" href="#__codelineno-19-22"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">result</span><span style="color: #ECEFF4">)</span>
 </span></code></pre></div>
 <p>Using the first to pages of the paper (they are not images of hot dogs), we should get</p>
-<div class="language-text highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>not hot dog
+<div class="language-text highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>not hot dog
 </span></code></pre></div>
 
 
@@ -4138,7 +4085,7 @@ but they are also larger, slower to process, and require more memory.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="June 8, 2025 07:43:07 UTC"><span class="timeago" datetime="2025-06-08T07:43:07+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="June 8, 2025 07:43:07 UTC">2025-06-08</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="June 20, 2025 11:51:24 UTC"><span class="timeago" datetime="2025-06-20T11:51:24+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="June 20, 2025 11:51:24 UTC">2025-06-20</span>
   </span>
 
     
@@ -4153,39 +4100,6 @@ but they are also larger, slower to process, and require more memory.</p>
 
     
     
-    
-      
-  <span class="md-source-file__fact">
-    
-      
-  <span class="md-icon" title="Contributors">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33s1.71.11 2.5.33c1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2"/></svg>
-  </span>
-  <span>GitHub</span>
-
-    
-    <nav>
-      
-        <a href="https://github.com/RobinPicard" class="md-author" title="@RobinPicard">
-          
-          <img src="https://avatars.githubusercontent.com/u/83579270?v=4&size=72" alt="RobinPicard">
-        </a>
-      
-        <a href="https://github.com/rlouf" class="md-author" title="@rlouf">
-          
-          <img src="https://avatars.githubusercontent.com/u/3885044?v=4&size=72" alt="rlouf">
-        </a>
-      
-        <a href="https://github.com/web-flow" class="md-author" title="@web-flow">
-          
-          <img src="https://avatars.githubusercontent.com/u/19864447?v=4&size=72" alt="web-flow">
-        </a>
-      
-      
-      
-    </nav>
-  </span>
-
     
   </aside>
 

@@ -571,12 +571,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../licence/" class="md-nav__link">
+      <a href="../../guide/fastapi_vllm_deployment/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Licence
+    Deploying with FastAPI
     
   </span>
   
@@ -586,51 +586,6 @@
   
 
               
-            
-              
-                
-  
-  
-  
-  
-    
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_5" >
-        
-          
-          <label class="md-nav__link" for="__nav_2_5" id="__nav_2_5_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    Utility
-    
-  </span>
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_5">
-            <span class="md-nav__icon md-icon"></span>
-            Utility
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
             
               
                 
@@ -650,14 +605,6 @@
   
 
       </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
     </li>
   
 
@@ -3956,32 +3903,32 @@
 <h2 id="how-to-contribute">How to contribute?</h2>
 <h3 id="setup">Setup</h3>
 <p>First, <a href="https://github.com/dottxt-ai/outlines/fork">fork the repository on GitHub</a> and clone the fork locally:</p>
-<div class="language-shell highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>git<span style="color: #BBB"> </span>clone<span style="color: #BBB"> </span>git@github.com/YourUserName/outlines.git
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span style="color: #008000">cd</span><span style="color: #BBB"> </span>outlines
+<div class="language-shell highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>git<span style="color: #D8DEE9"> </span>clone<span style="color: #D8DEE9"> </span>git@github.com/YourUserName/outlines.git
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span style="color: #81A1C1">cd</span><span style="color: #D8DEE9"> </span>outlines
 </span></code></pre></div>
 <p>Create a new virtual environment:</p>
 <p><em>If you are using <code>uv</code></em>:</p>
-<div class="language-shell highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>uv<span style="color: #BBB"> </span>venv
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span style="color: #008000">source</span><span style="color: #BBB"> </span>.venv/bin/activate
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span style="color: #008000">alias</span><span style="color: #BBB"> </span><span style="color: #19177C">pip</span><span style="color: #666">=</span><span style="color: #BA2121">&quot;uv pip&quot;</span><span style="color: #BBB"> </span><span style="color: #3D7B7B; font-style: italic"># ... or just remember to prepend any pip command with uv in the rest of this guide</span>
+<div class="language-shell highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>uv<span style="color: #D8DEE9"> </span>venv
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span style="color: #81A1C1">source</span><span style="color: #D8DEE9"> </span>.venv/bin/activate
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span style="color: #81A1C1">alias</span><span style="color: #D8DEE9"> pip</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #A3BE8C">&quot;uv pip&quot;</span><span style="color: #D8DEE9"> </span><span style="color: #616E87; font-style: italic"># ... or just remember to prepend any pip command with uv in the rest of this guide</span>
 </span></code></pre></div>
 <p><em>If you are using <code>venv</code></em>:</p>
-<div class="language-shell highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>python<span style="color: #BBB"> </span>-m<span style="color: #BBB"> </span>venv<span style="color: #BBB"> </span>.venv
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span style="color: #008000">source</span><span style="color: #BBB"> </span>.venv/bin/activate
+<div class="language-shell highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>python<span style="color: #D8DEE9"> </span>-m<span style="color: #D8DEE9"> </span>venv<span style="color: #D8DEE9"> </span>.venv
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span style="color: #81A1C1">source</span><span style="color: #D8DEE9"> </span>.venv/bin/activate
 </span></code></pre></div>
 <p><em>If you are using <code>conda</code></em>:</p>
-<div class="language-shell highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>conda<span style="color: #BBB"> </span>env<span style="color: #BBB"> </span>create<span style="color: #BBB"> </span>-f<span style="color: #BBB"> </span>environment.yml
+<div class="language-shell highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>conda<span style="color: #D8DEE9"> </span>env<span style="color: #D8DEE9"> </span>create<span style="color: #D8DEE9"> </span>-f<span style="color: #D8DEE9"> </span>environment.yml
 </span></code></pre></div>
 <p>Then install the dependencies in editable mode, and install the <code>pre-commit</code> hooks:</p>
-<p><div class="language-shell highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>pip<span style="color: #BBB"> </span>install<span style="color: #BBB"> </span>-e<span style="color: #BBB"> </span><span style="color: #BA2121">&quot;.[test]&quot;</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>pre-commit<span style="color: #BBB"> </span>install
+<p><div class="language-shell highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>pip<span style="color: #D8DEE9"> </span>install<span style="color: #D8DEE9"> </span>-e<span style="color: #D8DEE9"> </span><span style="color: #A3BE8C">&quot;.[test]&quot;</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>pre-commit<span style="color: #D8DEE9"> </span>install
 </span></code></pre></div>
 If you own a GPU and want to run the vLLM tests you will have to run:</p>
-<div class="language-shell highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>pip<span style="color: #BBB"> </span>install<span style="color: #BBB"> </span>-e<span style="color: #BBB"> </span><span style="color: #BA2121">&quot;.[test-gpu]&quot;</span>
+<div class="language-shell highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>pip<span style="color: #D8DEE9"> </span>install<span style="color: #D8DEE9"> </span>-e<span style="color: #D8DEE9"> </span><span style="color: #A3BE8C">&quot;.[test-gpu]&quot;</span>
 </span></code></pre></div>
 <p>instead.</p>
 <p>Outlines provides optional dependencies for different supported backends, which you can install with</p>
-<div class="language-shell highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>pip<span style="color: #BBB"> </span>install<span style="color: #BBB"> </span><span style="color: #BA2121">&quot;.[vllm]&quot;</span>
+<div class="language-shell highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>pip<span style="color: #D8DEE9"> </span>install<span style="color: #D8DEE9"> </span><span style="color: #A3BE8C">&quot;.[vllm]&quot;</span>
 </span></code></pre></div>
 <p>A list of supported optional dependencies can be found in the <a href="/installation">installation guide</a>.</p>
 <h3 id="using-vscode-devcontainer-github-codespaces">Using VSCode DevContainer / GitHub Codespaces</h3>
@@ -4003,15 +3950,15 @@ If you own a GPU and want to run the vLLM tests you will have to run:</p>
 <p>You will not have access to a GPU, but you'll be able to make basic contributions to the project on the go while using a fully featured web-based IDE.</p>
 <h3 id="before-pushing-your-code">Before pushing your code</h3>
 <p>Run the tests:</p>
-<div class="language-shell highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>pytest
+<div class="language-shell highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>pytest
 </span></code></pre></div>
 <p>And run the code style checks:</p>
-<div class="language-shell highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>pre-commit<span style="color: #BBB"> </span>run<span style="color: #BBB"> </span>--all-files
+<div class="language-shell highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>pre-commit<span style="color: #D8DEE9"> </span>run<span style="color: #D8DEE9"> </span>--all-files
 </span></code></pre></div>
 <h3 id="benchmarking">Benchmarking</h3>
 <p>Outlines uses <a href="https://asv.readthedocs.io">asv</a> for automated benchmark testing. Benchmarks are run automatically before pull requests are merged to prevent performance degradation.</p>
 <p>You can run the benchmark test suite locally with the following command:</p>
-<div class="language-shell highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>asv<span style="color: #BBB"> </span>run<span style="color: #BBB"> </span>--config<span style="color: #BBB"> </span>benchmarks/asv.conf.json
+<div class="language-shell highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>asv<span style="color: #D8DEE9"> </span>run<span style="color: #D8DEE9"> </span>--config<span style="color: #D8DEE9"> </span>benchmarks/asv.conf.json
 </span></code></pre></div>
 <p>Caveats:</p>
 <ul>
@@ -4019,14 +3966,14 @@ If you own a GPU and want to run the vLLM tests you will have to run:</p>
 <li>Uncommitted code will not be benchmarked, you must first commit your changes.</li>
 </ul>
 <h4 id="run-a-specific-test">Run a specific test:</h4>
-<div class="language-shell highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>asv<span style="color: #BBB"> </span>run<span style="color: #BBB"> </span>--config<span style="color: #BBB"> </span>benchmarks/asv.conf.json<span style="color: #BBB"> </span>-b<span style="color: #BBB"> </span>bench_json_schema.JsonSchemaBenchmark.time_json_schema_to_fsm
+<div class="language-shell highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>asv<span style="color: #D8DEE9"> </span>run<span style="color: #D8DEE9"> </span>--config<span style="color: #D8DEE9"> </span>benchmarks/asv.conf.json<span style="color: #D8DEE9"> </span>-b<span style="color: #D8DEE9"> </span>bench_json_schema.JsonSchemaBenchmark.time_json_schema_to_fsm
 </span></code></pre></div>
 <h4 id="profile-a-specific-test">Profile a specific test:</h4>
-<div class="language-shell highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>asv<span style="color: #BBB"> </span>run<span style="color: #BBB"> </span>--config<span style="color: #BBB"> </span>benchmarks/asv.conf.json<span style="color: #BBB"> </span>--profile<span style="color: #BBB"> </span>-b<span style="color: #BBB"> </span>bench_json_schema.JsonSchemaBenchmark.time_json_schema_to_fsm
+<div class="language-shell highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>asv<span style="color: #D8DEE9"> </span>run<span style="color: #D8DEE9"> </span>--config<span style="color: #D8DEE9"> </span>benchmarks/asv.conf.json<span style="color: #D8DEE9"> </span>--profile<span style="color: #D8DEE9"> </span>-b<span style="color: #D8DEE9"> </span>bench_json_schema.JsonSchemaBenchmark.time_json_schema_to_fsm
 </span></code></pre></div>
 <h4 id="compare-to-originmain">Compare to <code>origin/main</code></h4>
-<div class="language-shell highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>get<span style="color: #BBB"> </span>fetch<span style="color: #BBB"> </span>origin
-</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>asv<span style="color: #BBB"> </span>continuous<span style="color: #BBB"> </span>origin/main<span style="color: #BBB"> </span>HEAD<span style="color: #BBB"> </span>--config<span style="color: #BBB"> </span>benchmarks/asv.conf.json
+<div class="language-shell highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>get<span style="color: #D8DEE9"> </span>fetch<span style="color: #D8DEE9"> </span>origin
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>asv<span style="color: #D8DEE9"> </span>continuous<span style="color: #D8DEE9"> </span>origin/main<span style="color: #D8DEE9"> </span>HEAD<span style="color: #D8DEE9"> </span>--config<span style="color: #D8DEE9"> </span>benchmarks/asv.conf.json
 </span></code></pre></div>
 <h4 id="asv-pr-behavior">ASV PR Behavior</h4>
 <ul>
@@ -4037,19 +3984,19 @@ If you own a GPU and want to run the vLLM tests you will have to run:</p>
 </ul>
 <h3 id="contribute-to-the-documentation">Contribute to the documentation</h3>
 <p>To work on the <em>documentation</em> you will need to install the related dependencies:</p>
-<div class="language-shell highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>pip<span style="color: #BBB"> </span>install<span style="color: #BBB"> </span>-r<span style="color: #BBB"> </span>requirements-doc.txt
+<div class="language-shell highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>pip<span style="color: #D8DEE9"> </span>install<span style="color: #D8DEE9"> </span>-r<span style="color: #D8DEE9"> </span>requirements-doc.txt
 </span></code></pre></div>
 <p>To build the documentation and serve it locally, run the following command in the repository's root folder:</p>
-<div class="language-shell highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>mkdocs<span style="color: #BBB"> </span>serve
+<div class="language-shell highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>mkdocs<span style="color: #D8DEE9"> </span>serve
 </span></code></pre></div>
 <p>By following the instruction you will be able to view the documentation locally.
 It will be updated every time you make a change.</p>
 <h2 id="open-a-pull-request">Open a Pull Request</h2>
 <p>Create a new branch on your fork, commit and push the changes:</p>
-<div class="language-shell highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>git<span style="color: #BBB"> </span>checkout<span style="color: #BBB"> </span>-b<span style="color: #BBB"> </span>new-branch
-</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>git<span style="color: #BBB"> </span>add<span style="color: #BBB"> </span>.
-</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>git<span style="color: #BBB"> </span>commit<span style="color: #BBB"> </span>-m<span style="color: #BBB"> </span><span style="color: #BA2121">&quot;Changes I made&quot;</span>
-</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>git<span style="color: #BBB"> </span>push<span style="color: #BBB"> </span>origin<span style="color: #BBB"> </span>new-branch
+<div class="language-shell highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>git<span style="color: #D8DEE9"> </span>checkout<span style="color: #D8DEE9"> </span>-b<span style="color: #D8DEE9"> </span>new-branch
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>git<span style="color: #D8DEE9"> </span>add<span style="color: #D8DEE9"> </span>.
+</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>git<span style="color: #D8DEE9"> </span>commit<span style="color: #D8DEE9"> </span>-m<span style="color: #D8DEE9"> </span><span style="color: #A3BE8C">&quot;Changes I made&quot;</span>
+</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>git<span style="color: #D8DEE9"> </span>push<span style="color: #D8DEE9"> </span>origin<span style="color: #D8DEE9"> </span>new-branch
 </span></code></pre></div>
 <p>Then you can <a href="https://github.com/dottxt-ai/outlines/pulls">open a pull request</a> on GitHub. It should prompt you to do so. Every subsequent change that you make on your branch will update the pull request.</p>
 <p>Do not hesitate to open a draft PR before your contribution is ready, especially if you have questions and/or need feedback. If you need help, come tell us on <a href="https://discord.gg/R9DSu34mGd">Discord</a>.</p>

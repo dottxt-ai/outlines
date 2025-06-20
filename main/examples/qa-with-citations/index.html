@@ -571,12 +571,12 @@
   
   
     <li class="md-nav__item">
-      <a href="../../licence/" class="md-nav__link">
+      <a href="../../guide/fastapi_vllm_deployment/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
-    Licence
+    Deploying with FastAPI
     
   </span>
   
@@ -586,51 +586,6 @@
   
 
               
-            
-              
-                
-  
-  
-  
-  
-    
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_5" >
-        
-          
-          <label class="md-nav__link" for="__nav_2_5" id="__nav_2_5_label" tabindex="0">
-            
-  
-  
-  <span class="md-ellipsis">
-    Utility
-    
-  </span>
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2_5">
-            <span class="md-nav__icon md-icon"></span>
-            Utility
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
             
               
                 
@@ -650,14 +605,6 @@
   
 
       </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
     </li>
   
 
@@ -3702,220 +3649,220 @@
 <h1 id="generate-synthetic-data-and-qa-with-citations">Generate Synthetic Data and Q&amp;A with Citations</h1>
 <p>This tutorial is adapted from the <a href="https://github.com/alonsosilvaallende/Hermes-Function-Calling/blob/main/examples/instructor_ollama.ipynb">instructor-ollama notebook</a>. We start with a simple example to generate synthetic data and then we approach the problem of question answering by providing citations.</p>
 <p>We will use <a href="https://github.com/ggerganov/llama.cpp">llama.cpp</a> using the <a href="https://github.com/abetlen/llama-cpp-python">llama-cpp-python</a> library. Outlines supports llama-cpp-python, but we need to install it ourselves:</p>
-<div class="language-bash highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pip<span style="color: #BBB"> </span>install<span style="color: #BBB"> </span>llama-cpp-python
+<div class="language-shell highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pip<span style="color: #D8DEE9"> </span>install<span style="color: #D8DEE9"> </span>llama-cpp-python
 </span></code></pre></div>
 <p>We download the model weights by passing the name of the repository on the HuggingFace Hub, and the filenames (or glob pattern):
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span style="color: #008000; font-weight: bold">import</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">llama_cpp</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span style="color: #008000; font-weight: bold">import</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">outlines</span>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">llama_cpp</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines</span>
 </span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>llm <span style="color: #666">=</span> llama_cpp<span style="color: #666">.</span>Llama(
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span style="color: #BA2121">&quot;NousResearch/Hermes-2-Pro-Llama-3-8B-GGUF&quot;</span>,
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    tokenizer<span style="color: #666">=</span>llama_cpp<span style="color: #666">.</span>llama_tokenizer<span style="color: #666">.</span>LlamaHFTokenizer<span style="color: #666">.</span>from_pretrained(
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>        <span style="color: #BA2121">&quot;NousResearch/Hermes-2-Pro-Llama-3-8B&quot;</span>
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    ),
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>    n_gpu_layers<span style="color: #666">=-1</span>,
-</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>    flash_attn<span style="color: #666">=</span><span style="color: #008000; font-weight: bold">True</span>,
-</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    n_ctx<span style="color: #666">=8192</span>,
-</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>    verbose<span style="color: #666">=</span><span style="color: #008000; font-weight: bold">False</span>
-</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>)
-</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>model <span style="color: #666">=</span> outlines<span style="color: #666">.</span>from_llamacpp(llm)
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span style="color: #D8DEE9">llm</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">llama_cpp</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">Llama</span><span style="color: #ECEFF4">(</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>    <span style="color: #A3BE8C">&quot;NousResearch/Hermes-2-Pro-Llama-3-8B-GGUF&quot;</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span style="color: #D8DEE9">tokenizer</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #D8DEE9">llama_cpp</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">llama_tokenizer</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">LlamaHFTokenizer</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_pretrained</span><span style="color: #ECEFF4">(</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>        <span style="color: #A3BE8C">&quot;NousResearch/Hermes-2-Pro-Llama-3-8B&quot;</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span style="color: #ECEFF4">),</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>    <span style="color: #D8DEE9">n_gpu_layers</span><span style="color: #81A1C1; font-weight: bold">=-</span><span style="color: #B48EAD">1</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>    <span style="color: #D8DEE9">flash_attn</span><span style="color: #81A1C1; font-weight: bold">=True</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    <span style="color: #D8DEE9">n_ctx</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #B48EAD">8192</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>    <span style="color: #D8DEE9">verbose</span><span style="color: #81A1C1; font-weight: bold">=False</span>
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span style="color: #ECEFF4">)</span>
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span style="color: #D8DEE9">model</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">outlines</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_llamacpp</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">llm</span><span style="color: #ECEFF4">)</span>
 </span></code></pre></div></p>
 <details class="note">
 <summary>(Optional) Store the model weights in a custom folder</summary>
 <p>By default the model weights are downloaded to the hub cache but if we want so store the weights in a custom folder, we pull a quantized GGUF model <a href="https://huggingface.co/NousResearch/Hermes-2-Theta-Llama-3-8B-GGUF">Hermes-2-Pro-Llama-3-8B</a> by <a href="https://nousresearch.com/">NousResearch</a> from <a href="https://huggingface.co/">HuggingFace</a>:</p>
-<div class="language-bash highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>wget<span style="color: #BBB"> </span>https://hf.co/NousResearch/Hermes-2-Pro-Llama-3-8B-GGUF/resolve/main/Hermes-2-Pro-Llama-3-8B-Q4_K_M.gguf
+<div class="language-shell highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>wget<span style="color: #D8DEE9"> </span>https://hf.co/NousResearch/Hermes-2-Pro-Llama-3-8B-GGUF/resolve/main/Hermes-2-Pro-Llama-3-8B-Q4_K_M.gguf
 </span></code></pre></div>
 <p>We initialize the model:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">llama_cpp</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> Llama
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">llama_cpp</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">Llama</span>
 </span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>llm <span style="color: #666">=</span> Llama(<span style="color: #BA2121">&quot;/path/to/model/Hermes-2-Pro-Llama-3-8B-Q4_K_M.gguf&quot;</span>, <span style="color: #666">...</span>)
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span style="color: #D8DEE9">llm</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">Llama</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;/path/to/model/Hermes-2-Pro-Llama-3-8B-Q4_K_M.gguf&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #81A1C1; font-weight: bold">...</span><span style="color: #ECEFF4">)</span>
 </span></code></pre></div>
 </details>
 <h2 id="generate-synthetic-data">Generate Synthetic Data</h2>
 <p>We first need to define our Pydantic class for a user:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">pydantic</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> BaseModel, Field
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">pydantic</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">BaseModel</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">Field</span>
 </span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span style="color: #008000; font-weight: bold">class</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">UserDetail</span>(BaseModel):
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span style="color: #008000">id</span>: <span style="color: #008000">int</span> <span style="color: #666">=</span> Field(<span style="color: #666">...</span>, description<span style="color: #666">=</span><span style="color: #BA2121">&quot;Unique identifier&quot;</span>) <span style="color: #3D7B7B; font-style: italic"># so the model keeps track of the number of users</span>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    first_name: <span style="color: #008000">str</span>
-</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    last_name: <span style="color: #008000">str</span>
-</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>    age: <span style="color: #008000">int</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span style="color: #81A1C1; font-weight: bold">class</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">UserDetail</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">BaseModel</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    <span style="color: #81A1C1">id</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">int</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">Field</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1; font-weight: bold">...</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">description</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #A3BE8C">&quot;Unique identifier&quot;</span><span style="color: #ECEFF4">)</span> <span style="color: #616E87; font-style: italic"># so the model keeps track of the number of users</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    <span style="color: #D8DEE9">first_name</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">str</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    <span style="color: #D8DEE9">last_name</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">str</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>    <span style="color: #D8DEE9">age</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">int</span>
 </span></code></pre></div>
 <p>We then define a Pydantic class for a list of users:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">typing</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> List
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">typing</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">List</span>
 </span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span style="color: #008000; font-weight: bold">class</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">Users</span>(BaseModel):
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    users: List[UserDetail]
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span style="color: #81A1C1; font-weight: bold">class</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">Users</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">BaseModel</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    <span style="color: #D8DEE9">users</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">List</span><span style="color: #ECEFF4">[</span><span style="color: #D8DEE9">UserDetail</span><span style="color: #ECEFF4">]</span>
 </span></code></pre></div>
 <p>We can use a <code>outlines.Generator</code> by passing this Pydantic class we just defined, and call the generator:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span style="color: #008000; font-weight: bold">import</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">json</span>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">json</span>
 </span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>generator <span style="color: #666">=</span> outlines<span style="color: #666">.</span>Generator(model, Users)
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>response <span style="color: #666">=</span> generator(<span style="color: #BA2121">&quot;Create 5 fake users&quot;</span>, max_tokens<span style="color: #666">=1024</span>, temperature<span style="color: #666">=0</span>, seed<span style="color: #666">=42</span>)
-</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>response <span style="color: #666">=</span> json<span style="color: #666">.</span>loads(response)
-</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span style="color: #008000">print</span>(response[<span style="color: #BA2121">&#39;users&#39;</span>])
-</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span style="color: #3D7B7B; font-style: italic"># [{&#39;id&#39;: 1, &#39;first_name&#39;: &#39;John&#39;, &#39;last_name&#39;: &#39;Doe&#39;, &#39;age&#39;: 25},</span>
-</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span style="color: #3D7B7B; font-style: italic"># {&#39;id&#39;: 2, &#39;first_name&#39;: &#39;Jane&#39;, &#39;last_name&#39;: &#39;Doe&#39;, &#39;age&#39;: 30},</span>
-</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span style="color: #3D7B7B; font-style: italic"># {&#39;id&#39;: 3, &#39;first_name&#39;: &#39;Bob&#39;, &#39;last_name&#39;: &#39;Smith&#39;, &#39;age&#39;: 40},</span>
-</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span style="color: #3D7B7B; font-style: italic"># {&#39;id&#39;: 4, &#39;first_name&#39;: &#39;Alice&#39;, &#39;last_name&#39;: &#39;Smith&#39;, &#39;age&#39;: 35},</span>
-</span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span style="color: #3D7B7B; font-style: italic"># {&#39;id&#39;: 5, &#39;first_name&#39;: &#39;John&#39;, &#39;last_name&#39;: &#39;Smith&#39;, &#39;age&#39;: 20}]</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span style="color: #D8DEE9">generator</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">outlines</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">Generator</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">Users</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span style="color: #D8DEE9">response</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">generator</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;Create 5 fake users&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">max_tokens</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #B48EAD">1024</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">temperature</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #B48EAD">0</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">seed</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #B48EAD">42</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span style="color: #D8DEE9">response</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">json</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">loads</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">response</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">response</span><span style="color: #ECEFF4">[</span><span style="color: #A3BE8C">&#39;users&#39;</span><span style="color: #ECEFF4">])</span>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span style="color: #616E87; font-style: italic"># [{&#39;id&#39;: 1, &#39;first_name&#39;: &#39;John&#39;, &#39;last_name&#39;: &#39;Doe&#39;, &#39;age&#39;: 25},</span>
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span style="color: #616E87; font-style: italic"># {&#39;id&#39;: 2, &#39;first_name&#39;: &#39;Jane&#39;, &#39;last_name&#39;: &#39;Doe&#39;, &#39;age&#39;: 30},</span>
+</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span style="color: #616E87; font-style: italic"># {&#39;id&#39;: 3, &#39;first_name&#39;: &#39;Bob&#39;, &#39;last_name&#39;: &#39;Smith&#39;, &#39;age&#39;: 40},</span>
+</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span style="color: #616E87; font-style: italic"># {&#39;id&#39;: 4, &#39;first_name&#39;: &#39;Alice&#39;, &#39;last_name&#39;: &#39;Smith&#39;, &#39;age&#39;: 35},</span>
+</span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span style="color: #616E87; font-style: italic"># {&#39;id&#39;: 5, &#39;first_name&#39;: &#39;John&#39;, &#39;last_name&#39;: &#39;Smith&#39;, &#39;age&#39;: 20}]</span>
 </span></code></pre></div>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span style="color: #008000; font-weight: bold">for</span> user <span style="color: #A2F; font-weight: bold">in</span> response[<span style="color: #BA2121">&#39;users&#39;</span>]:
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>    <span style="color: #008000">print</span>(user[<span style="color: #BA2121">&#39;first_name&#39;</span>])
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>    <span style="color: #008000">print</span>(user[<span style="color: #BA2121">&#39;last_name&#39;</span>])
-</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>    <span style="color: #008000">print</span>(user[<span style="color: #BA2121">&#39;age&#39;</span>])
-</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>    <span style="color: #008000">print</span>(<span style="color: #BA2121">&quot;#####&quot;</span>)
-</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span style="color: #3D7B7B; font-style: italic"># John</span>
-</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span style="color: #3D7B7B; font-style: italic"># Doe</span>
-</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span style="color: #3D7B7B; font-style: italic"># 25</span>
-</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span style="color: #3D7B7B; font-style: italic"># #####</span>
-</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span style="color: #3D7B7B; font-style: italic"># Jane</span>
-</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span style="color: #3D7B7B; font-style: italic"># Doe</span>
-</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a><span style="color: #3D7B7B; font-style: italic"># 30</span>
-</span><span id="__span-7-13"><a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a><span style="color: #3D7B7B; font-style: italic"># #####</span>
-</span><span id="__span-7-14"><a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a><span style="color: #3D7B7B; font-style: italic"># Bob</span>
-</span><span id="__span-7-15"><a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a><span style="color: #3D7B7B; font-style: italic"># Smith</span>
-</span><span id="__span-7-16"><a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a><span style="color: #3D7B7B; font-style: italic"># 40</span>
-</span><span id="__span-7-17"><a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a><span style="color: #3D7B7B; font-style: italic"># #####</span>
-</span><span id="__span-7-18"><a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a><span style="color: #3D7B7B; font-style: italic"># Alice</span>
-</span><span id="__span-7-19"><a id="__codelineno-7-19" name="__codelineno-7-19" href="#__codelineno-7-19"></a><span style="color: #3D7B7B; font-style: italic"># Smith</span>
-</span><span id="__span-7-20"><a id="__codelineno-7-20" name="__codelineno-7-20" href="#__codelineno-7-20"></a><span style="color: #3D7B7B; font-style: italic"># 35</span>
-</span><span id="__span-7-21"><a id="__codelineno-7-21" name="__codelineno-7-21" href="#__codelineno-7-21"></a><span style="color: #3D7B7B; font-style: italic"># #####</span>
-</span><span id="__span-7-22"><a id="__codelineno-7-22" name="__codelineno-7-22" href="#__codelineno-7-22"></a><span style="color: #3D7B7B; font-style: italic"># John</span>
-</span><span id="__span-7-23"><a id="__codelineno-7-23" name="__codelineno-7-23" href="#__codelineno-7-23"></a><span style="color: #3D7B7B; font-style: italic"># Smith</span>
-</span><span id="__span-7-24"><a id="__codelineno-7-24" name="__codelineno-7-24" href="#__codelineno-7-24"></a><span style="color: #3D7B7B; font-style: italic"># 20</span>
-</span><span id="__span-7-25"><a id="__codelineno-7-25" name="__codelineno-7-25" href="#__codelineno-7-25"></a><span style="color: #3D7B7B; font-style: italic"># #####</span>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span style="color: #81A1C1; font-weight: bold">for</span> <span style="color: #D8DEE9">user</span> <span style="color: #81A1C1; font-weight: bold">in</span> <span style="color: #D8DEE9">response</span><span style="color: #ECEFF4">[</span><span style="color: #A3BE8C">&#39;users&#39;</span><span style="color: #ECEFF4">]:</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>    <span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">user</span><span style="color: #ECEFF4">[</span><span style="color: #A3BE8C">&#39;first_name&#39;</span><span style="color: #ECEFF4">])</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>    <span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">user</span><span style="color: #ECEFF4">[</span><span style="color: #A3BE8C">&#39;last_name&#39;</span><span style="color: #ECEFF4">])</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>    <span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">user</span><span style="color: #ECEFF4">[</span><span style="color: #A3BE8C">&#39;age&#39;</span><span style="color: #ECEFF4">])</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>    <span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;#####&quot;</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span style="color: #616E87; font-style: italic"># John</span>
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span style="color: #616E87; font-style: italic"># Doe</span>
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span style="color: #616E87; font-style: italic"># 25</span>
+</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span style="color: #616E87; font-style: italic"># #####</span>
+</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span style="color: #616E87; font-style: italic"># Jane</span>
+</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span style="color: #616E87; font-style: italic"># Doe</span>
+</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a><span style="color: #616E87; font-style: italic"># 30</span>
+</span><span id="__span-7-13"><a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a><span style="color: #616E87; font-style: italic"># #####</span>
+</span><span id="__span-7-14"><a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a><span style="color: #616E87; font-style: italic"># Bob</span>
+</span><span id="__span-7-15"><a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a><span style="color: #616E87; font-style: italic"># Smith</span>
+</span><span id="__span-7-16"><a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a><span style="color: #616E87; font-style: italic"># 40</span>
+</span><span id="__span-7-17"><a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a><span style="color: #616E87; font-style: italic"># #####</span>
+</span><span id="__span-7-18"><a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a><span style="color: #616E87; font-style: italic"># Alice</span>
+</span><span id="__span-7-19"><a id="__codelineno-7-19" name="__codelineno-7-19" href="#__codelineno-7-19"></a><span style="color: #616E87; font-style: italic"># Smith</span>
+</span><span id="__span-7-20"><a id="__codelineno-7-20" name="__codelineno-7-20" href="#__codelineno-7-20"></a><span style="color: #616E87; font-style: italic"># 35</span>
+</span><span id="__span-7-21"><a id="__codelineno-7-21" name="__codelineno-7-21" href="#__codelineno-7-21"></a><span style="color: #616E87; font-style: italic"># #####</span>
+</span><span id="__span-7-22"><a id="__codelineno-7-22" name="__codelineno-7-22" href="#__codelineno-7-22"></a><span style="color: #616E87; font-style: italic"># John</span>
+</span><span id="__span-7-23"><a id="__codelineno-7-23" name="__codelineno-7-23" href="#__codelineno-7-23"></a><span style="color: #616E87; font-style: italic"># Smith</span>
+</span><span id="__span-7-24"><a id="__codelineno-7-24" name="__codelineno-7-24" href="#__codelineno-7-24"></a><span style="color: #616E87; font-style: italic"># 20</span>
+</span><span id="__span-7-25"><a id="__codelineno-7-25" name="__codelineno-7-25" href="#__codelineno-7-25"></a><span style="color: #616E87; font-style: italic"># #####</span>
 </span></code></pre></div>
 <h2 id="qa-with-citations">QA with Citations</h2>
 <p>We first need to define our Pydantic class for QA with citations:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">typing</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> List
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">pydantic</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> BaseModel
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">typing</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">List</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">pydantic</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">BaseModel</span>
 </span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
-</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span style="color: #008000; font-weight: bold">class</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">QuestionAnswer</span>(BaseModel):
-</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>    question: <span style="color: #008000">str</span>
-</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>    answer: <span style="color: #008000">str</span>
-</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>    citations: List[<span style="color: #008000">str</span>]
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span style="color: #81A1C1; font-weight: bold">class</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">QuestionAnswer</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">BaseModel</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>    <span style="color: #D8DEE9">question</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">str</span>
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>    <span style="color: #D8DEE9">answer</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">str</span>
+</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>    <span style="color: #D8DEE9">citations</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">List</span><span style="color: #ECEFF4">[</span><span style="color: #81A1C1">str</span><span style="color: #ECEFF4">]</span>
 </span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>
-</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>schema <span style="color: #666">=</span> QuestionAnswer<span style="color: #666">.</span>model_json_schema()
+</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span style="color: #D8DEE9">schema</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">QuestionAnswer</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">model_json_schema</span><span style="color: #ECEFF4">()</span>
 </span></code></pre></div>
 <p>We then need to adapt our prompt to the <a href="https://github.com/NousResearch/Hermes-Function-Calling?tab=readme-ov-file#prompt-format-for-json-mode--structured-outputs">Hermes prompt format for JSON schema</a>:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span style="color: #008000; font-weight: bold">from</span><span style="color: #BBB"> </span><span style="color: #00F; font-weight: bold">outlines</span><span style="color: #BBB"> </span><span style="color: #008000; font-weight: bold">import</span> Template
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">Template</span>
 </span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>
-</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>hermes_prompt <span style="color: #666">=</span> Template<span style="color: #666">.</span>from_string(
-</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span style="color: #BBB">    </span><span style="color: #BA2121; font-style: italic">&quot;&quot;&quot;</span>
-</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span style="color: #BA2121; font-style: italic">    &lt;|im_start|&gt;system</span>
-</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span style="color: #BA2121; font-style: italic">    You are a world class AI model who answers questions in JSON with correct and exact citations</span>
-</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span style="color: #BA2121; font-style: italic">    extracted from the `Context`.</span>
-</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span style="color: #BA2121; font-style: italic">    Here&#39;s the json schema you must adhere to:</span>
-</span><span id="__span-9-9"><a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span style="color: #BA2121; font-style: italic">    &lt;schema&gt;</span>
-</span><span id="__span-9-10"><a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span style="color: #BA2121; font-style: italic">    {{ schema }}</span>
-</span><span id="__span-9-11"><a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a><span style="color: #BA2121; font-style: italic">    &lt;/schema&gt;</span>
-</span><span id="__span-9-12"><a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a><span style="color: #BA2121; font-style: italic">    &lt;|im_end|&gt;</span>
-</span><span id="__span-9-13"><a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a><span style="color: #BA2121; font-style: italic">    &lt;|im_start|&gt;user</span>
-</span><span id="__span-9-14"><a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a><span style="color: #BA2121; font-style: italic">    `Context`:</span>
-</span><span id="__span-9-15"><a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a><span style="color: #BA2121; font-style: italic">    {{ context }}</span>
-</span><span id="__span-9-16"><a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a><span style="color: #BA2121; font-style: italic">    `Question`:</span>
-</span><span id="__span-9-17"><a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a><span style="color: #BA2121; font-style: italic">    {{ question }}</span>
-</span><span id="__span-9-18"><a id="__codelineno-9-18" name="__codelineno-9-18" href="#__codelineno-9-18"></a><span style="color: #BA2121; font-style: italic">    &lt;|im_end|&gt;</span>
-</span><span id="__span-9-19"><a id="__codelineno-9-19" name="__codelineno-9-19" href="#__codelineno-9-19"></a><span style="color: #BA2121; font-style: italic">    &lt;|im_start|&gt;assistant</span>
-</span><span id="__span-9-20"><a id="__codelineno-9-20" name="__codelineno-9-20" href="#__codelineno-9-20"></a><span style="color: #BA2121; font-style: italic">    &quot;&quot;&quot;</span>
-</span><span id="__span-9-21"><a id="__codelineno-9-21" name="__codelineno-9-21" href="#__codelineno-9-21"></a>)
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span style="color: #D8DEE9">hermes_prompt</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">Template</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_string</span><span style="color: #ECEFF4">(</span>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">&quot;&quot;&quot;</span>
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span style="color: #616E87">    &lt;|im_start|&gt;system</span>
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span style="color: #616E87">    You are a world class AI model who answers questions in JSON with correct and exact citations</span>
+</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span style="color: #616E87">    extracted from the `Context`.</span>
+</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span style="color: #616E87">    Here&#39;s the json schema you must adhere to:</span>
+</span><span id="__span-9-9"><a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span style="color: #616E87">    &lt;schema&gt;</span>
+</span><span id="__span-9-10"><a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span style="color: #616E87">    {{ schema }}</span>
+</span><span id="__span-9-11"><a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a><span style="color: #616E87">    &lt;/schema&gt;</span>
+</span><span id="__span-9-12"><a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a><span style="color: #616E87">    &lt;|im_end|&gt;</span>
+</span><span id="__span-9-13"><a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a><span style="color: #616E87">    &lt;|im_start|&gt;user</span>
+</span><span id="__span-9-14"><a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a><span style="color: #616E87">    `Context`:</span>
+</span><span id="__span-9-15"><a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a><span style="color: #616E87">    {{ context }}</span>
+</span><span id="__span-9-16"><a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a><span style="color: #616E87">    `Question`:</span>
+</span><span id="__span-9-17"><a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a><span style="color: #616E87">    {{ question }}</span>
+</span><span id="__span-9-18"><a id="__codelineno-9-18" name="__codelineno-9-18" href="#__codelineno-9-18"></a><span style="color: #616E87">    &lt;|im_end|&gt;</span>
+</span><span id="__span-9-19"><a id="__codelineno-9-19" name="__codelineno-9-19" href="#__codelineno-9-19"></a><span style="color: #616E87">    &lt;|im_start|&gt;assistant</span>
+</span><span id="__span-9-20"><a id="__codelineno-9-20" name="__codelineno-9-20" href="#__codelineno-9-20"></a><span style="color: #616E87">    &quot;&quot;&quot;</span>
+</span><span id="__span-9-21"><a id="__codelineno-9-21" name="__codelineno-9-21" href="#__codelineno-9-21"></a><span style="color: #ECEFF4">)</span>
 </span></code></pre></div>
 <p>We can use <code>outlines.Generator</code> by passing the Pydantic class we previously defined, and call the generator with Hermes prompt:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>question <span style="color: #666">=</span> <span style="color: #BA2121">&quot;What did the author do during college?&quot;</span>
-</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>context <span style="color: #666">=</span> <span style="color: #BA2121">&quot;&quot;&quot;</span>
-</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span style="color: #BA2121">My name is Jason Liu, and I grew up in Toronto Canada but I was born in China.</span>
-</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span style="color: #BA2121">I went to an arts high school but in university I studied Computational Mathematics and physics.</span>
-</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span style="color: #BA2121">As part of coop I worked at many companies including Stitchfix, Facebook.</span>
-</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span style="color: #BA2121">I also started the Data Science club at the University of Waterloo and I was the president of the club for 2 years.</span>
-</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span style="color: #BA2121">&quot;&quot;&quot;</span>
-</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>generator <span style="color: #666">=</span> outlines<span style="color: #666">.</span>Generator(model, QuestionAnswer)
-</span><span id="__span-10-9"><a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>prompt <span style="color: #666">=</span> hermes_prompt(question<span style="color: #666">=</span>question, context<span style="color: #666">=</span>context, schema<span style="color: #666">=</span>schema)
-</span><span id="__span-10-10"><a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a>response <span style="color: #666">=</span> generator(prompt, max_tokens<span style="color: #666">=1024</span>, temperature<span style="color: #666">=0</span>, seed<span style="color: #666">=42</span>)
-</span><span id="__span-10-11"><a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a><span style="color: #008000">print</span>(response)
-</span><span id="__span-10-12"><a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a><span style="color: #3D7B7B; font-style: italic"># {&quot;question&quot;: &quot;What did the author do during college?&quot;, &quot;answer&quot;: &quot;The author studied Computational Mathematics and physics in university and was also involved in starting the Data Science club, serving as its president for 2 years.&quot;, &quot;citations&quot;: [&quot;I went to an arts high school but in university I studied Computational Mathematics and physics.&quot;, &quot;I also started the Data Science club at the University of Waterloo and I was the president of the club for 2 years.&quot;]}</span>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span style="color: #D8DEE9">question</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">&quot;What did the author do during college?&quot;</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span style="color: #D8DEE9">context</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">&quot;&quot;&quot;</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span style="color: #A3BE8C">My name is Jason Liu, and I grew up in Toronto Canada but I was born in China.</span>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span style="color: #A3BE8C">I went to an arts high school but in university I studied Computational Mathematics and physics.</span>
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span style="color: #A3BE8C">As part of coop I worked at many companies including Stitchfix, Facebook.</span>
+</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span style="color: #A3BE8C">I also started the Data Science club at the University of Waterloo and I was the president of the club for 2 years.</span>
+</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span style="color: #A3BE8C">&quot;&quot;&quot;</span>
+</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span style="color: #D8DEE9">generator</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">outlines</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">Generator</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">QuestionAnswer</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-10-9"><a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a><span style="color: #D8DEE9">prompt</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">hermes_prompt</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">question</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #D8DEE9">question</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">context</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #D8DEE9">context</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">schema</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #D8DEE9">schema</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-10-10"><a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a><span style="color: #D8DEE9">response</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">generator</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">prompt</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">max_tokens</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #B48EAD">1024</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">temperature</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #B48EAD">0</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">seed</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #B48EAD">42</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-10-11"><a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">response</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-10-12"><a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a><span style="color: #616E87; font-style: italic"># {&quot;question&quot;: &quot;What did the author do during college?&quot;, &quot;answer&quot;: &quot;The author studied Computational Mathematics and physics in university and was also involved in starting the Data Science club, serving as its president for 2 years.&quot;, &quot;citations&quot;: [&quot;I went to an arts high school but in university I studied Computational Mathematics and physics.&quot;, &quot;I also started the Data Science club at the University of Waterloo and I was the president of the club for 2 years.&quot;]}</span>
 </span></code></pre></div>
 <p>We can do the same for a list of question-context pairs:</p>
-<div class="language-python highlight" style="background: #f8f8f8"><pre style="line-height: 125%;"><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>question1 <span style="color: #666">=</span> <span style="color: #BA2121">&quot;Where was John born?&quot;</span>
-</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>context1 <span style="color: #666">=</span> <span style="color: #BA2121">&quot;&quot;&quot;</span>
-</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span style="color: #BA2121">John Doe is a software engineer who was born in New York, USA.</span>
-</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span style="color: #BA2121">He studied Computer Science at the Massachusetts Institute of Technology.</span>
-</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span style="color: #BA2121">During his studies, he interned at Google and Microsoft.</span>
-</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span style="color: #BA2121">He also founded the Artificial Intelligence club at his university and served as its president for three years.</span>
-</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span style="color: #BA2121">&quot;&quot;&quot;</span>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span style="color: #D8DEE9">question1</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">&quot;Where was John born?&quot;</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span style="color: #D8DEE9">context1</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">&quot;&quot;&quot;</span>
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span style="color: #A3BE8C">John Doe is a software engineer who was born in New York, USA.</span>
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span style="color: #A3BE8C">He studied Computer Science at the Massachusetts Institute of Technology.</span>
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span style="color: #A3BE8C">During his studies, he interned at Google and Microsoft.</span>
+</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span style="color: #A3BE8C">He also founded the Artificial Intelligence club at his university and served as its president for three years.</span>
+</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span style="color: #A3BE8C">&quot;&quot;&quot;</span>
 </span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>
-</span><span id="__span-11-9"><a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>question2 <span style="color: #666">=</span> <span style="color: #BA2121">&quot;What did Emily study in university?&quot;</span>
-</span><span id="__span-11-10"><a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a>context2 <span style="color: #666">=</span> <span style="color: #BA2121">&quot;&quot;&quot;</span>
-</span><span id="__span-11-11"><a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a><span style="color: #BA2121">Emily Smith is a data scientist from London, England.</span>
-</span><span id="__span-11-12"><a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a><span style="color: #BA2121">She attended the University of Cambridge where she studied Statistics and Machine Learning.</span>
-</span><span id="__span-11-13"><a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a><span style="color: #BA2121">She interned at IBM and Amazon during her summer breaks.</span>
-</span><span id="__span-11-14"><a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a><span style="color: #BA2121">Emily was also the head of the Women in Tech society at her university.</span>
-</span><span id="__span-11-15"><a id="__codelineno-11-15" name="__codelineno-11-15" href="#__codelineno-11-15"></a><span style="color: #BA2121">&quot;&quot;&quot;</span>
+</span><span id="__span-11-9"><a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a><span style="color: #D8DEE9">question2</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">&quot;What did Emily study in university?&quot;</span>
+</span><span id="__span-11-10"><a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a><span style="color: #D8DEE9">context2</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">&quot;&quot;&quot;</span>
+</span><span id="__span-11-11"><a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a><span style="color: #A3BE8C">Emily Smith is a data scientist from London, England.</span>
+</span><span id="__span-11-12"><a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a><span style="color: #A3BE8C">She attended the University of Cambridge where she studied Statistics and Machine Learning.</span>
+</span><span id="__span-11-13"><a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a><span style="color: #A3BE8C">She interned at IBM and Amazon during her summer breaks.</span>
+</span><span id="__span-11-14"><a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a><span style="color: #A3BE8C">Emily was also the head of the Women in Tech society at her university.</span>
+</span><span id="__span-11-15"><a id="__codelineno-11-15" name="__codelineno-11-15" href="#__codelineno-11-15"></a><span style="color: #A3BE8C">&quot;&quot;&quot;</span>
 </span><span id="__span-11-16"><a id="__codelineno-11-16" name="__codelineno-11-16" href="#__codelineno-11-16"></a>
-</span><span id="__span-11-17"><a id="__codelineno-11-17" name="__codelineno-11-17" href="#__codelineno-11-17"></a>question3 <span style="color: #666">=</span> <span style="color: #BA2121">&quot;Which companies did Robert intern at?&quot;</span>
-</span><span id="__span-11-18"><a id="__codelineno-11-18" name="__codelineno-11-18" href="#__codelineno-11-18"></a>context3 <span style="color: #666">=</span> <span style="color: #BA2121">&quot;&quot;&quot;</span>
-</span><span id="__span-11-19"><a id="__codelineno-11-19" name="__codelineno-11-19" href="#__codelineno-11-19"></a><span style="color: #BA2121">Robert Johnson, originally from Sydney, Australia, is a renowned cybersecurity expert.</span>
-</span><span id="__span-11-20"><a id="__codelineno-11-20" name="__codelineno-11-20" href="#__codelineno-11-20"></a><span style="color: #BA2121">He studied Information Systems at the University of Melbourne.</span>
-</span><span id="__span-11-21"><a id="__codelineno-11-21" name="__codelineno-11-21" href="#__codelineno-11-21"></a><span style="color: #BA2121">Robert interned at several cybersecurity firms including NortonLifeLock and McAfee.</span>
-</span><span id="__span-11-22"><a id="__codelineno-11-22" name="__codelineno-11-22" href="#__codelineno-11-22"></a><span style="color: #BA2121">He was also the leader of the Cybersecurity club at his university.</span>
-</span><span id="__span-11-23"><a id="__codelineno-11-23" name="__codelineno-11-23" href="#__codelineno-11-23"></a><span style="color: #BA2121">&quot;&quot;&quot;</span>
+</span><span id="__span-11-17"><a id="__codelineno-11-17" name="__codelineno-11-17" href="#__codelineno-11-17"></a><span style="color: #D8DEE9">question3</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">&quot;Which companies did Robert intern at?&quot;</span>
+</span><span id="__span-11-18"><a id="__codelineno-11-18" name="__codelineno-11-18" href="#__codelineno-11-18"></a><span style="color: #D8DEE9">context3</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">&quot;&quot;&quot;</span>
+</span><span id="__span-11-19"><a id="__codelineno-11-19" name="__codelineno-11-19" href="#__codelineno-11-19"></a><span style="color: #A3BE8C">Robert Johnson, originally from Sydney, Australia, is a renowned cybersecurity expert.</span>
+</span><span id="__span-11-20"><a id="__codelineno-11-20" name="__codelineno-11-20" href="#__codelineno-11-20"></a><span style="color: #A3BE8C">He studied Information Systems at the University of Melbourne.</span>
+</span><span id="__span-11-21"><a id="__codelineno-11-21" name="__codelineno-11-21" href="#__codelineno-11-21"></a><span style="color: #A3BE8C">Robert interned at several cybersecurity firms including NortonLifeLock and McAfee.</span>
+</span><span id="__span-11-22"><a id="__codelineno-11-22" name="__codelineno-11-22" href="#__codelineno-11-22"></a><span style="color: #A3BE8C">He was also the leader of the Cybersecurity club at his university.</span>
+</span><span id="__span-11-23"><a id="__codelineno-11-23" name="__codelineno-11-23" href="#__codelineno-11-23"></a><span style="color: #A3BE8C">&quot;&quot;&quot;</span>
 </span><span id="__span-11-24"><a id="__codelineno-11-24" name="__codelineno-11-24" href="#__codelineno-11-24"></a>
-</span><span id="__span-11-25"><a id="__codelineno-11-25" name="__codelineno-11-25" href="#__codelineno-11-25"></a>question4 <span style="color: #666">=</span> <span style="color: #BA2121">&quot;What club did Alice start at her university?&quot;</span>
-</span><span id="__span-11-26"><a id="__codelineno-11-26" name="__codelineno-11-26" href="#__codelineno-11-26"></a>context4 <span style="color: #666">=</span> <span style="color: #BA2121">&quot;&quot;&quot;</span>
-</span><span id="__span-11-27"><a id="__codelineno-11-27" name="__codelineno-11-27" href="#__codelineno-11-27"></a><span style="color: #BA2121">Alice Williams, a native of Dublin, Ireland, is a successful web developer.</span>
-</span><span id="__span-11-28"><a id="__codelineno-11-28" name="__codelineno-11-28" href="#__codelineno-11-28"></a><span style="color: #BA2121">She studied Software Engineering at Trinity College Dublin.</span>
-</span><span id="__span-11-29"><a id="__codelineno-11-29" name="__codelineno-11-29" href="#__codelineno-11-29"></a><span style="color: #BA2121">Alice interned at several tech companies including Shopify and Squarespace.</span>
-</span><span id="__span-11-30"><a id="__codelineno-11-30" name="__codelineno-11-30" href="#__codelineno-11-30"></a><span style="color: #BA2121">She started the Web Development club at her university and was its president for two years.</span>
-</span><span id="__span-11-31"><a id="__codelineno-11-31" name="__codelineno-11-31" href="#__codelineno-11-31"></a><span style="color: #BA2121">&quot;&quot;&quot;</span>
+</span><span id="__span-11-25"><a id="__codelineno-11-25" name="__codelineno-11-25" href="#__codelineno-11-25"></a><span style="color: #D8DEE9">question4</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">&quot;What club did Alice start at her university?&quot;</span>
+</span><span id="__span-11-26"><a id="__codelineno-11-26" name="__codelineno-11-26" href="#__codelineno-11-26"></a><span style="color: #D8DEE9">context4</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">&quot;&quot;&quot;</span>
+</span><span id="__span-11-27"><a id="__codelineno-11-27" name="__codelineno-11-27" href="#__codelineno-11-27"></a><span style="color: #A3BE8C">Alice Williams, a native of Dublin, Ireland, is a successful web developer.</span>
+</span><span id="__span-11-28"><a id="__codelineno-11-28" name="__codelineno-11-28" href="#__codelineno-11-28"></a><span style="color: #A3BE8C">She studied Software Engineering at Trinity College Dublin.</span>
+</span><span id="__span-11-29"><a id="__codelineno-11-29" name="__codelineno-11-29" href="#__codelineno-11-29"></a><span style="color: #A3BE8C">Alice interned at several tech companies including Shopify and Squarespace.</span>
+</span><span id="__span-11-30"><a id="__codelineno-11-30" name="__codelineno-11-30" href="#__codelineno-11-30"></a><span style="color: #A3BE8C">She started the Web Development club at her university and was its president for two years.</span>
+</span><span id="__span-11-31"><a id="__codelineno-11-31" name="__codelineno-11-31" href="#__codelineno-11-31"></a><span style="color: #A3BE8C">&quot;&quot;&quot;</span>
 </span><span id="__span-11-32"><a id="__codelineno-11-32" name="__codelineno-11-32" href="#__codelineno-11-32"></a>
-</span><span id="__span-11-33"><a id="__codelineno-11-33" name="__codelineno-11-33" href="#__codelineno-11-33"></a>question5 <span style="color: #666">=</span> <span style="color: #BA2121">&quot;What did Michael study in high school?&quot;</span>
-</span><span id="__span-11-34"><a id="__codelineno-11-34" name="__codelineno-11-34" href="#__codelineno-11-34"></a>context5 <span style="color: #666">=</span> <span style="color: #BA2121">&quot;&quot;&quot;</span>
-</span><span id="__span-11-35"><a id="__codelineno-11-35" name="__codelineno-11-35" href="#__codelineno-11-35"></a><span style="color: #BA2121">Michael Brown is a game developer from Tokyo, Japan.</span>
-</span><span id="__span-11-36"><a id="__codelineno-11-36" name="__codelineno-11-36" href="#__codelineno-11-36"></a><span style="color: #BA2121">He attended a specialized high school where he studied Game Design.</span>
-</span><span id="__span-11-37"><a id="__codelineno-11-37" name="__codelineno-11-37" href="#__codelineno-11-37"></a><span style="color: #BA2121">He later attended the University of Tokyo where he studied Computer Science.</span>
-</span><span id="__span-11-38"><a id="__codelineno-11-38" name="__codelineno-11-38" href="#__codelineno-11-38"></a><span style="color: #BA2121">Michael interned at Sony and Nintendo during his university years.</span>
-</span><span id="__span-11-39"><a id="__codelineno-11-39" name="__codelineno-11-39" href="#__codelineno-11-39"></a><span style="color: #BA2121">He also started the Game Developers club at his university.</span>
-</span><span id="__span-11-40"><a id="__codelineno-11-40" name="__codelineno-11-40" href="#__codelineno-11-40"></a><span style="color: #BA2121">&quot;&quot;&quot;</span>
+</span><span id="__span-11-33"><a id="__codelineno-11-33" name="__codelineno-11-33" href="#__codelineno-11-33"></a><span style="color: #D8DEE9">question5</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">&quot;What did Michael study in high school?&quot;</span>
+</span><span id="__span-11-34"><a id="__codelineno-11-34" name="__codelineno-11-34" href="#__codelineno-11-34"></a><span style="color: #D8DEE9">context5</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">&quot;&quot;&quot;</span>
+</span><span id="__span-11-35"><a id="__codelineno-11-35" name="__codelineno-11-35" href="#__codelineno-11-35"></a><span style="color: #A3BE8C">Michael Brown is a game developer from Tokyo, Japan.</span>
+</span><span id="__span-11-36"><a id="__codelineno-11-36" name="__codelineno-11-36" href="#__codelineno-11-36"></a><span style="color: #A3BE8C">He attended a specialized high school where he studied Game Design.</span>
+</span><span id="__span-11-37"><a id="__codelineno-11-37" name="__codelineno-11-37" href="#__codelineno-11-37"></a><span style="color: #A3BE8C">He later attended the University of Tokyo where he studied Computer Science.</span>
+</span><span id="__span-11-38"><a id="__codelineno-11-38" name="__codelineno-11-38" href="#__codelineno-11-38"></a><span style="color: #A3BE8C">Michael interned at Sony and Nintendo during his university years.</span>
+</span><span id="__span-11-39"><a id="__codelineno-11-39" name="__codelineno-11-39" href="#__codelineno-11-39"></a><span style="color: #A3BE8C">He also started the Game Developers club at his university.</span>
+</span><span id="__span-11-40"><a id="__codelineno-11-40" name="__codelineno-11-40" href="#__codelineno-11-40"></a><span style="color: #A3BE8C">&quot;&quot;&quot;</span>
 </span><span id="__span-11-41"><a id="__codelineno-11-41" name="__codelineno-11-41" href="#__codelineno-11-41"></a>
-</span><span id="__span-11-42"><a id="__codelineno-11-42" name="__codelineno-11-42" href="#__codelineno-11-42"></a><span style="color: #008000; font-weight: bold">for</span> question, context <span style="color: #A2F; font-weight: bold">in</span> [
-</span><span id="__span-11-43"><a id="__codelineno-11-43" name="__codelineno-11-43" href="#__codelineno-11-43"></a>    (question1, context1),
-</span><span id="__span-11-44"><a id="__codelineno-11-44" name="__codelineno-11-44" href="#__codelineno-11-44"></a>    (question2, context2),
-</span><span id="__span-11-45"><a id="__codelineno-11-45" name="__codelineno-11-45" href="#__codelineno-11-45"></a>    (question3, context3),
-</span><span id="__span-11-46"><a id="__codelineno-11-46" name="__codelineno-11-46" href="#__codelineno-11-46"></a>    (question4, context4),
-</span><span id="__span-11-47"><a id="__codelineno-11-47" name="__codelineno-11-47" href="#__codelineno-11-47"></a>    (question5, context5),
-</span><span id="__span-11-48"><a id="__codelineno-11-48" name="__codelineno-11-48" href="#__codelineno-11-48"></a>]:
-</span><span id="__span-11-49"><a id="__codelineno-11-49" name="__codelineno-11-49" href="#__codelineno-11-49"></a>    prompt <span style="color: #666">=</span> hermes_prompt(question<span style="color: #666">=</span>question, context<span style="color: #666">=</span>context, schema<span style="color: #666">=</span>schema)
-</span><span id="__span-11-50"><a id="__codelineno-11-50" name="__codelineno-11-50" href="#__codelineno-11-50"></a>    generator <span style="color: #666">=</span> outlines<span style="color: #666">.</span>Generator(model, QuestionAnswer)
-</span><span id="__span-11-51"><a id="__codelineno-11-51" name="__codelineno-11-51" href="#__codelineno-11-51"></a>    response <span style="color: #666">=</span> generator(prompt, max_tokens<span style="color: #666">=1024</span>, temperature<span style="color: #666">=0</span>, seed<span style="color: #666">=42</span>)
-</span><span id="__span-11-52"><a id="__codelineno-11-52" name="__codelineno-11-52" href="#__codelineno-11-52"></a>    response <span style="color: #666">=</span> json<span style="color: #666">.</span>loads(response)
-</span><span id="__span-11-53"><a id="__codelineno-11-53" name="__codelineno-11-53" href="#__codelineno-11-53"></a>    <span style="color: #008000">print</span>(question)
-</span><span id="__span-11-54"><a id="__codelineno-11-54" name="__codelineno-11-54" href="#__codelineno-11-54"></a>    <span style="color: #008000">print</span>(response[<span style="color: #BA2121">&#39;answer&#39;</span>])
-</span><span id="__span-11-55"><a id="__codelineno-11-55" name="__codelineno-11-55" href="#__codelineno-11-55"></a>    <span style="color: #008000">print</span>(response[<span style="color: #BA2121">&#39;citations&#39;</span>])
-</span><span id="__span-11-56"><a id="__codelineno-11-56" name="__codelineno-11-56" href="#__codelineno-11-56"></a>    <span style="color: #008000">print</span>(<span style="color: #BA2121">&quot;</span><span style="color: #AA5D1F; font-weight: bold">\n\n</span><span style="color: #BA2121">&quot;</span>)
+</span><span id="__span-11-42"><a id="__codelineno-11-42" name="__codelineno-11-42" href="#__codelineno-11-42"></a><span style="color: #81A1C1; font-weight: bold">for</span> <span style="color: #D8DEE9">question</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">context</span> <span style="color: #81A1C1; font-weight: bold">in</span> <span style="color: #ECEFF4">[</span>
+</span><span id="__span-11-43"><a id="__codelineno-11-43" name="__codelineno-11-43" href="#__codelineno-11-43"></a>    <span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">question1</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">context1</span><span style="color: #ECEFF4">),</span>
+</span><span id="__span-11-44"><a id="__codelineno-11-44" name="__codelineno-11-44" href="#__codelineno-11-44"></a>    <span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">question2</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">context2</span><span style="color: #ECEFF4">),</span>
+</span><span id="__span-11-45"><a id="__codelineno-11-45" name="__codelineno-11-45" href="#__codelineno-11-45"></a>    <span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">question3</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">context3</span><span style="color: #ECEFF4">),</span>
+</span><span id="__span-11-46"><a id="__codelineno-11-46" name="__codelineno-11-46" href="#__codelineno-11-46"></a>    <span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">question4</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">context4</span><span style="color: #ECEFF4">),</span>
+</span><span id="__span-11-47"><a id="__codelineno-11-47" name="__codelineno-11-47" href="#__codelineno-11-47"></a>    <span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">question5</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">context5</span><span style="color: #ECEFF4">),</span>
+</span><span id="__span-11-48"><a id="__codelineno-11-48" name="__codelineno-11-48" href="#__codelineno-11-48"></a><span style="color: #ECEFF4">]:</span>
+</span><span id="__span-11-49"><a id="__codelineno-11-49" name="__codelineno-11-49" href="#__codelineno-11-49"></a>    <span style="color: #D8DEE9">prompt</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">hermes_prompt</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">question</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #D8DEE9">question</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">context</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #D8DEE9">context</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">schema</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #D8DEE9">schema</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-11-50"><a id="__codelineno-11-50" name="__codelineno-11-50" href="#__codelineno-11-50"></a>    <span style="color: #D8DEE9">generator</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">outlines</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">Generator</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">QuestionAnswer</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-11-51"><a id="__codelineno-11-51" name="__codelineno-11-51" href="#__codelineno-11-51"></a>    <span style="color: #D8DEE9">response</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">generator</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">prompt</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">max_tokens</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #B48EAD">1024</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">temperature</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #B48EAD">0</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">seed</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #B48EAD">42</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-11-52"><a id="__codelineno-11-52" name="__codelineno-11-52" href="#__codelineno-11-52"></a>    <span style="color: #D8DEE9">response</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">json</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">loads</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">response</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-11-53"><a id="__codelineno-11-53" name="__codelineno-11-53" href="#__codelineno-11-53"></a>    <span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">question</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-11-54"><a id="__codelineno-11-54" name="__codelineno-11-54" href="#__codelineno-11-54"></a>    <span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">response</span><span style="color: #ECEFF4">[</span><span style="color: #A3BE8C">&#39;answer&#39;</span><span style="color: #ECEFF4">])</span>
+</span><span id="__span-11-55"><a id="__codelineno-11-55" name="__codelineno-11-55" href="#__codelineno-11-55"></a>    <span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">response</span><span style="color: #ECEFF4">[</span><span style="color: #A3BE8C">&#39;citations&#39;</span><span style="color: #ECEFF4">])</span>
+</span><span id="__span-11-56"><a id="__codelineno-11-56" name="__codelineno-11-56" href="#__codelineno-11-56"></a>    <span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;</span><span style="color: #EBCB8B">\n\n</span><span style="color: #A3BE8C">&quot;</span><span style="color: #ECEFF4">)</span>
 </span><span id="__span-11-57"><a id="__codelineno-11-57" name="__codelineno-11-57" href="#__codelineno-11-57"></a>
-</span><span id="__span-11-58"><a id="__codelineno-11-58" name="__codelineno-11-58" href="#__codelineno-11-58"></a><span style="color: #3D7B7B; font-style: italic"># &#39;Where was John born?&#39;</span>
-</span><span id="__span-11-59"><a id="__codelineno-11-59" name="__codelineno-11-59" href="#__codelineno-11-59"></a><span style="color: #3D7B7B; font-style: italic"># &#39;John Doe was born in New York, USA.&#39;</span>
-</span><span id="__span-11-60"><a id="__codelineno-11-60" name="__codelineno-11-60" href="#__codelineno-11-60"></a><span style="color: #3D7B7B; font-style: italic"># [&#39;John Doe is a software engineer who was born in New York, USA.&#39;]</span>
-</span><span id="__span-11-61"><a id="__codelineno-11-61" name="__codelineno-11-61" href="#__codelineno-11-61"></a><span style="color: #3D7B7B; font-style: italic">#</span>
-</span><span id="__span-11-62"><a id="__codelineno-11-62" name="__codelineno-11-62" href="#__codelineno-11-62"></a><span style="color: #3D7B7B; font-style: italic">#</span>
-</span><span id="__span-11-63"><a id="__codelineno-11-63" name="__codelineno-11-63" href="#__codelineno-11-63"></a><span style="color: #3D7B7B; font-style: italic"># &#39;What did Emily study in university?&#39;</span>
-</span><span id="__span-11-64"><a id="__codelineno-11-64" name="__codelineno-11-64" href="#__codelineno-11-64"></a><span style="color: #3D7B7B; font-style: italic"># &#39;Emily studied Statistics and Machine Learning in university.&#39;</span>
-</span><span id="__span-11-65"><a id="__codelineno-11-65" name="__codelineno-11-65" href="#__codelineno-11-65"></a><span style="color: #3D7B7B; font-style: italic"># [&#39;She attended the University of Cambridge where she studied Statistics and Machine Learning.&#39;]</span>
-</span><span id="__span-11-66"><a id="__codelineno-11-66" name="__codelineno-11-66" href="#__codelineno-11-66"></a><span style="color: #3D7B7B; font-style: italic">#</span>
-</span><span id="__span-11-67"><a id="__codelineno-11-67" name="__codelineno-11-67" href="#__codelineno-11-67"></a><span style="color: #3D7B7B; font-style: italic">#</span>
-</span><span id="__span-11-68"><a id="__codelineno-11-68" name="__codelineno-11-68" href="#__codelineno-11-68"></a><span style="color: #3D7B7B; font-style: italic"># &#39;Which companies did Robert intern at?&#39;</span>
-</span><span id="__span-11-69"><a id="__codelineno-11-69" name="__codelineno-11-69" href="#__codelineno-11-69"></a><span style="color: #3D7B7B; font-style: italic"># &#39;Robert interned at NortonLifeLock and McAfee.&#39;</span>
-</span><span id="__span-11-70"><a id="__codelineno-11-70" name="__codelineno-11-70" href="#__codelineno-11-70"></a><span style="color: #3D7B7B; font-style: italic"># [&#39;Robert Johnson, originally from Sydney, Australia, is a renowned cybersecurity expert. He interned at several cybersecurity firms including NortonLifeLock and McAfee.&#39;]</span>
-</span><span id="__span-11-71"><a id="__codelineno-11-71" name="__codelineno-11-71" href="#__codelineno-11-71"></a><span style="color: #3D7B7B; font-style: italic">#</span>
-</span><span id="__span-11-72"><a id="__codelineno-11-72" name="__codelineno-11-72" href="#__codelineno-11-72"></a><span style="color: #3D7B7B; font-style: italic">#</span>
-</span><span id="__span-11-73"><a id="__codelineno-11-73" name="__codelineno-11-73" href="#__codelineno-11-73"></a><span style="color: #3D7B7B; font-style: italic"># &#39;What club did Alice start at her university?&#39;</span>
-</span><span id="__span-11-74"><a id="__codelineno-11-74" name="__codelineno-11-74" href="#__codelineno-11-74"></a><span style="color: #3D7B7B; font-style: italic"># &#39;Alice started the Web Development club at her university.&#39;</span>
-</span><span id="__span-11-75"><a id="__codelineno-11-75" name="__codelineno-11-75" href="#__codelineno-11-75"></a><span style="color: #3D7B7B; font-style: italic"># [&#39;Alice Williams, a native of Dublin, Ireland, is a successful web developer. She started the Web Development club at her university and was its president for two years.&#39;]</span>
-</span><span id="__span-11-76"><a id="__codelineno-11-76" name="__codelineno-11-76" href="#__codelineno-11-76"></a><span style="color: #3D7B7B; font-style: italic">#</span>
-</span><span id="__span-11-77"><a id="__codelineno-11-77" name="__codelineno-11-77" href="#__codelineno-11-77"></a><span style="color: #3D7B7B; font-style: italic">#</span>
-</span><span id="__span-11-78"><a id="__codelineno-11-78" name="__codelineno-11-78" href="#__codelineno-11-78"></a><span style="color: #3D7B7B; font-style: italic"># &#39;What did Michael study in high school?&#39;</span>
-</span><span id="__span-11-79"><a id="__codelineno-11-79" name="__codelineno-11-79" href="#__codelineno-11-79"></a><span style="color: #3D7B7B; font-style: italic"># &#39;Michael studied Game Design in high school.&#39;</span>
-</span><span id="__span-11-80"><a id="__codelineno-11-80" name="__codelineno-11-80" href="#__codelineno-11-80"></a><span style="color: #3D7B7B; font-style: italic"># [&#39;Michael Brown is a game developer from Tokyo, Japan. He attended a specialized high school where he studied Game Design.&#39;]</span>
+</span><span id="__span-11-58"><a id="__codelineno-11-58" name="__codelineno-11-58" href="#__codelineno-11-58"></a><span style="color: #616E87; font-style: italic"># &#39;Where was John born?&#39;</span>
+</span><span id="__span-11-59"><a id="__codelineno-11-59" name="__codelineno-11-59" href="#__codelineno-11-59"></a><span style="color: #616E87; font-style: italic"># &#39;John Doe was born in New York, USA.&#39;</span>
+</span><span id="__span-11-60"><a id="__codelineno-11-60" name="__codelineno-11-60" href="#__codelineno-11-60"></a><span style="color: #616E87; font-style: italic"># [&#39;John Doe is a software engineer who was born in New York, USA.&#39;]</span>
+</span><span id="__span-11-61"><a id="__codelineno-11-61" name="__codelineno-11-61" href="#__codelineno-11-61"></a><span style="color: #616E87; font-style: italic">#</span>
+</span><span id="__span-11-62"><a id="__codelineno-11-62" name="__codelineno-11-62" href="#__codelineno-11-62"></a><span style="color: #616E87; font-style: italic">#</span>
+</span><span id="__span-11-63"><a id="__codelineno-11-63" name="__codelineno-11-63" href="#__codelineno-11-63"></a><span style="color: #616E87; font-style: italic"># &#39;What did Emily study in university?&#39;</span>
+</span><span id="__span-11-64"><a id="__codelineno-11-64" name="__codelineno-11-64" href="#__codelineno-11-64"></a><span style="color: #616E87; font-style: italic"># &#39;Emily studied Statistics and Machine Learning in university.&#39;</span>
+</span><span id="__span-11-65"><a id="__codelineno-11-65" name="__codelineno-11-65" href="#__codelineno-11-65"></a><span style="color: #616E87; font-style: italic"># [&#39;She attended the University of Cambridge where she studied Statistics and Machine Learning.&#39;]</span>
+</span><span id="__span-11-66"><a id="__codelineno-11-66" name="__codelineno-11-66" href="#__codelineno-11-66"></a><span style="color: #616E87; font-style: italic">#</span>
+</span><span id="__span-11-67"><a id="__codelineno-11-67" name="__codelineno-11-67" href="#__codelineno-11-67"></a><span style="color: #616E87; font-style: italic">#</span>
+</span><span id="__span-11-68"><a id="__codelineno-11-68" name="__codelineno-11-68" href="#__codelineno-11-68"></a><span style="color: #616E87; font-style: italic"># &#39;Which companies did Robert intern at?&#39;</span>
+</span><span id="__span-11-69"><a id="__codelineno-11-69" name="__codelineno-11-69" href="#__codelineno-11-69"></a><span style="color: #616E87; font-style: italic"># &#39;Robert interned at NortonLifeLock and McAfee.&#39;</span>
+</span><span id="__span-11-70"><a id="__codelineno-11-70" name="__codelineno-11-70" href="#__codelineno-11-70"></a><span style="color: #616E87; font-style: italic"># [&#39;Robert Johnson, originally from Sydney, Australia, is a renowned cybersecurity expert. He interned at several cybersecurity firms including NortonLifeLock and McAfee.&#39;]</span>
+</span><span id="__span-11-71"><a id="__codelineno-11-71" name="__codelineno-11-71" href="#__codelineno-11-71"></a><span style="color: #616E87; font-style: italic">#</span>
+</span><span id="__span-11-72"><a id="__codelineno-11-72" name="__codelineno-11-72" href="#__codelineno-11-72"></a><span style="color: #616E87; font-style: italic">#</span>
+</span><span id="__span-11-73"><a id="__codelineno-11-73" name="__codelineno-11-73" href="#__codelineno-11-73"></a><span style="color: #616E87; font-style: italic"># &#39;What club did Alice start at her university?&#39;</span>
+</span><span id="__span-11-74"><a id="__codelineno-11-74" name="__codelineno-11-74" href="#__codelineno-11-74"></a><span style="color: #616E87; font-style: italic"># &#39;Alice started the Web Development club at her university.&#39;</span>
+</span><span id="__span-11-75"><a id="__codelineno-11-75" name="__codelineno-11-75" href="#__codelineno-11-75"></a><span style="color: #616E87; font-style: italic"># [&#39;Alice Williams, a native of Dublin, Ireland, is a successful web developer. She started the Web Development club at her university and was its president for two years.&#39;]</span>
+</span><span id="__span-11-76"><a id="__codelineno-11-76" name="__codelineno-11-76" href="#__codelineno-11-76"></a><span style="color: #616E87; font-style: italic">#</span>
+</span><span id="__span-11-77"><a id="__codelineno-11-77" name="__codelineno-11-77" href="#__codelineno-11-77"></a><span style="color: #616E87; font-style: italic">#</span>
+</span><span id="__span-11-78"><a id="__codelineno-11-78" name="__codelineno-11-78" href="#__codelineno-11-78"></a><span style="color: #616E87; font-style: italic"># &#39;What did Michael study in high school?&#39;</span>
+</span><span id="__span-11-79"><a id="__codelineno-11-79" name="__codelineno-11-79" href="#__codelineno-11-79"></a><span style="color: #616E87; font-style: italic"># &#39;Michael studied Game Design in high school.&#39;</span>
+</span><span id="__span-11-80"><a id="__codelineno-11-80" name="__codelineno-11-80" href="#__codelineno-11-80"></a><span style="color: #616E87; font-style: italic"># [&#39;Michael Brown is a game developer from Tokyo, Japan. He attended a specialized high school where he studied Game Design.&#39;]</span>
 </span></code></pre></div>
 <p>This example was originally contributed by <a href="https://github.com/alonsosilvaallende">Alonso Silva</a>.</p>
 
@@ -3940,7 +3887,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="June 8, 2025 07:43:07 UTC"><span class="timeago" datetime="2025-06-08T07:43:07+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="June 8, 2025 07:43:07 UTC">2025-06-08</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="June 20, 2025 11:51:24 UTC"><span class="timeago" datetime="2025-06-20T11:51:24+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="June 20, 2025 11:51:24 UTC">2025-06-20</span>
   </span>
 
     
@@ -3968,14 +3915,14 @@
     
     <nav>
       
-        <a href="https://github.com/RobinPicard" class="md-author" title="@RobinPicard">
-          
-          <img src="https://avatars.githubusercontent.com/u/83579270?v=4&size=72" alt="RobinPicard">
-        </a>
-      
         <a href="https://github.com/rlouf" class="md-author" title="@rlouf">
           
           <img src="https://avatars.githubusercontent.com/u/3885044?v=4&size=72" alt="rlouf">
+        </a>
+      
+        <a href="https://github.com/RobinPicard" class="md-author" title="@RobinPicard">
+          
+          <img src="https://avatars.githubusercontent.com/u/83579270?v=4&size=72" alt="RobinPicard">
         </a>
       
         <a href="https://github.com/web-flow" class="md-author" title="@web-flow">
