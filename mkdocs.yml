@@ -121,9 +121,7 @@ nav:
           - Installation: guide/installation.md
           - Migrating to v1: guide/migration.md
           - Deploying with FastAPI: guide/fastapi_vllm_deployment.md
-          - Licence: licence.md
-          - Utility:
-                - Chat Templating for Instruct Models: guide/chat_templating.md
+          - Chat Templating for Instruct Models: guide/chat_templating.md
 
     - Features:
           - Overview: features/index.md
