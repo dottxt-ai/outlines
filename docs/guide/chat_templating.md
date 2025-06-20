@@ -29,7 +29,7 @@ prompt = tokenizer.apply_chat_template(
 
 yields
 
-```
+```ascii
 <|im_start|>system
 You extract information from text.<|im_end|>
 <|im_start|>user

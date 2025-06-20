@@ -8,14 +8,14 @@ In this guide we will show you how you can use Modal to run programs written wit
 
 We recommend installing `modal` and `outlines` in a virtual environment. You can create one with:
 
-```bash
+```shell
 python -m venv venv
 source venv/bin/activate
 ```
 
 Then install the required packages:
 
-```bash
+```shell
 pip install modal outlines
 ```
 
@@ -187,19 +187,19 @@ Here `@app.local_entrypoint()` decorator defines `main` as the function to start
 
 First install the Modal client from PyPi, if you have not already:
 
-```bash
+```shell
 pip install modal
 ```
 
 You then need to obtain a token from Modal. Run the following command:
 
-```bash
+```shell
 modal setup
 ```
 
 Once that is set you can run inference on the cloud using:
 
-```bash
+```shell
 modal run example.py
 ```
 

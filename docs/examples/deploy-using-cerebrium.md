@@ -8,14 +8,14 @@ In this guide we will show you how you can use Cerebrium to run programs written
 
 First, we install Cerebrium and login to get authenticated.
 
-```bash
+```shell
 pip install cerebrium
 cerebrium login
 ```
 
 Then let us create our first project
 
-```bash
+```shell
 cerebrium init outlines-project
 ```
 
@@ -118,7 +118,7 @@ def generate(
 
 ## Run on the cloud
 
-```bash
+```shell
 cerebrium deploy
 ```
 
