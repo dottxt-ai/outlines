@@ -120,6 +120,7 @@ nav:
           - Getting Started: guide/getting_started.md
           - Installation: guide/installation.md
           - Migrating to v1: guide/migration.md
+          - Vision-Language Models: guide/vlm.md
           - Deploying with FastAPI: guide/fastapi_vllm_deployment.md
           - Chat Templating for Instruct Models: guide/chat_templating.md
 
@@ -175,7 +176,6 @@ nav:
           - Structured Generation Workflow: examples/structured_generation_workflow.md
           - Chain of Thought (CoT): examples/chain_of_thought.md
           - ReAct Agent: examples/react_agent.md
-          - Vision-Language Models: examples/atomic_caption.md
           - Structured Generation from PDFs: examples/read-pdfs.md
           - Earnings Reports to CSV: examples/earnings-reports.md
           - Receipt Digitization: examples/receipt-digitization.md

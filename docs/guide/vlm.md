@@ -1,18 +1,18 @@
 # Vision-Language Models with Outlines
 
-This guide demonstrates how to use Outlines with vision-language models, leveraging the outlines `TransformersMultiModal` model. Vision-language models can process both text and images, allowing for tasks like image captioning, visual question answering, and more.
+This guide demonstrates how to use Outlines with vision-language models. Vision-language models can process both text and images, allowing for tasks like image captioning, visual question answering, and more.
 
 We will be using the Pixtral-12B model from Mistral to take advantage of some of its visual reasoning capabilities and a workflow to generate a multistage atomic caption.
 
 ## Setup
-First, we need to install the necessary dependencies. In addition to Outlines, we'll need to install the transformers library and any specific requirements for the vision-language model we'll be using.
+First, we need to install the necessary dependencies. In addition to Outlines, we"ll need to install the transformers library and any specific requirements for the vision-language model we"ll be using.
 
 ```shell
-pip install outlines transformers torch
+pip install outlines transformers torch pillow
 ```
 
 ### Initializing the Model
-We'll use the `outlines.from_transformers` function to initialize our vision-language model. For this function to return a vision multi-modal model we need to pass in a transformers model and a transformers processor that can handle both text and image inputs. Today we'll be using the Pixtral model with the AutoProcessor.
+We"ll use the `outlines.from_transformers` function to initialize our vision-language model. For this function to return a vision multi-modal model we need to pass in a transformers model and a transformers processor that can handle both text and image inputs. Today we"ll be using the Pixtral model with the AutoProcessor.
 
 ```python
 import outlines
@@ -45,7 +45,7 @@ model = get_vision_model(model_name, model_class, processor_class)
 ```
 
 ### Defining the Schema
-Next, we'll define a schema for the output we expect from our vision multi-modal model. This schema will help structure the model's responses. We use the `outlines.Generator` object to create a generator for our schema that will then be called with our prompt and images.
+Next, we will define a schema for the output we expect from our vision multi-modal model. This schema will help structure the model's responses. We use the `outlines.Generator` object to create a generator for our schema that will then be called with our prompt and images.
 
 ```python
 from enum import Enum
@@ -132,11 +132,12 @@ pixtral_instruction = """
 </Examples>
 </TagCategories>
 <ShortCaption note="The short caption should be a concise single sentence caption of the image content with a maximum length of 100 characters.">
-<DenseCaption note="The dense caption should be a descriptive but grounded narrative paragraph of the image content with high quality narrative prose. It should incorporate elements from each of the tag categories to provide a broad dense caption">\n[IMG]<image>[/INST]
+<DenseCaption note="The dense caption should be a descriptive but grounded narrative paragraph of the image content with high quality narrative prose. It should incorporate elements from each of the tag categories to provide a broad dense caption">
+[IMG]<image>[/INST]
 """.strip()
 ```
 
-This prompt provides detailed instructions to the model on how to generate comprehensive tag lists, captions, and dense captions for image analysis. Because of the ordering of the instructions the original tag generation serves as a sort of visual grounding for the captioning task, reducing the amount of manual post processing required. It's essential to include the <image> tag in the prompt at the location where the image will be inserted.
+This prompt provides detailed instructions to the model on how to generate comprehensive tag lists, captions, and dense captions for image analysis. Because of the ordering of the instructions the original tag generation serves as a sort of visual grounding for the captioning task, reducing the amount of manual post processing required. It is essential to include the <image> tag in the prompt at the location where the image will be inserted.
 
 ### Generating Structured Output
 Now we can use our model to generate structured output based on an input image:
@@ -162,33 +163,52 @@ print(result)
 This code loads an image from a URL, passes it to our vision multi-modal model along with the instruction prompt, and generates a structured output based on the defined schema. We end up with an output like this, ready to be used for the next stage in your pipeline:
 
 ```json
-{'tags_list': [{'tag': 'astronaut',
-   'category': <TagType.ENTITY: 'Entity'>,
-   'confidence': 0.99},
-  {'tag': 'moon', 'category': <TagType.ENTITY: 'Entity'>, 'confidence': 0.98},
-  {'tag': 'space suit',
-   'category': <TagType.ATTRIBUTE: 'Attribute'>,
-   'confidence': 0.97},
-  {'tag': 'lunar module',
-   'category': <TagType.ENTITY: 'Entity'>,
-   'confidence': 0.95},
-  {'tag': 'shadow of astronaut',
-   'category': <TagType.COMPOSITION: 'Composition'>,
-   'confidence': 0.95},
-  {'tag': 'footprints in moon dust',
-   'category': <TagType.CONTEXTUAL: 'Contextual'>,
-   'confidence': 0.93},
-  {'tag': 'low angle shot',
-   'category': <TagType.TECHNICAL: 'Technical'>,
-   'confidence': 0.92},
-  {'tag': 'human first steps on the moon',
-   'category': <TagType.SEMANTIC: 'Semantic'>,
-   'confidence': 0.95}],
- 'short_caption': 'First man on the Moon',
- 'dense_caption': "The figure clad in a pristine white space suit, emblazoned with the American flag, stands powerfully on the moon's desolate and rocky surface. The lunar module, a workhorse of space engineering, looms in the background, its metallic legs sinking slightly into the dust where footprints and tracks from the mission's journey are clearly visible. The photograph captures the astronaut from a low angle, emphasizing his imposing presence against the desolate lunar backdrop. The stark contrast between the blacks and whiteslicks of lost light and shadow adds dramatic depth to this seminal moment in human achievement."}
+{"tags_list": [
+  {
+    "tag": "astronaut",
+    "category": <TagType.ENTITY: "Entity">,
+    "confidence": 0.99
+  },
+  {"tag": "moon", "category": <TagType.ENTITY: "Entity">, "confidence": 0.98},
+  {
+    "tag": "space suit",
+    "category": <TagType.ATTRIBUTE: "Attribute">,
+    "confidence": 0.97
+  },
+  {
+    "tag": "lunar module",
+    "category": <TagType.ENTITY: "Entity">,
+    "confidence": 0.95
+  },
+  {
+    "tag": "shadow of astronaut",
+    "category": <TagType.COMPOSITION: "Composition">,
+    "confidence": 0.95
+  },
+  {
+    "tag": "footprints in moon dust",
+    "category": <TagType.CONTEXTUAL: "Contextual">,
+    "confidence": 0.93
+  },
+  {
+    "tag": "low angle shot",
+    "category": <TagType.TECHNICAL: "Technical">,
+    "confidence": 0.92
+  },
+  {
+    "tag": "human first steps on the moon",
+    "category": <TagType.SEMANTIC: "Semantic">,
+    "confidence": 0.95
+  }],
+  "short_caption": "First man on the Moon",
+  "dense_caption": "The figure clad in a pristine white space suit, emblazoned with the American flag, stands powerfully on the moon's desolate and rocky surface. The lunar module, a workhorse of space engineering, looms in the background, its metallic legs sinking slightly into the dust where footprints and tracks from the mission's journey are clearly visible. The photograph captures the astronaut from a low angle, emphasizing his imposing presence against the desolate lunar backdrop. The stark contrast between the blacks and whiteslicks of lost light and shadow adds dramatic depth to this seminal moment in human achievement."
+}
 ```
 
 ## Conclusion
-The `TransformersMultiModal` model in Outlines provides a powerful way to work with vision-language models. It allows for structured generation of outputs that combine image analysis with natural language processing, opening up possibilities for complex tasks like detailed image captioning, visual question answering, and more.
 
-By leveraging the capabilities of models like Pixtral-12B and the structured output generation of Outlines, you can create sophisticated applications that understand and describe visual content in a highly structured and customizable manner.
+This guide demonstrated how Outlines enables structured output generation with vision-language models. With the techniques shown above, you can build:
+
+- **Content Management Systems**: Automatically tag and categorize visual content with structured metadata that can be directly stored in databases, enabling powerful search and filtering capabilities
+- **Accessibility Tools**: Generate rich, structured descriptions of images that can be adapted for different contexts - from brief alt-text to detailed scene descriptions for screen readers
+- **Quality Assurance Pipelines**: Validate visual content against specific criteria by extracting structured attributes and checking them against business rules
