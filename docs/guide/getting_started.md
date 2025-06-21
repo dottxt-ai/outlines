@@ -205,7 +205,7 @@ Supported output types can be organized in 5 categories:
 - [Multiple Choices](../../features/core/output_types#multiple-choices): using `Literal` or `Enum`
 - [JSON Schemas](../../features/core/output_types#json-schemas): using a wide range of possible objects including Pydantic models and dataclasses
 - [Regex](../../features/core/output_types#regex-patterns): through the Outlines's `Regex` object
-- [Context-free Grammarq](../../features/core/output_types#context-free-grammars): through the Outlines's `CFG` object
+- [Context-free Grammars](../../features/core/output_types#context-free-grammars): through the Outlines's `CFG` object
 
 Consult the section on [Output Types](../../features/core/output_types.md) in the features documentation for more detailed information on all supported types for each output type category.
 
@@ -228,8 +228,8 @@ In the meantime, you can find below examples of using each of the five output ty
 
     # Define our multiple choice output type
     class PizzaOrBurger(Enum):
-        pizza = "pizza
-        burger = "burger
+        pizza = "pizza"
+        burger = "burger"
 
     model = <your_model_as_defined_above>
 
