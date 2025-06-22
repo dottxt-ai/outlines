@@ -13,10 +13,10 @@
       
       
       
-        <link rel="prev" href="../react_agent/">
+        <link rel="prev" href="../migration/">
       
       
-        <link rel="next" href="../read-pdfs/">
+        <link rel="next" href="../fastapi_vllm_deployment/">
       
       
       <link rel="icon" href="../../assets/images/logo-square.png">
@@ -79,7 +79,7 @@
       
         <meta  property="og:description"  content="Structured text generation with LLMs" >
       
-        <meta  property="og:image"  content="./assets/images/social/examples/atomic_caption.png" >
+        <meta  property="og:image"  content="./assets/images/social/guide/vlm.png" >
       
         <meta  property="og:image:type"  content="image/png" >
       
@@ -95,7 +95,7 @@
       
         <meta  name="twitter:description"  content="Structured text generation with LLMs" >
       
-        <meta  name="twitter:image"  content="./assets/images/social/examples/atomic_caption.png" >
+        <meta  name="twitter:image"  content="./assets/images/social/guide/vlm.png" >
       
     
     
@@ -269,11 +269,13 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="../../guide/getting_started/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../getting_started/" class="md-tabs__link">
           
   
   
@@ -329,11 +331,9 @@
   
   
   
-    
   
-  
-    <li class="md-tabs__item md-tabs__item--active">
-      <a href="../" class="md-tabs__link">
+    <li class="md-tabs__item">
+      <a href="../../examples/" class="md-tabs__link">
         
   
   
@@ -454,28 +454,31 @@
       
   
   
+    
   
   
+  
     
     
     
     
+      
+        
+        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
         
           
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
-        
-          
-          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="">
             
   
   
@@ -488,7 +491,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             Guide
@@ -502,7 +505,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../guide/getting_started/" class="md-nav__link">
+      <a href="../getting_started/" class="md-nav__link">
         
   
   
@@ -525,7 +528,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../guide/installation/" class="md-nav__link">
+      <a href="../installation/" class="md-nav__link">
         
   
   
@@ -548,7 +551,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../guide/migration/" class="md-nav__link">
+      <a href="../migration/" class="md-nav__link">
         
   
   
@@ -568,10 +571,135 @@
                 
   
   
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Vision-Language Models
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    Vision-Language Models
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      Setup
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Setup">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#initializing-the-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      Initializing the Model
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#defining-the-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      Defining the Schema
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#preparing-the-prompt" class="md-nav__link">
+    <span class="md-ellipsis">
+      Preparing the Prompt
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#generating-structured-output" class="md-nav__link">
+    <span class="md-ellipsis">
+      Generating Structured Output
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conclusion" class="md-nav__link">
+    <span class="md-ellipsis">
+      Conclusion
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
   
   
     <li class="md-nav__item">
-      <a href="../../guide/fastapi_vllm_deployment/" class="md-nav__link">
+      <a href="../fastapi_vllm_deployment/" class="md-nav__link">
         
   
   
@@ -594,7 +722,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../guide/chat_templating/" class="md-nav__link">
+      <a href="../chat_templating/" class="md-nav__link">
         
   
   
@@ -2776,32 +2904,29 @@
       
   
   
-    
   
   
-  
     
     
     
     
-      
-        
-        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../" class="md-nav__link ">
+            <a href="../../examples/" class="md-nav__link ">
               
   
   
@@ -2814,13 +2939,13 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="">
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             Examples
@@ -2834,7 +2959,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../classification/" class="md-nav__link">
+      <a href="../../examples/classification/" class="md-nav__link">
         
   
   
@@ -2857,7 +2982,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../extraction/" class="md-nav__link">
+      <a href="../../examples/extraction/" class="md-nav__link">
         
   
   
@@ -2880,7 +3005,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../dating_profiles/" class="md-nav__link">
+      <a href="../../examples/dating_profiles/" class="md-nav__link">
         
   
   
@@ -2903,7 +3028,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../chain_of_density/" class="md-nav__link">
+      <a href="../../examples/chain_of_density/" class="md-nav__link">
         
   
   
@@ -2926,7 +3051,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../models_playing_chess/" class="md-nav__link">
+      <a href="../../examples/models_playing_chess/" class="md-nav__link">
         
   
   
@@ -2949,7 +3074,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../simtom/" class="md-nav__link">
+      <a href="../../examples/simtom/" class="md-nav__link">
         
   
   
@@ -2972,7 +3097,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../qa-with-citations/" class="md-nav__link">
+      <a href="../../examples/qa-with-citations/" class="md-nav__link">
         
   
   
@@ -2995,7 +3120,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../knowledge_graph_extraction/" class="md-nav__link">
+      <a href="../../examples/knowledge_graph_extraction/" class="md-nav__link">
         
   
   
@@ -3018,7 +3143,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../structured_generation_workflow/" class="md-nav__link">
+      <a href="../../examples/structured_generation_workflow/" class="md-nav__link">
         
   
   
@@ -3041,7 +3166,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../chain_of_thought/" class="md-nav__link">
+      <a href="../../examples/chain_of_thought/" class="md-nav__link">
         
   
   
@@ -3064,7 +3189,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../react_agent/" class="md-nav__link">
+      <a href="../../examples/react_agent/" class="md-nav__link">
         
   
   
@@ -3084,135 +3209,10 @@
                 
   
   
-    
-  
-  
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    Vision-Language Models
-    
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
-        
-  
-  
-  <span class="md-ellipsis">
-    Vision-Language Models
-    
-  </span>
-  
-
-      </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#setup" class="md-nav__link">
-    <span class="md-ellipsis">
-      Setup
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Setup">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#initializing-the-model" class="md-nav__link">
-    <span class="md-ellipsis">
-      Initializing the Model
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#defining-the-schema" class="md-nav__link">
-    <span class="md-ellipsis">
-      Defining the Schema
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#preparing-the-prompt" class="md-nav__link">
-    <span class="md-ellipsis">
-      Preparing the Prompt
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#generating-structured-output" class="md-nav__link">
-    <span class="md-ellipsis">
-      Generating Structured Output
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#conclusion" class="md-nav__link">
-    <span class="md-ellipsis">
-      Conclusion
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
   
   
     <li class="md-nav__item">
-      <a href="../read-pdfs/" class="md-nav__link">
+      <a href="../../examples/read-pdfs/" class="md-nav__link">
         
   
   
@@ -3235,7 +3235,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../earnings-reports/" class="md-nav__link">
+      <a href="../../examples/earnings-reports/" class="md-nav__link">
         
   
   
@@ -3258,7 +3258,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../receipt-digitization/" class="md-nav__link">
+      <a href="../../examples/receipt-digitization/" class="md-nav__link">
         
   
   
@@ -3281,7 +3281,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../extract_event_details/" class="md-nav__link">
+      <a href="../../examples/extract_event_details/" class="md-nav__link">
         
   
   
@@ -3310,22 +3310,19 @@
       
       
         
-          
-          
-        
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_17" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5_16" >
         
           
-          <label class="md-nav__link" for="__nav_5_17" id="__nav_5_17_label" tabindex="">
+          <label class="md-nav__link" for="__nav_5_16" id="__nav_5_16_label" tabindex="0">
             
   
   
@@ -3338,8 +3335,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_17_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_5_17">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_16_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_16">
             <span class="md-nav__icon md-icon"></span>
             Run on the cloud
           </label>
@@ -3352,7 +3349,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../deploy-using-bentoml/" class="md-nav__link">
+      <a href="../../examples/deploy-using-bentoml/" class="md-nav__link">
         
   
   
@@ -3375,7 +3372,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../deploy-using-cerebrium/" class="md-nav__link">
+      <a href="../../examples/deploy-using-cerebrium/" class="md-nav__link">
         
   
   
@@ -3398,7 +3395,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../deploy-using-modal/" class="md-nav__link">
+      <a href="../../examples/deploy-using-modal/" class="md-nav__link">
         
   
   
@@ -3731,14 +3728,14 @@
 
 
 <h1 id="vision-language-models-with-outlines">Vision-Language Models with Outlines</h1>
-<p>This guide demonstrates how to use Outlines with vision-language models, leveraging the outlines <code>TransformersMultiModal</code> model. Vision-language models can process both text and images, allowing for tasks like image captioning, visual question answering, and more.</p>
+<p>This guide demonstrates how to use Outlines with vision-language models. Vision-language models can process both text and images, allowing for tasks like image captioning, visual question answering, and more.</p>
 <p>We will be using the Pixtral-12B model from Mistral to take advantage of some of its visual reasoning capabilities and a workflow to generate a multistage atomic caption.</p>
 <h2 id="setup">Setup</h2>
-<p>First, we need to install the necessary dependencies. In addition to Outlines, we'll need to install the transformers library and any specific requirements for the vision-language model we'll be using.</p>
-<div class="language-shell highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pip<span style="color: #D8DEE9"> </span>install<span style="color: #D8DEE9"> </span>outlines<span style="color: #D8DEE9"> </span>transformers<span style="color: #D8DEE9"> </span>torch
+<p>First, we need to install the necessary dependencies. In addition to Outlines, we"ll need to install the transformers library and any specific requirements for the vision-language model we"ll be using.</p>
+<div class="language-shell highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>pip<span style="color: #D8DEE9"> </span>install<span style="color: #D8DEE9"> </span>outlines<span style="color: #D8DEE9"> </span>transformers<span style="color: #D8DEE9"> </span>torch<span style="color: #D8DEE9"> </span>pillow
 </span></code></pre></div>
 <h3 id="initializing-the-model">Initializing the Model</h3>
-<p>We'll use the <code>outlines.from_transformers</code> function to initialize our vision-language model. For this function to return a vision multi-modal model we need to pass in a transformers model and a transformers processor that can handle both text and image inputs. Today we'll be using the Pixtral model with the AutoProcessor.</p>
+<p>We"ll use the <code>outlines.from_transformers</code> function to initialize our vision-language model. For this function to return a vision multi-modal model we need to pass in a transformers model and a transformers processor that can handle both text and image inputs. Today we"ll be using the Pixtral model with the AutoProcessor.</p>
 <div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines</span>
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">torch</span>
 </span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">transformers</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #ECEFF4">(</span>
@@ -3768,7 +3765,7 @@
 </span><span id="__span-1-27"><a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a><span style="color: #D8DEE9">model</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">get_vision_model</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">model_name</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">model_class</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">processor_class</span><span style="color: #ECEFF4">)</span>
 </span></code></pre></div>
 <h3 id="defining-the-schema">Defining the Schema</h3>
-<p>Next, we'll define a schema for the output we expect from our vision multi-modal model. This schema will help structure the model's responses. We use the <code>outlines.Generator</code> object to create a generator for our schema that will then be called with our prompt and images.</p>
+<p>Next, we will define a schema for the output we expect from our vision multi-modal model. This schema will help structure the model's responses. We use the <code>outlines.Generator</code> object to create a generator for our schema that will then be called with our prompt and images.</p>
 <div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">enum</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">Enum</span>
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">pydantic</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">BaseModel</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">Field</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">confloat</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">constr</span>
 </span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">pydantic.types</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">StringConstraints</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">PositiveFloat</span>
@@ -3848,10 +3845,11 @@
 </span><span id="__span-3-32"><a id="__codelineno-3-32" name="__codelineno-3-32" href="#__codelineno-3-32"></a><span style="color: #A3BE8C">&lt;/Examples&gt;</span>
 </span><span id="__span-3-33"><a id="__codelineno-3-33" name="__codelineno-3-33" href="#__codelineno-3-33"></a><span style="color: #A3BE8C">&lt;/TagCategories&gt;</span>
 </span><span id="__span-3-34"><a id="__codelineno-3-34" name="__codelineno-3-34" href="#__codelineno-3-34"></a><span style="color: #A3BE8C">&lt;ShortCaption note=&quot;The short caption should be a concise single sentence caption of the image content with a maximum length of 100 characters.&quot;&gt;</span>
-</span><span id="__span-3-35"><a id="__codelineno-3-35" name="__codelineno-3-35" href="#__codelineno-3-35"></a><span style="color: #A3BE8C">&lt;DenseCaption note=&quot;The dense caption should be a descriptive but grounded narrative paragraph of the image content with high quality narrative prose. It should incorporate elements from each of the tag categories to provide a broad dense caption&quot;&gt;</span><span style="color: #EBCB8B">\n</span><span style="color: #A3BE8C">[IMG]&lt;image&gt;[/INST]</span>
-</span><span id="__span-3-36"><a id="__codelineno-3-36" name="__codelineno-3-36" href="#__codelineno-3-36"></a><span style="color: #A3BE8C">&quot;&quot;&quot;</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">strip</span><span style="color: #ECEFF4">()</span>
+</span><span id="__span-3-35"><a id="__codelineno-3-35" name="__codelineno-3-35" href="#__codelineno-3-35"></a><span style="color: #A3BE8C">&lt;DenseCaption note=&quot;The dense caption should be a descriptive but grounded narrative paragraph of the image content with high quality narrative prose. It should incorporate elements from each of the tag categories to provide a broad dense caption&quot;&gt;</span>
+</span><span id="__span-3-36"><a id="__codelineno-3-36" name="__codelineno-3-36" href="#__codelineno-3-36"></a><span style="color: #A3BE8C">[IMG]&lt;image&gt;[/INST]</span>
+</span><span id="__span-3-37"><a id="__codelineno-3-37" name="__codelineno-3-37" href="#__codelineno-3-37"></a><span style="color: #A3BE8C">&quot;&quot;&quot;</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">strip</span><span style="color: #ECEFF4">()</span>
 </span></code></pre></div>
-<p>This prompt provides detailed instructions to the model on how to generate comprehensive tag lists, captions, and dense captions for image analysis. Because of the ordering of the instructions the original tag generation serves as a sort of visual grounding for the captioning task, reducing the amount of manual post processing required. It's essential to include the <image> tag in the prompt at the location where the image will be inserted.</p>
+<p>This prompt provides detailed instructions to the model on how to generate comprehensive tag lists, captions, and dense captions for image analysis. Because of the ordering of the instructions the original tag generation serves as a sort of visual grounding for the captioning task, reducing the amount of manual post processing required. It is essential to include the <image> tag in the prompt at the location where the image will be inserted.</p>
 <h3 id="generating-structured-output">Generating Structured Output</h3>
 <p>Now we can use our model to generate structured output based on an input image:</p>
 <div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">io</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">BytesIO</span>
@@ -3871,34 +3869,54 @@
 </span><span id="__span-4-15"><a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">result</span><span style="color: #ECEFF4">)</span>
 </span></code></pre></div>
 <p>This code loads an image from a URL, passes it to our vision multi-modal model along with the instruction prompt, and generates a structured output based on the defined schema. We end up with an output like this, ready to be used for the next stage in your pipeline:</p>
-<div class="language-json highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span style="color: #ECEFF4">{</span><span style="color: #BF616A">&#39;</span><span style="color: #81A1C1; font-weight: bold">ta</span><span style="color: #BF616A">gs_lis</span><span style="color: #81A1C1; font-weight: bold">t</span><span style="color: #BF616A">&#39;</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #ECEFF4">[{</span><span style="color: #BF616A">&#39;</span><span style="color: #81A1C1; font-weight: bold">ta</span><span style="color: #BF616A">g&#39;</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #BF616A">&#39;as</span><span style="color: #81A1C1; font-weight: bold">tr</span><span style="color: #BF616A">o</span><span style="color: #81A1C1; font-weight: bold">naut</span><span style="color: #BF616A">&#39;</span><span style="color: #ECEFF4">,</span>
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span style="color: #D8DEE9">   </span><span style="color: #BF616A">&#39;ca</span><span style="color: #81A1C1; font-weight: bold">te</span><span style="color: #BF616A">gory&#39;</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #BF616A">&lt;TagType.ENTITY</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #BF616A">&#39;E</span><span style="color: #81A1C1; font-weight: bold">nt</span><span style="color: #BF616A">i</span><span style="color: #81A1C1; font-weight: bold">t</span><span style="color: #BF616A">y&#39;&gt;</span><span style="color: #ECEFF4">,</span>
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span style="color: #D8DEE9">   </span><span style="color: #BF616A">&#39;co</span><span style="color: #81A1C1; font-weight: bold">nf</span><span style="color: #BF616A">ide</span><span style="color: #81A1C1; font-weight: bold">n</span><span style="color: #BF616A">ce&#39;</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #B48EAD">0.99</span><span style="color: #ECEFF4">},</span>
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span style="color: #D8DEE9">  </span><span style="color: #ECEFF4">{</span><span style="color: #BF616A">&#39;</span><span style="color: #81A1C1; font-weight: bold">ta</span><span style="color: #BF616A">g&#39;</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #BF616A">&#39;moo</span><span style="color: #81A1C1; font-weight: bold">n</span><span style="color: #BF616A">&#39;</span><span style="color: #ECEFF4">,</span><span style="color: #D8DEE9"> </span><span style="color: #BF616A">&#39;ca</span><span style="color: #81A1C1; font-weight: bold">te</span><span style="color: #BF616A">gory&#39;</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #BF616A">&lt;TagType.ENTITY</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #BF616A">&#39;E</span><span style="color: #81A1C1; font-weight: bold">nt</span><span style="color: #BF616A">i</span><span style="color: #81A1C1; font-weight: bold">t</span><span style="color: #BF616A">y&#39;&gt;</span><span style="color: #ECEFF4">,</span><span style="color: #D8DEE9"> </span><span style="color: #BF616A">&#39;co</span><span style="color: #81A1C1; font-weight: bold">nf</span><span style="color: #BF616A">ide</span><span style="color: #81A1C1; font-weight: bold">n</span><span style="color: #BF616A">ce&#39;</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #B48EAD">0.98</span><span style="color: #ECEFF4">},</span>
-</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span style="color: #D8DEE9">  </span><span style="color: #ECEFF4">{</span><span style="color: #BF616A">&#39;</span><span style="color: #81A1C1; font-weight: bold">ta</span><span style="color: #BF616A">g&#39;</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #BF616A">&#39;space</span><span style="color: #D8DEE9"> </span><span style="color: #BF616A">sui</span><span style="color: #81A1C1; font-weight: bold">t</span><span style="color: #BF616A">&#39;</span><span style="color: #ECEFF4">,</span>
-</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span style="color: #D8DEE9">   </span><span style="color: #BF616A">&#39;ca</span><span style="color: #81A1C1; font-weight: bold">te</span><span style="color: #BF616A">gory&#39;</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #BF616A">&lt;TagType.ATTRIBUTE</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #BF616A">&#39;A</span><span style="color: #81A1C1; font-weight: bold">ttr</span><span style="color: #BF616A">ibu</span><span style="color: #81A1C1; font-weight: bold">te</span><span style="color: #BF616A">&#39;&gt;</span><span style="color: #ECEFF4">,</span>
-</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span style="color: #D8DEE9">   </span><span style="color: #BF616A">&#39;co</span><span style="color: #81A1C1; font-weight: bold">nf</span><span style="color: #BF616A">ide</span><span style="color: #81A1C1; font-weight: bold">n</span><span style="color: #BF616A">ce&#39;</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #B48EAD">0.97</span><span style="color: #ECEFF4">},</span>
-</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span style="color: #D8DEE9">  </span><span style="color: #ECEFF4">{</span><span style="color: #BF616A">&#39;</span><span style="color: #81A1C1; font-weight: bold">ta</span><span style="color: #BF616A">g&#39;</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #BF616A">&#39;lu</span><span style="color: #81A1C1; font-weight: bold">nar</span><span style="color: #D8DEE9"> </span><span style="color: #BF616A">module&#39;</span><span style="color: #ECEFF4">,</span>
-</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span style="color: #D8DEE9">   </span><span style="color: #BF616A">&#39;ca</span><span style="color: #81A1C1; font-weight: bold">te</span><span style="color: #BF616A">gory&#39;</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #BF616A">&lt;TagType.ENTITY</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #BF616A">&#39;E</span><span style="color: #81A1C1; font-weight: bold">nt</span><span style="color: #BF616A">i</span><span style="color: #81A1C1; font-weight: bold">t</span><span style="color: #BF616A">y&#39;&gt;</span><span style="color: #ECEFF4">,</span>
-</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span style="color: #D8DEE9">   </span><span style="color: #BF616A">&#39;co</span><span style="color: #81A1C1; font-weight: bold">nf</span><span style="color: #BF616A">ide</span><span style="color: #81A1C1; font-weight: bold">n</span><span style="color: #BF616A">ce&#39;</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #B48EAD">0.95</span><span style="color: #ECEFF4">},</span>
-</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span style="color: #D8DEE9">  </span><span style="color: #ECEFF4">{</span><span style="color: #BF616A">&#39;</span><span style="color: #81A1C1; font-weight: bold">ta</span><span style="color: #BF616A">g&#39;</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #BF616A">&#39;shadow</span><span style="color: #D8DEE9"> </span><span style="color: #BF616A">o</span><span style="color: #81A1C1; font-weight: bold">f</span><span style="color: #D8DEE9"> </span><span style="color: #BF616A">as</span><span style="color: #81A1C1; font-weight: bold">tr</span><span style="color: #BF616A">o</span><span style="color: #81A1C1; font-weight: bold">naut</span><span style="color: #BF616A">&#39;</span><span style="color: #ECEFF4">,</span>
-</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span style="color: #D8DEE9">   </span><span style="color: #BF616A">&#39;ca</span><span style="color: #81A1C1; font-weight: bold">te</span><span style="color: #BF616A">gory&#39;</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #BF616A">&lt;TagType.COMPOSITION</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #BF616A">&#39;Composi</span><span style="color: #81A1C1; font-weight: bold">t</span><span style="color: #BF616A">io</span><span style="color: #81A1C1; font-weight: bold">n</span><span style="color: #BF616A">&#39;&gt;</span><span style="color: #ECEFF4">,</span>
-</span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span style="color: #D8DEE9">   </span><span style="color: #BF616A">&#39;co</span><span style="color: #81A1C1; font-weight: bold">nf</span><span style="color: #BF616A">ide</span><span style="color: #81A1C1; font-weight: bold">n</span><span style="color: #BF616A">ce&#39;</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #B48EAD">0.95</span><span style="color: #ECEFF4">},</span>
-</span><span id="__span-5-14"><a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a><span style="color: #D8DEE9">  </span><span style="color: #ECEFF4">{</span><span style="color: #BF616A">&#39;</span><span style="color: #81A1C1; font-weight: bold">ta</span><span style="color: #BF616A">g&#39;</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #BF616A">&#39;</span><span style="color: #81A1C1; font-weight: bold">f</span><span style="color: #BF616A">oo</span><span style="color: #81A1C1; font-weight: bold">t</span><span style="color: #BF616A">pri</span><span style="color: #81A1C1; font-weight: bold">nts</span><span style="color: #D8DEE9"> </span><span style="color: #BF616A">i</span><span style="color: #81A1C1; font-weight: bold">n</span><span style="color: #D8DEE9"> </span><span style="color: #BF616A">moo</span><span style="color: #81A1C1; font-weight: bold">n</span><span style="color: #D8DEE9"> </span><span style="color: #BF616A">dus</span><span style="color: #81A1C1; font-weight: bold">t</span><span style="color: #BF616A">&#39;</span><span style="color: #ECEFF4">,</span>
-</span><span id="__span-5-15"><a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a><span style="color: #D8DEE9">   </span><span style="color: #BF616A">&#39;ca</span><span style="color: #81A1C1; font-weight: bold">te</span><span style="color: #BF616A">gory&#39;</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #BF616A">&lt;TagType.CONTEXTUAL</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #BF616A">&#39;Co</span><span style="color: #81A1C1; font-weight: bold">nte</span><span style="color: #BF616A">x</span><span style="color: #81A1C1; font-weight: bold">tual</span><span style="color: #BF616A">&#39;&gt;</span><span style="color: #ECEFF4">,</span>
-</span><span id="__span-5-16"><a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a><span style="color: #D8DEE9">   </span><span style="color: #BF616A">&#39;co</span><span style="color: #81A1C1; font-weight: bold">nf</span><span style="color: #BF616A">ide</span><span style="color: #81A1C1; font-weight: bold">n</span><span style="color: #BF616A">ce&#39;</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #B48EAD">0.93</span><span style="color: #ECEFF4">},</span>
-</span><span id="__span-5-17"><a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a><span style="color: #D8DEE9">  </span><span style="color: #ECEFF4">{</span><span style="color: #BF616A">&#39;</span><span style="color: #81A1C1; font-weight: bold">ta</span><span style="color: #BF616A">g&#39;</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #BF616A">&#39;low</span><span style="color: #D8DEE9"> </span><span style="color: #BF616A">a</span><span style="color: #81A1C1; font-weight: bold">n</span><span style="color: #BF616A">gle</span><span style="color: #D8DEE9"> </span><span style="color: #BF616A">sho</span><span style="color: #81A1C1; font-weight: bold">t</span><span style="color: #BF616A">&#39;</span><span style="color: #ECEFF4">,</span>
-</span><span id="__span-5-18"><a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a><span style="color: #D8DEE9">   </span><span style="color: #BF616A">&#39;ca</span><span style="color: #81A1C1; font-weight: bold">te</span><span style="color: #BF616A">gory&#39;</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #BF616A">&lt;TagType.TECHNICAL</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #BF616A">&#39;Tech</span><span style="color: #81A1C1; font-weight: bold">n</span><span style="color: #BF616A">ical&#39;&gt;</span><span style="color: #ECEFF4">,</span>
-</span><span id="__span-5-19"><a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a><span style="color: #D8DEE9">   </span><span style="color: #BF616A">&#39;co</span><span style="color: #81A1C1; font-weight: bold">nf</span><span style="color: #BF616A">ide</span><span style="color: #81A1C1; font-weight: bold">n</span><span style="color: #BF616A">ce&#39;</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #B48EAD">0.92</span><span style="color: #ECEFF4">},</span>
-</span><span id="__span-5-20"><a id="__codelineno-5-20" name="__codelineno-5-20" href="#__codelineno-5-20"></a><span style="color: #D8DEE9">  </span><span style="color: #ECEFF4">{</span><span style="color: #BF616A">&#39;</span><span style="color: #81A1C1; font-weight: bold">ta</span><span style="color: #BF616A">g&#39;</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #BF616A">&#39;huma</span><span style="color: #81A1C1; font-weight: bold">n</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">f</span><span style="color: #BF616A">irs</span><span style="color: #81A1C1; font-weight: bold">t</span><span style="color: #D8DEE9"> </span><span style="color: #BF616A">s</span><span style="color: #81A1C1; font-weight: bold">te</span><span style="color: #BF616A">ps</span><span style="color: #D8DEE9"> </span><span style="color: #BF616A">o</span><span style="color: #81A1C1; font-weight: bold">n</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">t</span><span style="color: #BF616A">he</span><span style="color: #D8DEE9"> </span><span style="color: #BF616A">moo</span><span style="color: #81A1C1; font-weight: bold">n</span><span style="color: #BF616A">&#39;</span><span style="color: #ECEFF4">,</span>
-</span><span id="__span-5-21"><a id="__codelineno-5-21" name="__codelineno-5-21" href="#__codelineno-5-21"></a><span style="color: #D8DEE9">   </span><span style="color: #BF616A">&#39;ca</span><span style="color: #81A1C1; font-weight: bold">te</span><span style="color: #BF616A">gory&#39;</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #BF616A">&lt;TagType.SEMANTIC</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #BF616A">&#39;Sema</span><span style="color: #81A1C1; font-weight: bold">nt</span><span style="color: #BF616A">ic&#39;&gt;</span><span style="color: #ECEFF4">,</span>
-</span><span id="__span-5-22"><a id="__codelineno-5-22" name="__codelineno-5-22" href="#__codelineno-5-22"></a><span style="color: #D8DEE9">   </span><span style="color: #BF616A">&#39;co</span><span style="color: #81A1C1; font-weight: bold">nf</span><span style="color: #BF616A">ide</span><span style="color: #81A1C1; font-weight: bold">n</span><span style="color: #BF616A">ce&#39;</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #B48EAD">0.95</span><span style="color: #ECEFF4">}],</span>
-</span><span id="__span-5-23"><a id="__codelineno-5-23" name="__codelineno-5-23" href="#__codelineno-5-23"></a><span style="color: #D8DEE9"> </span><span style="color: #BF616A">&#39;shor</span><span style="color: #81A1C1; font-weight: bold">t</span><span style="color: #BF616A">_cap</span><span style="color: #81A1C1; font-weight: bold">t</span><span style="color: #BF616A">io</span><span style="color: #81A1C1; font-weight: bold">n</span><span style="color: #BF616A">&#39;</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #BF616A">&#39;Firs</span><span style="color: #81A1C1; font-weight: bold">t</span><span style="color: #D8DEE9"> </span><span style="color: #BF616A">ma</span><span style="color: #81A1C1; font-weight: bold">n</span><span style="color: #D8DEE9"> </span><span style="color: #BF616A">o</span><span style="color: #81A1C1; font-weight: bold">n</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">t</span><span style="color: #BF616A">he</span><span style="color: #D8DEE9"> </span><span style="color: #BF616A">Moo</span><span style="color: #81A1C1; font-weight: bold">n</span><span style="color: #BF616A">&#39;</span><span style="color: #ECEFF4">,</span>
-</span><span id="__span-5-24"><a id="__codelineno-5-24" name="__codelineno-5-24" href="#__codelineno-5-24"></a><span style="color: #D8DEE9"> </span><span style="color: #BF616A">&#39;de</span><span style="color: #81A1C1; font-weight: bold">nse</span><span style="color: #BF616A">_cap</span><span style="color: #81A1C1; font-weight: bold">t</span><span style="color: #BF616A">io</span><span style="color: #81A1C1; font-weight: bold">n</span><span style="color: #BF616A">&#39;</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #A3BE8C">&quot;The figure clad in a pristine white space suit, emblazoned with the American flag, stands powerfully on the moon&#39;s desolate and rocky surface. The lunar module, a workhorse of space engineering, looms in the background, its metallic legs sinking slightly into the dust where footprints and tracks from the mission&#39;s journey are clearly visible. The photograph captures the astronaut from a low angle, emphasizing his imposing presence against the desolate lunar backdrop. The stark contrast between the blacks and whiteslicks of lost light and shadow adds dramatic depth to this seminal moment in human achievement.&quot;</span><span style="color: #ECEFF4">}</span>
+<div class="language-json highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span style="color: #ECEFF4">{</span><span style="color: #81A1C1">&quot;tags_list&quot;</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #ECEFF4">[</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span style="color: #D8DEE9">  </span><span style="color: #ECEFF4">{</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span style="color: #D8DEE9">    </span><span style="color: #81A1C1">&quot;tag&quot;</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #A3BE8C">&quot;astronaut&quot;</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span style="color: #D8DEE9">    </span><span style="color: #81A1C1">&quot;category&quot;</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #BF616A">&lt;TagType.ENTITY</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #A3BE8C">&quot;Entity&quot;</span><span style="color: #BF616A">&gt;</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span style="color: #D8DEE9">    </span><span style="color: #81A1C1">&quot;confidence&quot;</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #B48EAD">0.99</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span style="color: #D8DEE9">  </span><span style="color: #ECEFF4">},</span>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span style="color: #D8DEE9">  </span><span style="color: #ECEFF4">{</span><span style="color: #81A1C1">&quot;tag&quot;</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #A3BE8C">&quot;moon&quot;</span><span style="color: #ECEFF4">,</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1">&quot;category&quot;</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #BF616A">&lt;TagType.ENTITY</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #A3BE8C">&quot;Entity&quot;</span><span style="color: #BF616A">&gt;</span><span style="color: #ECEFF4">,</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1">&quot;confidence&quot;</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #B48EAD">0.98</span><span style="color: #ECEFF4">},</span>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span style="color: #D8DEE9">  </span><span style="color: #ECEFF4">{</span>
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span style="color: #D8DEE9">    </span><span style="color: #81A1C1">&quot;tag&quot;</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #A3BE8C">&quot;space suit&quot;</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span style="color: #D8DEE9">    </span><span style="color: #81A1C1">&quot;category&quot;</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #BF616A">&lt;TagType.ATTRIBUTE</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #A3BE8C">&quot;Attribute&quot;</span><span style="color: #BF616A">&gt;</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span style="color: #D8DEE9">    </span><span style="color: #81A1C1">&quot;confidence&quot;</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #B48EAD">0.97</span>
+</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span style="color: #D8DEE9">  </span><span style="color: #ECEFF4">},</span>
+</span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span style="color: #D8DEE9">  </span><span style="color: #ECEFF4">{</span>
+</span><span id="__span-5-14"><a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a><span style="color: #D8DEE9">    </span><span style="color: #81A1C1">&quot;tag&quot;</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #A3BE8C">&quot;lunar module&quot;</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-5-15"><a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a><span style="color: #D8DEE9">    </span><span style="color: #81A1C1">&quot;category&quot;</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #BF616A">&lt;TagType.ENTITY</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #A3BE8C">&quot;Entity&quot;</span><span style="color: #BF616A">&gt;</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-5-16"><a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a><span style="color: #D8DEE9">    </span><span style="color: #81A1C1">&quot;confidence&quot;</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #B48EAD">0.95</span>
+</span><span id="__span-5-17"><a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a><span style="color: #D8DEE9">  </span><span style="color: #ECEFF4">},</span>
+</span><span id="__span-5-18"><a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a><span style="color: #D8DEE9">  </span><span style="color: #ECEFF4">{</span>
+</span><span id="__span-5-19"><a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a><span style="color: #D8DEE9">    </span><span style="color: #81A1C1">&quot;tag&quot;</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #A3BE8C">&quot;shadow of astronaut&quot;</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-5-20"><a id="__codelineno-5-20" name="__codelineno-5-20" href="#__codelineno-5-20"></a><span style="color: #D8DEE9">    </span><span style="color: #81A1C1">&quot;category&quot;</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #BF616A">&lt;TagType.COMPOSITION</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #A3BE8C">&quot;Composition&quot;</span><span style="color: #BF616A">&gt;</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-5-21"><a id="__codelineno-5-21" name="__codelineno-5-21" href="#__codelineno-5-21"></a><span style="color: #D8DEE9">    </span><span style="color: #81A1C1">&quot;confidence&quot;</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #B48EAD">0.95</span>
+</span><span id="__span-5-22"><a id="__codelineno-5-22" name="__codelineno-5-22" href="#__codelineno-5-22"></a><span style="color: #D8DEE9">  </span><span style="color: #ECEFF4">},</span>
+</span><span id="__span-5-23"><a id="__codelineno-5-23" name="__codelineno-5-23" href="#__codelineno-5-23"></a><span style="color: #D8DEE9">  </span><span style="color: #ECEFF4">{</span>
+</span><span id="__span-5-24"><a id="__codelineno-5-24" name="__codelineno-5-24" href="#__codelineno-5-24"></a><span style="color: #D8DEE9">    </span><span style="color: #81A1C1">&quot;tag&quot;</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #A3BE8C">&quot;footprints in moon dust&quot;</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-5-25"><a id="__codelineno-5-25" name="__codelineno-5-25" href="#__codelineno-5-25"></a><span style="color: #D8DEE9">    </span><span style="color: #81A1C1">&quot;category&quot;</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #BF616A">&lt;TagType.CONTEXTUAL</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #A3BE8C">&quot;Contextual&quot;</span><span style="color: #BF616A">&gt;</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-5-26"><a id="__codelineno-5-26" name="__codelineno-5-26" href="#__codelineno-5-26"></a><span style="color: #D8DEE9">    </span><span style="color: #81A1C1">&quot;confidence&quot;</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #B48EAD">0.93</span>
+</span><span id="__span-5-27"><a id="__codelineno-5-27" name="__codelineno-5-27" href="#__codelineno-5-27"></a><span style="color: #D8DEE9">  </span><span style="color: #ECEFF4">},</span>
+</span><span id="__span-5-28"><a id="__codelineno-5-28" name="__codelineno-5-28" href="#__codelineno-5-28"></a><span style="color: #D8DEE9">  </span><span style="color: #ECEFF4">{</span>
+</span><span id="__span-5-29"><a id="__codelineno-5-29" name="__codelineno-5-29" href="#__codelineno-5-29"></a><span style="color: #D8DEE9">    </span><span style="color: #81A1C1">&quot;tag&quot;</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #A3BE8C">&quot;low angle shot&quot;</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-5-30"><a id="__codelineno-5-30" name="__codelineno-5-30" href="#__codelineno-5-30"></a><span style="color: #D8DEE9">    </span><span style="color: #81A1C1">&quot;category&quot;</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #BF616A">&lt;TagType.TECHNICAL</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #A3BE8C">&quot;Technical&quot;</span><span style="color: #BF616A">&gt;</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-5-31"><a id="__codelineno-5-31" name="__codelineno-5-31" href="#__codelineno-5-31"></a><span style="color: #D8DEE9">    </span><span style="color: #81A1C1">&quot;confidence&quot;</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #B48EAD">0.92</span>
+</span><span id="__span-5-32"><a id="__codelineno-5-32" name="__codelineno-5-32" href="#__codelineno-5-32"></a><span style="color: #D8DEE9">  </span><span style="color: #ECEFF4">},</span>
+</span><span id="__span-5-33"><a id="__codelineno-5-33" name="__codelineno-5-33" href="#__codelineno-5-33"></a><span style="color: #D8DEE9">  </span><span style="color: #ECEFF4">{</span>
+</span><span id="__span-5-34"><a id="__codelineno-5-34" name="__codelineno-5-34" href="#__codelineno-5-34"></a><span style="color: #D8DEE9">    </span><span style="color: #81A1C1">&quot;tag&quot;</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #A3BE8C">&quot;human first steps on the moon&quot;</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-5-35"><a id="__codelineno-5-35" name="__codelineno-5-35" href="#__codelineno-5-35"></a><span style="color: #D8DEE9">    </span><span style="color: #81A1C1">&quot;category&quot;</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #BF616A">&lt;TagType.SEMANTIC</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #A3BE8C">&quot;Semantic&quot;</span><span style="color: #BF616A">&gt;</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-5-36"><a id="__codelineno-5-36" name="__codelineno-5-36" href="#__codelineno-5-36"></a><span style="color: #D8DEE9">    </span><span style="color: #81A1C1">&quot;confidence&quot;</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #B48EAD">0.95</span>
+</span><span id="__span-5-37"><a id="__codelineno-5-37" name="__codelineno-5-37" href="#__codelineno-5-37"></a><span style="color: #D8DEE9">  </span><span style="color: #ECEFF4">}],</span>
+</span><span id="__span-5-38"><a id="__codelineno-5-38" name="__codelineno-5-38" href="#__codelineno-5-38"></a><span style="color: #D8DEE9">  </span><span style="color: #81A1C1">&quot;short_caption&quot;</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #A3BE8C">&quot;First man on the Moon&quot;</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-5-39"><a id="__codelineno-5-39" name="__codelineno-5-39" href="#__codelineno-5-39"></a><span style="color: #D8DEE9">  </span><span style="color: #81A1C1">&quot;dense_caption&quot;</span><span style="color: #ECEFF4">:</span><span style="color: #D8DEE9"> </span><span style="color: #A3BE8C">&quot;The figure clad in a pristine white space suit, emblazoned with the American flag, stands powerfully on the moon&#39;s desolate and rocky surface. The lunar module, a workhorse of space engineering, looms in the background, its metallic legs sinking slightly into the dust where footprints and tracks from the mission&#39;s journey are clearly visible. The photograph captures the astronaut from a low angle, emphasizing his imposing presence against the desolate lunar backdrop. The stark contrast between the blacks and whiteslicks of lost light and shadow adds dramatic depth to this seminal moment in human achievement.&quot;</span>
+</span><span id="__span-5-40"><a id="__codelineno-5-40" name="__codelineno-5-40" href="#__codelineno-5-40"></a><span style="color: #ECEFF4">}</span>
 </span></code></pre></div>
 <h2 id="conclusion">Conclusion</h2>
-<p>The <code>TransformersMultiModal</code> model in Outlines provides a powerful way to work with vision-language models. It allows for structured generation of outputs that combine image analysis with natural language processing, opening up possibilities for complex tasks like detailed image captioning, visual question answering, and more.</p>
-<p>By leveraging the capabilities of models like Pixtral-12B and the structured output generation of Outlines, you can create sophisticated applications that understand and describe visual content in a highly structured and customizable manner.</p>
+<p>This guide demonstrated how Outlines enables structured output generation with vision-language models. With the techniques shown above, you can build:</p>
+<ul>
+<li><strong>Content Management Systems</strong>: Automatically tag and categorize visual content with structured metadata that can be directly stored in databases, enabling powerful search and filtering capabilities</li>
+<li><strong>Accessibility Tools</strong>: Generate rich, structured descriptions of images that can be adapted for different contexts - from brief alt-text to detailed scene descriptions for screen readers</li>
+<li><strong>Quality Assurance Pipelines</strong>: Validate visual content against specific criteria by extracting structured attributes and checking them against business rules</li>
+</ul>
 
 
 
@@ -3921,7 +3939,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="June 20, 2025 11:51:24 UTC"><span class="timeago" datetime="2025-06-20T11:51:24+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="June 20, 2025 11:51:24 UTC">2025-06-20</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="June 21, 2025 14:38:23 UTC"><span class="timeago" datetime="2025-06-21T14:38:23+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="June 21, 2025 14:38:23 UTC">2025-06-21</span>
   </span>
 
     
@@ -3952,16 +3970,6 @@
         <a href="https://github.com/rlouf" class="md-author" title="@rlouf">
           
           <img src="https://avatars.githubusercontent.com/u/3885044?v=4&size=72" alt="rlouf">
-        </a>
-      
-        <a href="https://github.com/RobinPicard" class="md-author" title="@RobinPicard">
-          
-          <img src="https://avatars.githubusercontent.com/u/83579270?v=4&size=72" alt="RobinPicard">
-        </a>
-      
-        <a href="https://github.com/web-flow" class="md-author" title="@web-flow">
-          
-          <img src="https://avatars.githubusercontent.com/u/19864447?v=4&size=72" alt="web-flow">
         </a>
       
       
