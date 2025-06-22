@@ -10,6 +10,7 @@ title: Ollama
 
     - To download Ollama: https://ollama.com/download
     - To install the ollama python sdk: `pip install outlines[ollama]`
+    - To make sure the Ollama server is running: `ollama serve`
 
     Consult the [`ollama` documentation](https://github.com/ollama/ollama-python) for detailed information on installation and client initialization.
 

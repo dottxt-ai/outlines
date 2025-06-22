@@ -6,7 +6,20 @@ title: SGLang
 
 ## Prerequisites
 
-The Outlines `SGLang` model is intended to be used along with an SGLang instance running on a separate server (can be local or remote). Make sure you have a SGLang server running and accessible before using the `SGLang` model. As the SGLang client relies on the `openai` python sdk, you need to have the `openai` package installed. Install all optional dependencies of the `SGLang` model with: `pip install outlines[sglang]`.
+The Outlines `SGLang` model is intended to be used along with an SGLang instance running on a separate server (can be local or remote). Make sure you have a SGLang server running and accessible before using the `SGLang` model. For instance by running:
+
+```shell
+pip install "sglang[all]"
+
+python -m sglang.launch_server \
+  --model-path NousResearch/Meta-Llama-3-8B-Instruct \
+  --host 0.0.0.0 \
+  --port 30000
+```
+
+Follow the [Installation instructions](https://docs.sglang.ai/start/install.html) for more information on how to set up a SGLang server for your particular setup.
+
+As the SGLang client relies on the `openai` python sdk, you need to have the `openai` package installed. Install all optional dependencies of the `SGLang` model with: `pip install outlines[sglang]`.
 
 When launching your SGLang server, you can specify the backend engine to use for structured generation through the `grammar-backend` cli argument. Add `--grammar-backend outlines` to your command to use Outlines instead of the default engine.
 

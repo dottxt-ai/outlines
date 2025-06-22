@@ -6,7 +6,20 @@ title: TGI
 
 ## Prerequisites
 
-The Outlines `TGI` model is intended to be used along with a HuggingFace `Text Generation Inference` server (running locally or remotely). Make sure you have a TGI server running before using the `TGI` model. As the TGI client relies on the `huggingface_hub` python package, you need to have it installed. Install all optional dependencoes of the `TGI` model with: `pip install outlines[tgi]`
+The Outlines `TGI` model is intended to be used along with a HuggingFace `Text Generation Inference` server (running locally or remotely). Make sure you have a TGI server running before using the `TGI` model. For instance running:
+
+```shell
+docker run \
+  --gpus all \
+  --shm-size 1g \
+  -p 8080:80 \
+  ghcr.io/huggingface/text-generation-inference:3.3.4 \
+  --model-id NousResearch/Meta-Llama-3-8B-Instruct
+```
+
+Please consult the [installation guide](https://huggingface.co/docs/text-generation-inference/en/quicktour) for more information about how to run TGI with your particular setup.
+  * [ ]
+As the TGI client relies on the `huggingface_hub` python package, you need to have it installed. Install all optional dependencoes of the `TGI` model with: `pip install outlines[tgi]`
 
 ## Model Initialization
 
