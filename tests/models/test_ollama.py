@@ -1,13 +1,16 @@
+import io
 import json
 from enum import Enum
 from typing import Annotated
 
 import pytest
+from PIL import Image
 from ollama import Client as OllamaClient
 from pydantic import BaseModel, Field
 
 import outlines
 from outlines.models import Ollama
+from outlines.templates import Vision
 
 
 MODEL_NAME = "tinyllama"
@@ -21,6 +24,21 @@ def model():
 @pytest.fixture
 def model_no_model_name():
     return Ollama(OllamaClient())
+
+
+@pytest.fixture(scope="session")
+def image():
+    width, height = 1, 1
+    white_background = (255, 255, 255)
+    image = Image.new("RGB", (width, height), white_background)
+
+    # Save to an in-memory bytes buffer and read as png
+    buffer = io.BytesIO()
+    image.save(buffer, format="PNG")
+    buffer.seek(0)
+    image = Image.open(buffer)
+
+    return image
 
 
 def test_init_from_client():
@@ -57,6 +75,16 @@ def test_ollama_direct(model_no_model_name):
     result = model_no_model_name(
         "Respond with one word. Not more.",
         None,
+        model=MODEL_NAME,
+    )
+    assert isinstance(result, str)
+
+
+def test_ollama_simple_vision(image, model):
+    # This is not using a vision model, so it's not able to describe
+    # the image, but we're still checking the model input syntax
+    result = model.generate(
+        Vision("What does this logo represent?", image),
         model=MODEL_NAME,
     )
     assert isinstance(result, str)
