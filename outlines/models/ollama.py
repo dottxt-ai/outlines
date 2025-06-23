@@ -1,11 +1,12 @@
 """Integration with the `ollama` library."""
 
 import json
-from typing import TYPE_CHECKING, Any, Iterator, Optional
+from typing import TYPE_CHECKING, Any, Iterator, Optional, Union
 
 from pydantic import TypeAdapter
 
 from outlines.models.base import Model, ModelTypeAdapter
+from outlines.templates import Vision
 from outlines.types import CFG, JsonSchema, Regex
 from outlines.types.utils import (
     is_dataclass,
@@ -23,7 +24,7 @@ __all__ = ["Ollama", "from_ollama"]
 class OllamaTypeAdapter(ModelTypeAdapter):
     """Type adapter for the `Ollama` model."""
 
-    def format_input(self, model_input: str) -> str:
+    def format_input(self, model_input: Union[str, Vision]) -> dict:
         """Generate the prompt argument to pass to the model.
 
         Parameters
@@ -33,18 +34,34 @@ class OllamaTypeAdapter(ModelTypeAdapter):
 
         Returns
         -------
-        str
-            The formatted input to be passed to the model.
+        dict
+            The model input to be passed to the client.
 
         """
         if isinstance(model_input, str):
-            return model_input
+            return self.format_str_model_input(model_input)
+        elif isinstance(model_input, Vision):
+            return self.format_vision_model_input(model_input)
         raise TypeError(
             f"The input type {model_input} is not available. "
-            "Ollama does not support batch inference."
+            "The only available types are `str` and `Vision`."
         )
 
-    def format_output_type(self, output_type: Optional[Any] = None) -> Optional[str]:
+    def format_str_model_input(self, model_input: str) -> dict:
+        """Format the string model input to pass to the client.
+
+        """
+        return {"prompt": model_input}
+
+    def format_vision_model_input(self, model_input: Vision) -> dict:
+        """Format the vision model input to pass to the client.
+
+        """
+        return {"prompt": model_input.prompt, "images": [model_input.image_str]}
+
+    def format_output_type(
+        self, output_type: Optional[Any] = None
+    ) -> Optional[str]:
         """Format the output type to pass to the client.
 
         TODO: `int`, `float` and other Python types could be supported via
@@ -147,7 +164,7 @@ class Ollama(Model):
             kwargs["model"] = self.model_name
 
         response = self.client.generate(
-            prompt=self.type_adapter.format_input(model_input),
+            **self.type_adapter.format_input(model_input),
             format=self.type_adapter.format_output_type(output_type),
             **kwargs,
         )
@@ -182,7 +199,7 @@ class Ollama(Model):
             kwargs["model"] = self.model_name
 
         response = self.client.generate(
-            prompt=self.type_adapter.format_input(model_input),
+            **self.type_adapter.format_input(model_input),
             format=self.type_adapter.format_output_type(output_type),
             stream=True,
             **kwargs,

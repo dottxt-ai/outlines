@@ -70,6 +70,35 @@ for chunk in model.stream("Write a short story about a cat"):
     print(chunk) # 'In...'
 ```
 
+Additionally, you can use `Ollama` with the `Vision` input if you're running a vision model such as qwen2.5vl. For instance:
+
+```python
+import io
+import requests
+import PIL
+import ollama
+import outlines
+from outlines.templates import Vision
+
+# Create the model
+model = outlines.from_ollama(
+    ollama.Client(),
+    "qwen2.5vl:3b"
+)
+
+# Function to get an image
+def get_image(url):
+    r = requests.get(url)
+    return PIL.Image.open(io.BytesIO(r.content))
+
+# Create the prompt
+prompt = Vision("Describe the image", get_image("https://picsum.photos/id/237/400/300"))
+
+# Generate text
+response = model(prompt)
+print(response) # The image shows a black puppy with a curious and attentive expression.
+```
+
 ## Structured Generation
 
 Ollama only provides support for structured generation based on a JSON schema. To use it, call the model with a JSON schema object as an `output_type` on top of your prompt.

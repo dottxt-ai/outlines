@@ -4,7 +4,6 @@ import os
 from typing import Annotated, Generator
 
 import pytest
-import requests
 from PIL import Image
 from openai import OpenAI as OpenAIClient
 from pydantic import BaseModel, Field

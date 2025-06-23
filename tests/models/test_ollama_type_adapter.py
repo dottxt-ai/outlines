@@ -54,11 +54,23 @@ def adapter():
 def test_ollama_type_adapter_input_text(adapter):
     message = "prompt"
     result = adapter.format_input(message)
-    assert result == message
+    assert isinstance(result, dict)
+    assert result.get("prompt") == message
 
 
-def test_ollama_type_adapter_input_invalid(adapter, image):
+def test_ollama_type_adapter_input_vision(adapter, image):
     prompt = Vision("prompt", image)
+    result = adapter.format_input(prompt)
+    assert isinstance(result, dict)
+    assert result.get("prompt") == prompt.prompt
+    assert result.get("images") == [prompt.image_str]
+
+
+def test_ollama_type_adapter_input_invalid(adapter):
+    prompt = [
+        "This is a first test",
+        "This is a second test",
+    ]
     with pytest.raises(TypeError, match="The input type"):
         _ = adapter.format_input(prompt)
 
