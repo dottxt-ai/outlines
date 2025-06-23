@@ -1,12 +1,16 @@
+import io
 import os
 import re
 import warnings
+import base64
 from typing import AsyncGenerator, Generator
 
 import pytest
+from PIL import Image
 from openai import AsyncOpenAI, OpenAI
 
 from outlines.models.vllm import VLLM, AsyncVLLM, from_vllm
+from outlines.templates import Vision
 from outlines.types.dsl import CFG, Regex, JsonSchema
 from tests.test_utils.mock_openai_client import MockOpenAIClient, MockAsyncOpenAIClient
 
@@ -22,7 +26,7 @@ answer: "yes" | "no"
 # Otherwise, use the mock server
 vllm_server_url = os.environ.get("VLLM_SERVER_URL")
 vllm_model_name = os.environ.get(
-    "VLLM_MODEL_NAME", "microsoft/Phi-3-mini-4k-instruct"
+    "VLLM_MODEL_NAME", "Qwen/Qwen2.5-VL-3B-Instruct"
 )
 if vllm_server_url:
     openai_client = OpenAI(base_url=vllm_server_url)
@@ -31,6 +35,17 @@ else:
     warnings.warn("No VLLM server URL provided, using mock server")
     openai_client = MockOpenAIClient()
     async_openai_client = MockAsyncOpenAIClient()
+
+# Create base64 encoded image for mock responses
+def get_base64_image():
+    width, height = 256, 256
+    white_background = (255, 255, 255)
+    image = Image.new("RGB", (width, height), white_background)
+
+    buffer = io.BytesIO()
+    image.save(buffer, format="PNG")
+    image_str = base64.b64encode(buffer.getvalue()).decode("utf-8")
+    return image_str
 
 mock_responses = [
     (
@@ -51,6 +66,18 @@ mock_responses = [
             'stream': True
         },
         ["foo", "bar"]
+    ),
+    (
+        {
+            'messages': [
+                {'role': "user", 'content': [
+                    {'type': 'text', 'text': 'Describe the image.'},
+                    {'type': 'image_url', 'image_url': {'url': 'data:image/png;base64,' + get_base64_image()}}
+                ]}
+            ],
+            'model': vllm_model_name,
+        },
+        "This is a white square."
     ),
     (
         {
@@ -130,6 +157,21 @@ def async_model_no_model_name():
     return AsyncVLLM(async_openai_client)
 
 
+@pytest.fixture(scope="session")
+def image():
+    width, height = 256, 256
+    white_background = (255, 255, 255)
+    image = Image.new("RGB", (width, height), white_background)
+
+    # Save to an in-memory bytes buffer and read as png
+    buffer = io.BytesIO()
+    image.save(buffer, format="PNG")
+    buffer.seek(0)
+    image = Image.open(buffer)
+
+    return image
+
+
 def test_vllm_init():
     # We do not rely on the mock server here because we need an object
     # of type OpenAI and AsyncOpenAI to test the init function.
@@ -178,6 +220,11 @@ def test_vllm_sync_streaming(sync_model_no_model_name):
     assert isinstance(next(result), str)
 
 
+def test_vllm_sync_vision(sync_model, image):
+    result = sync_model(Vision("Describe the image.", image))
+    assert isinstance(result, str)
+
+
 def test_vllm_sync_multiple_samples(sync_model):
     result = sync_model("Respond with a single word.", n=2)
     assert isinstance(result, list)
@@ -221,6 +268,12 @@ async def test_vllm_async_streaming(async_model_no_model_name):
     async for chunk in result:
         assert isinstance(chunk, str)
         break  # Just check the first chunk
+
+
+@pytest.mark.asyncio
+async def test_vllm_async_vision(async_model, image):
+    result = await async_model(Vision("Describe the image.", image))
+    assert isinstance(result, str)
 
 
 @pytest.mark.asyncio
