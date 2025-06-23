@@ -135,7 +135,7 @@ review = model(
 review = ProductReview.model_validate_json(review)
 print(f"Rating: {review.rating.name}")  # "Rating: good"
 print(f"Pros: {review.pros}")           # "Pros: ['great battery life', 'stunning display']"
-print(f"Summary: {review.summary}")     # "Summary: Good laptop with great display but thermal issues"t(result)
+print(f"Summary: {review.summary}")     # "Summary: Good laptop with great display but thermal issues"
 ```
 
 ## Real-world examples
