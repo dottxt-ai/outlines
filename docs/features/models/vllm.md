@@ -6,7 +6,19 @@ title: vLLM
 
 ## Prerequisites
 
-The Outlines `VLLM` model is intended to be used along with a vLLM instance running on a separate server (can be local or remote). Make sure you have a vLLM server running and accessible before using the `VLLM` model. As the vLLM client relies on the `openai` python sdk, you need to have the `openai` package installed. Install all optional dependencies for the `VLLM` model with: `pip install openai`.
+The Outlines `VLLM` model is intended to be used along with a vLLM instance running on a separate server (can be local or remote). Make sure you have a vLLM server running and accessible before using the `VLLM` model. For instance by running:
+
+```shell
+pip install vllm
+
+vllm serve NousResearch/Meta-Llama-3-8B-Instruct \
+  --dtype auto \
+  --api-key token-abc123
+```
+
+Follow the [Installation instructions](https://docs.vllm.ai/en/latest/getting_started/installation/index.html) for more information on how to set up a vLLM server for your particular setup.
+
+As the vLLM client relies on the `openai` python sdk, you need to have the `openai` package installed. Install all optional dependencies for the `VLLM` model with: `pip install openai`.
 
 If you want to use the vllm offline inference mode instead of the server mode, please refer to the [VLLMOffline](./vllm_offline.md) model documentation.
 
