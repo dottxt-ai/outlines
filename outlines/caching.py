@@ -1,3 +1,5 @@
+"""Caching and memoization of function calls."""
+
 import asyncio
 import contextlib
 import functools
@@ -12,7 +14,7 @@ from diskcache.core import ENOVAL, UNKNOWN, args_to_key, full_name
 _caching_enabled = True
 
 
-class CloudpickleDisk(Disk):
+class CloudpickleDisk(Disk): # pragma: no cover
     def __init__(self, directory, compress_level=1, **kwargs):
         self.compress_level = compress_level
         super().__init__(directory, **kwargs)
@@ -55,13 +57,13 @@ def get_cache():
     xdg_cache_home = os.environ.get("XDG_CACHE_HOME")
     home_dir = os.path.normpath(os.path.expanduser("~"))
     if outlines_cache_dir:
-        # OUTLINES_CACHE_DIR takes precendence
+        # OUTLINES_CACHE_DIR takes precedence
         cache_dir = outlines_cache_dir
-    elif xdg_cache_home:
+    elif xdg_cache_home:  # pragma: no cover
         cache_dir = os.path.join(xdg_cache_home, ".cache", "outlines")
     elif home_dir != "/":
         cache_dir = os.path.join(home_dir, ".cache", "outlines")
-    else:
+    else:  # pragma: no cover
         # home_dir may be / inside a docker container without existing user
         tempdir = tempfile.gettempdir()
         cache_dir = os.path.join(tempdir, ".cache", "outlines")
@@ -108,7 +110,7 @@ def cache(expire: Optional[float] = None, typed=False, ignore=()):
 
         base = (full_name(cached_function),)
 
-        if asyncio.iscoroutinefunction(cached_function):
+        if asyncio.iscoroutinefunction(cached_function):  # pragma: no cover
 
             async def wrapper(*args, **kwargs):
                 if not _caching_enabled:

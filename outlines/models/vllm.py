@@ -1,227 +1,362 @@
-import dataclasses
-from typing import TYPE_CHECKING, List, Optional, Union
+"""Integration with a vLLM server."""
 
-from outlines.generate.api import GenerationParameters, SamplingParameters
+import json
+from typing import TYPE_CHECKING, Any, AsyncIterator, Iterator, Optional, Union
+
+from outlines.models.base import AsyncModel,Model, ModelTypeAdapter
+from outlines.models.openai import OpenAITypeAdapter
+from outlines.types.dsl import CFG, JsonSchema, python_types_to_terms, to_regex
+from outlines.templates import Vision
 
 if TYPE_CHECKING:
-    from transformers import PreTrainedTokenizerBase
-    from vllm import LLM
-    from vllm.sampling_params import SamplingParams
+    from openai import AsyncOpenAI, OpenAI
+
+__all__ = ["VLLM", "AsyncVLLM", "from_vllm"]
 
 
-class VLLM:
-    """Represents a vLLM model.
+class VLLMTypeAdapter(ModelTypeAdapter):
+    """Type adapter for the `VLLM` and `AsyncVLLM` models."""
 
-    We wrap models from model providing libraries in order to give all of
-    them the same interface in Outlines and allow users to easily switch
-    between providers. This class wraps the `vllm.LLM` class from the
-    `vllm` library.
+    def format_input(self, model_input: Union[str, Vision]) -> dict:
+        """Generate the prompt argument to pass to the client.
 
+        We rely on the OpenAITypeAdapter to format the input as the vLLM server
+        expects input in the same format as OpenAI.
+
+        Parameters
+        ----------
+        model_input
+            The input passed by the user.
+
+        Returns
+        -------
+        dict
+            The formatted input to be passed to the model.
+
+        """
+        return OpenAITypeAdapter().format_input(model_input)
+
+    def format_output_type(self, output_type: Optional[Any] = None) -> dict:
+        """Generate the structured output argument to pass to the client.
+
+        Parameters
+        ----------
+        output_type
+            The structured output type provided.
+
+        Returns
+        -------
+        dict
+            The structured output argument to pass to the model.
+
+        """
+        if output_type is None:
+            return {}
+
+        term = python_types_to_terms(output_type)
+        if isinstance(term, CFG):
+            return {"guided_grammar": term.definition}
+        elif isinstance(term, JsonSchema):
+            extra_body = {"guided_json": json.loads(term.schema)}
+            if term.whitespace_pattern:
+                extra_body["whitespace_pattern"] = term.whitespace_pattern
+            return extra_body
+        else:
+            return {"guided_regex": to_regex(term)}
+
+
+class VLLM(Model):
+    """Thin wrapper around the `openai.OpenAI` client used to communicate with
+    a `vllm` server.
+
+    This wrapper is used to convert the input and output types specified by the
+    users at a higher level to arguments to the `openai.OpenAI` client for the
+    `vllm` server.
     """
 
-    def __init__(self, model: "LLM"):
-        self.model = model
-        self.lora_request = None
+    def __init__(
+        self,
+        client: "OpenAI",
+        model_name: Optional[str] = None,
+    ):
+        """
+        Parameters
+        ----------
+        client
+            An `openai.OpenAI` client instance.
 
-        self.tokenizer = self._get_tokenizer()
-
-    def _get_tokenizer(self):
-        if hasattr(self.model, "get_tokenizer"):
-            tokenizer = self.model.get_tokenizer()
-        elif hasattr(self.model, "tokenizer"):
-            if hasattr(self.model.tokenizer, "tokenizer"):
-                tokenizer = self.model.tokenizer.tokenizer
-            else:
-                tokenizer = self.model.tokenizer
-        else:
-            raise ValueError(
-                "The provided LLM instance neither has a "
-                "`tokenizer` attribute or a `get_tokenizer` method."
-            )
-        return adapt_tokenizer(tokenizer=tokenizer)
+        """
+        self.client = client
+        self.model_name = model_name
+        self.type_adapter = VLLMTypeAdapter()
 
     def generate(
         self,
-        prompts: Union[str, List[str]],
-        generation_parameters: GenerationParameters,
-        logits_processor,
-        sampling_parameters: SamplingParameters,
-        *,
-        sampling_params: Optional["SamplingParams"] = None,
-        use_tqdm: bool = True,
-    ):
+        model_input: Union[str, Vision],
+        output_type: Optional[Any] = None,
+        **inference_kwargs: Any,
+    ) -> Union[str, list[str]]:
         """Generate text using vLLM.
 
         Parameters
         ----------
-        prompts
-            A prompt or list of prompts.
-        generation_parameters
-            An instance of `GenerationParameters` that contains the prompt,
-            the maximum number of tokens, stop sequences and seed. All the
-            arguments to `SequenceGeneratorAdapter`'s `__cal__` method.
-        logits_processor
-            The logits processor to use when generating text.
-        sampling_parameters
-            An instance of `SamplingParameters`, a dataclass that contains
-            the name of the sampler to use and related parameters as available
-            in Outlines.
-        sampling_params
-            An instance of `vllm.sampling_params.SamplingParams`. The values
-            passed via this dataclass supersede the values of the parameters
-            in `generation_parameters` and `sampling_parameters`. See the
-            vLLM documentation for more details: https://docs.vllm.ai/en/latest/dev/sampling_params.html.
-        use_tqdm
-            A boolean in order to display progress bar while inferencing
+        model_input
+            The prompt based on which the model will generate a response.
+        output_type
+            The desired format of the response generated by the model. All
+            output types available in Outlines are supported provided your
+            server uses a structured generation backend that supports them.
+        inference_kwargs
+            Additional keyword arguments to pass to the client.
 
         Returns
         -------
-        The generated text, of shape `(n_batch, n_samples)`. If there are only
-        one batch and several samples, the list is of shape `(n_samples)`. If
-        this is a batch with several sequences but only one sample the list is
-        of shape `(n_batch)`. If there is only one sequence and one sample, a
-        string is returned.
+        Union[str, list[str]]
+            The text generated by the model.
 
         """
-        from vllm.sampling_params import SamplingParams
-
-        if sampling_params is None:
-            sampling_params = SamplingParams()
-
-        max_tokens, stop_at, seed = dataclasses.astuple(generation_parameters)
-
-        # We only update the values in `sampling_params` if they
-        # are specified by the user when calling the generator.
-        if max_tokens is not None:
-            sampling_params.max_tokens = max_tokens
-        if stop_at is not None:
-            if isinstance(stop_at, str):
-                stop_at = [stop_at]
-            sampling_params.stop = stop_at
-        if seed is not None:
-            sampling_params.seed = seed
-
-        sampling_params.logits_processors = (
-            [logits_processor] if logits_processor is not None else []
+        client_args = self._build_client_args(
+            model_input,
+            output_type,
+            **inference_kwargs,
         )
 
-        sampler, num_samples, top_p, top_k, temperature = dataclasses.astuple(
-            sampling_parameters
-        )
+        response = self.client.chat.completions.create(**client_args)
 
-        # We only update the values in `sampling_params` that
-        # were not specified by the user.
-        if sampling_params.n == 1:
-            sampling_params.n = num_samples
-            sampling_params.best_of = num_samples
-        if top_p is not None and sampling_params.top_p == 1.0:
-            sampling_params.top_p = top_p
-        if top_k is not None and sampling_params.top_k == -1:
-            sampling_params.top_k = top_k
-            # TODO: remove this if statement once fixed
-            # https://github.com/vllm-project/vllm/issues/5404#issuecomment-2175972897
-            if top_k == 1:
-                sampling_params.repetition_penalty = 0
-        if temperature is not None and sampling_params.temperature == 1.0:
-            sampling_params.temperature = temperature
-        if sampler == "beam_search":
-            sampling_params.use_beam_search = True
+        messages = [choice.message for choice in response.choices]
+        for message in messages:
+            if message.refusal is not None:  # pragma: no cover
+                raise ValueError(
+                    f"The vLLM server refused to answer the request: "
+                    f"{message.refusal}"
+                )
 
-        results = self.model.generate(
-            prompts,
-            sampling_params=sampling_params,
-            lora_request=self.lora_request,
-            use_tqdm=use_tqdm,
-        )
-        results = [[sample.text for sample in batch.outputs] for batch in results]
-
-        batch_size = len(results)
-        sample_size = len(results[0])
-
-        if batch_size == 1 and sample_size == 1:
-            return results[0][0]
-        elif batch_size == 1:
-            return results[0]
-        elif sample_size == 1:
-            return [batch[0] for batch in results]
-
-        return results
-
-    def stream(self, *args, **kwargs):
-        """Return a text generator.
-
-        Streaming is not yet available for `vllm.LLM`.
-
-        TODO: Implement the streaming functionality ourselves.
-
-        """
-        raise NotImplementedError(
-            "Streaming is not available for the vLLM integration."
-        )
-
-    def load_lora(self, adapter_path: Optional[str]):
-        from vllm.lora.request import LoRARequest
-
-        if adapter_path is None:
-            self.lora_request = None
+        if len(messages) == 1:
+            return messages[0].content
         else:
-            self.lora_request = LoRARequest(adapter_path, 1, adapter_path)
+            return [message.content for message in messages]
+
+    def generate_stream(
+        self,
+        model_input: Union[str, Vision],
+        output_type: Optional[Any] = None,
+        **inference_kwargs: Any,
+    ) -> Iterator[str]:
+        """Stream text using vLLM.
+
+        Parameters
+        ----------
+        model_input
+            The prompt based on which the model will generate a response.
+        output_type
+            The desired format of the response generated by the model. All
+            output types available in Outlines are supported provided your
+            server uses a structured generation backend that supports them.
+        inference_kwargs
+            Additional keyword arguments to pass to the client.
+
+        Returns
+        -------
+        Iterator[str]
+            An iterator that yields the text generated by the model.
+
+        """
+        client_args = self._build_client_args(
+            model_input, output_type, **inference_kwargs,
+        )
+
+        stream = self.client.chat.completions.create(
+            **client_args, stream=True,
+        )
+
+        for chunk in stream:  # pragma: no cover
+            if chunk.choices and chunk.choices[0].delta.content is not None:
+                yield chunk.choices[0].delta.content
+
+    def _build_client_args(
+        self,
+        model_input: Union[str, Vision],
+        output_type: Optional[Any] = None,
+        **inference_kwargs: Any,
+    ) -> dict:
+        """Build the arguments to pass to the OpenAI client."""
+        messages = self.type_adapter.format_input(model_input)
+        output_type_args = self.type_adapter.format_output_type(output_type)
+        extra_body = inference_kwargs.pop("extra_body", {})
+        extra_body.update(output_type_args)
+
+        if "model" not in inference_kwargs and self.model_name is not None:
+            inference_kwargs["model"] = self.model_name
+
+        client_args = {
+            **messages,
+            **inference_kwargs,
+        }
+        if extra_body:
+            client_args["extra_body"] = extra_body
+
+        return client_args
 
 
-def vllm(model_name: str, **vllm_model_params):
-    """Load a vLLM model.
+class AsyncVLLM(AsyncModel):
+    """Thin async wrapper around the `openai.OpenAI` client used to communicate
+    with a `vllm` server.
 
-    Parameters
-    ---------
-    model_name
-        The name of the model to load from the HuggingFace hub.
-    vllm_model_params
-        vLLM-specific model parameters. See the vLLM code for the full list:
-        https://github.com/vllm-project/vllm/blob/main/vllm/entrypoints/llm.py
-
+    This wrapper is used to convert the input and output types specified by the
+    users at a higher level to arguments to the `openai.OpenAI` client for the
+    `vllm` server.
     """
-    from vllm import LLM
 
-    model = LLM(model_name, **vllm_model_params)
+    def __init__(
+        self,
+        client: "AsyncOpenAI",
+        model_name: Optional[str] = None,
+    ):
+        """
+        Parameters
+        ----------
+        client
+            An `openai.AsyncOpenAI` client instance.
 
-    return VLLM(model)
+        """
+        self.client = client
+        self.model_name = model_name
+        self.type_adapter = VLLMTypeAdapter()
+
+    async def generate(
+        self,
+        model_input: Union[str, Vision],
+        output_type: Optional[Any] = None,
+        **inference_kwargs: Any,
+    ) -> Union[str, list[str]]:
+        """Generate text using vLLM.
+
+        Parameters
+        ----------
+        model_input
+            The prompt based on which the model will generate a response.
+        output_type
+            The desired format of the response generated by the model. All
+            output types available in Outlines are supported provided your
+            server uses a structured generation backend that supports them.
+        inference_kwargs
+            Additional keyword arguments to pass to the client.
+
+        Returns
+        -------
+        Union[str, list[str]]
+            The text generated by the model.
+
+        """
+        client_args = self._build_client_args(
+            model_input, output_type, **inference_kwargs,
+        )
+
+        response = await self.client.chat.completions.create(**client_args)
+
+        messages = [choice.message for choice in response.choices]
+        for message in messages:
+            if message.refusal is not None:  # pragma: no cover
+                raise ValueError(
+                    f"The vLLM server refused to answer the request: "
+                    f"{message.refusal}"
+                )
+
+        if len(messages) == 1:
+            return messages[0].content
+        else:
+            return [message.content for message in messages]
+
+    async def generate_stream( # type: ignore
+        self,
+        model_input: Union[str, Vision],
+        output_type: Optional[Any] = None,
+        **inference_kwargs: Any,
+    ) -> AsyncIterator[str]:
+        """Stream text using vLLM.
+
+        Parameters
+        ----------
+        model_input
+            The prompt based on which the model will generate a response.
+        output_type
+            The desired format of the response generated by the model. All
+            output types available in Outlines are supported provided your
+            server uses a structured generation backend that supports them.
+        inference_kwargs
+            Additional keyword arguments to pass to the client.
+
+        Returns
+        -------
+        AsyncIterator[str]
+            An async iterator that yields the text generated by the model.
+        """
+        client_args = self._build_client_args(
+            model_input, output_type, **inference_kwargs,
+        )
+
+        stream = await self.client.chat.completions.create(
+            **client_args,
+            stream=True,
+        )
+
+        async for chunk in stream:  # pragma: no cover
+            if chunk.choices and chunk.choices[0].delta.content is not None:
+                yield chunk.choices[0].delta.content
+
+    def _build_client_args(
+        self,
+        model_input: Union[str, Vision],
+        output_type: Optional[Any] = None,
+        **inference_kwargs: Any,
+    ) -> dict:
+        """Build the arguments to pass to the OpenAI client."""
+        messages = self.type_adapter.format_input(model_input)
+        output_type_args = self.type_adapter.format_output_type(output_type)
+        extra_body = inference_kwargs.pop("extra_body", {})
+        extra_body.update(output_type_args)
+
+        if "model" not in inference_kwargs and self.model_name is not None:
+            inference_kwargs["model"] = self.model_name
+
+        client_args = {
+            **messages,
+            **inference_kwargs,
+        }
+        if extra_body:
+            client_args["extra_body"] = extra_body
+
+        return client_args
 
 
-def adapt_tokenizer(tokenizer: "PreTrainedTokenizerBase") -> "PreTrainedTokenizerBase":
-    """Adapt a tokenizer to use to compile the FSM.
-
-    The API of Outlines tokenizers is slightly different to that of `transformers`. In
-    addition we need to handle the missing spaces to Llama's tokenizer to be able to
-    compile FSMs for this model.
+def from_vllm(
+    client: Union["OpenAI", "AsyncOpenAI"],
+    model_name: Optional[str] = None,
+) -> Union[VLLM, AsyncVLLM]:
+    """Create an Outlines `VLLM` or `AsyncVLLM` model instance from an
+    `openai.OpenAI` or `openai.AsyncOpenAI` instance.
 
     Parameters
     ----------
-    tokenizer
-        The tokenizer of the model.
+    client
+        An `openai.OpenAI` or `openai.AsyncOpenAI` instance.
+    model_name
+        The name of the model to use.
 
     Returns
     -------
-    PreTrainedTokenizerBase
-        The adapted tokenizer.
+    Union[VLLM, AsyncVLLM]
+        An Outlines `VLLM` or `AsyncVLLM` model instance.
+
     """
-    from transformers import SPIECE_UNDERLINE
+    from openai import AsyncOpenAI, OpenAI
 
-    tokenizer.vocabulary = tokenizer.get_vocab()
-    tokenizer.special_tokens = set(tokenizer.all_special_tokens)
-
-    def convert_token_to_string(token: Union[str, bytes]) -> str:
-        string = tokenizer.convert_tokens_to_string([token])
-
-        # A hack to handle missing spaces to HF's Llama tokenizers
-        if (
-            type(token) is str
-            and token.startswith(SPIECE_UNDERLINE)
-            or token == "<0x20>"
-        ):
-            return " " + string
-
-        return string
-
-    tokenizer.convert_token_to_string = convert_token_to_string
-
-    return tokenizer
+    if isinstance(client, OpenAI):
+        return VLLM(client, model_name)
+    elif isinstance(client, AsyncOpenAI):
+        return AsyncVLLM(client, model_name)
+    else:
+        raise ValueError(
+            f"Unsupported client type: {type(client)}.\n"
+            "Please provide an OpenAI or AsyncOpenAI instance."
+        )

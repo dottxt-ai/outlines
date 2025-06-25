@@ -4,7 +4,7 @@ from transformers import AutoTokenizer
 
 import outlines.grammars
 from outlines.caching import cache_disabled
-from outlines.fsm.guide import CFGGuide
+from outlines.processors.guide import CFGGuide
 from outlines.models.transformers import TransformerTokenizer
 
 random.seed(42)

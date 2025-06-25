@@ -1,125 +1,172 @@
-import importlib
+import io
 import json
-from contextlib import contextmanager
-from unittest import mock
-from unittest.mock import MagicMock
+import os
+from typing import Annotated, Generator
 
 import pytest
-from openai import AsyncOpenAI
+from PIL import Image
+from openai import OpenAI as OpenAIClient
+from pydantic import BaseModel, Field
 
-from outlines import generate
-from outlines.models.openai import OpenAI, OpenAIConfig
+import outlines
+from outlines.models.openai import OpenAI
+from outlines.templates import Vision
+from outlines.types import json_schema
 
-
-def module_patch(path):
-    """Patch functions that have the same name as the module in which they're implemented."""
-    target = path
-    components = target.split(".")
-    for i in range(len(components), 0, -1):
-        try:
-            # attempt to import the module
-            imported = importlib.import_module(".".join(components[:i]))
-
-            # module was imported, let's use it in the patch
-            patch = mock.patch(path)
-            patch.getter = lambda: imported
-            patch.attribute = ".".join(components[i:])
-            return patch
-        except Exception:
-            continue
-
-    # did not find a module, just return the default mock
-    return mock.patch(path)
+MODEL_NAME = "gpt-4o-mini-2024-07-18"
 
 
-def test_openai_call():
-    with module_patch("outlines.models.openai.generate_chat") as mocked_generate_chat:
-        mocked_generate_chat.return_value = ["foo"], 1, 2
-        async_client = MagicMock(spec=AsyncOpenAI, api_key="key")
+@pytest.fixture(scope="session")
+def api_key():
+    """Get the OpenAI API key from the environment, providing a default value if not found.
 
-        model = OpenAI(
-            async_client,
-            OpenAIConfig(max_tokens=10, temperature=0.5, n=2, stop=["."]),
-        )
+    This fixture should be used for tests that do not make actual api calls,
+    but still require to initialize the OpenAI client.
 
-        assert model("bar")[0] == "foo"
-        assert model.prompt_tokens == 1
-        assert model.completion_tokens == 2
-        mocked_generate_chat_args = mocked_generate_chat.call_args
-        mocked_generate_chat_arg_config = mocked_generate_chat_args[0][3]
-        assert isinstance(mocked_generate_chat_arg_config, OpenAIConfig)
-        assert mocked_generate_chat_arg_config.max_tokens == 10
-        assert mocked_generate_chat_arg_config.temperature == 0.5
-        assert mocked_generate_chat_arg_config.n == 2
-        assert mocked_generate_chat_arg_config.stop == ["."]
-
-        model("bar", samples=3)
-        mocked_generate_chat_args = mocked_generate_chat.call_args
-        mocked_generate_chat_arg_config = mocked_generate_chat_args[0][3]
-        assert mocked_generate_chat_arg_config.n == 3
+    """
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        return "MOCK_VALUE"
+    return api_key
 
 
-@contextmanager
-def patched_openai(completion, **oai_config):
-    """Create a patched openai whose chat completions always returns `completion`"""
-    with module_patch("outlines.models.openai.generate_chat") as mocked_generate_chat:
-        mocked_generate_chat.return_value = completion, 1, 2
-        async_client = MagicMock(spec=AsyncOpenAI, api_key="key")
-        model = OpenAI(
-            async_client,
-            OpenAIConfig(max_tokens=10, temperature=0.5, n=2, stop=["."]),
-        )
-        yield model
+@pytest.fixture(scope="session")
+def image():
+    width, height = 1, 1
+    white_background = (255, 255, 255)
+    image = Image.new("RGB", (width, height), white_background)
+
+    # Save to an in-memory bytes buffer and read as png
+    buffer = io.BytesIO()
+    image.save(buffer, format="PNG")
+    buffer.seek(0)
+    image = Image.open(buffer)
+
+    return image
 
 
-def test_openai_choice_call():
-    with patched_openai(completion='{"result": "foo"}') as model:
-        generator = generate.choice(model, ["foo", "bar"])
-        assert generator("hi") == "foo"
+@pytest.fixture(scope="session")
+def model(api_key):
+    return OpenAI(OpenAIClient(api_key=api_key), MODEL_NAME)
 
 
-def test_openai_choice_call_invalid_server_response():
-    with patched_openai(completion="not actual json") as model:
-        generator = generate.choice(model, ["foo", "bar"])
-        with pytest.raises(json.decoder.JSONDecodeError):
-            generator("hi")
+@pytest.fixture(scope="session")
+def model_no_model_name(api_key):
+    return OpenAI(OpenAIClient(api_key=api_key))
 
 
-def test_openai_json_call_pydantic():
-    from pydantic import BaseModel, ConfigDict, ValidationError
+def test_init_from_client(api_key):
+    client = OpenAIClient(api_key=api_key)
 
-    class Person(BaseModel):
-        model_config = ConfigDict(extra="forbid")  # required for openai
-        first_name: str
-        last_name: str
-        age: int
+    # With model name
+    model = outlines.from_openai(client, "gpt-4o")
+    assert isinstance(model, OpenAI)
+    assert model.client == client
+    assert model.model_name == "gpt-4o"
 
-    completion = '{"first_name": "Usain", "last_name": "Bolt", "age": 38}'
-
-    # assert success for valid response
-    with patched_openai(completion=completion) as model:
-        generator = generate.json(model, Person)
-        assert generator("fastest person") == Person.parse_raw(completion)
-
-    # assert fail for non-json response
-    with patched_openai(completion="usain bolt") as model:
-        generator = generate.json(model, Person)
-        with pytest.raises(ValidationError):
-            assert generator("fastest person")
+    # Without model name
+    model = outlines.from_openai(client)
+    assert isinstance(model, OpenAI)
+    assert model.client == client
+    assert model.model_name is None
 
 
-def test_openai_json_call_str():
-    person_schema = '{"additionalProperties": false, "properties": {"first_name": {"title": "First Name", "type": "string"}, "last_name": {"title": "Last Name", "type": "string"}, "age": {"title": "Age", "type": "integer"}}, "required": ["first_name", "last_name", "age"], "title": "Person", "type": "object"}'
+def test_openai_wrong_inference_parameters(model):
+    with pytest.raises(TypeError, match="got an unexpected"):
+        model.generate("prompt", foo=10)
 
-    output = {"first_name": "Usain", "last_name": "Bolt", "age": 38}
 
-    # assert success for valid response
-    with patched_openai(completion=json.dumps(output)) as model:
-        generator = generate.json(model, person_schema)
-        assert generator("fastest person") == output
+def test_openai_wrong_input_type(model):
+    class Foo:
+        def __init__(self, foo):
+            self.foo = foo
 
-    # assert fail for non-json response
-    with patched_openai(completion="usain bolt") as model:
-        generator = generate.json(model, person_schema)
-        with pytest.raises(json.decoder.JSONDecodeError):
-            assert generator("fastest person")
+    with pytest.raises(TypeError, match="is not available"):
+        model.generate(Foo("prompt"))
+
+
+def test_openai_wrong_output_type(model):
+    class Foo:
+        def __init__(self, foo):
+            self.foo = foo
+
+    with pytest.raises(TypeError, match="is not available"):
+        model.generate("prompt", Foo(1))
+
+
+@pytest.mark.api_call
+def test_openai_simple_call(model):
+    result = model.generate("Respond with one word. Not more.")
+    assert isinstance(result, str)
+
+
+@pytest.mark.api_call
+def test_openai_simple_call_multiple_samples(model):
+    result = model.generate("Respond with one word. Not more.", n=2)
+    assert isinstance(result, list)
+    assert len(result) == 2
+    assert isinstance(result[0], str)
+    assert isinstance(result[1], str)
+
+
+@pytest.mark.api_call
+def test_openai_direct_call(model_no_model_name):
+    result = model_no_model_name(
+        "Respond with one word. Not more.",
+        model=MODEL_NAME,
+    )
+    assert isinstance(result, str)
+
+
+@pytest.mark.api_call
+def test_openai_simple_vision(image, model):
+    result = model.generate(Vision("What does this logo represent?", image))
+    assert isinstance(result, str)
+
+
+@pytest.mark.api_call
+def test_openai_simple_pydantic(model):
+    class Foo(BaseModel):
+        bar: int
+
+    result = model.generate("foo?", Foo)
+    assert isinstance(result, str)
+    assert "bar" in json.loads(result)
+
+
+@pytest.mark.api_call
+def test_openai_simple_pydantic_refusal(model):
+    class Foo(BaseModel):
+        bar: Annotated[str, Field(int, pattern=r"^\d+$")]
+
+    with pytest.raises(TypeError, match="OpenAI does not support your schema"):
+        _ = model.generate("foo?", Foo)
+
+
+@pytest.mark.api_call
+def test_openai_simple_vision_pydantic(image, model):
+    class Logo(BaseModel):
+        name: int
+
+    result = model.generate(Vision("What does this logo represent?", image), Logo)
+    assert isinstance(result, str)
+    assert "name" in json.loads(result)
+
+
+@pytest.mark.api_call
+def test_openai_simple_json_schema(model):
+    class Foo(BaseModel):
+        bar: int
+
+    schema = json.dumps(Foo.model_json_schema())
+
+    result = model.generate("foo?", json_schema(schema))
+    assert isinstance(result, str)
+    assert "bar" in json.loads(result)
+
+
+@pytest.mark.api_call
+def test_openai_streaming(model):
+    result = model.stream("Respond with one word. Not more.")
+    assert isinstance(result, Generator)
+    assert isinstance(next(result), str)

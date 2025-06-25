@@ -1,25 +1,27 @@
-import dataclasses
-import pickle
+"""Integration with the `llama-cpp-python` library."""
+
 import warnings
+from functools import singledispatchmethod
 from typing import (
     TYPE_CHECKING,
+    Any,
     Dict,
     Iterator,
     List,
     Optional,
     Set,
     Tuple,
-    TypedDict,
     Union,
 )
 
-from typing_extensions import Unpack
-
-from outlines.generate.api import GenerationParameters, SamplingParameters
+from outlines.models.base import Model, ModelTypeAdapter
 from outlines.models.tokenizer import Tokenizer
+from outlines.processors import CFGLogitsProcessor, OutlinesLogitsProcessor
 
 if TYPE_CHECKING:
     from llama_cpp import Llama, LogitsProcessorList
+
+__all__ = ["LlamaCpp", "from_llamacpp"]
 
 
 class LlamaCppTokenizer(Tokenizer):
@@ -33,7 +35,8 @@ class LlamaCppTokenizer(Tokenizer):
 
         self.tokenizer = model.tokenizer()
 
-        # TODO: Remove when https://github.com/ggerganov/llama.cpp/pull/5613 is resolved
+        # TODO: Remove when https://github.com/ggerganov/llama.cpp/pull/5613
+        # is resolved
         self._hf_tokenizer = None
         try:
             self.vocabulary = model.tokenizer_.hf_tokenizer.get_vocab()
@@ -47,7 +50,8 @@ class LlamaCppTokenizer(Tokenizer):
         # ensure stable ordering of vocabulary
         self.vocabulary = {
             tok: tok_id
-            for tok, tok_id in sorted(self.vocabulary.items(), key=lambda x: x[1])
+            for tok, tok_id
+            in sorted(self.vocabulary.items(), key=lambda x: x[1])
         }
 
         self._hash = None
@@ -57,14 +61,19 @@ class LlamaCppTokenizer(Tokenizer):
         return [decoded_bytes.decode("utf-8", errors="ignore")]
 
     def encode(
-        self, prompt: Union[str, List[str]], add_bos: bool = True, special: bool = True
+        self,
+        prompt: Union[str, List[str]],
+        add_bos: bool = True,
+        special: bool = True,
     ) -> Tuple[List[int], List[int]]:
         if isinstance(prompt, list):
             raise NotImplementedError(
                 "llama-cpp-python tokenizer doesn't support batch tokenization"
             )
         token_ids = self.tokenizer.tokenize(
-            prompt.encode("utf-8", errors="ignore"), add_bos=add_bos, special=special
+            prompt.encode("utf-8", errors="ignore"),
+            add_bos=add_bos,
+            special=special,
         )
         # generate attention mask, missing from llama-cpp-python
         attention_mask = [
@@ -77,7 +86,10 @@ class LlamaCppTokenizer(Tokenizer):
             from transformers.file_utils import SPIECE_UNDERLINE
 
             token_str = self._hf_tokenizer.convert_tokens_to_string([token])
-            if token.startswith(SPIECE_UNDERLINE) or token == "<0x20>":
+            if (
+                token.startswith(SPIECE_UNDERLINE)
+                or token == "<0x20>"
+            ):  # pragma: no cover
                 token_str = " " + token_str
             return token_str
         else:
@@ -89,8 +101,15 @@ class LlamaCppTokenizer(Tokenizer):
         return self.__getstate__() == other.__getstate__()
 
     def __hash__(self):
+        # We create a custom hash as pickle.dumps(self) is not stable
         if self._hash is None:
-            self._hash = hash(pickle.dumps(self))
+            self._hash = hash((
+                tuple(sorted(self.vocabulary.items())),
+                self.eos_token_id,
+                self.eos_token,
+                self.pad_token_id,
+                tuple(sorted(self.special_tokens)),
+            ))
         return self._hash
 
     def __getstate__(self):
@@ -107,241 +126,160 @@ class LlamaCppTokenizer(Tokenizer):
         raise NotImplementedError("Cannot load a pickled llamacpp tokenizer")
 
 
-class LlamaCppParams(TypedDict, total=False):
-    suffix: Optional[str]
-    temperature: float
-    top_p: float
-    min_p: float
-    typical_p: float
-    seed: int
-    max_tokens: int
-    logits_processor: "LogitsProcessorList"
-    stop: Optional[Union[str, List[str]]]
-    frequence_penalty: float
-    presence_penalty: float
-    repeat_penalty: float
-    top_k: int
-    tfs_z: float
-    mirostat_mode: int
-    mirostat_tau: float
-    mirostat_eta: float
-    stream: bool
+class LlamaCppTypeAdapter(ModelTypeAdapter):
+    """Type adapter for the `LlamaCpp` model.
 
-
-class LlamaCpp:
-    """Represents a model provided by the `llama-cpp-python` library.
-
-    We wrap models from model providing libraries in order to give all of
-    them the same interface in Outlines and allow users to easily switch
-    between providers. This class wraps the `llama_cpp.Llama` class from the
-    `llama-cpp-python` library.
+    `LlamaCppTypeAdapter` is responsible for preparing the arguments to
+    `llama-cpp-python`'s `Llama.__call__` method: the input (a string prompt),
+    as well as the logits processor (an instance of `LogitsProcessorList`).
 
     """
 
-    def __init__(self, model: "Llama"):
-        self.model = model
+    @singledispatchmethod
+    def format_input(self, model_input):
+        """Generate the prompt argument to pass to the model.
 
-    @property
-    def tokenizer(self):
-        return LlamaCppTokenizer(self.model)
+        Parameters
+        ----------
+        model_input
+            The input provided by the user.
 
-    def prepare_generation_parameters(
-        self,
-        generation_parameters: GenerationParameters,
-        sampling_parameters: SamplingParameters,
-        structure_logits_processor,
-        **llama_cpp_params: Unpack[LlamaCppParams],
-    ):
-        """Prepare the generation parameters.
+        Returns
+        -------
+        str
+            The formatted input to be passed to the model.
 
-        `llama-cpp-python` uses different default values
+        """
+        raise NotImplementedError(
+            f"The input type {input} is not available. "
+            "The `llama-cpp-python` library does not support batch inference. "
+        )
+
+    @format_input.register(str)
+    def format_str_input(self, model_input: str) -> str:
+        return model_input
+
+    def format_output_type(
+        self, output_type: Optional[OutlinesLogitsProcessor] = None,
+    ) -> "LogitsProcessorList":
+        """Generate the logits processor argument to pass to the model.
+
+        Parameters
+        ----------
+        output_type
+            The logits processor provided.
+
+        Returns
+        -------
+        LogitsProcessorList
+            The logits processor to pass to the model.
 
         """
         from llama_cpp import LogitsProcessorList
 
-        max_tokens, stop_at, seed = dataclasses.astuple(generation_parameters)
+        return LogitsProcessorList([output_type])
 
-        # We update `llama_cpp_params` with the values the user passed to the
-        # generator.
-        if "stop" not in llama_cpp_params:
-            llama_cpp_params["stop"] = stop_at
-        if "seed" not in llama_cpp_params:
-            llama_cpp_params["seed"] = seed
 
-        # Somehow `llama-cpp-python` generates `max_tokens + 1`  tokens
-        if "max_tokens" not in llama_cpp_params:
-            if max_tokens is None:
-                llama_cpp_params["max_tokens"] = -1  # indicates unlimited tokens
-            else:
-                llama_cpp_params["max_tokens"] = max_tokens - 1
-        else:
-            llama_cpp_params["max_tokens"] = llama_cpp_params["max_tokens"] - 1
+class LlamaCpp(Model):
+    """Thin wrapper around the `llama_cpp.Llama` model.
 
-        sampler, num_samples, top_p, top_k, temperature = dataclasses.astuple(
-            sampling_parameters
-        )
+    This wrapper is used to convert the input and output types specified by the
+    users at a higher level to arguments to the `llama_cpp.Llama` model.
+    """
 
-        # We update the `llama_cpp_params` with the sampling values that
-        # were specified by the user via the `Sampler` class, unless they
-        # are also specified in `llama_cpp_params`. We also disable other
-        # sampling methods that are enabled by default and reset the temperature
-        # value.
-        #
-        # See https://github.com/ggerganov/llama.cpp/blob/e11a8999b5690f810c2c99c14347f0834e68c524/common/sampling.h#L22
-        # for the default values in `llama.cpp` and indications to disable the sampling modes.
-        # Mirostat sampling, tail-free sampling and all penalties are disabled by default.
-        #
-        # See https://llama-cpp-python.readthedocs.io/en/latest/api-reference/#llama_cpp.Llama.__call__
-        # for default values in `llama-cpp-python`
-        if sampler == "beam_search":
-            raise NotImplementedError(
-                "The `llama_cpp_python` library does not support Beam Search."
-            )
-        if num_samples != 1:
-            raise NotImplementedError(
-                "The `llama_cpp_python` library does not allow to take several samples."
-            )
-        if "top_p" not in llama_cpp_params:
-            if top_p is not None:
-                llama_cpp_params["top_p"] = top_p
-            else:
-                llama_cpp_params["top_p"] = 1.0
+    tensor_library_name = "numpy"
 
-        if "min_p" not in llama_cpp_params:
-            llama_cpp_params["min_p"] = 0.0
+    def __init__(self, model: "Llama"):
+        """
+        Parameters
+        ----------
+        model
+            A `llama_cpp.Llama` model instance.
 
-        if "top_k" not in llama_cpp_params:
-            if top_k is not None:
-                llama_cpp_params["top_k"] = top_k
-            else:
-                llama_cpp_params["top_k"] = -1
-
-        if "temperature" not in llama_cpp_params:
-            if temperature is not None:
-                llama_cpp_params["temperature"] = temperature
-            else:
-                llama_cpp_params["temperature"] = 1.0
-
-        if "repeat_penalty" not in llama_cpp_params:
-            llama_cpp_params["repeat_penalty"] = 1.0
-
-        # The choice to stream or not should happen via the high-level API
-        llama_cpp_params["stream"] = False
-
-        if structure_logits_processor is not None:
-            if "logits_processor" in llama_cpp_params:
-                llama_cpp_params["logits_processor"].append(structure_logits_processor)
-            else:
-                llama_cpp_params["logits_processor"] = LogitsProcessorList(
-                    [structure_logits_processor]
-                )
-
-        return llama_cpp_params
+        """
+        self.model = model
+        self.tokenizer = LlamaCppTokenizer(self.model)
+        self.type_adapter = LlamaCppTypeAdapter()
 
     def generate(
         self,
-        prompts: Union[str, List[str]],
-        generation_parameters: GenerationParameters,
-        structure_logits_processor,
-        sampling_parameters: SamplingParameters,
-        **llama_cpp_params: Unpack[LlamaCppParams],
+        model_input: str,
+        output_type: Optional[OutlinesLogitsProcessor] = None,
+        **inference_kwargs: Any,
     ) -> str:
         """Generate text using `llama-cpp-python`.
 
         Parameters
         ----------
-        prompts
-            A prompt or list of prompts.
-        generation_parameters
-            An instance of `GenerationParameters` that contains the prompt,
-            the maximum number of tokens, stop sequences and seed. All the
-            arguments to `SequenceGeneratorAdapter`'s `__cal__` method.
-        logits_processor
-            The logits processor to use when generating text.
-        sampling_parameters
-            An instance of `SamplingParameters`, a dataclass that contains
-            the name of the sampler to use and related parameters as available
-            in Outlines.
-        llama_cpp_params
-            Keyword arguments that can be passed to
-            `llama_cpp_python.Llama.__call__`.  The values in `llama_cpp_params`
-            supersede the values of the parameters in `generation_parameters` and
-            `sampling_parameters`.  See the `llama_cpp_python` documentation for
-            a list of possible values: https://llama-cpp-python.readthedocs.io/en/latest/api-reference/#llama_cpp.Llama.__call__
+        model_input
+            The prompt based on which the model will generate a response.
+        output_type
+            The logits processor the model will use to constrain the format of
+            the generated text.
+        **inference_kwargs
+            Additional keyword arguments to pass to the `Llama.__call__`
+            method of the `llama-cpp-python` library.
 
         Returns
         -------
-        The generated text.
+        str
+            The text generated by the model.
 
         """
-        if not isinstance(prompts, str):
+        if isinstance(output_type, CFGLogitsProcessor):
             raise NotImplementedError(
-                "The `llama-cpp-python` library does not support batch inference."
+                "CFG generation is not supported for LlamaCpp due to bug in "
+                "the llama_cpp tokenizer"
             )
 
-        llama_cpp_params = self.prepare_generation_parameters(
-            generation_parameters,
-            sampling_parameters,
-            structure_logits_processor,
-            **llama_cpp_params,
+        completion = self.model(
+            self.type_adapter.format_input(model_input),
+            logits_processor=self.type_adapter.format_output_type(output_type),
+            **inference_kwargs,
         )
-        completion = self.model(prompts, **llama_cpp_params)
         result = completion["choices"][0]["text"]
 
         self.model.reset()
 
         return result
 
-    def stream(
+    def generate_stream(
         self,
-        prompts: Union[str, List[str]],
-        generation_parameters: GenerationParameters,
-        structure_logits_processor,
-        sampling_parameters: SamplingParameters,
-        **llama_cpp_params: Unpack[LlamaCppParams],
+        model_input: str,
+        output_type: Optional[OutlinesLogitsProcessor] = None,
+        **inference_kwargs: Any,
     ) -> Iterator[str]:
         """Stream text using `llama-cpp-python`.
 
         Parameters
         ----------
-        prompts
-            A prompt or list of prompts.
-        generation_parameters
-            An instance of `GenerationParameters` that contains the prompt,
-            the maximum number of tokens, stop sequences and seed. All the
-            arguments to `SequenceGeneratorAdapter`'s `__cal__` method.
-        logits_processor
-            The logits processor to use when generating text.
-        sampling_parameters
-            An instance of `SamplingParameters`, a dataclass that contains
-            the name of the sampler to use and related parameters as available
-            in Outlines.
-        llama_cpp_params
-            Keyword arguments that can be passed to
-            `llama_cpp_python.Llama.__call__`.  The values in `llama_cpp_params`
-            supersede the values of the parameters in `generation_parameters` and
-            `sampling_parameters`.  See the `llama_cpp_python` documentation for
-            a list of possible values: https://llama-cpp-python.readthedocs.io/en/latest/api-reference/#llama_cpp.Llama.__call__
+        model_input
+            The prompt based on which the model will generate a response.
+        output_type
+            The logits processor the model will use to constrain the format of
+            the generated text.
+        **inference_kwargs
+            Additional keyword arguments to pass to the `Llama.__call__`
+            method of the `llama-cpp-python` library.
 
         Returns
         -------
-        A generator that return strings.
+        Iterator[str]
+            An iterator that yields the text generated by the model.
 
         """
-
-        if not isinstance(prompts, str):
+        if isinstance(output_type, CFGLogitsProcessor):
             raise NotImplementedError(
-                "The `llama-cpp-python` library does not support batch inference."
+                "CFG generation is not supported for LlamaCpp due to bug in "
+                "the llama_cpp tokenizer"
             )
 
-        llama_cpp_params = self.prepare_generation_parameters(
-            generation_parameters,
-            sampling_parameters,
-            structure_logits_processor,
-            **llama_cpp_params,
+        generator = self.model(
+            self.type_adapter.format_input(model_input),
+            logits_processor=self.type_adapter.format_output_type(output_type),
+            stream=True,
+            **inference_kwargs,
         )
-        llama_cpp_params["stream"] = True
-        generator = self.model(prompts, **llama_cpp_params)
 
         def token_generator() -> Iterator[str]:
             while True:
@@ -354,54 +292,37 @@ class LlamaCpp:
 
         return token_generator()
 
-    def load_lora(self, adapter_path: str):
+    def load_lora(self, adapter_path: str) -> None:  # pragma: no cover
+        """Load a LoRA adapter. Deprecated since v1.0.0."""
+        warnings.warn("""
+            The `load_lora` method is deprecated starting from v1.0.0.
+            Support for it will be removed in v1.1.0.
+            """,
+            DeprecationWarning,
+            stacklevel=2,
+        )
         if self.model._model.apply_lora_from_file(
             adapter_path,
             1.0,
         ):
-            raise RuntimeError(f"Failed to apply LoRA from lora path: {adapter_path}")
+            raise RuntimeError(
+                f"Failed to apply LoRA from lora path: {adapter_path}"
+            )
 
 
-def llamacpp(
-    repo_id: str, filename: Optional[str] = None, **llamacpp_model_params
-) -> LlamaCpp:
-    """Load a model from the `llama-cpp-python` library.
-
-    We use the `Llama.from_pretrained` classmethod that downloads models
-    directly from the HuggingFace hub, instead of asking users to specify
-    a path to the downloaded model. One can still load a local model
-    by initializing `llama_cpp.Llama` directly.
+def from_llamacpp(model: "Llama"):
+    """Create an Outlines `LlamaCpp` model instance from a
+    `llama_cpp.Llama` instance.
 
     Parameters
     ----------
-    repo_id
-        The name of the model repository.
-    filename:
-        A filename of glob pattern to match the model file in the repo.
-    llama_cpp_model_params
-        Llama-specific model parameters. See the `llama-cpp-python` documentation
-        for the full list: https://llama-cpp-python.readthedocs.io/en/latest/api-reference/#llama_cpp.Llama.__init__
+    model
+        A `llama_cpp.Llama` instance.
+
+    Returns
+    -------
+    LlamaCpp
+        An Outlines `LlamaCpp` model instance.
 
     """
-    from llama_cpp import Llama
-
-    # Default to using the model's full context length
-    if "n_ctx" not in llamacpp_model_params:
-        llamacpp_model_params["n_ctx"] = 0
-
-    if "verbose" not in llamacpp_model_params:
-        llamacpp_model_params["verbose"] = False
-
-    # TODO: Remove when https://github.com/ggerganov/llama.cpp/pull/5613 is resolved
-    if "tokenizer" not in llamacpp_model_params:
-        warnings.warn(
-            "The pre-tokenizer in `llama.cpp` handles unicode improperly "
-            + "(https://github.com/ggerganov/llama.cpp/pull/5613)\n"
-            + "Outlines may raise a `RuntimeError` when building the regex index.\n"
-            + "To circumvent this error when using `models.llamacpp()` you may pass the argument"
-            + "`tokenizer=llama_cpp.llama_tokenizer.LlamaHFTokenizer.from_pretrained(<hf_repo_id>)`\n"
-        )
-
-    model = Llama.from_pretrained(repo_id, filename, **llamacpp_model_params)
-
     return LlamaCpp(model)

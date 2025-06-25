@@ -1,7 +1,7 @@
 import typing as t
 
 import bentoml
-from import_model import BENTO_MODEL_TAG
+from import_model import BENTO_MODEL_TAG, MODEL_ID
 
 DEFAULT_SCHEMA = """{
     "title": "Character",
@@ -55,13 +55,17 @@ class Outlines:
 
     def __init__(self) -> None:
         import torch
+        from transformers import AutoModelForCausalLM, AutoTokenizer
 
         import outlines
 
-        self.model = outlines.models.transformers(
-            self.bento_model_ref.path,
-            device="cuda",
-            model_kwargs={"torch_dtype": torch.float16},
+        self.model = outlines.from_transformers(
+            AutoTokenizer.from_pretrained(MODEL_ID),
+            AutoModelForCausalLM.from_pretrained(
+                MODEL_ID,
+                torch_dtype=torch.float16,
+                low_cpu_mem_usage=True,
+            )
         )
 
     @bentoml.api
@@ -72,7 +76,7 @@ class Outlines:
     ) -> t.Dict[str, t.Any]:
         import outlines
 
-        generator = outlines.generate.json(self.model, json_schema)
+        generator = outlines.Generator(self.model, outlines.json_schema(json_schema))
         character = generator(prompt)
 
         return character

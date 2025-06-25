@@ -1,7 +1,7 @@
 import pytest
 
 import outlines.grammars as grammars
-from outlines.fsm.guide import CFGGuide
+from outlines.processors.guide import CFGGuide
 
 
 @pytest.mark.parametrize("grammar", [grammars.json, grammars.arithmetic])

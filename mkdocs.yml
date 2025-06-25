@@ -2,7 +2,7 @@
 site_name: Outlines
 site_author: The Outlines developers
 site_description: >-
-  Structured text generation with LLMs
+    Structured text generation with LLMs
 
 # Repository
 repo_name: dottxt-ai/outlines
@@ -11,173 +11,185 @@ repo_url: https://github.com/dottxt-ai/outlines
 # Copyright
 copyright: Copyright &copy; 2023- The Outlines Developers
 
+# Documentation directory
+docs_dir: docs
+
 # Configuration
 theme:
-  name: material
-  custom_dir: docs/overrides
-  palette:
-    - scheme: default
-      primary: white
-  logo: assets/images/logo-square.svg
-  favicon: assets/images/logo-simple.png
-  icon:
-    repo: fontawesome/brands/github
-  features:
-    - content.code.copy
-    - navigation.expand
-    - navigation.tabs
-    - navigation.sections
-    - header.autohide
-    - announce.dismiss
-  font:
-    text: Inter
-    code: Source Code Pro
+    name: material
+    palette:
+        # Palette toggle for light mode
+        - media: "(prefers-color-scheme: light)"
+          scheme: default
+          primary: white
+    logo: assets/images/logo-square.svg
+    favicon: assets/images/logo-square.png
+    icon:
+        repo: fontawesome/brands/github
+    features:
+        - content.code.copy
+        - navigation.expand
+        - navigation.tabs
+        - navigation.sections
+        - header.autohide
+        - announce.dismiss
+    font:
+        text: Inter
+        code: Source Code Pro
 
 # Additional configuration
 extra:
-  social:
-    - icon: fontawesome/brands/github
-      link: https://github.com/dottxt-ai
-    - icon: fontawesome/brands/twitter
-      link: https://twitter.com/remilouf
-  generator: false
-  analytics:
-    provider: google
-    property: !ENV GOOGLE_ANALYTICS_KEY
-  version:
-    provider: mike
-    default: latest
-    alias: true
+    social:
+        - icon: fontawesome/brands/github
+          link: https://github.com/dottxt-ai
+        - icon: fontawesome/brands/twitter
+          link: https://twitter.com/remilouf
+    generator: false
+    analytics:
+        provider: google
+        property: !ENV GOOGLE_ANALYTICS_KEY
+    version:
+        provider: mike
+        default: latest
+        alias: true
 
 # Extensions
 markdown_extensions:
-  - admonition
-  - def_list
-  - attr_list
-  - md_in_html
-  - pymdownx.highlight:
-      anchor_linenums: true
-      line_spans: __span
-      pygments_lang_class: true
-      noclasses: True
-      pygments_style: nord
-  - pymdownx.superfences:
-      custom_fences:
-        - name: mermaid
-          class: mermaid
-          format: !!python/name:pymdownx.superfences.fence_code_format
-  - pymdownx.tabbed:
-      alternate_style: true
-  - pymdownx.inlinehilite
-  - pymdownx.details
-  - pymdownx.emoji:
-      emoji_index: !!python/name:material.extensions.emoji.twemoji
-      emoji_generator: !!python/name:material.extensions.emoji.to_svg
-  - pymdownx.snippets:
+    - admonition
+    - def_list
+    - attr_list
+    - md_in_html
+    - pymdownx.highlight:
+          anchor_linenums: true
+          line_spans: __span
+          pygments_lang_class: true
+          noclasses: True
+          pygments_style: nord
+    - pymdownx.superfences:
+          custom_fences:
+              - name: mermaid
+                class: mermaid
+                format: !!python/name:pymdownx.superfences.fence_code_format
+    - pymdownx.tabbed:
+          alternate_style: true
+    - pymdownx.inlinehilite
+    - pymdownx.details
+    - pymdownx.emoji:
+          emoji_index: !!python/name:material.extensions.emoji.twemoji
+          emoji_generator: !!python/name:material.extensions.emoji.to_svg
+    - pymdownx.snippets:
 
 extra_css:
-  - stylesheets/extra.css
+    - stylesheets/extra.css
 
 plugins:
-  - blog
-  - mkdocstrings:
-      default_handler: python
-      handlers:
-        python:
-          options:
-            docstring_style: numpy
-            show_submodules: true
-  - search
-  - section-index
-  - social:
-      cards_layout_options:
-        color: #173a58
-  - git-committers:
-      repository: dottxt-ai/outlines
-      branch: main
-  - git-revision-date-localized:
-      enable_creation_date: true
-      type: timeago
+    - blog
+    - mkdocstrings:
+          update_features_models_documentation default_handler: python
+          handlers:
+              python:
+                  options:
+                      docstring_style: numpy
+                      show_submodules: true
+    - search
+    - section-index
+    - social:
+          cards_layout_options:
+              color: #173a58
+    - redirects:
+          redirect_maps:
+              "welcome.md": "index.md"
+
+    - git-committers:
+        repository: dottxt-ai/outlines
+        branch: main
+    - git-revision-date-localized:
+        enable_creation_date: true
+        type: timeago
+
+    - gen-files:
+        scripts:
+        - scripts/gen_ref_pages.py
+    - literate-nav:
+        nav_file: SUMMARY.md
 
 nav:
-  - Home: index.md
-  - Getting Started:
-      - Welcome to Outlines: welcome.md
-      - Installation: installation.md
-      - Quickstart: quickstart.md
-      - Licence: licence.md
-  - Cookbook:
-      - cookbook/index.md
-      - Classification: cookbook/classification.md
-      - Named Entity Extraction: cookbook/extraction.md
-      - Generate synthetic data: cookbook/dating_profiles.md
-      - Summarize a document: cookbook/chain_of_density.md
-      - Playing chess: cookbook/models_playing_chess.md
-      - Perspective-taking prompting: cookbook/simtom.md
-      - Question-answering with citations: cookbook/qa-with-citations.md
-      - Knowledge Graph Extraction: cookbook/knowledge_graph_extraction.md
-      - Structured Generation Workflow: cookbook/structured_generation_workflow.md
-      - Chain of Thought (CoT): cookbook/chain_of_thought.md
-      - ReAct Agent: cookbook/react_agent.md
-      - Vision-Language Models: cookbook/atomic_caption.md
-      - Structured Generation from PDFs: cookbook/read-pdfs.md
-      - Earnings reports to CSV: cookbook/earnings-reports.md
-      - Digitizing receipts with vision models: cookbook/receipt-digitization.md
-      - Extract events details from text: cookbook/extract_event_details.md
-      - Run on the cloud:
-          - BentoML: cookbook/deploy-using-bentoml.md
-          - Cerebrium: cookbook/deploy-using-cerebrium.md
-          - Modal: cookbook/deploy-using-modal.md
-  - Docs:
-      - reference/index.md
-      - Generation:
-          - Overview: reference/generation/generation.md
-          - Chat templating: reference/chat_templating.md
-          - Regex DSL: reference/regex_dsl.md
-          - Text: reference/text.md
-          - Samplers: reference/samplers.md
-          - Structured generation:
-              - How does it work?: reference/generation/structured_generation_explanation.md
-              - Classification: reference/generation/choices.md
-              - Regex: reference/generation/regex.md
-              - Type constraints: reference/generation/format.md
-              - JSON (function calling): reference/generation/json.md
-              - Grammar: reference/generation/cfg.md
-              - Creating Grammars: reference/generation/creating_grammars.md
-              - Custom FSM operations: reference/generation/custom_fsm_ops.md
-      - Utilities:
-          - Serve with vLLM: reference/serve/vllm.md
-          - Serve with LM Studio: reference/serve/lmstudio.md
-          - Custom types: reference/generation/types.md
-          - Prompt templating: reference/prompting.md
-          - Outlines functions: reference/functions.md
-      - Models:
-          - Overview: reference/models/models.md
-          - Open source:
-              - Transformers: reference/models/transformers.md
-              - Transformers Vision: reference/models/transformers_vision.md
-              - Llama.cpp: reference/models/llamacpp.md
-              - vLLM: reference/models/vllm.md
-              - TGI: reference/models/tgi.md
-              - ExllamaV2: reference/models/exllamav2.md
-              - MLX: reference/models/mlxlm.md
-              - Mamba: reference/models/transformers/#mamba
-          - API:
-              - OpenAI: reference/models/openai.md
-  - API Reference:
-      - api/index.md
-      - api/models.md
-      - api/templates.md
-      - api/json_schema.md
-      - api/guide.md
-      - api/parsing.md
-      - api/regex.md
-      - api/samplers.md
-  - Community:
-      - community/index.md
-      - Feedback 🫶: community/feedback.md
-      - Chat with us ☕: https://discord.com/invite/R9DSu34mGd
-      - How to contribute 🏗️: community/contribute.md
-      - Your projects 👏: community/examples.md
-      - Versioning Guide 📌: community/versioning.md
-  - Blog: https://blog.dottxt.co
+    - Home: index.md
+
+    - Guide:
+          - Getting Started: guide/getting_started.md
+          - Installation: guide/installation.md
+          - Migrating to v1: guide/migration.md
+          - Vision-Language Models: guide/vlm.md
+          - Deploying with FastAPI: guide/fastapi_vllm_deployment.md
+          - Chat Templating for Instruct Models: guide/chat_templating.md
+
+    - Features:
+          - Overview: features/index.md
+
+          - Core:
+                - Models:
+                    - Overview: features/models/index.md
+                    - Anthropic: features/models/anthropic.md
+                    - Dottxt: features/models/dottxt.md
+                    - Gemini: features/models/gemini.md
+                    - Llamacpp: features/models/llamacpp.md
+                    - Mlx-lm: features/models/mlxlm.md
+                    - Ollama: features/models/ollama.md
+                    - OpenAI: features/models/openai.md
+                    - OpenAI compatible API: features/models/openai_compatible.md
+                    - SGLang: features/models/sglang.md
+                    - TGI: features/models/tgi.md
+                    - Transformers: features/models/transformers.md
+                    - TransformersMultiModal: features/models/transformers_multimodal.md
+                    - vLLM (online server): features/models/vllm.md
+                    - vLLM (offline): features/models/vllm_offline.md
+                - Output Types:
+                    - Overview: features/core/output_types.md
+                    - Basic Types: features/core/output_types#basic-python-types
+                    - Multiple-Choices: features/core/output_types#multiple-choices
+                    - JSON: features/core/output_types#json-schemas
+                    - Regex: features/core/output_types#regex-patterns
+                    - Context-free Grammars: features/core/output_types#context-free-grammars
+                - Generator: features/core/generator.md
+
+          - Utilities:
+                - Application: features/utility/application.md
+                - Regex DSL: features/utility/regex_dsl.md
+                - Template: features/utility/template.md
+
+          - Advanced:
+                - Logits Processors: features/advanced/logits_processors.md
+
+    - API Reference: api_reference/
+
+    - Examples:
+          - examples/index.md
+          - Classification: examples/classification.md
+          - Named Entity Extraction: examples/extraction.md
+          - Dating Profiles: examples/dating_profiles.md
+          - Chain of Density: examples/chain_of_density.md
+          - Playing chess: examples/models_playing_chess.md
+          - SimTom: examples/simtom.md
+          - Q&A with Citations: examples/qa-with-citations.md
+          - Knowledge Graph Extraction: examples/knowledge_graph_extraction.md
+          - Structured Generation Workflow: examples/structured_generation_workflow.md
+          - Chain of Thought (CoT): examples/chain_of_thought.md
+          - ReAct Agent: examples/react_agent.md
+          - Structured Generation from PDFs: examples/read-pdfs.md
+          - Earnings Reports to CSV: examples/earnings-reports.md
+          - Receipt Digitization: examples/receipt-digitization.md
+          - Extract Events Details: examples/extract_event_details.md
+          - Run on the cloud:
+                - BentoML: examples/deploy-using-bentoml.md
+                - Cerebrium: examples/deploy-using-cerebrium.md
+                - Modal: examples/deploy-using-modal.md
+    - Community:
+        - community/index.md
+        - Feedback 🫶: community/feedback.md
+        - Our Discord Server ☕: https://discord.com/invite/R9DSu34mGd
+        - How to Contribute 🏗️: community/contribute.md
+        - Community Projects 👏: community/examples.md
+        - Versioning Guide 📌: community/versioning.md
+
+    - Blog: https://blog.dottxt.co
