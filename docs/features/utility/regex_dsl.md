@@ -241,14 +241,16 @@ The DSL comes "batteries included" with types that represent common text constru
 - `number` represents a floating-point number recognize by Python's `float`
 - `date` represents a date as understood by `datetime.date`
 - `time` represents a time as understood by `datetime.time`
-- `datetime` represents a time as understoof by `datetime.datetime`
+- `datetime` represents a time as understood by `datetime.datetime`
 - `digit` represents a single digit
 - `char` represents a single character
 - `newline` represents a new line character
 - `whitespace` represents a white space
+- `hex_str` represents a hexadecimal string, optionally prefixed with "0x"
+- `uuid4` represents a UUID version 4 string in the format "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx"
+- `ipv4` represents an IPv4 address in the format "xxx.xxx.xxx.xxx" where each octet is between 0 and 255
 - `sentence` represents a sentence
-- `paragraph` reprensents a pagraph (one or more sentences separated by one or more ilne breaks)
-
+- `paragraph` represents a paragraph (one or more sentences separated by one or more line breaks)
 
 For instance you can describe the answers in the GSM8K dataset using the following pattern:
 
@@ -265,6 +267,7 @@ answer = "A: " + sentence.between(2,4) + " So the answer is: " + digit.between(1
 ### Example 1: Matching a Custom ID Format
 
 Suppose you want to create a regex that matches an ID format like "ID-12345", where:
+
 - The literal "ID-" must be at the start.
 - Followed by exactly 5 digits.
 
