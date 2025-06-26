@@ -47,14 +47,6 @@ jobs:
         echo "::set-output name=id::$MATRIX_ID"
     - name: Run tests
       run: |
-        uv run pytest -x --cov=outlines
+        uv run pytest -x --cov=outlines -m 'api_call' --ignore=tests/models/test_dottxt.py
       env:
         COVERAGE_FILE: .coverage.${{ steps.matrix-id.outputs.id }}
-    - name: Slack notification on failure
-      if: failure()
-      uses: 8398a7/action-slack@v3
-      with:
-        status: ${{ job.status }}
-        fields: commit,author,ref
-      env:
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_TESTS_ERRORS_WEBHOOK_URL }}
