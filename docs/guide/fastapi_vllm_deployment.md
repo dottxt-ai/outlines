@@ -116,7 +116,7 @@ async def lifespan(app: FastAPI):
         base_url="http://localhost:8000/v1",  # Adjust to your vLLM server URL
         api_key="dummy"  # vLLM doesn't require a real API key
     )
-    async_model = models.from_vllm(client)
+    async_model = models.from_vllm(client, "Qwen/Qwen2.5-VL-7B-Instruct")
 
     yield
 
@@ -173,7 +173,7 @@ async def generate_response(
 
     try:
         # Generate and parse a structured response
-        result = await async_model(prompt, SupportResponse, max_tokens=800)
+        result = await async_model(prompt, SupportResponse, max_tokens=5000)
         response = SupportResponse.model_validate_json(result)
 
         return response
@@ -187,9 +187,7 @@ async def generate_response(
 ### Step 1: Start your vLLM server
 
 ```shell
-python -m vllm.entrypoints.openai.api_server \
-    --model meta-llama/Llama-2-7b-chat-hf \
-    --port 8000
+vllm serve Qwen/Qwen2.5-VL-7B-Instruct
 ```
 
 ### Step 2: Run the FastAPI application
