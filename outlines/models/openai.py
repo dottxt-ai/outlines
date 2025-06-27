@@ -19,6 +19,7 @@ from dataclasses import asdict, dataclass, field, replace
 from pydantic import BaseModel, TypeAdapter
 
 from outlines.caching import cache
+from outlines.inputs import Chat, Message
 from outlines.models.base import Model, ModelTypeAdapter
 from outlines.templates import Vision
 from outlines.types import JsonSchema, Regex, CFG
@@ -62,6 +63,8 @@ class OpenAITypeAdapter(ModelTypeAdapter):
         """
         if isinstance(model_input, str):
             return self.format_str_model_input(model_input)
+        elif isinstance(model_input, Chat):
+            return self.format_chat_model_input(model_input)
         elif isinstance(model_input, Vision):
             return self.format_vision_model_input(model_input)
         raise TypeError(
@@ -71,38 +74,51 @@ class OpenAITypeAdapter(ModelTypeAdapter):
 
     def format_str_model_input(self, model_input: str) -> dict:
         """Generate the `messages` argument to pass to the client when the user
-        only passes a prompt.
+        provides a simple text prompt.
 
         """
-        return {
-            "messages": [
-                {
-                    "role": "user",
-                    "content": model_input,
-                }
-            ]
-        }
+        return {"messages": [self.create_text_message("user", model_input)]}
+
+    def format_chat_model_input(self, model_input: Chat) -> dict:
+        """Generate the `messages` argument to pass to the client when the user
+        provides a `Chat` object.
+
+        """
+        messages = []
+        for message in model_input.messages:
+            if isinstance(message, Message):
+                messages.append(self.create_text_message(message.role, message.content))
+            elif isinstance(message, Vision):
+                messages.append(self.create_vision_message(message))
+        return {"messages": messages}
 
     def format_vision_model_input(self, model_input: Vision) -> dict:
         """Generate the `messages` argument to pass to the client when the user
-        passes a prompt and an image.
+        provides a `Vision` object.
 
         """
+        return {"messages": [self.create_vision_message(model_input)]}
+
+    def create_text_message(self, role: str, content: str) -> dict:
+        """Create a text message for the OpenAI API."""
         return {
-            "messages": [
+            "role": role,
+            "content": content
+        }
+
+    def create_vision_message(self, model_input) -> dict:
+        """Create a vision message for the OpenAI API."""
+        return {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": model_input.prompt},
                 {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": model_input.prompt},
-                        {
-                            "type": "image_url",
-                            "image_url": {
-                                "url": f"data:{model_input.image_format};base64,{model_input.image_str}"  # noqa: E702
-                            },
-                        },
-                    ],
-                }
-            ]
+                    "type": "image_url",
+                    "image_url": {
+                        "url": f"data:{model_input.image_format};base64,{model_input.image_str}"  # noqa: E702
+                    },
+                },
+            ],
         }
 
     def format_output_type(self, output_type: Optional[Any] = None) -> dict:

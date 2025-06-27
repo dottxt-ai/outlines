@@ -1,6 +1,5 @@
 """Create templates to easily build prompts."""
 
-import base64
 import functools
 import inspect
 import json
@@ -8,46 +7,15 @@ import os
 import re
 import textwrap
 from dataclasses import dataclass
-from io import BytesIO
 from pathlib import Path
 from typing import Any, Callable, Dict, Optional, Type, cast
 import warnings
 
 import jinja2
-from PIL import Image
 from pydantic import BaseModel
 
-
-@dataclass
-class Vision:
-    """Contains the input for a vision model.
-
-    Provide an instance of this class as the `model_input` argument to a model
-    that supports vision.
-
-    Parameters
-    ----------
-    prompt
-        The prompt to use to generate the response.
-    image
-        The image to use to generate the response.
-
-    """
-    prompt: str
-    image: Image.Image
-
-    def __post_init__(self):
-        image = self.image
-
-        if not image.format:
-            raise TypeError(
-                "Could not read the format of the image passed to the model."
-            )
-
-        buffer = BytesIO()
-        image.save(buffer, format=image.format)
-        self.image_str = base64.b64encode(buffer.getvalue()).decode("utf-8")
-        self.image_format = f"image/{image.format.lower()}"
+# for legacy purposes as Vision used to be defined here
+from outlines.inputs import Vision
 
 
 @dataclass
