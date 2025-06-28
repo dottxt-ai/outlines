@@ -1,9 +1,10 @@
 import base64
-import re
 from dataclasses import dataclass
 from io import BytesIO
-from typing import List, Optional, Union, Literal
+from typing import Any, List, Optional, Union, Tuple
 
+from jinja2 import Environment, nodes
+from jinja2.ext import Extension
 from PIL import Image
 
 
@@ -21,10 +22,14 @@ class Vision:
         The prompt to use to generate the response.
     image
         The image to use to generate the response.
+    keyword: str = "image"
+        The keyword to use to pass the image to the model. Only required for
+        `TransformersMultiModal` models with non-standard processors.
 
     """
-    prompt: str
-    image: Image.Image
+    image: Union[Image.Image, List[Image.Image]]
+    prompt: Optional[str] = None
+    keyword: str = "image"
 
     def __post_init__(self):
         image = self.image
@@ -41,32 +46,51 @@ class Vision:
 
 
 @dataclass
-class Message:
-    """Contains the input for a message as part of a `Chat` prompt.
+class Video:
+    """Contains the input for a video model.
 
-    This class is not intended to be used directly. Provide regular dicts
-    in a list to the `Chat` class instead.
+    Provide an instance of this class as the `model_input` argument to a model
+    that supports video. You can also include a `Video` instance as a message
+    in a `Chat` object.
 
     Parameters
     ----------
-    role
-        The role of the message.
-    content
-        The content of the message.
+    prompt
+        The prompt to use to generate the response.
+    video
+        The video to use to generate the response.
+    keyword: str = "video"
+        The keyword to use to pass the video to the model. Only required for
+        `TransformersMultiModal` models with non-standard processors.
 
     """
-    role: Literal["user", "assistant", "system"]
-    content: str
+    video: Any
+    prompt: Optional[str] = None
+    keyword: str = "video"
 
-    def __post_init__(self):
-        if self.role not in ["user", "assistant", "system"]:
-            raise ValueError(
-                "Invalid role. The only valid roles are 'user', 'assistant' "
-                "and 'system'."
-            )
 
-        if not isinstance(self.content, str):
-            raise ValueError("Content must be a string")
+@dataclass
+class Audio:
+    """Contains the input for an audio model.
+
+    Provide an instance of this class as the `model_input` argument to a model
+    that supports audio. You can also include a `Audio` instance as a message
+    in a `Chat` object.
+
+    Parameters
+    ----------
+    prompt
+        The prompt to use to generate the response.
+    audio
+        The audio to use to generate the response.
+    keyword: str = "audio"
+        The keyword to use to pass the audio to the model. Only required for
+        `TransformersMultiModal` models with non-standard processors.
+
+    """
+    audio: Any
+    prompt: Optional[str] = None
+    keyword: str = "audio"
 
 
 @dataclass
@@ -96,57 +120,48 @@ class Chat:
         A list of messages.
 
     """
-    messages: List[Union[dict, Message, Vision]]
+    messages: List[Tuple[str, Union[str, Vision, Video, Audio]]]
 
     def __post_init__(self):
-        processed_messages = []
-        for message in self.messages:
-            processed_messages.append(self._input_processing(message))
-        self.messages = processed_messages
+        self._input_validation(self.messages)
 
-    def _input_processing(
-        self, input: Union[dict, Message, Vision]
-    ) -> Union[Message, Vision]:
-        """Process the user-provided input to return an object that can be
-        added to the message list.
+    def _input_validation(
+        self, input: List[Tuple[str, Union[str, Vision, Video, Audio]]]
+    ) -> None:
+        """Check that the input provided to the Chat class is valid."""
+        for role, content in input:
+            if role not in ["user", "assistant", "system"]:
+                raise ValueError(
+                    "Invalid role. The only valid roles are "
+                    "user, assistant and system."
+                )
+            if (
+                not isinstance(content, str)
+                and not isinstance(content, Vision)
+                and not isinstance(content, Video)
+                and not isinstance(content, Audio)
+            ):
+                raise ValueError(
+                    "Invalid content. The content must be a string, Vision, Video or Audio."
+                )
 
-        """
-        if isinstance(input, dict):
-            return Message(**input)
-        elif isinstance(input, Message) or isinstance(input, Vision):
-            return input
-        else:
-            raise ValueError(
-                "Invalid message type. The only valid message types are "
-                "dict, Message and Vision."
-            )
-
-    def add(self, message: Union[dict, Message, Vision], index: int = -1):
+    def append(self, role: str, content: Union[str, Vision, Video, Audio]):
         """Add a message to the chat.
 
         Parameters
         ----------
-        message
-            Either a dict with 'role' and 'content' keys, or a `Message` or
-            `Vision` instance.
-        index
-            The index at which to insert the message. If not provided, the
-            message will be appended to the end of the list.
+        role
+            The role of the message.
+        content
+            The content of the message.
 
         """
-        self.messages.insert(index, self._input_processing(message))
+        self._input_validation([(role, content)])
+        self.messages.append((role, content))
 
-    def remove(self, index: int = -1):
-        """Remove a message from the chat.
-
-        Parameters
-        ----------
-        index
-            The index of the message to remove. If not provided, the last
-            message will be removed.
-
-        """
-        self.messages.pop(index)
+    def pop(self) -> Tuple[str, Union[str, Vision, Video, Audio]]:
+        """Remove a message from the chat."""
+        return self.messages.pop()
 
     def __str__(self):
         return "\n".join(str(message) for message in self.messages)
@@ -168,12 +183,33 @@ def prompt_string_to_chat(prompt: str) -> Optional[Chat]:
         The prompt to convert to a `Chat` object if it contains messages.
 
     """
-    messages = []
-    for match in re.finditer(r'{%\s*(\w+)\s*%}(.*?){%\s*end\1\s*%}', prompt, re.DOTALL):
-        role = match.group(1).lower()
-        content = match.group(2).strip()
-        if role in ["user", "assistant", "system"]:
-            messages.append({"role": role, "content": content})
-    if messages:
-        return Chat(messages) # type: ignore
+    env = Environment(extensions=[ChatExtension])
+    template = env.from_string(prompt)
+    template.render()
+    if env.messages:
+        return Chat(env.messages)
     return None
+
+
+class ChatExtension(Extension):
+    """Jinja2 extension to capture chat messages in a prompt."""
+    tags = {'system', 'user', 'assistant'}
+
+    def __init__(self, environment):
+        super().__init__(environment)
+        environment.messages = []
+
+    def parse(self, parser):
+        tag = parser.stream.current.value
+        next(parser.stream).lineno
+        body = parser.parse_statements([f'name:end{tag}'], drop_needle=True)
+
+        return nodes.CallBlock(
+            self.call_method('_capture_block', args=[nodes.Const(tag)]),
+            [], [], body
+        )
+
+    def _capture_block(self, tag, caller):
+        content = caller().strip()
+        self.environment.messages.append((tag, content))
+        return '' # discard render

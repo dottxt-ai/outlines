@@ -19,7 +19,7 @@ from dataclasses import asdict, dataclass, field, replace
 from pydantic import BaseModel, TypeAdapter
 
 from outlines.caching import cache
-from outlines.inputs import Chat, Message
+from outlines.inputs import Chat
 from outlines.models.base import Model, ModelTypeAdapter
 from outlines.templates import Vision
 from outlines.types import JsonSchema, Regex, CFG
@@ -85,11 +85,13 @@ class OpenAITypeAdapter(ModelTypeAdapter):
 
         """
         messages = []
-        for message in model_input.messages:
-            if isinstance(message, Message):
-                messages.append(self.create_text_message(message.role, message.content))
-            elif isinstance(message, Vision):
-                messages.append(self.create_vision_message(message))
+        for role, content in model_input.messages:
+            if isinstance(content, str):
+                messages.append(self.create_text_message(role, content))
+            elif isinstance(content, Vision):
+                messages.append(self.create_vision_message(content))
+            else:
+                raise ValueError(f"Unsupported message type: {type(content)}")
         return {"messages": messages}
 
     def format_vision_model_input(self, model_input: Vision) -> dict:
