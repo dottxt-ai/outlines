@@ -8,7 +8,6 @@ from typing import (
     Union,
 )
 
-from outlines.inputs import prompt_string_to_chat
 from outlines.models import (
     AsyncBlackBoxModel,
     BlackBoxModel,
@@ -71,7 +70,7 @@ class BlackBoxGenerator:
 
         """
         return self.model.generate(
-            process_user_prompt(prompt), self.output_type, **inference_kwargs
+            prompt, self.output_type, **inference_kwargs
         )
 
     def stream(self, prompt: Any, **inference_kwargs) -> Iterator[Any]:
@@ -91,7 +90,7 @@ class BlackBoxGenerator:
 
         """
         return self.model.generate_stream(
-            process_user_prompt(prompt), self.output_type, **inference_kwargs
+            prompt, self.output_type, **inference_kwargs
         )
 
 
@@ -140,7 +139,7 @@ class AsyncBlackBoxGenerator:
 
         """
         return await self.model.generate(
-            process_user_prompt(prompt), self.output_type, **inference_kwargs
+            prompt, self.output_type, **inference_kwargs
         )
 
     async def stream(
@@ -162,7 +161,7 @@ class AsyncBlackBoxGenerator:
 
         """
         async for chunk in self.model.generate_stream(  # pragma: no cover
-            process_user_prompt(prompt), self.output_type, **inference_kwargs
+            prompt, self.output_type, **inference_kwargs
         ):
             yield chunk
 
@@ -266,7 +265,7 @@ class SteerableGenerator:
 
         """
         return self.model.generate(
-            process_user_prompt(prompt), self.logits_processor, **inference_kwargs
+            prompt, self.logits_processor, **inference_kwargs
         )
 
     def stream(self, prompt: Any, **inference_kwargs) -> Iterator[Any]:
@@ -286,7 +285,7 @@ class SteerableGenerator:
 
         """
         return self.model.generate_stream(
-            process_user_prompt(prompt), self.logits_processor, **inference_kwargs
+            prompt, self.logits_processor, **inference_kwargs
         )
 
 
@@ -346,23 +345,3 @@ def Generator(
                 "The model argument must be an instance of "
                 "SteerableModel, BlackBoxModel or AsyncBlackBoxModel"
             )
-
-
-def process_user_prompt(prompt: Any) -> Any:
-    """Process the user-provided prompt to turn strings into `Chat` instances
-    if they contains messages. Leave all other types of prompt unchanged.
-
-    Parameters
-    ----------
-    prompt
-        The prompt provided by the user to process.
-
-    """
-    if isinstance(prompt, str):
-        prompt = prompt_string_to_chat(prompt) or prompt
-    elif isinstance(prompt, list):
-        prompt = [
-            process_user_prompt(item) if isinstance(item, str) else item
-            for item in prompt
-        ]
-    return prompt

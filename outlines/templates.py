@@ -11,11 +11,19 @@ from pathlib import Path
 from typing import Any, Callable, Dict, Optional, Type, cast
 import warnings
 
-import jinja2
+from jinja2 import (
+    BaseLoader,
+    Environment,
+    FileSystemLoader,
+    Template as JinjaTemplate,
+    StrictUndefined,
+    nodes,
+)
+from jinja2.ext import Extension
 from pydantic import BaseModel
 
-# for legacy purposes as Vision used to be defined here
-from outlines.inputs import Vision
+# import Vision for legacy purposes as it used to be defined here
+from outlines.inputs import Chat, Image as Vision
 
 
 @dataclass
@@ -26,24 +34,30 @@ class Template:
     template can be accessed by callers.
 
     """
-    template: jinja2.Template
+    template: JinjaTemplate
     signature: Optional[inspect.Signature]
+    env: Environment
 
-    def __call__(self, *args, **kwargs) -> str:
+    def __call__(self, *args, **kwargs) -> str | Chat:
         """Render and return the template.
 
         Returns
         -------
-        str
-            The rendered template as a Python string.
+        str | Chat
+            The rendered template as a Python string or a Chat object if the
+            template contains messages.
 
         """
         if self.signature is not None:
             bound_arguments = self.signature.bind(*args, **kwargs)
             bound_arguments.apply_defaults()
-            return self.template.render(**bound_arguments.arguments)
+            rendered = self.template.render(**bound_arguments.arguments)
         else:
-            return self.template.render(**kwargs)
+            rendered = self.template.render(**kwargs)
+
+        if self.env.messages:
+            return Chat(self.env.messages)
+        return rendered
 
     @classmethod
     def from_string(cls, content: str, filters: Dict[str, Callable] = {}):
@@ -61,7 +75,8 @@ class Template:
             An instance of the class with the provided content as a template.
 
         """
-        return cls(build_template_from_string(content, filters), None)
+        env, template = build_template_from_string(content, filters)
+        return cls(template, None, env)
 
     @classmethod
     def from_file(cls, path: Path, filters: Dict[str, Callable] = {}):
@@ -88,12 +103,13 @@ class Template:
         # infer one from a Jinja2 environment that is
         # split across multiple files (since e.g. we support features like
         # Jinja2 includes and template inheritance)
-        return cls(build_template_from_file(path, filters), None)
+        env, template = build_template_from_file(path, filters)
+        return cls(template, None, env)
 
 
 def build_template_from_string(
     content: str, filters: Dict[str, Callable] = {}
-) -> jinja2.Template:
+) -> JinjaTemplate:
     # Dedent, and remove extra linebreak
     cleaned_template = inspect.cleandoc(content)
 
@@ -110,16 +126,16 @@ def build_template_from_string(
 
     env = create_jinja_env(None, filters)
 
-    return env.from_string(cleaned_template)
+    return env, env.from_string(cleaned_template)
 
 
 def build_template_from_file(
     path: Path, filters: Dict[str, Callable] = {}
-) -> jinja2.Template:
+) -> JinjaTemplate:
     file_directory = os.path.dirname(os.path.abspath(path))
-    env = create_jinja_env(jinja2.FileSystemLoader(file_directory), filters)
+    env = create_jinja_env(FileSystemLoader(file_directory), filters)
 
-    return env.get_template(os.path.basename(path))
+    return env, env.get_template(os.path.basename(path))
 
 
 def prompt(
@@ -206,9 +222,33 @@ def prompt(
     return Template(template, signature)
 
 
+class ChatExtension(Extension):
+    """Jinja2 extension to capture chat messages in a prompt."""
+    tags = {'system', 'user', 'assistant'}
+
+    def __init__(self, environment):
+        super().__init__(environment)
+        environment.messages = []
+
+    def parse(self, parser):
+        tag = parser.stream.current.value
+        next(parser.stream).lineno
+        body = parser.parse_statements([f'name:end{tag}'], drop_needle=True)
+
+        return nodes.CallBlock(
+            self.call_method('_capture_block', args=[nodes.Const(tag)]),
+            [], [], body
+        )
+
+    def _capture_block(self, tag, caller):
+        content = caller().strip()
+        self.environment.messages.append({"role": tag, "content": content})
+        return '' # discard render
+
+
 def create_jinja_env(
-    loader: Optional[jinja2.BaseLoader], filters: Dict[str, Callable]
-) -> jinja2.Environment:
+    loader: Optional[BaseLoader], filters: Dict[str, Callable]
+) -> Environment:
     """Create a new Jinja environment.
 
     The Jinja environment is loaded with a set of pre-defined filters:
@@ -230,12 +270,13 @@ def create_jinja_env(
        corresponding function.
 
     """
-    env = jinja2.Environment(
+    env = Environment(
         loader=loader,
         trim_blocks=True,
         lstrip_blocks=True,
         keep_trailing_newline=True,
-        undefined=jinja2.StrictUndefined,
+        undefined=StrictUndefined,
+        extensions=[ChatExtension],
     )
 
     env.filters["name"] = get_fn_name
@@ -372,3 +413,4 @@ def parse_pydantic_schema(raw_schema, definitions):
             simple_schema[name] = f"<{name}>"
 
     return simple_schema
+
