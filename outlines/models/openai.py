@@ -20,6 +20,7 @@ from pydantic import BaseModel, TypeAdapter
 
 from outlines.caching import cache
 from outlines.models.base import Model, ModelTypeAdapter
+from outlines.models.utils import set_additional_properties_false_json_schema
 from outlines.templates import Vision
 from outlines.types import JsonSchema, Regex, CFG
 from outlines.types.utils import (
@@ -166,9 +167,8 @@ class OpenAITypeAdapter(ModelTypeAdapter):
         specified a `Json` output type.
 
         """
-        # OpenAI requires `additionalProperties` to be set
-        if "additionalProperties" not in schema:
-            schema["additionalProperties"] = False
+        # OpenAI requires `additionalProperties` to be set to False
+        schema = set_additional_properties_false_json_schema(schema)
 
         return {
             "response_format": {

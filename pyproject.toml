@@ -42,6 +42,7 @@ dependencies = [
    "outlines_core==0.1.26",
    "genson",
    "torch",
+   "jsonpath_ng",
 ]
 dynamic = ["version"]
 
@@ -168,6 +169,7 @@ module = [
     "tf-keras",
     "tf-keras.*",
     "mkdocs_gen_files.*",
+    "jsonpath_ng.*",
 ]
 ignore_missing_imports = true
 
