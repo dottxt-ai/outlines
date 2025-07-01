@@ -163,6 +163,13 @@ def get_enum_from_literal(value) -> Enum:
     )
 
 
+def get_enum_from_choice(value) -> Enum:
+    return Enum(
+        'Choice',
+        {str(item): item for item in value.items}
+    )
+
+
 def get_schema_from_signature(fn: Callable) -> dict:
     """Turn a function signature into a JSON schema.
 

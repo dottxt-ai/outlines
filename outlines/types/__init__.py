@@ -14,6 +14,7 @@ from outlines.types.dsl import (
     Regex,
     CFG,
     FSM,
+    Choice,
     JsonSchema,
     regex,
     cfg,
