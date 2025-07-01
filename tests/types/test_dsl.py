@@ -30,6 +30,7 @@ from outlines.types.dsl import (
     QuantifyExact,
     QuantifyMaximum,
     QuantifyMinimum,
+    Choice,
     Regex,
     Sequence,
     String,
@@ -68,6 +69,11 @@ def test_dsl_init():
     assert string.value == "test"
     assert repr(string) == "String(value='test')"
     assert string.display_ascii_tree() == "└── String('test')\n"
+
+    choice = Choice(["a", "b"])
+    assert choice.items == ["a", "b"]
+    assert repr(choice) == "Choice(items=['a', 'b'])"
+    assert choice.display_ascii_tree() == "└── Choice(['a', 'b'])\n"
 
     regex = Regex("[0-9]")
     assert regex.pattern == "[0-9]"
