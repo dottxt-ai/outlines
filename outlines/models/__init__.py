@@ -14,7 +14,7 @@ from .dottxt import Dottxt, from_dottxt
 from .gemini import Gemini, from_gemini
 from .llamacpp import LlamaCpp, from_llamacpp
 from .mlxlm import MLXLM, from_mlxlm
-from .ollama import Ollama, from_ollama
+from .ollama import AsyncOllama, Ollama, from_ollama
 from .openai import OpenAI, from_openai
 from .sglang import AsyncSGLang, SGLang, from_sglang
 from .tgi import AsyncTGI, TGI, from_tgi
@@ -40,6 +40,7 @@ BlackBoxModel = Union[
     VLLMOffline,
 ]
 AsyncBlackBoxModel = Union[
+    AsyncOllama,
     AsyncTGI,
     AsyncSGLang,
     AsyncVLLM,
