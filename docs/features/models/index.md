@@ -56,7 +56,7 @@ In alphabetical order:
 | Regex | ❌ | ❌ | ❌ | ✅ | ✅ | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Grammar | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | 🟠 | ❌ | ✅ | ✅ | ✅ | ✅ |
 | **Generation Features** | | | | | | | | | | | | | |
-| Async | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ | ❌ | ❌ | ✅ | ❌ |
+| Async | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ | ✅ | ❌ | ❌ | ✅ | ❌ |
 | Streaming | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ | ❌ |
 | Vision | ✅ | ❌ | ✅ | ❌ | ❌ | ✅ | ✅ | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ |
 | Batching | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ |
@@ -104,6 +104,7 @@ print(type(model)) # outlines.models.tgi.AsyncTGI
 
 The models that have an async version are the following:
 
+- Ollama
 - SgLang
 - TGI
 - VLLM

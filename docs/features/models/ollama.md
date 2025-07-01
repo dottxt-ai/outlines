@@ -17,8 +17,10 @@ title: Ollama
 
 To create an Ollama model instance, you can use the `from_ollama` function. It takes 2 arguments:
 
-- `client`: an `ollama.Client` instance
+- `client`: an `ollama.Client` or `ollama.AsyncClient` instance
 - `model_name`: the name of the model you want to use
+
+Based on whether the inference client instance is synchronous or asynchronous, you will receive an `Ollama` or an `AsyncOllama` model instance.
 
 For instance:
 
@@ -26,13 +28,20 @@ For instance:
 import ollama
 import outlines
 
-# Create the client
+# Create the client or async client
 client = ollama.Client()
+async_client = ollama.AsyncClient()
 
-# Create the model
+# Create a sync model
 model = outlines.from_ollama(
     client,
-    "tinyllama",
+    "qwen2.5vl:3b",
+)
+
+# Create an async model
+model = outlines.from_ollama(
+    async_client,
+    "qwen2.5vl:3b",
 )
 ```
 
@@ -49,7 +58,7 @@ import ollama
 import outlines
 
 # Create the model
-model = outlines.from_ollama(ollama.Client(), "tinyllama")
+model = outlines.from_ollama(ollama.Client(), "qwen2.5vl:3b")
 
 # Call it to generate text
 response = model("What's the capital of Latvia?")
@@ -63,7 +72,7 @@ import ollama
 import outlines
 
 # Create the model
-model = outlines.from_ollama(ollama.Client(), "tinyllama")
+model = outlines.from_ollama(ollama.Client(), "qwen2.5vl:3b")
 
 # Stream text
 for chunk in model.stream("Write a short story about a cat"):
@@ -97,6 +106,76 @@ prompt = Vision("Describe the image", get_image("https://picsum.photos/id/237/40
 # Generate text
 response = model(prompt)
 print(response) # The image shows a black puppy with a curious and attentive expression.
+```
+
+## Asynchronous Calls
+
+Ollama supports asynchronous operations by passing an `AsyncClient` instead of a regular `Client`. This returns an `AsyncOllama` model instance that supports async/await patterns.
+
+### Basic Async Generation
+
+```python
+import asyncio
+import outlines
+import ollama
+
+async def generate_text():
+    # Create an async model
+    async_client = ollama.AsyncClient()
+    async_model = outlines.from_ollama(async_client, "qwen2.5vl:3b")
+
+    result = await async_model("Write a haiku about Python.")
+    print(result)
+
+asyncio.run(generate_text())
+```
+
+### Async Streaming
+
+The async model also supports streaming with async iteration:
+
+```python
+import asyncio
+import outlines
+import ollama
+
+async def stream_text():
+    async_client = ollama.AsyncClient()
+    async_model = outlines.from_ollama(async_client, "qwen2.5vl:3b")
+
+    async for chunk in async_model.stream("Tell me a story about a robot."):
+        print(chunk, end="")
+
+asyncio.run(stream_text())
+```
+
+### Concurrent Async Requests
+
+One of the main benefits of async calls is the ability to make multiple concurrent requests:
+
+```python
+import asyncio
+import outlines
+import ollama
+
+async def generate_multiple():
+    async_client = ollama.AsyncClient()
+    async_model = outlines.from_ollama(async_client, "qwen2.5vl:3b")
+
+    # Define multiple prompts
+    prompts = [
+        "Write a tagline for a coffee shop.",
+        "Write a tagline for a bookstore.",
+        "Write a tagline for a gym."
+    ]
+
+    tasks = [async_model(prompt) for prompt in prompts]
+    results = await asyncio.gather(*tasks)
+
+    for prompt, result in zip(prompts, results):
+        print(f"{prompt}\n{result}\n")
+
+asyncio.run(generate_multiple())
 ```
 
 ## Structured Generation
