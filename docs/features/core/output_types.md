@@ -177,6 +177,10 @@ schema_dict = {
 output_type = JsonSchema(schema_dict)
 ```
 
+`JsonSchema` accepts two optional parameters:
+- `whitespace_pattern` (defaults to `None`): specifies the pattern to use for JSON syntactic whitespace. If none is provided, the default permissive JSON whitespace rules are used.
+- `ensure_ascii` (defaults to `True`): defines the value to use for the argument `ensure_ascii` of the `json.dumps` method. If false, non-ASCII characters will be turned into unicodes.
+
 ### Regex Patterns
 
 Outlines provides support for text generation constrained by regular expressions. Since regular expressions are expressed as simple raw string literals, regex strings must wrapped in an `outlines.types.Regex` object.
