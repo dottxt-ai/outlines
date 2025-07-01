@@ -18,10 +18,11 @@ from typing import (
 
 import interegular
 from genson import SchemaBuilder
-from pydantic import BaseModel, constr
+from pydantic import BaseModel
 
-from outlines.types.dsl import JsonSchema
+from outlines.types.dsl import Choice, JsonSchema
 from outlines.types.utils import (
+    get_enum_from_choice,
     get_enum_from_literal,
     get_schema_from_enum,
     get_schema_from_signature,
@@ -366,6 +367,15 @@ def test_is_interegular_fsm():
 
 
 # Type conversion
+
+
+def test_get_enum_from_choice(sample_enum):
+    choice = Choice(["a", "b", sample_enum.A])
+    enum = get_enum_from_choice(choice)
+    assert is_enum(enum)
+    assert enum.a.value == "a"
+    assert enum.b.value == "b"
+    assert getattr(enum, "SampleEnum.A").value == sample_enum.A
 
 
 def test_get_enum_from_literal(sample_enum):

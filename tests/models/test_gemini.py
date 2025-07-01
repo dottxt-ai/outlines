@@ -13,6 +13,7 @@ from pydantic import BaseModel, ValidationError
 import outlines
 from outlines.models.gemini import Gemini
 from outlines.templates import Vision
+from outlines.types import Choice
 
 if sys.version_info >= (3, 12):
     from typing import TypedDict
@@ -181,6 +182,13 @@ def test_gemini_simple_choice_enum(model):
         foor = "Foo"
 
     result = model.generate("foo?", Foo)
+    assert isinstance(result, str)
+    assert result == "Foo" or result == "Bar"
+
+
+@pytest.mark.api_call
+def test_gemini_simple_choice_choice(model):
+    result = model.generate("foo?", Choice(["Foo", "Bar"]))
     assert isinstance(result, str)
     assert result == "Foo" or result == "Bar"
 
