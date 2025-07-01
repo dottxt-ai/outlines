@@ -3925,6 +3925,9 @@ You have to cast the response into the type you want yourself.</p>
 </span><span id="__span-9-11"><a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a><span style="color: #ECEFF4">}</span>
 </span><span id="__span-9-12"><a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a><span style="color: #D8DEE9">output_type</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">JsonSchema</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">schema_dict</span><span style="color: #ECEFF4">)</span>
 </span></code></pre></div>
+<p><code>JsonSchema</code> accepts two optional parameters:
+- <code>whitespace_pattern</code> (defaults to <code>None</code>): specifies the pattern to use for JSON syntactic whitespace. If none is provided, the default permissive JSON whitespace rules are used.
+- <code>ensure_ascii</code> (defaults to <code>True</code>): defines the value to use for the argument <code>ensure_ascii</code> of the <code>json.dumps</code> method. If false, non-ASCII characters will be turned into unicodes.</p>
 <h3 id="regex-patterns">Regex Patterns</h3>
 <p>Outlines provides support for text generation constrained by regular expressions. Since regular expressions are expressed as simple raw string literals, regex strings must wrapped in an <code>outlines.types.Regex</code> object.</p>
 <div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines.types</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">Regex</span>
@@ -3974,7 +3977,7 @@ You have to cast the response into the type you want yourself.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="July 1, 2025 12:20:52 UTC"><span class="timeago" datetime="2025-07-01T12:20:52+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="July 1, 2025 12:20:52 UTC">2025-07-01</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="July 1, 2025 12:48:16 UTC"><span class="timeago" datetime="2025-07-01T12:48:16+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="July 1, 2025 12:48:16 UTC">2025-07-01</span>
   </span>
 
     
