@@ -2,6 +2,7 @@ import pytest
 
 
 from outlines.types.dsl import (
+    Choice,
     String,
     Regex,
     JsonSchema,
@@ -35,6 +36,12 @@ def test_to_regex_simple():
     assert a.matches(1) is True
     assert a.matches("1") is True
     assert a.matches("a") is False
+
+    a = Choice(["a", "b"])
+    assert to_regex(a) == "(a|b)"
+    assert a.matches("a") is True
+    assert a.matches("b") is True
+    assert a.matches("c") is False
 
     a = Optional(String("a"))
     assert to_regex(a) == "(a)?"

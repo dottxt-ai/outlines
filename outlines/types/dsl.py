@@ -396,6 +396,25 @@ class JsonSchema(Term):
 
 
 @dataclass
+class Choice(Term):
+    """Class representing a choice between different items.
+
+    Parameters
+    ----------
+    items
+        The items to choose from.
+
+    """
+    items: List[Any]
+
+    def _display_node(self) -> str:
+        return f"Choice({repr(self.items)})"
+
+    def __repr__(self):
+        return f"Choice(items={repr(self.items)})"
+
+
+@dataclass
 class KleeneStar(Term):
     term: Term
 
@@ -916,6 +935,9 @@ def to_regex(term: Term) -> str:
         case JsonSchema():
             regex_str = build_regex_from_schema(term.schema, term.whitespace_pattern)
             return f"({regex_str})"
+        case Choice():
+            regexes = [to_regex(python_types_to_terms(item)) for item in term.items]
+            return f"({'|'.join(regexes)})"
         case KleeneStar():
             return f"({to_regex(term.term)})*"
         case KleenePlus():

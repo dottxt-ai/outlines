@@ -16,6 +16,7 @@ Output types can be from the general Python ecosystem, including:
 - Types from popular third party libraries such as Pydantic or GenSON.
 
 Outlines also provides special classes for certain output structures (more details below):
+- Multiple choices with `Choice`
 - JSON schemas with `JsonSchema`
 - Regular expressions with `Regex`
 - Context-free grammars with `CFG`
@@ -113,6 +114,20 @@ class PizzaOrBurger(Enum):
 # Equivalent multiple-choice output types
 output_type = Literal["pizza", "burger"]
 output_type = PizzaOrBurger
+```
+
+Additionally, you can use the Outlines-specific type `Choice` that takes a `list` as an argument. This type is useful in situations in which the list of choices is dynamic.
+
+For instance:
+
+```python
+from outlines.types import Choice
+
+def get_multiple_choices() -> list:
+    # we could have something complex here
+    return ["pizza", "burger"]
+
+output_type = Choice(get_multiple_choices())
 ```
 
 ### JSON Schemas
