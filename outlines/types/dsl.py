@@ -318,6 +318,7 @@ class JsonSchema(Term):
             dict, str, type[BaseModel], _TypedDictMeta, type, SchemaBuilder
         ],
         whitespace_pattern: OptionalType[str] = None,
+        ensure_ascii: bool = True,
     ):
         """
         Parameters
@@ -326,22 +327,24 @@ class JsonSchema(Term):
             The object containing the JSON schema.
         whitespace_pattern
             The pattern to use to match whitespace characters.
+        ensure_ascii
+            Whether to ensure the schema is ASCII-only.
 
         """
         schema_str: str
 
         if is_dict_instance(schema):
-            schema_str = json.dumps(schema)
+            schema_str = json.dumps(schema, ensure_ascii=ensure_ascii)
         elif is_str_instance(schema):
             schema_str = str(schema)
         elif is_pydantic_model(schema):
-            schema_str = json.dumps(schema.model_json_schema())  # type: ignore
+            schema_str = json.dumps(schema.model_json_schema(), ensure_ascii=ensure_ascii) # type: ignore
         elif is_typed_dict(schema):
-            schema_str = json.dumps(TypeAdapter(schema).json_schema())
+            schema_str = json.dumps(TypeAdapter(schema).json_schema(), ensure_ascii=ensure_ascii)
         elif is_dataclass(schema):
-            schema_str = json.dumps(TypeAdapter(schema).json_schema())
+            schema_str = json.dumps(TypeAdapter(schema).json_schema(), ensure_ascii=ensure_ascii)
         elif is_genson_schema_builder(schema):
-            schema_str = schema.to_json()  # type: ignore
+            schema_str = schema.to_json(ensure_ascii=ensure_ascii)  # type: ignore
         else:
             raise ValueError(
                 f"Cannot parse schema {schema}. The schema must be either "
