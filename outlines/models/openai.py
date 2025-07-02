@@ -316,6 +316,16 @@ class OpenAI(Model):
         else:
             return [message.content for message in messages]
 
+    def generate_batch(
+        self,
+        model_input,
+        output_type = None,
+        **inference_kwargs,
+    ):
+        raise NotImplementedError(
+            "The `openai` library does not support batch inference."
+        )
+
     def generate_stream(
         self,
         model_input: Union[str, Vision],

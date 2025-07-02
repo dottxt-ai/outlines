@@ -151,8 +151,8 @@ class LlamaCppTypeAdapter(ModelTypeAdapter):
 
         """
         raise NotImplementedError(
-            f"The input type {input} is not available. "
-            "The `llama-cpp-python` library does not support batch inference. "
+            f"The input type {input} is not available with LlamaCpp. "
+            "The only available type is `str`."
         )
 
     @format_input.register(str)
@@ -242,6 +242,14 @@ class LlamaCpp(Model):
         self.model.reset()
 
         return result
+
+    def generate_batch(
+        self,
+        model_input,
+        output_type = None,
+        **inference_kwargs,
+    ):
+        raise NotImplementedError("LlamaCpp does not support batch generation.")
 
     def generate_stream(
         self,

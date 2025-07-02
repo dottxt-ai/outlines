@@ -153,6 +153,16 @@ class Anthropic(Model):
         )
         return completion.content[0].text
 
+    def generate_batch(
+        self,
+        model_input,
+        output_type = None,
+        **inference_kwargs,
+    ):
+        raise NotImplementedError(
+            "Anthropic does not support batch generation."
+        )
+
     def generate_stream(
         self,
         model_input: Union[str, Vision],
