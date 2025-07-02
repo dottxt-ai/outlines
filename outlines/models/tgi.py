@@ -40,16 +40,12 @@ class TGITypeAdapter(ModelTypeAdapter):
         """
         raise NotImplementedError(
             f"The input type {input} is not available with TGI. "
-            + "Please provide a string."
+            + "The only available type is `str`."
         )
 
     @format_input.register(str)
     def format_str_input(self, model_input: str) -> str:
         return model_input
-
-    @format_input.register(list)
-    def format_list_input(self, model_input: list):
-        raise NotImplementedError("TGI does not support batch inference.")
 
     def format_output_type(self, output_type: Optional[Any] = None) -> dict:
         """Generate the structured output argument to pass to the client.
@@ -142,6 +138,14 @@ class TGI(Model):
         )
 
         return self.client.text_generation(**client_args)
+
+    def generate_batch(
+        self,
+        model_input,
+        output_type = None,
+        **inference_kwargs,
+    ):
+        raise NotImplementedError("TGI does not support batch inference.")
 
     def generate_stream(
         self,
@@ -251,6 +255,14 @@ class AsyncTGI(AsyncModel):
         response = await self.client.text_generation(**client_args)
 
         return response
+
+    async def generate_batch(
+        self,
+        model_input,
+        output_type = None,
+        **inference_kwargs,
+    ):
+        raise NotImplementedError("TGI does not support batch inference.")
 
     async def generate_stream( # type: ignore
         self,

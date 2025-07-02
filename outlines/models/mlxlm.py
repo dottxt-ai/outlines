@@ -33,8 +33,8 @@ class MLXLMTypeAdapter(ModelTypeAdapter):
 
         """
         raise NotImplementedError(
-            f"The input type {input} is not available. "
-            "The `mlx_lm` library does not support batch inference."
+            f"The input type {input} is not available with mlx-lm. "
+            "The only available type is `str`."
         )
 
     @format_input.register(str)
@@ -126,6 +126,16 @@ class MLXLM(Model):
             self.type_adapter.format_input(model_input),
             logits_processors=self.type_adapter.format_output_type(output_type),
             **kwargs,
+        )
+
+    def generate_batch(
+        self,
+        model_input,
+        output_type = None,
+        **kwargs,
+    ):
+        raise NotImplementedError(
+            "The `mlx_lm` library does not support batch inference."
         )
 
     def generate_stream(

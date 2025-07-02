@@ -2,7 +2,9 @@
 
 import json
 import warnings
-from typing import TYPE_CHECKING, Any, AsyncIterator, Iterator, Optional, Union
+from typing import (
+    TYPE_CHECKING, Any, AsyncIterator, Iterator, Optional, Union
+)
 
 from outlines.models.base import AsyncModel, Model, ModelTypeAdapter
 from outlines.models.openai import OpenAITypeAdapter
@@ -147,6 +149,16 @@ class SGLang(Model):
         else:
             return [message.content for message in messages]
 
+    def generate_batch(
+        self,
+        model_input,
+        output_type = None,
+        **inference_kwargs,
+    ):
+        raise NotImplementedError(
+            "SGLang does not support batch inference."
+        )
+
     def generate_stream(
         self,
         model_input: Union[str, Vision],
@@ -278,6 +290,16 @@ class AsyncSGLang(AsyncModel):
             return messages[0].content
         else:
             return [message.content for message in messages]
+
+    async def generate_batch(
+        self,
+        model_input,
+        output_type = None,
+        **inference_kwargs,
+    ):
+        raise NotImplementedError(
+            "SGLang does not support batch inference."
+        )
 
     async def generate_stream( # type: ignore
         self,

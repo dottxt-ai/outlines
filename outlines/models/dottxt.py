@@ -176,6 +176,16 @@ class Dottxt(Model):
         )
         return completion.data
 
+    def generate_batch(
+        self,
+        model_input,
+        output_type = None,
+        **inference_kwargs,
+    ):
+        raise NotImplementedError(
+            "Dottxt does not support batch generation."
+        )
+
     def generate_stream(
         self,
         model_input,

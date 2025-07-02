@@ -44,7 +44,7 @@ class OllamaTypeAdapter(ModelTypeAdapter):
         elif isinstance(model_input, Vision):
             return self.format_vision_model_input(model_input)
         raise TypeError(
-            f"The input type {model_input} is not available. "
+            f"The input type {model_input} is not available with Ollama. "
             "The only available types are `str` and `Vision`."
         )
 
@@ -58,7 +58,10 @@ class OllamaTypeAdapter(ModelTypeAdapter):
         """Format the vision model input to pass to the client.
 
         """
-        return {"prompt": model_input.prompt, "images": [model_input.image_str]}
+        return {
+            "prompt": model_input.prompt,
+            "images": [model_input.image_str]
+        }
 
     def format_output_type(
         self, output_type: Optional[Any] = None
@@ -169,6 +172,16 @@ class Ollama(Model):
         )
         return response.response
 
+    def generate_batch(
+        self,
+        model_input,
+        output_type = None,
+        **kwargs,
+    ):
+        raise NotImplementedError(
+            "The `ollama` library does not support batch inference."
+        )
+
     def generate_stream(
         self,
         model_input: str,
@@ -264,6 +277,16 @@ class AsyncOllama(AsyncModel):
             **kwargs,
         )
         return response.response
+
+    async def generate_batch(
+        self,
+        model_input,
+        output_type = None,
+        **kwargs,
+    ):
+        raise NotImplementedError(
+            "The `ollama` library does not support batch inference."
+        )
 
     async def generate_stream( # type: ignore
         self,
