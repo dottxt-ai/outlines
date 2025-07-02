@@ -132,3 +132,10 @@ def test_llamacpp_stream_text_stop(model):
     result = next(generator)
     assert isinstance(result, str)
     assert result != "a"
+
+
+def test_llamacpp_batch(model):
+    with pytest.raises(NotImplementedError, match="does not support"):
+        model.batch(
+            ["Respond with one word.", "Respond with one word."],
+        )

@@ -120,6 +120,13 @@ def test_tgi_sync_streaming(sync_model):
     assert isinstance(next(result), str)
 
 
+def test_tgi_sync_batch(sync_model):
+    with pytest.raises(NotImplementedError, match="does not support"):
+        sync_model.batch(
+            ["Respond with one word.", "Respond with one word."],
+        )
+
+
 def test_tgi_sync_json(sync_model):
     json_string = '{"type": "object", "properties": {"bar": {"type": "string"}}, "required": ["bar"]}'
     result = sync_model("foo?", JsonSchema(json_string), max_new_tokens=10)
@@ -154,6 +161,14 @@ async def test_tgi_async_streaming(async_model):
     async for chunk in result:
         assert isinstance(chunk, str)
         break  # Just check the first chunk
+
+
+@pytest.mark.asyncio
+async def test_tgi_async_batch(async_model):
+    with pytest.raises(NotImplementedError, match="does not support"):
+        await async_model.batch(
+            ["Respond with one word.", "Respond with one word."],
+        )
 
 
 @pytest.mark.asyncio

@@ -154,7 +154,7 @@ def test_transformers_vision_choice(model, images):
     assert result in ["cat", "dog"]
 
 
-def test_transformers_vision_batch_samples(model, images):
+def test_transformers_vision_multiple_samples(model, images):
     result = model(
         {"text": "<image>Describe this image in one sentence.", "images": images[0]},
         num_return_sequences=2,
@@ -163,26 +163,36 @@ def test_transformers_vision_batch_samples(model, images):
     )
     assert isinstance(result, list)
     assert len(result) == 2
-    result = model(
-        {
-            "text": [
-                "<image>Describe this image in one sentence.",
-                "<image>Describe this image in one sentence.",
-            ],
-            "images": [images[0], images[1]],
-        },
+
+
+def test_transformers_vision_batch(model, images):
+    result = model.batch(
+        [
+            {
+                "text": "<image>Describe this image in one sentence.",
+                "images": images[0],
+            },
+            {
+                "text": "<image>Describe this image in one sentence.",
+                "images": [images[0]],
+            }
+        ],
         max_new_tokens=2,
     )
     assert isinstance(result, list)
     assert len(result) == 2
-    result = model(
-        {
-            "text": [
-                "<image>Describe this image in one sentence.",
-                "<image>Describe this image in one sentence.",
-            ],
-            "images": [images[0], images[1]],
-        },
+
+    result = model.batch(
+        [
+            {
+                "text": "<image>Describe this image in one sentence.<image>",
+                "images": [images[0], images[1]],
+            },
+            {
+                "text": "<image>Describe this image in one sentence.<image>",
+                "images": [images[0], images[1]],
+            }
+        ],
         num_return_sequences=2,
         num_beams=2,
         max_new_tokens=2,

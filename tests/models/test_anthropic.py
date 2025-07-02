@@ -104,3 +104,11 @@ def test_anthopic_streaming(model):
     result = model.stream("Respond with one word. Not more.", max_tokens=1024)
     assert isinstance(result, Generator)
     assert isinstance(next(result), str)
+
+
+def test_anthropic_batch(model):
+    with pytest.raises(NotImplementedError, match="does not support"):
+        model.batch(
+            ["Respond with one word.", "Respond with one word."],
+            max_tokens=1024,
+        )
