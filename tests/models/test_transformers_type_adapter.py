@@ -32,11 +32,6 @@ def test_transformers_type_adapter_format_input(adapter):
 
     assert adapter.format_input("Hello, world!") == "Hello, world!"
 
-    assert adapter.format_input(["Hello, world!", "Hello, world!"]) == [
-        "Hello, world!",
-        "Hello, world!",
-    ]
-
 
 def test_transformers_type_adapter_format_output_type(
     adapter, logits_processor

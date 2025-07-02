@@ -227,3 +227,11 @@ def test_gemini_streaming(model):
     result = model.stream("Respond with one word. Not more.")
     assert isinstance(result, Generator)
     assert isinstance(next(result), str)
+
+
+@pytest.mark.api_call
+def test_gemini_batch(model):
+    with pytest.raises(NotImplementedError, match="does not support"):
+        model.batch(
+            ["Respond with one word.", "Respond with one word."],
+        )

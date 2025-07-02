@@ -220,6 +220,13 @@ def test_vllm_sync_streaming(sync_model_no_model_name):
     assert isinstance(next(result), str)
 
 
+def test_vllm_sync_batch(sync_model):
+    with pytest.raises(NotImplementedError, match="does not support"):
+        sync_model.batch(
+            ["Respond with one word.", "Respond with one word."],
+        )
+
+
 def test_vllm_sync_vision(sync_model, image):
     result = sync_model(Vision("Describe the image.", image))
     assert isinstance(result, str)
@@ -268,6 +275,14 @@ async def test_vllm_async_streaming(async_model_no_model_name):
     async for chunk in result:
         assert isinstance(chunk, str)
         break  # Just check the first chunk
+
+
+@pytest.mark.asyncio
+async def test_vllm_async_batch(async_model):
+    with pytest.raises(NotImplementedError, match="does not support"):
+        await async_model.batch(
+            ["Respond with one word.", "Respond with one word."],
+        )
 
 
 @pytest.mark.asyncio

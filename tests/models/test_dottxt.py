@@ -129,3 +129,11 @@ def test_dottxt_streaming(model):
         match="Dottxt does not support streaming"
     ):
         model.stream("Create a user", User)
+
+
+@pytest.mark.api_call
+def test_dottxt_batch(model):
+    with pytest.raises(NotImplementedError, match="does not support"):
+        model.batch(
+            ["Respond with one word.", "Respond with one word."]
+        )

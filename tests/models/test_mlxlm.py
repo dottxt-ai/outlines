@@ -117,3 +117,11 @@ def test_mlxlm_stream_text_stop(model):
     )
     assert isinstance(generator, Generator)
     assert isinstance(next(generator), str)
+
+
+@pytest.mark.skipif(not HAS_MLX, reason="MLX tests require Apple Silicon")
+def test_mlxlm_batch(model):
+    with pytest.raises(NotImplementedError, match="does not support"):
+        model.batch(
+            ["Respond with one word.", "Respond with one word."],
+        )

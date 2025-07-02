@@ -84,7 +84,7 @@ def test_vllm_choice(model):
     assert result in ["cat", "dog"]
 
 
-def test_vllm_batch_samples(model):
+def test_vllm_multiple_samples(model):
     result = model(
         "Respond with one word. Not more.",
         sampling_params=SamplingParams(n=2)
@@ -92,13 +92,15 @@ def test_vllm_batch_samples(model):
     assert isinstance(result, list)
     assert len(result) == 2
 
-    result = model(
+
+def test_vllm_batch(model):
+    result = model.batch(
         ["Respond with one word. Not more.", "Respond with one word. Not more."]
     )
     assert isinstance(result, list)
     assert len(result) == 2
 
-    result = model(
+    result = model.batch(
         ["Respond with one word. Not more.", "Respond with one word. Not more."],
         sampling_params=SamplingParams(n=2)
     )

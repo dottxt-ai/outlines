@@ -186,6 +186,13 @@ def test_sglang_sync_streaming(sync_model_no_model_name):
     assert isinstance(next(result), str)
 
 
+def test_sglang_sync_batch(sync_model):
+    with pytest.raises(NotImplementedError, match="does not support"):
+        sync_model.batch(
+            ["Respond with one word.", "Respond with one word."],
+        )
+
+
 def test_sglang_sync_multiple_samples(sync_model):
     result = sync_model("Respond with a single word.", n=2)
     assert isinstance(result, list)
@@ -236,6 +243,14 @@ async def test_sglang_async_streaming(async_model_no_model_name):
     async for chunk in result:
         assert isinstance(chunk, str)
         break  # Just check the first chunk
+
+
+@pytest.mark.asyncio
+async def test_sglang_async_batch(async_model):
+    with pytest.raises(NotImplementedError, match="does not support"):
+        await async_model.batch(
+            ["Respond with one word.", "Respond with one word."],
+        )
 
 
 @pytest.mark.asyncio

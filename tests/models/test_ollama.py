@@ -139,6 +139,13 @@ def test_ollama_stream_json(model_no_model_name):
     assert "foo" in json.loads("".join(generated_text))
 
 
+def test_ollama_batch(model):
+    with pytest.raises(NotImplementedError, match="does not support"):
+        model.batch(
+            ["Respond with one word.", "Respond with one word."],
+        )
+
+
 def test_ollama_async_init_from_client():
     client = AsyncClient()
 
@@ -234,3 +241,11 @@ async def test_ollama_async_stream_json(async_model_no_model_name):
     async for chunk in async_generator:
         generated_text.append(chunk)
     assert "foo" in json.loads("".join(generated_text))
+
+
+@pytest.mark.asyncio
+async def test_ollama_async_batch(async_model):
+    with pytest.raises(NotImplementedError, match="does not support"):
+        await async_model.batch(
+            ["Respond with one word.", "Respond with one word."],
+        )

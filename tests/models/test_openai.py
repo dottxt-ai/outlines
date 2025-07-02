@@ -170,3 +170,10 @@ def test_openai_streaming(model):
     result = model.stream("Respond with one word. Not more.")
     assert isinstance(result, Generator)
     assert isinstance(next(result), str)
+
+
+def test_openai_batch(model):
+    with pytest.raises(NotImplementedError, match="does not support"):
+        model.batch(
+            ["Respond with one word.", "Respond with one word."],
+        )
