@@ -31,16 +31,16 @@ model = outlines.from_transformers(hf_model, hf_processor)
 
 ## Model Input
 
-Instead of a string or a list of strings (for batch generation), you should provide a dictionary or a list of dictionaries as a prompt when calling the `TransformersMultiModal` model. The dictionary should contain key-value pairs for all elements required by your processor. `text`, that contains the text prompt, is the only mandatory field. The format of that argument is:
+Instead of a string, you should provide a dictionary as a prompt when calling the `TransformersMultiModal` model. The dictionary should contain key-value pairs for all elements required by your processor. `text`, that contains the text prompt, is the only mandatory field. The format of that argument is:
 
 ```python
 {
-    "text": Union[str, List[str]]
+    "text": str,
     "<other_keys_depending_on_your_processor>": Union[Any, List[Any]]
 }
 ```
 
-Some common keys to include for processors are `images` for vision models or `audios` for audio models. The value for those keys would respectively be an image object and an audio file (or lists of those if there are several assets or if you are using batch generation).
+Some common keys to include for processors are `images` for vision models or `audio` for audio models. The value for those keys would respectively be an image object and an audio file (or lists of those if there are several assets).
 
 Here's an example of using a vision multimodal model:
 
@@ -82,6 +82,57 @@ result = model(
 )
 print(result) # '{"specie": "cat", "color": "white", "weight": 4}'
 print(Animal.model_validate_json(result)) # specie=cat, color=white, weight=4
+```
+
+The `TransformersMultiModal` model supports batch generation. To use it, provide a list of the dictionaries described above to the `batch` method. You will receive as a result a list of completions.
+
+For instance:
+
+```python
+{
+    "text": str,
+    "<other_keys_depending_on_your_processor>": Union[Any, List[Any]]
+}
+```
+
+Some common keys to include for processors are `images` for vision models or `audio` for audio models. The value for those keys would respectively be an image object and an audio file (or lists of those if there are several assets).
+
+Here's an example of using a vision multimodal model:
+
+```python
+from io import BytesIO
+from urllib.request import urlopen
+
+from PIL import Image
+from transformers import (
+    LlavaForConditionalGeneration,
+    AutoProcessor,
+)
+
+import outlines
+
+TEST_MODEL = "trl-internal-testing/tiny-LlavaForConditionalGeneration"
+IMAGE_URL = "https://upload.wikimedia.org/wikipedia/commons/2/25/Siam_lilacpoint.jpg"
+IMAGE_URL_2 ="https://upload.wikimedia.org/wikipedia/commons/9/98/Aldrin_Apollo_11_original.jpg"
+
+def get_image_from_url(image_url):
+    img_byte_stream = BytesIO(urlopen(image_url).read())
+    return Image.open(img_byte_stream).convert("RGB")
+
+# Create a model
+model = outlines.from_transformers(
+    LlavaForConditionalGeneration.from_pretrained(TEST_MODEL),
+    AutoProcessor.from_pretrained(TEST_MODEL),
+)
+
+# Call the batch method with a list of model input dicts
+result = model(
+    [
+        {"text": "<image>Describe the image.", "images": get_image_from_url(IMAGE_URL)},
+        {"text": "<image>Describe the image.", "images": get_image_from_url(IMAGE_URL_2)},
+    ]
+)
+print(result) # ['The image shows a cat', 'The image shows an astronaut']
 ```
 
 !!! Warning
