@@ -19,6 +19,7 @@ from dataclasses import asdict, dataclass, field, replace
 from pydantic import BaseModel, TypeAdapter
 
 from outlines.caching import cache
+from outlines.inputs import Chat, Image
 from outlines.models.base import Model, ModelTypeAdapter
 from outlines.models.utils import set_additional_properties_false_json_schema
 from outlines.templates import Vision
@@ -47,13 +48,19 @@ class OpenAITypeAdapter(ModelTypeAdapter):
 
     """
 
-    def format_input(self, model_input: Union[str, Vision]) -> dict:
+    def format_input(
+        self,
+        model_input: Union[str, Vision],
+        items: Optional[List[Any]] = None,
+    ) -> dict:
         """Generate the `messages` argument to pass to the client.
 
         Parameters
         ----------
         model_input
             The input provided by the user.
+        items
+            A list of items to be passed to the client.
 
         Returns
         -------
@@ -62,48 +69,62 @@ class OpenAITypeAdapter(ModelTypeAdapter):
 
         """
         if isinstance(model_input, str):
-            return self.format_str_model_input(model_input)
-        elif isinstance(model_input, Vision):
-            return self.format_vision_model_input(model_input)
+            return self.format_str_model_input(model_input, items)
+        elif isinstance(model_input, Chat):
+            return self.format_chat_model_input(model_input)
         raise TypeError(
             f"The input type {input} is not available with OpenAI. "
             "The only available types are `str` and `Vision`."
         )
 
-    def format_str_model_input(self, model_input: str) -> dict:
+    def format_str_model_input(self, model_input: str, items: Optional[List[Any]] = None) -> dict:
         """Generate the `messages` argument to pass to the client when the user
-        only passes a prompt.
+        provides a simple text prompt.
 
         """
+        if items:
+            if len(items) == 1 and isinstance(items[0], Image):
+                return {"messages": [self.create_vision_message(model_input, items[0])]}
+            else:
+                raise ValueError(f"Unsupported items type: {type(items)}")
+        else:
+            return {"messages": [self.create_text_message("user", model_input)]}
+
+    def format_chat_model_input(self, model_input: Chat) -> dict:
+        """Generate the `messages` argument to pass to the client when the user
+        provides a `Chat` object.
+
+        """
+        messages = []
+        for message in model_input.messages:
+            if message["role"] == "user" and len(message.get("items", [])) == 1 and isinstance(message["items"][0], Image):
+                messages.append(self.create_vision_message(message["content"], message["items"][0]))
+            elif message["role"] in ["user", "assistant", "system"]:
+                messages.append(self.create_text_message(message["role"], message["content"]))
+            else:
+                raise ValueError(f"Unsupported message type: {type(message)}")
+        return {"messages": messages}
+
+    def create_text_message(self, role: str, content: str) -> dict:
+        """Create a text message for the OpenAI API."""
         return {
-            "messages": [
-                {
-                    "role": "user",
-                    "content": model_input,
-                }
-            ]
+            "role": role,
+            "content": content
         }
 
-    def format_vision_model_input(self, model_input: Vision) -> dict:
-        """Generate the `messages` argument to pass to the client when the user
-        passes a prompt and an image.
-
-        """
+    def create_vision_message(self, prompt: str, image: Image) -> dict:
+        """Create a vision message for the OpenAI API."""
         return {
-            "messages": [
+            "role": "user",
+            "content": [
+                {"type": "text", "text": prompt},
                 {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": model_input.prompt},
-                        {
-                            "type": "image_url",
-                            "image_url": {
-                                "url": f"data:{model_input.image_format};base64,{model_input.image_str}"  # noqa: E702
-                            },
-                        },
-                    ],
-                }
-            ]
+                    "type": "image_url",
+                    "image_url": {
+                        "url": f"data:{image.image_format};base64,{image.image_str}"  # noqa: E702
+                    },
+                },
+            ],
         }
 
     def format_output_type(self, output_type: Optional[Any] = None) -> dict:
@@ -283,7 +304,8 @@ class OpenAI(Model):
         """
         import openai
 
-        messages = self.type_adapter.format_input(model_input)
+        items = inference_kwargs.pop("items", None)
+        messages = self.type_adapter.format_input(model_input, items)
         response_format = self.type_adapter.format_output_type(output_type)
 
         if "model" not in inference_kwargs and self.model_name is not None:
@@ -353,7 +375,8 @@ class OpenAI(Model):
         """
         import openai
 
-        messages = self.type_adapter.format_input(model_input)
+        items = inference_kwargs.pop("items", None)
+        messages = self.type_adapter.format_input(model_input, items)
         response_format = self.type_adapter.format_output_type(output_type)
 
         if "model" not in inference_kwargs and self.model_name is not None:
