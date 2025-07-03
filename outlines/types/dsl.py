@@ -41,6 +41,7 @@ from pydantic_core import core_schema as cs
 
 import outlines.types as types
 from outlines import grammars
+from outlines.types.json_schema_utils import preprocess_schema_for_union_types
 from outlines.types.utils import (
     get_schema_from_signature,
     is_int,
@@ -353,7 +354,8 @@ class JsonSchema(Term):
                 + "specification"
             )
 
-        self.schema = schema_str
+        # Preprocess the schema to handle union types
+        self.schema = preprocess_schema_for_union_types(schema_str)
         self.whitespace_pattern = whitespace_pattern
 
     def __post_init__(self):
