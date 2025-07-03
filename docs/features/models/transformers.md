@@ -54,7 +54,9 @@ result = model("What's the capital of Latvia?", max_new_tokens=20)
 print(result) # 'Riga'
 ```
 
-The `Transformers` model also supports batch generation. To use it, provide a list of prompts instead of a single prompt. You will receive as result a list of completions. For instance:
+The `Transformers` model also supports batch generation. To use it, provide a list of prompts to the `batch` method. You will receive as a result a list of completions.
+
+For instance:
 
 ```python
 import outlines
@@ -74,7 +76,7 @@ prompts = [
 ]
 
 # Call it to generate text
-result = model(prompts, max_new_tokens=20)
+result = model.batch(prompts, max_new_tokens=20)
 print(result) # ['Vilnius', 'Riga', 'Tallinn']
 ```
 

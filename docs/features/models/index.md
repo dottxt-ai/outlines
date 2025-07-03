@@ -43,6 +43,44 @@ response = generator("How many countries are there in the world")
 print(result) # '200'
 ```
 
+Some models support streaming through a `stream` method. It takes the same argument as the `__call__` method, but returns an iterator instead of a string.
+
+For instance:
+
+```python
+from outlines import from_openai, Generator
+import openai
+
+# Create the model
+model = from_openai(
+    openai.OpenAI(),
+    "gpt-4o"
+)
+
+# Stream the response
+for chunk in model.stream("Tell a short story about a cat.", max_tokens=50):
+    print(chunk) # 'This...'
+```
+
+Additionally, some models support batch processing through a `batch` method. It's similar to the `__call__` method, but takes a list of prompts instead of a single prompt and returns a list of strings.
+
+For instance:
+
+```python
+from outlines import from_transformers, Generator
+import transformers
+
+# Create a model
+model = from_transformers(
+    transformers.AutoModelForCausalLM.from_pretrained("microsoft/Phi-3-mini-4k-instruct"),
+    transformers.AutoTokenizer.from_pretrained("microsoft/Phi-3-mini-4k-instruct"),
+)
+
+# Call it directly
+response = model.batch(["What's the capital of Latvia?", "What's the capital of Estonia?"], max_new_tokens=20)
+print(response) # ['Riga', 'Tallinn']
+```
+
 ## Features Matrix
 
 In alphabetical order:
@@ -59,7 +97,7 @@ In alphabetical order:
 | Async | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ | ✅ | ❌ | ❌ | ✅ | ❌ |
 | Streaming | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ | ❌ |
 | Vision | ✅ | ❌ | ✅ | ❌ | ❌ | ✅ | ✅ | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ |
-| Batching | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ |
+| Batching | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ | ❌ | ✅ |
 
 ## Model Types
 

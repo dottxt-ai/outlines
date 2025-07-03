@@ -56,6 +56,22 @@ result = model("What's the capital of Latvia?", sampling_params=SamplingParams(m
 print(result) # 'Riga'
 ```
 
+The `VLLOffline` model also supports batch generation. To use it, provide a list of prompts to the `batch` method. You will receive as a result a list of completions. For instance:
+
+```python
+import outlines
+from vllm import LLM, SamplingParams
+
+# Create the model
+model = outlines.from_vllm_offline(
+    LLM("microsoft/Phi-3-mini-4k-instruct")
+)
+
+# Call it to generate text
+result = model.batch(["What's the capital of Latvia?", "What's the capital of Estonia"], sampling_params=SamplingParams(max_tokens=20))
+print(result) # ['Riga', 'Tallinn']
+```
+
 ## Structured Generation
 
 The `VLLMOffline` model supports all output types available in Outlines. Simply provide an `output_type` after the prompt when calling the model.
