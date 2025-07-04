@@ -220,7 +220,6 @@ class Transformers(Model):
 
         tokenizer.padding_side = "left"
         self.model = model
-        self.transformer_tokenizer = tokenizer
         self.tokenizer = TransformerTokenizer(tokenizer)
         self.type_adapter = TransformersTypeAdapter()
 
@@ -332,9 +331,9 @@ class Transformers(Model):
 
     def _generate_output_seq(self, prompts, inputs, **inference_kwargs):
         input_ids = inputs["input_ids"]
+
         output_ids = self.model.generate(
             **inputs,
-            tokenizer=self.transformer_tokenizer,
             **inference_kwargs,
         )
 
