@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING, Any, AsyncIterator, Iterator, Optional, Union
 from outlines.models.base import AsyncModel,Model, ModelTypeAdapter
 from outlines.models.openai import OpenAITypeAdapter
 from outlines.types.dsl import CFG, JsonSchema, python_types_to_terms, to_regex
-from outlines.templates import Vision
 
 if TYPE_CHECKING:
     from openai import AsyncOpenAI, OpenAI
@@ -17,7 +16,7 @@ __all__ = ["VLLM", "AsyncVLLM", "from_vllm"]
 class VLLMTypeAdapter(ModelTypeAdapter):
     """Type adapter for the `VLLM` and `AsyncVLLM` models."""
 
-    def format_input(self, model_input: Union[str, Vision]) -> dict:
+    def format_input(self, model_input: Union[str, list]) -> dict:
         """Generate the prompt argument to pass to the client.
 
         We rely on the OpenAITypeAdapter to format the input as the vLLM server
@@ -92,7 +91,7 @@ class VLLM(Model):
 
     def generate(
         self,
-        model_input: Union[str, Vision],
+        model_input: Union[str, list],
         output_type: Optional[Any] = None,
         **inference_kwargs: Any,
     ) -> Union[str, list[str]]:
@@ -146,7 +145,7 @@ class VLLM(Model):
 
     def generate_stream(
         self,
-        model_input: Union[str, Vision],
+        model_input: Union[str, list],
         output_type: Optional[Any] = None,
         **inference_kwargs: Any,
     ) -> Iterator[str]:
@@ -183,7 +182,7 @@ class VLLM(Model):
 
     def _build_client_args(
         self,
-        model_input: Union[str, Vision],
+        model_input: Union[str, list],
         output_type: Optional[Any] = None,
         **inference_kwargs: Any,
     ) -> dict:
@@ -233,7 +232,7 @@ class AsyncVLLM(AsyncModel):
 
     async def generate(
         self,
-        model_input: Union[str, Vision],
+        model_input: Union[str, list],
         output_type: Optional[Any] = None,
         **inference_kwargs: Any,
     ) -> Union[str, list[str]]:
@@ -285,7 +284,7 @@ class AsyncVLLM(AsyncModel):
 
     async def generate_stream( # type: ignore
         self,
-        model_input: Union[str, Vision],
+        model_input: Union[str, list],
         output_type: Optional[Any] = None,
         **inference_kwargs: Any,
     ) -> AsyncIterator[str]:
@@ -322,7 +321,7 @@ class AsyncVLLM(AsyncModel):
 
     def _build_client_args(
         self,
-        model_input: Union[str, Vision],
+        model_input: Union[str, list],
         output_type: Optional[Any] = None,
         **inference_kwargs: Any,
     ) -> dict:

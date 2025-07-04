@@ -21,7 +21,7 @@ class TransformersVision(Transformers):
         self.type_adapter = TransformersMultiModalTypeAdapter()
 
 
-    def _prepare_model_inputs(self, model_input):
+    def _prepare_model_inputs(self, model_input, is_batch=False):
         model_input = self.type_adapter.format_input(model_input)
         inputs = self.processor(
             **model_input, padding=True, return_tensors="pt"
