@@ -1,9 +1,11 @@
 import pytest
 
-import outlines
 import transformers
+from PIL import Image as PILImage
 from transformers import LogitsProcessorList
 
+import outlines
+from outlines.inputs import Image, Video
 from outlines.models.transformers import TransformersMultiModalTypeAdapter
 from outlines.processors.structured import RegexLogitsProcessor
 
@@ -26,14 +28,38 @@ def logits_processor():
     )
 
 
-def test_transformers_multimodal_type_adapter_format_input(adapter):
-    with pytest.raises(NotImplementedError):
+@pytest.fixture
+def image():
+    width, height = 1, 1
+    white_background = (255, 255, 255)
+    image = PILImage.new("RGB", (width, height), white_background)
+    image.format = "PNG"
+
+    return image
+
+
+def test_transformers_multimodal_type_adapter_format_input(adapter, image):
+    with pytest.raises(TypeError):
         adapter.format_input("hello")
 
     with pytest.raises(ValueError):
-        adapter.format_input({"foo": "bar"})
+        with pytest.deprecated_call():
+            adapter.format_input({"foo": "bar"})
 
-    assert adapter.format_input({"text": "foo"}) == {"text": "foo"}
+    with pytest.raises(ValueError, match="All assets must be of the same type"):
+        adapter.format_input(["foo", Image(image), Video("")])
+
+    class MockAsset:
+        pass
+
+    with pytest.raises(ValueError, match="Unsupported asset type"):
+        adapter.format_input(["foo", MockAsset()])
+
+    image_asset = Image(image)
+    assert adapter.format_input(["foo", image_asset]) == {
+        "text": "foo",
+        "images": [image_asset.image],
+    }
 
 
 def test_transformers_multimodal_type_adapter_format_output_type(

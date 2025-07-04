@@ -1,15 +1,15 @@
 import base64
-import json
 import os
 import tempfile
 from typing import Dict, List
 
 import pytest
-from PIL import Image
+from PIL import Image as PILImage
 from io import BytesIO
 from pydantic import BaseModel, Field
 
 import outlines
+from outlines.inputs import Image
 from outlines.templates import (
     Template,
     build_template_from_string,
@@ -44,32 +44,37 @@ class PydanticClass(BaseModel):
 
 def test_vision_initialization():
     # Create a simple image for testing
-    image = Image.new("RGB", (10, 10), color="red")
+    image = PILImage.new("RGB", (10, 10), color="red")
     image.format = "PNG"
 
     # Initialize the Vision object
-    vision = Vision(prompt="Test prompt", image=image)
+    with pytest.deprecated_call():
+        vision = Vision(prompt="Test prompt", image=image)
 
     # Check that the prompt is set correctly
-    assert vision.prompt == "Test prompt"
+    assert isinstance(vision, list)
+    assert len(vision) == 2
+    assert vision[0] == "Test prompt"
+    assert isinstance(vision[1], Image)
 
     # Check that the image is encoded correctly
     buffer = BytesIO()
     image.save(buffer, format=image.format)
     expected_image_str = base64.b64encode(buffer.getvalue()).decode("utf-8")
-    assert vision.image_str == expected_image_str
+    assert vision[1].image_str == expected_image_str
 
     # Check that the image format is set correctly
-    assert vision.image_format == "image/png"
+    assert vision[1].image_format == "image/png"
 
 
 def test_vision_invalid_image_format():
     # Create an image without a format
-    image = Image.new("RGB", (10, 10), color="blue")
+    image = PILImage.new("RGB", (10, 10), color="blue")
 
     # Expect a TypeError when the image format is not set
-    with pytest.raises(TypeError, match="Could not read the format"):
-        Vision(prompt="Test prompt", image=image)
+    with pytest.deprecated_call():
+        with pytest.raises(TypeError, match="Could not read the format"):
+            Vision(prompt="Test prompt", image=image)
 
 
 def render(content: str, **kwargs):
