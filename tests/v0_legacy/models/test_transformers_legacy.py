@@ -168,5 +168,6 @@ def test_transformers_legacy_call_generation():
         "foo",
         2,
         length_penalty=0.5,
+        tokenizer=model.tokenizer.tokenizer,
     )
     assert isinstance(result, str)
