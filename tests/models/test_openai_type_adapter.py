@@ -6,10 +6,11 @@ from dataclasses import dataclass
 from typing import Literal
 
 from genson import SchemaBuilder
-from PIL import Image
+from PIL import Image as PILImage
 from pydantic import BaseModel
 
-from outlines import cfg, json_schema, regex, Vision
+from outlines import cfg, json_schema, regex
+from outlines.inputs import Image
 from outlines.models.openai import OpenAITypeAdapter
 
 if sys.version_info >= (3, 12):
@@ -36,13 +37,13 @@ def schema():
 def image():
     width, height = 1, 1
     white_background = (255, 255, 255)
-    image = Image.new("RGB", (width, height), white_background)
+    image = PILImage.new("RGB", (width, height), white_background)
 
     # Save to an in-memory bytes buffer and read as png
     buffer = io.BytesIO()
     image.save(buffer, format="PNG")
     buffer.seek(0)
-    image = Image.open(buffer)
+    image = PILImage.open(buffer)
 
     return image
 
@@ -62,7 +63,7 @@ def test_openai_type_adapter_input_text(adapter):
 
 
 def test_openai_type_adapter_input_vision(adapter, image):
-    input_message = Vision("hello", image)
+    input_message = ["hello", Image(image)]
     result = adapter.format_input(input_message)
     assert isinstance(result, dict)
 
@@ -78,11 +79,11 @@ def test_openai_type_adapter_input_vision(adapter, image):
     assert message["content"][1]["type"] == "image_url"
     assert (
         message["content"][1]["image_url"]["url"]
-        == f"data:image/png;base64,{input_message.image_str}"
+        == f"data:image/png;base64,{input_message[1].image_str}"
     )
 
 
-def test_dottxt_type_adapter_input_invalid(adapter):
+def test_openai_type_adapter_input_invalid(adapter):
     @dataclass
     class Audio:
         file: str

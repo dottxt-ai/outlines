@@ -1,12 +1,13 @@
 """Integration with the `ollama` library."""
 
 import json
+from functools import singledispatchmethod
 from typing import TYPE_CHECKING, Any, AsyncIterator, Iterator, Optional, Union
 
 from pydantic import TypeAdapter
 
+from outlines.inputs import Image
 from outlines.models.base import AsyncModel, Model, ModelTypeAdapter
-from outlines.templates import Vision
 from outlines.types import CFG, JsonSchema, Regex
 from outlines.types.utils import (
     is_dataclass,
@@ -25,7 +26,8 @@ __all__ = ["Ollama", "from_ollama"]
 class OllamaTypeAdapter(ModelTypeAdapter):
     """Type adapter for the `Ollama` model."""
 
-    def format_input(self, model_input: Union[str, Vision]) -> dict:
+    @singledispatchmethod
+    def format_input(self, model_input):
         """Generate the prompt argument to pass to the model.
 
         Parameters
@@ -39,26 +41,36 @@ class OllamaTypeAdapter(ModelTypeAdapter):
             The model input to be passed to the client.
 
         """
-        if isinstance(model_input, str):
-            return self.format_str_model_input(model_input)
-        elif isinstance(model_input, Vision):
-            return self.format_vision_model_input(model_input)
         raise TypeError(
-            f"The input type {model_input} is not available. "
-            "The only available types are `str` and `Vision`."
+            f"The input type {type(model_input)} is not available with "
+            "Ollama. The only available types are `str` and `list` "
+            "(containing a prompt and images)."
         )
 
+    @format_input.register(str)
     def format_str_model_input(self, model_input: str) -> dict:
-        """Format the string model input to pass to the client.
+        """Generate the `prompt` argument to pass to the client when the user
+        only passes a prompt.
 
         """
         return {"prompt": model_input}
 
-    def format_vision_model_input(self, model_input: Vision) -> dict:
-        """Format the vision model input to pass to the client.
+    @format_input.register(list)
+    def format_list_model_input(self, model_input: list) -> dict:
+        """Generate the `prompt` and `images` arguments to pass to the client
+        when the user passes a prompt and images.
 
         """
-        return {"prompt": model_input.prompt, "images": [model_input.image_str]}
+        prompt = model_input[0]
+        images = model_input[1:]
+
+        if not all(isinstance(image, Image) for image in images):
+            raise ValueError("All assets provided must be of type Image")
+
+        return {
+            "prompt": prompt,
+            "images": [image.image_str for image in images]
+        }
 
     def format_output_type(
         self, output_type: Optional[Any] = None
@@ -169,6 +181,16 @@ class Ollama(Model):
         )
         return response.response
 
+    def generate_batch(
+        self,
+        model_input,
+        output_type = None,
+        **kwargs,
+    ):
+        raise NotImplementedError(
+            "The `ollama` library does not support batch inference."
+        )
+
     def generate_stream(
         self,
         model_input: str,
@@ -264,6 +286,16 @@ class AsyncOllama(AsyncModel):
             **kwargs,
         )
         return response.response
+
+    async def generate_batch(
+        self,
+        model_input,
+        output_type = None,
+        **kwargs,
+    ):
+        raise NotImplementedError(
+            "The `ollama` library does not support batch inference."
+        )
 
     async def generate_stream( # type: ignore
         self,

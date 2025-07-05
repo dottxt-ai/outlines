@@ -27,15 +27,10 @@ def logits_processor():
 
 
 def test_transformers_type_adapter_format_input(adapter):
-    with pytest.raises(NotImplementedError):
+    with pytest.raises(TypeError):
         adapter.format_input(int)
 
     assert adapter.format_input("Hello, world!") == "Hello, world!"
-
-    assert adapter.format_input(["Hello, world!", "Hello, world!"]) == [
-        "Hello, world!",
-        "Hello, world!",
-    ]
 
 
 def test_transformers_type_adapter_format_output_type(

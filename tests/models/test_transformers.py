@@ -143,7 +143,7 @@ def test_transformers_choice(model):
     assert result in ["cat", "dog"]
 
 
-def test_transformers_batch_samples(model):
+def test_transformers_multiple_samples(model):
     result = model("Respond with one word. Not more.")
     assert isinstance(result, str)
     result = model(
@@ -151,12 +151,16 @@ def test_transformers_batch_samples(model):
     )
     assert isinstance(result, list)
     assert len(result) == 2
-    result = model(
+
+
+def test_transformers_batch(model):
+    result = model.batch(
         ["Respond with one word. Not more.", "Respond with one word. Not more."]
     )
     assert isinstance(result, list)
     assert len(result) == 2
-    result = model(
+
+    result = model.batch(
         ["Respond with one word. Not more.", "Respond with one word. Not more."],
         num_return_sequences=2,
         num_beams=2,
@@ -168,7 +172,7 @@ def test_transformers_batch_samples(model):
         assert len(item) == 2
 
 
-def test_transformers_batch_samples_constrained(model):
+def test_transformers_multiple_samples_constrained(model):
     class Foo(Enum):
         cat = "cat"
         dog = "dog"
@@ -178,7 +182,14 @@ def test_transformers_batch_samples_constrained(model):
     assert len(result) == 2
     assert result[0] in ["cat", "dog"]
     assert result[1] in ["cat", "dog"]
-    result = model(
+
+
+def test_transformers_batch_constrained(model):
+    class Foo(Enum):
+        cat = "cat"
+        dog = "dog"
+
+    result = model.batch(
         ["Cat or dog?", "Cat or dog?"],
         Foo,
     )
@@ -186,7 +197,8 @@ def test_transformers_batch_samples_constrained(model):
     assert len(result) == 2
     assert result[0] in ["cat", "dog"]
     assert result[1] in ["cat", "dog"]
-    result = model(
+
+    result = model.batch(
         ["Cat or dog?", "Cat or dog?"],
         Foo,
         num_return_sequences=2,

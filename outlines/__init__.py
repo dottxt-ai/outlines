@@ -4,11 +4,13 @@ import sys
 from types import ModuleType
 
 import outlines.grammars
+import outlines.inputs
 import outlines.processors
 import outlines.types
 from outlines.applications import Application
 from outlines.caching import clear_cache, disable_cache, get_cache
 from outlines.generator import Generator
+from outlines.inputs import Audio, Image, Video
 from outlines.models import (
     from_dottxt,
     from_openai,

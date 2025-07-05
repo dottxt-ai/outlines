@@ -4,12 +4,12 @@ import pytest
 import sys
 from dataclasses import dataclass
 
-from PIL import Image
+from PIL import Image as PILImage
 from genson import SchemaBuilder
 from pydantic import BaseModel
 
+from outlines.inputs import Image
 from outlines.models.dottxt import DottxtTypeAdapter
-from outlines.templates import Vision
 from outlines.types import cfg, json_schema, regex
 
 if sys.version_info >= (3, 12):
@@ -35,13 +35,13 @@ def schema():
 def image():
     width, height = 1, 1
     white_background = (255, 255, 255)
-    image = Image.new("RGB", (width, height), white_background)
+    image = PILImage.new("RGB", (width, height), white_background)
 
     # Save to an in-memory bytes buffer and read as png
     buffer = io.BytesIO()
     image.save(buffer, format="PNG")
     buffer.seek(0)
-    image = Image.open(buffer)
+    image = PILImage.open(buffer)
 
     return image
 
@@ -58,7 +58,7 @@ def test_dottxt_type_adapter_input_text(adapter):
 
 
 def test_dottxt_type_adapter_input_invalid(adapter, image):
-    prompt = Vision("prompt", image)
+    prompt = ["prompt", image]
     with pytest.raises(TypeError, match="The input type"):
         _ = adapter.format_input(prompt)
 

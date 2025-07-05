@@ -89,7 +89,7 @@ import requests
 import PIL
 import openai
 import outlines
-from outlines.templates import Vision
+from outlines.inputs import Image
 
 # Create the model
 model = outlines.from_vllm(openai.OpenAI(base_url="http://0.0.0.0:8000/v1"), "Qwen/Qwen2.5-VL-3B-Instruct")
@@ -100,7 +100,10 @@ def get_image(url):
     return PIL.Image.open(io.BytesIO(r.content))
 
 # Create the prompt
-prompt = Vision("Describe the image", get_image("https://picsum.photos/id/237/400/300"))
+prompt = [
+    "Describe the image",
+    Image(get_image("https://picsum.photos/id/237/400/300"))
+]
 
 # Generate text
 response = model(prompt)

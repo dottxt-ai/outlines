@@ -45,11 +45,6 @@ def test_tgi_type_adapter_input_text(type_adapter):
 def test_tgi_type_adapter_input_invalid(type_adapter):
     with pytest.raises(
         NotImplementedError,
-        match="TGI does not support batch inference.",
-    ):
-        type_adapter.format_input(["foo", "bar"])
-    with pytest.raises(
-        NotImplementedError,
         match="is not available with TGI",
     ):
         type_adapter.format_input({"foo": "bar"})

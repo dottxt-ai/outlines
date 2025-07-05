@@ -4,13 +4,13 @@ import os
 from typing import Annotated, Generator
 
 import pytest
-from PIL import Image
+from PIL import Image as PILImage
 from openai import OpenAI as OpenAIClient
 from pydantic import BaseModel, Field
 
 import outlines
+from outlines.inputs import Image, Video
 from outlines.models.openai import OpenAI
-from outlines.templates import Vision
 from outlines.types import json_schema
 
 MODEL_NAME = "gpt-4o-mini-2024-07-18"
@@ -34,13 +34,13 @@ def api_key():
 def image():
     width, height = 1, 1
     white_background = (255, 255, 255)
-    image = Image.new("RGB", (width, height), white_background)
+    image = PILImage.new("RGB", (width, height), white_background)
 
     # Save to an in-memory bytes buffer and read as png
     buffer = io.BytesIO()
     image.save(buffer, format="PNG")
     buffer.seek(0)
-    image = Image.open(buffer)
+    image = PILImage.open(buffer)
 
     return image
 
@@ -76,13 +76,16 @@ def test_openai_wrong_inference_parameters(model):
         model.generate("prompt", foo=10)
 
 
-def test_openai_wrong_input_type(model):
+def test_openai_wrong_input_type(model, image):
     class Foo:
         def __init__(self, foo):
             self.foo = foo
 
     with pytest.raises(TypeError, match="is not available"):
         model.generate(Foo("prompt"))
+
+    with pytest.raises(ValueError, match="All assets provided must be of type Image"):
+        model.generate(["foo?", Image(image), Video("")])
 
 
 def test_openai_wrong_output_type(model):
@@ -120,7 +123,7 @@ def test_openai_direct_call(model_no_model_name):
 
 @pytest.mark.api_call
 def test_openai_simple_vision(image, model):
-    result = model.generate(Vision("What does this logo represent?", image))
+    result = model.generate(["What does this logo represent?", Image(image)])
     assert isinstance(result, str)
 
 
@@ -148,7 +151,7 @@ def test_openai_simple_vision_pydantic(image, model):
     class Logo(BaseModel):
         name: int
 
-    result = model.generate(Vision("What does this logo represent?", image), Logo)
+    result = model.generate(["What does this logo represent?", Image(image)], Logo)
     assert isinstance(result, str)
     assert "name" in json.loads(result)
 
@@ -170,3 +173,10 @@ def test_openai_streaming(model):
     result = model.stream("Respond with one word. Not more.")
     assert isinstance(result, Generator)
     assert isinstance(next(result), str)
+
+
+def test_openai_batch(model):
+    with pytest.raises(NotImplementedError, match="does not support"):
+        model.batch(
+            ["Respond with one word.", "Respond with one word."],
+        )

@@ -66,7 +66,7 @@ import requests
 import PIL
 from anthropic import Anthropic
 from outlines import from_anthropic
-from outlines.templates import Vision
+from outlines.inputs import Image
 
 # Create the model
 model = from_anthropic(
@@ -80,7 +80,10 @@ def get_image(url):
     return PIL.Image.open(io.BytesIO(r.content))
 
 # Create the prompt
-prompt = Vision("Describe the image", get_image("https://picsum.photos/id/237/400/300"))
+prompt = [
+    "Describe the image",
+    Image(get_image("https://picsum.photos/id/237/400/300"))
+]
 
 # Stream the response
 for chunk in model.stream(prompt, max_tokens=50):

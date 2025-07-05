@@ -19,6 +19,16 @@ The `Generator` class is the core component of Outlines v1. `Generator` accepts 
     - `generate.regex`
     - `generate.text`
 
+## Methods
+
+Generators implement the same methods as models:
+
+- `__call__`
+- `batch`
+- `stream`
+
+All of them take a single positional argument: the prompt or list of prompts from which to generate completions. Contrarily to the equivalent methods of models, you do not need to provide an output type as it has already been defined when initializing the generator.
+
 ## Basic Usage
 
 ```python

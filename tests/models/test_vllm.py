@@ -6,11 +6,11 @@ import base64
 from typing import AsyncGenerator, Generator
 
 import pytest
-from PIL import Image
+from PIL import Image as PILImage
 from openai import AsyncOpenAI, OpenAI
 
+from outlines.inputs import Image
 from outlines.models.vllm import VLLM, AsyncVLLM, from_vllm
-from outlines.templates import Vision
 from outlines.types.dsl import CFG, Regex, JsonSchema
 from tests.test_utils.mock_openai_client import MockOpenAIClient, MockAsyncOpenAIClient
 
@@ -40,7 +40,7 @@ else:
 def get_base64_image():
     width, height = 256, 256
     white_background = (255, 255, 255)
-    image = Image.new("RGB", (width, height), white_background)
+    image = PILImage.new("RGB", (width, height), white_background)
 
     buffer = io.BytesIO()
     image.save(buffer, format="PNG")
@@ -161,13 +161,13 @@ def async_model_no_model_name():
 def image():
     width, height = 256, 256
     white_background = (255, 255, 255)
-    image = Image.new("RGB", (width, height), white_background)
+    image = PILImage.new("RGB", (width, height), white_background)
 
     # Save to an in-memory bytes buffer and read as png
     buffer = io.BytesIO()
     image.save(buffer, format="PNG")
     buffer.seek(0)
-    image = Image.open(buffer)
+    image = PILImage.open(buffer)
 
     return image
 
@@ -220,8 +220,15 @@ def test_vllm_sync_streaming(sync_model_no_model_name):
     assert isinstance(next(result), str)
 
 
+def test_vllm_sync_batch(sync_model):
+    with pytest.raises(NotImplementedError, match="does not support"):
+        sync_model.batch(
+            ["Respond with one word.", "Respond with one word."],
+        )
+
+
 def test_vllm_sync_vision(sync_model, image):
-    result = sync_model(Vision("Describe the image.", image))
+    result = sync_model(["Describe the image.", Image(image)])
     assert isinstance(result, str)
 
 
@@ -271,8 +278,16 @@ async def test_vllm_async_streaming(async_model_no_model_name):
 
 
 @pytest.mark.asyncio
+async def test_vllm_async_batch(async_model):
+    with pytest.raises(NotImplementedError, match="does not support"):
+        await async_model.batch(
+            ["Respond with one word.", "Respond with one word."],
+        )
+
+
+@pytest.mark.asyncio
 async def test_vllm_async_vision(async_model, image):
-    result = await async_model(Vision("Describe the image.", image))
+    result = await async_model(["Describe the image.", Image(image)])
     assert isinstance(result, str)
 
 

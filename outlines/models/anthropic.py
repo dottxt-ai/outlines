@@ -1,9 +1,10 @@
 """Integration with Anthropic's API."""
 
+from functools import singledispatchmethod
 from typing import TYPE_CHECKING, Any, Iterator, Optional, Union
 
+from outlines.inputs import Image
 from outlines.models.base import Model, ModelTypeAdapter
-from outlines.templates import Vision
 
 if TYPE_CHECKING:
     from anthropic import Anthropic as AnthropicClient
@@ -22,7 +23,8 @@ class AnthropicTypeAdapter(ModelTypeAdapter):
 
     """
 
-    def format_input(self, model_input: Union[str, Vision]) -> dict:
+    @singledispatchmethod
+    def format_input(self, model_input):
         """Generate the `messages` argument to pass to the client.
 
         Parameters
@@ -36,15 +38,13 @@ class AnthropicTypeAdapter(ModelTypeAdapter):
             The `messages` argument to pass to the client.
 
         """
-        if isinstance(model_input, str):
-            return self.format_str_model_input(model_input)
-        elif isinstance(model_input, Vision):
-            return self.format_vision_model_input(model_input)
         raise TypeError(
-            f"The input type {input} is not available with Anthropic. "
-            "The only available types are `str` and `Vision`."
+            f"The input type {type(model_input)} is not available with "
+            "Anthropic. The only available types are `str` and `list` "
+            "(containing a prompt and images)."
         )
 
+    @format_input.register(str)
     def format_str_model_input(self, model_input: str) -> dict:
         return {
             "messages": [
@@ -55,21 +55,33 @@ class AnthropicTypeAdapter(ModelTypeAdapter):
             ]
         }
 
-    def format_vision_model_input(self, model_input: Vision) -> dict:
+    @format_input.register(list)
+    def format_list_model_input(self, model_input: list) -> dict:
+        prompt = model_input[0]
+        images = model_input[1:]
+
+        if not all(isinstance(image, Image) for image in images):
+            raise ValueError("All assets provided must be of type Image")
+
+        image_content_messages = [
+            {
+                "type": "image",
+                "source": {
+                    "type": "base64",
+                    "media_type": image.image_format,
+                    "data": image.image_str,
+                },
+            }
+            for image in images
+        ]
+
         return {
             "messages": [
                 {
                     "role": "user",
                     "content": [
-                        {
-                            "type": "image",
-                            "source": {
-                                "type": "base64",
-                                "media_type": model_input.image_format,
-                                "data": model_input.image_str,
-                            },
-                        },
-                        {"type": "text", "text": model_input.prompt},
+                        *image_content_messages,
+                        {"type": "text", "text": prompt},
                     ],
                 }
             ]
@@ -111,7 +123,7 @@ class Anthropic(Model):
 
     def generate(
         self,
-        model_input: Union[str, Vision],
+        model_input: Union[str, list],
         output_type: Optional[Any] = None,
         **inference_kwargs: Any,
     ) -> str:
@@ -153,9 +165,19 @@ class Anthropic(Model):
         )
         return completion.content[0].text
 
+    def generate_batch(
+        self,
+        model_input,
+        output_type = None,
+        **inference_kwargs,
+    ):
+        raise NotImplementedError(
+            "Anthropic does not support batch generation."
+        )
+
     def generate_stream(
         self,
-        model_input: Union[str, Vision],
+        model_input: Union[str, list],
         output_type: Optional[Any] = None,
         **inference_kwargs: Any,
     ) -> Iterator[str]:

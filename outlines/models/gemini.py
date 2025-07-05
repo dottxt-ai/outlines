@@ -1,5 +1,6 @@
 """Integration with Gemini's API."""
 
+from functools import singledispatchmethod
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -9,8 +10,8 @@ from typing import (
     get_args,
 )
 
+from outlines.inputs import Image
 from outlines.models.base import Model, ModelTypeAdapter
-from outlines.templates import Vision
 from outlines.types import CFG, Choice, JsonSchema, Regex
 from outlines.types.utils import (
     is_dataclass,
@@ -39,7 +40,8 @@ class GeminiTypeAdapter(ModelTypeAdapter):
 
     """
 
-    def format_input(self, model_input: Union[str, Vision]) -> dict:
+    @singledispatchmethod
+    def format_input(self, model_input):
         """Generate the `contents` argument to pass to the client.
 
         Parameters
@@ -53,21 +55,36 @@ class GeminiTypeAdapter(ModelTypeAdapter):
             The `contents` argument to pass to the client.
 
         """
-        if isinstance(model_input, str):
-            return {"contents": [model_input]}
-        elif isinstance(model_input, Vision):
-            from google.genai import types
+        raise TypeError(
+            f"The input type {type(model_input)} is not available with "
+            "Gemini. The only available types are `str` and `list` "
+            "(containing a prompt and images)."
+        )
 
-            image_part = types.Part.from_bytes(
-                data=model_input.image_str,
-                mime_type=model_input.image_format
-            ),
-            return {"contents": [model_input.prompt, image_part]}
-        else:
-            raise TypeError(
-                f"The input type {input} is not available with Gemini. "
-                "The only available types are `str` and `Vision`."
+    @format_input.register(str)
+    def format_str_model_input(self, model_input: str) -> dict:
+        return {"contents": [model_input]}
+
+    @format_input.register(list)
+    def format_list_model_input(self, model_input: list) -> dict:
+        from google.genai import types
+
+        prompt = model_input[0]
+        images = model_input[1:]
+
+        if not all(isinstance(image, Image) for image in images):
+            raise ValueError("All assets provided must be of type Image")
+
+        image_parts = [
+            types.Part.from_bytes(
+                data=image.image_str,
+                mime_type=image.image_format
             )
+            for image in images
+        ]
+
+        return {"contents": [prompt, *image_parts]}
+
 
     def format_output_type(self, output_type: Optional[Any] = None) -> dict:
         """Generate the `generation_config` argument to pass to the client.
@@ -207,7 +224,7 @@ class Gemini(Model):
 
     def generate(
         self,
-        model_input: Union[str, Vision],
+        model_input: Union[str, list],
         output_type: Optional[Any] = None,
         **inference_kwargs,
     ) -> str:
@@ -241,9 +258,19 @@ class Gemini(Model):
 
         return completion.text
 
+    def generate_batch(
+        self,
+        model_input,
+        output_type = None,
+        **inference_kwargs,
+    ):
+        raise NotImplementedError(
+            "Gemini does not support batch generation."
+        )
+
     def generate_stream(
         self,
-        model_input: Union[str, Vision],
+        model_input: Union[str, list],
         output_type: Optional[Any] = None,
         **inference_kwargs,
     ) -> Iterator[str]:

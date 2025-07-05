@@ -1,13 +1,13 @@
-import io
 from typing import Generator
 
 from anthropic import Anthropic as AnthropicClient
-from PIL import Image
+from PIL import Image as PILImage
 import pytest
 
 import outlines
+from outlines.inputs import Image, Video
 from outlines.models.anthropic import Anthropic
-from outlines.templates import Vision
+
 
 MODEL_NAME = "claude-3-haiku-20240307"
 
@@ -26,7 +26,7 @@ def model_no_model_name():
 def image():
     width, height = 1, 1
     white_background = (255, 255, 255)
-    image = Image.new("RGB", (width, height), white_background)
+    image = PILImage.new("RGB", (width, height), white_background)
     image.format = "PNG"
 
     return image
@@ -54,7 +54,7 @@ def test_anthropic_wrong_inference_parameters():
         model.generate("prompt", foo=10, max_tokens=1024)
 
 
-def test_anthropic_wrong_input_type():
+def test_anthropic_wrong_input_type(image):
     class Foo:
         def __init__(self, foo):
             self.foo = foo
@@ -62,6 +62,9 @@ def test_anthropic_wrong_input_type():
     with pytest.raises(TypeError, match="is not available"):
         model = Anthropic(AnthropicClient(), MODEL_NAME)
         model.generate(Foo("prompt"))
+
+    with pytest.raises(ValueError, match="All assets provided must be of type Image"):
+        model.generate(["foo?", Image(image), Video("")])
 
 
 def test_anthropic_wrong_output_type():
@@ -94,7 +97,11 @@ def test_anthropic_direct_call(model_no_model_name):
 @pytest.mark.api_call
 def test_anthropic_simple_vision(model, image):
     result = model.generate(
-        Vision("What does this logo represent?", image), max_tokens=1024
+        [
+            "What does this logo represent?",
+            Image(image),
+        ],
+        max_tokens=1024,
     )
     assert isinstance(result, str)
 
@@ -104,3 +111,11 @@ def test_anthopic_streaming(model):
     result = model.stream("Respond with one word. Not more.", max_tokens=1024)
     assert isinstance(result, Generator)
     assert isinstance(next(result), str)
+
+
+def test_anthropic_batch(model):
+    with pytest.raises(NotImplementedError, match="does not support"):
+        model.batch(
+            ["Respond with one word.", "Respond with one word."],
+            max_tokens=1024,
+        )

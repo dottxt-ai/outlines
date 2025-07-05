@@ -4,13 +4,13 @@ from enum import Enum
 from typing import Annotated
 
 import pytest
-from PIL import Image
+from PIL import Image as PILImage
 from ollama import AsyncClient, Client
 from pydantic import BaseModel, Field
 
 import outlines
+from outlines.inputs import Image, Video
 from outlines.models import AsyncOllama, Ollama
-from outlines.templates import Vision
 
 
 MODEL_NAME = "tinyllama"
@@ -40,13 +40,13 @@ def async_model_no_model_name():
 def image():
     width, height = 1, 1
     white_background = (255, 255, 255)
-    image = Image.new("RGB", (width, height), white_background)
+    image = PILImage.new("RGB", (width, height), white_background)
 
     # Save to an in-memory bytes buffer and read as png
     buffer = io.BytesIO()
     image.save(buffer, format="PNG")
     buffer.seek(0)
-    image = Image.open(buffer)
+    image = PILImage.open(buffer)
 
     return image
 
@@ -65,6 +65,10 @@ def test_ollama_init_from_client():
     assert isinstance(model, Ollama)
     assert model.client == client
     assert model.model_name is None
+
+    # With invalid client
+    with pytest.raises(ValueError, match="Invalid client type"):
+        outlines.from_ollama(object())
 
 
 def test_ollama_wrong_inference_parameters(model):
@@ -94,7 +98,7 @@ def test_ollama_simple_vision(image, model):
     # This is not using a vision model, so it's not able to describe
     # the image, but we're still checking the model input syntax
     result = model.generate(
-        Vision("What does this logo represent?", image),
+        ["What does this logo represent?", Image(image)],
         model=MODEL_NAME,
     )
     assert isinstance(result, str)
@@ -118,9 +122,12 @@ def test_ollama_wrong_output_type(model):
         model.generate("foo?", Foo)
 
 
-def test_ollama_wrong_input_type(model):
+def test_ollama_wrong_input_type(model, image):
     with pytest.raises(TypeError, match="is not available"):
-        model.generate(["foo?", "bar?"], None)
+        model.generate({"foo?": "bar?"}, None)
+
+    with pytest.raises(ValueError, match="All assets provided must be of type Image"):
+        model.generate(["foo?", Image(image), Video("")], None)
 
 
 def test_ollama_stream(model):
@@ -137,6 +144,13 @@ def test_ollama_stream_json(model_no_model_name):
     for text in generator:
         generated_text.append(text)
     assert "foo" in json.loads("".join(generated_text))
+
+
+def test_ollama_batch(model):
+    with pytest.raises(NotImplementedError, match="does not support"):
+        model.batch(
+            ["Respond with one word.", "Respond with one word."],
+        )
 
 
 def test_ollama_async_init_from_client():
@@ -186,7 +200,7 @@ async def test_ollama_async_simple_vision(image, async_model):
     # This is not using a vision model, so it's not able to describe
     # the image, but we're still checking the model input syntax
     result = await async_model.generate(
-        Vision("What does this logo represent?", image),
+        ["What does this logo represent?", Image(image)],
         model=MODEL_NAME,
     )
     assert isinstance(result, str)
@@ -215,7 +229,7 @@ async def test_ollama_async_wrong_output_type(async_model):
 @pytest.mark.asyncio
 async def test_ollama_async_wrong_input_type(async_model):
     with pytest.raises(TypeError, match="is not available"):
-        await async_model.generate(["foo?", "bar?"], None)
+        await async_model.generate({"foo?": "bar?"}, None)
 
 
 @pytest.mark.asyncio
@@ -234,3 +248,11 @@ async def test_ollama_async_stream_json(async_model_no_model_name):
     async for chunk in async_generator:
         generated_text.append(chunk)
     assert "foo" in json.loads("".join(generated_text))
+
+
+@pytest.mark.asyncio
+async def test_ollama_async_batch(async_model):
+    with pytest.raises(NotImplementedError, match="does not support"):
+        await async_model.batch(
+            ["Respond with one word.", "Respond with one word."],
+        )
