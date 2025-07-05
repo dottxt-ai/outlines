@@ -355,7 +355,7 @@ class JsonSchema(Term):
             )
 
         # Preprocess the schema to handle union types
-        self.schema = preprocess_schema_for_union_types(schema_str)
+        self.schema = preprocess_schema_for_union_types(schema_str, ensure_ascii=ensure_ascii)
         self.whitespace_pattern = whitespace_pattern
 
     def __post_init__(self):
