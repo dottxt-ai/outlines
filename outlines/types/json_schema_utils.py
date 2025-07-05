@@ -34,12 +34,18 @@ def preprocess_schema_for_union_types(
     """
     # Convert to dict if string
     if isinstance(schema, str):
+        original_str = schema
         schema_dict = json.loads(schema)
     else:
+        original_str = None
         schema_dict = schema
 
     # Process the schema
     preprocessed = _convert_type_arrays_to_anyof(schema_dict)
+    
+    # If no changes were made, return the original string (if it was a string)
+    if preprocessed == schema_dict and original_str is not None:
+        return original_str
     
     # Return as JSON string with proper formatting
     return json.dumps(preprocessed, ensure_ascii=ensure_ascii, separators=(",", ":"))
