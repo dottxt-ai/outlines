@@ -9,23 +9,23 @@ def preprocess_schema_for_union_types(
 ) -> str:
     """
     Preprocess a JSON schema to handle union types (array type specifications).
-    
-    This is a temporary workaround for the limitation in outlines-core 0.1.26 
+
+    This is a temporary workaround for the limitation in outlines-core 0.1.26
     which doesn't support JSON schema type arrays like ["string", "null"].
     This function converts such arrays into the equivalent anyOf format.
-    
+
     Parameters
     ----------
     schema
         The JSON schema as a string or dictionary
     ensure_ascii
         Whether to ensure the output JSON is ASCII-only
-        
+
     Returns
     -------
     str
         The preprocessed JSON schema string
-        
+
     Examples
     --------
     >>> schema = {"type": ["string", "null"]}
@@ -35,18 +35,23 @@ def preprocess_schema_for_union_types(
     # Convert to dict if string
     if isinstance(schema, str):
         original_str = schema
-        schema_dict = json.loads(schema)
+        try:
+            schema_dict = json.loads(schema)
+        except (json.JSONDecodeError, ValueError):
+            # If JSON parsing fails, return original string unchanged
+            # This preserves original error handling behavior
+            return original_str
     else:
         original_str = None
         schema_dict = schema
 
     # Process the schema
     preprocessed = _convert_type_arrays_to_anyof(schema_dict)
-    
+
     # If no changes were made, return the original string (if it was a string)
     if preprocessed == schema_dict and original_str is not None:
         return original_str
-    
+
     # Return as JSON string with proper formatting
     return json.dumps(preprocessed, ensure_ascii=ensure_ascii, separators=(",", ":"))
 
@@ -54,12 +59,12 @@ def preprocess_schema_for_union_types(
 def _convert_type_arrays_to_anyof(obj: Any) -> Any:
     """
     Recursively convert type arrays to anyOf format.
-    
+
     Parameters
     ----------
     obj
         The JSON schema object or sub-object to process
-        
+
     Returns
     -------
     Any
@@ -71,7 +76,7 @@ def _convert_type_arrays_to_anyof(obj: Any) -> Any:
             # Convert type array to anyOf
             types = obj["type"]
             new_obj = {}
-            
+
             # Copy over non-type-specific properties
             type_specific_keys = {
                 "properties", "required", "additionalProperties",  # object
@@ -79,11 +84,11 @@ def _convert_type_arrays_to_anyof(obj: Any) -> Any:
                 "minLength", "maxLength", "pattern", "format",  # string
                 "minimum", "maximum", "exclusiveMinimum", "exclusiveMaximum", "multipleOf"  # number/integer
             }
-            
+
             for k, v in obj.items():
                 if k != "type" and k not in type_specific_keys:
                     new_obj[k] = v
-            
+
             # Create anyOf array
             any_of = []
             for t in types:
@@ -93,7 +98,7 @@ def _convert_type_arrays_to_anyof(obj: Any) -> Any:
                 else:
                     # For other types, preserve any type-specific constraints
                     type_schema = {"type": t}
-                    
+
                     # Copy over type-specific constraints
                     if t == "string":
                         for k in ["minLength", "maxLength", "pattern", "format"]:
@@ -119,9 +124,9 @@ def _convert_type_arrays_to_anyof(obj: Any) -> Any:
                                     type_schema[k] = _convert_type_arrays_to_anyof(obj[k])
                                 else:
                                     type_schema[k] = obj[k]
-                    
+
                     any_of.append(type_schema)
-            
+
             new_obj["anyOf"] = any_of
             return new_obj
         else:

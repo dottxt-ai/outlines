@@ -13,7 +13,7 @@ class TestJsonSchemaUnionTypes:
         """Test simple union type conversion."""
         schema = {"type": ["string", "null"]}
         result = json.loads(preprocess_schema_for_union_types(schema))
-        
+
         assert "anyOf" in result
         assert len(result["anyOf"]) == 2
         assert {"type": "string"} in result["anyOf"]
@@ -27,7 +27,7 @@ class TestJsonSchemaUnionTypes:
             "maxLength": 10
         }
         result = json.loads(preprocess_schema_for_union_types(schema))
-        
+
         assert "anyOf" in result
         assert len(result["anyOf"]) == 2
         assert {"type": "string", "minLength": 5, "maxLength": 10} in result["anyOf"]
@@ -43,7 +43,7 @@ class TestJsonSchemaUnionTypes:
             }
         }
         result = json.loads(preprocess_schema_for_union_types(schema))
-        
+
         assert result["properties"]["name"]["anyOf"][0] == {"type": "string"}
         assert result["properties"]["name"]["anyOf"][1] == {"type": "null"}
         assert result["properties"]["age"]["anyOf"][0] == {"type": "integer"}
@@ -56,7 +56,7 @@ class TestJsonSchemaUnionTypes:
             "items": {"type": ["string", "number", "null"]}
         }
         result = json.loads(preprocess_schema_for_union_types(schema))
-        
+
         assert "anyOf" in result["items"]
         assert len(result["items"]["anyOf"]) == 3
         assert {"type": "string"} in result["items"]["anyOf"]
@@ -79,18 +79,18 @@ class TestJsonSchemaUnionTypes:
         """Test that string input is properly handled."""
         schema_str = '{"type": ["string", "null"]}'
         result = json.loads(preprocess_schema_for_union_types(schema_str))
-        
+
         assert "anyOf" in result
         assert len(result["anyOf"]) == 2
 
     def test_ensure_ascii_parameter(self):
         """Test that ensure_ascii parameter is respected."""
         schema = {"type": "string", "pattern": "café"}
-        
+
         # With ensure_ascii=True (default)
         result_ascii = preprocess_schema_for_union_types(schema, ensure_ascii=True)
         assert "caf\\u00e9" in result_ascii
-        
+
         # With ensure_ascii=False
         result_unicode = preprocess_schema_for_union_types(schema, ensure_ascii=False)
         assert "café" in result_unicode
@@ -120,15 +120,15 @@ class TestJsonSchemaUnionTypes:
             }
         }
         result = json.loads(preprocess_schema_for_union_types(schema))
-        
+
         # Check value was converted
         assert "anyOf" in result["properties"]["data"]["properties"]["value"]
         assert len(result["properties"]["data"]["properties"]["value"]["anyOf"]) == 3
-        
+
         # Check metadata was converted
         assert "anyOf" in result["properties"]["data"]["properties"]["metadata"]
         assert len(result["properties"]["data"]["properties"]["metadata"]["anyOf"]) == 2
-        
+
         # Check tags items were converted
         metadata_object = next(
             item for item in result["properties"]["data"]["properties"]["metadata"]["anyOf"]
