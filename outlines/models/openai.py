@@ -15,13 +15,14 @@ from typing import (
     Union,
 )
 from dataclasses import asdict, dataclass, field, replace
+from functools import singledispatchmethod
 
 from pydantic import BaseModel, TypeAdapter
 
 from outlines.caching import cache
+from outlines.inputs import Image
 from outlines.models.base import Model, ModelTypeAdapter
 from outlines.models.utils import set_additional_properties_false_json_schema
-from outlines.templates import Vision
 from outlines.types import JsonSchema, Regex, CFG
 from outlines.types.utils import (
     is_dataclass,
@@ -47,7 +48,8 @@ class OpenAITypeAdapter(ModelTypeAdapter):
 
     """
 
-    def format_input(self, model_input: Union[str, Vision]) -> dict:
+    @singledispatchmethod
+    def format_input(self, model_input):
         """Generate the `messages` argument to pass to the client.
 
         Parameters
@@ -61,15 +63,13 @@ class OpenAITypeAdapter(ModelTypeAdapter):
             The formatted input to be passed to the client.
 
         """
-        if isinstance(model_input, str):
-            return self.format_str_model_input(model_input)
-        elif isinstance(model_input, Vision):
-            return self.format_vision_model_input(model_input)
         raise TypeError(
-            f"The input type {input} is not available with OpenAI. "
-            "The only available types are `str` and `Vision`."
+            f"The input type {type(model_input)} is not available with "
+            "OpenAI. The only available types are `str` and `list` "
+            "(containing a prompt and images)."
         )
 
+    @format_input.register(str)
     def format_str_model_input(self, model_input: str) -> dict:
         """Generate the `messages` argument to pass to the client when the user
         only passes a prompt.
@@ -84,23 +84,35 @@ class OpenAITypeAdapter(ModelTypeAdapter):
             ]
         }
 
-    def format_vision_model_input(self, model_input: Vision) -> dict:
+    @format_input.register(list)
+    def format_list_model_input(self, model_input: list) -> dict:
         """Generate the `messages` argument to pass to the client when the user
-        passes a prompt and an image.
+        passes a prompt and images.
 
         """
+        prompt = model_input[0]
+        images = model_input[1:]
+
+        if not all(isinstance(image, Image) for image in images):
+            raise ValueError("All assets provided must be of type Image")
+
+        image_parts = [
+            {
+                "type": "image_url",
+                "image_url": {
+                    "url": f"data:{image.image_format};base64,{image.image_str}"  # noqa: E702
+                },
+            }
+            for image in images
+        ]
+
         return {
             "messages": [
                 {
                     "role": "user",
                     "content": [
-                        {"type": "text", "text": model_input.prompt},
-                        {
-                            "type": "image_url",
-                            "image_url": {
-                                "url": f"data:{model_input.image_format};base64,{model_input.image_str}"  # noqa: E702
-                            },
-                        },
+                        {"type": "text", "text": prompt},
+                        *image_parts,
                     ],
                 }
             ]
@@ -258,7 +270,7 @@ class OpenAI(Model):
 
     def generate(
         self,
-        model_input: Union[str, Vision],
+        model_input: Union[str, list],
         output_type: Optional[Union[type[BaseModel], str]] = None,
         **inference_kwargs: Any,
     ) -> Union[str, list[str]]:
@@ -328,7 +340,7 @@ class OpenAI(Model):
 
     def generate_stream(
         self,
-        model_input: Union[str, Vision],
+        model_input: Union[str, list],
         output_type: Optional[Union[type[BaseModel], str]] = None,
         **inference_kwargs,
     ) -> Iterator[str]:

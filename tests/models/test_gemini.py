@@ -6,13 +6,13 @@ from enum import Enum
 from typing import Generator, Literal
 
 import pytest
-from PIL import Image
+from PIL import Image as PILImage
 from google.genai import Client
 from pydantic import BaseModel, ValidationError
 
 import outlines
+from outlines.inputs import Image, Video
 from outlines.models.gemini import Gemini
-from outlines.templates import Vision
 from outlines.types import Choice
 
 if sys.version_info >= (3, 12):
@@ -37,13 +37,13 @@ def model_no_model_name():
 def image():
     width, height = 1, 1
     white_background = (255, 255, 255)
-    image = Image.new("RGB", (width, height), white_background)
+    image = PILImage.new("RGB", (width, height), white_background)
 
     # Save to an in-memory bytes buffer and read as png
     buffer = io.BytesIO()
     image.save(buffer, format="PNG")
     buffer.seek(0)
-    image = Image.open(buffer)
+    image = PILImage.open(buffer)
 
     return image
 
@@ -72,6 +72,12 @@ def test_gemini_wrong_inference_parameters(model):
 
 
 @pytest.mark.api_call
+def test_gemini_wrong_input_type(model, image):
+    with pytest.raises(ValueError, match="All assets provided must be of type Image"):
+        model.generate(["foo?", Image(image), Video("")])
+
+
+@pytest.mark.api_call
 def test_gemini_simple_call(model):
     result = model.generate("Respond with one word. Not more.")
     assert isinstance(result, str)
@@ -88,7 +94,7 @@ def test_gemini_direct_call(model_no_model_name):
 
 @pytest.mark.api_call
 def test_gemini_simple_vision(model, image):
-    result = model.generate(Vision("What does this logo represent?", image))
+    result = model.generate(["What does this logo represent?", Image(image)])
     assert isinstance(result, str)
 
 
@@ -107,7 +113,7 @@ def test_gemini_simple_vision_pydantic(model, image):
     class Logo(BaseModel):
         name: int
 
-    result = model.generate(Vision("What does this logo represent?", image), Logo)
+    result = model.generate(["What does this logo represent?", Image(image)], Logo)
     assert isinstance(result, str)
     assert "name" in json.loads(result)
 

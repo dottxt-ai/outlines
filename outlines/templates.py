@@ -1,6 +1,5 @@
 """Create templates to easily build prompts."""
 
-import base64
 import functools
 import inspect
 import json
@@ -8,22 +7,20 @@ import os
 import re
 import textwrap
 from dataclasses import dataclass
-from io import BytesIO
 from pathlib import Path
 from typing import Any, Callable, Dict, Optional, Type, cast
 import warnings
 
 import jinja2
-from PIL import Image
 from pydantic import BaseModel
+from PIL import Image as PILImage
+
+from outlines.inputs import Image
 
 
-@dataclass
-class Vision:
-    """Contains the input for a vision model.
-
-    Provide an instance of this class as the `model_input` argument to a model
-    that supports vision.
+def Vision(prompt: str, image: PILImage.Image) -> list:
+    """This factory function replaces the deprecated `Vision` class until it is
+    fully removed in outlines v1.2.0.
 
     Parameters
     ----------
@@ -32,22 +29,30 @@ class Vision:
     image
         The image to use to generate the response.
 
+    Returns
+    -------
+    list
+        A list containing the prompt and Image instance.
     """
-    prompt: str
-    image: Image.Image
-
-    def __post_init__(self):
-        image = self.image
-
-        if not image.format:
-            raise TypeError(
-                "Could not read the format of the image passed to the model."
-            )
-
-        buffer = BytesIO()
-        image.save(buffer, format=image.format)
-        self.image_str = base64.b64encode(buffer.getvalue()).decode("utf-8")
-        self.image_format = f"image/{image.format.lower()}"
+    warnings.warn("""
+        The Vision function is deprecated and will be removed in outlines 1.2.0.
+        Instead of using Vision, please use a prompt along with an
+        outlines.inputs.Image instance.
+        For instance:
+        ```python
+        import openai
+        from outlines import Image, from_openai
+        model = from_openai("gpt-4o")
+        response = model(
+            ["A beautiful image of a cat", Image(my_image)],
+            max_tokens=100
+        )
+        ```
+        """,
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    return [prompt, Image(image)]
 
 
 @dataclass

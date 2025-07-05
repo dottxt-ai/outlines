@@ -176,7 +176,8 @@ def test_generator_v0_adapter_vision_call_stream(transformers_vision_model):
     media = img_from_url(
         "https://upload.wikimedia.org/wikipedia/commons/2/25/Siam_lilacpoint.jpg"
     )
-    result = generator_v0_adapter("Hello, world!<image>", media, max_tokens=10)
+    with pytest.deprecated_call():
+        result = generator_v0_adapter("Hello, world!<image>", media, max_tokens=10)
     assert isinstance(result, str)
     with pytest.raises(
         NotImplementedError,

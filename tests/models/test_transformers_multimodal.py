@@ -6,7 +6,7 @@ from io import BytesIO
 from urllib.request import urlopen
 
 import pytest
-from PIL import Image
+from PIL import Image as PILImage
 from pydantic import BaseModel
 from transformers import (
     LlavaForConditionalGeneration,
@@ -14,6 +14,7 @@ from transformers import (
 )
 
 import outlines
+from outlines.inputs import Image
 from outlines.models.transformers import (
     TransformersMultiModal,
     TransformerTokenizer,
@@ -32,7 +33,9 @@ IMAGE_URLS = [
 def images():
     def img_from_url(url):
         img_byte_stream = BytesIO(urlopen(url).read())
-        return Image.open(img_byte_stream).convert("RGB")
+        image = PILImage.open(img_byte_stream).convert("RGB")
+        image.format = "PNG"
+        return image
 
     return [img_from_url(url) for url in IMAGE_URLS]
 
@@ -58,7 +61,7 @@ def test_transformers_vision_instantiate_simple():
 
 def test_transformers_vision_simple(model, images):
     result = model.generate(
-        {"text": "<image>Describe this image in one sentence:", "images": images[0]},
+        ["<image>Describe this image in one sentence:", Image(images[0])],
         None,
         max_new_tokens=2,
     )
@@ -67,7 +70,7 @@ def test_transformers_vision_simple(model, images):
 
 def test_transformers_vision_call(model, images):
     result = model(
-        {"text": "<image>Describe this image in one sentence:", "images": images[0]},
+        ["<image>Describe this image in one sentence:", Image(images[0])],
         max_new_tokens=2,
     )
     assert isinstance(result, str)
@@ -76,21 +79,22 @@ def test_transformers_vision_call(model, images):
 def test_transformers_vision_wrong_number_images(model, images):
     with pytest.raises(ValueError):
         model(
-            {
-                "text": "<image>Describe this image in one sentence:",
-                "images": [images[0], images[1]],
-            }
+            [
+                "<image>Describe this image in one sentence:",
+                Image(images[0]),
+                Image(images[1]),
+            ],
         )
 
 
 def test_transformers_vision_wrong_input_type(model):
-    with pytest.raises(NotImplementedError):
+    with pytest.raises(TypeError):
         model.generate("invalid input", None)
 
 
 def test_transformers_inference_kwargs(model, images):
     result = model(
-        {"text": "<image>Describe this image in one sentence:", "images": images[0]},
+        ["<image>Describe this image in one sentence:", Image(images[0])],
         max_new_tokens=2,
     )
     assert isinstance(result, str)
@@ -99,20 +103,21 @@ def test_transformers_inference_kwargs(model, images):
 def test_transformers_invalid_inference_kwargs(model, images):
     with pytest.raises(ValueError):
         model(
-            {
-                "text": "<image>Describe this image in one sentence:",
-                "images": images[0],
-            },
+            [
+                "<image>Describe this image in one sentence:",
+                Image(images[0]),
+            ],
             foo="bar",
         )
 
 
 def test_transformers_several_images(model, images):
     result = model(
-        {
-            "text": "<image><image>Describe this image in one sentence:",
-            "images": [images[0], images[1]],
-        },
+        [
+            "<image><image>Describe this image in one sentence:",
+            Image(images[0]),
+            Image(images[1]),
+        ],
         max_new_tokens=2,
     )
     assert isinstance(result, str)
@@ -123,7 +128,7 @@ def test_transformers_vision_json(model, images):
         name: str
 
     result = model(
-        {"text": "<image>Give a name to this animal.", "images": images[0]},
+        ["<image>Give a name to this animal.", Image(images[0])],
         Foo,
         max_new_tokens=10,
     )
@@ -132,7 +137,7 @@ def test_transformers_vision_json(model, images):
 
 def test_transformers_vision_regex(model, images):
     result = model(
-        {"text": "<image>How old is it?", "images": images[0]},
+        ["<image>How old is it?", Image(images[0])],
         Regex(r"[0-9]")
     )
 
@@ -146,7 +151,7 @@ def test_transformers_vision_choice(model, images):
         dog = "dog"
 
     result = model(
-        {"text": "<image>Is it a cat or a dog?", "images": images[0]},
+        ["<image>Is it a cat or a dog?", Image(images[0])],
         Foo,
     )
 
@@ -156,7 +161,7 @@ def test_transformers_vision_choice(model, images):
 
 def test_transformers_vision_multiple_samples(model, images):
     result = model(
-        {"text": "<image>Describe this image in one sentence.", "images": images[0]},
+        ["<image>Describe this image in one sentence.", Image(images[0])],
         num_return_sequences=2,
         num_beams=2,
         max_new_tokens=2,
@@ -168,14 +173,8 @@ def test_transformers_vision_multiple_samples(model, images):
 def test_transformers_vision_batch(model, images):
     result = model.batch(
         [
-            {
-                "text": "<image>Describe this image in one sentence.",
-                "images": images[0],
-            },
-            {
-                "text": "<image>Describe this image in one sentence.",
-                "images": [images[0]],
-            }
+            ["<image>Describe this image in one sentence.", Image(images[0])],
+            ["<image>Describe this image in one sentence.", Image(images[0])],
         ],
         max_new_tokens=2,
     )
@@ -184,14 +183,8 @@ def test_transformers_vision_batch(model, images):
 
     result = model.batch(
         [
-            {
-                "text": "<image>Describe this image in one sentence.<image>",
-                "images": [images[0], images[1]],
-            },
-            {
-                "text": "<image>Describe this image in one sentence.<image>",
-                "images": [images[0], images[1]],
-            }
+            ["<image>Describe this image in one sentence.<image>", Image(images[0]), Image(images[1])],
+            ["<image>Describe this image in one sentence.<image>", Image(images[0]), Image(images[1])],
         ],
         num_return_sequences=2,
         num_beams=2,
@@ -202,3 +195,16 @@ def test_transformers_vision_batch(model, images):
     for item in result:
         assert isinstance(item, list)
         assert len(item) == 2
+
+
+def test_transformers_vision_deprecated_input_type(model, images):
+    with pytest.warns(DeprecationWarning):
+        result = model.generate(
+            {
+                "text": "<image>Describe this image in one sentence:",
+                "images": images[0],
+            },
+            None,
+            max_new_tokens=2,
+        )
+        assert isinstance(result, str)

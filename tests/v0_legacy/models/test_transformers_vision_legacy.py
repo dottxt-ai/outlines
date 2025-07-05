@@ -96,16 +96,17 @@ def test_transformers_vision_legacy_call_generation():
         )
     assert isinstance(generator, GeneratorV0Adapter)
 
-    result = generator(
-        "Hello, world!<image>",
-        img_from_url(
-            "https://upload.wikimedia.org/wikipedia/commons"
-            + "/2/25/Siam_lilacpoint.jpg"
-        ),
-        10,
-        "foo",
-        2,
-        length_penalty=0.5,
-        tokenizer=model.tokenizer.tokenizer,
-    )
-    assert isinstance(result, str)
+    with pytest.deprecated_call():
+      result = generator(
+          "Hello, world!<image>",
+          img_from_url(
+              "https://upload.wikimedia.org/wikipedia/commons"
+              + "/2/25/Siam_lilacpoint.jpg"
+          ),
+          10,
+          "foo",
+          2,
+          length_penalty=0.5,
+          tokenizer=model.tokenizer.tokenizer,
+      )
+      assert isinstance(result, str)

@@ -88,12 +88,20 @@ class GeneratorV0Adapter:
         seed: Optional[int] = None,
         **model_specific_params,
     ):
-        result = self.generator(
-            prompts,
-            **self.create_inference_params(
-                max_tokens, stop_at, seed, **model_specific_params
+        if isinstance(prompts, list):
+            result = self.generator.batch(
+                prompts,
+                **self.create_inference_params(
+                    max_tokens, stop_at, seed, **model_specific_params
+                )
             )
-        )
+        else:
+            result = self.generator(
+                prompts,
+                **self.create_inference_params(
+                    max_tokens, stop_at, seed, **model_specific_params
+                )
+            )
         if isinstance(result, list):
             return [self.format_sequence(r) for r in result]
         else:

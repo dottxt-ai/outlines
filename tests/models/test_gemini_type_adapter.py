@@ -5,14 +5,14 @@ from dataclasses import dataclass
 from enum import Enum, EnumMeta
 from typing import Literal
 
-from PIL import Image
+from PIL import Image as PILImage
 from genson import SchemaBuilder
 from google.genai import types
 from pydantic import BaseModel
 
 from outlines import cfg, json_schema, regex
+from outlines.inputs import Image
 from outlines.models.gemini import GeminiTypeAdapter
-from outlines.templates import Vision
 
 if sys.version_info >= (3, 12):
     from typing import TypedDict, is_typeddict
@@ -37,13 +37,13 @@ def schema():
 def image():
     width, height = 1, 1
     white_background = (255, 255, 255)
-    image = Image.new("RGB", (width, height), white_background)
+    image = PILImage.new("RGB", (width, height), white_background)
 
     # Save to an in-memory bytes buffer and read as png
     buffer = io.BytesIO()
     image.save(buffer, format="PNG")
     buffer.seek(0)
-    image = Image.open(buffer)
+    image = PILImage.open(buffer)
 
     return image
 
@@ -60,16 +60,16 @@ def test_gemini_type_adapter_input_text(adapter):
 
 
 def test_gemini_type_adapter_input_vision(adapter, image):
-    input_message = Vision("hello", image)
+    input_message = ["hello", Image(image)]
     result = adapter.format_input(input_message)
     image_part = types.Part.from_bytes(
-        data=input_message.image_str,
-        mime_type=input_message.image_format
-    ),
-    assert result == {"contents": [input_message.prompt, image_part]}
+        data=input_message[1].image_str,
+        mime_type=input_message[1].image_format
+    )
+    assert result == {"contents": [input_message[0], image_part]}
 
 
-def test_dottxt_type_adapter_input_invalid(adapter):
+def test_gemini_type_adapter_input_invalid(adapter):
     @dataclass
     class Audio:
         file: str
