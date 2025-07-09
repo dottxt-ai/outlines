@@ -39,24 +39,110 @@ For instance:
 
 ```python
 import outlines
-from google import genai
+from google.genai import Client
 
 # Create the model
-model = outlines.from_gemini(genai.Client(), "gemini-1.5-flash-latest")
+model = outlines.from_gemini(
+    Client(),
+    "gemini-1.5-flash-latest"
+)
 
 # Call it to generate text
 result = model("What's the capital of Latvia?", max_output_tokens=20)
 print(result) # 'Riga'
 ```
 
-Gemini also supports streaming. For instance:
+#### Vision
+
+Some Gemini models support vision input. To use this feature, provide a list containing a text prompt and `Image` instances.
+
+For instance:
+
+```python
+import io
+import requests
+import PIL
+import outlines
+from google.genai import Client
+from outlines.inputs import Image
+
+# Create the model
+model = outlines.from_gemini(
+    Client(),
+    "gemini-1.5-flash-latest"
+)
+
+# Function to get an image
+def get_image(url):
+    r = requests.get(url)
+    return PIL.Image.open(io.BytesIO(r.content))
+
+# Create the prompt containing the text and the image
+prompt = [
+    "Describe the image",
+    Image(get_image("https://picsum.photos/id/237/400/300"))
+]
+
+# Call the model to generate a response
+response = model(prompt, max_output_tokens=50)
+print(response) # 'This is a picture of a black dog.'
+```
+
+#### Chat
+
+You can also use chat inputs with the `Gemini` model. To do so, call the model with a `Chat` instance. The content of messsage within the chat can be vision inputs as described above.
+
+For instance:
+
+```python
+import io
+import requests
+import PIL
+import outlines
+from google.genai import Client
+from outlines.inputs import Chat, Image
+
+# Create the model
+model = outlines.from_gemini(
+    Client(),
+    "gemini-1.5-flash-latest"
+)
+
+# Function to get an image
+def get_image(url):
+    r = requests.get(url)
+    return PIL.Image.open(io.BytesIO(r.content))
+
+# Create the chat input
+prompt = Chat([
+    {"role": "user", "content": "You are a helpful assistant that helps me described pictures."},
+    {"role": "assistant", "content": "I'd be happy to help you describe pictures! Please go ahead and share an image"},
+    {
+        "role": "user",
+        "content": ["Describe the image", Image(get_image("https://picsum.photos/id/237/400/300"))]
+    },
+])
+
+# Call the model to generate a response
+response = model(prompt, max_output_tokens=50)
+print(response) # 'This is a picture of a black dog.'
+```
+
+#### Streaming
+
+Finally, the `Gemini` model supports streaming through the `stream` method.
+
+For instance:
 
 ```python
 import outlines
-from google import genai
+from google.genai import Client
 
 # Create the model
-model = outlines.from_gemini(genai.Client(), "gemini-1.5-flash-latest")
+model = outlines.from_gemini(
+    Client(),
+    "gemini-1.5-flash-latest"
+)
 
 # Stream text
 for chunk in model.stream("Write a short story about a cat.", max_output_tokens=20):

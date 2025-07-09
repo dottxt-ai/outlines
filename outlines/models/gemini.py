@@ -10,7 +10,7 @@ from typing import (
     get_args,
 )
 
-from outlines.inputs import Image
+from outlines.inputs import Image, Chat
 from outlines.models.base import Model, ModelTypeAdapter
 from outlines.types import CFG, Choice, JsonSchema, Regex
 from outlines.types.utils import (
@@ -57,34 +57,92 @@ class GeminiTypeAdapter(ModelTypeAdapter):
         """
         raise TypeError(
             f"The input type {type(model_input)} is not available with "
-            "Gemini. The only available types are `str` and `list` "
+            "Gemini. The only available types are `str`, `list` and `Chat` "
             "(containing a prompt and images)."
         )
 
     @format_input.register(str)
     def format_str_model_input(self, model_input: str) -> dict:
-        return {"contents": [model_input]}
+        return {"contents": [self._create_text_part(model_input)]}
 
     @format_input.register(list)
     def format_list_model_input(self, model_input: list) -> dict:
-        from google.genai import types
+        return {
+            "contents": [
+                self._create_message("user", model_input)
+            ]
+        }
 
-        prompt = model_input[0]
-        images = model_input[1:]
+    @format_input.register(Chat)
+    def format_chat_model_input(self, model_input: Chat) -> dict:
+        """Generate the `contents` argument to pass to the client when the user
+        passes a Chat instance.
 
-        if not all(isinstance(image, Image) for image in images):
-            raise ValueError("All assets provided must be of type Image")
+        """
+        return {
+            "contents": [
+                self._create_message(message["role"], message["content"])
+                for message in model_input.messages
+            ]
+        }
 
-        image_parts = [
-            types.Part.from_bytes(
-                data=image.image_str,
-                mime_type=image.image_format
+    def _create_message(self, role: str, content: str | list) -> dict:
+        """Create a message."""
+
+        # Gemini uses "model" instead of "assistant"
+        if role == "assistant":
+            role = "model"
+
+        if isinstance(content, str):
+            return {
+                "role": role,
+                "parts": [self._create_text_part(content)],
+            }
+
+        elif isinstance(content, list):
+            prompt = content[0]
+            images = content[1:]
+
+            if not all(isinstance(image, Image) for image in images):
+                raise ValueError("All assets provided must be of type Image")
+
+            image_parts = [
+                self._create_img_part(image)
+                for image in images
+            ]
+
+            return {
+                "role": role,
+                "parts": [
+                    self._create_text_part(prompt),
+                    *image_parts,
+                ],
+            }
+
+        else:
+            raise ValueError(
+                f"Invalid content type: {type(content)}. "
+                "The content must be a string or a list containing a string "
+                "and a list of images."
             )
-            for image in images
-        ]
 
         return {"contents": [prompt, *image_parts]}
 
+
+    def _create_text_part(self, text: str) -> dict:
+        """Create a text input part for a message."""
+        return {
+            "text": text,
+        }
+
+    def _create_img_part(self, image: Image) -> dict:
+        """Create an image input part for a message."""
+        return {
+            "inline_data": {
+                "mime_type": image.image_format,
+                "data": image.image_str,
+            }
+        }
 
     def format_output_type(self, output_type: Optional[Any] = None) -> dict:
         """Generate the `generation_config` argument to pass to the client.
@@ -224,7 +282,7 @@ class Gemini(Model):
 
     def generate(
         self,
-        model_input: Union[str, list],
+        model_input: Union[Chat, list, str],
         output_type: Optional[Any] = None,
         **inference_kwargs,
     ) -> str:
@@ -270,7 +328,7 @@ class Gemini(Model):
 
     def generate_stream(
         self,
-        model_input: Union[str, list],
+        model_input: Union[Chat, list, str],
         output_type: Optional[Any] = None,
         **inference_kwargs,
     ) -> Iterator[str]:
