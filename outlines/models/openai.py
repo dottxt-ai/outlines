@@ -20,7 +20,7 @@ from functools import singledispatchmethod
 from pydantic import BaseModel, TypeAdapter
 
 from outlines.caching import cache
-from outlines.inputs import Image
+from outlines.inputs import Chat, Image
 from outlines.models.base import Model, ModelTypeAdapter
 from outlines.models.utils import set_additional_properties_false_json_schema
 from outlines.types import JsonSchema, Regex, CFG
@@ -65,57 +65,83 @@ class OpenAITypeAdapter(ModelTypeAdapter):
         """
         raise TypeError(
             f"The input type {type(model_input)} is not available with "
-            "OpenAI. The only available types are `str` and `list` "
-            "(containing a prompt and images)."
+            "OpenAI. The only available types are `str`, `list` and `Chat`."
         )
 
     @format_input.register(str)
-    def format_str_model_input(self, model_input: str) -> dict:
-        """Generate the `messages` argument to pass to the client when the user
-        only passes a prompt.
+    def format_str_model_input(self, model_input: str) -> list:
+        """Generate the value of the `messages` argument to pass to the
+        client when the user only passes a prompt.
 
         """
-        return {
-            "messages": [
-                {
-                    "role": "user",
-                    "content": model_input,
-                }
-            ]
-        }
-
-    @format_input.register(list)
-    def format_list_model_input(self, model_input: list) -> dict:
-        """Generate the `messages` argument to pass to the client when the user
-        passes a prompt and images.
-
-        """
-        prompt = model_input[0]
-        images = model_input[1:]
-
-        if not all(isinstance(image, Image) for image in images):
-            raise ValueError("All assets provided must be of type Image")
-
-        image_parts = [
-            {
-                "type": "image_url",
-                "image_url": {
-                    "url": f"data:{image.image_format};base64,{image.image_str}"  # noqa: E702
-                },
-            }
-            for image in images
+        return [
+            self._create_message("user", model_input)
         ]
 
-        return {
-            "messages": [
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": prompt},
-                        *image_parts,
-                    ],
-                }
+    @format_input.register(list)
+    def format_list_model_input(self, model_input: list) -> list:
+        """Generate the value of the `messages` argument to pass to the
+        client when the user passes a prompt and images.
+
+        """
+        return [
+            self._create_message("user", model_input)
+        ]
+
+    @format_input.register(Chat)
+    def format_chat_model_input(self, model_input: Chat) -> list:
+        """Generate the value of the `messages` argument to pass to the
+        client when the user passes a Chat instance.
+
+        """
+        return [
+            self._create_message(message["role"], message["content"])
+            for message in model_input.messages
+        ]
+
+    def _create_message(self, role: str, content: str | list) -> dict:
+        """Create a message."""
+
+        if isinstance(content, str):
+            return {
+                "role": role,
+                "content": content,
+            }
+
+        elif isinstance(content, list):
+            prompt = content[0]
+            images = content[1:]
+
+            if not all(isinstance(image, Image) for image in images):
+                raise ValueError("All assets provided must be of type Image")
+
+            image_parts = [
+                self._create_img_content(image)
+                for image in images
             ]
+
+            return {
+                "role": role,
+                "content": [
+                    {"type": "text", "text": prompt},
+                    *image_parts,
+                ],
+            }
+
+        else:
+            raise ValueError(
+                f"Invalid content type: {type(content)}. "
+                "The content must be a string or a list containing a string "
+                "and a list of images."
+            )
+
+    def _create_img_content(self, image: Image) -> dict:
+        """Create the content for an image input."""
+        return {
+            "type": "image_url",
+            "image_url": {
+                "url": f"data:{image.image_format};base64,{image.image_str}"  # noqa: E702
+            },
         }
 
     def format_output_type(self, output_type: Optional[Any] = None) -> dict:
@@ -270,7 +296,7 @@ class OpenAI(Model):
 
     def generate(
         self,
-        model_input: Union[str, list],
+        model_input: Union[Chat, list, str],
         output_type: Optional[Union[type[BaseModel], str]] = None,
         **inference_kwargs: Any,
     ) -> Union[str, list[str]]:
@@ -303,7 +329,7 @@ class OpenAI(Model):
 
         try:
             result = self.client.chat.completions.create(
-                **messages,
+                messages=messages,
                 **response_format,
                 **inference_kwargs,
             )
@@ -340,7 +366,7 @@ class OpenAI(Model):
 
     def generate_stream(
         self,
-        model_input: Union[str, list],
+        model_input: Union[Chat, list, str],
         output_type: Optional[Union[type[BaseModel], str]] = None,
         **inference_kwargs,
     ) -> Iterator[str]:
@@ -373,7 +399,7 @@ class OpenAI(Model):
 
         stream = self.client.chat.completions.create(
             stream=True,
-            **messages,
+            messages=messages,
             **response_format,
             **inference_kwargs
         )

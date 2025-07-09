@@ -9,7 +9,7 @@ from openai import OpenAI as OpenAIClient
 from pydantic import BaseModel, Field
 
 import outlines
-from outlines.inputs import Image, Video
+from outlines.inputs import Chat, Image, Video
 from outlines.models.openai import OpenAI
 from outlines.types import json_schema
 
@@ -124,6 +124,18 @@ def test_openai_direct_call(model_no_model_name):
 @pytest.mark.api_call
 def test_openai_simple_vision(image, model):
     result = model.generate(["What does this logo represent?", Image(image)])
+    assert isinstance(result, str)
+
+
+@pytest.mark.api_call
+def test_openai_chat(image, model):
+    result = model.generate(Chat(messages=[
+        {"role": "system", "content": "You are a helpful assistant."},
+        {
+            "role": "user",
+            "content": ["What does this logo represent?", Image(image)]
+        },
+    ]), max_tokens=10)
     assert isinstance(result, str)
 
 

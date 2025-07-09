@@ -10,7 +10,7 @@ from PIL import Image as PILImage
 from pydantic import BaseModel
 
 from outlines import cfg, json_schema, regex
-from outlines.inputs import Image
+from outlines.inputs import Chat, Image
 from outlines.models.openai import OpenAITypeAdapter
 
 if sys.version_info >= (3, 12):
@@ -56,31 +56,56 @@ def adapter():
 def test_openai_type_adapter_input_text(adapter):
     message = "prompt"
     result = adapter.format_input(message)
-    assert isinstance(result, dict)
-    assert len(result["messages"]) == 1
-    assert result["messages"][0]["role"] == "user"
-    assert result["messages"][0]["content"] == message
+    assert result == [{"role": "user", "content": message}]
 
 
 def test_openai_type_adapter_input_vision(adapter, image):
-    input_message = ["hello", Image(image)]
-    result = adapter.format_input(input_message)
-    assert isinstance(result, dict)
+    image_input = Image(image)
+    text_input = "hello"
+    result = adapter.format_input([text_input, image_input])
+    assert result == [
+        {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": text_input},
+                {
+                    "type": "image_url",
+                    "image_url": {
+                        "url": f"data:image/png;base64,{image_input.image_str}"
+                    },
+                },
+            ],
+        },
+    ]
 
-    messages = result["messages"]
-    assert len(messages) == 1
 
-    message = messages[0]
-    assert message["role"] == "user"
-    assert len(message["content"]) == 2
-    assert message["content"][0]["type"] == "text"
-    assert message["content"][0]["text"] == "hello"
-
-    assert message["content"][1]["type"] == "image_url"
-    assert (
-        message["content"][1]["image_url"]["url"]
-        == f"data:image/png;base64,{input_message[1].image_str}"
-    )
+def test_openai_type_adapter_input_chat(adapter, image):
+    image_input = Image(image)
+    model_input = Chat(messages=[
+        {"role": "system", "content": "prompt"},
+        {"role": "user", "content": [
+            "hello",
+            image_input,
+        ]},
+        {"role": "assistant", "content": "response"},
+    ])
+    result = adapter.format_input(model_input)
+    assert result == [
+        {"role": "system", "content": "prompt"},
+        {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": "hello"},
+                {
+                    "type": "image_url",
+                    "image_url": {
+                        "url": f"data:image/png;base64,{image_input.image_str}"
+                    },
+                },
+            ]
+        },
+        {"role": "assistant", "content": "response"},
+    ]
 
 
 def test_openai_type_adapter_input_invalid(adapter):
@@ -88,11 +113,22 @@ def test_openai_type_adapter_input_invalid(adapter):
     class Audio:
         file: str
 
-    prompt = Audio(
-        "file",
-    )
-    with pytest.raises(TypeError, match="The input type"):
-        _ = adapter.format_input(prompt)
+    with pytest.raises(TypeError, match="is not available"):
+        _ = adapter.format_input(Audio("file"))
+
+    with pytest.raises(
+        ValueError,
+        match="All assets provided must be of type Image",
+    ):
+        _ = adapter.format_input(["prompt", Audio("file")])
+
+    with pytest.raises(
+        ValueError,
+        match="The content must be a string or a list",
+    ):
+        _ = adapter.format_input(
+            Chat(messages=[{"role": "user", "content": {"foo": "bar"}}])
+        )
 
 
 def test_openai_type_adapter_output_invalid(adapter):
