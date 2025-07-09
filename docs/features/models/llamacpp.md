@@ -54,7 +54,41 @@ result = model("What's the capital of Latvia?", max_tokens=20)
 print(result) # 'Riga'
 ```
 
-The `LlamaCpp` model also supports streaming. For instance:
+#### Chat
+
+You can also use chat inputs with the `LlamaCpp` model. To do so, call the model with a `Chat` instance.
+
+For instance:
+
+```python
+import outlines
+from llama_cpp import Llama
+from outlines.inputs import Chat
+
+# Create the model
+model = outlines.from_llamacpp(
+    Llama.from_pretrained(
+        repo_id="TheBloke/Mistral-7B-Instruct-v0.2-GGUF",
+        filename="mistral-7b-instruct-v0.2.Q5_K_M.gguf",
+    )
+)
+
+# Create the prompt containing the text and the image
+prompt = Chat([
+    {"role": "system", "content": "You are a helpful assistant."},
+    {"role": "assistant", "content": "What's the capital of Latvia?"},
+])
+
+# Call the model to generate a response
+response = model(prompt, max_tokens=50)
+print(response) # 'This is a picture of a black dog.'
+```
+
+#### Streaming
+
+The `LlamaCpp` model also supports streaming.
+
+For instance:
 
 ```python
 import outlines
