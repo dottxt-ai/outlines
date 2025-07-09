@@ -8,7 +8,7 @@ from genson import SchemaBuilder
 from PIL import Image as PILImage
 from pydantic import BaseModel
 
-from outlines.inputs import Image
+from outlines.inputs import Chat, Image
 from outlines.models.ollama import OllamaTypeAdapter
 from outlines.types import cfg, json_schema, regex
 
@@ -52,23 +52,53 @@ def adapter():
 
 
 def test_ollama_type_adapter_input_text(adapter):
-    message = "prompt"
-    result = adapter.format_input(message)
-    assert isinstance(result, dict)
-    assert result.get("prompt") == message
+    text_input = "prompt"
+    result = adapter.format_input(text_input)
+    assert isinstance(result, list)
+    assert len(result) == 1
+    assert result[0] == {"role": "user", "content": text_input}
 
 
 def test_ollama_type_adapter_input_vision(adapter, image):
-    prompt = ["prompt", Image(image)]
-    result = adapter.format_input(prompt)
-    assert isinstance(result, dict)
-    assert result.get("prompt") == prompt[0]
-    assert result.get("images") == [prompt[1].image_str]
+    image_input = Image(image)
+    text_input = "prompt"
+    result = adapter.format_input([text_input, image_input])
+    assert isinstance(result, list)
+    assert len(result) == 1
+    assert result[0] == {
+        "role": "user",
+        "content": text_input,
+        "image": [image_input.image_str],
+    }
+
+
+def test_ollama_type_adapter_input_chat(adapter, image):
+    image_input = Image(image)
+    chat_input = Chat(messages=[
+        {"role": "system", "content": "prompt"},
+        {"role": "user", "content": [
+            "hello",
+            image_input,
+        ]},
+        {"role": "assistant", "content": "response"},
+    ])
+    result = adapter.format_input(chat_input)
+    assert isinstance(result, list)
+    assert len(result) == 3
+    assert result[0] == {"role": "system", "content": "prompt"}
+    assert result[1] == {"role": "user", "content": "hello", "image": [image_input.image_str]}
+    assert result[2] == {"role": "assistant", "content": "response"}
 
 
 def test_ollama_type_adapter_input_invalid(adapter):
     prompt = {"foo": "bar"}
     with pytest.raises(TypeError, match="The input type"):
+        _ = adapter.format_input(prompt)
+
+    prompt = Chat(messages=[
+        {"role": "user", "content": {"foo": "bar"}},
+    ])
+    with pytest.raises(ValueError, match="Invalid content type"):
         _ = adapter.format_input(prompt)
 
 
