@@ -15,7 +15,11 @@ Outlines models are objects that wrap an inference client or engine. Models prov
 
 All Outlines model classes have an associated loader function to facilitate initializing a model instance. The name of this function is `from_` plus the name of the model in lower-case letters. For instance, Outlines has a `Transformers` model and an associated `from_transformers` loader function. The parameters to load a model are specific to each provider, please consult the documentation of the model you want to use for more information.
 
-After having created a model instance, you can either directly call it to generate text or first create a reusable generator that you would then call. In either case, you can provide an `output_type` to constrain the format of the generation output. See the [output types section](../core/output_types.md) for more information on constrained generation.
+After having created a model instance, you can either directly call it to generate text or first create a reusable generator that you would then call.
+
+The input you must provide to a model to generate text can be a simple text prompt or a vision or chat input for models that support them. See the [model inputs section](../core/inputs.md) for more information on model inputs formats.
+
+In all cases, you can provide an `output_type` to constrain the format of the generation output. See the [output types section](../core/output_types.md) for more information on constrained generation.
 
 For instance:
 
