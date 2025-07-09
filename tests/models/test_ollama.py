@@ -9,7 +9,7 @@ from ollama import AsyncClient, Client
 from pydantic import BaseModel, Field
 
 import outlines
-from outlines.inputs import Image, Video
+from outlines.inputs import Chat, Image, Video
 from outlines.models import AsyncOllama, Ollama
 
 
@@ -99,6 +99,22 @@ def test_ollama_simple_vision(image, model):
     # the image, but we're still checking the model input syntax
     result = model.generate(
         ["What does this logo represent?", Image(image)],
+        model=MODEL_NAME,
+    )
+    assert isinstance(result, str)
+
+
+def test_ollama_chat(image, model):
+    result = model.generate(
+        Chat(
+            [
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": [
+                    "What does this logo represent?",
+                    Image(image)
+                ]},
+            ]
+        ),
         model=MODEL_NAME,
     )
     assert isinstance(result, str)
@@ -201,6 +217,23 @@ async def test_ollama_async_simple_vision(image, async_model):
     # the image, but we're still checking the model input syntax
     result = await async_model.generate(
         ["What does this logo represent?", Image(image)],
+        model=MODEL_NAME,
+    )
+    assert isinstance(result, str)
+
+
+@pytest.mark.asyncio
+async def test_ollama_async_chat(image, async_model):
+    result = await async_model.generate(
+        Chat(
+            [
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": [
+                    "What does this logo represent?",
+                    Image(image)
+                ]},
+            ]
+        ),
         model=MODEL_NAME,
     )
     assert isinstance(result, str)
