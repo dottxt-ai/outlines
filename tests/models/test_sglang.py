@@ -3,14 +3,17 @@
 # The outlines backend does not support the EBNF grammar. The xgrammar
 # backend is slow and buggy.
 
+import io
 import os
 import re
 import warnings
 from typing import AsyncGenerator, Generator
 
 import pytest
+from PIL import Image as PILImage
 from openai import AsyncOpenAI, OpenAI
 
+from outlines.inputs import Chat, Image
 from outlines.models.sglang import SGLang, AsyncSGLang, from_sglang
 from outlines.types.dsl import CFG, Regex, JsonSchema
 from tests.test_utils.mock_openai_client import MockOpenAIClient, MockAsyncOpenAIClient
@@ -20,6 +23,16 @@ EBNF_YES_NO_GRAMMAR = """
 root ::= answer
 answer ::= "yes" | "no"
 """
+
+# Image for testing
+width, height = 1, 1
+white_background = (255, 255, 255)
+image = PILImage.new("RGB", (width, height), white_background)
+buffer = io.BytesIO()
+image.save(buffer, format="PNG")
+buffer.seek(0)
+image = PILImage.open(buffer)
+image_input = Image(image)
 
 
 # If the SGLANG_SERVER_URL environment variable is set, use the real SGLang server
@@ -108,6 +121,50 @@ mock_responses = [
         },
         "yes"
     ),
+    (
+        {
+            'messages': [
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": "hello"},
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/png;base64,{image_input.image_str}"
+                            },
+                        },
+                    ]
+                }
+            ],
+            'model': sglang_model_name,
+            'max_tokens': 10,
+        },
+        "foo"
+    ),
+    (
+        {
+            'messages': [
+                {"role": "system", "content": "prompt"},
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": "hello"},
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/png;base64,{image_input.image_str}"
+                            },
+                        },
+                    ],
+                },
+                {"role": "assistant", "content": "response"},
+            ],
+            'model': sglang_model_name,
+            'max_tokens': 10,
+        },
+        "foo"
+    )
 ]
 
 
@@ -193,6 +250,26 @@ def test_sglang_sync_batch(sync_model):
         )
 
 
+def test_sglang_sync_vision(sync_model):
+    result = sync_model(["hello", image_input], max_tokens=10)
+    assert isinstance(result, str)
+
+
+def test_sglang_sync_vision_chat(sync_model):
+    result = sync_model(
+        Chat(messages=[
+            {"role": "system", "content": "prompt"},
+            {"role": "user", "content": [
+                "hello",
+                image_input,
+            ]},
+            {"role": "assistant", "content": "response"},
+        ]),
+        max_tokens=10,
+    )
+    assert isinstance(result, str)
+
+
 def test_sglang_sync_multiple_samples(sync_model):
     result = sync_model("Respond with a single word.", n=2)
     assert isinstance(result, list)
@@ -251,6 +328,28 @@ async def test_sglang_async_batch(async_model):
         await async_model.batch(
             ["Respond with one word.", "Respond with one word."],
         )
+
+
+@pytest.mark.asyncio
+async def test_sglang_async_vision(async_model):
+    result = await async_model(["hello", image_input], max_tokens=10)
+    assert isinstance(result, str)
+
+
+@pytest.mark.asyncio
+async def test_sglang_async_vision_chat(async_model):
+    result = await async_model(
+        Chat(messages=[
+            {"role": "system", "content": "prompt"},
+            {"role": "user", "content": [
+                "hello",
+                image_input,
+            ]},
+            {"role": "assistant", "content": "response"},
+        ]),
+        max_tokens=10,
+    )
+    assert isinstance(result, str)
 
 
 @pytest.mark.asyncio

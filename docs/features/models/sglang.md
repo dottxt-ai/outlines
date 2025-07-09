@@ -59,95 +59,98 @@ import openai
 import outlines
 
 # Create the model
-openai_client = openai.OpenAI(base_url="http://localhost:11434")
-model = outlines.from_sglang(openai_client)
+model = outlines.from_openai(openai.OpenAI(base_url="http://localhost:11434"))
 
 # Call it to generate text
-result = model("Write a short story about a cat.", max_tokens=100)
-print(result) # 'In a quiet village where the cobblestones hummed softly beneath the morning mist...'
+response = model("What's the capital of Latvia?", max_tokens=20)
+print(response) # 'Riga'
 ```
 
-The `SGLang` model also supports streaming. For instance:
+#### Vision
+
+Some models you can run with SGLang support vision input. To use this feature, provide a list containing a text prompt and `Image` instances.
+
+For instance:
+
+```python
+import io
+import requests
+import PIL
+import outlines
+import openai
+from outlines.inputs import Image
+
+# Create the model
+model = outlines.from_openai(openai.OpenAI(base_url="http://localhost:11434"))
+
+# Function to get an image
+def get_image(url):
+    r = requests.get(url)
+    return PIL.Image.open(io.BytesIO(r.content))
+
+# Create the prompt containing the text and the image
+prompt = [
+    "Describe the image",
+    Image(get_image("https://picsum.photos/id/237/400/300"))
+]
+
+# Call the model to generate a response
+response = model(prompt, max_tokens=50)
+print(response) # 'This is a picture of a black dog.'
+```
+
+#### Chat
+
+You can also use chat inputs with the `SGLang` model. To do so, call the model with a `Chat` instance. The content of messsage within the chat can be vision inputs as described above.
+
+For instance:
+
+```python
+import io
+import requests
+import PIL
+import openai
+import outlines
+from outlines.inputs import Chat, Image
+
+# Create the model
+model = outlines.from_openai(openai.OpenAI(base_url="http://localhost:11434"))
+
+# Function to get an image
+def get_image(url):
+    r = requests.get(url)
+    return PIL.Image.open(io.BytesIO(r.content))
+
+# Create the chat input
+prompt = Chat([
+    {"role": "system", "content": "You are a helpful assistant."},
+    {
+        "role": "user",
+        "content": ["Describe the image", Image(get_image("https://picsum.photos/id/237/400/300"))]
+    },
+])
+
+# Call the model to generate a response
+response = model(prompt, max_tokens=50)
+print(response) # 'This is a picture of a black dog.'
+```
+
+#### Streaming
+
+Finally, the `SGLang` model supports streaming through the `stream` method.
+
+For instance:
 
 ```python
 import openai
 import outlines
 
 # Create the model
-openai_client = openai.OpenAI(base_url="http://localhost:11434")
-model = outlines.from_sglang(openai_client)
+model = outlines.from_openai(openai.OpenAI(base_url="http://localhost:11434"))
 
-# Stream text
-for chunk in model.stream("Write a short story about a cat.", max_tokens=100):
-    print(chunk) # 'In ...'
-```
-
-## Asynchronous Calls
-
-SGLang supports asynchronous operations by passing an `AsyncOpenAI` client instead of a regular `OpenAI` client. This returns an `AsyncSGLang` model instance that supports async/await patterns.
-
-### Basic Async Generation
-
-```python
-import asyncio
-import openai
-import outlines
-
-async def generate_text():
-    async_client = openai.AsyncOpenAI(base_url="http://localhost:11434")
-    async_model = outlines.from_sglang(async_client)
-
-    result = await async_model("Write a haiku about Python.", max_tokens=50)
-    print(result)
-
-asyncio.run(generate_text())
-```
-
-### Async Streaming
-
-The async model also supports streaming with async iteration:
-
-```python
-import asyncio
-import openai
-import outlines
-
-async def stream_text():
-    async_client = openai.AsyncOpenAI(base_url="http://localhost:11434")
-    async_model = outlines.from_sglang(async_client)
-
-    async for chunk in async_model.stream("Tell me a story about a robot.", max_tokens=100):
-        print(chunk, end="")
-
-asyncio.run(stream_text())
-```
-
-### Concurrent Async Requests
-
-One of the main benefits of async calls is the ability to make multiple concurrent requests:
-
-```python
-import asyncio
-import openai
-import outlines
-
-async def generate_multiple():
-    async_client = openai.AsyncOpenAI(base_url="http://localhost:11434")
-    async_model = outlines.from_sglang(async_client)
-
-    prompts = [
-        "Write a tagline for a coffee shop.",
-        "Write a tagline for a bookstore.",
-        "Write a tagline for a gym."
-    ]
-
-    tasks = [async_model(prompt, max_tokens=30) for prompt in prompts]
-    results = await asyncio.gather(*tasks)
-
-    for prompt, result in zip(prompts, results):
-        print(f"{prompt}\n{result}\n")
-
-asyncio.run(generate_multiple())
+# Stream the response
+for chunk in model.stream("Tell me a short story about a cat.", max_tokens=50):
+    print(chunk) # 'Once...'
 ```
 
 ## Structured Generation
