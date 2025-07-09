@@ -1,3 +1,4 @@
+import io
 from typing import Generator
 
 from anthropic import Anthropic as AnthropicClient
@@ -5,7 +6,7 @@ from PIL import Image as PILImage
 import pytest
 
 import outlines
-from outlines.inputs import Image, Video
+from outlines.inputs import Chat, Image, Video
 from outlines.models.anthropic import Anthropic
 
 
@@ -27,7 +28,12 @@ def image():
     width, height = 1, 1
     white_background = (255, 255, 255)
     image = PILImage.new("RGB", (width, height), white_background)
-    image.format = "PNG"
+
+    # Save to an in-memory bytes buffer and read as png
+    buffer = io.BytesIO()
+    image.save(buffer, format="PNG")
+    buffer.seek(0)
+    image = PILImage.open(buffer)
 
     return image
 
@@ -103,6 +109,18 @@ def test_anthropic_simple_vision(model, image):
         ],
         max_tokens=1024,
     )
+    assert isinstance(result, str)
+
+
+@pytest.mark.api_call
+def test_anthropic_chat(model, image):
+    result = model.generate(Chat(messages=[
+        {"role": "assistant", "content": "How can I help you today?"},
+        {
+            "role": "user",
+            "content": ["What does this logo represent?", Image(image)]
+        },
+    ]), max_tokens=10)
     assert isinstance(result, str)
 
 
