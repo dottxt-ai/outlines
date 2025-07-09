@@ -11,13 +11,13 @@ from google.genai import types
 from pydantic import BaseModel
 
 from outlines import cfg, json_schema, regex
-from outlines.inputs import Image
+from outlines.inputs import Chat, Image
 from outlines.models.gemini import GeminiTypeAdapter
 
 if sys.version_info >= (3, 12):
-    from typing import TypedDict, is_typeddict
+    from typing import TypedDict
 else:
-    from typing_extensions import TypedDict, is_typeddict
+    from typing_extensions import TypedDict
 
 
 @pytest.fixture
@@ -56,17 +56,58 @@ def adapter():
 def test_gemini_type_adapter_input_text(adapter):
     message = "prompt"
     result = adapter.format_input(message)
-    assert result == {"contents": [message]}
+    assert result == {"contents": [{"text": message}]}
 
 
 def test_gemini_type_adapter_input_vision(adapter, image):
-    input_message = ["hello", Image(image)]
+    image_input = Image(image)
+    text_input = "hello"
+    result = adapter.format_input([text_input, image_input])
+    assert result == {
+        "contents": [
+            {
+                "role": "user",
+                "parts": [
+                    {"text": text_input},
+                    {
+                        "inline_data": {
+                            "mime_type": "image/png",
+                            "data": image_input.image_str,
+                        },
+                    },
+                ],
+            },
+        ]
+    }
+
+
+def test_gemini_type_adapter_input_chat(adapter, image):
+    image_input = Image(image)
+    input_message = Chat(messages=[
+        {"role": "assistant", "content": "How can I help you today?"},
+        {"role": "user", "content": [
+            "What does this logo represent?",
+            image_input,
+        ]},
+    ])
     result = adapter.format_input(input_message)
-    image_part = types.Part.from_bytes(
-        data=input_message[1].image_str,
-        mime_type=input_message[1].image_format
-    )
-    assert result == {"contents": [input_message[0], image_part]}
+    assert result == {
+        "contents": [
+            {"role": "model", "parts": [{"text": "How can I help you today?"}]},
+            {
+                "role": "user",
+                "parts": [
+                    {"text": "What does this logo represent?"},
+                    {
+                        "inline_data": {
+                            "mime_type": "image/png",
+                            "data": image_input.image_str,
+                        },
+                    },
+                ],
+            },
+        ]
+    }
 
 
 def test_gemini_type_adapter_input_invalid(adapter):

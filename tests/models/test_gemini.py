@@ -11,7 +11,7 @@ from google.genai import Client
 from pydantic import BaseModel, ValidationError
 
 import outlines
-from outlines.inputs import Image, Video
+from outlines.inputs import Chat, Image, Video
 from outlines.models.gemini import Gemini
 from outlines.types import Choice
 
@@ -95,6 +95,18 @@ def test_gemini_direct_call(model_no_model_name):
 @pytest.mark.api_call
 def test_gemini_simple_vision(model, image):
     result = model.generate(["What does this logo represent?", Image(image)])
+    assert isinstance(result, str)
+
+
+@pytest.mark.api_call
+def test_gemini_chat(model, image):
+    result = model.generate(Chat(messages=[
+        {"role": "assistant", "content": "How can I help you today?"},
+        {
+            "role": "user",
+            "content": ["What does this logo represent?", Image(image)]
+        },
+    ]))
     assert isinstance(result, str)
 
 
