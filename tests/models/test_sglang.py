@@ -42,8 +42,8 @@ sglang_model_name = os.environ.get(
     "SGLANG_MODEL_NAME", "qwen/qwen2.5-0.5b-instruct"
 )
 if sglang_server_url:
-    openai_client = OpenAI(base_url=sglang_server_url)
-    async_openai_client = AsyncOpenAI(base_url=sglang_server_url)
+    openai_client = OpenAI(base_url=sglang_server_url, api_key="foo")
+    async_openai_client = AsyncOpenAI(base_url=sglang_server_url, api_key="foo")
 else:
     warnings.warn("No SGLang server URL provided, using mock server")
     openai_client = MockOpenAIClient()
@@ -198,8 +198,8 @@ def async_model_no_model_name():
 def test_sglang_init():
     # We do not rely on the mock server here because we need an object
     # of type OpenAI and AsyncOpenAI to test the init function.
-    openai_client = OpenAI(base_url="http://localhost:11434")
-    async_openai_client = AsyncOpenAI(base_url="http://localhost:11434")
+    openai_client = OpenAI(base_url="http://localhost:11434", api_key="foo")
+    async_openai_client = AsyncOpenAI(base_url="http://localhost:11434", api_key="foo")
 
     # Sync with model name
     model = from_sglang(openai_client, sglang_model_name)

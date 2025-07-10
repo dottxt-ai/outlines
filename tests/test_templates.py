@@ -1,14 +1,13 @@
 import base64
 import os
 import tempfile
-from typing import Dict, List
+from typing import Optional
 
 import pytest
 from PIL import Image as PILImage
 from io import BytesIO
 from pydantic import BaseModel, Field
 
-import outlines
 from outlines.inputs import Image
 from outlines.templates import (
     Template,
@@ -77,8 +76,8 @@ def test_vision_invalid_image_format():
             Vision(prompt="Test prompt", image=image)
 
 
-def render(content: str, **kwargs):
-    template = build_template_from_string(content)
+def render(content: str, filters: Optional[dict] = None, **kwargs):
+    template = build_template_from_string(content, filters or {})
     return template.render(kwargs)
 
 
@@ -180,251 +179,58 @@ def test_render_jinja():
     assert render(tpl, is_true=False) == "final"
 
 
-def test_prompt_basic():
-    with pytest.deprecated_call():
-
-        @outlines.prompt
-        def test_tpl(variable):
-            """{{variable}} test"""
-
-        assert list(test_tpl.signature.parameters) == ["variable"]
-
-        with pytest.raises(TypeError):
-            test_tpl(v="test")
-
-        p = test_tpl("test")
-        assert p == "test test"
-
-        p = test_tpl(variable="test")
-        assert p == "test test"
-
-        @outlines.prompt
-        def test_single_quote_tpl(variable):
-            "${variable} test"
-
-        assert list(test_single_quote_tpl.signature.parameters) == ["variable"]
-
-        p = test_tpl("test")
-        assert p == "test test"
-
-
-def test_prompt_kwargs():
-    with pytest.deprecated_call():
-
-        @outlines.prompt
-        def test_kwarg_tpl(var, other_var="other"):
-            """{{var}} and {{other_var}}"""
-
-        assert list(test_kwarg_tpl.signature.parameters) == ["var", "other_var"]
-
-        p = test_kwarg_tpl("test")
-        assert p == "test and other"
-
-        p = test_kwarg_tpl("test", other_var="kwarg")
-        assert p == "test and kwarg"
-
-        p = test_kwarg_tpl("test", "test")
-        assert p == "test and test"
-
-
-def test_no_prompt():
-    with pytest.deprecated_call():
-        with pytest.raises(TypeError, match="template"):
-
-            @outlines.prompt
-            def test_empty(variable):
-                pass
-
-        with pytest.raises(TypeError, match="template"):
-
-            @outlines.prompt
-            def test_only_code(variable):
-                return variable
-
-
-def test_prompt_function():
-    def empty_fn():
-        pass
-
-    def with_description():
-        """A description.
-
-        But this is ignored.
-        """
-        pass
-
-    with pytest.deprecated_call():
-
-        @outlines.prompt
-        def name_description_ppt(fn):
-            """
-            {{fn|name}}: {{fn|description}}
-            """
-
-        rendered = name_description_ppt(empty_fn)
-        assert rendered == "empty_fn: "
-
-        rendered = name_description_ppt(with_description)
-        assert rendered == "with_description: A description."
-
-    def with_signature(one: int, two: List[str], three: float = 1.0):
-        pass
-
-    with pytest.deprecated_call():
-
-        @outlines.prompt
-        def name_signature_ppt(fn):
-            """
-            {{fn|name}}: {{fn|signature}}
-            """
-
-        rendered = name_signature_ppt(with_signature)
-        assert (
-            rendered == "with_signature: one: int, two: List[str], three: float = 1.0"
-        )
-
-    def test_function_call(one, two=2):
-        return one + two
-
-    with pytest.deprecated_call():
-
-        @outlines.prompt
-        def source_ppt(fn):
-            """
-            {{fn|source}}
-            """
-
-        rendered = source_ppt(test_function_call)
-        assert rendered == "def test_function_call(one, two=2):\n    return one + two\n"
-
-
-def test_prompt_pydantic_response():
-    class SimpleResponse(BaseModel):
-        one: str = Field(description="a description")
-        two: str
-
-    with pytest.deprecated_call():
-
-        @outlines.prompt
-        def source_ppt(model):
-            "{{model | schema }}"
-
-        prompt = source_ppt(SimpleResponse)
-        assert prompt == '{\n  "one": "a description",\n  "two": "<two>"\n}'
-
-        class NestedResponse(BaseModel):
-            answer: str
-            thought: SimpleResponse
-
-        prompt = source_ppt(NestedResponse)
-        assert (
-            prompt
-            == '{\n  "answer": "<answer>",\n  "thought": {\n    "one": "a description",\n    "two": "<two>"\n  }\n}'
-        )
-
-        class ConvolutedResponse(BaseModel):
-            part_one: NestedResponse
-            part_two: SimpleResponse
-
-        prompt = source_ppt(ConvolutedResponse)
-        assert (
-            prompt
-            == '{\n  "part_one": {\n    "answer": "<answer>",\n    "thought": {\n      "one": "a description",\n      "two": "<two>"\n    }\n  },\n  "part_two": {\n    "one": "a description",\n    "two": "<two>"\n  }\n}'
-        )
-
-
-def test_prompt_dict_response():
-    response = {"one": "a description", "two": ""}
-
-    with pytest.deprecated_call():
-
-        @outlines.prompt
-        def source_ppt(model):
-            "{{model | schema }}"
-
-        prompt = source_ppt(response)
-        assert prompt == '{\n  "one": "a description",\n  "two": ""\n}'
-
-
-def test_prompt_args():
-    def no_args():
-        pass
-
-    def with_args(x, y, z):
-        pass
-
-    def with_annotations(x: bool, y: str, z: Dict[int, List[str]]):
-        pass
-
-    def with_defaults(x=True, y="Hi", z={4: ["I", "love", "outlines"]}):
-        pass
-
-    def with_annotations_and_defaults(
-        x: bool = True,
-        y: str = "Hi",
-        z: Dict[int, List[str]] = {4: ["I", "love", "outlines"]},
-    ):
-        pass
-
-    def with_all(
-        x1,
-        y1,
-        z1,
-        x2: bool,
-        y2: str,
-        z2: Dict[int, List[str]],
-        x3=True,
-        y3="Hi",
-        z3={4: ["I", "love", "outlines"]},
-        x4: bool = True,
-        y4: str = "Hi",
-        z4: Dict[int, List[str]] = {4: ["I", "love", "outlines"]},
-    ):
-        pass
-
-    with pytest.deprecated_call():
-
-        @outlines.prompt
-        def args_prompt(fn):
-            """args: {{ fn | args }}"""
-
-        assert args_prompt(no_args) == "args: "
-        assert args_prompt(with_args) == "args: x, y, z"
-        assert (
-            args_prompt(with_annotations)
-            == "args: x: bool, y: str, z: Dict[int, List[str]]"
-        )
-        assert (
-            args_prompt(with_defaults)
-            == "args: x=True, y='Hi', z={4: ['I', 'love', 'outlines']}"
-        )
-        assert (
-            args_prompt(with_annotations_and_defaults)
-            == "args: x: bool = True, y: str = 'Hi', z: Dict[int, List[str]] = {4: ['I', 'love', 'outlines']}"
-        )
-        assert (
-            args_prompt(with_all)
-            == "args: x1, y1, z1, x2: bool, y2: str, z2: Dict[int, List[str]], x3=True, y3='Hi', z3={4: ['I', 'love', 'outlines']}, x4: bool = True, y4: str = 'Hi', z4: Dict[int, List[str]] = {4: ['I', 'love', 'outlines']}"
-        )
-
-
-def test_prompt_with_additional_filters():
-    def reverse(s: str) -> str:
-        return s[::-1]
-
-    with pytest.deprecated_call():
-
-        @outlines.prompt(filters=dict(reverse=reverse))
-        def test_tpl(variable):
-            """{{ variable | reverse }} test"""
-
-        assert list(test_tpl.signature.parameters) == ["variable"]
-
-        p = test_tpl("test")
-        assert p == "tset test"
-
-        p = test_tpl(variable="example")
-        assert p == "elpmaxe test"
+def test_render_filters():
+    def foo(bar: str) -> str:
+        """This is a sample function."""
+        return bar
+
+    class PydanticClass(BaseModel):
+        foo: str = Field(description="bar")
+
+    def custom_filter(x: str) -> str:
+        return x.upper()
+
+    # name filter
+    tpl = """
+    {{ func | name }}
+    """
+    assert render(tpl, func=foo) == "foo"
+
+    # description filter
+    tpl = """
+    {{ func | description }}
+    """
+    assert render(tpl, func=foo) == "This is a sample function."
+
+    # source filter
+    tpl = """
+    {{ func | source }}
+    """
+    assert render(tpl, func=foo) == 'def foo(bar: str) -> str:\n    """This is a sample function."""\n    return bar\n'
+
+    # signature filter
+    tpl = """
+    {{ func | signature }}
+    """
+    assert render(tpl, func=foo) == "bar: str"
+
+    # args filter
+    tpl = """
+    {{ func | args }}
+    """
+    assert render(tpl, func=foo) == "bar: str"
+
+    # schema filter
+    tpl = """
+    {{ schema | schema }}
+    """
+    assert render(tpl, schema=PydanticClass) == '{\n  "foo": "bar"\n}'
+
+    # custom filters
+    tpl = """
+    {{ name | custom_filter }}
+    """
+    assert render(tpl, {"custom_filter": custom_filter}, name="John") == "JOHN"
 
 
 @pytest.fixture
@@ -470,7 +276,6 @@ A:
 
 def test_prompt_from_file(temp_prompt_file):
     prompt = Template.from_file(temp_prompt_file)
-    assert prompt.signature is None
     examples = [
         {"question": "What is the capital of France?", "answer": "Paris"},
         {"question": "What is 2 + 2?", "answer": "4"},
@@ -497,7 +302,6 @@ def test_prompt_from_str():
     Hello, {{ name }}!
     """
     prompt = Template.from_string(content)
-    assert prompt.signature is None
     assert prompt(name="World") == "Hello, World!"
 
 

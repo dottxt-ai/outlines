@@ -53,9 +53,7 @@ from outlines.types.dsl import (
     exactly,
     regex,
     python_types_to_terms,
-    # deprecated
-    repeat,
-    times,
+    to_regex,
 )
 
 if sys.version_info >= (3, 12):
@@ -343,49 +341,6 @@ def test_dsl_aliases():
     assert isinstance(test, JsonSchema)
 
 
-def test_dsl_repeat():
-    with pytest.warns(
-        DeprecationWarning,
-        match="The `repeat` function/method is deprecated",
-    ):
-        a = String("a")
-
-        # error missing min_count or max_count
-        with pytest.raises(
-            ValueError,
-            match="You must provide a value for at least `min_count` or "
-            "`max_count`",
-        ):
-            repeat(a, None, None)
-
-        # at_least
-        assert repeat(a, 2, None) == at_least(2, a)
-        assert repeat("a", 2, None) == at_least(2, "a")
-        assert a.repeat(2, None) == a.at_least(2)
-
-        # at_most
-        assert repeat(a, None, 2) == at_most(2, a)
-        assert repeat("a", None, 2) == at_most(2, "a")
-        assert a.repeat(None, 2) == a.at_most(2)
-
-        # between
-        assert repeat(a, 1, 2) == between(1, 2, a)
-        assert repeat("a", 1, 2) == between(1, 2, "a")
-        assert a.repeat(1, 2) == a.between(1, 2)
-
-
-def test_dsl_times():
-    with pytest.warns(
-        DeprecationWarning,
-        match="The `times` function/method is deprecated",
-    ):
-        a = String("a")
-
-        assert times(a, 2) == exactly(2, a)
-        assert times("a", 2) == exactly(2, "a")
-        assert a.times(2) == a.exactly(2)
-
-
 def test_dsl_term_pydantic_simple():
     a = String("a")
 
@@ -661,6 +616,10 @@ def test_dsl_python_types_to_terms():
     assert python_types_to_terms(tuple[int, str]) == _handle_tuple((int, str), recursion_depth=0)
     assert python_types_to_terms(dict[int, str]) == _handle_dict((int, str), recursion_depth=0)
 
+    # type not supported
+    with pytest.raises(TypeError, match="is currently not supported"):
+        python_types_to_terms(bytes)
+
 
 def test_dsl_handle_literal():
     literal = Literal["a", 1]
@@ -795,3 +754,47 @@ def test_dsl_handle_dict():
     assert result.terms[1].term.terms[2] == types.string
     assert result.terms[1].term.terms[3] == KleeneStar(Sequence([String(", "), types.integer, String(":"), types.string]))
     assert result.terms[2] == String("}")
+
+
+def test_to_regex():
+    string_term = String("hello")
+    assert to_regex(string_term) == r"hello"
+
+    regex_term = Regex("[0-9]+")
+    assert to_regex(regex_term) == r"([0-9]+)"
+
+    json_schema_term = JsonSchema({"type": "integer"})
+    assert to_regex(json_schema_term) == r"((-)?(0|[1-9][0-9]*))"
+
+    choice_term = Choice(["a", "b", "c"])
+    assert to_regex(choice_term) == r"(a|b|c)"
+
+    kleene_star = KleeneStar(String("a"))
+    assert to_regex(kleene_star) == r"(a)*"
+
+    kleene_plus = KleenePlus(String("a"))
+    assert to_regex(kleene_plus) == r"(a)+"
+
+    optional_term = Optional(String("a"))
+    assert to_regex(optional_term) == r"(a)?"
+
+    alt_term = Alternatives([String("a"), String("b")])
+    assert to_regex(alt_term) == r"(a|b)"
+
+    seq_term = Sequence([String("a"), String("b")])
+    assert to_regex(seq_term) == r"ab"
+
+    exact_term = QuantifyExact(String("a"), 3)
+    assert to_regex(exact_term) == r"(a){3}"
+
+    min_term = QuantifyMinimum(String("a"), 2)
+    assert to_regex(min_term) == r"(a){2,}"
+
+    max_term = QuantifyMaximum(String("a"), 5)
+    assert to_regex(max_term) == r"(a){,5}"
+
+    between_term = QuantifyBetween(String("a"), 1, 3)
+    assert to_regex(between_term) == r"(a){1,3}"
+
+    with pytest.raises(TypeError):
+        to_regex(Term())
