@@ -5,7 +5,9 @@ title: Logits Processors
 # Logits Processors
 
 Logits processors are objects that control text generation by modifying the probability distribution of possible next tokens. They do this by adjusting the logits (raw model outputs) at each generation step, effectively biasing the model's token selection.
+
 Processors can be used to:
+
 1. Generate structured output (e.g., JSON that follows a specific schema)
 2. Prevent the model from generating specific words or tokens
 3. Implement custom token sampling strategies

@@ -108,8 +108,8 @@ from enum import Enum
 from typing import Literal
 
 class PizzaOrBurger(Enum):
-    pizza = "pizza
-    burger = "burger
+    pizza = "pizza"
+    burger = "burger"
 
 # Equivalent multiple-choice output types
 output_type = Literal["pizza", "burger"]
@@ -150,7 +150,7 @@ class Character:
     name: str
     age: int
 
-ouput_type = Character
+output_type = Character
 
 def character(name: str, age: int):
     return None
