@@ -5,7 +5,7 @@ title: Generator API
 # Generator
 
 
-The `Generator` class is the core component of Outlines v1. `Generator` accepts a [model](../reference/available_models) and an optional [output type](/api/types). If no output type is provided, the `Generator` will return unstructured text.
+The `Generator` class is the core component of Outlines v1. `Generator` accepts a [model](../models/index.md) and an optional [output type](../core/output_types.md). If no output type is provided, the `Generator` will return unstructured text.
 
 !!! note
 
@@ -27,7 +27,7 @@ Generators implement the same methods as models:
 - `batch`
 - `stream`
 
-All of them take a single positional argument: the prompt or list of prompts from which to generate completions. Contrarily to the equivalent methods of models, you do not need to provide an output type as it has already been defined when initializing the generator.
+All of them take a single positional argument: the [model input](../core/inputs.md) from which text is generated. Contrarily to the equivalent methods of models, you do not need to provide an output type as it has already been defined when initializing the generator.
 
 ## Basic Usage
 

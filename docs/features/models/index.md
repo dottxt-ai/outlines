@@ -35,16 +35,16 @@ model = from_transformers(
 
 # Call it directly
 response = model("How many countries are there in the world", max_new_tokens=20)
-print(result) # 'There are 200 countries in the world.'
+print(response) # 'There are 200 countries in the world.'
 
 # Call it directly with an output_type
 response = model("How many countries are there in the world", int, max_new_tokens=20)
-print(result) # '200'
+print(response) # '200'
 
 # Create a generator first and then call it
 generator = Generator(model, int)
 response = generator("How many countries are there in the world")
-print(result) # '200'
+print(response) # '200'
 ```
 
 Some models support streaming through a `stream` method. It takes the same argument as the `__call__` method, but returns an iterator instead of a string.
