@@ -39,8 +39,8 @@ vllm_model_name = os.environ.get(
     "VLLM_MODEL_NAME", "Qwen/Qwen2.5-VL-3B-Instruct"
 )
 if vllm_server_url:
-    openai_client = OpenAI(base_url=vllm_server_url)
-    async_openai_client = AsyncOpenAI(base_url=vllm_server_url)
+    openai_client = OpenAI(base_url=vllm_server_url, api_key="foo")
+    async_openai_client = AsyncOpenAI(base_url=vllm_server_url, api_key="foo")
 else:
     warnings.warn("No VLLM server URL provided, using mock server")
     openai_client = MockOpenAIClient()
@@ -192,8 +192,8 @@ def async_model_no_model_name():
 def test_vllm_init():
     # We do not rely on the mock server here because we need an object
     # of type OpenAI and AsyncOpenAI to test the init function.
-    openai_client = OpenAI(base_url="http://localhost:11434")
-    async_openai_client = AsyncOpenAI(base_url="http://localhost:11434")
+    openai_client = OpenAI(base_url="http://localhost:11434", api_key="foo")
+    async_openai_client = AsyncOpenAI(base_url="http://localhost:11434", api_key="foo")
 
     # Sync with model name
     model = from_vllm(openai_client, vllm_model_name)
