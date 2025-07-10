@@ -22,7 +22,7 @@ import transformers
 from outlines import Application, Template, from_transformers
 
 # Create a template
-template_str = "Is {{ name }} a boy or a girl name?"""
+template_str = "Is {{ name }} a boy or a girl name?"
 template = Template.from_string(template_str)
 
 # Create a model
@@ -48,7 +48,7 @@ import transformers
 from outlines import Application, from_transformers
 
 # Create a function that will be used as a template
-def template(name: str) -> str:
+def template_func(name: str) -> str:
     return f"Is {name} a boy or a girl name?"
 
 # Create a model
@@ -58,7 +58,7 @@ model = from_transformers(
 )
 
 # Create the application with the function template and call it to generate text
-application = Application(template, Literal["boy", "girl"])
+application = Application(template_func, Literal["boy", "girl"])
 response = application(model, {"name": "Alice"}, max_new_tokens=10)
 
 print(response) # "girl"

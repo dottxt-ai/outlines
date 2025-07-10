@@ -5,6 +5,7 @@ This section presents in details the different features of Outlines.
 ## Core Concepts
 
 - [Models](./models/index.md)
+- [Model Inputs](./core/inputs.md)
 - [Output Types](./core/output_types.md)
 - [Generators](./core/generator.md)
 
