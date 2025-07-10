@@ -2,17 +2,25 @@ import pytest
 
 import transformers
 from PIL import Image as PILImage
-from transformers import LogitsProcessorList
+from transformers import AutoTokenizer, LogitsProcessorList
 
 import outlines
-from outlines.inputs import Image, Video
+from outlines.inputs import Chat, Image, Video
 from outlines.models.transformers import TransformersMultiModalTypeAdapter
 from outlines.processors.structured import RegexLogitsProcessor
 
 
+MODEL_NAME = "erwanf/gpt2-mini"
+
+
 @pytest.fixture
 def adapter():
-    return TransformersMultiModalTypeAdapter()
+    tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+    type_adapter = TransformersMultiModalTypeAdapter(tokenizer=tokenizer)
+    chat_template = '{% for message in messages %}{{ message.role }}: {{ message.content }}{% endfor %}'
+    type_adapter.tokenizer.chat_template = chat_template
+
+    return type_adapter
 
 
 @pytest.fixture
@@ -60,6 +68,17 @@ def test_transformers_multimodal_type_adapter_format_input(adapter, image):
         "text": "foo",
         "images": [image_asset.image],
     }
+
+    chat_prompt = Chat(messages=[
+        {"role": "system", "content": "foo"},
+        {"role": "user", "content": ["bar", image_asset]},
+    ])
+    result = adapter.format_input(chat_prompt)
+    assert isinstance(result, dict)
+    assert isinstance(result["text"], str)
+    assert isinstance(result["images"], list)
+    assert len(result["images"]) == 1
+    assert result["images"][0] == image_asset.image
 
 
 def test_transformers_multimodal_type_adapter_format_output_type(

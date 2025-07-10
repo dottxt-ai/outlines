@@ -1,4 +1,4 @@
-"""Integration with the `transformers` library."""
+"""Integration with the `transformers` library. """
 
 import warnings
 
@@ -6,7 +6,7 @@ from collections import defaultdict
 from functools import singledispatchmethod
 from typing import TYPE_CHECKING, Any, List, Optional, Tuple, Union
 
-from outlines.inputs import Audio, Image, Video
+from outlines.inputs import Audio, Chat, Image, Video
 from outlines.models.base import Model, ModelTypeAdapter
 from outlines.models.tokenizer import Tokenizer
 from outlines.processors import OutlinesLogitsProcessor
@@ -135,6 +135,9 @@ class TransformerTokenizer(Tokenizer):
 class TransformersTypeAdapter(ModelTypeAdapter):
     """Type adapter for the `Transformers` model."""
 
+    def __init__(self, **kwargs):
+        self.tokenizer = kwargs.get("tokenizer")
+
     @singledispatchmethod
     def format_input(self, model_input):
         """Generate the prompt argument to pass to the model.
@@ -152,12 +155,19 @@ class TransformersTypeAdapter(ModelTypeAdapter):
         """
         raise TypeError(
             f"The input type {type(model_input)} is not available."
-            "The only available type is `str`."
+            "The only available types are `str` and `Chat`."
         )
 
     @format_input.register(str)
     def format_str_input(self, model_input: str) -> str:
         return model_input
+
+    @format_input.register(Chat)
+    def format_chat_input(self, model_input: Chat) -> str:
+        return self.tokenizer.apply_chat_template(
+            model_input.messages,
+            tokenize=False
+        )
 
     def format_output_type(
         self,
@@ -224,7 +234,7 @@ class Transformers(Model):
         tokenizer.padding_side = "left"
         self.model = model
         self.tokenizer = TransformerTokenizer(tokenizer)
-        self.type_adapter = TransformersTypeAdapter()
+        self.type_adapter = TransformersTypeAdapter(tokenizer=tokenizer)
 
         if (
             FlaxPreTrainedModel is not None
@@ -241,7 +251,7 @@ class Transformers(Model):
 
     def _prepare_model_inputs(
         self,
-        model_input: Union[str, List[str], dict, List[dict]],
+        model_input,
         is_batch: bool = False,
     ) -> Tuple[Union[str, List[str]], dict]:
         """Turn the user input into arguments to pass to the model"""
@@ -263,7 +273,7 @@ class Transformers(Model):
 
     def generate(
         self,
-        model_input: Union[str, dict],
+        model_input: Union[str, dict, Chat],
         output_type: Optional[OutlinesLogitsProcessor] = None,
         **inference_kwargs: Any,
     ) -> Union[str, List[str]]:
@@ -309,7 +319,7 @@ class Transformers(Model):
 
     def generate_batch(
         self,
-        model_input: List[Union[str, dict]],
+        model_input: List[Union[str, dict, Chat]],
         output_type: Optional[OutlinesLogitsProcessor] = None,
         **inference_kwargs: Any,
     ) -> List[Union[str, List[str]]]:
@@ -374,6 +384,9 @@ class Transformers(Model):
 class TransformersMultiModalTypeAdapter(ModelTypeAdapter):
     """Type adapter for `TransformersMultiModal` model."""
 
+    def __init__(self, **kwargs):
+        self.tokenizer = kwargs.get("tokenizer")
+
     @singledispatchmethod
     def format_input(self, model_input):
         """Fomat the prompt arguments to pass to the model.
@@ -393,7 +406,7 @@ class TransformersMultiModalTypeAdapter(ModelTypeAdapter):
             f"The input type {type(model_input)} is not available. Please "
             + "provide a list containing a text prompt and assets "
             + "(`Image`, `Audio` or `Video` instances) supported by your "
-            + "model."
+            + "model or a `Chat` instance."
         )
 
     @format_input.register(dict)
@@ -422,6 +435,29 @@ class TransformersMultiModalTypeAdapter(ModelTypeAdapter):
                 + "keys required by your processor."
             )
         return model_input
+
+    @format_input.register(Chat)
+    def format_chat_input(self, model_input: Chat) -> dict:
+        # we need to separate the images from the messages
+        # to apply the chat template to the messages without images
+        messages = model_input.messages
+        images = []
+        messages_without_images = []
+        for message in messages:
+            if isinstance(message["content"], list):
+                images.extend(message["content"][1:])
+                messages_without_images.append({
+                    "role": message["role"],
+                    "content": message["content"][0],
+                })
+            else:
+                messages_without_images.append(message)
+        formatted_prompt = self.tokenizer.apply_chat_template(
+            messages_without_images,
+            tokenize=False
+        )
+        # use the formatted prompt and the images to format the input
+        return self.format_list_input([formatted_prompt, *images])
 
     @format_input.register(list)
     def format_list_input(self, model_input: list) -> dict:
@@ -512,11 +548,13 @@ class TransformersMultiModal(Transformers):
 
         super().__init__(model, tokenizer)
 
-        self.type_adapter = TransformersMultiModalTypeAdapter()
+        self.type_adapter = TransformersMultiModalTypeAdapter(
+            tokenizer=tokenizer
+        )
 
     def _prepare_model_inputs(
         self,
-        model_input: Union[str, List[str], dict, List[dict]],
+        model_input,
         is_batch: bool = False,
     ) -> Tuple[Union[str, List[str]], dict]:
         """Turn the user input into arguments to pass to the model"""
