@@ -6,7 +6,7 @@ Outlines is a library for structured generation for type-safe LLMs. It ensures o
 
 **Core insight**: Instead of generating text and hoping it matches a format, Outlines makes it impossible for the model to generate invalid outputs by masking invalid tokens during generation.
 
-**Note**: The codebase has undergone significant refactoring. Core FSM functionality has been extracted to the `outlines-core` package, and legacy implementations are preserved in `v0_legacy/` for backward compatibility.
+**Note**: The codebase has undergone significant refactoring. Core FSM functionality has been extracted to the `outlines-core` package.
 
 ## Usage Examples
 
@@ -73,10 +73,9 @@ Key files:
 - `tgi.py`: Integration with text-generation-inferece servers
 - `sglang.py`: Integration with SGLang servers
 
-### Generation (`outlines/generator.py` and `outlines/v0_legacy/generate/`)
+### Generation (`outlines/generator.py`)
 Handles the generation process:
 - `generator.py`: Main `Generator` class implementations (root level)
-- `v0_legacy/generate/api.py`: Legacy generation API (backward compatibility)
 - Stream functionality is now integrated into generator classes
 
 Base classes and implementations for different model providers:
@@ -152,9 +151,6 @@ outlines/
 │   └── tensor_adapters/    # Framework-specific tensor handling
 ├── caching.py               # Caching system
 ├── grammars/                # Grammar files (.lark)
-└── v0_legacy/              # Backward compatibility
-    ├── generate/           # Legacy generation API
-    └── models/             # Legacy model integrations
 ```
 
 ## Extension Points

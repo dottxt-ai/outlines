@@ -14,7 +14,7 @@ import mkdocs_gen_files
 
 CODEBASE_DIR_NAME = "outlines"
 OUTPUT_DIR_NAME = "api_reference"
-EXCLUDED_FILES = ["_version", "v0_legacy"]
+EXCLUDED_FILES = ["_version"]
 
 
 nav = mkdocs_gen_files.Nav()
