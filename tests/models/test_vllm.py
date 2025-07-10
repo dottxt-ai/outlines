@@ -9,7 +9,7 @@ import pytest
 from PIL import Image as PILImage
 from openai import AsyncOpenAI, OpenAI
 
-from outlines.inputs import Image
+from outlines.inputs import Chat, Image
 from outlines.models.vllm import VLLM, AsyncVLLM, from_vllm
 from outlines.types.dsl import CFG, Regex, JsonSchema
 from tests.test_utils.mock_openai_client import MockOpenAIClient, MockAsyncOpenAIClient
@@ -20,6 +20,16 @@ YES_NO_GRAMMAR = """
 
 answer: "yes" | "no"
 """
+
+# Image for testing
+width, height = 1, 1
+white_background = (255, 255, 255)
+image = PILImage.new("RGB", (width, height), white_background)
+buffer = io.BytesIO()
+image.save(buffer, format="PNG")
+buffer.seek(0)
+image = PILImage.open(buffer)
+image_input = Image(image)
 
 
 # If the VLLM_SERVER_URL environment variable is set, use the real vLLM server
@@ -36,16 +46,6 @@ else:
     openai_client = MockOpenAIClient()
     async_openai_client = MockAsyncOpenAIClient()
 
-# Create base64 encoded image for mock responses
-def get_base64_image():
-    width, height = 256, 256
-    white_background = (255, 255, 255)
-    image = PILImage.new("RGB", (width, height), white_background)
-
-    buffer = io.BytesIO()
-    image.save(buffer, format="PNG")
-    image_str = base64.b64encode(buffer.getvalue()).decode("utf-8")
-    return image_str
 
 mock_responses = [
     (
@@ -66,18 +66,6 @@ mock_responses = [
             'stream': True
         },
         ["foo", "bar"]
-    ),
-    (
-        {
-            'messages': [
-                {'role': "user", 'content': [
-                    {'type': 'text', 'text': 'Describe the image.'},
-                    {'type': 'image_url', 'image_url': {'url': 'data:image/png;base64,' + get_base64_image()}}
-                ]}
-            ],
-            'model': vllm_model_name,
-        },
-        "This is a white square."
     ),
     (
         {
@@ -127,6 +115,50 @@ mock_responses = [
         },
         "yes"
     ),
+    (
+        {
+            'messages': [
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": "hello"},
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/png;base64,{image_input.image_str}"
+                            },
+                        },
+                    ]
+                }
+            ],
+            'model': vllm_model_name,
+            'max_tokens': 10,
+        },
+        "foo"
+    ),
+    (
+        {
+            'messages': [
+                {"role": "system", "content": "prompt"},
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": "hello"},
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/png;base64,{image_input.image_str}"
+                            },
+                        },
+                    ],
+                },
+                {"role": "assistant", "content": "response"},
+            ],
+            'model': vllm_model_name,
+            'max_tokens': 10,
+        },
+        "foo"
+    )
 ]
 
 
@@ -155,21 +187,6 @@ def async_model():
 @pytest.fixture
 def async_model_no_model_name():
     return AsyncVLLM(async_openai_client)
-
-
-@pytest.fixture(scope="session")
-def image():
-    width, height = 256, 256
-    white_background = (255, 255, 255)
-    image = PILImage.new("RGB", (width, height), white_background)
-
-    # Save to an in-memory bytes buffer and read as png
-    buffer = io.BytesIO()
-    image.save(buffer, format="PNG")
-    buffer.seek(0)
-    image = PILImage.open(buffer)
-
-    return image
 
 
 def test_vllm_init():
@@ -227,8 +244,23 @@ def test_vllm_sync_batch(sync_model):
         )
 
 
-def test_vllm_sync_vision(sync_model, image):
-    result = sync_model(["Describe the image.", Image(image)])
+def test_vllm_sync_vision(sync_model):
+    result = sync_model(["hello", image_input], max_tokens=10)
+    assert isinstance(result, str)
+
+
+def test_vllm_sync_vision_chat(sync_model):
+    result = sync_model(
+        Chat(messages=[
+            {"role": "system", "content": "prompt"},
+            {"role": "user", "content": [
+                "hello",
+                image_input,
+            ]},
+            {"role": "assistant", "content": "response"},
+        ]),
+        max_tokens=10,
+    )
     assert isinstance(result, str)
 
 
@@ -286,8 +318,24 @@ async def test_vllm_async_batch(async_model):
 
 
 @pytest.mark.asyncio
-async def test_vllm_async_vision(async_model, image):
-    result = await async_model(["Describe the image.", Image(image)])
+async def test_vllm_async_vision(async_model):
+    result = await async_model(["hello", image_input], max_tokens=10)
+    assert isinstance(result, str)
+
+
+@pytest.mark.asyncio
+async def test_vllm_async_vision_chat(async_model):
+    result = await async_model(
+        Chat(messages=[
+            {"role": "system", "content": "prompt"},
+            {"role": "user", "content": [
+                "hello",
+                image_input,
+            ]},
+            {"role": "assistant", "content": "response"},
+        ]),
+        max_tokens=10,
+    )
     assert isinstance(result, str)
 
 
