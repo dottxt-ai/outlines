@@ -8,11 +8,6 @@ title: Models
 
 Outlines models are objects that wrap an inference client or engine. Models provide a standardized interface to generate structured text.
 
-!!! Warning
-
-    The model loading functions have been modified in v1. While they used to be called `<name_inference_library>`, they are now called `from_<name_inference_library>`. The model classes' names and `__init__` methods are left unchanged.
-
-
 All Outlines model classes have an associated loader function to facilitate initializing a model instance. The name of this function is `from_` plus the name of the model in lower-case letters. For instance, Outlines has a `Transformers` model and an associated `from_transformers` loader function. The parameters to load a model are specific to each provider, please consult the documentation of the model you want to use for more information.
 
 After having created a model instance, you can either directly call it to generate text or first create a reusable generator that you would then call.
