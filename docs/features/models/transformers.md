@@ -54,7 +54,37 @@ result = model("What's the capital of Latvia?", max_new_tokens=20)
 print(result) # 'Riga'
 ```
 
-The `Transformers` model also supports batch generation. To use it, provide a list of prompts to the `batch` method. You will receive as a result a list of completions.
+#### Chat
+
+You can also use chat inputs with the `Transformers` model. To do so, call the model with a `Chat` instance. The content of messsage within the chat can be vision inputs as described above.
+
+For instance:
+
+```python
+import outlines
+from outlines.inputs import Chat
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
+# Create the model
+model = outlines.from_transformers(
+    AutoModelForCausalLM.from_pretrained("microsoft/Phi-3-mini-4k-instruct"),
+    AutoTokenizer.from_pretrained("microsoft/Phi-3-mini-4k-instruct")
+)
+
+# Create the chat input
+prompt = Chat([
+    {"role": "system", "content": "You are a helpful assistant."},
+    {"role": "user", "content": "What's the capital of Latvia?"},
+])
+
+# Call the model to generate a response
+response = model(prompt, max_new_tokens=50)
+print(response) # 'This is a picture of a black dog.'
+```
+
+#### Batching
+
+Finally, the `Transformers` model supports batching through the `batch` method. To use it, provide a list of prompts (using the formats described above) to the `batch` method. You will receive as a result a list of completions.
 
 For instance:
 
