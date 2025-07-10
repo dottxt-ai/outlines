@@ -201,16 +201,6 @@ class Term:
     def zero_or_more(self) -> "KleeneStar":
         return zero_or_more(self)
 
-    # deprecated
-    def times(self, count: int) -> "QuantifyExact":
-        return times(self, count)
-
-    # deprecated
-    def repeat(self, min_count: int, max_count: int) -> Union[
-        "QuantifyMinimum", "QuantifyMaximum", "QuantifyBetween"
-    ]:
-        return repeat(self, min_count, max_count)
-
 
 @dataclass
 class String(Term):
@@ -816,99 +806,6 @@ def _handle_dict(args: tuple, recursion_depth: int) -> Sequence:
             String("}"),
         ]
     )
-
-
-# deprecated
-def repeat(term: Term, min_count: int, max_count: int) -> Union[
-    QuantifyMinimum, QuantifyMaximum, QuantifyBetween
-]:
-    if min_count is None and max_count is None:
-        warnings.warn("""
-            The `repeat` function/method is deprecated starting from v0.2.2.
-            Do not use it. Support for it will be removed in v1.5.0.
-            Use `between`, `at_least` or `at_most` instead.
-            """,
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        raise ValueError(
-            "You must provide a value for at least `min_count` or `max_count`"
-        )
-    if max_count is None:
-        warnings.warn("""
-            The `repeat` function/method is deprecated starting from v0.2.2.
-            Do not use it. Support for it will be removed in v1.5.0.
-            Use `at_least` instead.
-            For instance:
-            ```python
-            from outlines.types import Regex, at_least
-            digit = Regex(r'[0-9]')
-            # 2 ways of doing the same thing
-            at_least_5_digits = digit.at_least(5)
-            at_least_5_digits = at_least(digit, 5)
-            ```
-            """,
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return at_least(min_count, term)
-    if min_count is None:
-        warnings.warn("""
-            The `repeat` function/method is deprecated starting from v0.2.2.
-            Do not use it. Support for it will be removed in v1.5.0.
-            Use `at_most` instead.
-            For instance:
-            ```python
-            from outlines.types import Regex, at_most
-            digit = Regex(r'[0-9]')
-            # 2 ways of doing the same thing
-            at_most_5_digits = digit.at_most(5)
-            at_most_5_digits = at_most(digit, 5)
-            ```
-            """,
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return at_most(max_count, term)
-    else:
-        warnings.warn("""
-            The `repeat` function/method is deprecated starting from v0.2.2.
-            Do not use it. Support for it will be removed in v1.5.0.
-            Use `between` instead.
-            For instance:
-            ```python
-            from outlines.types import Regex, between
-            digit = Regex(r'[0-9]')
-            # 2 ways of doing the same thing
-            five_to_eight_digits = digit.between(5, 8)
-            five_to_eight_digits = between(digit, 5, 8)
-            ```
-            """,
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return between(min_count, max_count, term)
-
-
-# deprecated
-def times(term: Term, count: int) -> QuantifyExact:
-    warnings.warn("""
-        The `times` function/method is deprecated starting from v0.2.2.
-        Do not use it. Support for it will be removed in v1.5.0.
-        Use `exactly` instead.
-        For instance:
-        ```python
-        from outlines.types import Regex, exactly
-        digit = Regex(r'[0-9]')
-        # 2 ways of doing the same thing
-        five_digits = digit.exactly(5)
-        five_digits = exactly(digit, 5)
-        ```
-        """,
-        DeprecationWarning,
-        stacklevel=2,
-    )
-    return exactly(count, term)
 
 
 def to_regex(term: Term) -> str:

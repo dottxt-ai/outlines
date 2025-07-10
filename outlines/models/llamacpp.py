@@ -334,24 +334,6 @@ class LlamaCpp(Model):
                 yield chunk["choices"][0]["delta"].get("content", "")
 
 
-    def load_lora(self, adapter_path: str) -> None:  # pragma: no cover
-        """Load a LoRA adapter. Deprecated since v1.0.0."""
-        warnings.warn("""
-            The `load_lora` method is deprecated starting from v1.0.0.
-            Support for it will be removed in v1.1.0.
-            """,
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        if self.model._model.apply_lora_from_file(
-            adapter_path,
-            1.0,
-        ):
-            raise RuntimeError(
-                f"Failed to apply LoRA from lora path: {adapter_path}"
-            )
-
-
 def from_llamacpp(model: "Llama"):
     """Create an Outlines `LlamaCpp` model instance from a
     `llama_cpp.Llama` instance.
