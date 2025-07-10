@@ -64,7 +64,6 @@ class Template:
 
     """
     template: jinja2.Template
-    signature: Optional[inspect.Signature]
 
     def __call__(self, *args, **kwargs) -> str:
         """Render and return the template.
@@ -75,12 +74,7 @@ class Template:
             The rendered template as a Python string.
 
         """
-        if self.signature is not None:
-            bound_arguments = self.signature.bind(*args, **kwargs)
-            bound_arguments.apply_defaults()
-            return self.template.render(**bound_arguments.arguments)
-        else:
-            return self.template.render(**kwargs)
+        return self.template.render(**kwargs)
 
     @classmethod
     def from_string(cls, content: str, filters: Dict[str, Callable] = {}):
@@ -98,7 +92,7 @@ class Template:
             An instance of the class with the provided content as a template.
 
         """
-        return cls(build_template_from_string(content, filters), None)
+        return cls(build_template_from_string(content, filters))
 
     @classmethod
     def from_file(cls, path: Path, filters: Dict[str, Callable] = {}):
@@ -125,7 +119,7 @@ class Template:
         # infer one from a Jinja2 environment that is
         # split across multiple files (since e.g. we support features like
         # Jinja2 includes and template inheritance)
-        return cls(build_template_from_file(path, filters), None)
+        return cls(build_template_from_file(path, filters))
 
 
 def build_template_from_string(
@@ -157,90 +151,6 @@ def build_template_from_file(
     env = create_jinja_env(jinja2.FileSystemLoader(file_directory), filters)
 
     return env.get_template(os.path.basename(path))
-
-
-def prompt(
-    fn: Optional[Callable] = None,
-    filters: Dict[str, Callable] = {},
-) -> Callable:
-    """Decorate a function that contains a prompt template.
-
-    This allows to define prompts in the docstring of a function and simplify their
-    manipulation by providing some degree of encapsulation. It uses the `render`
-    function internally to render templates.
-
-    ```pycon
-    >>> import outlines
-    >>>
-    >>> @outlines.prompt
-    >>> def build_prompt(question):
-    ...    "I have a ${question}"
-    ...
-    >>> prompt = build_prompt("How are you?")
-    ```
-
-    This API can also be helpful in an "agent" context where parts of the prompt
-    are set when the agent is initialized and never modified later. In this situation
-    we can partially apply the prompt function at initialization.
-
-    ```pycon
-    >>> import outlines
-    >>> import functools as ft
-    ...
-    >>> @outlines.prompt
-    ... def solve_task(name: str, objective: str, task: str):
-    ...     \"""Your name is {{name}}.
-    ...     Your overall objective is to {{objective}}.
-    ...     Please solve the following task: {{task}}
-    ...     \"""
-    ...
-    >>> hal = ft.partial(solve_task, "HAL", "Travel to Jupiter")
-    ```
-
-    Additional Jinja2 filters can be provided as keyword arguments to the decorator.
-
-    ```pycon
-    >>> def reverse(s: str) -> str:
-    ...     return s[::-1]
-    ...
-    >>> @outlines.prompt(filters={ 'reverse': reverse })
-    ... def reverse_prompt(text):
-    ...     \"""{{ text | reverse }}\"""
-    ...
-    >>> prompt = reverse_prompt("Hello")
-    >>> print(prompt)
-    ... "olleH"
-    ```
-
-    Returns
-    -------
-    A `Template` callable class which will render the template when called.
-
-    """
-    warnings.warn(
-        "The @prompt decorator is deprecated and will be removed in outlines 1.1.0. "
-        "Instead of using docstring templates, please use Template.from_file() to "
-        "load your prompts from separate template files, or a simple Python function "
-        "that returns text. This helps keep prompt content separate from code and is "
-        "more maintainable.",
-        DeprecationWarning,
-        stacklevel=2,
-    )
-
-    if fn is None:
-        return lambda fn: prompt(fn, cast(Dict[str, Callable], filters))
-
-    signature = inspect.signature(fn)
-
-    # The docstring contains the template that will be rendered to be used
-    # as a prompt to the language model.
-    docstring = fn.__doc__
-    if docstring is None:
-        raise TypeError("Could not find a template in the function's docstring.")
-
-    template = build_template_from_string(cast(str, docstring), filters)
-
-    return Template(template, signature)
 
 
 def create_jinja_env(
@@ -400,7 +310,7 @@ def parse_pydantic_schema(raw_schema, definitions):
     for name, value in raw_schema["properties"].items():
         if "description" in value:
             simple_schema[name] = value["description"]
-        elif "$ref" in value:
+        elif "$ref" in value: # pragma: no cover
             refs = value["$ref"].split("/")
             simple_schema[name] = parse_pydantic_schema(
                 definitions[refs[2]], definitions

@@ -1,11 +1,10 @@
 """Integration with the `vllm` library (offline mode)."""
 
 import json
-import warnings
 from functools import singledispatchmethod
 from typing import TYPE_CHECKING, Any, List, Optional, Union
 
-from outlines.inputs import Chat, Image
+from outlines.inputs import Chat
 from outlines.models.base import Model, ModelTypeAdapter
 from outlines.models.openai import OpenAITypeAdapter
 from outlines.types.dsl import CFG, JsonSchema, python_types_to_terms, to_regex
@@ -111,7 +110,6 @@ class VLLMOffline(Model):
         """
         self.model = model
         self.type_adapter = VLLMOfflineTypeAdapter()
-        self.lora_request = None # v0 legacy, to be removed
 
     def _build_generation_args(
         self,
@@ -167,14 +165,12 @@ class VLLMOffline(Model):
             results = self.model.chat(
                 messages=self.type_adapter.format_input(model_input),
                 sampling_params=sampling_params,
-                lora_request=self.lora_request, # v0 legacy, to be removed
                 **inference_kwargs,
             )
         else:
             results = self.model.generate(
                 prompts=self.type_adapter.format_input(model_input),
                 sampling_params=sampling_params,
-                lora_request=self.lora_request, # v0 legacy, to be removed
                 **inference_kwargs,
             )
         results = [completion.text for completion in results[0].outputs]
@@ -223,7 +219,6 @@ class VLLMOffline(Model):
         results = self.model.generate(
             prompts=[self.type_adapter.format_input(item) for item in model_input],
             sampling_params=sampling_params,
-            lora_request=self.lora_request, # v0 legacy, to be removed
             **inference_kwargs,
         )
         return [[sample.text for sample in batch.outputs] for batch in results]
@@ -237,30 +232,6 @@ class VLLMOffline(Model):
         raise NotImplementedError(
             "Streaming is not available for the vLLM offline integration."
         )
-
-    def load_lora(self, adapter_path: Optional[str]) -> None:
-        """Load a LoRA adapter. Deprecated since v1.0.0.
-
-        Use the `lora_request` argument when calling the model or generator
-        instead.
-
-        """
-        warnings.warn("""
-            The `load_lora` method is deprecated starting from v1.0.0.
-            Support for it will be removed in v1.1.0.
-            Please use the v1 of the `outlines` library by using the
-            `outlines.from_vllm` function to create a `VLLM` model
-            instance.
-            In the v1, you must pass the `lora_request` argument as
-            a keyword argument when calling the model or generator.
-            """)
-
-        from vllm.lora.request import LoRARequest
-
-        if adapter_path is None:
-            self.lora_request = None
-        else:
-            self.lora_request = LoRARequest(adapter_path, 1, adapter_path)
 
 
 def from_vllm_offline(model: "LLM") -> VLLMOffline:
