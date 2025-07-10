@@ -1,7 +1,9 @@
+import io
 import re
 from enum import Enum
 
 import pytest
+from PIL import Image as PILImage
 from pydantic import BaseModel
 
 try:
@@ -11,6 +13,7 @@ except ImportError:
     HAS_VLLM = False
 
 import outlines
+from outlines.inputs import Chat
 from outlines.models.vllm_offline import (
     VLLMOffline,
     VLLMOfflineTypeAdapter,
@@ -19,12 +22,26 @@ from outlines.models.vllm_offline import (
 from outlines.types import Regex
 
 
-TEST_MODEL = "erwanf/gpt2-mini"
+TEST_MODEL = "microsoft/Phi-3-mini-4k-instruct"
 
 pytestmark = pytest.mark.skipif(
     not HAS_VLLM,
     reason="vLLM models can only be run on GPU."
 )
+
+@pytest.fixture(scope="session")
+def image():
+    width, height = 1, 1
+    white_background = (255, 255, 255)
+    image = PILImage.new("RGB", (width, height), white_background)
+
+    # Save to an in-memory bytes buffer and read as png
+    buffer = io.BytesIO()
+    image.save(buffer, format="PNG")
+    buffer.seek(0)
+    image = PILImage.open(buffer)
+
+    return image
 
 
 def test_vllm_model_initialization():
@@ -51,9 +68,25 @@ def test_vllm_call(model):
 
 
 def test_vllm_inference_kwargs(model):
-    result = model("Write a short story about a cat.", sampling_params=SamplingParams(max_tokens=2), use_tqdm=True)
+    result = model(
+        "Write a short story about a cat.",
+        sampling_params=SamplingParams(max_tokens=2),
+        use_tqdm=True
+    )
     assert isinstance(result, str)
     assert len(result) <= 20
+
+
+def test_vllm_chat(model):
+    result = model(
+        Chat(messages=[
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": "What is the capital of France?"},
+            {"role": "assistant", "content": "Response: "},
+        ]),
+        sampling_params=SamplingParams(max_tokens=2),
+    )
+    assert isinstance(result, str)
 
 
 def test_vllm_invalid_inference_kwargs(model):
@@ -110,10 +143,18 @@ def test_vllm_batch(model):
         assert isinstance(item, list)
         assert len(item) == 2
 
+    with pytest.raises(TypeError, match="Batch generation is not available"):
+        model.batch(
+            [
+                Chat(messages=[
+                    {"role": "user", "content": "What is the capital of France?"},
+                ]),
+            ]
+        )
 
 def test_vllm_streaming(model):
     with pytest.raises(
         NotImplementedError,
-        match="Streaming is not available for the vLLM integration."
+        match="Streaming is not available"
     ):
         model.stream("Respond with one word. Not more.")
