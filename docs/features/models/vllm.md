@@ -58,30 +58,51 @@ import openai
 import outlines
 
 # Create the model
-openai_client = openai.OpenAI(base_url="http://0.0.0.0:8000/v1", "microsoft/Phi-3-mini-4k-instruct")
-model = outlines.from_vllm(openai_client)
+model = outlines.from_openai(openai.OpenAI(base_url="http://0.0.0.0:8000/v1", "microsoft/Phi-3-mini-4k-instruct"))
 
 # Call it to generate text
-result = model("Write a short story about a cat.", max_tokens=100)
-print(result) # 'In a quiet village where the cobblestones hummed softly beneath the morning mist...'
+response = model("What's the capital of Latvia?", max_tokens=20)
+print(response) # 'Riga'
 ```
 
-The `VLLM` model also supports streaming. For instance:
+#### Vision
+
+Some models you can run with VLLM support vision input. To use this feature, provide a list containing a text prompt and `Image` instances.
+
+For instance:
 
 ```python
-import openai
+import io
+import requests
+import PIL
 import outlines
+import openai
+from outlines.inputs import Image
 
 # Create the model
-openai_client = openai.OpenAI(base_url="http://0.0.0.0:8000/v1", "microsoft/Phi-3-mini-4k-instruct")
-model = outlines.from_vllm(openai_client)
+model = outlines.from_openai(openai.OpenAI(base_url="http://0.0.0.0:8000/v1", "microsoft/Phi-3-mini-4k-instruct"))
 
-# Stream text
-for chunk in model.stream("Write a short story about a cat.", max_tokens=100):
-    print(chunk) # 'In ...'
+# Function to get an image
+def get_image(url):
+    r = requests.get(url)
+    return PIL.Image.open(io.BytesIO(r.content))
+
+# Create the prompt containing the text and the image
+prompt = [
+    "Describe the image",
+    Image(get_image("https://picsum.photos/id/237/400/300"))
+]
+
+# Call the model to generate a response
+response = model(prompt, max_tokens=50)
+print(response) # 'This is a picture of a black dog.'
 ```
 
-Additionnaly, you can use the VLLM model with vision input if your server is running a multimodal model such as Qwen2.5-VL. For instance:
+#### Chat
+
+You can also use chat inputs with the `VLLM` model. To do so, call the model with a `Chat` instance. The content of messsage within the chat can be vision inputs as described above.
+
+For instance:
 
 ```python
 import io
@@ -89,25 +110,46 @@ import requests
 import PIL
 import openai
 import outlines
-from outlines.inputs import Image
+from outlines.inputs import Chat, Image
 
 # Create the model
-model = outlines.from_vllm(openai.OpenAI(base_url="http://0.0.0.0:8000/v1"), "Qwen/Qwen2.5-VL-3B-Instruct")
+model = outlines.from_openai(openai.OpenAI(base_url="http://0.0.0.0:8000/v1", "microsoft/Phi-3-mini-4k-instruct"))
 
 # Function to get an image
 def get_image(url):
     r = requests.get(url)
     return PIL.Image.open(io.BytesIO(r.content))
 
-# Create the prompt
-prompt = [
-    "Describe the image",
-    Image(get_image("https://picsum.photos/id/237/400/300"))
-]
+# Create the chat input
+prompt = Chat([
+    {"role": "system", "content": "You are a helpful assistant."},
+    {
+        "role": "user",
+        "content": ["Describe the image", Image(get_image("https://picsum.photos/id/237/400/300"))]
+    },
+])
 
-# Generate text
-response = model(prompt)
-print(response) # The image shows a black puppy lying on a wooden surface, looking up at the camera with wide eyes.
+# Call the model to generate a response
+response = model(prompt, max_tokens=50)
+print(response) # 'This is a picture of a black dog.'
+```
+
+#### Streaming
+
+Finally, the `VLLM` model supports streaming through the `stream` method.
+
+For instance:
+
+```python
+import openai
+import outlines
+
+# Create the model
+model = outlines.from_openai(openai.OpenAI(base_url="http://0.0.0.0:8000/v1", "microsoft/Phi-3-mini-4k-instruct"))
+
+# Stream the response
+for chunk in model.stream("Tell me a short story about a cat.", max_tokens=50):
+    print(chunk) # 'Once...'
 ```
 
 ## Asynchronous Calls
