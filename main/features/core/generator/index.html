@@ -3812,7 +3812,7 @@
 
 
 <h1 id="generator">Generator</h1>
-<p>The <code>Generator</code> class is the core component of Outlines v1. <code>Generator</code> accepts a <a href="../reference/available_models">model</a> and an optional <a href="/api/types">output type</a>. If no output type is provided, the <code>Generator</code> will return unstructured text.</p>
+<p>The <code>Generator</code> class is the core component of Outlines v1. <code>Generator</code> accepts a <a href="../../models/">model</a> and an optional <a href="../output_types/">output type</a>. If no output type is provided, the <code>Generator</code> will return unstructured text.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><code>Generator</code> is new as of Outlines v1, and replaces previous generator constructors:</p>
@@ -3833,7 +3833,7 @@
 <li><code>batch</code></li>
 <li><code>stream</code></li>
 </ul>
-<p>All of them take a single positional argument: the prompt or list of prompts from which to generate completions. Contrarily to the equivalent methods of models, you do not need to provide an output type as it has already been defined when initializing the generator.</p>
+<p>All of them take a single positional argument: the <a href="../inputs/">model input</a> from which text is generated. Contrarily to the equivalent methods of models, you do not need to provide an output type as it has already been defined when initializing the generator.</p>
 <h2 id="basic-usage">Basic Usage</h2>
 <div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">Generator</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">from_transformers</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">transformers</span>
@@ -4160,7 +4160,7 @@ outlines.types.dsl module.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="July 3, 2025 08:10:00 UTC"><span class="timeago" datetime="2025-07-03T08:10:00+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="July 3, 2025 08:10:00 UTC">2025-07-03</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="July 10, 2025 14:58:22 UTC"><span class="timeago" datetime="2025-07-10T14:58:22+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="July 10, 2025 14:58:22 UTC">2025-07-10</span>
   </span>
 
     
