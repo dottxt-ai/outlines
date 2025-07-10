@@ -899,6 +899,39 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Text Generation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#vision" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vision
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#chat" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chat
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#streaming" class="md-nav__link">
+    <span class="md-ellipsis">
+      Streaming
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1232,6 +1265,29 @@
   
   
   
+    <li class="md-nav__item">
+      <a href="../../core/inputs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Model Inputs
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
     
     
     
@@ -1248,10 +1304,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_2_2" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_2_3" >
         
           
-          <label class="md-nav__link" for="__nav_3_2_2" id="__nav_3_2_2_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3_2_3" id="__nav_3_2_3_label" tabindex="0">
             
   
   
@@ -1264,8 +1320,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_2_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_2_2">
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_2_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_2_3">
             <span class="md-nav__icon md-icon"></span>
             Output Types
           </label>
@@ -3686,6 +3742,39 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Text Generation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#vision" class="md-nav__link">
+    <span class="md-ellipsis">
+      Vision
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#chat" class="md-nav__link">
+    <span class="md-ellipsis">
+      Chat
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#streaming" class="md-nav__link">
+    <span class="md-ellipsis">
+      Streaming
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -3743,7 +3832,7 @@
 </span></code></pre></div>
 <p>Check the <a href="https://docs.anthropic.com/en/docs/about-claude/models">Anthropic documentation</a> for an up-to-date list of available models.</p>
 <h2 id="text-generation">Text Generation</h2>
-<p>Once you've created your Outlines <code>Anthropic</code> model instance, you're all set to generate text with this provider. You can simply call the model with a prompt.</p>
+<p>Once you've created your Outlines <code>Anthropic</code> model instance, you're all set to generate text with this provider. You can simply call the model with a text prompt.</p>
 <p>For instance:</p>
 <div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">anthropic</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">Anthropic</span>
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines</span>
@@ -3758,7 +3847,8 @@
 </span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span style="color: #D8DEE9">response</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;What&#39;s the capital of Latvia?&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">max_tokens</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #B48EAD">20</span><span style="color: #ECEFF4">)</span>
 </span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">response</span><span style="color: #ECEFF4">)</span> <span style="color: #616E87; font-style: italic"># &#39;Riga&#39;</span>
 </span></code></pre></div>
-<p>Anthropic does not support structured generation, so you cannot provide an output type. It does support streaming and vision inputs though.</p>
+<h4 id="vision">Vision</h4>
+<p>Some Anthropic models support vision input. To use this feature, provide a list containing a text prompt and <code>Image</code> instances.</p>
 <p>For instance:</p>
 <div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">io</span>
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">requests</span>
@@ -3778,15 +3868,66 @@
 </span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>    <span style="color: #D8DEE9">r</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">requests</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">get</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">url</span><span style="color: #ECEFF4">)</span>
 </span><span id="__span-2-17"><a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>    <span style="color: #81A1C1; font-weight: bold">return</span> <span style="color: #D8DEE9">PIL</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">Image</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">open</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">io</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">BytesIO</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">r</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">content</span><span style="color: #ECEFF4">))</span>
 </span><span id="__span-2-18"><a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a>
-</span><span id="__span-2-19"><a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a><span style="color: #616E87; font-style: italic"># Create the prompt</span>
+</span><span id="__span-2-19"><a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a><span style="color: #616E87; font-style: italic"># Create the prompt containing the text and the image</span>
 </span><span id="__span-2-20"><a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a><span style="color: #D8DEE9">prompt</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #ECEFF4">[</span>
 </span><span id="__span-2-21"><a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a>    <span style="color: #A3BE8C">&quot;Describe the image&quot;</span><span style="color: #ECEFF4">,</span>
 </span><span id="__span-2-22"><a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a>    <span style="color: #D8DEE9">Image</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">get_image</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;https://picsum.photos/id/237/400/300&quot;</span><span style="color: #ECEFF4">))</span>
 </span><span id="__span-2-23"><a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a><span style="color: #ECEFF4">]</span>
 </span><span id="__span-2-24"><a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a>
-</span><span id="__span-2-25"><a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a><span style="color: #616E87; font-style: italic"># Stream the response</span>
-</span><span id="__span-2-26"><a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a><span style="color: #81A1C1; font-weight: bold">for</span> <span style="color: #D8DEE9">chunk</span> <span style="color: #81A1C1; font-weight: bold">in</span> <span style="color: #D8DEE9">model</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">stream</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">prompt</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">max_tokens</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #B48EAD">50</span><span style="color: #ECEFF4">):</span>
-</span><span id="__span-2-27"><a id="__codelineno-2-27" name="__codelineno-2-27" href="#__codelineno-2-27"></a>    <span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">chunk</span><span style="color: #ECEFF4">)</span> <span style="color: #616E87; font-style: italic"># &#39;This...&#39;</span>
+</span><span id="__span-2-25"><a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a><span style="color: #616E87; font-style: italic"># Call the model to generate a response</span>
+</span><span id="__span-2-26"><a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a><span style="color: #D8DEE9">response</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">prompt</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">max_tokens</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #B48EAD">50</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-2-27"><a id="__codelineno-2-27" name="__codelineno-2-27" href="#__codelineno-2-27"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">response</span><span style="color: #ECEFF4">)</span> <span style="color: #616E87; font-style: italic"># &#39;This is a picture of a black dog.&#39;</span>
+</span></code></pre></div>
+<h4 id="chat">Chat</h4>
+<p>You can also use chat inputs with the <code>Anthropic</code> model. To do so, call the model with a <code>Chat</code> instance. The content of messsage within the chat can be vision inputs as described above.</p>
+<p>For instance:</p>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">io</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">requests</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">PIL</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">anthropic</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">Anthropic</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">from_anthropic</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines.inputs</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">Chat</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">Image</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span style="color: #616E87; font-style: italic"># Create the model</span>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span style="color: #D8DEE9">model</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">from_anthropic</span><span style="color: #ECEFF4">(</span>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>    <span style="color: #D8DEE9">Anthropic</span><span style="color: #ECEFF4">(),</span>
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>    <span style="color: #A3BE8C">&quot;claude-3-5-sonnet-latest&quot;</span>
+</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span style="color: #ECEFF4">)</span>
+</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>
+</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span style="color: #616E87; font-style: italic"># Function to get an image</span>
+</span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">get_image</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">url</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-3-16"><a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>    <span style="color: #D8DEE9">r</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">requests</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">get</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">url</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-3-17"><a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a>    <span style="color: #81A1C1; font-weight: bold">return</span> <span style="color: #D8DEE9">PIL</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">Image</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">open</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">io</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">BytesIO</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">r</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">content</span><span style="color: #ECEFF4">))</span>
+</span><span id="__span-3-18"><a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a>
+</span><span id="__span-3-19"><a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a><span style="color: #616E87; font-style: italic"># Create the chat input</span>
+</span><span id="__span-3-20"><a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a><span style="color: #D8DEE9">prompt</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">Chat</span><span style="color: #ECEFF4">([</span>
+</span><span id="__span-3-21"><a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a>    <span style="color: #ECEFF4">{</span><span style="color: #A3BE8C">&quot;role&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;user&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;content&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;You are a helpful assistant that helps me described pictures.&quot;</span><span style="color: #ECEFF4">},</span>
+</span><span id="__span-3-22"><a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a>    <span style="color: #ECEFF4">{</span><span style="color: #A3BE8C">&quot;role&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;assistant&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;content&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;I&#39;d be happy to help you describe pictures! Please go ahead and share an image&quot;</span><span style="color: #ECEFF4">},</span>
+</span><span id="__span-3-23"><a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a>    <span style="color: #ECEFF4">{</span>
+</span><span id="__span-3-24"><a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a>        <span style="color: #A3BE8C">&quot;role&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;user&quot;</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-3-25"><a id="__codelineno-3-25" name="__codelineno-3-25" href="#__codelineno-3-25"></a>        <span style="color: #A3BE8C">&quot;content&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #ECEFF4">[</span><span style="color: #A3BE8C">&quot;Describe the image&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">Image</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">get_image</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;https://picsum.photos/id/237/400/300&quot;</span><span style="color: #ECEFF4">))]</span>
+</span><span id="__span-3-26"><a id="__codelineno-3-26" name="__codelineno-3-26" href="#__codelineno-3-26"></a>    <span style="color: #ECEFF4">},</span>
+</span><span id="__span-3-27"><a id="__codelineno-3-27" name="__codelineno-3-27" href="#__codelineno-3-27"></a><span style="color: #ECEFF4">])</span>
+</span><span id="__span-3-28"><a id="__codelineno-3-28" name="__codelineno-3-28" href="#__codelineno-3-28"></a>
+</span><span id="__span-3-29"><a id="__codelineno-3-29" name="__codelineno-3-29" href="#__codelineno-3-29"></a><span style="color: #616E87; font-style: italic"># Call the model to generate a response</span>
+</span><span id="__span-3-30"><a id="__codelineno-3-30" name="__codelineno-3-30" href="#__codelineno-3-30"></a><span style="color: #D8DEE9">response</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">prompt</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">max_tokens</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #B48EAD">50</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-3-31"><a id="__codelineno-3-31" name="__codelineno-3-31" href="#__codelineno-3-31"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">response</span><span style="color: #ECEFF4">)</span> <span style="color: #616E87; font-style: italic"># &#39;This is a picture of a black dog.&#39;</span>
+</span></code></pre></div>
+<h4 id="streaming">Streaming</h4>
+<p>Finally, the <code>Anthropic</code> model supports streaming through the <code>stream</code> method.</p>
+<p>For instance:</p>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">anthropic</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">Anthropic</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span style="color: #616E87; font-style: italic"># Create the model</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span style="color: #D8DEE9">model</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">outlines</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_anthropic</span><span style="color: #ECEFF4">(</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    <span style="color: #D8DEE9">Anthropic</span><span style="color: #ECEFF4">(),</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>    <span style="color: #A3BE8C">&quot;claude-3-5-sonnet-latest&quot;</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span style="color: #ECEFF4">)</span>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span style="color: #616E87; font-style: italic"># Stream the response</span>
+</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span style="color: #81A1C1; font-weight: bold">for</span> <span style="color: #D8DEE9">chunk</span> <span style="color: #81A1C1; font-weight: bold">in</span> <span style="color: #D8DEE9">model</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">stream</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;Tell me a short story about a cat.&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">max_tokens</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #B48EAD">50</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>    <span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">chunk</span><span style="color: #ECEFF4">)</span> <span style="color: #616E87; font-style: italic"># &#39;Once...&#39;</span>
 </span></code></pre></div>
 <h2 id="inference-arguments">Inference arguments</h2>
 <p>When calling the model or streaming, you can provide keyword arguments that will be passed down to the Anthropic client. Make sure to include all the arguments you need to configure the client's behavior to your expected behavior. Some of the most common arguments include <code>max_tokens</code>, <code>temperature</code>, <code>stop_sequences</code> and <code>top_k</code>.</p>
@@ -3817,7 +3958,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="July 5, 2025 13:14:15 UTC"><span class="timeago" datetime="2025-07-05T13:14:15+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="July 5, 2025 13:14:15 UTC">2025-07-05</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="July 9, 2025 16:37:38 UTC"><span class="timeago" datetime="2025-07-09T16:37:38+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="July 9, 2025 16:37:38 UTC">2025-07-09</span>
   </span>
 
     

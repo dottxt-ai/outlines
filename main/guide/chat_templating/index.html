@@ -1170,6 +1170,29 @@
   
   
   
+    <li class="md-nav__item">
+      <a href="../../features/core/inputs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Model Inputs
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
     
     
     
@@ -1186,10 +1209,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_2_2" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_2_3" >
         
           
-          <label class="md-nav__link" for="__nav_3_2_2" id="__nav_3_2_2_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3_2_3" id="__nav_3_2_3_label" tabindex="0">
             
   
   
@@ -1202,8 +1225,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_2_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_2_2">
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_3_2_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_2_3">
             <span class="md-nav__icon md-icon"></span>
             Output Types
           </label>
@@ -3615,31 +3638,7 @@
 
 <h1 id="chat-templating">Chat templating</h1>
 <p>Instruction-tuned language models use "special tokens" to indicate different parts of text, such as the system prompt, the user prompt, any images, and the assistant's response. A <a href="https://huggingface.co/docs/transformers/main/en/chat_templating">chat template</a> is how different types of input are composited together into a single, machine-readable string.</p>
-<p>Outlines does not manage chat templating tokens when using instruct models. You must apply the chat template tokens to the prompt yourself -- if you do not apply chat templating on instruction-tuned models, you will often get nonsensical output from the model.</p>
-<p>Chat template tokens are not needed for base models.</p>
-<p>You can find the chat template tokens in the model's HuggingFace repo or documentation. As an example, the <code>SmolLM2-360M-Instruct</code> special tokens can be found <a href="https://huggingface.co/HuggingFaceTB/SmolLM2-360M-Instruct/blob/main/special_tokens_map.json">here</a>.</p>
-<p>However, it can be slow to manually look up a model's special tokens, and special tokens vary by models. If you change the model, your prompts may break if you have hard-coded special tokens.</p>
-<p>If you need a convenient tool to apply chat templating for you, you should use the <code>tokenizer</code> from the <code>transformers</code> library:</p>
-<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">transformers</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">AutoTokenizer</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span style="color: #D8DEE9">tokenizer</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">AutoTokenizer</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_pretrained</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;HuggingFaceTB/SmolLM2-360M-Instruct&quot;</span><span style="color: #ECEFF4">)</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span style="color: #D8DEE9">prompt</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">tokenizer</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">apply_chat_template</span><span style="color: #ECEFF4">(</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    <span style="color: #ECEFF4">[</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>        <span style="color: #ECEFF4">{</span><span style="color: #A3BE8C">&quot;role&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;system&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;content&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;You extract information from text.&quot;</span><span style="color: #ECEFF4">},</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>        <span style="color: #ECEFF4">{</span><span style="color: #A3BE8C">&quot;role&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;user&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;content&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;What food does the following text describe?&quot;</span><span style="color: #ECEFF4">},</span>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>    <span style="color: #ECEFF4">],</span>
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span style="color: #D8DEE9">tokenize</span><span style="color: #81A1C1; font-weight: bold">=False</span><span style="color: #ECEFF4">,</span>
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    <span style="color: #D8DEE9">add_bos</span><span style="color: #81A1C1; font-weight: bold">=True</span><span style="color: #ECEFF4">,</span>
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    <span style="color: #D8DEE9">add_generation_prompt</span><span style="color: #81A1C1; font-weight: bold">=True</span><span style="color: #ECEFF4">,</span>
-</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span style="color: #ECEFF4">)</span>
-</span></code></pre></div>
-<p>yields</p>
-<div class="language-text highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>&lt;|im_start|&gt;system
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>You extract information from text.&lt;|im_end|&gt;
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>&lt;|im_start|&gt;user
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>What food does the following text describe?&lt;|im_end|&gt;
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>&lt;|im_start|&gt;assistant
-</span></code></pre></div>
+<p>Outlines supports chat templating throught the <code>Chat</code> model input class. It contains a list of messages similar in format to the chat history you would use with API models such as OpenAI or Anthropic and to the expected arguments of the <code>apply_chat_template</code> method of transformers tokenizers. You can find detailed information on the interface of this object in the <a href="../../features/core/inputs/">model inputs documentation</a>.</p>
 
 
 
@@ -3662,7 +3661,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="June 20, 2025 11:51:24 UTC"><span class="timeago" datetime="2025-06-20T11:51:24+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="June 20, 2025 11:51:24 UTC">2025-06-20</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="July 9, 2025 16:37:21 UTC"><span class="timeago" datetime="2025-07-09T16:37:21+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="July 9, 2025 16:37:21 UTC">2025-07-09</span>
   </span>
 
     
@@ -3690,14 +3689,14 @@
     
     <nav>
       
-        <a href="https://github.com/rlouf" class="md-author" title="@rlouf">
-          
-          <img src="https://avatars.githubusercontent.com/u/3885044?v=4&size=72" alt="rlouf">
-        </a>
-      
         <a href="https://github.com/RobinPicard" class="md-author" title="@RobinPicard">
           
           <img src="https://avatars.githubusercontent.com/u/83579270?v=4&size=72" alt="RobinPicard">
+        </a>
+      
+        <a href="https://github.com/rlouf" class="md-author" title="@rlouf">
+          
+          <img src="https://avatars.githubusercontent.com/u/3885044?v=4&size=72" alt="rlouf">
         </a>
       
         <a href="https://github.com/web-flow" class="md-author" title="@web-flow">
