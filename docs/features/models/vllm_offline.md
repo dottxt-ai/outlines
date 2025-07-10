@@ -38,13 +38,13 @@ model = outlines.from_vllm_offline(
 
 ## Text Generation
 
-To generate text, you can simply call the model with a prompt.
+Once you've created your Outlines `VLLMOffline` model instance, you're all set to generate text with this provider. You can simply call the model with a prompt.
 
 For instance:
 
 ```python
 import outlines
-from vllm import LLM, SamplingParams
+from vllm import LLM
 
 # Create the model
 model = outlines.from_vllm_offline(
@@ -52,24 +52,82 @@ model = outlines.from_vllm_offline(
 )
 
 # Call it to generate text
-result = model("What's the capital of Latvia?", sampling_params=SamplingParams(max_tokens=20))
-print(result) # 'Riga'
+response = model("What's the capital of Latvia?", max_tokens=20)
+print(response) # 'Riga'
 ```
 
-The `VLLOffline` model also supports batch generation. To use it, provide a list of prompts to the `batch` method. You will receive as a result a list of completions. For instance:
+#### Chat
+
+You can also use chat inputs with the `VLLMOffline` model. To do so, call the model with a `Chat` instance. The content of messsage within the chat can be vision inputs as described above.
+
+For instance:
 
 ```python
 import outlines
-from vllm import LLM, SamplingParams
+from vllm import LLM
+from outlines.inputs import Chat
 
 # Create the model
 model = outlines.from_vllm_offline(
     LLM("microsoft/Phi-3-mini-4k-instruct")
 )
 
+# Create the chat prompt
+prompt = Chat([
+    {"role": "system", "content": "You are a helpful assistant."},
+    {"role": "user", "content": "What's the capital of Latvia?"},
+])
+
+# Call the model to generate a response
+response = model(prompt, max_tokens=50)
+print(response) # 'Riga'
+```
+
+#### Streaming
+
+The `VLLMOffline` model supports streaming through the `stream` method.
+
+For instance:
+
+```python
+import outlines
+from vllm import LLM
+
+# Create the model
+model = outlines.from_vllm_offline(
+    LLM("microsoft/Phi-3-mini-4k-instruct")
+)
+
+# Stream the response
+for chunk in model.stream("Tell me a short story about a cat.", max_tokens=50):
+    print(chunk) # 'Once...'
+```
+
+#### Batching
+
+Finally, the `VLLMOffline` model also supports batching through the `batch` method. To use it, provide a list of prompts (using the formats described above) to the `batch` method. You will receive as a result a list of completions.
+
+For instance:
+
+```python
+import outlines
+from vllm import LLM
+
+# Create the model
+model = outlines.from_vllm_offline(
+    LLM("microsoft/Phi-3-mini-4k-instruct")
+)
+
+# Create a list of prompts that will be used in a single batch
+prompts = [
+    "What's the capital of Lithuania?",
+    "What's the capital of Latvia?",
+    "What's the capital of Estonia?"
+]
+
 # Call it to generate text
-result = model.batch(["What's the capital of Latvia?", "What's the capital of Estonia"], sampling_params=SamplingParams(max_tokens=20))
-print(result) # ['Riga', 'Tallinn']
+result = model.batch(prompts, max_new_tokens=20)
+print(result) # ['Vilnius', 'Riga', 'Tallinn']
 ```
 
 ## Structured Generation
