@@ -166,7 +166,8 @@ class TransformersTypeAdapter(ModelTypeAdapter):
     def format_chat_input(self, model_input: Chat) -> str:
         return self.tokenizer.apply_chat_template(
             model_input.messages,
-            tokenize=False
+            tokenize=False,
+            add_generation_prompt=True,
         )
 
     def format_output_type(
