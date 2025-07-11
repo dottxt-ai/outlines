@@ -13,7 +13,6 @@ This part of the documentation provides a few cookbooks that you can browse to g
 - [Structured Generation Workflow](structured_generation_workflow.md):
 - [Chain Of Thought (CoT)](chain_of_thought.md): Generate a series of intermediate reasoning steps using regex-structured generation.
 - [ReAct Agent](react_agent.md): Build an agent with open weights models using regex-structured generation.
-- [Vision-Language Models](atomic_caption.md): Use Outlines with vision-language models for tasks like image captioning and visual reasoning.
 - [Structured Generation from PDFs](read-pdfs.md): Use Outlines with vision-language models to read PDFs and produce structured output.
 - [Earnings reports to CSV](earnings-reports.md): Extract data from earnings reports to CSV using regex-structured generation.
 - [Receipt Digitization](receipt-digitization.md): Extract information from a picture of a receipt using structured generation.
