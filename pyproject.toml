@@ -101,8 +101,8 @@ repository = "https://github.com/dottxt-ai/outlines"
 file="README.md"
 content-type = "text/markdown"
 
-[tool.setuptools]
-packages = ["outlines"]
+[tool.setuptools.packages.find]
+include = ["outlines*"]
 
 [tool.setuptools.package-data]
 "outlines" = ["py.typed"]
