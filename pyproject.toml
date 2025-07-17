@@ -105,7 +105,7 @@ content-type = "text/markdown"
 include = ["outlines*"]
 
 [tool.setuptools.package-data]
-"outlines" = ["py.typed"]
+"outlines" = ["py.typed", "grammars/*.lark"]
 
 [tool.setuptools_scm]
 write_to = "outlines/_version.py"
