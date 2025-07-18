@@ -81,6 +81,7 @@ class Model(ABC):
         self,
         model_input: Any,
         output_type: Optional[Any] = None,
+        backend: Optional[str] = None,
         **inference_kwargs: Any
     ) -> Any:
         """Call the model.
@@ -103,6 +104,10 @@ class Model(ABC):
             The input provided by the user.
         output_type
             The output type provided by the user.
+        backend
+            The name of the backend to use to create the logits processor that
+            will be used to generate the response. Only used for steerable
+            models if `output_type` is provided.
         **inference_kwargs
             Additional keyword arguments to pass to the model.
 
@@ -114,12 +119,13 @@ class Model(ABC):
         """
         from outlines import Generator
 
-        return Generator(self, output_type)(model_input, **inference_kwargs)
+        return Generator(self, output_type, backend)(model_input, **inference_kwargs)
 
     def batch(
         self,
         model_input: List[Any],
         output_type: Optional[Any] = None,
+        backend: Optional[str] = None,
         **inference_kwargs: Any
     ) -> List[Any]:
         """Make a batch call to the model (several inputs at once).
@@ -143,6 +149,10 @@ class Model(ABC):
             The list of inputs provided by the user.
         output_type
             The output type provided by the user.
+        backend
+            The name of the backend to use to create the logits processor that
+            will be used to generate the response. Only used for steerable
+            models if `output_type` is provided.
         **inference_kwargs
             Additional keyword arguments to pass to the model.
 
@@ -154,13 +164,14 @@ class Model(ABC):
         """
         from outlines import Generator
 
-        generator = Generator(self, output_type)
+        generator = Generator(self, output_type, backend)
         return generator.batch(model_input, **inference_kwargs) # type: ignore
 
     def stream(
         self,
         model_input: Any,
         output_type: Optional[Any] = None,
+        backend: Optional[str] = None,
         **inference_kwargs: Any
     ) -> Iterator[Any]:
         """Stream a response from the model.
@@ -186,6 +197,10 @@ class Model(ABC):
             The input provided by the user.
         output_type
             The output type provided by the user.
+        backend
+            The name of the backend to use to create the logits processor that
+            will be used to generate the response. Only used for steerable
+            models if `output_type` is provided.
         **inference_kwargs
             Additional keyword arguments to pass to the model.
 
@@ -197,7 +212,7 @@ class Model(ABC):
         """
         from outlines import Generator
 
-        generator = Generator(self, output_type)
+        generator = Generator(self, output_type, backend)
         return generator.stream(model_input, **inference_kwargs) # type: ignore
 
     @abstractmethod
@@ -311,6 +326,7 @@ class AsyncModel(ABC):
         self,
         model_input: Any,
         output_type: Optional[Any] = None,
+        backend: Optional[str] = None,
         **inference_kwargs: Any
     ) -> Any:
         """Call the model.
@@ -333,6 +349,10 @@ class AsyncModel(ABC):
             The input provided by the user.
         output_type
             The output type provided by the user.
+        backend
+            The name of the backend to use to create the logits processor that
+            will be used to generate the response. Only used for steerable
+            models if `output_type` is provided.
         **inference_kwargs
             Additional keyword arguments to pass to the model.
 
@@ -344,13 +364,14 @@ class AsyncModel(ABC):
         """
         from outlines import Generator
 
-        generator = Generator(self, output_type)
+        generator = Generator(self, output_type, backend)
         return await generator(model_input, **inference_kwargs)
 
     async def batch(
         self,
         model_input: List[Any],
         output_type: Optional[Any] = None,
+        backend: Optional[str] = None,
         **inference_kwargs: Any
     ) -> List[Any]:
         """Make a batch call to the model (several inputs at once).
@@ -374,6 +395,10 @@ class AsyncModel(ABC):
             The list of inputs provided by the user.
         output_type
             The output type provided by the user.
+        backend
+            The name of the backend to use to create the logits processor that
+            will be used to generate the response. Only used for steerable
+            models if `output_type` is provided.
         **inference_kwargs
             Additional keyword arguments to pass to the model.
 
@@ -385,13 +410,14 @@ class AsyncModel(ABC):
         """
         from outlines import Generator
 
-        generator = Generator(self, output_type)
+        generator = Generator(self, output_type, backend)
         return await generator.batch(model_input, **inference_kwargs) # type: ignore
 
     async def stream(
         self,
         model_input: Any,
         output_type: Optional[Any] = None,
+        backend: Optional[str] = None,
         **inference_kwargs: Any
     ) -> AsyncIterator[Any]:
         """Stream a response from the model.
@@ -417,6 +443,10 @@ class AsyncModel(ABC):
             The input provided by the user.
         output_type
             The output type provided by the user.
+        backend
+            The name of the backend to use to create the logits processor that
+            will be used to generate the response. Only used for steerable
+            models if `output_type` is provided.
         **inference_kwargs
             Additional keyword arguments to pass to the model.
 
@@ -428,7 +458,7 @@ class AsyncModel(ABC):
         """
         from outlines import Generator
 
-        generator = Generator(self, output_type)
+        generator = Generator(self, output_type, backend)
 
         async for chunk in generator.stream(model_input, **inference_kwargs):  # type: ignore
             yield chunk
