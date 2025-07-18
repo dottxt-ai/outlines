@@ -89,6 +89,8 @@ test = [
     "dottxt",
     "sentencepiece",
     "mkdocs_gen_files",
+    "llguidance",
+    "xgrammar",
 ]
 test-gpu=["outlines[test]", "vllm; sys_platform == 'linux'"]
 
@@ -170,6 +172,8 @@ module = [
     "tf-keras.*",
     "mkdocs_gen_files.*",
     "jsonpath_ng.*",
+    "llguidance.*",
+    "xgrammar.*",
 ]
 ignore_missing_imports = true
 
