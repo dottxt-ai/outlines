@@ -14,6 +14,7 @@ from typing import (
     Union,
 )
 
+from outlines.inputs import Chat
 from outlines.models.base import Model, ModelTypeAdapter
 from outlines.models.tokenizer import Tokenizer
 from outlines.processors import CFGLogitsProcessor, OutlinesLogitsProcessor
@@ -130,8 +131,7 @@ class LlamaCppTypeAdapter(ModelTypeAdapter):
     """Type adapter for the `LlamaCpp` model.
 
     `LlamaCppTypeAdapter` is responsible for preparing the arguments to
-    `llama-cpp-python`'s `Llama.__call__` method: the input (a string prompt),
-    as well as the logits processor (an instance of `LogitsProcessorList`).
+    the `Llama` object text generation methods.
 
     """
 
@@ -151,13 +151,32 @@ class LlamaCppTypeAdapter(ModelTypeAdapter):
 
         """
         raise NotImplementedError(
-            f"The input type {input} is not available with LlamaCpp. "
-            "The only available type is `str`."
+            f"The input type {type(model_input)} is not available with "
+            "LlamaCpp. The only available types are `str` and `Chat`."
         )
 
     @format_input.register(str)
     def format_str_input(self, model_input: str) -> str:
         return model_input
+
+    @format_input.register(Chat)
+    def format_chat_input(self, model_input: Chat) -> list:
+        if not all(
+            isinstance(message["content"], str)
+            for message in model_input.messages
+        ):
+            raise ValueError(
+                "LlamaCpp does not support multi-modal messages."
+                + "The content of each message must be a string."
+            )
+
+        return  [
+            {
+                "role": message["role"],
+                "content": message["content"],
+            }
+            for message in model_input.messages
+        ]
 
     def format_output_type(
         self, output_type: Optional[OutlinesLogitsProcessor] = None,
@@ -203,7 +222,7 @@ class LlamaCpp(Model):
 
     def generate(
         self,
-        model_input: str,
+        model_input: Union[Chat, str],
         output_type: Optional[OutlinesLogitsProcessor] = None,
         **inference_kwargs: Any,
     ) -> str:
@@ -232,12 +251,22 @@ class LlamaCpp(Model):
                 "the llama_cpp tokenizer"
             )
 
-        completion = self.model(
-            self.type_adapter.format_input(model_input),
-            logits_processor=self.type_adapter.format_output_type(output_type),
-            **inference_kwargs,
-        )
-        result = completion["choices"][0]["text"]
+        prompt = self.type_adapter.format_input(model_input)
+
+        if isinstance(prompt, str):
+            completion = self.model(
+                prompt,
+                logits_processor=self.type_adapter.format_output_type(output_type),
+                **inference_kwargs,
+            )
+            result = completion["choices"][0]["text"]
+        elif isinstance(prompt, list): # pragma: no cover
+            completion = self.model.create_chat_completion(
+                prompt,
+                logits_processor=self.type_adapter.format_output_type(output_type),
+                **inference_kwargs,
+            )
+            result = completion["choices"][0]["message"]["content"]
 
         self.model.reset()
 
@@ -253,7 +282,7 @@ class LlamaCpp(Model):
 
     def generate_stream(
         self,
-        model_input: str,
+        model_input: Union[Chat, str],
         output_type: Optional[OutlinesLogitsProcessor] = None,
         **inference_kwargs: Any,
     ) -> Iterator[str]:
@@ -282,40 +311,27 @@ class LlamaCpp(Model):
                 "the llama_cpp tokenizer"
             )
 
-        generator = self.model(
-            self.type_adapter.format_input(model_input),
-            logits_processor=self.type_adapter.format_output_type(output_type),
-            stream=True,
-            **inference_kwargs,
-        )
+        prompt = self.type_adapter.format_input(model_input)
 
-        def token_generator() -> Iterator[str]:
-            while True:
-                try:
-                    result = next(generator)
-                    yield result["choices"][0]["text"]
-                except StopIteration:
-                    self.model.reset()
-                    return
-
-        return token_generator()
-
-    def load_lora(self, adapter_path: str) -> None:  # pragma: no cover
-        """Load a LoRA adapter. Deprecated since v1.0.0."""
-        warnings.warn("""
-            The `load_lora` method is deprecated starting from v1.0.0.
-            Support for it will be removed in v1.1.0.
-            """,
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        if self.model._model.apply_lora_from_file(
-            adapter_path,
-            1.0,
-        ):
-            raise RuntimeError(
-                f"Failed to apply LoRA from lora path: {adapter_path}"
+        if isinstance(prompt, str):
+            generator = self.model(
+                prompt,
+                logits_processor=self.type_adapter.format_output_type(output_type),
+                stream=True,
+                **inference_kwargs,
             )
+            for chunk in generator:
+                yield chunk["choices"][0]["text"]
+
+        elif isinstance(prompt, list): # pragma: no cover
+            generator = self.model.create_chat_completion(
+                prompt,
+                logits_processor=self.type_adapter.format_output_type(output_type),
+                stream=True,
+                **inference_kwargs,
+            )
+            for chunk in generator:
+                yield chunk["choices"][0]["delta"].get("content", "")
 
 
 def from_llamacpp(model: "Llama"):

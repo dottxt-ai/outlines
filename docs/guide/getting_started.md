@@ -72,14 +72,14 @@ For a quick start, you can find below an example of how to initialize all suppor
 
     ```python
     import outlines
-    from transformers
+    from transformers import AutoModelForCausalLM, AutoTokenizer
 
     # Define the model you want to use
     model_name = "HuggingFaceTB/SmolLM2-135M-Instruct"
 
     # Create a HuggingFace model and tokenizer
-    hf_model = transformers.AutoModelForCausalLM.from_pretrained(model_name)
-    hf_tokenizer = transformers.AutoTokenizer.from_pretrained(model_name)
+    hf_model = AutoModelForCausalLM.from_pretrained(model_name)
+    hf_tokenizer = AutoTokenizer.from_pretrained(model_name)
 
     # Create an Outlines model
     model = outlines.from_transformers(hf_model, hf_tokenizer)
@@ -256,7 +256,7 @@ In the meantime, you can find below examples of using each of the five output ty
     # Generate a character
     result = model("Create a character", Character)
     print(result) # '{"name": "Aurora", "birth_date": "1990-06-15", "skills": ["Stealth", "Diplomacy"]}'
-    print(Character.model_validate_json(result);) # name=Aurora birth_date=datetime.date(1990, 6, 15) skills=['Stealth', 'Diplomacy']
+    print(Character.model_validate_json(result)) # name=Aurora birth_date=datetime.date(1990, 6, 15) skills=['Stealth', 'Diplomacy']
     ```
 
 === "Regex"

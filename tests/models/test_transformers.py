@@ -6,6 +6,7 @@ import pytest
 import transformers
 
 import outlines
+from outlines.inputs import Chat
 from outlines.models.transformers import (
     Transformers,
     TransformerTokenizer,
@@ -85,6 +86,9 @@ def model():
         transformers.AutoModelForCausalLM.from_pretrained(TEST_MODEL),
         transformers.AutoTokenizer.from_pretrained(TEST_MODEL),
     )
+    chat_template = '{% for message in messages %}{{ message.role }}: {{ message.content }}{% endfor %}'
+    model.type_adapter.tokenizer.chat_template = chat_template
+
     return model
 
 
@@ -107,6 +111,16 @@ def test_transformers_call(model, model_bart):
     assert isinstance(result, str)
 
     result = model_bart("Respond with one word. Not more.")
+    assert isinstance(result, str)
+
+
+def test_transformers_chat(model):
+    result = model(
+        Chat(messages=[
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": "What is the capital of France?"},
+        ])
+    )
     assert isinstance(result, str)
 
 
@@ -170,6 +184,21 @@ def test_transformers_batch(model):
     for item in result:
         assert isinstance(item, list)
         assert len(item) == 2
+
+    result = model.batch(
+        [
+            Chat(messages=[
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": "What is the capital of France?"},
+            ]),
+            Chat(messages=[
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": "What is the capital of France?"},
+            ]),
+        ],
+    )
+    assert isinstance(result, list)
+    assert len(result) == 2
 
 
 def test_transformers_multiple_samples_constrained(model):

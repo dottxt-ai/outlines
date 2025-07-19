@@ -3,7 +3,7 @@
 from functools import singledispatchmethod
 from typing import TYPE_CHECKING, Any, Iterator, Optional, Union
 
-from outlines.inputs import Image
+from outlines.inputs import Chat, Image
 from outlines.models.base import Model, ModelTypeAdapter
 
 if TYPE_CHECKING:
@@ -40,52 +40,79 @@ class AnthropicTypeAdapter(ModelTypeAdapter):
         """
         raise TypeError(
             f"The input type {type(model_input)} is not available with "
-            "Anthropic. The only available types are `str` and `list` "
+            "Anthropic. The only available types are `str`, `list` and `Chat` "
             "(containing a prompt and images)."
         )
 
     @format_input.register(str)
     def format_str_model_input(self, model_input: str) -> dict:
         return {
-            "messages": [
-                {
-                    "role": "user",
-                    "content": model_input,
-                }
-            ]
+            "messages": [self._create_message("user", model_input)]
         }
 
     @format_input.register(list)
     def format_list_model_input(self, model_input: list) -> dict:
-        prompt = model_input[0]
-        images = model_input[1:]
-
-        if not all(isinstance(image, Image) for image in images):
-            raise ValueError("All assets provided must be of type Image")
-
-        image_content_messages = [
-            {
-                "type": "image",
-                "source": {
-                    "type": "base64",
-                    "media_type": image.image_format,
-                    "data": image.image_str,
-                },
-            }
-            for image in images
-        ]
-
         return {
             "messages": [
-                {
-                    "role": "user",
-                    "content": [
-                        *image_content_messages,
-                        {"type": "text", "text": prompt},
-                    ],
-                }
+                self._create_message("user", model_input)
             ]
         }
+
+    @format_input.register(Chat)
+    def format_chat_model_input(self, model_input: Chat) -> dict:
+        """Generate the `messages` argument to pass to the client when the user
+        passes a Chat instance.
+
+        """
+        return {
+            "messages": [
+                self._create_message(message["role"], message["content"])
+                for message in model_input.messages
+            ]
+        }
+
+    def _create_message(self, role: str, content: str | list) -> dict:
+        """Create a message."""
+
+        if isinstance(content, str):
+            return {
+                "role": role,
+                "content": content,
+            }
+
+        elif isinstance(content, list):
+            prompt = content[0]
+            images = content[1:]
+
+            if not all(isinstance(image, Image) for image in images):
+                raise ValueError("All assets provided must be of type Image")
+
+            image_content_messages = [
+                {
+                    "type": "image",
+                    "source": {
+                        "type": "base64",
+                        "media_type": image.image_format,
+                        "data": image.image_str,
+                    },
+                }
+                for image in images
+            ]
+
+            return {
+                "role": role,
+                "content": [
+                    *image_content_messages,
+                    {"type": "text", "text": prompt},
+                ],
+            }
+
+        else:
+            raise ValueError(
+                f"Invalid content type: {type(content)}. "
+                "The content must be a string or a list containing a string "
+                "and a list of images."
+            )
 
     def format_output_type(self, output_type):
         """Not implemented for Anthropic."""
@@ -123,7 +150,7 @@ class Anthropic(Model):
 
     def generate(
         self,
-        model_input: Union[str, list],
+        model_input: Union[Chat, list, str],
         output_type: Optional[Any] = None,
         **inference_kwargs: Any,
     ) -> str:
@@ -177,7 +204,7 @@ class Anthropic(Model):
 
     def generate_stream(
         self,
-        model_input: Union[str, list],
+        model_input: Union[Chat, list, str],
         output_type: Optional[Any] = None,
         **inference_kwargs: Any,
     ) -> Iterator[str]:

@@ -5,7 +5,7 @@ from dataclasses import dataclass
 
 from PIL import Image as PILImage
 
-from outlines.inputs import Image
+from outlines.inputs import Chat, Image
 from outlines.models.vllm import VLLMTypeAdapter
 from outlines.types import CFG, JsonSchema
 
@@ -42,7 +42,6 @@ def json_schema_instance():
 def json_schema_whitespace_instance():
     return JsonSchema(JSON_SCHEMA_STRING, whitespace_pattern="\n")
 
-
 @pytest.fixture
 def image():
     width, height = 1, 1
@@ -61,31 +60,55 @@ def image():
 def test_vllm_type_adapter_input_text(type_adapter):
     message = "prompt"
     result = type_adapter.format_input(message)
-    assert isinstance(result, dict)
-    assert len(result["messages"]) == 1
-    assert result["messages"][0]["role"] == "user"
-    assert result["messages"][0]["content"] == message
+    assert result == [{"role": "user", "content": message}]
 
 
 def test_vllm_type_adapter_input_vision(type_adapter, image):
-    input_message = ["hello", Image(image)]
-    result = type_adapter.format_input(input_message)
-    assert isinstance(result, dict)
+    image_input = Image(image)
+    result = type_adapter.format_input(["hello", image_input])
+    assert result == [
+        {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": "hello"},
+                {
+                    "type": "image_url",
+                    "image_url": {
+                        "url": f"data:image/png;base64,{image_input.image_str}"
+                    },
+                },
+            ],
+        }
+    ]
 
-    messages = result["messages"]
-    assert len(messages) == 1
 
-    message = messages[0]
-    assert message["role"] == "user"
-    assert len(message["content"]) == 2
-    assert message["content"][0]["type"] == "text"
-    assert message["content"][0]["text"] == "hello"
-
-    assert message["content"][1]["type"] == "image_url"
-    assert (
-        message["content"][1]["image_url"]["url"]
-        == f"data:image/png;base64,{input_message[1].image_str}"
-    )
+def test_vllm_type_adapter_input_chat(type_adapter, image):
+    image_input = Image(image)
+    model_input = Chat(messages=[
+        {"role": "system", "content": "prompt"},
+        {"role": "user", "content": [
+            "hello",
+            image_input,
+        ]},
+        {"role": "assistant", "content": "response"},
+    ])
+    result = type_adapter.format_input(model_input)
+    assert result == [
+        {"role": "system", "content": "prompt"},
+        {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": "hello"},
+                {
+                    "type": "image_url",
+                    "image_url": {
+                        "url": f"data:image/png;base64,{image_input.image_str}"
+                    },
+                },
+            ],
+        },
+        {"role": "assistant", "content": "response"},
+    ]
 
 
 def test_vllm_type_adapter_input_invalid(type_adapter):

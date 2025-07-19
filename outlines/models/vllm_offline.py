@@ -1,11 +1,12 @@
 """Integration with the `vllm` library (offline mode)."""
 
 import json
-import warnings
 from functools import singledispatchmethod
 from typing import TYPE_CHECKING, Any, List, Optional, Union
 
+from outlines.inputs import Chat
 from outlines.models.base import Model, ModelTypeAdapter
+from outlines.models.openai import OpenAITypeAdapter
 from outlines.types.dsl import CFG, JsonSchema, python_types_to_terms, to_regex
 
 if TYPE_CHECKING:
@@ -28,18 +29,32 @@ class VLLMOfflineTypeAdapter(ModelTypeAdapter):
             The input passed by the user.
 
         """
-        raise NotImplementedError(
-            f"The input type {input} is not available. "
-            "Please use a string or a list of strings."
+        raise TypeError(
+            f"The input type {type(model_input)} is not available with "
+            "VLLM offline. The only available types are `str` and "
+            "`Chat` (containing a prompt and images)."
         )
 
     @format_input.register(str)
-    def format_str_input(self, model_input: str) -> str:
+    def format_input_str(self, model_input: str) -> str:
+        """Format a `str` input.
+
+        """
         return model_input
 
-    @format_input.register(list)
-    def format_list_input(self, model_input: List[str]) -> List[str]:
-        return model_input
+    @format_input.register(Chat)
+    def format_input_chat(self, model_input: Chat) -> list:
+        """Format a `Chat` input.
+
+        """
+        for message in model_input.messages:
+            content = message["content"]
+            if isinstance(content, list):
+                raise ValueError(
+                    "Assets are not supported for vLLM offline."
+                    "Please only use text content in the `Chat` input."
+                )
+        return OpenAITypeAdapter().format_input(model_input)
 
     def format_output_type(self, output_type: Optional[Any] = None) -> dict:
         """Generate the structured output argument to pass to the model.
@@ -95,7 +110,6 @@ class VLLMOffline(Model):
         """
         self.model = model
         self.type_adapter = VLLMOfflineTypeAdapter()
-        self.lora_request = None # v0 legacy, to be removed
 
     def _build_generation_args(
         self,
@@ -119,7 +133,7 @@ class VLLMOffline(Model):
 
     def generate(
         self,
-        model_input: str,
+        model_input: Chat | str,
         output_type: Optional[Any] = None,
         **inference_kwargs: Any,
     ) -> Union[str, List[str]]:
@@ -147,12 +161,18 @@ class VLLMOffline(Model):
             output_type,
         )
 
-        results = self.model.generate(
-            self.type_adapter.format_input(model_input),
-            sampling_params=sampling_params,
-            lora_request=self.lora_request, # v0 legacy, to be removed
-            **inference_kwargs,
-        )
+        if isinstance(model_input, Chat):
+            results = self.model.chat(
+                messages=self.type_adapter.format_input(model_input),
+                sampling_params=sampling_params,
+                **inference_kwargs,
+            )
+        else:
+            results = self.model.generate(
+                prompts=self.type_adapter.format_input(model_input),
+                sampling_params=sampling_params,
+                **inference_kwargs,
+            )
         results = [completion.text for completion in results[0].outputs]
 
         if len(results) == 1:
@@ -162,7 +182,7 @@ class VLLMOffline(Model):
 
     def generate_batch(
         self,
-        model_input: List[str],
+        model_input: List[Chat | str],
         output_type: Optional[Any] = None,
         **inference_kwargs: Any,
     ) -> Union[List[str], List[List[str]]]:
@@ -191,18 +211,17 @@ class VLLMOffline(Model):
             output_type,
         )
 
+        if any(isinstance(item, Chat) for item in model_input):
+            raise TypeError(
+                "Batch generation is not available for the `Chat` input type."
+            )
+
         results = self.model.generate(
-            self.type_adapter.format_input(model_input),
+            prompts=[self.type_adapter.format_input(item) for item in model_input],
             sampling_params=sampling_params,
-            lora_request=self.lora_request, # v0 legacy, to be removed
             **inference_kwargs,
         )
-        results = [[sample.text for sample in batch.outputs] for batch in results]
-
-        if len(results[0]) == 1:
-            return [batch[0] for batch in results]
-        else:
-            return results
+        return [[sample.text for sample in batch.outputs] for batch in results]
 
     def generate_stream(self, model_input, output_type, **inference_kwargs):
         """Not available for `vllm.LLM`.
@@ -213,30 +232,6 @@ class VLLMOffline(Model):
         raise NotImplementedError(
             "Streaming is not available for the vLLM offline integration."
         )
-
-    def load_lora(self, adapter_path: Optional[str]) -> None:
-        """Load a LoRA adapter. Deprecated since v1.0.0.
-
-        Use the `lora_request` argument when calling the model or generator
-        instead.
-
-        """
-        warnings.warn("""
-            The `load_lora` method is deprecated starting from v1.0.0.
-            Support for it will be removed in v1.1.0.
-            Please use the v1 of the `outlines` library by using the
-            `outlines.from_vllm` function to create a `VLLM` model
-            instance.
-            In the v1, you must pass the `lora_request` argument as
-            a keyword argument when calling the model or generator.
-            """)
-
-        from vllm.lora.request import LoRARequest
-
-        if adapter_path is None:
-            self.lora_request = None
-        else:
-            self.lora_request = LoRARequest(adapter_path, 1, adapter_path)
 
 
 def from_vllm_offline(model: "LLM") -> VLLMOffline:

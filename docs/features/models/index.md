@@ -8,14 +8,13 @@ title: Models
 
 Outlines models are objects that wrap an inference client or engine. Models provide a standardized interface to generate structured text.
 
-!!! Warning
-
-    The model loading functions have been modified in v1. While they used to be called `<name_inference_library>`, they are now called `from_<name_inference_library>`. The model classes' names and `__init__` methods are left unchanged.
-
-
 All Outlines model classes have an associated loader function to facilitate initializing a model instance. The name of this function is `from_` plus the name of the model in lower-case letters. For instance, Outlines has a `Transformers` model and an associated `from_transformers` loader function. The parameters to load a model are specific to each provider, please consult the documentation of the model you want to use for more information.
 
-After having created a model instance, you can either directly call it to generate text or first create a reusable generator that you would then call. In either case, you can provide an `output_type` to constrain the format of the generation output. See the [output types section](../core/output_types.md) for more information on constrained generation.
+After having created a model instance, you can either directly call it to generate text or first create a reusable generator that you would then call.
+
+The input you must provide to a model to generate text can be a simple text prompt or a vision or chat input for models that support them. See the [model inputs section](../core/inputs.md) for more information on model inputs formats.
+
+In all cases, you can provide an `output_type` to constrain the format of the generation output. See the [output types section](../core/output_types.md) for more information on constrained generation.
 
 For instance:
 
@@ -31,16 +30,16 @@ model = from_transformers(
 
 # Call it directly
 response = model("How many countries are there in the world", max_new_tokens=20)
-print(result) # 'There are 200 countries in the world.'
+print(response) # 'There are 200 countries in the world.'
 
 # Call it directly with an output_type
 response = model("How many countries are there in the world", int, max_new_tokens=20)
-print(result) # '200'
+print(response) # '200'
 
 # Create a generator first and then call it
 generator = Generator(model, int)
 response = generator("How many countries are there in the world")
-print(result) # '200'
+print(response) # '200'
 ```
 
 Some models support streaming through a `stream` method. It takes the same argument as the `__call__` method, but returns an iterator instead of a string.

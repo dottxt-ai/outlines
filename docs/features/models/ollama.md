@@ -65,21 +65,9 @@ response = model("What's the capital of Latvia?")
 print(response) # 'Riga'
 ```
 
-Ollama also supports streaming. For instance:
+#### Vision
 
-```python
-import ollama
-import outlines
-
-# Create the model
-model = outlines.from_ollama(ollama.Client(), "qwen2.5vl:3b")
-
-# Stream text
-for chunk in model.stream("Write a short story about a cat"):
-    print(chunk) # 'In...'
-```
-
-Additionally, you can use `Ollama` with the `Vision` input if you're running a vision model such as qwen2.5vl. For instance:
+Some Ollama models support vision input. To use this feature, provide a list containing a text prompt and `Image` instances.
 
 ```python
 import io
@@ -109,6 +97,61 @@ prompt = [
 # Generate text
 response = model(prompt)
 print(response) # The image shows a black puppy with a curious and attentive expression.
+```
+
+#### Chat
+
+You can also use chat inputs with the `Ollama` model. To do so, call the model with a `Chat` instance. The content of messsage within the chat can be vision inputs as described above.
+
+For instance:
+
+```python
+import io
+import requests
+import PIL
+import ollama
+import outlines
+from outlines.inputs import Chat, Image
+
+# Create the model
+model = outlines.from_ollama(
+    ollama.Client(),
+    "qwen2.5vl:3b"
+)
+
+# Function to get an image
+def get_image(url):
+    r = requests.get(url)
+    return PIL.Image.open(io.BytesIO(r.content))
+
+# Create the chat input
+prompt = Chat([
+    {"role": "system", "content": "You are a helpful assistant."},
+    {
+        "role": "user",
+        "content": ["Describe the image", Image(get_image("https://picsum.photos/id/237/400/300"))]
+    },
+])
+
+# Call the model to generate a response
+response = model(prompt)
+print(response) # 'This is a picture of a black dog.'
+```
+
+#### Streaming
+
+Finally, the `Anthropic` model supports streaming through the `stream` method.
+
+```python
+import ollama
+import outlines
+
+# Create the model
+model = outlines.from_ollama(ollama.Client(), "qwen2.5vl:3b")
+
+# Stream text
+for chunk in model.stream("Write a short story about a cat"):
+    print(chunk) # 'In...'
 ```
 
 ## Asynchronous Calls
