@@ -32,7 +32,7 @@ model = outlines.from_openai(
 )
 ```
 
-Leaving an empty string in the model name field will lead OpenRouter to use your default model defined in [settings](https://openrouter.ai/settings/preferences). 
+Leaving an empty string in the model name field will lead OpenRouter to use your default model defined in [settings](https://openrouter.ai/settings/preferences).
 
 The [OpenRouter](https://openrouter.ai/models) website lists available models. Keep in mind that some models do not support `json_schema` response formats and may return a 400 error code as a result.
 
