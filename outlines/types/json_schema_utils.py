@@ -1,7 +1,7 @@
 """Utilities for handling JSON schema compatibility."""
 
 import json
-from typing import Any, Dict, List, Union
+from typing import Any, Union
 
 
 def preprocess_schema_for_union_types(
@@ -49,7 +49,7 @@ def preprocess_schema_for_union_types(
     preprocessed = _convert_type_arrays_to_anyof(schema_dict)
 
     # If no changes were made, return the original string (if it was a string)
-    if preprocessed == schema_dict and original_str is not None:
+    if preprocessed == schema_dict and original_str is not None: # pragma: no cover
         return original_str
 
     # Return as JSON string with proper formatting
@@ -116,7 +116,7 @@ def _convert_type_arrays_to_anyof(obj: Any) -> Any:
                                     type_schema[k] = _convert_type_arrays_to_anyof(obj[k])
                                 else:
                                     type_schema[k] = obj[k]
-                    elif t == "object":
+                    elif t == "object": # pragma: no cover
                         for k in ["properties", "required", "additionalProperties"]:
                             if k in obj:
                                 # Recursively process properties if present

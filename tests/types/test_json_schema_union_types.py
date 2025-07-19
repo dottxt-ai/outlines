@@ -1,13 +1,18 @@
 """Test cases for JSON schemas with union types."""
 
 import json
-import pytest
 
 from outlines.types.json_schema_utils import preprocess_schema_for_union_types
 
 
 class TestJsonSchemaUnionTypes:
     """Test cases for JSON schemas with union types."""
+
+    def test_invalid_schema(self):
+        """Test invalid schema."""
+        schema = 'foo'
+        result = preprocess_schema_for_union_types(schema)
+        assert result == schema
 
     def test_simple_union_type(self):
         """Test simple union type conversion."""
@@ -95,6 +100,20 @@ class TestJsonSchemaUnionTypes:
         result_unicode = preprocess_schema_for_union_types(schema, ensure_ascii=False)
         assert "café" in result_unicode
 
+    def test_union_array_type(self):
+        """Test union array type."""
+        schema = {
+            "type": ["array", "null"],
+            "items": {"type": "string"},
+            "minItems": 1,
+        }
+        result = json.loads(preprocess_schema_for_union_types(schema))
+
+        assert "anyOf" in result
+        assert len(result["anyOf"]) == 2
+        assert {"type": "array", "items": {"type": "string"}, "minItems": 1} in result["anyOf"]
+        assert {"type": "null"} in result["anyOf"]
+
     def test_complex_nested_structure(self):
         """Test a more complex nested structure with multiple union types."""
         schema = {
@@ -104,9 +123,11 @@ class TestJsonSchemaUnionTypes:
                 "data": {
                     "type": "object",
                     "properties": {
-                        "value": {"type": ["string", "number", "null"]},
+                        "value": {"type": ["string", "number", "null"], "minimum": 0},
                         "metadata": {
                             "type": ["object", "null"],
+                            "description": "Some metadata",
+                            "additionalProperties": False,
                             "properties": {
                                 "created": {"type": "string"},
                                 "tags": {
