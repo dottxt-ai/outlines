@@ -41,6 +41,7 @@ from pydantic_core import core_schema as cs
 
 import outlines.types as types
 from outlines import grammars
+from outlines.types.json_schema_utils import preprocess_schema_for_union_types
 from outlines.types.utils import (
     get_schema_from_signature,
     is_int,
@@ -343,7 +344,8 @@ class JsonSchema(Term):
                 + "specification"
             )
 
-        self.schema = schema_str
+        # Preprocess the schema to handle union types
+        self.schema = preprocess_schema_for_union_types(schema_str, ensure_ascii=ensure_ascii)
         self.whitespace_pattern = whitespace_pattern
 
     def __post_init__(self):
@@ -824,38 +826,37 @@ def to_regex(term: Term) -> str:
         The regular expression as a string.
 
     """
-    match term:
-        case String():
-            return re.escape(term.value)
-        case Regex():
-            return f"({term.pattern})"
-        case JsonSchema():
-            regex_str = build_regex_from_schema(term.schema, term.whitespace_pattern)
-            return f"({regex_str})"
-        case Choice():
-            regexes = [to_regex(python_types_to_terms(item)) for item in term.items]
-            return f"({'|'.join(regexes)})"
-        case KleeneStar():
-            return f"({to_regex(term.term)})*"
-        case KleenePlus():
-            return f"({to_regex(term.term)})+"
-        case Optional():
-            return f"({to_regex(term.term)})?"
-        case Alternatives():
-            regexes = [to_regex(subterm) for subterm in term.terms]
-            return f"({'|'.join(regexes)})"
-        case Sequence():
-            regexes = [to_regex(subterm) for subterm in term.terms]
-            return f"{''.join(regexes)}"
-        case QuantifyExact():
-            return f"({to_regex(term.term)}){{{term.count}}}"
-        case QuantifyMinimum():
-            return f"({to_regex(term.term)}){{{term.min_count},}}"
-        case QuantifyMaximum():
-            return f"({to_regex(term.term)}){{,{term.max_count}}}"
-        case QuantifyBetween():
-            return f"({to_regex(term.term)}){{{term.min_count},{term.max_count}}}"
-        case _:
-            raise TypeError(
-                f"Cannot convert object {repr(term)} to a regular expression."
-            )
+    if isinstance(term, String):
+        return re.escape(term.value)
+    elif isinstance(term, Regex):
+        return f"({term.pattern})"
+    elif isinstance(term, JsonSchema):
+        regex_str = build_regex_from_schema(term.schema, term.whitespace_pattern)
+        return f"({regex_str})"
+    elif isinstance(term, Choice):
+        regexes = [to_regex(python_types_to_terms(item)) for item in term.items]
+        return f"({'|'.join(regexes)})"
+    elif isinstance(term, KleeneStar):
+        return f"({to_regex(term.term)})*"
+    elif isinstance(term, KleenePlus):
+        return f"({to_regex(term.term)})+"
+    elif isinstance(term, Optional):
+        return f"({to_regex(term.term)})?"
+    elif isinstance(term, Alternatives):
+        regexes = [to_regex(subterm) for subterm in term.terms]
+        return f"({'|'.join(regexes)})"
+    elif isinstance(term, Sequence):
+        regexes = [to_regex(subterm) for subterm in term.terms]
+        return f"{''.join(regexes)}"
+    elif isinstance(term, QuantifyExact):
+        return f"({to_regex(term.term)}){{{term.count}}}"
+    elif isinstance(term, QuantifyMinimum):
+        return f"({to_regex(term.term)}){{{term.min_count},}}"
+    elif isinstance(term, QuantifyMaximum):
+        return f"({to_regex(term.term)}){{,{term.max_count}}}"
+    elif isinstance(term, QuantifyBetween):
+        return f"({to_regex(term.term)}){{{term.min_count},{term.max_count}}}"
+    else:
+        raise TypeError(
+            f"Cannot convert object {repr(term)} to a regular expression."
+        )
