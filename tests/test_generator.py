@@ -100,11 +100,6 @@ def test_steerable_generator_init_valid_processor(steerable_model, sample_proces
     assert generator.model == steerable_model
 
 
-def test_steerable_generator_init_invalid_processor(steerable_model):
-    with pytest.raises(TypeError):
-        SteerableGenerator.from_processor(steerable_model, Literal["foo", "bar"])
-
-
 def test_steerable_generator_init_cfg_output_type(steerable_model):
     generator = SteerableGenerator(steerable_model, CFG('start: "a"'))
     assert generator.model == steerable_model

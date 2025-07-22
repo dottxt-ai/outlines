@@ -40,6 +40,36 @@ def model(tmp_path_factory):
         )
     )
 
+@pytest.fixture
+def lark_grammar():
+    return """
+?start: sum
+
+?sum: product
+| sum "+" product   -> add
+| sum "-" product   -> sub
+
+?product: atom
+| product "*" atom  -> mul
+| product "/" atom  -> div
+
+?atom: NUMBER           -> number
+| "-" atom         -> neg
+| "(" sum ")"
+
+%import common.NUMBER
+%import common.WS_INLINE
+
+%ignore WS_INLINE
+"""
+
+@pytest.fixture
+def ebnf_grammar():
+    return """
+root ::= answer
+answer ::= "yes" | "no"
+"""
+
 
 def test_llamacpp_simple(model):
     result = model.generate("Respond with one word. Not more.", None)
@@ -84,12 +114,21 @@ def test_llamacpp_choice(model):
     assert result == "Foo" or result == "Bar"
 
 
-def test_llamacpp_cfg(model):
+def test_llamacpp_cfg(model, ebnf_grammar):
+    response = model("Respond with one word. Not more.", CFG(ebnf_grammar))
+    assert response in ["yes", "no"]
+
+
+def test_llamacpp_cfg_outlines_core(model, lark_grammar):
     with pytest.raises(
         NotImplementedError,
-        match="CFG generation is not supported for LlamaCpp"
+        match="not supported for LlamaCpp with the outlines-core backend"
     ):
-        model("Respond with one word. Not more.", CFG('start: "a"'), max_tokens=10)
+        model(
+            "Respond with one word. Not more.",
+            CFG(lark_grammar),
+            backend="outlines_core"
+        )
 
 
 def test_llamacpp_text_stop(model):
@@ -135,15 +174,26 @@ def test_llamacpp_stream_json(model):
     assert x == "{"
 
 
-def test_llamacpp_stream_cfg(model):
+def test_llamacpp_stream_cfg(model, ebnf_grammar):
+    response = ""
+    for chunk in model.stream(
+        "Respond with one word. Not more.", CFG(ebnf_grammar)
+    ):
+        response += chunk
+    assert response in ["yes", "no"]
+
+
+def test_llamacpp_stream_cfg_outlines_core(model, lark_grammar):
     with pytest.raises(
         NotImplementedError,
-        match="CFG generation is not supported for LlamaCpp"
+        match="not supported for LlamaCpp with the outlines-core backend"
     ):
         for chunk in model.stream(
-            "Respond with one word. Not more.", CFG('start: "a"')
+            "Respond with one word. Not more.",
+            CFG(lark_grammar),
+            backend="outlines_core"
         ):
-            assert isinstance(chunk, str)
+            pass
 
 
 def test_llamacpp_stream_choice(model):
