@@ -31,6 +31,13 @@ class OutlinesLogitsProcessor:
             values are "jax", "mlx", "numpy", "tensorflow" and "torch". You
             must choose the library that your model is using.
         """
+        # Temporary fix as torch raises a warning that can cause can an error
+        # with python 3.12.
+        if tensor_library_name == "torch":
+            import torch._dynamo
+
+            torch._dynamo.config.suppress_errors = True
+
         tensor_adapter_class = tensor_adapters.get(tensor_library_name)
         if tensor_adapter_class is None:
             raise NotImplementedError(

@@ -15,14 +15,14 @@ from outlines.models import (
     SteerableModel,
 )
 from outlines.models.base import AsyncModel, Model
-from outlines.processors import (
-    CFGLogitsProcessor,
-    GuideLogitsProcessor,
-    OutlinesLogitsProcessor,
-    RegexLogitsProcessor,
+from outlines.backends import (
+    get_cfg_logits_processor,
+    get_fsm_logits_processor,
+    get_json_schema_logits_processor,
+    get_regex_logits_processor,
 )
-from outlines.processors.guide import RegexGuide
-from outlines.types import CFG, FSM
+from outlines.backends.base import LogitsProcessorType
+from outlines.types import CFG, FSM, JsonSchema
 from outlines.types.dsl import python_types_to_terms, to_regex
 
 
@@ -222,9 +222,14 @@ class SteerableGenerator:
     The 2 parameters are mutually exclusive.
 
     """
-    logits_processor: Optional[OutlinesLogitsProcessor]
+    logits_processor: Optional[LogitsProcessorType]
 
-    def __init__(self, model: SteerableModel, output_type: Optional[Any]):
+    def __init__(
+        self,
+        model: SteerableModel,
+        output_type: Optional[Any],
+        backend_name: Optional[str] = None,
+    ):
         """
         Parameters
         ----------
@@ -232,6 +237,8 @@ class SteerableGenerator:
             An instance of an Outlines model.
         output_type
             The output type expressed as a Python type
+        backend_name
+            The name of the backend to use to create the logits processor.
 
         """
         self.model = model
@@ -241,30 +248,34 @@ class SteerableGenerator:
             term = python_types_to_terms(output_type)
             if isinstance(term, CFG):
                 cfg_string = term.definition
-                self.logits_processor = CFGLogitsProcessor(
+                self.logits_processor = get_cfg_logits_processor(
+                    backend_name,
+                    model,
                     cfg_string,
-                    self.model.tokenizer,
-                    self.model.tensor_library_name,
                 )
             elif isinstance(term, FSM):
-                guide = RegexGuide.from_interegular_fsm(
+                self.logits_processor = get_fsm_logits_processor(
+                    backend_name,
+                    model,
                     term.fsm,
-                    self.model.tokenizer,
                 )
-                self.logits_processor = GuideLogitsProcessor(
-                    self.model.tokenizer, guide, self.model.tensor_library_name
+            elif isinstance(term, JsonSchema):
+                self.logits_processor = get_json_schema_logits_processor(
+                    backend_name,
+                    model,
+                    term.schema,
                 )
             else:
                 regex_string = to_regex(term)
-                self.logits_processor = RegexLogitsProcessor(
+                self.logits_processor = get_regex_logits_processor(
+                    backend_name,
+                    model,
                     regex_string,
-                    self.model.tokenizer,
-                    self.model.tensor_library_name,
                 )
 
     @classmethod
     def from_processor(
-        cls, model: SteerableModel, processor: OutlinesLogitsProcessor
+        cls, model: SteerableModel, processor: LogitsProcessorType
     ):
         """Create a generator from a logits processor.
 
@@ -273,14 +284,9 @@ class SteerableGenerator:
         model
             An instance of an Outlines model.
         processor
-            An instance of an OutlinesLogitsProcessor.
+            An instance of a logits processor.
 
         """
-        if not isinstance(processor, OutlinesLogitsProcessor):
-            raise TypeError(
-                "The processor argument must be an instance of "
-                "OutlinesLogitsProcessor"
-            )
         instance = cls.__new__(cls)
         instance.model = model
         instance.logits_processor = processor
@@ -351,8 +357,9 @@ class SteerableGenerator:
 def Generator(
     model: Union[Model, AsyncModel],
     output_type: Optional[Any] = None,
+    backend: Optional[str] = None,
     *,
-    processor: Optional[OutlinesLogitsProcessor] = None,
+    processor: Optional[LogitsProcessorType] = None,
 ) -> Union[SteerableGenerator, BlackBoxGenerator, AsyncBlackBoxGenerator]:
     """Create a generator for the given model and output parameters.
 
@@ -367,8 +374,12 @@ def Generator(
     output_type
         The output type expressed as a Python type or a type defined in the
         outlines.types.dsl module.
+    backend
+        The name of the backend to use to create the logits processor. Only
+        used for steerable models if there is an output type and `processor` is
+        not provided.
     processor
-        An instance of an OutlinesLogitsProcessor.
+        An instance of a logits processor.
 
     Returns
     -------
@@ -389,7 +400,7 @@ def Generator(
         if processor is not None:
             return SteerableGenerator.from_processor(model, processor) # type: ignore
         else:
-            return SteerableGenerator(model, output_type) # type: ignore
+            return SteerableGenerator(model, output_type, backend) # type: ignore
     else:
         if processor is not None:
             raise NotImplementedError(

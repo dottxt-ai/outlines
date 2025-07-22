@@ -1,6 +1,5 @@
 """Integration with the `llama-cpp-python` library."""
 
-import warnings
 from functools import singledispatchmethod
 from typing import (
     TYPE_CHECKING,
@@ -247,8 +246,8 @@ class LlamaCpp(Model):
         """
         if isinstance(output_type, CFGLogitsProcessor):
             raise NotImplementedError(
-                "CFG generation is not supported for LlamaCpp due to bug in "
-                "the llama_cpp tokenizer"
+                "CFG generation is not supported for LlamaCpp with the "
+                + "outlines-core backend"
             )
 
         prompt = self.type_adapter.format_input(model_input)
@@ -307,8 +306,8 @@ class LlamaCpp(Model):
         """
         if isinstance(output_type, CFGLogitsProcessor):
             raise NotImplementedError(
-                "CFG generation is not supported for LlamaCpp due to bug in "
-                "the llama_cpp tokenizer"
+                "CFG generation is not supported for LlamaCpp with the "
+                + "outlines-core backend"
             )
 
         prompt = self.type_adapter.format_input(model_input)
