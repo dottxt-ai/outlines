@@ -58,6 +58,8 @@ sglang = ["openai"]
 tgi = ["huggingface_hub"]
 transformers = ["accelerate", "datasets", "transformers"]
 vllm = ["openai"]
+xgrammar = ["xgrammar"]
+llguidance = ["llguidance"]
 test = [
     "pre-commit",
     "pytest",
@@ -89,6 +91,8 @@ test = [
     "dottxt",
     "sentencepiece",
     "mkdocs_gen_files",
+    "llguidance",
+    "xgrammar",
 ]
 test-gpu=["outlines[test]", "vllm; sys_platform == 'linux'"]
 
@@ -170,6 +174,8 @@ module = [
     "tf-keras.*",
     "mkdocs_gen_files.*",
     "jsonpath_ng.*",
+    "llguidance.*",
+    "xgrammar.*",
 ]
 ignore_missing_imports = true
 

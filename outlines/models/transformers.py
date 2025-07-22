@@ -234,6 +234,7 @@ class Transformers(Model):
 
         tokenizer.padding_side = "left"
         self.model = model
+        self.hf_tokenizer = tokenizer
         self.tokenizer = TransformerTokenizer(tokenizer)
         self.type_adapter = TransformersTypeAdapter(tokenizer=tokenizer)
 
