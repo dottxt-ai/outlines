@@ -162,6 +162,7 @@ nav:
 
           - Advanced:
                 - Logits Processors: features/advanced/logits_processors.md
+                - Structured Generation Backends: features/advanced/backends.md
 
     - API Reference: api_reference/
 

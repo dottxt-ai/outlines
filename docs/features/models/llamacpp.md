@@ -109,7 +109,7 @@ for chunk in model.stream("Write a short story about a cat.", max_tokens=100):
 
 ## Structured Generation
 
-The `LlamaCpp` model supports all output types available in Outlines except for context-free grammars. Simply provide an `output_type` after the prompt when calling the model.
+The `LlamaCpp` model supports all output types available in Outlines. Simply provide an `output_type` after the prompt when calling the model.
 
 ### Basic Type
 
@@ -193,6 +193,29 @@ model = outlines.from_llamacpp(
 
 result = model("Generate a fake social security number.", output_type)
 print(result) # '782-32-3789'
+```
+
+### Context-free grammar
+
+```python
+from outlines.types import CFG
+import outlines
+from llama_cpp import Llama
+
+output_type = CFG("""
+root ::= answer
+answer ::= "yes" | "no"
+""")
+
+model = outlines.from_llamacpp(
+    Llama.from_pretrained(
+        repo_id="TheBloke/Mistral-7B-Instruct-v0.2-GGUF",
+        filename="mistral-7b-instruct-v0.2.Q5_K_M.gguf",
+    )
+)
+
+result = model("Are you feeling good today?", output_type)
+print(result) # 'yes'
 ```
 
 ## Inference Arguments
