@@ -45,6 +45,15 @@ class OutlinesLogitsProcessor:
             )
         self.tensor_adapter = tensor_adapter_class()  # type: ignore
 
+    def reset(self):
+        """Reset the logits processor for a new generation
+
+        Only implement this method in subclasses if the logits processor
+        needs to be reset for a new generation.
+
+        """
+        pass
+
     @abstractmethod
     def process_logits(
         self, input_ids: TensorType, logits: TensorType

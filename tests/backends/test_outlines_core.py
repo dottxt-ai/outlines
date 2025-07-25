@@ -137,3 +137,13 @@ def test_llguidance_backend(model, tensor_library_name, json_schema, regex, cfg,
     response = generator("Hello, how are you?")
     assert len(response) == 3
     assert int(response)
+
+    # multiple generations
+    processor = backend.get_regex_logits_processor(regex)
+    generator = outlines.Generator(model, backend="outlines_core", processor=processor)
+    response = generator("Hello, how are you?")
+    assert len(response) == 3
+    assert int(response)
+    response = generator("Hello, how are you?")
+    assert len(response) == 3
+    assert int(response)

@@ -4,7 +4,8 @@ import interegular
 import llama_cpp
 import transformers
 from xgrammar import GrammarCompiler
-from xgrammar.contrib.hf import LogitsProcessor
+
+from outlines.backends.xgrammar import XGrammarLogitsProcessor
 
 import outlines
 from outlines.backends.xgrammar import XGrammarBackend
@@ -69,7 +70,7 @@ def test_xgrammar_backend(model_transformers, json_schema, regex, cfg, fsm):
 
     # json schema
     processor = backend.get_json_schema_logits_processor(json_schema)
-    assert isinstance(processor, LogitsProcessor)
+    assert isinstance(processor, XGrammarLogitsProcessor)
     generator = outlines.Generator(model_transformers, backend="xgrammar", processor=processor)
     response = generator("Hello, how are you?")
     assert response[0] == "{"
@@ -77,7 +78,7 @@ def test_xgrammar_backend(model_transformers, json_schema, regex, cfg, fsm):
 
     # regex
     processor = backend.get_regex_logits_processor(regex)
-    assert isinstance(processor, LogitsProcessor)
+    assert isinstance(processor, XGrammarLogitsProcessor)
     generator = outlines.Generator(model_transformers, backend="xgrammar", processor=processor)
     response = generator("Hello, how are you?")
     assert len(response) == 3
@@ -85,7 +86,7 @@ def test_xgrammar_backend(model_transformers, json_schema, regex, cfg, fsm):
 
     # cfg
     processor = backend.get_cfg_logits_processor(cfg)
-    assert isinstance(processor, LogitsProcessor)
+    assert isinstance(processor, XGrammarLogitsProcessor)
     generator = outlines.Generator(model_transformers, backend="xgrammar", processor=processor)
     response = generator("Hello, how are you?")
     assert response == "yes" or response == "no"
@@ -96,6 +97,16 @@ def test_xgrammar_backend(model_transformers, json_schema, regex, cfg, fsm):
         match="XGrammarBackend does not support FSM logits processors",
     ):
         backend.get_fsm_logits_processor(fsm)
+
+    # multiple generations
+    processor = backend.get_regex_logits_processor(regex)
+    generator = outlines.Generator(model_transformers, backend="xgrammar", processor=processor)
+    response = generator("Hello, how are you?")
+    assert len(response) == 3
+    assert int(response)
+    response = generator("Hello, how are you?")
+    assert len(response) == 3
+    assert int(response)
 
 
 def test_xgrammar_backend_invalid_model(model_llamacpp):
