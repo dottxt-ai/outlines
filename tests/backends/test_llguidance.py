@@ -196,3 +196,13 @@ def test_llguidance_backend(model, tensor_library_name, json_schema, regex, cfg_
         match="LLGuidanceBackend does not support FSM logits processors",
     ):
         backend.get_fsm_logits_processor(fsm)
+
+    # multiple generations
+    processor = backend.get_regex_logits_processor(regex)
+    generator = outlines.Generator(model, backend="llguidance", processor=processor)
+    response = generator("Hello, how are you?")
+    assert len(response) == 3
+    assert int(response)
+    response = generator("Hello, how are you?")
+    assert len(response) == 3
+    assert int(response)

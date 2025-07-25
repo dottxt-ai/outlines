@@ -48,6 +48,10 @@ class LLGuidanceLogitsProcessor(OutlinesLogitsProcessor):
         self.tensor_library_name = tensor_library_name
         super().__init__(tensor_library_name)
 
+    def reset(self):
+        """Ensure self._setup is called again for the next generation."""
+        self.is_first_token = True
+
     def _setup(self, batch_size: int) -> None:
         """Setup the LLMatchers, the bitmask and some functions used in the
         `process_logits` method.

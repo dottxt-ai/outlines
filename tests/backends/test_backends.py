@@ -2,7 +2,6 @@ import interegular
 import outlines
 import pytest
 import transformers
-from xgrammar.contrib.hf import LogitsProcessor as XGrammarLogitsProcessor
 
 from outlines.backends import (
     _get_backend,
@@ -16,7 +15,7 @@ from outlines.backends.llguidance import (
     LLGuidanceBackend,
     LLGuidanceLogitsProcessor
 )
-from outlines.backends.xgrammar import XGrammarBackend
+from outlines.backends.xgrammar import XGrammarBackend, XGrammarLogitsProcessor
 from outlines.processors.structured import (
     CFGLogitsProcessor,
     GuideLogitsProcessor,
