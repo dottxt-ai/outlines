@@ -52,5 +52,5 @@ As mentioned previously, selecting the structured generation backend is only app
 | **Output Types** | | | |
 | JSON Schema | ✅ | ✅ | ✅ |
 | Regex | ✅ | ✅ | ✅ |
-| Grammar | ✅ | ✅ | ✅ |
+| Grammar | ❌ | ✅ | ✅ |
 | FSM | ✅ | ❌ | ❌ |

@@ -24,7 +24,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
-import math
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Type, Union
 
 from pydantic import BaseModel
@@ -35,7 +34,6 @@ from outlines.processors.base_logits_processor import (
     TensorType
 )
 from outlines.processors.guide import (
-    CFGGuide,
     Guide,
     RegexGuide
 )
@@ -209,77 +207,3 @@ class JSONLogitsProcessor(RegexLogitsProcessor):
             tokenizer=tokenizer,
             tensor_library_name=tensor_library_name
         )
-
-
-class CFGLogitsProcessor(GuideLogitsProcessor):
-    """Bias generation based on a context-free grammar."""
-    guide: CFGGuide
-
-    def __init__(
-        self, cfg_str: str, tokenizer: "Tokenizer", tensor_library_name: str
-    ):
-        """
-        Parameters
-        ----------
-        cfg_str
-            A string that represents a grammar.
-        tokenizer
-            The tokenizer used to convert tokens to ids.
-        tensor_library_name
-            The name of the library to use to manipulate the tensors.
-
-        """
-        # Build a guide from the CFG string and then pass it to the
-        # GuideLogitsProcessor superclass.
-        cfg_guide = CFGGuide(cfg_string=cfg_str, tokenizer=tokenizer)
-        super().__init__(
-            tokenizer=tokenizer,
-            guide=cfg_guide,
-            tensor_library_name=tensor_library_name
-        )
-
-    def process_logits(
-        self, input_ids: TensorType, logits: TensorType
-    ) -> TensorType:
-        """Same behavior as GuideLogitsProcessor, but uses rejection
-        sampling.
-
-        Parameters
-        ----------
-        input_ids
-            The ids of the tokens of the existing sequences.
-        logits
-            The logits for the current generation step.
-
-        Returns
-        -------
-        TensorType
-            The biased logits.
-
-        """
-        if self._seq_start_idx is None:
-            self._seq_start_idx = len(input_ids[0]) # type: ignore
-
-        sequence_states: List = []  # vector of states corresponding to `input_ids`
-
-        for seq_ids in input_ids: # type: ignore
-            gen_ids = seq_ids[self._seq_start_idx :]
-            curr_state_key = hash(tuple(self.tensor_adapter.to_list(gen_ids)))
-
-            if curr_state_key not in self._guide_states: # pragma: no cover
-                prev_state = self._guide_states[hash(tuple(self.tensor_adapter.to_list(gen_ids[:-1])))]
-                curr_state = self.guide.get_next_state(prev_state, self.tensor_adapter.to_scalar(gen_ids[-1]))
-                self._guide_states[curr_state_key] = curr_state
-
-            sequence_states.append(self._guide_states[curr_state_key])
-
-        mask = self.tensor_adapter.full_like(logits, -math.inf)
-        for i, guide_state in enumerate(sequence_states):
-            first_legal_token = next(
-                self.guide.iter_valid_token_ids(
-                    guide_state, self.tensor_adapter.argsort_descending(logits[i]) # type: ignore
-                )
-            )
-            mask[i, [first_legal_token]] = logits[i, [first_legal_token]] # type: ignore
-
-        return mask

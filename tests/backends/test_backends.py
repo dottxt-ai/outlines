@@ -17,7 +17,6 @@ from outlines.backends.llguidance import (
 )
 from outlines.backends.xgrammar import XGrammarBackend, XGrammarLogitsProcessor
 from outlines.processors.structured import (
-    CFGLogitsProcessor,
     GuideLogitsProcessor,
     RegexLogitsProcessor,
 )
@@ -114,8 +113,11 @@ def test_get_regex_logits_processor(model, regex):
 
 
 def test_get_cfg_logits_processor(model, cfg_lark, cfg_ebnf):
-    processor = get_cfg_logits_processor("outlines_core", model, cfg_lark)
-    assert isinstance(processor, CFGLogitsProcessor)
+    with pytest.raises(
+        NotImplementedError,
+        match="Context-free grammar output type is not supported"
+    ):
+        get_cfg_logits_processor("outlines_core", model, cfg_lark)
 
     processor = get_cfg_logits_processor("llguidance", model, cfg_lark)
     assert isinstance(processor, LLGuidanceLogitsProcessor)

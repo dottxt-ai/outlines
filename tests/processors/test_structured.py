@@ -10,7 +10,6 @@ from outlines.processors.structured import (
     GuideLogitsProcessor,
     RegexLogitsProcessor,
     JSONLogitsProcessor,
-    CFGLogitsProcessor,
 )
 
 
@@ -107,29 +106,3 @@ def test_structured_init_regex_logits_processor(tokenizer):
     assert processor.tokenizer is tokenizer
     assert processor.guide is not None
     assert processor.tensor_adapter.library_name == "torch"
-
-
-def test_structured_init_cfg_logits_processor(tokenizer):
-    processor = CFGLogitsProcessor(
-        cfg_str=arithmetic_grammar,
-        tokenizer=tokenizer,
-        tensor_library_name="torch",
-    )
-    assert isinstance(processor, CFGLogitsProcessor)
-    assert processor.tokenizer is tokenizer
-    assert processor.guide is not None
-    assert processor.tensor_adapter.library_name == "torch"
-
-
-def test_structured_cfg_logits_processor_call(tokenizer):
-    processor = CFGLogitsProcessor(
-        cfg_str=arithmetic_grammar,
-        tokenizer=tokenizer,
-        tensor_library_name="torch",
-    )
-    vocab_token_ids = list(tokenizer.vocabulary.values())
-    logits = torch.randn(1, len(vocab_token_ids))
-    input_ids = torch.randint(0, len(vocab_token_ids), (1, 10))
-    output = processor(input_ids, logits)
-    assert output.shape == (1, len(vocab_token_ids))
-    processor(input_ids, logits)
