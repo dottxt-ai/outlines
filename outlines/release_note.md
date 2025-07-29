@@ -362,7 +362,7 @@ app = Application(template, Character)
 response = app(model, {"gender": "female"})
 ```
 
-- The regex DSL and the associated `Term` classes and functions have been added. Terms (`Regex`, `String`…) can be used as output types to generate text with models or generators (they are turned into a regex). The term functions (`either`, `optional`, `at_least`…) are useful to build more complex regex patterns by combining terms. On top of the objects related to regex patterns, there are also 3 terms that are intended to be used by themselves as output types: `JsonSchema`, `CFG` and `FSM`.
+- The regex DSL and the associated `Term` classes and functions have been added. Terms (`Regex`, `String`…) can be used as output types to generate text with models or generators (they are turned into a regex). The term functions (`either`, `optional`, `at_least`…) are useful to build more complex regex patterns by combining terms. On top of the objects related to regex patterns, there are also 2 terms that are intended to be used by themselves as output types: `JsonSchema` and `CFG`.
 [Documentation](https://dottxt-ai.github.io/outlines/latest/features/core/ouput_types)
 
 ```python

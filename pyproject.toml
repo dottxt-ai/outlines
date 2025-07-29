@@ -24,7 +24,6 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 dependencies = [
-   "interegular",
    "jinja2",
    "lark",
    "nest_asyncio",
@@ -156,7 +155,6 @@ module = [
     "llama_cpp",
     "huggingface_hub",
     "lark.*",
-    "interegular.*",
     "datasets.*",
     "openai.*",
     "requests.*",

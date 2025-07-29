@@ -1,7 +1,5 @@
 """Module to define the backends in charge of creating logits processors."""
 
-import interegular
-
 from outlines.backends.base import (
     BaseBackend,
     LogitsProcessorType,
@@ -13,7 +11,6 @@ from outlines.models import SteerableModel
 
 
 CFG_DEFAULT_BACKEND = "llguidance"
-FSM_DEFAULT_BACKEND = "outlines_core"
 JSON_SCHEMA_DEFAULT_BACKEND = "outlines_core"
 REGEX_DEFAULT_BACKEND = "outlines_core"
 
@@ -129,32 +126,3 @@ def get_cfg_logits_processor(
         model,
     )
     return backend.get_cfg_logits_processor(grammar)
-
-
-def get_fsm_logits_processor(
-    backend_name: str | None,
-    model: SteerableModel,
-    fsm: interegular,
-) -> LogitsProcessorType:
-    """Create a logits processor from an interegular FSM.
-
-    Parameters
-    ----------
-    backend_name: str | None
-        The name of the backend to use.
-    model: Model
-        The Outlines model of the user.
-    fsm: interegular.fsm.FSM
-        The interegular FSM to create a logits processor from.
-
-    Returns
-    -------
-    LogitsProcessorType
-        The logits processor.
-
-    """
-    backend = _get_backend(
-        backend_name or FSM_DEFAULT_BACKEND,
-        model,
-    )
-    return backend.get_fsm_logits_processor(fsm)

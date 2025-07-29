@@ -17,12 +17,11 @@ from outlines.models import (
 from outlines.models.base import AsyncModel, Model
 from outlines.backends import (
     get_cfg_logits_processor,
-    get_fsm_logits_processor,
     get_json_schema_logits_processor,
     get_regex_logits_processor,
 )
 from outlines.backends.base import LogitsProcessorType
-from outlines.types import CFG, FSM, JsonSchema
+from outlines.types import CFG, JsonSchema
 from outlines.types.dsl import python_types_to_terms, to_regex
 
 
@@ -48,11 +47,6 @@ class BlackBoxGenerator:
         """
         self.model = model
         self.output_type = output_type
-
-        if isinstance(self.output_type, FSM):
-            raise NotImplementedError(
-                "FSM generation is not supported for API-based models"
-            )
 
     def __call__(self, prompt: Any, **inference_kwargs) -> Any:
         """Generate a response from the model.
@@ -137,11 +131,6 @@ class AsyncBlackBoxGenerator:
         """
         self.model = model
         self.output_type = output_type
-
-        if isinstance(self.output_type, FSM):
-            raise NotImplementedError(
-                "FSM generation is not supported for API-based models"
-            )
 
     async def __call__(self, prompt: Any, **inference_kwargs) -> Any:
         """Generate a response from the model.
@@ -252,12 +241,6 @@ class SteerableGenerator:
                     backend_name,
                     model,
                     cfg_string,
-                )
-            elif isinstance(term, FSM):
-                self.logits_processor = get_fsm_logits_processor(
-                    backend_name,
-                    model,
-                    term.fsm,
                 )
             elif isinstance(term, JsonSchema):
                 self.logits_processor = get_json_schema_logits_processor(

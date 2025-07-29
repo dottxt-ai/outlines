@@ -26,7 +26,6 @@ from typing import (
     Union,
     get_args,
 )
-import interegular
 import jsonschema
 from genson import SchemaBuilder
 from outlines_core.fsm.json_schema import build_regex_from_schema
@@ -273,26 +272,6 @@ class CFG(Term):
         with open(path, "r") as f:
             definition = f.read()
         return cls(definition)
-
-
-@dataclass
-class FSM(Term):
-    """Class representing a finite state machine.
-
-    Parameters
-    ----------
-    fsm
-        The finite state machine to store. This object must be an instance of
-        `interegular.fsm.FSM`.
-
-    """
-    fsm: interegular.fsm.FSM
-
-    def _display_node(self) -> str:
-        return f"FSM({self.fsm.__repr__()})"
-
-    def __repr__(self):
-        return f"FSM(fsm={self.fsm.__repr__()})"
 
 
 class JsonSchema(Term):
@@ -559,10 +538,6 @@ def regex(pattern: str):
 
 def cfg(definition: str):
     return CFG(definition)
-
-
-def fsm(fsm: interegular.fsm.FSM):
-    return FSM(fsm)
 
 
 def json_schema(schema: Union[str, dict, type[BaseModel]]):

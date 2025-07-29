@@ -1,7 +1,5 @@
 """Backend class for Outlines Core."""
 
-from interegular.fsm import FSM
-
 from outlines.backends.base import BaseBackend
 from outlines.models import SteerableModel
 from outlines.processors import (
@@ -69,25 +67,4 @@ class OutlinesCoreBackend(BaseBackend):
         raise NotImplementedError(
             "Context-free grammar output type is not supported for the "
             + "Outlines Core backend."
-        )
-
-    def get_fsm_logits_processor(self, fsm: FSM) -> GuideLogitsProcessor:
-        """Create a logits processor from an interegular FSM.
-
-        Parameters
-        ----------
-        fsm: interegular.fsm.FSM
-            The interegular FSM to create a logits processor from.
-
-        Returns
-        -------
-        LogitsProcessor
-            The logits processor to use to constrain the generation.
-
-        """
-        guide = RegexGuide.from_interegular_fsm(fsm, self.tokenizer)
-        return GuideLogitsProcessor(
-            self.tokenizer,
-            guide,
-            self.tensor_library_name,
         )
