@@ -3,8 +3,6 @@
 import warnings
 from typing import TYPE_CHECKING
 
-from llguidance import LLMatcher
-
 from outlines.backends.base import BaseBackend
 from outlines.models import LlamaCpp, MLXLM, SteerableModel, Transformers
 from outlines.processors.base_logits_processor import (
@@ -65,6 +63,8 @@ class LLGuidanceLogitsProcessor(OutlinesLogitsProcessor):
             The batch size of the input
 
         """
+        from llguidance import LLMatcher
+
         self.ll_matchers = [
             LLMatcher(self.llg_tokenizer, self.grammar)
             for _ in range(batch_size)

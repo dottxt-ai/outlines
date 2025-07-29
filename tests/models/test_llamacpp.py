@@ -12,7 +12,6 @@ from outlines.models.llamacpp import (
     LlamaCppTypeAdapter,
     from_llamacpp
 )
-from outlines.processors import RegexLogitsProcessor
 from outlines.types.dsl import Regex, CFG
 
 
@@ -90,10 +89,10 @@ def test_llamacpp_chat(model):
 
 
 def test_llamacpp_regex(model):
-    regex_str = Regex(r"[0-9]").pattern
-    logits_processor = RegexLogitsProcessor(regex_str, model.tokenizer, model.tensor_library_name)
-    result = model.generate("Respond with one word. Not more.", logits_processor)
+    result = model("Respond with one word. Not more.", Regex(r"[0-9]"))
     assert isinstance(result, str)
+    assert int(result)
+    assert len(result) == 1
 
 
 def test_llamacpp_json(model):
@@ -122,7 +121,7 @@ def test_llamacpp_cfg(model, ebnf_grammar):
 def test_llamacpp_cfg_outlines_core(model, lark_grammar):
     with pytest.raises(
         NotImplementedError,
-        match="not supported for LlamaCpp with the outlines-core backend"
+        match="Outlines Core does not support context-free grammar."
     ):
         model(
             "Respond with one word. Not more.",
@@ -186,7 +185,7 @@ def test_llamacpp_stream_cfg(model, ebnf_grammar):
 def test_llamacpp_stream_cfg_outlines_core(model, lark_grammar):
     with pytest.raises(
         NotImplementedError,
-        match="not supported for LlamaCpp with the outlines-core backend"
+        match="Outlines Core does not support context-free grammar."
     ):
         for chunk in model.stream(
             "Respond with one word. Not more.",

@@ -2,8 +2,10 @@ import pytest
 from typing import AsyncGenerator, Generator as TypingGenerator, Literal
 
 import transformers
+from outlines_core import Index, Vocabulary
 
 import outlines
+from outlines.backends.outlines_core import OutlinesCoreLogitsProcessor
 from outlines.generator import (
     BlackBoxGenerator,
     SteerableGenerator,
@@ -13,7 +15,6 @@ from outlines.generator import (
 from outlines.models import AsyncVLLM, VLLM
 from outlines.processors import (
     OutlinesLogitsProcessor,
-    RegexLogitsProcessor,
 )
 from outlines.types import CFG
 from tests.test_utils.mock_openai_client import (
@@ -68,16 +69,9 @@ def steerable_model():
 
 @pytest.fixture(scope="session")
 def sample_processor():
-    model = outlines.from_transformers(
-        transformers.AutoModelForCausalLM.from_pretrained("erwanf/gpt2-mini"),
-        transformers.AutoTokenizer.from_pretrained("erwanf/gpt2-mini"),
-    )
-    processor = RegexLogitsProcessor(
-        regex_string="[0-9]{3}",
-        tokenizer=model.tokenizer,
-        tensor_library_name=model.tensor_library_name,
-    )
-    return processor
+    vocabulary = Vocabulary.from_pretrained("openai-community/gpt2")
+    index = Index(r"[0-9]{3}", vocabulary)
+    return OutlinesCoreLogitsProcessor(index, "torch")
 
 
 @pytest.fixture(scope="module")
@@ -138,7 +132,6 @@ def test_black_box_generator_init(black_box_sync_model):
     assert generator.model == black_box_sync_model
     assert generator.output_type == Literal["foo", "bar"]
 
-
 def test_black_box_generator_call(black_box_sync_model):
     generator = BlackBoxGenerator(black_box_sync_model, str)
     result = generator("Write a very short sentence", max_tokens=10)
@@ -150,7 +143,6 @@ def test_black_box_generator_stream(black_box_sync_model):
     result = generator.stream("Write a very short sentence", max_tokens=10)
     assert isinstance(result, TypingGenerator)
     assert isinstance(next(result), str)
-
 
 
 # AsyncBlackBoxGenerator

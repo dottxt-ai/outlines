@@ -1,13 +1,12 @@
 import pytest
 
-import transformers
 from PIL import Image as PILImage
+from outlines_core import Index, Vocabulary
 from transformers import AutoTokenizer, LogitsProcessorList
 
-import outlines
 from outlines.inputs import Chat, Image, Video
 from outlines.models.transformers import TransformersMultiModalTypeAdapter
-from outlines.processors.structured import RegexLogitsProcessor
+from outlines.backends.outlines_core import OutlinesCoreLogitsProcessor
 
 
 MODEL_NAME = "erwanf/gpt2-mini"
@@ -25,15 +24,9 @@ def adapter():
 
 @pytest.fixture
 def logits_processor():
-    model = outlines.from_transformers(
-        transformers.AutoModelForCausalLM.from_pretrained("erwanf/gpt2-mini"),
-        transformers.AutoTokenizer.from_pretrained("erwanf/gpt2-mini"),
-    )
-    return RegexLogitsProcessor(
-        regex_string=r"[a-z]+",
-        tokenizer=model.tokenizer,
-        tensor_library_name="torch",
-    )
+    vocabulary = Vocabulary.from_pretrained("openai-community/gpt2")
+    index = Index(r"[0-9]{3}", vocabulary)
+    return OutlinesCoreLogitsProcessor(index, "torch")
 
 
 @pytest.fixture
@@ -87,7 +80,8 @@ def test_transformers_multimodal_type_adapter_format_output_type(
     formatted = adapter.format_output_type(logits_processor)
     assert isinstance(formatted, LogitsProcessorList)
     assert len(formatted) == 1
-    assert isinstance(formatted[0], RegexLogitsProcessor)
+    assert formatted[0].index == logits_processor.index
+    assert formatted[0].tensor_library_name == logits_processor.tensor_library_name
 
     formatted = adapter.format_output_type(None)
     assert formatted is None

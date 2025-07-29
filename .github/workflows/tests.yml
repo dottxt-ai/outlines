@@ -51,9 +51,9 @@ jobs:
         echo "::set-output name=id::$MATRIX_ID"
     - name: Run tests
       run: |
-        uv run pytest -x --cov=outlines -m 'not api_call'
-      env:
-        COVERAGE_FILE: .coverage.${{ steps.matrix-id.outputs.id }}
+        rm -f .coverage*
+        uv run coverage erase
+        uv run python -m coverage run --branch --parallel-mode -m pytest -x -m 'not api_call'
     - name: Upload coverage data
       uses: actions/upload-artifact@v4
       with:
@@ -61,7 +61,6 @@ jobs:
         path: .coverage.*
         if-no-files-found: ignore
         include-hidden-files: true
-        # TODO FIXME: This is only using the last run
         overwrite: true
 
   coverage:
