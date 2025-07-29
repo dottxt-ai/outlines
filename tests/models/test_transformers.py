@@ -161,7 +161,7 @@ def test_transformers_multiple_samples(model):
     result = model("Respond with one word. Not more.")
     assert isinstance(result, str)
     result = model(
-        "Respond with one word. Not more.", num_return_sequences=2, num_beams=2
+        "Respond with one word. Not more.", num_return_sequences=2, do_sample=True
     )
     assert isinstance(result, list)
     assert len(result) == 2
@@ -177,7 +177,7 @@ def test_transformers_batch(model):
     result = model.batch(
         ["Respond with one word. Not more.", "Respond with one word. Not more."],
         num_return_sequences=2,
-        num_beams=2,
+        do_sample=True,
     )
     assert isinstance(result, list)
     assert len(result) == 2
@@ -206,7 +206,7 @@ def test_transformers_multiple_samples_constrained(model):
         cat = "cat"
         dog = "dog"
 
-    result = model("Cat or dog?", Foo, num_return_sequences=2, num_beams=2)
+    result = model("Cat or dog?", Foo, num_return_sequences=2, do_sample=True)
     assert isinstance(result, list)
     assert len(result) == 2
     assert result[0] in ["cat", "dog"]
@@ -231,7 +231,7 @@ def test_transformers_batch_constrained(model):
         ["Cat or dog?", "Cat or dog?"],
         Foo,
         num_return_sequences=2,
-        num_beams=2,
+        do_sample=True,
     )
     assert isinstance(result, list)
     assert len(result) == 2

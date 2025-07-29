@@ -10,7 +10,8 @@ Python-side preprocessing resolves the issue.
 import json
 from typing import Optional
 from pydantic import BaseModel
-from outlines_core.fsm.outlines_core_rs import build_regex_from_schema
+# TODO: change this once the import issue is fixed in outlines_core
+from outlines_core import outlines_core
 from outlines.types import JsonSchema
 
 # Test case 1: Simple optional field (this should work)
@@ -49,7 +50,7 @@ def test_schema(schema_dict, name):
     try:
         # Try to create regex from schema
         schema_str = json.dumps(schema_dict)
-        regex = build_regex_from_schema(schema_str)
+        regex = outlines_core.json_schema.build_regex_from_schema(schema_str)
         print(f"✓ Success! Generated regex: {regex[:100]}...")
     except Exception as e:
         print(f"✗ Error: {type(e).__name__}: {e}")

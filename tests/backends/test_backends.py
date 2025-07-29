@@ -8,16 +8,15 @@ from outlines.backends import (
     get_regex_logits_processor,
     get_cfg_logits_processor,
 )
-from outlines.backends.outlines_core import OutlinesCoreBackend
+from outlines.backends.outlines_core import (
+    OutlinesCoreBackend,
+    OutlinesCoreLogitsProcessor,
+)
 from outlines.backends.llguidance import (
     LLGuidanceBackend,
     LLGuidanceLogitsProcessor
 )
 from outlines.backends.xgrammar import XGrammarBackend, XGrammarLogitsProcessor
-from outlines.processors.structured import (
-    GuideLogitsProcessor,
-    RegexLogitsProcessor,
-)
 
 
 @pytest.fixture
@@ -86,7 +85,7 @@ def test_get_backend(model):
 
 def test_get_json_schema_logits_processor(model, json_schema):
     processor = get_json_schema_logits_processor("outlines_core", model, json_schema)
-    assert isinstance(processor, RegexLogitsProcessor)
+    assert isinstance(processor, OutlinesCoreLogitsProcessor)
 
     processor = get_json_schema_logits_processor("llguidance", model, json_schema)
     assert isinstance(processor, LLGuidanceLogitsProcessor)
@@ -97,7 +96,7 @@ def test_get_json_schema_logits_processor(model, json_schema):
 
 def test_get_regex_logits_processor(model, regex):
     processor = get_regex_logits_processor("outlines_core", model, regex)
-    assert isinstance(processor, RegexLogitsProcessor)
+    assert isinstance(processor, OutlinesCoreLogitsProcessor)
 
     processor = get_regex_logits_processor("llguidance", model, regex)
     assert isinstance(processor, LLGuidanceLogitsProcessor)
@@ -109,7 +108,7 @@ def test_get_regex_logits_processor(model, regex):
 def test_get_cfg_logits_processor(model, cfg_lark, cfg_ebnf):
     with pytest.raises(
         NotImplementedError,
-        match="Context-free grammar output type is not supported"
+        match="Outlines Core does not support context-free grammar."
     ):
         get_cfg_logits_processor("outlines_core", model, cfg_lark)
 

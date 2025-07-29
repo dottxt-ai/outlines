@@ -92,7 +92,7 @@ def test_mlxlm_regex(model):
 
 
 @pytest.mark.skipif(not HAS_MLX, reason="MLX tests require Apple Silicon")
-def test_mlxlm_JsonType(model):
+def test_mlxlm_json_schema(model):
     class Character(BaseModel):
         name: str
 

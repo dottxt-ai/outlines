@@ -28,7 +28,8 @@ from typing import (
 )
 import jsonschema
 from genson import SchemaBuilder
-from outlines_core.fsm.json_schema import build_regex_from_schema
+# TODO: change this once the import issue is fixed in outlines_core
+from outlines_core import outlines_core
 from pydantic import (
     BaseModel,
     GetCoreSchemaHandler,
@@ -806,7 +807,7 @@ def to_regex(term: Term) -> str:
     elif isinstance(term, Regex):
         return f"({term.pattern})"
     elif isinstance(term, JsonSchema):
-        regex_str = build_regex_from_schema(term.schema, term.whitespace_pattern)
+        regex_str = outlines_core.json_schema.build_regex_from_schema(term.schema, term.whitespace_pattern)
         return f"({regex_str})"
     elif isinstance(term, Choice):
         regexes = [to_regex(python_types_to_terms(item)) for item in term.items]
