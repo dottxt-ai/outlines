@@ -294,9 +294,3 @@ class LLGuidanceBackend(BaseBackend):
         return LLGuidanceLogitsProcessor(
             grammar_spec, self.llg_tokenizer, self.tensor_library_name
         )
-
-    def get_fsm_logits_processor(self, fsm):
-        raise NotImplementedError(
-            "LLGuidanceBackend does not support FSM logits processors. "
-            "Use the outlines_core backend instead."
-        )

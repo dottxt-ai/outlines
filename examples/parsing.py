@@ -15,7 +15,6 @@ from transformers import (
     set_seed,
 )
 
-from outlines.fsm.parsing import PartialLark, PartialPythonIndenter
 
 revision = None
 checkpoint = "Salesforce/codegen-350M-mono"

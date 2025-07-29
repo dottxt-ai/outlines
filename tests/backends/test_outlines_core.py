@@ -1,6 +1,5 @@
 import pytest
 
-import interegular
 import llama_cpp
 import transformers
 
@@ -72,10 +71,6 @@ def cfg():
 %ignore WS_INLINE
 """
 
-@pytest.fixture
-def fsm():
-    return interegular.parse_pattern(r"[0-9]{3}").to_fsm()
-
 
 models = [
     (model_transformers(), "torch"),
@@ -85,7 +80,7 @@ if HAS_MLX:
     models.append((model_mlxlm(), "mlx"))
 
 @pytest.mark.parametrize("model, tensor_library_name", models)
-def test_llguidance_backend(model, tensor_library_name, json_schema, regex, cfg, fsm):
+def test_llguidance_backend(model, tensor_library_name, json_schema, regex, cfg):
     # initialization
     backend = OutlinesCoreBackend(model)
     assert backend.tokenizer == model.tokenizer
@@ -113,21 +108,3 @@ def test_llguidance_backend(model, tensor_library_name, json_schema, regex, cfg,
         match="Context-free grammar output type is not supported",
     ):
         backend.get_cfg_logits_processor(cfg)
-
-    # fsm
-    processor = backend.get_fsm_logits_processor(fsm)
-    assert isinstance(processor, GuideLogitsProcessor)
-    generator = outlines.Generator(model, backend="outlines_core", processor=processor)
-    response = generator("Hello, how are you?")
-    assert len(response) == 3
-    assert int(response)
-
-    # multiple generations
-    processor = backend.get_regex_logits_processor(regex)
-    generator = outlines.Generator(model, backend="outlines_core", processor=processor)
-    response = generator("Hello, how are you?")
-    assert len(response) == 3
-    assert int(response)
-    response = generator("Hello, how are you?")
-    assert len(response) == 3
-    assert int(response)

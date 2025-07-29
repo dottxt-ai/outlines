@@ -1,7 +1,6 @@
 import pytest
 from typing import AsyncGenerator, Generator as TypingGenerator, Literal
 
-import interegular
 import transformers
 
 import outlines
@@ -16,7 +15,7 @@ from outlines.processors import (
     OutlinesLogitsProcessor,
     RegexLogitsProcessor,
 )
-from outlines.types import CFG, FSM
+from outlines.types import CFG
 from tests.test_utils.mock_openai_client import (
     MockAsyncOpenAIClient,
     MockOpenAIClient,
@@ -106,15 +105,6 @@ def test_steerable_generator_init_cfg_output_type(steerable_model):
     assert isinstance(generator.logits_processor, OutlinesLogitsProcessor)
 
 
-def test_steerable_generator_init_fsm_output_type(steerable_model):
-    generator = SteerableGenerator(
-        steerable_model,
-        FSM(interegular.parse_pattern(r"abc").to_fsm())
-    )
-    assert generator.model == steerable_model
-    assert isinstance(generator.logits_processor, OutlinesLogitsProcessor)
-
-
 def test_steerable_generator_init_other_output_type(steerable_model):
     generator = SteerableGenerator(steerable_model, Literal["foo", "bar"])
     assert generator.model == steerable_model
@@ -143,15 +133,10 @@ def test_steerable_generator_stream(steerable_model):
 # BlackBoxGenerator
 
 
-def test_black_box_generator_init_valid(black_box_sync_model):
+def test_black_box_generator_init(black_box_sync_model):
     generator = BlackBoxGenerator(black_box_sync_model, Literal["foo", "bar"])
     assert generator.model == black_box_sync_model
     assert generator.output_type == Literal["foo", "bar"]
-
-
-def test_black_box_generator_init_invalid(black_box_sync_model):
-    with pytest.raises(NotImplementedError):
-        BlackBoxGenerator(black_box_sync_model, FSM("foo"))
 
 
 def test_black_box_generator_call(black_box_sync_model):
@@ -171,15 +156,10 @@ def test_black_box_generator_stream(black_box_sync_model):
 # AsyncBlackBoxGenerator
 
 
-def test_async_black_box_generator_init_valid(black_box_async_model):
+def test_async_black_box_generator_init(black_box_async_model):
     generator = AsyncBlackBoxGenerator(black_box_async_model, Literal["foo", "bar"])
     assert generator.model == black_box_async_model
     assert generator.output_type == Literal["foo", "bar"]
-
-
-def test_async_black_box_generator_init_invalid(black_box_async_model):
-    with pytest.raises(NotImplementedError):
-        AsyncBlackBoxGenerator(black_box_async_model, FSM("foo"))
 
 
 @pytest.mark.asyncio

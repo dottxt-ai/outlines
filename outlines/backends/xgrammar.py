@@ -132,9 +132,3 @@ class XGrammarBackend(BaseBackend):
         """
         compiled_grammar = self.grammar_compiler.compile_grammar(grammar)
         return XGrammarLogitsProcessor(compiled_grammar)
-
-    def get_fsm_logits_processor(self, fsm):
-        raise NotImplementedError(
-            "XGrammarBackend does not support FSM logits processors. "
-            "Use the outlines_core backend instead."
-        )

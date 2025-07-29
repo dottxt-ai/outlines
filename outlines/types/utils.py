@@ -20,7 +20,6 @@ from typing import (
     get_origin,
 )
 
-import interegular
 from genson import SchemaBuilder
 from pydantic import BaseModel, create_model
 
@@ -147,10 +146,6 @@ def is_enum(value: Any) -> bool:
 
 def is_callable(value: Any) -> bool:
     return callable(value) and not isinstance(value, type)
-
-
-def is_interegular_fsm(value: Any) -> bool:
-    return isinstance(value, interegular.fsm.FSM)
 
 
 # Type conversion

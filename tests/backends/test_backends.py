@@ -1,4 +1,3 @@
-import interegular
 import outlines
 import pytest
 import transformers
@@ -8,7 +7,6 @@ from outlines.backends import (
     get_json_schema_logits_processor,
     get_regex_logits_processor,
     get_cfg_logits_processor,
-    get_fsm_logits_processor
 )
 from outlines.backends.outlines_core import OutlinesCoreBackend
 from outlines.backends.llguidance import (
@@ -71,10 +69,6 @@ root ::= answer
 answer ::= "yes" | "no"
 """
 
-@pytest.fixture
-def fsm():
-    return interegular.parse_pattern(r"[0-9]{3}").to_fsm()
-
 
 def test_get_backend(model):
     backend = _get_backend("outlines_core", model)
@@ -124,20 +118,3 @@ def test_get_cfg_logits_processor(model, cfg_lark, cfg_ebnf):
 
     processor = get_cfg_logits_processor("xgrammar", model, cfg_ebnf)
     assert isinstance(processor, XGrammarLogitsProcessor)
-
-
-def test_get_fsm_logits_processor(model, fsm):
-    processor = get_fsm_logits_processor("outlines_core", model, fsm)
-    assert isinstance(processor, GuideLogitsProcessor)
-
-    with pytest.raises(
-        NotImplementedError,
-        match="LLGuidanceBackend does not support FSM logits processors"
-    ):
-        get_fsm_logits_processor("llguidance", model, fsm)
-
-    with pytest.raises(
-        NotImplementedError,
-        match="XGrammarBackend does not support FSM logits processors",
-    ):
-        get_fsm_logits_processor("xgrammar", model, fsm)
