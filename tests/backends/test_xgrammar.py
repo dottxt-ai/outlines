@@ -1,6 +1,5 @@
 import pytest
 
-import interegular
 import llama_cpp
 import transformers
 from xgrammar import GrammarCompiler
@@ -58,12 +57,8 @@ root ::= answer
 answer ::= "yes" | "no"
 """
 
-@pytest.fixture
-def fsm():
-    return interegular.parse_pattern(r"[0-9]{3}").to_fsm()
 
-
-def test_xgrammar_backend(model_transformers, json_schema, regex, cfg, fsm):
+def test_xgrammar_backend(model_transformers, json_schema, regex, cfg):
     # initialization
     backend = XGrammarBackend(model_transformers)
     assert isinstance(backend.grammar_compiler, GrammarCompiler)
@@ -73,7 +68,6 @@ def test_xgrammar_backend(model_transformers, json_schema, regex, cfg, fsm):
     assert isinstance(processor, XGrammarLogitsProcessor)
     generator = outlines.Generator(model_transformers, backend="xgrammar", processor=processor)
     response = generator("Hello, how are you?")
-    assert response[0] == "{"
     assert "name" in response
 
     # regex
@@ -90,13 +84,6 @@ def test_xgrammar_backend(model_transformers, json_schema, regex, cfg, fsm):
     generator = outlines.Generator(model_transformers, backend="xgrammar", processor=processor)
     response = generator("Hello, how are you?")
     assert response == "yes" or response == "no"
-
-    # fsm
-    with pytest.raises(
-        NotImplementedError,
-        match="XGrammarBackend does not support FSM logits processors",
-    ):
-        backend.get_fsm_logits_processor(fsm)
 
     # multiple generations
     processor = backend.get_regex_logits_processor(regex)

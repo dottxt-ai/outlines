@@ -29,7 +29,8 @@ For instance:
 ```python
 import transformers
 from outlines import Generator, from_transformers
-from outlines.processors import RegexLogitsProcessor
+from outlines.backends.outlines_core import OutlinesCoreLogitsProccesor
+from outlines_core import Index, Vocabulary
 
 # Create a model
 model = from_transformers(
@@ -38,7 +39,9 @@ model = from_transformers(
 )
 
 # Create a regex logits processor that only returns hex unicode notations
-logits_processor = RegexLogitsProcessor(r"U\+[0-9A-Fa-f]{4,6}", model.tokenizer, model.tensor_library_name)
+vocabulary = Vocabulary.from_pretrained("NousResearch/Hermes-2-Pro-Llama-3-8B")
+index = Index(regex, vocabulary)
+logits_processor = OutlinesCoreLogitsProccesor(r"U\+[0-9A-Fa-f]{4,6}", vocabulary)
 
 # Create a generator with the logits processor and use it to generate text
 generator = Generator(model, processor=logits_processor)

@@ -15,7 +15,6 @@ output types for structured generation:
 import json
 import re
 import sys
-import warnings
 from dataclasses import dataclass
 from enum import EnumMeta
 from types import FunctionType
@@ -26,10 +25,9 @@ from typing import (
     Union,
     get_args,
 )
-import interegular
+
 import jsonschema
 from genson import SchemaBuilder
-from outlines_core.fsm.json_schema import build_regex_from_schema
 from pydantic import (
     BaseModel,
     GetCoreSchemaHandler,
@@ -38,6 +36,8 @@ from pydantic import (
 )
 from pydantic.json_schema import JsonSchemaValue
 from pydantic_core import core_schema as cs
+# TODO: change this once the import issue is fixed in outlines_core
+from outlines_core import outlines_core
 
 import outlines.types as types
 from outlines import grammars
@@ -273,26 +273,6 @@ class CFG(Term):
         with open(path, "r") as f:
             definition = f.read()
         return cls(definition)
-
-
-@dataclass
-class FSM(Term):
-    """Class representing a finite state machine.
-
-    Parameters
-    ----------
-    fsm
-        The finite state machine to store. This object must be an instance of
-        `interegular.fsm.FSM`.
-
-    """
-    fsm: interegular.fsm.FSM
-
-    def _display_node(self) -> str:
-        return f"FSM({self.fsm.__repr__()})"
-
-    def __repr__(self):
-        return f"FSM(fsm={self.fsm.__repr__()})"
 
 
 class JsonSchema(Term):
@@ -561,10 +541,6 @@ def cfg(definition: str):
     return CFG(definition)
 
 
-def fsm(fsm: interegular.fsm.FSM):
-    return FSM(fsm)
-
-
 def json_schema(schema: Union[str, dict, type[BaseModel]]):
     return JsonSchema(schema)
 
@@ -831,7 +807,9 @@ def to_regex(term: Term) -> str:
     elif isinstance(term, Regex):
         return f"({term.pattern})"
     elif isinstance(term, JsonSchema):
-        regex_str = build_regex_from_schema(term.schema, term.whitespace_pattern)
+        regex_str = outlines_core.json_schema.build_regex_from_schema(
+            term.schema, term.whitespace_pattern
+        )
         return f"({regex_str})"
     elif isinstance(term, Choice):
         regexes = [to_regex(python_types_to_terms(item)) for item in term.items]

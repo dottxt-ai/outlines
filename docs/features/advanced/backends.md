@@ -37,7 +37,6 @@ If you do not provide a value for the `backend` argument, the default value will
 - JSON schema: `outlines_core`
 - Regex: `outlines_core`
 - Context-free grammar: `llguidance`
-- Interegular FSM: `outlines_core`
 
 ## Features matrix
 
@@ -52,5 +51,4 @@ As mentioned previously, selecting the structured generation backend is only app
 | **Output Types** | | | |
 | JSON Schema | ✅ | ✅ | ✅ |
 | Regex | ✅ | ✅ | ✅ |
-| Grammar | ✅ | ✅ | ✅ |
-| FSM | ✅ | ❌ | ❌ |
+| Grammar | ❌ | ✅ | ✅ |
