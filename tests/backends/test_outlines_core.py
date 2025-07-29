@@ -7,7 +7,6 @@ import transformers
 import outlines
 from outlines.backends.outlines_core import OutlinesCoreBackend
 from outlines.processors.structured import (
-    CFGLogitsProcessor,
     RegexLogitsProcessor,
     GuideLogitsProcessor,
 )
@@ -109,26 +108,11 @@ def test_llguidance_backend(model, tensor_library_name, json_schema, regex, cfg,
     assert int(response)
 
     # cfg
-    if isinstance(model, outlines.models.LlamaCpp):
-        with pytest.raises(
-            NotImplementedError,
-            match="CFG generation is not supported for LlamaCpp with the outlines-core backend",
-        ):
-            processor = backend.get_cfg_logits_processor(cfg)
-            generator = outlines.Generator(model, backend="outlines_core", processor=processor)
-            response = generator("Hello, how are you?")
-    else:
-        processor = backend.get_cfg_logits_processor(cfg)
-        assert isinstance(processor, CFGLogitsProcessor)
-        generator = outlines.Generator(model, backend="outlines_core", processor=processor)
-        response = generator("Hello, how are you?")
-        assert (
-            "+" in response
-            or "-" in response
-            or "*" in response
-            or "/" in response
-            or float(response.strip())
-        )
+    with pytest.raises(
+        NotImplementedError,
+        match="Context-free grammar output type is not supported",
+    ):
+        backend.get_cfg_logits_processor(cfg)
 
     # fsm
     processor = backend.get_fsm_logits_processor(fsm)
