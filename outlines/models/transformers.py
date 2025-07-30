@@ -4,7 +4,8 @@ import warnings
 
 from collections import defaultdict
 from functools import singledispatchmethod
-from typing import TYPE_CHECKING, Any, List, Optional, Tuple, Union
+from typing import TYPE_CHECKING, Any, List, Optional, Tuple, Union, get_args, get_origin, Literal
+import re
 
 from outlines.inputs import Audio, Chat, Image, Video
 from outlines.models.base import Model, ModelTypeAdapter
@@ -302,8 +303,9 @@ class Transformers(Model):
 
         """
         prompts, inputs = self._prepare_model_inputs(model_input, False)
+        print(output_type == List[Literal["Paris", "London", "Rome", "Berlin"]])
         logits_processor = self.type_adapter.format_output_type(output_type)
-
+        print(output_type)
         generated_ids = self._generate_output_seq(
             prompts,
             inputs,
@@ -317,7 +319,17 @@ class Transformers(Model):
         if num_samples == 1 and len(generated_ids.shape) == 2:
             generated_ids = generated_ids.squeeze(0)
 
-        return self._decode_generation(generated_ids)
+        values = self._decode_generation(generated_ids)
+        origin = get_origin(output_type)
+        
+        if isinstance(values, str) and origin is List:
+            print("here")
+            match = re.match(r"\[([^\]]*)\]", values)
+            if match:
+                items = [item.strip().strip('"').strip("'") for item in match.group(1).split(",") if item.strip()]
+                values = items
+
+        return values
 
     def generate_batch(
         self,
