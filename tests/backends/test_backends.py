@@ -1,4 +1,3 @@
-import interegular
 import outlines
 import pytest
 import transformers
@@ -8,19 +7,13 @@ from outlines.backends import (
     get_json_schema_logits_processor,
     get_regex_logits_processor,
     get_cfg_logits_processor,
-    get_fsm_logits_processor
 )
-from outlines.backends.outlines_core import OutlinesCoreBackend
+from outlines.backends.outlines_core import OutlinesCoreBackend, OutlinesCoreLogitsProcessor
 from outlines.backends.llguidance import (
     LLGuidanceBackend,
     LLGuidanceLogitsProcessor
 )
 from outlines.backends.xgrammar import XGrammarBackend, XGrammarLogitsProcessor
-from outlines.processors.structured import (
-    CFGLogitsProcessor,
-    GuideLogitsProcessor,
-    RegexLogitsProcessor,
-)
 
 
 @pytest.fixture
@@ -72,11 +65,6 @@ root ::= answer
 answer ::= "yes" | "no"
 """
 
-@pytest.fixture
-def fsm():
-    return interegular.parse_pattern(r"[0-9]{3}").to_fsm()
-
-
 def test_get_backend(model):
     backend = _get_backend("outlines_core", model)
     assert isinstance(backend, OutlinesCoreBackend)
@@ -93,7 +81,7 @@ def test_get_backend(model):
 
 def test_get_json_schema_logits_processor(model, json_schema):
     processor = get_json_schema_logits_processor("outlines_core", model, json_schema)
-    assert isinstance(processor, RegexLogitsProcessor)
+    assert isinstance(processor, OutlinesCoreLogitsProcessor)
 
     processor = get_json_schema_logits_processor("llguidance", model, json_schema)
     assert isinstance(processor, LLGuidanceLogitsProcessor)
@@ -104,7 +92,7 @@ def test_get_json_schema_logits_processor(model, json_schema):
 
 def test_get_regex_logits_processor(model, regex):
     processor = get_regex_logits_processor("outlines_core", model, regex)
-    assert isinstance(processor, RegexLogitsProcessor)
+    assert isinstance(processor, OutlinesCoreLogitsProcessor)
 
     processor = get_regex_logits_processor("llguidance", model, regex)
     assert isinstance(processor, LLGuidanceLogitsProcessor)
@@ -114,28 +102,14 @@ def test_get_regex_logits_processor(model, regex):
 
 
 def test_get_cfg_logits_processor(model, cfg_lark, cfg_ebnf):
-    processor = get_cfg_logits_processor("outlines_core", model, cfg_lark)
-    assert isinstance(processor, CFGLogitsProcessor)
+    with pytest.raises(
+        NotImplementedError,
+        match="Outlines Core does not support context-free grammar.",
+    ):
+        get_cfg_logits_processor("outlines_core", model, cfg_lark)
 
     processor = get_cfg_logits_processor("llguidance", model, cfg_lark)
     assert isinstance(processor, LLGuidanceLogitsProcessor)
 
     processor = get_cfg_logits_processor("xgrammar", model, cfg_ebnf)
     assert isinstance(processor, XGrammarLogitsProcessor)
-
-
-def test_get_fsm_logits_processor(model, fsm):
-    processor = get_fsm_logits_processor("outlines_core", model, fsm)
-    assert isinstance(processor, GuideLogitsProcessor)
-
-    with pytest.raises(
-        NotImplementedError,
-        match="LLGuidanceBackend does not support FSM logits processors"
-    ):
-        get_fsm_logits_processor("llguidance", model, fsm)
-
-    with pytest.raises(
-        NotImplementedError,
-        match="XGrammarBackend does not support FSM logits processors",
-    ):
-        get_fsm_logits_processor("xgrammar", model, fsm)

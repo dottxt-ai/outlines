@@ -1,13 +1,13 @@
 import pytest
 import io
 
-import llama_cpp
-from PIL import Image as PILImage
 from llama_cpp import LogitsProcessorList
+from PIL import Image as PILImage
+from outlines_core import Index, Vocabulary
 
+from outlines.backends.outlines_core import OutlinesCoreLogitsProcessor
 from outlines.inputs import Chat, Image
-from outlines.models.llamacpp import LlamaCppTypeAdapter, LlamaCppTokenizer
-from outlines.processors.structured import RegexLogitsProcessor
+from outlines.models.llamacpp import LlamaCppTypeAdapter
 
 
 @pytest.fixture
@@ -17,15 +17,9 @@ def adapter():
 
 @pytest.fixture
 def logits_processor():
-    model = llama_cpp.Llama.from_pretrained(
-        "M4-ai/TinyMistral-248M-v2-Instruct-GGUF",
-        filename="TinyMistral-248M-v2-Instruct.Q4_K_M.gguf",
-    )
-    return RegexLogitsProcessor(
-        regex_string=r"[a-z]+",
-        tokenizer=LlamaCppTokenizer(model),
-        tensor_library_name="numpy",
-    )
+    vocabulary = Vocabulary.from_pretrained("openai-community/gpt2")
+    index = Index(r"[0-9]{3}", vocabulary)
+    return OutlinesCoreLogitsProcessor(index, "numpy")
 
 
 @pytest.fixture
@@ -71,5 +65,5 @@ def test_llamacpp_type_adapter_format_input(adapter, image):
 def test_llamacpp_type_adapter_format_output_type(adapter, logits_processor):
     formatted = adapter.format_output_type(logits_processor)
     assert isinstance(formatted, LogitsProcessorList)
-    assert len(formatted) == 1
-    assert isinstance(formatted[0], RegexLogitsProcessor)
+    assert formatted[0].index == logits_processor.index
+    assert formatted[0].tensor_library_name == logits_processor.tensor_library_name

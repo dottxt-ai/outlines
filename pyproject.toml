@@ -24,7 +24,6 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 dependencies = [
-   "interegular",
    "jinja2",
    "lark",
    "nest_asyncio",
@@ -39,9 +38,8 @@ dependencies = [
    "typing_extensions",
    "iso3166",
    "airportsdata",
-   "outlines_core==0.1.26",
+   "outlines_core==0.2.11",
    "genson",
-   "torch",
    "jsonpath_ng",
 ]
 dynamic = ["version"]
@@ -50,7 +48,7 @@ dynamic = ["version"]
 anthropic = ["anthropic"]
 dottxt = ["dottxt"]
 gemini = ["google-genai"]
-llamacpp = ["huggingface-hub", "llama-cpp-python"]
+llamacpp = ["huggingface-hub", "llama-cpp-python", "numba"]
 mlxlm = ["datasets", "mlx", "mlx-lm"]
 ollama = ["ollama"]
 openai = ["openai"]
@@ -84,6 +82,7 @@ test = [
     "jax",
     "flax",
     "numpy>=2.0.0,<2.2.0",
+    "numba",
     "torch",
     "tensorflow",
     "tf-keras",
@@ -156,7 +155,6 @@ module = [
     "llama_cpp",
     "huggingface_hub",
     "lark.*",
-    "interegular.*",
     "datasets.*",
     "openai.*",
     "requests.*",
@@ -194,6 +192,7 @@ omit = [
     "tests/*",
 ]
 branch = true
+parallel = true
 relative_files = true
 
 [tool.coverage.report]

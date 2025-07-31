@@ -1,6 +1,6 @@
 """Module to define the backends in charge of creating logits processors."""
 
-import interegular
+from typing import Optional
 
 from outlines.backends.base import (
     BaseBackend,
@@ -18,7 +18,7 @@ JSON_SCHEMA_DEFAULT_BACKEND = "outlines_core"
 REGEX_DEFAULT_BACKEND = "outlines_core"
 
 
-def _get_backend(backend_name: str, model: SteerableModel) -> BaseBackend:
+def _get_backend(backend_name: str, model: SteerableModel, end_thinking_tag: Optional[str] = None) -> BaseBackend:
     """Create a Backend instance.
 
     Parameters
@@ -35,7 +35,7 @@ def _get_backend(backend_name: str, model: SteerableModel) -> BaseBackend:
 
     """
     if backend_name == "outlines_core":
-        return OutlinesCoreBackend(model)
+        return OutlinesCoreBackend(model, end_thinking_tag)
     elif backend_name == "xgrammar":
         return XGrammarBackend(model)
     elif backend_name == "llguidance":
@@ -48,6 +48,7 @@ def get_json_schema_logits_processor(
     backend_name: str | None,
     model: SteerableModel,
     json_schema: str,
+    end_thinking_tag: Optional[str] = None,
 ) -> LogitsProcessorType:
     """Create a logits processor from a JSON schema.
 
@@ -59,6 +60,8 @@ def get_json_schema_logits_processor(
         The Outlines model of the user.
     json_schema: str
         The JSON schema to create a logits processor from.
+    end_thinking_tag: Optional[str] = None,
+        The tag to use to identify the end of thinking.
 
     Returns
     -------
@@ -69,6 +72,7 @@ def get_json_schema_logits_processor(
     backend = _get_backend(
         backend_name or JSON_SCHEMA_DEFAULT_BACKEND,
         model,
+        end_thinking_tag,
     )
     return backend.get_json_schema_logits_processor(json_schema)
 
@@ -77,6 +81,7 @@ def get_regex_logits_processor(
     backend_name: str | None,
     model: SteerableModel,
     regex: str,
+    end_thinking_tag: Optional[str] = None,
 ) -> LogitsProcessorType:
     """Create a logits processor from a regex.
 
@@ -88,6 +93,8 @@ def get_regex_logits_processor(
         The Outlines model of the user.
     regex: str
         The regex to create a logits processor from.
+    end_thinking_tag: Optional[str] = None,
+        The tag to use to identify the end of thinking.
 
     Returns
     -------
@@ -98,6 +105,7 @@ def get_regex_logits_processor(
     backend = _get_backend(
         backend_name or REGEX_DEFAULT_BACKEND,
         model,
+        end_thinking_tag,
     )
     return backend.get_regex_logits_processor(regex)
 
@@ -106,6 +114,7 @@ def get_cfg_logits_processor(
     backend_name: str | None,
     model: SteerableModel,
     grammar: str,
+    end_thinking_tag: Optional[str] = None,
 ) -> LogitsProcessorType:
     """Create a logits processor from a context-free grammar.
 
@@ -117,6 +126,8 @@ def get_cfg_logits_processor(
         The Outlines model of the user.
     grammar: str
         The context-free grammar to create a logits processor from.
+    end_thinking_tag: Optional[str] = None,
+        The tag to use to identify the end of thinking.
 
     Returns
     -------
@@ -127,34 +138,6 @@ def get_cfg_logits_processor(
     backend = _get_backend(
         backend_name or CFG_DEFAULT_BACKEND,
         model,
+        end_thinking_tag,
     )
     return backend.get_cfg_logits_processor(grammar)
-
-
-def get_fsm_logits_processor(
-    backend_name: str | None,
-    model: SteerableModel,
-    fsm: interegular,
-) -> LogitsProcessorType:
-    """Create a logits processor from an interegular FSM.
-
-    Parameters
-    ----------
-    backend_name: str | None
-        The name of the backend to use.
-    model: Model
-        The Outlines model of the user.
-    fsm: interegular.fsm.FSM
-        The interegular FSM to create a logits processor from.
-
-    Returns
-    -------
-    LogitsProcessorType
-        The logits processor.
-
-    """
-    backend = _get_backend(
-        backend_name or FSM_DEFAULT_BACKEND,
-        model,
-    )
-    return backend.get_fsm_logits_processor(fsm)

@@ -17,12 +17,11 @@ from outlines.models import (
 from outlines.models.base import AsyncModel, Model
 from outlines.backends import (
     get_cfg_logits_processor,
-    get_fsm_logits_processor,
     get_json_schema_logits_processor,
     get_regex_logits_processor,
 )
 from outlines.backends.base import LogitsProcessorType
-from outlines.types import CFG, FSM, JsonSchema
+from outlines.types import CFG, JsonSchema
 from outlines.types.dsl import python_types_to_terms, to_regex
 
 
@@ -48,11 +47,6 @@ class BlackBoxGenerator:
         """
         self.model = model
         self.output_type = output_type
-
-        if isinstance(self.output_type, FSM):
-            raise NotImplementedError(
-                "FSM generation is not supported for API-based models"
-            )
 
     def __call__(self, prompt: Any, **inference_kwargs) -> Any:
         """Generate a response from the model.
@@ -137,11 +131,6 @@ class AsyncBlackBoxGenerator:
         """
         self.model = model
         self.output_type = output_type
-
-        if isinstance(self.output_type, FSM):
-            raise NotImplementedError(
-                "FSM generation is not supported for API-based models"
-            )
 
     async def __call__(self, prompt: Any, **inference_kwargs) -> Any:
         """Generate a response from the model.
@@ -229,6 +218,7 @@ class SteerableGenerator:
         model: SteerableModel,
         output_type: Optional[Any],
         backend_name: Optional[str] = None,
+        end_thinking_tag: Optional[str] = None,
     ):
         """
         Parameters
@@ -239,6 +229,8 @@ class SteerableGenerator:
             The output type expressed as a Python type
         backend_name
             The name of the backend to use to create the logits processor.
+        end_thinking_tag
+            The tag to use to identify the end of thinking.
 
         """
         self.model = model
@@ -252,18 +244,14 @@ class SteerableGenerator:
                     backend_name,
                     model,
                     cfg_string,
-                )
-            elif isinstance(term, FSM):
-                self.logits_processor = get_fsm_logits_processor(
-                    backend_name,
-                    model,
-                    term.fsm,
+                    end_thinking_tag,
                 )
             elif isinstance(term, JsonSchema):
                 self.logits_processor = get_json_schema_logits_processor(
                     backend_name,
                     model,
                     term.schema,
+                    end_thinking_tag,
                 )
             else:
                 regex_string = to_regex(term)
@@ -271,6 +259,7 @@ class SteerableGenerator:
                     backend_name,
                     model,
                     regex_string,
+                    end_thinking_tag,
                 )
 
     @classmethod
@@ -364,6 +353,7 @@ def Generator(
     model: Union[Model, AsyncModel],
     output_type: Optional[Any] = None,
     backend: Optional[str] = None,
+    end_thinking_tag: Optional[str] = None,
     *,
     processor: Optional[LogitsProcessorType] = None,
 ) -> Union[SteerableGenerator, BlackBoxGenerator, AsyncBlackBoxGenerator]:
@@ -384,6 +374,8 @@ def Generator(
         The name of the backend to use to create the logits processor. Only
         used for steerable models if there is an output type and `processor` is
         not provided.
+    end_thinking_tag
+        The tag to use to identify the end of thinking.
     processor
         An instance of a logits processor.
 
@@ -406,7 +398,7 @@ def Generator(
         if processor is not None:
             return SteerableGenerator.from_processor(model, processor) # type: ignore
         else:
-            return SteerableGenerator(model, output_type, backend) # type: ignore
+            return SteerableGenerator(model, output_type, backend, end_thinking_tag) # type: ignore
     else:
         if processor is not None:
             raise NotImplementedError(

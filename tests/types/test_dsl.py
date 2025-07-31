@@ -14,7 +14,6 @@ from typing import (
     Optional as PyOptional
 )
 
-import interegular
 import pytest
 from genson import SchemaBuilder
 from pydantic import BaseModel
@@ -37,7 +36,6 @@ from outlines.types.dsl import (
     Term,
     either,
     CFG,
-    FSM,
     _handle_dict,
     _handle_list,
     _handle_literal,
@@ -402,15 +400,6 @@ def test_cfg():
     assert not cfg == "a"
 
 
-def test_fsm():
-    interegular_fsm = interegular.parse_pattern(r"a").to_fsm()
-    fsm = types.fsm(interegular_fsm)
-    assert isinstance(fsm, FSM)
-    assert fsm.fsm == interegular_fsm
-    assert fsm._display_node() == f"FSM({fsm.fsm.__repr__()})"
-    assert fsm.__repr__() == f"FSM(fsm={fsm.fsm.__repr__()})"
-
-
 def test_json_schema():
     # init dict
     schema = types.json_schema({"type": "string"})
@@ -567,9 +556,6 @@ def test_dsl_python_types_to_terms():
             "required": ["hi"]
         }
     )
-
-    interegular_fsm = interegular.parse_pattern(r"abc").to_fsm()
-    assert python_types_to_terms(types.fsm(interegular_fsm)).fsm is interegular_fsm
 
     def func(a: int, b: str):
         return (a, b)

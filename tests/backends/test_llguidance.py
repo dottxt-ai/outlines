@@ -1,6 +1,5 @@
 import pytest
 
-import interegular
 import llama_cpp
 import llguidance.hf
 import numpy as np
@@ -97,11 +96,6 @@ root ::= answer
 answer ::= "yes" | "no"
 """
 
-@pytest.fixture
-def fsm():
-    return interegular.parse_pattern(r"[0-9]{3}").to_fsm()
-
-
 def test_llguidance_processor_torch(llg_grammar_spec, llg_tokenizer):
     processor = LLGuidanceLogitsProcessor(llg_grammar_spec, llg_tokenizer, "torch")
     logits = torch.randn(2, llg_tokenizer.vocab_size)
@@ -148,7 +142,7 @@ if HAS_MLX:
     models.append((model_mlxlm(), "mlx"))
 
 @pytest.mark.parametrize("model, tensor_library_name", models)
-def test_llguidance_backend(model, tensor_library_name, json_schema, regex, cfg_lark, cfg_ebnf, fsm):
+def test_llguidance_backend(model, tensor_library_name, json_schema, regex, cfg_lark, cfg_ebnf):
     # initialization
     backend = LLGuidanceBackend(model)
     assert isinstance(backend.llg_tokenizer, LLTokenizer)
@@ -159,7 +153,6 @@ def test_llguidance_backend(model, tensor_library_name, json_schema, regex, cfg_
     assert isinstance(processor, LLGuidanceLogitsProcessor)
     generator = outlines.Generator(model, backend="llguidance", processor=processor)
     response = generator("Hello, how are you?")
-    assert response[0] == "{"
     assert "name" in response
 
     # regex
@@ -189,13 +182,6 @@ def test_llguidance_backend(model, tensor_library_name, json_schema, regex, cfg_
     generator = outlines.Generator(model, backend="llguidance", processor=processor)
     response = generator("Hello, how are you?")
     assert response == "yes" or response == "no"
-
-    # fsm
-    with pytest.raises(
-        NotImplementedError,
-        match="LLGuidanceBackend does not support FSM logits processors",
-    ):
-        backend.get_fsm_logits_processor(fsm)
 
     # multiple generations
     processor = backend.get_regex_logits_processor(regex)

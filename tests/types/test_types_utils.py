@@ -16,7 +16,6 @@ from typing import (
     Union
 )
 
-import interegular
 from genson import SchemaBuilder
 from pydantic import BaseModel
 
@@ -37,7 +36,6 @@ from outlines.types.utils import (
     is_genson_schema_builder,
     is_int,
     is_int_instance,
-    is_interegular_fsm,
     is_literal,
     is_native_dict,
     is_pydantic_model,
@@ -358,12 +356,6 @@ def test_is_callable(sample_function, sample_class, sample_dataclass, sample_typ
     assert not is_callable(sample_dataclass)
     assert not is_callable(sample_typed_dict)
     assert not is_callable(sample_pydantic_model)
-
-
-def test_is_interegular_fsm():
-    fsm = interegular.parse_pattern(r"[0-9]+").to_fsm()
-    assert is_interegular_fsm(fsm)
-    assert not is_interegular_fsm(dict)
 
 
 # Type conversion
