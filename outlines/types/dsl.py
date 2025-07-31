@@ -827,7 +827,7 @@ def to_regex(term: Term) -> str:
 
     """
     if isinstance(term, String):
-        return re.escape(term.value)
+        return f'"{re.escape(term.value)}"' if term.value not in "[]" else re.escape(term.value)
     elif isinstance(term, Regex):
         return f"({term.pattern})"
     elif isinstance(term, JsonSchema):
