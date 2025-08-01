@@ -90,6 +90,6 @@ def test_xgrammar_backend(model_transformers, json_schema, regex, cfg):
 def test_xgrammar_backend_invalid_model(model_llamacpp):
     with pytest.raises(
         ValueError,
-        match="The xgrammar backend only supports Transformers models",
+        match="The xgrammar backend only supports Transformers and MLXLM models",
     ):
         XGrammarBackend(model_llamacpp)

@@ -47,7 +47,7 @@ As mentioned previously, selecting the structured generation backend is only app
 | **Models** | | | |
 | Transformers | ✅ | ✅ | ✅ |
 | LlamaCpp | ✅ | ✅ | ❌ |
-| MLXLM | ✅ | ✅ | ❌ |
+| MLXLM | ✅ | ✅ | ✅ |
 | **Output Types** | | | |
 | JSON Schema | ✅ | ✅ | ✅ |
 | Regex | ✅ | ✅ | ✅ |
