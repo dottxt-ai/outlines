@@ -1,6 +1,6 @@
 """Backend class for Outlines Core."""
 
-from typing import Dict
+from typing import Callable, Dict
 
 from outlines_core import Guide, Index, Vocabulary
 # TODO: change this once the import issue is fixed in outlines_core
@@ -184,23 +184,29 @@ class OutlinesCoreBackend(BaseBackend):
 
         """
         if isinstance(model, Transformers):
-            vocabulary = model.hf_tokenizer.get_vocab()
-            eos_token_id = model.hf_tokenizer.eos_token_id
-            eos_token = model.hf_tokenizer.eos_token
+            tokenizer = model.hf_tokenizer
+            vocabulary = tokenizer.get_vocab()
+            eos_token_id = tokenizer.eos_token_id
+            eos_token = tokenizer.eos_token
+            token_to_str = lambda token: tokenizer.convert_tokens_to_string([token])
         elif isinstance(model, LlamaCpp):
-            vocabulary = model.tokenizer.vocabulary
-            eos_token_id = model.tokenizer.eos_token_id
-            eos_token = model.tokenizer.eos_token
+            tokenizer = model.tokenizer
+            vocabulary = tokenizer.vocabulary
+            eos_token_id = tokenizer.eos_token_id
+            eos_token = tokenizer.eos_token
+            token_to_str = tokenizer.convert_token_to_string
         elif isinstance(model, MLXLM):
-            vocabulary = model.mlx_tokenizer._tokenizer.get_vocab()
-            eos_token_id = model.mlx_tokenizer._tokenizer.eos_token_id
-            eos_token = model.mlx_tokenizer._tokenizer.eos_token
+            tokenizer = model.mlx_tokenizer
+            vocabulary = tokenizer.get_vocab()
+            eos_token_id = tokenizer.eos_token_id
+            eos_token = tokenizer.eos_token
+            token_to_str = lambda token: tokenizer.convert_tokens_to_string([token])
         else:
             raise ValueError(f"Unsupported model type: {type(model)}")
 
         self.eos_token_id = eos_token_id
         self.vocabulary = self.create_outlines_core_vocabulary(
-            vocabulary, eos_token_id, eos_token
+            vocabulary, eos_token_id, eos_token, token_to_str
         )
         self.tensor_library_name = model.tensor_library_name
 
@@ -247,7 +253,10 @@ class OutlinesCoreBackend(BaseBackend):
 
     @staticmethod
     def create_outlines_core_vocabulary(
-        vocab: Dict[str, int], eos_token_id: int, eos_token: str
+        vocab: Dict[str, int],
+        eos_token_id: int,
+        eos_token: str,
+        token_to_str: Callable[[str], str]
     ) -> Vocabulary:
         """Create an Outlines Core Vocabulary instance.
 
@@ -259,6 +268,8 @@ class OutlinesCoreBackend(BaseBackend):
             The EOS token ID.
         eos_token: str
             The EOS token.
+        token_to_str: Callable[[str], str]
+            The function to convert a token to a string.
 
         Returns
         -------
@@ -268,6 +279,11 @@ class OutlinesCoreBackend(BaseBackend):
         """
         formatted_vocab = {}
         for token, token_id in vocab.items():
-            formatted_vocab[token] = [token_id]
+            # This step is necessary to transform special tokens into their
+            # string representation, in particular for spacing. We need those
+            # string representations as outlines core first builds an FSM from
+            # the regex provided that only contains regular strings.
+            token_as_str = token_to_str(token)
+            formatted_vocab[token_as_str] = [token_id]
         formatted_vocab.pop(eos_token)
         return Vocabulary(eos_token_id, formatted_vocab)
