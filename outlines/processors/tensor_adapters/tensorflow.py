@@ -48,3 +48,17 @@ class TensorFlowTensorAdapter(TensorAdapter):
 
     def argsort_descending(self, tensor):
         return self.tf.argsort(tensor, direction='DESCENDING')
+
+    def create_end_thinking_bitmask(self, size, end_thinking_token_id):
+        bitmask = self.tf.zeros(
+            (size + 31) // 32,
+            dtype=self.tf.int32
+        )
+        byte_index = end_thinking_token_id // 32
+        bit_index = end_thinking_token_id % 32
+        bitmask = self.tf.tensor_scatter_nd_update(
+            bitmask,
+            [[byte_index]],
+            [1 << bit_index]
+        )
+        return bitmask

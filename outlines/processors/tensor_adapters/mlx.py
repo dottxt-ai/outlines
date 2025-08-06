@@ -58,3 +58,14 @@ class MLXTensorAdapter(TensorAdapter):
 
     def argsort_descending(self, tensor):
         return self.mlx.argsort(-tensor)
+
+    def create_end_thinking_bitmask(self, size, end_thinking_token_id):
+        bitmask = self.mlx.zeros(
+            (size + 31) // 32,
+            dtype=self.mlx.int32
+        )
+        byte_index = end_thinking_token_id // 32
+        bit_index = end_thinking_token_id % 32
+        bitmask = self.mlx.array(bitmask)
+        bitmask[byte_index] = 1 << bit_index
+        return bitmask

@@ -15,7 +15,13 @@ JSON_SCHEMA_DEFAULT_BACKEND = "outlines_core"
 REGEX_DEFAULT_BACKEND = "outlines_core"
 
 
-def _get_backend(backend_name: str, model: SteerableModel) -> BaseBackend:
+def _get_backend(
+    backend_name: str,
+    model: SteerableModel,
+    *,
+    end_thinking_tag: str | None,
+    thinking_max_tokens: int | None,
+) -> BaseBackend:
     """Create a Backend instance.
 
     Parameters
@@ -24,6 +30,13 @@ def _get_backend(backend_name: str, model: SteerableModel) -> BaseBackend:
         The name of the backend to get.
     model: Model
         The Outlines model of the user.
+    end_thinking_tag: str | None
+        The tag the model uses to indicate the end of the thinking process.
+        Only used when running a thinking model.
+    thinking_max_tokens: int | None
+        The maximum number of tokens the model can think about. Only used when
+        running a thinking model. The end_thinking_tag argument must also be
+        provided to use this parameter.
 
     Returns
     -------
@@ -32,11 +45,23 @@ def _get_backend(backend_name: str, model: SteerableModel) -> BaseBackend:
 
     """
     if backend_name == "outlines_core":
-        return OutlinesCoreBackend(model)
+        return OutlinesCoreBackend(
+            model,
+            end_thinking_tag=end_thinking_tag,
+            thinking_max_tokens=thinking_max_tokens,
+        )
     elif backend_name == "xgrammar":
-        return XGrammarBackend(model)
+        return XGrammarBackend(
+            model,
+            end_thinking_tag=end_thinking_tag,
+            thinking_max_tokens=thinking_max_tokens,
+        )
     elif backend_name == "llguidance":
-        return LLGuidanceBackend(model)
+        return LLGuidanceBackend(
+            model,
+            end_thinking_tag=end_thinking_tag,
+            thinking_max_tokens=thinking_max_tokens,
+        )
     else:
         raise ValueError(f"Backend {backend_name} not supported")
 
@@ -45,6 +70,9 @@ def get_json_schema_logits_processor(
     backend_name: str | None,
     model: SteerableModel,
     json_schema: str,
+    *,
+    end_thinking_tag: str | None,
+    thinking_max_tokens: int | None,
 ) -> LogitsProcessorType:
     """Create a logits processor from a JSON schema.
 
@@ -56,6 +84,13 @@ def get_json_schema_logits_processor(
         The Outlines model of the user.
     json_schema: str
         The JSON schema to create a logits processor from.
+    end_thinking_tag: str | None
+        The tag the model uses to indicate the end of the thinking process.
+        Only used when running a thinking model.
+    thinking_max_tokens: int | None
+        The maximum number of tokens the model can think about. Only used when
+        running a thinking model. The end_thinking_tag argument must also be
+        provided to use this parameter.
 
     Returns
     -------
@@ -66,6 +101,8 @@ def get_json_schema_logits_processor(
     backend = _get_backend(
         backend_name or JSON_SCHEMA_DEFAULT_BACKEND,
         model,
+        end_thinking_tag=end_thinking_tag,
+        thinking_max_tokens=thinking_max_tokens,
     )
     return backend.get_json_schema_logits_processor(json_schema)
 
@@ -74,6 +111,9 @@ def get_regex_logits_processor(
     backend_name: str | None,
     model: SteerableModel,
     regex: str,
+    *,
+    end_thinking_tag: str | None,
+    thinking_max_tokens: int | None,
 ) -> LogitsProcessorType:
     """Create a logits processor from a regex.
 
@@ -85,6 +125,13 @@ def get_regex_logits_processor(
         The Outlines model of the user.
     regex: str
         The regex to create a logits processor from.
+    end_thinking_tag: str | None
+        The tag the model uses to indicate the end of the thinking process.
+        Only used when running a thinking model.
+    thinking_max_tokens: int | None
+        The maximum number of tokens the model can think about. Only used when
+        running a thinking model. The end_thinking_tag argument must also be
+        provided to use this parameter.
 
     Returns
     -------
@@ -95,6 +142,8 @@ def get_regex_logits_processor(
     backend = _get_backend(
         backend_name or REGEX_DEFAULT_BACKEND,
         model,
+        end_thinking_tag=end_thinking_tag,
+        thinking_max_tokens=thinking_max_tokens,
     )
     return backend.get_regex_logits_processor(regex)
 
@@ -103,6 +152,9 @@ def get_cfg_logits_processor(
     backend_name: str | None,
     model: SteerableModel,
     grammar: str,
+    *,
+    end_thinking_tag: str | None,
+    thinking_max_tokens: int | None,
 ) -> LogitsProcessorType:
     """Create a logits processor from a context-free grammar.
 
@@ -114,7 +166,13 @@ def get_cfg_logits_processor(
         The Outlines model of the user.
     grammar: str
         The context-free grammar to create a logits processor from.
-
+    end_thinking_tag: str | None
+        The tag the model uses to indicate the end of the thinking process.
+        Only used when running a thinking model.
+    thinking_max_tokens: int | None
+        The maximum number of tokens the model can think about. Only used when
+        running a thinking model. The end_thinking_tag argument must also be
+        provided to use this parameter.
     Returns
     -------
     LogitsProcessorType
@@ -124,5 +182,7 @@ def get_cfg_logits_processor(
     backend = _get_backend(
         backend_name or CFG_DEFAULT_BACKEND,
         model,
+        end_thinking_tag=end_thinking_tag,
+        thinking_max_tokens=thinking_max_tokens,
     )
     return backend.get_cfg_logits_processor(grammar)

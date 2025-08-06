@@ -46,3 +46,14 @@ class TorchTensorAdapter(TensorAdapter):
 
     def argsort_descending(self, tensor):
         return self.torch.argsort(tensor, descending=True)
+
+    def create_end_thinking_bitmask(self, size, end_thinking_token_id):
+        bitmask = self.torch.zeros(
+            (size + 31) // 32,
+            dtype=self.torch.int32,
+            pin_memory=self.torch.cuda.is_available()
+        )
+        byte_index = end_thinking_token_id // 32
+        bit_index = end_thinking_token_id % 32
+        bitmask[byte_index] = 1 << bit_index
+        return bitmask

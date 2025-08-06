@@ -48,3 +48,13 @@ class JAXTensorAdapter(TensorAdapter):
 
     def argsort_descending(self, tensor):
         return self.jax.numpy.argsort(-tensor)
+
+    def create_end_thinking_bitmask(self, size, end_thinking_token_id):
+        bitmask = self.jax.numpy.zeros(
+            (size + 31) // 32,
+            dtype=self.jax.numpy.int32
+        )
+        byte_index = end_thinking_token_id // 32
+        bit_index = end_thinking_token_id % 32
+        bitmask = bitmask.at[byte_index].set(1 << bit_index)
+        return bitmask

@@ -255,3 +255,29 @@ class TensorAdapter(ABC):
 
         """
         ...
+
+    @abstractmethod
+    def create_end_thinking_bitmask(
+        self,
+        size: int,
+        end_thinking_token_id: int
+    ) -> TensorType: # type: ignore
+        """Create a 1D bitmask tensor with 0 everywhere except at the position
+        of the end thinking token.
+
+        Parameters
+        ----------
+        size
+            The size of the tensor.
+        end_thinking_token_id
+            The id of the end thinking token. It corresponds to the position
+            of the tensor for which the bitmask will be 1.
+
+        Returns
+        -------
+        TensorType
+            A 1D bitmask tensor with a 1 at the position of the end thinking
+            token.
+
+        """
+        ...
