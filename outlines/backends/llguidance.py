@@ -115,8 +115,17 @@ class LLGuidanceLogitsProcessor(OutlinesLogitsProcessor):
 
         for i in range(self.tensor_adapter.shape(input_ids)[0]):
             llguidance.torch.fill_next_token_bitmask(self.ll_matchers[i], self.bitmask, i)
+            self.bitmask = self.tensor_adapter.to_device(
+                self.bitmask,
+                self.tensor_adapter.get_device(logits)
+            )
             llguidance.torch.apply_token_bitmask_inplace(
-                logits[i], self.bitmask[i] # type: ignore
+                logits[i], # type: ignore
+                self.bitmask[i]
+            )
+            self.bitmask = self.tensor_adapter.to_device(
+                self.bitmask,
+                "cpu"
             )
 
         return logits

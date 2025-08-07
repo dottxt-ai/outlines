@@ -47,7 +47,15 @@ class OutlinesCoreLogitsProcessor(OutlinesLogitsProcessor):
         `process_logits` method.
 
         This method is called when the first token is generated instead of
-        at initialization because we need to know the batch size.
+        at initialization because we need to know the batch size and the device
+        of the logits.
+
+        Parameters
+        ----------
+        batch_size: int
+            The batch size.
+        vocab_size: int
+            The vocabulary size.
 
         """
         if self.tensor_library_name == "torch":
@@ -111,9 +119,17 @@ class OutlinesCoreLogitsProcessor(OutlinesLogitsProcessor):
 
         for i in range(batch_size):
             fill_next_token_bitmask(self._guides[i], self._bitmasks[i])
+            self._bitmasks[i] = self.tensor_adapter.to_device(
+                self._bitmasks[i],
+                self.tensor_adapter.get_device(logits)
+            )
             apply_token_bitmask_inplace(
                 self.tensor_adapter.unsqueeze(logits[i]), # type: ignore
                 self._bitmasks[i]
+            )
+            self._bitmasks[i] = self.tensor_adapter.to_device(
+                self._bitmasks[i],
+                "cpu"
             )
 
         return logits
