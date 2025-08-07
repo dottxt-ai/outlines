@@ -60,7 +60,15 @@ class XGrammarLogitsProcessor(OutlinesLogitsProcessor):
             if not self._matchers[i].is_terminated():
                 self._matchers[i].fill_next_token_bitmask(self._bitmask, i)
 
+        self._bitmask = self.tensor_adapter.to_device(
+            self._bitmask,
+            self.tensor_adapter.get_device(logits)
+        )
         self.xgr.apply_token_bitmask_inplace(logits, self._bitmask)
+        self._bitmask = self.tensor_adapter.to_device(
+            self._bitmask,
+            "cpu"
+        )
 
         return logits
 
