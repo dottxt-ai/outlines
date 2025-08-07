@@ -1,5 +1,6 @@
 """Integration with the `llama-cpp-python` library."""
 
+import ctypes
 from functools import singledispatchmethod
 from typing import (
     TYPE_CHECKING,
@@ -26,34 +27,51 @@ __all__ = ["LlamaCpp", "from_llamacpp"]
 
 class LlamaCppTokenizer(Tokenizer):
     def __init__(self, model: "Llama"):
-        self.eos_token_id = model.token_eos()
-        self.eos_token = model.tokenizer().decode([self.eos_token_id])
-        self.pad_token_id = self.eos_token_id
-        self.special_tokens: Set[str] = set()
-
-        self.vocabulary: Dict[str, int] = dict()
-
         self.tokenizer = model.tokenizer()
+        self.special_tokens: Set[str] = set()
+        self.vocabulary: Dict[str, int] = dict()
 
         # TODO: Remove when https://github.com/ggerganov/llama.cpp/pull/5613
         # is resolved
         self._hf_tokenizer = None
-        try:
-            self.vocabulary = model.tokenizer_.hf_tokenizer.get_vocab()
+        if (
+            hasattr(model, "tokenizer_")
+            and hasattr(model.tokenizer_, "hf_tokenizer")
+        ):
             self._hf_tokenizer = model.tokenizer_.hf_tokenizer
-        except AttributeError:
-            # ###
-            for t in range(model.n_vocab()):
-                token_piece = model.tokenizer().decode([t])
-                self.vocabulary[token_piece] = t
+            self.eos_token_id = self._hf_tokenizer.eos_token_id
+            self.eos_token = self._hf_tokenizer.eos_token
+            self.vocabulary = self._hf_tokenizer.get_vocab()
+        else:
+            from llama_cpp import (
+                llama_model_get_vocab,
+                llama_token_to_piece,
+            )
 
+            self.eos_token_id = model.token_eos()
+            size = 32
+            buffer = (ctypes.c_char * size)()
+            for i in range(model.n_vocab()):
+                n = llama_token_to_piece(
+                    llama_model_get_vocab(model.model),
+                    i,
+                    buffer,
+                    size,
+                    0,
+                    True
+                )
+                token_piece = buffer[:n].decode("utf-8", errors="replace") # type: ignore
+                self.vocabulary[token_piece] = i
+                if i == self.eos_token_id:
+                    self.eos_token = token_piece
+
+        self.pad_token_id = self.eos_token_id
         # ensure stable ordering of vocabulary
         self.vocabulary = {
             tok: tok_id
             for tok, tok_id
             in sorted(self.vocabulary.items(), key=lambda x: x[1])
         }
-
         self._hash = None
 
     def decode(self, token_ids: List[int]) -> List[str]:
