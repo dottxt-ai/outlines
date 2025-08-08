@@ -1,14 +1,18 @@
 """Base class for logits processors."""
 
 from abc import abstractmethod
-from typing import TypeVar
+from typing import TypeVar, Any, Protocol
 
 from outlines.processors.tensor_adapters import (
     TensorAdapterImplementation,
     tensor_adapters,
 )
 
-TensorType = TypeVar('TensorType')
+
+class Indexable(Protocol):
+    def __getitem__(self, key: Any) -> Any: ...
+
+TensorType = TypeVar('TensorType', bound=Indexable)
 
 
 class OutlinesLogitsProcessor:

@@ -218,6 +218,9 @@ class SteerableGenerator:
         model: SteerableModel,
         output_type: Optional[Any],
         backend_name: Optional[str] = None,
+        *,
+        end_thinking_tag: Optional[str] = None,
+        thinking_max_tokens: Optional[int] = None,
     ):
         """
         Parameters
@@ -228,6 +231,13 @@ class SteerableGenerator:
             The output type expressed as a Python type
         backend_name
             The name of the backend to use to create the logits processor.
+        end_thinking_tag
+            The tag the model uses to indicate the end of the thinking process.
+            Only used when running a thinking model.
+        thinking_max_tokens
+            The maximum number of tokens the model can think about. Only used
+            when running a thinking model. The end_thinking_tag argument must
+            also be provided to use this parameter.
 
         """
         self.model = model
@@ -241,12 +251,16 @@ class SteerableGenerator:
                     backend_name,
                     model,
                     cfg_string,
+                    end_thinking_tag=end_thinking_tag,
+                    thinking_max_tokens=thinking_max_tokens,
                 )
             elif isinstance(term, JsonSchema):
                 self.logits_processor = get_json_schema_logits_processor(
                     backend_name,
                     model,
                     term.schema,
+                    end_thinking_tag=end_thinking_tag,
+                    thinking_max_tokens=thinking_max_tokens,
                 )
             else:
                 regex_string = to_regex(term)
@@ -254,6 +268,8 @@ class SteerableGenerator:
                     backend_name,
                     model,
                     regex_string,
+                    end_thinking_tag=end_thinking_tag,
+                    thinking_max_tokens=thinking_max_tokens,
                 )
 
     @classmethod
@@ -349,6 +365,8 @@ def Generator(
     backend: Optional[str] = None,
     *,
     processor: Optional[LogitsProcessorType] = None,
+    end_thinking_tag: Optional[str] = None,
+    thinking_max_tokens: Optional[int] = None,
 ) -> Union[SteerableGenerator, BlackBoxGenerator, AsyncBlackBoxGenerator]:
     """Create a generator for the given model and output parameters.
 
@@ -369,6 +387,13 @@ def Generator(
         not provided.
     processor
         An instance of a logits processor.
+    end_thinking_tag
+        The tag the model uses to indicate the end of the thinking process.
+        Only used for steerable models running a thinking model.
+    thinking_max_tokens
+        The maximum number of tokens the model can think about. Only used for
+        steerable models running a thinking model. The end_thinking_tag
+        argument must also be provided to use this parameter.
 
     Returns
     -------
@@ -389,7 +414,13 @@ def Generator(
         if processor is not None:
             return SteerableGenerator.from_processor(model, processor) # type: ignore
         else:
-            return SteerableGenerator(model, output_type, backend) # type: ignore
+            return SteerableGenerator(
+                model, # type: ignore
+                output_type,
+                backend,
+                end_thinking_tag=end_thinking_tag,
+                thinking_max_tokens=thinking_max_tokens,
+            )
     else:
         if processor is not None:
             raise NotImplementedError(

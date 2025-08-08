@@ -25,6 +25,9 @@ class LLGuidanceLogitsProcessor(OutlinesLogitsProcessor):
         grammar: str,
         llg_tokenizer,
         tensor_library_name: str,
+        *,
+        end_thinking_token_id: int | None,
+        thinking_max_tokens: int | None,
     ) -> None:
         """
         Parameters
@@ -35,6 +38,10 @@ class LLGuidanceLogitsProcessor(OutlinesLogitsProcessor):
             The LLGuidance tokenizer
         tensor_library_name: str
             The name of the tensor library used by the model
+        end_thinking_token_id: int | None
+            The id of the end thinking token
+        thinking_max_tokens: int | None
+            The maximum number of tokens the model can think about
 
         """
         if tensor_library_name not in SUPPORTED_TENSOR_LIBRARIES:
@@ -44,6 +51,8 @@ class LLGuidanceLogitsProcessor(OutlinesLogitsProcessor):
         self.grammar = grammar
         self.llg_tokenizer = llg_tokenizer
         self.tensor_library_name = tensor_library_name
+        self.end_thinking_token_id = end_thinking_token_id
+        self.thinking_max_tokens = thinking_max_tokens or float("inf")
         super().__init__(tensor_library_name)
 
     def reset(self):
@@ -65,30 +74,38 @@ class LLGuidanceLogitsProcessor(OutlinesLogitsProcessor):
         """
         from llguidance import LLMatcher
 
-        self.ll_matchers = [
+        self._ll_matchers = [
             LLMatcher(self.llg_tokenizer, self.grammar)
             for _ in range(batch_size)
         ]
+        self._is_thinking = [self.end_thinking_token_id is not None] * batch_size
+        self._generate_end_thinking_token = [False] * batch_size
+        self._num_tokens_generated = 0
 
         # we must adapt the bitmask creation and the bias function to the
         # tensor library used by the model
         if self.tensor_library_name == "torch":
             import llguidance.torch
 
-            self.bitmask = llguidance.torch.allocate_token_bitmask(batch_size, self.llg_tokenizer.vocab_size)
+            self.allocate_token_bitmask = llguidance.torch.allocate_token_bitmask
             self._bias_logits = self._bias_logits_torch
         elif self.tensor_library_name == "numpy":
             import llguidance.numpy
 
-            self.bitmask = llguidance.numpy.allocate_token_bitmask(batch_size, self.llg_tokenizer.vocab_size)
+            self.allocate_token_bitmask = llguidance.numpy.allocate_token_bitmask
             self._bias_logits = self._bias_logits_numpy
         elif self.tensor_library_name == "mlx": # pragma: no cover
             import llguidance.numpy
 
-            self.bitmask = llguidance.numpy.allocate_token_bitmask(batch_size, self.llg_tokenizer.vocab_size)
+            self.allocate_token_bitmask = llguidance.numpy.allocate_token_bitmask
             self._bias_logits = self._bias_logits_mlx
         else: # pragma: no cover
             raise ValueError(f"Unsupported tensor library: {self.tensor_library_name}")
+
+        self._bitmasks = [
+            self.allocate_token_bitmask(1, self.llg_tokenizer.vocab_size)
+            for _ in range(batch_size)
+        ]
 
     def _bias_logits_mlx( # pragma: no cover
         self, input_ids: TensorType, logits: TensorType
@@ -99,10 +116,19 @@ class LLGuidanceLogitsProcessor(OutlinesLogitsProcessor):
 
         biased_logits_array = []
         for i in range(self.tensor_adapter.shape(input_ids)[0]):
-            llguidance.numpy.fill_next_token_bitmask(self.ll_matchers[i], self.bitmask, i)
-            biased_logits = llguidance.mlx.apply_token_bitmask(
-                logits[i], self.bitmask[i] # type: ignore
-            )
+            if not self._is_thinking[i] and not self._generate_end_thinking_token[i]:
+                llguidance.numpy.fill_next_token_bitmask(self._ll_matchers[i], self._bitmasks[i], 0)
+                biased_logits = llguidance.mlx.apply_token_bitmask(
+                    logits[i], self._bitmasks[i] # type: ignore
+                )
+            elif self._generate_end_thinking_token[i]:
+                self._generate_end_thinking_token[i] = False
+                biased_logits = llguidance.mlx.apply_token_bitmask(
+                    logits[i], self._bitmasks[i] # type: ignore
+                )
+            else:
+                biased_logits = logits[i]
+
             biased_logits_array.append(biased_logits)
 
         return self.tensor_adapter.concatenate(biased_logits_array)
@@ -114,10 +140,16 @@ class LLGuidanceLogitsProcessor(OutlinesLogitsProcessor):
         import llguidance.torch
 
         for i in range(self.tensor_adapter.shape(input_ids)[0]):
-            llguidance.torch.fill_next_token_bitmask(self.ll_matchers[i], self.bitmask, i)
-            llguidance.torch.apply_token_bitmask_inplace(
-                logits[i], self.bitmask[i] # type: ignore
-            )
+            if not self._is_thinking[i] and not self._generate_end_thinking_token[i]:
+                llguidance.torch.fill_next_token_bitmask(self._ll_matchers[i], self._bitmasks[i], 0)
+                llguidance.torch.apply_token_bitmask_inplace(
+                    logits[i], self._bitmasks[i] # type: ignore
+                )
+            elif self._generate_end_thinking_token[i]:
+                self._generate_end_thinking_token[i] = False
+                llguidance.torch.apply_token_bitmask_inplace(
+                    logits[i], self._bitmasks[i] # type: ignore
+                )
 
         return logits
 
@@ -128,10 +160,16 @@ class LLGuidanceLogitsProcessor(OutlinesLogitsProcessor):
         import llguidance.numpy
 
         for i in range(self.tensor_adapter.shape(input_ids)[0]):
-            llguidance.numpy.fill_next_token_bitmask(self.ll_matchers[i], self.bitmask, i)
-            llguidance.numpy.apply_token_bitmask_inplace(
-                logits[i], self.bitmask[i] # type: ignore
-            )
+            if not self._is_thinking[i] and not self._generate_end_thinking_token[i]:
+                llguidance.numpy.fill_next_token_bitmask(self._ll_matchers[i], self._bitmasks[i], 0)
+                llguidance.numpy.apply_token_bitmask_inplace(
+                    logits[i], self._bitmasks[i] # type: ignore
+                )
+            elif self._generate_end_thinking_token[i]:
+                self._generate_end_thinking_token[i] = False
+                llguidance.numpy.apply_token_bitmask_inplace(
+                    logits[i], self._bitmasks[i] # type: ignore
+                )
 
         return logits
 
@@ -153,20 +191,43 @@ class LLGuidanceLogitsProcessor(OutlinesLogitsProcessor):
             The biased logits.
 
         """
-        if self.is_first_token:
-            self._setup(self.tensor_adapter.shape(input_ids)[0])
-            self.is_first_token = False
+        batch_size = self.tensor_adapter.shape(input_ids)[0]
+        vocab_size = self.tensor_adapter.shape(logits)[1]
 
-        # we do not make the matchers consume the last token during the first
-        # generation step because no tokens have been generated yet
+        if self.is_first_token:
+            self._setup(batch_size)
+            self.is_first_token = False
         else:
-            for i in range(self.tensor_adapter.shape(input_ids)[0]):
-                sequence = input_ids[i] # type: ignore
-                last_token = sequence[-1].item()
-                self.ll_matchers[i].consume_token(last_token)
-                error = self.ll_matchers[i].get_error()
-                if error:
-                    warnings.warn(f"Error in LLMatcher: {error}")
+            self._num_tokens_generated += 1
+            for i in range(batch_size):
+                latest_token_id = self.tensor_adapter.to_scalar(input_ids[i][-1]) # type: ignore
+                if not self._is_thinking[i]:
+                    self._ll_matchers[i].consume_token(latest_token_id)
+                    error = self._ll_matchers[i].get_error()
+                    if error:
+                        warnings.warn(f"Error in LLMatcher: {error}")
+                else:
+                    # If the end of thinking token was generated at the
+                    # previous step, we set thinking to False to start
+                    # biasing the logits according to the guide
+                    if latest_token_id == self.end_thinking_token_id:
+                        self._is_thinking[i] = False
+                    # If the max number of tokens has been generated, we
+                    # modify the bitmask to only allow the end of thinking
+                    # token to be generated and set generate_end_thinking_token
+                    # to True to skip filling the bitmask (as we did it
+                    # manually ourselves)
+                    elif (
+                        self._num_tokens_generated >= self.thinking_max_tokens
+                    ):
+                        updated_bitmask = self.tensor_adapter.create_end_thinking_bitmask(
+                            vocab_size,
+                            self.end_thinking_token_id,
+                        )
+                        self._bitmasks[i] = self.tensor_adapter.unsqueeze(
+                            updated_bitmask # type: ignore
+                        )
+                        self._generate_end_thinking_token[i] = True
 
         return self._bias_logits(input_ids, logits)
 
@@ -174,12 +235,25 @@ class LLGuidanceLogitsProcessor(OutlinesLogitsProcessor):
 class LLGuidanceBackend(BaseBackend):
     """Backend for LLGuidance."""
 
-    def __init__(self, model: SteerableModel):
+    def __init__(
+        self,
+        model: SteerableModel,
+        *,
+        end_thinking_tag: str | None,
+        thinking_max_tokens: int | None,
+    ):
         """
         Parameters
         ----------
         model
             The Outlines model of the user.
+        end_thinking_tag
+            The tag the model uses to indicate the end of the thinking process.
+            Only used when running a thinking model.
+        thinking_max_tokens
+            The maximum number of tokens the model can think about. Only used
+            when running a thinking model. The end_thinking_tag argument must
+            also be provided to use this parameter.
 
         """
         import llguidance as llg
@@ -187,6 +261,23 @@ class LLGuidanceBackend(BaseBackend):
         self.llg = llg
         self.tensor_library_name = model.tensor_library_name
         self.llg_tokenizer = self._create_llg_tokenizer(model)
+        encoded_end_thinking_tag = (
+            self.llg_tokenizer.tokenize_str(end_thinking_tag)
+            if end_thinking_tag
+            else None
+        )
+        if (
+            encoded_end_thinking_tag is not None
+            and len(encoded_end_thinking_tag) != 1
+        ):
+            raise ValueError(
+                "The end_thinking_tag must correspond to a single token in"
+                + "the tokenizer vocabulary."
+            )
+        self.end_thinking_token_id = (
+            encoded_end_thinking_tag[0] if encoded_end_thinking_tag else None
+        )
+        self.thinking_max_tokens = thinking_max_tokens
 
     def _create_llg_tokenizer(self, model: SteerableModel) -> "LLGTokenizer":
         """Create an llg tokenizer from the Outlines model's tokenizer.
@@ -246,7 +337,11 @@ class LLGuidanceBackend(BaseBackend):
         """
         grammar_spec = self.llg.grammar_from("json_schema", json_schema)
         return LLGuidanceLogitsProcessor(
-            grammar_spec, self.llg_tokenizer, self.tensor_library_name
+            grammar_spec,
+            self.llg_tokenizer,
+            self.tensor_library_name,
+            end_thinking_token_id=self.end_thinking_token_id,
+            thinking_max_tokens=self.thinking_max_tokens
         )
 
     def get_regex_logits_processor(
@@ -267,7 +362,11 @@ class LLGuidanceBackend(BaseBackend):
         """
         grammar_spec = self.llg.grammar_from("regex", regex)
         return LLGuidanceLogitsProcessor(
-            grammar_spec, self.llg_tokenizer, self.tensor_library_name
+            grammar_spec,
+            self.llg_tokenizer,
+            self.tensor_library_name,
+            end_thinking_token_id=self.end_thinking_token_id,
+            thinking_max_tokens=self.thinking_max_tokens
         )
 
     def get_cfg_logits_processor(
@@ -292,5 +391,9 @@ class LLGuidanceBackend(BaseBackend):
         except ValueError:
             grammar_spec = self.llg.grammar_from("lark", grammar)
         return LLGuidanceLogitsProcessor(
-            grammar_spec, self.llg_tokenizer, self.tensor_library_name
+            grammar_spec,
+            self.llg_tokenizer,
+            self.tensor_library_name,
+            end_thinking_token_id=self.end_thinking_token_id,
+            thinking_max_tokens=self.thinking_max_tokens
         )
