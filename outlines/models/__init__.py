@@ -15,7 +15,7 @@ from .gemini import Gemini, from_gemini
 from .llamacpp import LlamaCpp, from_llamacpp
 from .mlxlm import MLXLM, from_mlxlm
 from .ollama import AsyncOllama, Ollama, from_ollama
-from .openai import OpenAI, from_openai
+from .openai import AsyncOpenAI, OpenAI, from_openai
 from .sglang import AsyncSGLang, SGLang, from_sglang
 from .tgi import AsyncTGI, TGI, from_tgi
 from .transformers import (
@@ -41,6 +41,7 @@ BlackBoxModel = Union[
 ]
 AsyncBlackBoxModel = Union[
     AsyncOllama,
+    AsyncOpenAI,
     AsyncTGI,
     AsyncSGLang,
     AsyncVLLM,

@@ -10,8 +10,10 @@
 
 To create an OpenAI model instance, you can use the `from_openai` function. It takes 2 arguments:
 
-- `client`: an `openai.OpenAI` or `openai.AzureOpenAI` instance
+- `client`: an `openai.OpenAI`, `openai.AzureOpenAI`, `openai.AsyncOpenAI` or `openai.AsyncAzureOpenAI` instance
 - `model_name`: the name of the model you want to use
+
+Based on whether the inference client instance is synchronous or asynchronous, you will receive an `OpenAI` or an `AsyncOpenAI` model instance.
 
 For instance:
 
@@ -19,12 +21,19 @@ For instance:
 import outlines
 import openai
 
-# Create the client
+# Create the client or async client
 client = openai.OpenAI()
+async_client = openai.AsyncOpenAI()
 
-# Create the model
+# Create a sync model
 model = outlines.from_openai(
     client,
+    "gpt-4o"
+)
+
+# Create aa async model
+model = outlines.from_openai(
+    async_client,
     "gpt-4o"
 )
 ```
@@ -188,6 +197,47 @@ model = outlines.from_openai(openai.OpenAI(), "gpt-4o")
 # Call it with the output type to generate structured text
 result = model("Create a character, use the json format.", dict, temperature=0.5)
 print(result) # '{"first_name": "Henri", "last_name": "Smith", "height": "170"}'
+```
+
+## Asynchronous Calls
+
+All features presented above for the sync model are also available for the async model.
+
+For instance:
+
+```python
+import asyncio
+import openai
+import outlines
+from pydantic import BaseModel
+from typing import List
+
+class Character(BaseModel):
+    name: str
+    age: int
+    skills: List[str]
+
+# Create the model
+model = outlines.from_openai(
+    openai.AsyncOpenAI(),
+    "gpt-4o"
+)
+
+async def text_generation():
+    # Regular generation
+    response = await model("What's the capital of Latvia?", max_tokens=20)
+    print(response) # 'Riga'
+
+    # Streaming
+    async for chunk in  model.stream("Tell me a short story about a cat.", max_tokens=50):
+        print(chunk, end="") # 'Once...'
+
+    # Structured generation
+    result = await model("Create a character, use the json format.", Character, top_p=0.1)
+    print(result) # '{"name": "Evelyn", "age": 34, "skills": ["archery", "stealth", "alchemy"]}'
+    print(Character.model_validate_json(result)) # name=Evelyn, age=34, skills=['archery', 'stealth', 'alchemy']
+
+asyncio.run(text_generation())
 ```
 
 ## Inference arguments
