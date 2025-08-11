@@ -1,16 +1,16 @@
 import io
 import json
 import os
-from typing import Annotated, Generator
+from typing import Annotated, Generator, AsyncGenerator
 
 import pytest
 from PIL import Image as PILImage
-from openai import OpenAI as OpenAIClient
+from openai import AsyncOpenAI as AsyncOpenAIClient, OpenAI as OpenAIClient
 from pydantic import BaseModel, Field
 
 import outlines
 from outlines.inputs import Chat, Image, Video
-from outlines.models.openai import OpenAI
+from outlines.models.openai import AsyncOpenAI, OpenAI
 from outlines.types import json_schema
 
 MODEL_NAME = "gpt-4o-mini-2024-07-18"
@@ -51,11 +51,21 @@ def model(api_key):
 
 
 @pytest.fixture(scope="session")
+def async_model(api_key):
+    return AsyncOpenAI(AsyncOpenAIClient(api_key=api_key), MODEL_NAME)
+
+
+@pytest.fixture(scope="session")
 def model_no_model_name(api_key):
     return OpenAI(OpenAIClient(api_key=api_key))
 
 
-def test_init_from_client(api_key):
+@pytest.fixture(scope="session")
+def async_model_no_model_name(api_key):
+    return AsyncOpenAI(AsyncOpenAIClient(api_key=api_key))
+
+
+def test_openai_init_from_client(api_key):
     client = OpenAIClient(api_key=api_key)
 
     # With model name
@@ -190,5 +200,160 @@ def test_openai_streaming(model):
 def test_openai_batch(model):
     with pytest.raises(NotImplementedError, match="does not support"):
         model.batch(
+            ["Respond with one word.", "Respond with one word."],
+        )
+
+
+def test_openai_async_init_from_client(api_key):
+    client = AsyncOpenAIClient(api_key=api_key)
+
+    # With model name
+    model = outlines.from_openai(client, "gpt-4o")
+    assert isinstance(model, AsyncOpenAI)
+    assert model.client == client
+    assert model.model_name == "gpt-4o"
+
+    # Without model name
+    model = outlines.from_openai(client)
+    assert isinstance(model, AsyncOpenAI)
+    assert model.client == client
+    assert model.model_name is None
+
+
+@pytest.mark.asyncio
+async def test_openai_async_wrong_inference_parameters(async_model):
+    with pytest.raises(TypeError, match="got an unexpected"):
+        await async_model.generate("prompt", foo=10)
+
+
+@pytest.mark.asyncio
+async def test_openai_async_wrong_input_type(async_model, image):
+    class Foo:
+        def __init__(self, foo):
+            self.foo = foo
+
+    with pytest.raises(TypeError, match="is not available"):
+        await async_model.generate(Foo("prompt"))
+
+    with pytest.raises(ValueError, match="All assets provided must be of type Image"):
+        await async_model.generate(["foo?", Image(image), Video("")])
+
+
+@pytest.mark.asyncio
+async def test_openai_async_wrong_output_type(async_model):
+    class Foo:
+        def __init__(self, foo):
+            self.foo = foo
+
+    with pytest.raises(TypeError, match="is not available"):
+        await async_model.generate("prompt", Foo(1))
+
+
+@pytest.mark.asyncio
+@pytest.mark.api_call
+async def test_openai_async_simple_call(async_model):
+    result = await async_model.generate("Respond with one word. Not more.")
+    assert isinstance(result, str)
+
+
+@pytest.mark.asyncio
+@pytest.mark.api_call
+async def test_openai_async_simple_call_multiple_samples(async_model):
+    result = await async_model.generate("Respond with one word. Not more.", n=2)
+    assert isinstance(result, list)
+    assert len(result) == 2
+    assert isinstance(result[0], str)
+    assert isinstance(result[1], str)
+
+
+@pytest.mark.asyncio
+@pytest.mark.api_call
+async def test_openai_async_direct_call(async_model_no_model_name):
+    result = await async_model_no_model_name(
+        "Respond with one word. Not more.",
+        model=MODEL_NAME,
+    )
+    assert isinstance(result, str)
+
+
+@pytest.mark.asyncio
+@pytest.mark.api_call
+async def test_openai_async_simple_vision(image, async_model):
+    result = await async_model.generate(["What does this logo represent?", Image(image)])
+    assert isinstance(result, str)
+
+
+@pytest.mark.asyncio
+@pytest.mark.api_call
+async def test_openai_async_chat(image, async_model):
+    result = await async_model.generate(Chat(messages=[
+        {"role": "system", "content": "You are a helpful assistant."},
+        {
+            "role": "user",
+            "content": ["What does this logo represent?", Image(image)]
+        },
+    ]), max_tokens=10)
+    assert isinstance(result, str)
+
+
+@pytest.mark.asyncio
+@pytest.mark.api_call
+async def test_openai_async_simple_pydantic(async_model):
+    class Foo(BaseModel):
+        bar: int
+
+    result = await async_model.generate("foo?", Foo)
+    assert isinstance(result, str)
+    assert "bar" in json.loads(result)
+
+
+@pytest.mark.asyncio
+@pytest.mark.api_call
+async def test_openai_async_simple_pydantic_refusal(async_model):
+    class Foo(BaseModel):
+        bar: Annotated[str, Field(int, pattern=r"^\d+$")]
+
+    with pytest.raises(TypeError, match="OpenAI does not support your schema"):
+        _ = await async_model.generate("foo?", Foo)
+
+
+@pytest.mark.asyncio
+@pytest.mark.api_call
+async def test_openai_async_simple_vision_pydantic(image, async_model):
+    class Logo(BaseModel):
+        name: int
+
+    result = await async_model.generate(["What does this logo represent?", Image(image)], Logo)
+    assert isinstance(result, str)
+    assert "name" in json.loads(result)
+
+
+@pytest.mark.asyncio
+@pytest.mark.api_call
+async def test_openai_async_simple_json_schema(async_model):
+    class Foo(BaseModel):
+        bar: int
+
+    schema = json.dumps(Foo.model_json_schema())
+
+    result = await async_model.generate("foo?", json_schema(schema))
+    assert isinstance(result, str)
+    assert "bar" in json.loads(result)
+
+
+@pytest.mark.asyncio
+@pytest.mark.api_call
+async def test_openai_async_streaming(async_model):
+    result = async_model.stream("Respond with a single word.")
+    assert isinstance(result, AsyncGenerator)
+    async for chunk in result:
+        assert isinstance(chunk, str)
+        break  # Just check the first chunk
+
+
+@pytest.mark.asyncio
+async def test_openai_async_batch(async_model):
+    with pytest.raises(NotImplementedError, match="does not support"):
+        await async_model.batch(
             ["Respond with one word.", "Respond with one word."],
         )
