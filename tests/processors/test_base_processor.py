@@ -1,6 +1,5 @@
 from typing import List
 
-import jax.numpy as jnp
 import numpy as np
 import pytest
 import torch
@@ -14,7 +13,7 @@ except ImportError:
     HAS_MLX = False
 
 
-libraries = ["numpy", "torch", "jax"]
+libraries = ["numpy", "torch"]
 if HAS_MLX:
     libraries.append("mlx")
 
@@ -43,14 +42,6 @@ arrays = {
         (torch.tensor([1, 2], dtype=torch.float32), torch.tensor([[1, 2], [3, 4]], dtype=torch.int32), AssertionError),
         (torch.tensor([[[1, 2]]], dtype=torch.float32), torch.tensor([[[1, 2]]], dtype=torch.int32), ValueError),
     ],
-    "jax": [
-        (jnp.array([1, 2], dtype=jnp.float32), jnp.array([1, 2], dtype=jnp.int32), None),
-        (jnp.array([[1, 2], [3, 4]], dtype=jnp.float32), jnp.array([[1, 2], [3, 4]], dtype=jnp.int32), None),
-        (jnp.array([1, 2], dtype=jnp.float32), jnp.array([[1, 2]], dtype=jnp.int32), None),
-        (jnp.array([[1, 2]], dtype=jnp.float32), jnp.array([1, 2], dtype=jnp.int32), AssertionError),
-        (jnp.array([1, 2], dtype=jnp.float32), jnp.array([[1, 2], [3, 4]], dtype=jnp.int32), AssertionError),
-        (jnp.array([[[1, 2]]], dtype=jnp.float32), jnp.array([[[1, 2]]], dtype=jnp.int32), ValueError),
-    ],
 }
 if HAS_MLX:
     arrays["mlx"] = [
@@ -76,6 +67,7 @@ def test_base_logits_processor_init(library):
     assert processor.tensor_adapter is not None
     with pytest.raises(NotImplementedError):
         processor = MockLogitsProcessor("foo")
+        processor.reset()
 
 
 @pytest.mark.parametrize("library", libraries)

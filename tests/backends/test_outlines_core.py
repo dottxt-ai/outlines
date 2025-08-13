@@ -1,8 +1,10 @@
 import pytest
 
 import llama_cpp
-from outlines_core import Vocabulary
+import numpy as np
+import torch
 import transformers
+from outlines_core import Vocabulary
 
 import outlines
 from outlines.backends.outlines_core import (
@@ -10,8 +12,8 @@ from outlines.backends.outlines_core import (
     OutlinesCoreLogitsProcessor
 )
 
-
 try:
+    import mlx.core as mx
     import mlx_lm
     HAS_MLX = True
 except ImportError:
@@ -71,6 +73,34 @@ def cfg():
 
 %ignore WS_INLINE
 """
+
+
+def test_outlines_core_processor_torch(llg_grammar_spec, llg_tokenizer):
+    processor = OutlinesCoreLogitsProcessor(llg_grammar_spec, llg_tokenizer, "torch")
+    logits = torch.randn(2, llg_tokenizer.vocab_size)
+    input_ids = torch.randint(0, llg_tokenizer.vocab_size, (2, 10))
+    output = processor(input_ids, logits)
+    assert output.shape == (2, llg_tokenizer.vocab_size)
+    processor(input_ids, logits)
+
+
+def test_outlines_core_processor_numpy(llg_grammar_spec, llg_tokenizer):
+    processor = OutlinesCoreLogitsProcessor(llg_grammar_spec, llg_tokenizer, "numpy")
+    logits = np.random.randn(2, llg_tokenizer.vocab_size)
+    input_ids = np.random.randint(0, llg_tokenizer.vocab_size, (2, 10))
+    output = processor(input_ids, logits)
+    assert output.shape == (2, llg_tokenizer.vocab_size)
+    processor(input_ids, logits)
+
+
+@pytest.mark.skipif(not HAS_MLX, reason="MLX tests require Apple Silicon")
+def test_outlines_core_processor_mlx(llg_grammar_spec, llg_tokenizer):
+    processor = OutlinesCoreLogitsProcessor(llg_grammar_spec, llg_tokenizer, "mlx")
+    logits = mx.random.normal((2, llg_tokenizer.vocab_size))
+    input_ids = mx.random.randint(0, llg_tokenizer.vocab_size, (2, 10))
+    output = processor(input_ids, logits)
+    assert output.shape == (2, llg_tokenizer.vocab_size)
+    processor(input_ids, logits)
 
 
 models = [

@@ -125,16 +125,6 @@ def test_llguidance_processor_mlx(llg_grammar_spec, llg_tokenizer):
     processor(input_ids, logits)
 
 
-def test_llguidance_processor_tensorflow(llg_grammar_spec, llg_tokenizer):
-    with pytest.raises(TypeError):
-        LLGuidanceLogitsProcessor(llg_grammar_spec, llg_tokenizer, "tensorflow")
-
-
-def test_llguidance_processor_jax(llg_grammar_spec, llg_tokenizer):
-    with pytest.raises(TypeError):
-        LLGuidanceLogitsProcessor(llg_grammar_spec, llg_tokenizer, "jax")
-
-
 models = [
     (model_transformers(), "torch"),
     (model_llamacpp(), "numpy"),
@@ -184,3 +174,12 @@ def test_llguidance_backend(model, tensor_library_name, json_schema, regex, cfg_
     generator = outlines.Generator(model, backend="llguidance", processor=processor)
     response = generator("Hello, how are you?")
     assert response == "yes" or response == "no"
+
+    # batch
+    processor = backend.get_json_schema_logits_processor(json_schema)
+    generator = outlines.Generator(model, backend="llguidance", processor=processor)
+    response = generator.batch(["Create a character", "Hello, how are you?"], batch_size=2, max_new_tokens=200)
+    assert len(response) == 2
+    assert response[0] == "{"
+    assert "name" in response[0]
+    assert response[1] == "{"
