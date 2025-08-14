@@ -37,9 +37,6 @@ class LLGuidanceLogitsProcessor(OutlinesLogitsProcessor):
             The name of the tensor library used by the model
 
         """
-        if tensor_library_name not in SUPPORTED_TENSOR_LIBRARIES:
-            raise TypeError(f"Unsupported tensor library: {tensor_library_name}")
-
         self.is_first_token = True
         self.grammar = grammar
         self.llg_tokenizer = llg_tokenizer

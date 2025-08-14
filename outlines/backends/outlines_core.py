@@ -70,7 +70,7 @@ class OutlinesCoreLogitsProcessor(OutlinesLogitsProcessor):
             self.allocate_token_bitmask = allocate_token_bitmask
             self.bias_logits = self._bias_logits_numpy
 
-        elif self.tensor_library_name == "mlx":
+        elif self.tensor_library_name == "mlx": # pragma: no cover
             from outlines_core.kernels.mlx import (
                 allocate_token_bitmask
             )
@@ -78,7 +78,7 @@ class OutlinesCoreLogitsProcessor(OutlinesLogitsProcessor):
             self.allocate_token_bitmask = allocate_token_bitmask
             self.bias_logits = self._bias_logits_mlx
 
-        else:
+        else: # pragma: no cover
             raise ValueError(
                 f"Unsupported tensor library: {self.tensor_library_name}"
             )
@@ -217,13 +217,13 @@ class OutlinesCoreBackend(BaseBackend):
             eos_token_id = tokenizer.eos_token_id
             eos_token = tokenizer.eos_token
             token_to_str = tokenizer.convert_token_to_string
-        elif isinstance(model, MLXLM):
+        elif isinstance(model, MLXLM): # pragma: no cover
             tokenizer = model.mlx_tokenizer # type: ignore
             vocabulary = tokenizer.get_vocab()
             eos_token_id = tokenizer.eos_token_id
             eos_token = tokenizer.eos_token
             token_to_str = lambda token: tokenizer.convert_tokens_to_string([token]) # type: ignore
-        else:
+        else: # pragma: no cover
             raise ValueError(f"Unsupported model type: {type(model)}")
 
         self.eos_token_id = eos_token_id
