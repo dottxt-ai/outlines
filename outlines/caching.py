@@ -61,7 +61,7 @@ def get_cache():
         cache_dir = outlines_cache_dir
     elif xdg_cache_home:  # pragma: no cover
         cache_dir = os.path.join(xdg_cache_home, ".cache", "outlines")
-    elif home_dir != "/":
+    elif home_dir != "/": # pragma: no cover
         cache_dir = os.path.join(home_dir, ".cache", "outlines")
     else:  # pragma: no cover
         # home_dir may be / inside a docker container without existing user
