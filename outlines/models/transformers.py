@@ -459,26 +459,22 @@ class TransformersMultiModalTypeAdapter(ModelTypeAdapter):
 
     @format_input.register(Chat)
     def format_chat_input(self, model_input: Chat) -> dict:
-        # we need to separate the images from the messages
-        # to apply the chat template to the messages without images
+        # we need to separate the assets from the messages
+        # to apply the chat template to the messages without assets
         messages = model_input.messages
-        images = []
-        messages_without_images = []
+        assets = []
         for message in messages:
             if isinstance(message["content"], list):
-                images.extend(message["content"][1:])
-                messages_without_images.append({
-                    "role": message["role"],
-                    "content": message["content"][0],
-                })
-            else:
-                messages_without_images.append(message)
+                for item in message["content"]:
+                    if item["type"] != "text":
+                        assets.append(item[item["type"]])
         formatted_prompt = self.tokenizer.apply_chat_template(
-            messages_without_images,
-            tokenize=False
+            messages, # full message for applying chat template
+            tokenize=False,
+            add_generation_prompt=True
         )
-        # use the formatted prompt and the images to format the input
-        return self.format_list_input([formatted_prompt, *images])
+        # use the formatted prompt and the assets to format the input
+        return self.format_list_input([formatted_prompt, *assets])
 
     @format_input.register(list)
     def format_list_input(self, model_input: list) -> dict:
