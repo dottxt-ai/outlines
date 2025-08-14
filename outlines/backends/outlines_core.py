@@ -179,7 +179,13 @@ class OutlinesCoreLogitsProcessor(OutlinesLogitsProcessor):
         else:
             for i in range(batch_size):
                 last_token_id = self.tensor_adapter.to_scalar(input_ids[i][-1]) # type: ignore
-                if not self._guides[i].is_finished():
+                # This circumvents issue #227 in outlines_core
+                # Ideally, we would be able to advance all the times as the final
+                # state would accept the eos token leading to itself
+                if (
+                    not self._guides[i].is_finished()
+                    or self._guides[i].accepts_tokens([last_token_id])
+                ):
                     self._guides[i].advance(
                         token_id=last_token_id,
                         return_tokens=False
