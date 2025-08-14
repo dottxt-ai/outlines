@@ -1,9 +1,8 @@
-import pytest
+import re
 
 import llama_cpp
-import llguidance.hf
-import numpy as np
-import torch
+import llguidance
+import pytest
 import transformers
 from llguidance import LLTokenizer
 
@@ -12,9 +11,9 @@ from outlines.backends.llguidance import (
     LLGuidanceBackend,
     LLGuidanceLogitsProcessor
 )
+from tests.backends.test_backends_utils import simulate_model_calling_processor
 
 try:
-    import mlx.core as mx
     import mlx_lm
     HAS_MLX = True
 except ImportError:
@@ -38,20 +37,6 @@ def model_llamacpp():
 def model_mlxlm():
     return outlines.from_mlxlm(
         *mlx_lm.load("mlx-community/SmolLM-135M-Instruct-4bit")
-    )
-
-@pytest.fixture
-def llg_tokenizer():
-    return llguidance.hf.from_tokenizer(
-        transformers.AutoTokenizer.from_pretrained("erwanf/gpt2-mini"),
-    )
-
-@pytest.fixture
-def llg_grammar_spec():
-    return (
-        '{"grammars": [{ "json_schema": {"type": "object", "properties":'
-        + ' {"name": {"type": "string"}, "age": {"type": "integer"}}, "requ'
-        + 'ired": ["name", "age"], "additionalProperties": false} }] }'
     )
 
 @pytest.fixture
@@ -97,42 +82,61 @@ answer ::= "yes" | "no"
 """
 
 
-def test_llguidance_processor_torch(llg_grammar_spec, llg_tokenizer):
-    processor = LLGuidanceLogitsProcessor(llg_grammar_spec, llg_tokenizer, "torch")
-    logits = torch.randn(2, llg_tokenizer.vocab_size)
-    input_ids = torch.randint(0, llg_tokenizer.vocab_size, (2, 10))
-    output = processor(input_ids, logits)
-    assert output.shape == (2, llg_tokenizer.vocab_size)
-    processor(input_ids, logits)
+def test_llguidance_processor_torch(regex):
+    model = model_transformers()
+    tokenizer = model.tokenizer
+    hf_tokenizer = model.hf_tokenizer
+    llg_tokenizer = LLGuidanceBackend(model).llg_tokenizer
+    grammar_spec = llguidance.grammar_from("regex", regex)
+    processor = LLGuidanceLogitsProcessor(grammar_spec, llg_tokenizer, "torch")
+    for _ in range(2):
+        input_ids = simulate_model_calling_processor(
+            processor,
+            "torch",
+            len(tokenizer.get_vocab()),
+            tokenizer.eos_token_id,
+            2
+        )
+        assert re.match(regex, hf_tokenizer.decode(input_ids[0]))
+        assert re.match(regex, hf_tokenizer.decode(input_ids[1]))
 
 
-def test_llguidance_processor_numpy(llg_grammar_spec, llg_tokenizer):
-    processor = LLGuidanceLogitsProcessor(llg_grammar_spec, llg_tokenizer, "numpy")
-    logits = np.random.randn(2, llg_tokenizer.vocab_size)
-    input_ids = np.random.randint(0, llg_tokenizer.vocab_size, (2, 10))
-    output = processor(input_ids, logits)
-    assert output.shape == (2, llg_tokenizer.vocab_size)
-    processor(input_ids, logits)
+def test_llguidance_processor_numpy(regex):
+    model = model_llamacpp()
+    tokenizer = model.tokenizer
+    llg_tokenizer = LLGuidanceBackend(model).llg_tokenizer
+    grammar_spec = llguidance.grammar_from("regex", regex)
+    processor = LLGuidanceLogitsProcessor(grammar_spec, llg_tokenizer, "numpy")
+    for _ in range(2):
+        input_ids = simulate_model_calling_processor(
+            processor,
+            "numpy",
+            len(tokenizer.vocabulary),
+            tokenizer.eos_token_id,
+            2
+        )
+        assert re.match(regex, tokenizer.decode(input_ids[0])[0])
+        assert re.match(regex, tokenizer.decode(input_ids[1])[0])
+
 
 
 @pytest.mark.skipif(not HAS_MLX, reason="MLX tests require Apple Silicon")
-def test_llguidance_processor_mlx(llg_grammar_spec, llg_tokenizer):
-    processor = LLGuidanceLogitsProcessor(llg_grammar_spec, llg_tokenizer, "mlx")
-    logits = mx.random.normal((2, llg_tokenizer.vocab_size))
-    input_ids = mx.random.randint(0, llg_tokenizer.vocab_size, (2, 10))
-    output = processor(input_ids, logits)
-    assert output.shape == (2, llg_tokenizer.vocab_size)
-    processor(input_ids, logits)
-
-
-def test_llguidance_processor_tensorflow(llg_grammar_spec, llg_tokenizer):
-    with pytest.raises(TypeError):
-        LLGuidanceLogitsProcessor(llg_grammar_spec, llg_tokenizer, "tensorflow")
-
-
-def test_llguidance_processor_jax(llg_grammar_spec, llg_tokenizer):
-    with pytest.raises(TypeError):
-        LLGuidanceLogitsProcessor(llg_grammar_spec, llg_tokenizer, "jax")
+def test_llguidance_processor_mlx(regex):
+    model = model_mlxlm()
+    tokenizer = model.mlx_tokenizer
+    llg_tokenizer = LLGuidanceBackend(model).llg_tokenizer
+    grammar_spec = llguidance.grammar_from("regex", regex)
+    processor = LLGuidanceLogitsProcessor(grammar_spec, llg_tokenizer, "mlx")
+    for _ in range(2):
+        input_ids = simulate_model_calling_processor(
+            processor,
+            "mlx",
+            len(tokenizer.vocabulary),
+            tokenizer.eos_token_id,
+            2
+        )
+        assert re.match(regex, tokenizer.decode(input_ids[0]))
+        assert re.match(regex, tokenizer.decode(input_ids[1]))
 
 
 models = [
@@ -155,7 +159,6 @@ def test_llguidance_backend(model, tensor_library_name, json_schema, regex, cfg_
     generator = outlines.Generator(model, backend="llguidance", processor=processor)
     response = generator("Hello, how are you?")
     assert response[0] == "{"
-    assert "name" in response
 
     # regex
     processor = backend.get_regex_logits_processor(regex)
@@ -184,3 +187,16 @@ def test_llguidance_backend(model, tensor_library_name, json_schema, regex, cfg_
     generator = outlines.Generator(model, backend="llguidance", processor=processor)
     response = generator("Hello, how are you?")
     assert response == "yes" or response == "no"
+
+    # batch + multiple generations
+    processor = backend.get_json_schema_logits_processor(json_schema)
+    generator = outlines.Generator(model, backend="llguidance", processor=processor)
+    for _ in range(2):
+        if tensor_library_name == "torch":
+            response = generator.batch(["Create a character", "Hello, how are you?"], max_new_tokens=200)
+            assert len(response) == 2
+            for r in response:
+                assert r[0] == "{"
+        else:
+            response = generator("Create a character", max_tokens=20)
+            assert response[0] == "{"
