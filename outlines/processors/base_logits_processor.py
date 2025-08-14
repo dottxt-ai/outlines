@@ -28,8 +28,8 @@ class OutlinesLogitsProcessor:
         ----------
         tensor_library_name
             The name of the library to use to manipulate tensors. Possible
-            values are "jax", "mlx", "numpy", "tensorflow" and "torch". You
-            must choose the library that your model is using.
+            values are "mlx", "numpy" and "torch". You must choose the library
+            that your model is using.
         """
         # Temporary fix as torch raises a warning that can cause can an error
         # with python 3.12.
@@ -52,7 +52,7 @@ class OutlinesLogitsProcessor:
         needs to be reset for a new generation.
 
         """
-        pass
+        pass # pragma: no cover
 
     @abstractmethod
     def process_logits(
