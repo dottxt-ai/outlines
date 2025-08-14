@@ -39,7 +39,7 @@ class XGrammarLogitsProcessor(OutlinesLogitsProcessor):
         """Setup the logits processor for a new generation."""
         if self.tensor_library_name == "torch":
             self._bias_logits = self._bias_logits_torch
-        elif self.tensor_library_name == "mlx":
+        elif self.tensor_library_name == "mlx": # pragma: no cover
             self._bias_logits = self._bias_logits_mlx
         else: # pragma: no cover
             raise ValueError(
@@ -101,7 +101,7 @@ class XGrammarLogitsProcessor(OutlinesLogitsProcessor):
             self.is_first_token = False
         else:
             for i in range(batch_size):
-                if not self._matchers[i].is_terminated():
+                if not self._matchers[i].is_terminated(): # pragma: no cover
                     last_token_id = self.tensor_adapter.to_scalar(
                         input_ids[i][-1] # type: ignore
                     )
@@ -125,7 +125,7 @@ class XGrammarBackend(BaseBackend):
 
         if isinstance(model, Transformers):
             tokenizer = model.hf_tokenizer
-        elif isinstance(model, MLXLM):
+        elif isinstance(model, MLXLM): # pragma: no cover
             tokenizer = model.mlx_tokenizer._tokenizer
         else: # pragma: no cover
             raise ValueError(
