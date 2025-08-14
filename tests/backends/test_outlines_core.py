@@ -1,15 +1,16 @@
-import pytest
+import re
 
 import llama_cpp
-from outlines_core import Vocabulary
+import pytest
 import transformers
+from outlines_core import Index, Vocabulary
 
 import outlines
 from outlines.backends.outlines_core import (
     OutlinesCoreBackend,
     OutlinesCoreLogitsProcessor
 )
-
+from tests.backends.test_backends_utils import simulate_model_calling_processor
 
 try:
     import mlx_lm
@@ -73,6 +74,62 @@ def cfg():
 """
 
 
+def test_outlines_core_processor_torch(regex):
+    model = model_transformers()
+    tokenizer = model.tokenizer
+    hf_tokenizer = model.hf_tokenizer
+    backend = OutlinesCoreBackend(model)
+    index = Index(regex, backend.vocabulary)
+    processor = OutlinesCoreLogitsProcessor(index, "torch")
+    for _ in range(2):
+        input_ids = simulate_model_calling_processor(
+            processor,
+            "torch",
+            len(tokenizer.get_vocab()),
+            tokenizer.eos_token_id,
+            2
+        )
+        assert re.match(regex, hf_tokenizer.decode(input_ids[0]))
+        assert re.match(regex, hf_tokenizer.decode(input_ids[1]))
+
+
+def test_outlines_core_processor_numpy(regex):
+    model = model_llamacpp()
+    tokenizer = model.tokenizer
+    backend = OutlinesCoreBackend(model)
+    index = Index(regex, backend.vocabulary)
+    processor = OutlinesCoreLogitsProcessor(index, "numpy")
+    for _ in range(2):
+        input_ids = simulate_model_calling_processor(
+            processor,
+            "numpy",
+            len(tokenizer.vocabulary),
+            tokenizer.eos_token_id,
+            2
+        )
+        assert re.match(regex, tokenizer.decode(input_ids[0])[0])
+        assert re.match(regex, tokenizer.decode(input_ids[1])[0])
+
+
+@pytest.mark.skipif(not HAS_MLX, reason="MLX tests require Apple Silicon")
+def test_outlines_core_processor_mlx():
+    model = model_mlxlm()
+    tokenizer = model.mlx_tokenizer
+    backend = OutlinesCoreBackend(model)
+    index = Index(r"[0-9]{3}", backend.vocabulary)
+    processor = OutlinesCoreLogitsProcessor(index, "mlx")
+    for _ in range(2):
+        input_ids = simulate_model_calling_processor(
+            processor,
+            "mlx",
+            len(tokenizer.vocabulary),
+            tokenizer.eos_token_id,
+            2
+        )
+        assert re.match(regex, tokenizer.decode(input_ids[0]))
+        assert re.match(regex, tokenizer.decode(input_ids[1]))
+
+
 models = [
     (model_transformers(), "torch"),
     (model_llamacpp(), "numpy"),
@@ -109,12 +166,17 @@ def test_outlines_core_backend(model, tensor_library_name, json_schema, regex, c
     ):
         backend.get_cfg_logits_processor(cfg)
 
-    # multiple generations
-    processor = backend.get_regex_logits_processor(regex)
+    # batch + multiple generations
+    processor = backend.get_json_schema_logits_processor(json_schema)
     generator = outlines.Generator(model, backend="outlines_core", processor=processor)
-    response = generator("Hello, how are you?")
-    assert len(response) == 3
-    assert int(response)
-    response = generator("Hello, how are you?")
-    assert len(response) == 3
-    assert int(response)
+    for _ in range(2):
+        if tensor_library_name == "torch":
+            response = generator.batch(["Create a character", "Hello, how are you?"], max_new_tokens=200)
+            assert len(response) == 2
+            for r in response:
+                assert r[0] == "{"
+                assert "name" in r
+        else:
+            response = generator("Create a character", max_tokens=20)
+            assert response[0] == "{"
+            assert "name" in response
