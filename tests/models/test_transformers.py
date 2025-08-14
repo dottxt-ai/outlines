@@ -40,25 +40,27 @@ def test_transformers_instantiate_simple():
 
 
 def test_transformers_instantiate_flax_model():
-    model = outlines.from_transformers(
-        transformers.FlaxAutoModelForCausalLM.from_pretrained(TEST_MODEL),
-        transformers.AutoTokenizer.from_pretrained(TEST_MODEL),
-    )
-    assert isinstance(model, Transformers)
-    assert isinstance(model.tokenizer, TransformerTokenizer)
-    assert isinstance(model.type_adapter, TransformersTypeAdapter)
-    assert model.tensor_library_name == "jax"
+    with pytest.warns(DeprecationWarning):
+        model = outlines.from_transformers(
+            transformers.FlaxAutoModelForCausalLM.from_pretrained(TEST_MODEL),
+            transformers.AutoTokenizer.from_pretrained(TEST_MODEL),
+        )
+        assert isinstance(model, Transformers)
+        assert isinstance(model.tokenizer, TransformerTokenizer)
+        assert isinstance(model.type_adapter, TransformersTypeAdapter)
+        assert model.tensor_library_name == "jax"
 
 
 def test_transformers_instantiate_tensorflow_model():
-    model = outlines.from_transformers(
-        transformers.TFAutoModelForCausalLM.from_pretrained(TEST_MODEL),
-        transformers.AutoTokenizer.from_pretrained(TEST_MODEL),
-    )
-    assert isinstance(model, Transformers)
-    assert isinstance(model.tokenizer, TransformerTokenizer)
-    assert isinstance(model.type_adapter, TransformersTypeAdapter)
-    assert model.tensor_library_name == "tensorflow"
+    with pytest.warns(DeprecationWarning):
+        model = outlines.from_transformers(
+            transformers.TFAutoModelForCausalLM.from_pretrained(TEST_MODEL),
+            transformers.AutoTokenizer.from_pretrained(TEST_MODEL),
+        )
+        assert isinstance(model, Transformers)
+        assert isinstance(model.tokenizer, TransformerTokenizer)
+        assert isinstance(model.type_adapter, TransformersTypeAdapter)
+        assert model.tensor_library_name == "tensorflow"
 
 
 def test_transformers_instantiate_mamba():
