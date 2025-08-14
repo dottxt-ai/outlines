@@ -1,18 +1,13 @@
 import pytest
 from pytest import mark
 
-import jax
-import jax.numpy as jnp
 import numpy as np
-import tensorflow as tf
 import torch
 
 from outlines.processors.tensor_adapters import (
     NumpyTensorAdapter,
     TorchTensorAdapter,
     MLXTensorAdapter,
-    JAXTensorAdapter,
-    TensorFlowTensorAdapter,
 )
 
 try:
@@ -25,26 +20,19 @@ except ImportError:
 
 
 adapters = {
-    "jax": JAXTensorAdapter(),
     "numpy": NumpyTensorAdapter(),
-    "tensorflow": TensorFlowTensorAdapter(),
     "torch": TorchTensorAdapter(),
 }
 if HAS_MLX:
     adapters["mlx"] = MLXTensorAdapter()
 
-frameworks = ["jax", "numpy", "tensorflow", "torch", "mlx"]
+frameworks = ["numpy", "torch", "mlx"]
 
 def create_tensor(framework, shape, dtype=None):
     if framework == "torch":
         return torch.randn(*shape)
     elif framework == "numpy":
         return np.random.randn(*shape)
-    elif framework == "jax":
-        key = jax.random.PRNGKey(0)
-        return jax.random.normal(key, shape=shape)
-    elif framework == "tensorflow":
-        return tf.random.normal(shape)
     elif framework == "mlx":
         if not HAS_MLX:
             pytest.skip("MLX not available")
@@ -55,10 +43,6 @@ def compare_tensors(framework, tensor1, tensor2):
         return torch.allclose(tensor1, tensor2)
     elif framework == "numpy":
         return np.array_equal(tensor1, tensor2)
-    elif framework == "jax":
-        return jax.numpy.array_equal(tensor1, tensor2)
-    elif framework == "tensorflow":
-        return tf.reduce_all(tf.equal(tensor1, tensor2))
     elif framework == "mlx":
         if not HAS_MLX:
             pytest.skip("MLX not available")
@@ -243,11 +227,6 @@ def test_tensor_adapter_apply_mask(framework):
         mask = torch.randn(2, 3) > 0
     elif framework == "numpy":
         mask = np.random.randn(2, 3) > 0
-    elif framework == "jax":
-        key = jax.random.PRNGKey(0)
-        mask = jax.random.normal(key, shape=(2, 3)) > 0
-    elif framework == "tensorflow":
-        mask = tf.random.normal((2, 3)) > 0
     elif framework == "mlx":
         if not HAS_MLX:
             pytest.skip("MLX not available")
