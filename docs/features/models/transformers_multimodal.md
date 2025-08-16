@@ -120,6 +120,58 @@ result = model.batch(
 print(result) # ['The image shows a cat', 'The image shows an astronaut']
 ```
 
+### Chat
+You can use chat inputs with the `TransformersMultiModal` model. To do so, call the model with a `Chat` instance. 
+
+For instance:
+
+```python
+import outlines
+from outlines.inputs import Chat, Image
+from transformers import AutoModelForImageTextToText, AutoProcessor
+from PIL import Image as PILImage
+from io import BytesIO
+from urllib.request import urlopen
+import torch
+
+model_kwargs = {
+        "torch_dtype": torch.bfloat16,
+        "attn_implementation": "flash_attention_2",
+        "device_map": "auto",
+    }
+
+def get_image_from_url(image_url):
+    img_byte_stream = BytesIO(urlopen(image_url).read())
+    image = PILImage.open(img_byte_stream).convert("RGB")
+    image.format = "PNG"
+    image.save("image.png")
+    return image
+    
+# Create the model
+model = outlines.from_transformers(
+    AutoModelForImageTextToText.from_pretrained("Qwen/Qwen2.5-VL-3B-Instruct", **model_kwargs),
+    AutoProcessor.from_pretrained("Qwen/Qwen2.5-VL-3B-Instruct", **model_kwargs)
+)
+
+IMAGE_URL = "https://upload.wikimedia.org/wikipedia/commons/2/25/Siam_lilacpoint.jpg"
+
+# Create the chat mutimodal input
+prompt = Chat([
+    {
+        "role": "user",
+        "content": [
+            {"type": "image", "image": Image(get_image_from_url(IMAGE_URL))},
+            {"type": "text", "text": "Describe the image in few words."}
+        ],
+    }
+])
+
+# Call the model to generate a response
+response = model(prompt, max_new_tokens=50)
+print(response) # 'A Siamese cat with blue eyes is sitting on a cat tree, looking alert and curious.'
+```
+
+
 !!! Warning
 
     Make sure your prompt contains the tags expected by your processor to correctly inject the assets in the prompt. For some vision multimodal models for instance, you need to add as many `<image>` tags in your prompt as there are image assets included in your model input.
