@@ -481,6 +481,9 @@ class TransformersMultiModalTypeAdapter(ModelTypeAdapter):
         prompt = model_input[0]
         assets = model_input[1:]
 
+        if not assets:  # handle empty assets case
+            return {"text": prompt}
+        
         asset_types = set(type(asset) for asset in assets)
         if len(asset_types) > 1:
             raise ValueError(
