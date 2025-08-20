@@ -9,24 +9,69 @@ from jsonschema.exceptions import SchemaError
 from pydantic import BaseModel, TypeAdapter
 from typing_extensions import _TypedDictMeta  # type: ignore
 
-from . import airports, countries, locale
 from outlines.types.dsl import (
-    Regex,
     CFG,
     Choice,
     JsonSchema,
-    regex,
-    cfg,
-    json_schema,
-    optional,
-    either,
-    exactly,
+    Regex,
     at_least,
     at_most,
     between,
-    zero_or_more,
+    cfg,
+    either,
+    exactly,
+    json_schema,
     one_or_more,
+    optional,
+    regex,
+    zero_or_more,
 )
+
+from . import airports, countries, locale
+
+__all__ = [
+    # Submodules
+    "airports",
+    "countries",
+    "locale",
+    # DSL functions and classes
+    "Regex",
+    "CFG",
+    "Choice",
+    "JsonSchema",
+    "regex",
+    "cfg",
+    "json_schema",
+    "optional",
+    "either",
+    "exactly",
+    "at_least",
+    "at_most",
+    "between",
+    "zero_or_more",
+    "one_or_more",
+    # Python types
+    "string",
+    "integer",
+    "boolean",
+    "number",
+    "date",
+    "time",
+    "datetime",
+    # Basic regex types
+    "digit",
+    "char",
+    "newline",
+    "whitespace",
+    "hex_str",
+    "uuid4",
+    "ipv4",
+    # Document-specific types
+    "sentence",
+    "paragraph",
+    "email",
+    "isbn",
+]
 
 
 # Python types
