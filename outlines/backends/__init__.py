@@ -9,6 +9,20 @@ from outlines.backends.outlines_core import OutlinesCoreBackend
 from outlines.backends.xgrammar import XGrammarBackend
 from outlines.models import SteerableModel
 
+__all__ = [
+    "BaseBackend",
+    "LogitsProcessorType",
+    "LLGuidanceBackend",
+    "OutlinesCoreBackend",
+    "XGrammarBackend",
+    "SteerableModel",
+    "CFG_DEFAULT_BACKEND",
+    "JSON_SCHEMA_DEFAULT_BACKEND",
+    "REGEX_DEFAULT_BACKEND",
+    "get_json_schema_logits_processor",
+    "get_regex_logits_processor",
+    "get_cfg_logits_processor",
+]
 
 CFG_DEFAULT_BACKEND = "llguidance"
 JSON_SCHEMA_DEFAULT_BACKEND = "outlines_core"
