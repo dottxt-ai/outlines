@@ -11,7 +11,6 @@ from pathlib import Path
 
 import mkdocs_gen_files
 
-
 CODEBASE_DIR_NAME = "outlines"
 OUTPUT_DIR_NAME = "api_reference"
 EXCLUDED_FILES = ["_version"]
@@ -45,7 +44,11 @@ for path in sorted(src.rglob("*.py")):
 
     with mkdocs_gen_files.open(full_doc_path, "w") as fd:
         ident = ".".join(parts)
-        fd.write(f"::: {CODEBASE_DIR_NAME}.{ident}")
+        if len(parts) == 1 and parts[0] == CODEBASE_DIR_NAME:
+            # For root module, just use the package name
+            fd.write(f"::: {CODEBASE_DIR_NAME}")
+        else:
+            fd.write(f"::: {CODEBASE_DIR_NAME}.{ident}")
 
     mkdocs_gen_files.set_edit_path(full_doc_path, path.relative_to(root))
 
