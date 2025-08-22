@@ -43,9 +43,8 @@ def test_transformers_multimodal_type_adapter_format_input(adapter, image):
     with pytest.raises(TypeError):
         adapter.format_input("hello")
 
-    with pytest.raises(ValueError):
-        with pytest.deprecated_call():
-            adapter.format_input({"foo": "bar"})
+    with pytest.raises(TypeError):
+        adapter.format_input({"foo": "bar"})
 
     with pytest.raises(ValueError, match="All assets must be of the same type"):
         adapter.format_input(["foo", Image(image), Video("")])
