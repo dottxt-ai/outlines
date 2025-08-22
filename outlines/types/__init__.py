@@ -1,14 +1,5 @@
 """Output types for structured generation and regex DSL."""
 
-from dataclasses import dataclass, is_dataclass
-from enum import Enum, EnumMeta
-from typing import Union
-
-from jsonschema import Draft202012Validator as Validator
-from jsonschema.exceptions import SchemaError
-from pydantic import BaseModel, TypeAdapter
-from typing_extensions import _TypedDictMeta  # type: ignore
-
 from outlines.types.dsl import (
     CFG,
     Choice,
