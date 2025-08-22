@@ -430,33 +430,6 @@ class TransformersMultiModalTypeAdapter(ModelTypeAdapter):
             + "model or a `Chat` instance."
         )
 
-    @format_input.register(dict)
-    def format_dict_input(self, model_input: dict) -> dict:
-        warnings.warn("""
-            Providing the input as a dict is deprecated. Support for this will
-            be removed in the v1.2.0 release of Outlines. Use a list containing
-            a text prompt and assets (`Image`, `Audio` or `Video` instances)
-            instead.
-            For instance:
-            ```python
-            from outlines import Image
-            model = from_transformers(mymodel, myprocessor)
-            response = model([
-                "A beautiful image of a cat",
-                Image(my_image),
-            ])
-            ```
-            """,
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        if "text" not in model_input:
-            raise ValueError(
-                "The input must contain the 'text' key along with the other "
-                + "keys required by your processor."
-            )
-        return model_input
-
     @format_input.register(Chat)
     def format_chat_input(self, model_input: Chat) -> dict:
         # we need to separate the assets from the messages
