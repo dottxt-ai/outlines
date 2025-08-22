@@ -3,6 +3,9 @@
 from abc import ABC, abstractmethod
 from typing import Any, AsyncIterator, Iterator, List, Optional
 
+from outlines.tools import ToolDef, ToolsInput
+from outlines.outputs import Output
+
 
 class ModelTypeAdapter(ABC):
     """Base class for all model type adapters.
@@ -59,6 +62,13 @@ class ModelTypeAdapter(ABC):
         """
         ...
 
+    @abstractmethod
+    def format_tools(self, tools: Optional[List[ToolDef]] = None) -> List[ToolDef]:
+        """Format the tools to the expected format of the model.
+
+        """
+        ...
+
 class Model(ABC):
     """Base class for all synchronous models.
 
@@ -82,8 +92,10 @@ class Model(ABC):
         model_input: Any,
         output_type: Optional[Any] = None,
         backend: Optional[str] = None,
+        *,
+        tools: Optional[ToolsInput] = None,
         **inference_kwargs: Any
-    ) -> Any:
+    ) -> Output:
         """Call the model.
 
         Users can call the model directly, in which case we will create a
@@ -119,15 +131,17 @@ class Model(ABC):
         """
         from outlines.generator import Generator
 
-        return Generator(self, output_type, backend)(model_input, **inference_kwargs)
+        return Generator(self, output_type, backend, tools=tools)(model_input, **inference_kwargs)
 
     def batch(
         self,
         model_input: List[Any],
         output_type: Optional[Any] = None,
         backend: Optional[str] = None,
+        *,
+        tools: Optional[ToolsInput] = None,
         **inference_kwargs: Any
-    ) -> List[Any]:
+    ) -> List[Output]:
         """Make a batch call to the model (several inputs at once).
 
         Users can use the `batch` method from the model directly, in which
@@ -164,7 +178,7 @@ class Model(ABC):
         """
         from outlines import Generator
 
-        generator = Generator(self, output_type, backend)
+        generator = Generator(self, output_type, backend, tools=tools)
         return generator.batch(model_input, **inference_kwargs) # type: ignore
 
     def stream(
@@ -172,6 +186,8 @@ class Model(ABC):
         model_input: Any,
         output_type: Optional[Any] = None,
         backend: Optional[str] = None,
+        *,
+        tools: Optional[ToolsInput] = None,
         **inference_kwargs: Any
     ) -> Iterator[Any]:
         """Stream a response from the model.
@@ -212,7 +228,7 @@ class Model(ABC):
         """
         from outlines import Generator
 
-        generator = Generator(self, output_type, backend)
+        generator = Generator(self, output_type, backend, tools=tools)
         return generator.stream(model_input, **inference_kwargs) # type: ignore
 
     @abstractmethod
@@ -220,8 +236,9 @@ class Model(ABC):
         self,
         model_input: Any,
         output_type: Optional[Any] = None,
+        tools: Optional[List[ToolDef]] = None,
         **inference_kwargs: Any
-    ) -> Any:
+    ) -> Output:
         """Generate a response from the model.
 
         The output_type argument contains a logits processor for steerable
@@ -250,8 +267,9 @@ class Model(ABC):
         self,
         model_input: List[Any],
         output_type: Optional[Any] = None,
+        tools: Optional[List[ToolDef]] = None,
         **inference_kwargs: Any
-    ) -> List[Any]:
+    ) -> List[Output]:
         """Generate a batch of responses from the model.
 
         The output_type argument contains a logits processor for steerable
@@ -279,8 +297,9 @@ class Model(ABC):
         self,
         model_input: Any,
         output_type: Optional[Any] = None,
+        tools: Optional[List[ToolDef]] = None,
         **inference_kwargs: Any
-    ) -> Iterator[Any]:
+    ) -> Iterator[Output]:
         """Generate a stream of responses from the model.
 
         The output_type argument contains a logits processor for steerable
@@ -327,8 +346,10 @@ class AsyncModel(ABC):
         model_input: Any,
         output_type: Optional[Any] = None,
         backend: Optional[str] = None,
+        *,
+        tools: Optional[ToolsInput] = None,
         **inference_kwargs: Any
-    ) -> Any:
+    ) -> Output:
         """Call the model.
 
         Users can call the model directly, in which case we will create a
@@ -364,7 +385,7 @@ class AsyncModel(ABC):
         """
         from outlines import Generator
 
-        generator = Generator(self, output_type, backend)
+        generator = Generator(self, output_type, backend, tools=tools)
         return await generator(model_input, **inference_kwargs)
 
     async def batch(
@@ -372,8 +393,10 @@ class AsyncModel(ABC):
         model_input: List[Any],
         output_type: Optional[Any] = None,
         backend: Optional[str] = None,
+        *,
+        tools: Optional[ToolsInput] = None,
         **inference_kwargs: Any
-    ) -> List[Any]:
+    ) -> List[Output]:
         """Make a batch call to the model (several inputs at once).
 
         Users can use the `batch` method from the model directly, in which
@@ -410,7 +433,7 @@ class AsyncModel(ABC):
         """
         from outlines import Generator
 
-        generator = Generator(self, output_type, backend)
+        generator = Generator(self, output_type, backend, tools=tools)
         return await generator.batch(model_input, **inference_kwargs) # type: ignore
 
     async def stream(
@@ -418,6 +441,8 @@ class AsyncModel(ABC):
         model_input: Any,
         output_type: Optional[Any] = None,
         backend: Optional[str] = None,
+        *,
+        tools: Optional[ToolsInput] = None,
         **inference_kwargs: Any
     ) -> AsyncIterator[Any]:
         """Stream a response from the model.
@@ -458,7 +483,7 @@ class AsyncModel(ABC):
         """
         from outlines import Generator
 
-        generator = Generator(self, output_type, backend)
+        generator = Generator(self, output_type, backend, tools=tools)
 
         async for chunk in generator.stream(model_input, **inference_kwargs):  # type: ignore
             yield chunk
@@ -468,8 +493,9 @@ class AsyncModel(ABC):
         self,
         model_input: Any,
         output_type: Optional[Any] = None,
+        tools: Optional[List[ToolDef]] = None,
         **inference_kwargs: Any
-    ) -> Any:
+    ) -> Output:
         """Generate a response from the model.
 
         The output_type argument contains a logits processor for steerable
@@ -498,8 +524,9 @@ class AsyncModel(ABC):
         self,
         model_input: List[Any],
         output_type: Optional[Any] = None,
+        tools: Optional[List[ToolDef]] = None,
         **inference_kwargs: Any
-    ) -> List[Any]:
+    ) -> List[Output]:
         """Generate a batch of responses from the model.
 
         The output_type argument contains a logits processor for steerable
@@ -528,6 +555,7 @@ class AsyncModel(ABC):
         self,
         model_input: Any,
         output_type: Optional[Any] = None,
+        tools: Optional[List[ToolDef]] = None,
         **inference_kwargs: Any
     ) -> AsyncIterator[Any]:
         """Generate a stream of responses from the model.
