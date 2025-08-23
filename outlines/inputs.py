@@ -83,7 +83,7 @@ class Chat:
     supports either:
     - a text string, or
     - a list containing text and assets (e.g., ["Describe...", Image(...)]), or
-    - a list of dict items with explicit types (e.g.,
+    - only for HuggingFace transformers models, a list of dict items with explicit types (e.g.,
       [{"type": "text", "text": "Describe..."}, {"type": "image", "image": Image(...)}])
 
     Examples
