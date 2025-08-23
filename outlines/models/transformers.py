@@ -432,10 +432,6 @@ class TransformersMultiModalTypeAdapter(ModelTypeAdapter):
 
     @format_input.register(Chat)
     def format_chat_input(self, model_input: Chat) -> dict:
-        SUPPORTED_ASSETS = {
-            "type": ["image", "video", "audio"],
-            "class": (Image, Video, Audio)
-        }
         messages = model_input.messages
         assets = []
 
@@ -445,18 +441,18 @@ class TransformersMultiModalTypeAdapter(ModelTypeAdapter):
                 for item in message["content"]:
                     if item["type"] == "text":
                         continue
-                    elif item["type"] in SUPPORTED_ASSETS['type']:
+                    elif item["type"] in ["image", "video", "audio"]:
                         asset_key = item["type"]
-                        if isinstance(item[asset_key], SUPPORTED_ASSETS['class']):
+                        if isinstance(item[asset_key], (Image, Video, Audio)):
                             assets.append(item[asset_key])
                         else:
                             raise ValueError(
-                                f"Assets must be of type {SUPPORTED_ASSETS['class']}. "
+                                "Assets must be of type `Image`, `Video` or `Audio`. "
                                 + f"Unsupported asset type: {asset_key}"
                             )
                     else:
                         raise ValueError(
-                            f"Content must be 'text', {SUPPORTED_ASSETS['type']}. "
+                            "Content must be 'text', 'image', 'video' or 'audio'. "
                             + f"Unsupported content type: {item['type']}")
 
         formatted_prompt = self.tokenizer.apply_chat_template(
@@ -474,7 +470,7 @@ class TransformersMultiModalTypeAdapter(ModelTypeAdapter):
 
         if not assets:  # handle empty assets case
             return {"text": prompt}
-        
+
         asset_types = set(type(asset) for asset in assets)
         if len(asset_types) > 1:
             raise ValueError(
