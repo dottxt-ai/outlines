@@ -21,6 +21,8 @@ from outlines.backends import (
     get_regex_logits_processor,
 )
 from outlines.backends.base import LogitsProcessorType
+from outlines.outputs import Output
+from outlines.tools import get_formatted_tools, ToolsInput
 from outlines.types import CFG, JsonSchema
 from outlines.types.dsl import python_types_to_terms, to_regex
 
@@ -35,7 +37,13 @@ class BlackBoxGenerator:
     """
     output_type: Optional[Any]
 
-    def __init__(self, model: BlackBoxModel, output_type: Optional[Any]):
+    def __init__(
+        self,
+        model: BlackBoxModel,
+        output_type: Optional[Any],
+        *,
+        tools: Optional[ToolsInput] = None,
+    ):
         """
         Parameters
         ----------
@@ -47,8 +55,9 @@ class BlackBoxGenerator:
         """
         self.model = model
         self.output_type = output_type
+        self.tools = get_formatted_tools(tools)
 
-    def __call__(self, prompt: Any, **inference_kwargs) -> Any:
+    def __call__(self, prompt: Any, **inference_kwargs) -> Output:
         """Generate a response from the model.
 
         Parameters
@@ -65,10 +74,10 @@ class BlackBoxGenerator:
 
         """
         return self.model.generate(
-            prompt, self.output_type, **inference_kwargs
+            prompt, self.output_type, tools=self.tools, **inference_kwargs
         )
 
-    def batch(self, prompts: List[Any], **inference_kwargs) -> List[Any]:
+    def batch(self, prompts: List[Any], **inference_kwargs) -> List[Output]:
         """Generate a batch of responses from the model.
 
         Parameters
@@ -85,7 +94,7 @@ class BlackBoxGenerator:
 
         """
         return self.model.generate_batch(
-            prompts, self.output_type, **inference_kwargs
+            prompts, self.output_type, tools=self.tools, **inference_kwargs
         )
 
     def stream(self, prompt: Any, **inference_kwargs) -> Iterator[Any]:
@@ -105,7 +114,7 @@ class BlackBoxGenerator:
 
         """
         return self.model.generate_stream(
-            prompt, self.output_type, **inference_kwargs
+            prompt, self.output_type, tools=self.tools, **inference_kwargs
         )
 
 
@@ -119,7 +128,13 @@ class AsyncBlackBoxGenerator:
     """
     output_type: Optional[Any]
 
-    def __init__(self, model: AsyncBlackBoxModel, output_type: Optional[Any]):
+    def __init__(
+        self,
+        model: AsyncBlackBoxModel,
+        output_type: Optional[Any],
+        *,
+        tools: Optional[ToolsInput] = None,
+    ):
         """
         Parameters
         ----------
@@ -131,8 +146,9 @@ class AsyncBlackBoxGenerator:
         """
         self.model = model
         self.output_type = output_type
+        self.tools = get_formatted_tools(tools)
 
-    async def __call__(self, prompt: Any, **inference_kwargs) -> Any:
+    async def __call__(self, prompt: Any, **inference_kwargs) -> Output:
         """Generate a response from the model.
 
         Parameters
@@ -149,10 +165,10 @@ class AsyncBlackBoxGenerator:
 
         """
         return await self.model.generate(
-            prompt, self.output_type, **inference_kwargs
+            prompt, self.output_type, tools=self.tools, **inference_kwargs
         )
 
-    async def batch(self, prompts: List[Any], **inference_kwargs) -> List[Any]:
+    async def batch(self, prompts: List[Any], **inference_kwargs) -> List[Output]:
         """Generate a batch of responses from the model.
 
         Parameters
@@ -169,7 +185,7 @@ class AsyncBlackBoxGenerator:
 
         """
         return await self.model.generate_batch(
-            prompts, self.output_type, **inference_kwargs
+            prompts, self.output_type, tools=self.tools, **inference_kwargs
         )
 
     async def stream(self, prompt: Any, **inference_kwargs) -> AsyncIterator[Any]:
@@ -189,7 +205,7 @@ class AsyncBlackBoxGenerator:
 
         """
         async for chunk in self.model.generate_stream(  # pragma: no cover
-            prompt, self.output_type, **inference_kwargs
+            prompt, self.output_type, tools=self.tools, **inference_kwargs
         ):
             yield chunk
 
@@ -218,6 +234,8 @@ class SteerableGenerator:
         model: SteerableModel,
         output_type: Optional[Any],
         backend_name: Optional[str] = None,
+        *,
+        tools: Optional[ToolsInput] = None,
     ):
         """
         Parameters
@@ -231,6 +249,7 @@ class SteerableGenerator:
 
         """
         self.model = model
+        self.tools = get_formatted_tools(tools)
         if output_type is None:
             self.logits_processor = None
         else:
@@ -258,7 +277,11 @@ class SteerableGenerator:
 
     @classmethod
     def from_processor(
-        cls, model: SteerableModel, processor: LogitsProcessorType
+        cls,
+        model: SteerableModel,
+        processor: LogitsProcessorType,
+        *,
+        tools: Optional[ToolsInput] = None,
     ):
         """Create a generator from a logits processor.
 
@@ -270,13 +293,12 @@ class SteerableGenerator:
             An instance of a logits processor.
 
         """
-        instance = cls.__new__(cls)
-        instance.model = model
+        instance = cls(model, None, tools=tools)
         instance.logits_processor = processor
 
         return instance
 
-    def __call__(self, prompt: Any, **inference_kwargs) -> Any:
+    def __call__(self, prompt: Any, **inference_kwargs) -> Output:
         """Generate a response from the model.
 
         Parameters
@@ -295,10 +317,10 @@ class SteerableGenerator:
         if self.logits_processor is not None:
             self.logits_processor.reset()
         return self.model.generate(
-            prompt, self.logits_processor, **inference_kwargs
+            prompt, self.logits_processor, tools=self.tools, **inference_kwargs
         )
 
-    def batch(self, prompts: List[Any], **inference_kwargs) -> List[Any]:
+    def batch(self, prompts: List[Any], **inference_kwargs) -> List[Output]:
         """Generate a batch of responses from the model.
 
         Parameters
@@ -317,7 +339,7 @@ class SteerableGenerator:
         if self.logits_processor is not None:
             self.logits_processor.reset()
         return self.model.generate_batch(
-            prompts, self.logits_processor, **inference_kwargs
+            prompts, self.logits_processor, tools=self.tools, **inference_kwargs
         )
 
     def stream(self, prompt: Any, **inference_kwargs) -> Iterator[Any]:
@@ -339,7 +361,7 @@ class SteerableGenerator:
         if self.logits_processor is not None:
             self.logits_processor.reset()
         return self.model.generate_stream(
-            prompt, self.logits_processor, **inference_kwargs
+            prompt, self.logits_processor, tools=self.tools, **inference_kwargs
         )
 
 
@@ -348,6 +370,7 @@ def Generator(
     output_type: Optional[Any] = None,
     backend: Optional[str] = None,
     *,
+    tools: Optional[ToolsInput] = None,
     processor: Optional[LogitsProcessorType] = None,
 ) -> Union[SteerableGenerator, BlackBoxGenerator, AsyncBlackBoxGenerator]:
     """Create a generator for the given model and output parameters.
@@ -387,18 +410,18 @@ def Generator(
 
     if isinstance(model, SteerableModel): # type: ignore
         if processor is not None:
-            return SteerableGenerator.from_processor(model, processor) # type: ignore
+            return SteerableGenerator.from_processor(model, processor, tools=tools) # type: ignore
         else:
-            return SteerableGenerator(model, output_type, backend) # type: ignore
+            return SteerableGenerator(model, output_type, backend, tools=tools) # type: ignore
     else:
         if processor is not None:
             raise NotImplementedError(
                 "This model does not support logits processors"
             )
         if isinstance(model, AsyncBlackBoxModel): # type: ignore
-            return AsyncBlackBoxGenerator(model, output_type) # type: ignore
+            return AsyncBlackBoxGenerator(model, output_type, tools=tools) # type: ignore
         elif isinstance(model, BlackBoxModel): # type: ignore
-            return BlackBoxGenerator(model, output_type) # type: ignore
+            return BlackBoxGenerator(model, output_type, tools=tools) # type: ignore
         else:
             raise ValueError(
                 "The model argument must be an instance of "

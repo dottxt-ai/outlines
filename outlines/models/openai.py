@@ -6,6 +6,7 @@ from typing import (
     Any,
     AsyncIterator,
     Iterator,
+    List,
     Optional,
     Union,
 )
@@ -16,6 +17,8 @@ from pydantic import BaseModel, TypeAdapter
 from outlines.inputs import Chat, Image
 from outlines.models.base import AsyncModel, Model, ModelTypeAdapter
 from outlines.models.utils import set_additional_properties_false_json_schema
+from outlines.outputs import Output
+from outlines.tools import ToolDef, ToolCall
 from outlines.types import JsonSchema, Regex, CFG
 from outlines.types.utils import (
     is_dataclass,
@@ -224,6 +227,29 @@ class OpenAITypeAdapter(ModelTypeAdapter):
         """
         return {"response_format": {"type": "json_object"}}
 
+    def format_tools(self, tools: Optional[List[ToolDef]] = None) -> list:
+        """Format the tools for the OpenAI client.
+
+        """
+        if not tools:
+            return []
+
+        formatted_tools = []
+        for tool in tools:
+            formatted_tools.append({
+                "type": "function",
+                "function": {
+                    "name": tool["name"],
+                    "description": tool["description"],
+                    "parameters": {
+                        "type": "object",
+                        "properties": {key: {"type": value} for key, value in tool["parameters"].items()},
+                        "required": tool["required"],
+                    },
+                },
+            })
+        return formatted_tools
+
 
 class OpenAI(Model):
     """Thin wrapper around the `openai.OpenAI` client.
@@ -255,6 +281,7 @@ class OpenAI(Model):
         self,
         model_input: Union[Chat, list, str],
         output_type: Optional[Union[type[BaseModel], str]] = None,
+        tools: Optional[List[ToolDef]] = None,
         **inference_kwargs: Any,
     ) -> Union[str, list[str]]:
         """Generate text using OpenAI.
@@ -280,9 +307,12 @@ class OpenAI(Model):
 
         messages = self.type_adapter.format_input(model_input)
         response_format = self.type_adapter.format_output_type(output_type)
+        tools = self.type_adapter.format_tools(tools)
 
         if "model" not in inference_kwargs and self.model_name is not None:
             inference_kwargs["model"] = self.model_name
+        if tools:
+            inference_kwargs["tools"] = tools
 
         try:
             result = self.client.chat.completions.create(
@@ -300,21 +330,39 @@ class OpenAI(Model):
                 raise e
 
         messages = [choice.message for choice in result.choices]
+
+        outputs = []
         for message in messages:
             if message.refusal is not None:
                 raise ValueError(
                     f"OpenAI refused to answer the request: {message.refusal}"
                 )
+            if message.tool_calls:
+                outputs.append(Output(
+                    content=message.content,
+                    type="tool_call",
+                    tool_calls=[
+                        ToolCall(
+                            name=tool.function.name,
+                            args=tool.function.arguments,
+                            tool_call_id=tool.id
+                        )
+                        for tool in message.tool_calls
+                    ],
+                ))
+            else:
+                outputs.append(Output(content=message.content, type="assistant"))
 
-        if len(messages) == 1:
-            return messages[0].content
+        if len(outputs) == 1:
+            return outputs[0]
         else:
-            return [message.content for message in messages]
+            return outputs
 
     def generate_batch(
         self,
         model_input,
         output_type = None,
+        tools: Optional[List[ToolDef]] = None,
         **inference_kwargs,
     ):
         raise NotImplementedError(
@@ -325,6 +373,7 @@ class OpenAI(Model):
         self,
         model_input: Union[Chat, list, str],
         output_type: Optional[Union[type[BaseModel], str]] = None,
+        tools: Optional[List[ToolDef]] = None,
         **inference_kwargs,
     ) -> Iterator[str]:
         """Stream text using OpenAI.
@@ -405,6 +454,7 @@ class AsyncOpenAI(AsyncModel):
         self,
         model_input: Union[Chat, list, str],
         output_type: Optional[Union[type[BaseModel], str]] = None,
+        tools: Optional[List[ToolDef]] = None,
         **inference_kwargs: Any,
     ) -> Union[str, list[str]]:
         """Generate text using OpenAI.
@@ -465,6 +515,7 @@ class AsyncOpenAI(AsyncModel):
         self,
         model_input,
         output_type = None,
+        tools: Optional[List[ToolDef]] = None,
         **inference_kwargs,
     ):
         raise NotImplementedError(
@@ -475,6 +526,7 @@ class AsyncOpenAI(AsyncModel):
         self,
         model_input: Union[Chat, list, str],
         output_type: Optional[Union[type[BaseModel], str]] = None,
+        tools: Optional[List[ToolDef]] = None,
         **inference_kwargs,
     ) -> AsyncIterator[str]:
         """Stream text using OpenAI.
