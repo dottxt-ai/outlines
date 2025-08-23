@@ -80,8 +80,11 @@ class Chat:
 
     Each message contained in the messages list must be a dict with 'role' and
     'content' keys. The role can be 'user', 'assistant', or 'system'. The content
-    can be a string or a list containing a str and assets (images, videos,
-    audios, etc.) in the case of multimodal models.
+    supports either:
+    - a text string, or
+    - a list containing text and assets (e.g., ["Describe...", Image(...)]), or
+    - a list of dict items with explicit types (e.g.,
+      [{"type": "text", "text": "Describe..."}, {"type": "image", "image": Image(...)}])
 
     Examples
     --------
@@ -95,7 +98,7 @@ class Chat:
     chat_prompt.add_user_message(["Describe the image below", Image(image)])
 
     # Add as an assistant message the response from the model.
-    chat_prompt.add_assistant_message("The is a black cat sitting on a couch.")
+    chat_prompt.add_assistant_message("There is a black cat sitting on a couch.")
     ```
 
     Parameters
