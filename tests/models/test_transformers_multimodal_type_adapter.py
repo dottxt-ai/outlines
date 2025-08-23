@@ -63,7 +63,7 @@ def test_transformers_multimodal_type_adapter_format_input(adapter, image):
 
     chat_prompt = Chat(messages=[
         {"role": "system", "content": "foo"},
-        {"role": "user", "content": ["bar", image_asset]},
+        {"role": "user", "content": [{"type": "text", "text": "bar"}, {"type": "image", "image": image_asset}]},
     ])
     result = adapter.format_input(chat_prompt)
     assert isinstance(result, dict)
