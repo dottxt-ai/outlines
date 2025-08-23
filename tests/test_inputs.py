@@ -141,6 +141,13 @@ def test_chat_add_system_message(image_input):
     assert chat.messages[0]["role"] == "system"
     assert chat.messages[0]["content"] == ["prompt", image_input]
 
+    # Add a list of dict items with explicit types
+    chat = Chat(messages=[])
+    chat.add_system_message([{"type": "text", "text": "prompt"}, {"type": "image", "image": image_input}])
+    assert len(chat.messages) == 1
+    assert chat.messages[0]["role"] == "system"
+    assert chat.messages[0]["content"] == [{"type": "text", "text": "prompt"}, {"type": "image", "image": image_input}]
+
 
 def test_add_user_message_string(image_input):
     # Add a string
@@ -157,6 +164,13 @@ def test_add_user_message_string(image_input):
     assert chat.messages[0]["role"] == "user"
     assert chat.messages[0]["content"] == ["prompt", image_input]
 
+    # Add a list of dict items with explicit types
+    chat = Chat(messages=[])
+    chat.add_user_message([{"type": "text", "text": "prompt"}, {"type": "image", "image": image_input}])
+    assert len(chat.messages) == 1
+    assert chat.messages[0]["role"] == "user"
+    assert chat.messages[0]["content"] == [{"type": "text", "text": "prompt"}, {"type": "image", "image": image_input}]
+
 
 def test_add_assistant_message_string(image_input):
     # Add a string
@@ -172,3 +186,10 @@ def test_add_assistant_message_string(image_input):
     assert len(chat.messages) == 1
     assert chat.messages[0]["role"] == "assistant"
     assert chat.messages[0]["content"] == ["prompt", image_input]
+
+    # Add a list of dict items with explicit types
+    chat = Chat(messages=[])
+    chat.add_assistant_message([{"type": "text", "text": "prompt"}, {"type": "image", "image": image_input}])
+    assert len(chat.messages) == 1
+    assert chat.messages[0]["role"] == "assistant"
+    assert chat.messages[0]["content"] == [{"type": "text", "text": "prompt"}, {"type": "image", "image": image_input}]
