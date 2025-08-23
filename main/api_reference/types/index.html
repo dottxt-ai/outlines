@@ -3681,6 +3681,117 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#outlines.types.CFG" class="md-nav__link">
+    <span class="md-ellipsis">
+      CFG
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="CFG">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#outlines.types.CFG.from_file" class="md-nav__link">
+    <span class="md-ellipsis">
+      from_file
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#outlines.types.Choice" class="md-nav__link">
+    <span class="md-ellipsis">
+      Choice
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#outlines.types.JsonSchema" class="md-nav__link">
+    <span class="md-ellipsis">
+      JsonSchema
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="JsonSchema">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#outlines.types.JsonSchema.__init__" class="md-nav__link">
+    <span class="md-ellipsis">
+      __init__
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#outlines.types.JsonSchema.from_file" class="md-nav__link">
+    <span class="md-ellipsis">
+      from_file
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#outlines.types.Regex" class="md-nav__link">
+    <span class="md-ellipsis">
+      Regex
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#outlines.types.at_least" class="md-nav__link">
+    <span class="md-ellipsis">
+      at_least
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#outlines.types.at_most" class="md-nav__link">
+    <span class="md-ellipsis">
+      at_most
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#outlines.types.either" class="md-nav__link">
+    <span class="md-ellipsis">
+      either
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#outlines.types.exactly" class="md-nav__link">
+    <span class="md-ellipsis">
+      exactly
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#outlines.types.airports" class="md-nav__link">
     <span class="md-ellipsis">
       airports
@@ -4009,6 +4120,1167 @@
 
 
 
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="outlines.types.CFG" class="doc doc-heading">
+            <code>CFG</code>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="Term (outlines.types.dsl.Term)" href="../#outlines.types.dsl.Term">Term</a></code></p>
+
+
+        <p>Class representing a context-free grammar.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>definition</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The definition of the context-free grammar as a string.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+              <details class="quote">
+                <summary>Source code in <code>outlines/types/dsl.py</code></summary>
+                <div class="language-python highlight" style="background: #2E3440"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-236">236</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-237">237</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-238">238</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-239">239</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-240">240</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-241">241</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-242">242</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-243">243</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-244">244</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-245">245</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-246">246</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-247">247</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-248">248</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-249">249</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-250">250</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-251">251</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-252">252</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-253">253</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-254">254</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-255">255</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-256">256</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-257">257</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-258">258</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-259">259</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-260">260</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-261">261</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-262">262</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-263">263</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-264">264</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-265">265</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-266">266</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-267">267</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-268">268</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-269">269</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-270">270</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-271">271</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-272">272</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-273">273</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-274">274</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-275">275</a></span></pre></div></td><td class="code"><div><pre style="line-height: 125%;"><span></span><code><span id="__span-0-236"><a id="__codelineno-0-236" name="__codelineno-0-236"></a><span style="color: #D08770">@dataclass</span>
+</span><span id="__span-0-237"><a id="__codelineno-0-237" name="__codelineno-0-237"></a><span style="color: #81A1C1; font-weight: bold">class</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">CFG</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">Term</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-0-238"><a id="__codelineno-0-238" name="__codelineno-0-238"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">&quot;&quot;&quot;Class representing a context-free grammar.</span>
+</span><span id="__span-0-239"><a id="__codelineno-0-239" name="__codelineno-0-239"></a>
+</span><span id="__span-0-240"><a id="__codelineno-0-240" name="__codelineno-0-240"></a><span style="color: #616E87">    Parameters</span>
+</span><span id="__span-0-241"><a id="__codelineno-0-241" name="__codelineno-0-241"></a><span style="color: #616E87">    ----------</span>
+</span><span id="__span-0-242"><a id="__codelineno-0-242" name="__codelineno-0-242"></a><span style="color: #616E87">    definition</span>
+</span><span id="__span-0-243"><a id="__codelineno-0-243" name="__codelineno-0-243"></a><span style="color: #616E87">        The definition of the context-free grammar as a string.</span>
+</span><span id="__span-0-244"><a id="__codelineno-0-244" name="__codelineno-0-244"></a>
+</span><span id="__span-0-245"><a id="__codelineno-0-245" name="__codelineno-0-245"></a><span style="color: #616E87">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-246"><a id="__codelineno-0-246" name="__codelineno-0-246"></a>    <span style="color: #D8DEE9">definition</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">str</span>
+</span><span id="__span-0-247"><a id="__codelineno-0-247" name="__codelineno-0-247"></a>
+</span><span id="__span-0-248"><a id="__codelineno-0-248" name="__codelineno-0-248"></a>    <span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">_display_node</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">self</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #81A1C1">str</span><span style="color: #ECEFF4">:</span>
+</span><span id="__span-0-249"><a id="__codelineno-0-249" name="__codelineno-0-249"></a>        <span style="color: #81A1C1; font-weight: bold">return</span> <span style="color: #A3BE8C">f&quot;CFG(&#39;{</span><span style="color: #81A1C1">self</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">definition</span><span style="color: #A3BE8C">}&#39;)&quot;</span>
+</span><span id="__span-0-250"><a id="__codelineno-0-250" name="__codelineno-0-250"></a>
+</span><span id="__span-0-251"><a id="__codelineno-0-251" name="__codelineno-0-251"></a>    <span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">__repr__</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">self</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-0-252"><a id="__codelineno-0-252" name="__codelineno-0-252"></a>        <span style="color: #81A1C1; font-weight: bold">return</span> <span style="color: #A3BE8C">f&quot;CFG(definition=&#39;{</span><span style="color: #81A1C1">self</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">definition</span><span style="color: #A3BE8C">}&#39;)&quot;</span>
+</span><span id="__span-0-253"><a id="__codelineno-0-253" name="__codelineno-0-253"></a>
+</span><span id="__span-0-254"><a id="__codelineno-0-254" name="__codelineno-0-254"></a>    <span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">__eq__</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">self</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">other</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-0-255"><a id="__codelineno-0-255" name="__codelineno-0-255"></a>        <span style="color: #81A1C1; font-weight: bold">if</span> <span style="color: #81A1C1; font-weight: bold">not</span> <span style="color: #81A1C1">isinstance</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">other</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">CFG</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-0-256"><a id="__codelineno-0-256" name="__codelineno-0-256"></a>            <span style="color: #81A1C1; font-weight: bold">return</span> <span style="color: #81A1C1; font-weight: bold">False</span>
+</span><span id="__span-0-257"><a id="__codelineno-0-257" name="__codelineno-0-257"></a>        <span style="color: #81A1C1; font-weight: bold">return</span> <span style="color: #81A1C1">self</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">definition</span> <span style="color: #81A1C1; font-weight: bold">==</span> <span style="color: #D8DEE9">other</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">definition</span>
+</span><span id="__span-0-258"><a id="__codelineno-0-258" name="__codelineno-0-258"></a>
+</span><span id="__span-0-259"><a id="__codelineno-0-259" name="__codelineno-0-259"></a>    <span style="color: #D08770">@classmethod</span>
+</span><span id="__span-0-260"><a id="__codelineno-0-260" name="__codelineno-0-260"></a>    <span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">from_file</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">cls</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">path</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">str</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #A3BE8C">&quot;CFG&quot;</span><span style="color: #ECEFF4">:</span>
+</span><span id="__span-0-261"><a id="__codelineno-0-261" name="__codelineno-0-261"></a><span style="color: #D8DEE9">        </span><span style="color: #616E87">&quot;&quot;&quot;Create a CFG instance from a file containing a CFG definition.</span>
+</span><span id="__span-0-262"><a id="__codelineno-0-262" name="__codelineno-0-262"></a>
+</span><span id="__span-0-263"><a id="__codelineno-0-263" name="__codelineno-0-263"></a><span style="color: #616E87">        Parameters</span>
+</span><span id="__span-0-264"><a id="__codelineno-0-264" name="__codelineno-0-264"></a><span style="color: #616E87">        ----------</span>
+</span><span id="__span-0-265"><a id="__codelineno-0-265" name="__codelineno-0-265"></a><span style="color: #616E87">        path : str</span>
+</span><span id="__span-0-266"><a id="__codelineno-0-266" name="__codelineno-0-266"></a><span style="color: #616E87">            The path to the file containing the CFG definition.</span>
+</span><span id="__span-0-267"><a id="__codelineno-0-267" name="__codelineno-0-267"></a><span style="color: #616E87">        Returns</span>
+</span><span id="__span-0-268"><a id="__codelineno-0-268" name="__codelineno-0-268"></a><span style="color: #616E87">        -------</span>
+</span><span id="__span-0-269"><a id="__codelineno-0-269" name="__codelineno-0-269"></a><span style="color: #616E87">        CFG</span>
+</span><span id="__span-0-270"><a id="__codelineno-0-270" name="__codelineno-0-270"></a><span style="color: #616E87">            A CFG instance.</span>
+</span><span id="__span-0-271"><a id="__codelineno-0-271" name="__codelineno-0-271"></a>
+</span><span id="__span-0-272"><a id="__codelineno-0-272" name="__codelineno-0-272"></a><span style="color: #616E87">        &quot;&quot;&quot;</span>
+</span><span id="__span-0-273"><a id="__codelineno-0-273" name="__codelineno-0-273"></a>        <span style="color: #81A1C1; font-weight: bold">with</span> <span style="color: #81A1C1">open</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">path</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;r&quot;</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">as</span> <span style="color: #D8DEE9">f</span><span style="color: #ECEFF4">:</span>
+</span><span id="__span-0-274"><a id="__codelineno-0-274" name="__codelineno-0-274"></a>            <span style="color: #D8DEE9">definition</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">f</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">read</span><span style="color: #ECEFF4">()</span>
+</span><span id="__span-0-275"><a id="__codelineno-0-275" name="__codelineno-0-275"></a>        <span style="color: #81A1C1; font-weight: bold">return</span> <span style="color: #81A1C1">cls</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">definition</span><span style="color: #ECEFF4">)</span>
+</span></code></pre></div></td></tr></table></div>
+              </details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="outlines.types.CFG.from_file" class="doc doc-heading">
+            <code class="highlight language-python"><span style="color: #D8DEE9">from_file</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">path</span><span style="color: #ECEFF4">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
+  </span>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Create a CFG instance from a file containing a CFG definition.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>path</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The path to the file containing the CFG definition.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="CFG
+
+
+  
+      dataclass
+   (outlines.types.dsl.CFG)" href="../#outlines.types.dsl.CFG">CFG</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A CFG instance.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+            <details class="quote">
+              <summary>Source code in <code>outlines/types/dsl.py</code></summary>
+              <div class="language-python highlight" style="background: #2E3440"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-259">259</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-260">260</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-261">261</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-262">262</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-263">263</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-264">264</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-265">265</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-266">266</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-267">267</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-268">268</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-269">269</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-270">270</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-271">271</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-272">272</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-273">273</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-274">274</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-275">275</a></span></pre></div></td><td class="code"><div><pre style="line-height: 125%;"><span></span><code><span id="__span-0-259"><a id="__codelineno-0-259" name="__codelineno-0-259"></a><span style="color: #D08770">@classmethod</span>
+</span><span id="__span-0-260"><a id="__codelineno-0-260" name="__codelineno-0-260"></a><span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">from_file</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">cls</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">path</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">str</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #A3BE8C">&quot;CFG&quot;</span><span style="color: #ECEFF4">:</span>
+</span><span id="__span-0-261"><a id="__codelineno-0-261" name="__codelineno-0-261"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">&quot;&quot;&quot;Create a CFG instance from a file containing a CFG definition.</span>
+</span><span id="__span-0-262"><a id="__codelineno-0-262" name="__codelineno-0-262"></a>
+</span><span id="__span-0-263"><a id="__codelineno-0-263" name="__codelineno-0-263"></a><span style="color: #616E87">    Parameters</span>
+</span><span id="__span-0-264"><a id="__codelineno-0-264" name="__codelineno-0-264"></a><span style="color: #616E87">    ----------</span>
+</span><span id="__span-0-265"><a id="__codelineno-0-265" name="__codelineno-0-265"></a><span style="color: #616E87">    path : str</span>
+</span><span id="__span-0-266"><a id="__codelineno-0-266" name="__codelineno-0-266"></a><span style="color: #616E87">        The path to the file containing the CFG definition.</span>
+</span><span id="__span-0-267"><a id="__codelineno-0-267" name="__codelineno-0-267"></a><span style="color: #616E87">    Returns</span>
+</span><span id="__span-0-268"><a id="__codelineno-0-268" name="__codelineno-0-268"></a><span style="color: #616E87">    -------</span>
+</span><span id="__span-0-269"><a id="__codelineno-0-269" name="__codelineno-0-269"></a><span style="color: #616E87">    CFG</span>
+</span><span id="__span-0-270"><a id="__codelineno-0-270" name="__codelineno-0-270"></a><span style="color: #616E87">        A CFG instance.</span>
+</span><span id="__span-0-271"><a id="__codelineno-0-271" name="__codelineno-0-271"></a>
+</span><span id="__span-0-272"><a id="__codelineno-0-272" name="__codelineno-0-272"></a><span style="color: #616E87">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-273"><a id="__codelineno-0-273" name="__codelineno-0-273"></a>    <span style="color: #81A1C1; font-weight: bold">with</span> <span style="color: #81A1C1">open</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">path</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;r&quot;</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">as</span> <span style="color: #D8DEE9">f</span><span style="color: #ECEFF4">:</span>
+</span><span id="__span-0-274"><a id="__codelineno-0-274" name="__codelineno-0-274"></a>        <span style="color: #D8DEE9">definition</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">f</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">read</span><span style="color: #ECEFF4">()</span>
+</span><span id="__span-0-275"><a id="__codelineno-0-275" name="__codelineno-0-275"></a>    <span style="color: #81A1C1; font-weight: bold">return</span> <span style="color: #81A1C1">cls</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">definition</span><span style="color: #ECEFF4">)</span>
+</span></code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="outlines.types.Choice" class="doc doc-heading">
+            <code>Choice</code>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="Term (outlines.types.dsl.Term)" href="../#outlines.types.dsl.Term">Term</a></code></p>
+
+
+        <p>Class representing a choice between different items.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>items</code>
+            </td>
+            <td>
+                  <code><span title="typing.List">List</span>[<span title="typing.Any">Any</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The items to choose from.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+              <details class="quote">
+                <summary>Source code in <code>outlines/types/dsl.py</code></summary>
+                <div class="language-python highlight" style="background: #2E3440"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-370">370</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-371">371</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-372">372</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-373">373</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-374">374</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-375">375</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-376">376</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-377">377</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-378">378</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-379">379</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-380">380</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-381">381</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-382">382</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-383">383</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-384">384</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-385">385</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-386">386</a></span></pre></div></td><td class="code"><div><pre style="line-height: 125%;"><span></span><code><span id="__span-0-370"><a id="__codelineno-0-370" name="__codelineno-0-370"></a><span style="color: #D08770">@dataclass</span>
+</span><span id="__span-0-371"><a id="__codelineno-0-371" name="__codelineno-0-371"></a><span style="color: #81A1C1; font-weight: bold">class</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">Choice</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">Term</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-0-372"><a id="__codelineno-0-372" name="__codelineno-0-372"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">&quot;&quot;&quot;Class representing a choice between different items.</span>
+</span><span id="__span-0-373"><a id="__codelineno-0-373" name="__codelineno-0-373"></a>
+</span><span id="__span-0-374"><a id="__codelineno-0-374" name="__codelineno-0-374"></a><span style="color: #616E87">    Parameters</span>
+</span><span id="__span-0-375"><a id="__codelineno-0-375" name="__codelineno-0-375"></a><span style="color: #616E87">    ----------</span>
+</span><span id="__span-0-376"><a id="__codelineno-0-376" name="__codelineno-0-376"></a><span style="color: #616E87">    items</span>
+</span><span id="__span-0-377"><a id="__codelineno-0-377" name="__codelineno-0-377"></a><span style="color: #616E87">        The items to choose from.</span>
+</span><span id="__span-0-378"><a id="__codelineno-0-378" name="__codelineno-0-378"></a>
+</span><span id="__span-0-379"><a id="__codelineno-0-379" name="__codelineno-0-379"></a><span style="color: #616E87">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-380"><a id="__codelineno-0-380" name="__codelineno-0-380"></a>    <span style="color: #D8DEE9">items</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">List</span><span style="color: #ECEFF4">[</span><span style="color: #D8DEE9">Any</span><span style="color: #ECEFF4">]</span>
+</span><span id="__span-0-381"><a id="__codelineno-0-381" name="__codelineno-0-381"></a>
+</span><span id="__span-0-382"><a id="__codelineno-0-382" name="__codelineno-0-382"></a>    <span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">_display_node</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">self</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #81A1C1">str</span><span style="color: #ECEFF4">:</span>
+</span><span id="__span-0-383"><a id="__codelineno-0-383" name="__codelineno-0-383"></a>        <span style="color: #81A1C1; font-weight: bold">return</span> <span style="color: #A3BE8C">f&quot;Choice({</span><span style="color: #81A1C1">repr</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">self</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">items</span><span style="color: #ECEFF4">)</span><span style="color: #A3BE8C">})&quot;</span>
+</span><span id="__span-0-384"><a id="__codelineno-0-384" name="__codelineno-0-384"></a>
+</span><span id="__span-0-385"><a id="__codelineno-0-385" name="__codelineno-0-385"></a>    <span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">__repr__</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">self</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-0-386"><a id="__codelineno-0-386" name="__codelineno-0-386"></a>        <span style="color: #81A1C1; font-weight: bold">return</span> <span style="color: #A3BE8C">f&quot;Choice(items={</span><span style="color: #81A1C1">repr</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">self</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">items</span><span style="color: #ECEFF4">)</span><span style="color: #A3BE8C">})&quot;</span>
+</span></code></pre></div></td></tr></table></div>
+              </details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="outlines.types.JsonSchema" class="doc doc-heading">
+            <code>JsonSchema</code>
+
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="Term (outlines.types.dsl.Term)" href="../#outlines.types.dsl.Term">Term</a></code></p>
+
+
+        <p>Class representing a JSON schema.</p>
+<p>The JSON schema object from which to instantiate the class can be a
+dictionary, a string, a Pydantic model, a typed dict, a dataclass, or a
+genSON schema builder.</p>
+
+
+
+
+
+
+
+              <details class="quote">
+                <summary>Source code in <code>outlines/types/dsl.py</code></summary>
+                <div class="language-python highlight" style="background: #2E3440"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-278">278</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-279">279</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-280">280</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-281">281</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-282">282</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-283">283</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-284">284</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-285">285</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-286">286</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-287">287</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-288">288</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-289">289</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-290">290</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-291">291</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-292">292</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-293">293</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-294">294</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-295">295</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-296">296</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-297">297</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-298">298</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-299">299</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-300">300</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-301">301</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-302">302</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-303">303</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-304">304</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-305">305</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-306">306</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-307">307</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-308">308</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-309">309</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-310">310</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-311">311</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-312">312</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-313">313</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-314">314</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-315">315</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-316">316</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-317">317</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-318">318</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-319">319</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-320">320</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-321">321</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-322">322</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-323">323</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-324">324</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-325">325</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-326">326</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-327">327</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-328">328</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-329">329</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-330">330</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-331">331</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-332">332</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-333">333</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-334">334</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-335">335</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-336">336</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-337">337</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-338">338</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-339">339</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-340">340</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-341">341</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-342">342</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-343">343</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-344">344</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-345">345</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-346">346</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-347">347</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-348">348</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-349">349</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-350">350</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-351">351</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-352">352</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-353">353</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-354">354</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-355">355</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-356">356</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-357">357</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-358">358</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-359">359</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-360">360</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-361">361</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-362">362</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-363">363</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-364">364</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-365">365</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-366">366</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-367">367</a></span></pre></div></td><td class="code"><div><pre style="line-height: 125%;"><span></span><code><span id="__span-0-278"><a id="__codelineno-0-278" name="__codelineno-0-278"></a><span style="color: #81A1C1; font-weight: bold">class</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">JsonSchema</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">Term</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-0-279"><a id="__codelineno-0-279" name="__codelineno-0-279"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">&quot;&quot;&quot;Class representing a JSON schema.</span>
+</span><span id="__span-0-280"><a id="__codelineno-0-280" name="__codelineno-0-280"></a>
+</span><span id="__span-0-281"><a id="__codelineno-0-281" name="__codelineno-0-281"></a><span style="color: #616E87">    The JSON schema object from which to instantiate the class can be a</span>
+</span><span id="__span-0-282"><a id="__codelineno-0-282" name="__codelineno-0-282"></a><span style="color: #616E87">    dictionary, a string, a Pydantic model, a typed dict, a dataclass, or a</span>
+</span><span id="__span-0-283"><a id="__codelineno-0-283" name="__codelineno-0-283"></a><span style="color: #616E87">    genSON schema builder.</span>
+</span><span id="__span-0-284"><a id="__codelineno-0-284" name="__codelineno-0-284"></a>
+</span><span id="__span-0-285"><a id="__codelineno-0-285" name="__codelineno-0-285"></a><span style="color: #616E87">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-286"><a id="__codelineno-0-286" name="__codelineno-0-286"></a>    <span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">__init__</span><span style="color: #ECEFF4">(</span>
+</span><span id="__span-0-287"><a id="__codelineno-0-287" name="__codelineno-0-287"></a>        <span style="color: #81A1C1">self</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-0-288"><a id="__codelineno-0-288" name="__codelineno-0-288"></a>        <span style="color: #D8DEE9">schema</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">Union</span><span style="color: #ECEFF4">[</span>
+</span><span id="__span-0-289"><a id="__codelineno-0-289" name="__codelineno-0-289"></a>            <span style="color: #81A1C1">dict</span><span style="color: #ECEFF4">,</span> <span style="color: #81A1C1">str</span><span style="color: #ECEFF4">,</span> <span style="color: #81A1C1">type</span><span style="color: #ECEFF4">[</span><span style="color: #D8DEE9">BaseModel</span><span style="color: #ECEFF4">],</span> <span style="color: #D8DEE9">_TypedDictMeta</span><span style="color: #ECEFF4">,</span> <span style="color: #81A1C1">type</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">SchemaBuilder</span>
+</span><span id="__span-0-290"><a id="__codelineno-0-290" name="__codelineno-0-290"></a>        <span style="color: #ECEFF4">],</span>
+</span><span id="__span-0-291"><a id="__codelineno-0-291" name="__codelineno-0-291"></a>        <span style="color: #D8DEE9">whitespace_pattern</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">OptionalType</span><span style="color: #ECEFF4">[</span><span style="color: #81A1C1">str</span><span style="color: #ECEFF4">]</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #81A1C1; font-weight: bold">None</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-0-292"><a id="__codelineno-0-292" name="__codelineno-0-292"></a>        <span style="color: #D8DEE9">ensure_ascii</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">bool</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #81A1C1; font-weight: bold">True</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-0-293"><a id="__codelineno-0-293" name="__codelineno-0-293"></a>    <span style="color: #ECEFF4">):</span>
+</span><span id="__span-0-294"><a id="__codelineno-0-294" name="__codelineno-0-294"></a><span style="color: #D8DEE9">        </span><span style="color: #616E87">&quot;&quot;&quot;</span>
+</span><span id="__span-0-295"><a id="__codelineno-0-295" name="__codelineno-0-295"></a><span style="color: #616E87">        Parameters</span>
+</span><span id="__span-0-296"><a id="__codelineno-0-296" name="__codelineno-0-296"></a><span style="color: #616E87">        ----------</span>
+</span><span id="__span-0-297"><a id="__codelineno-0-297" name="__codelineno-0-297"></a><span style="color: #616E87">        schema</span>
+</span><span id="__span-0-298"><a id="__codelineno-0-298" name="__codelineno-0-298"></a><span style="color: #616E87">            The object containing the JSON schema.</span>
+</span><span id="__span-0-299"><a id="__codelineno-0-299" name="__codelineno-0-299"></a><span style="color: #616E87">        whitespace_pattern</span>
+</span><span id="__span-0-300"><a id="__codelineno-0-300" name="__codelineno-0-300"></a><span style="color: #616E87">            The pattern to use to match whitespace characters.</span>
+</span><span id="__span-0-301"><a id="__codelineno-0-301" name="__codelineno-0-301"></a><span style="color: #616E87">        ensure_ascii</span>
+</span><span id="__span-0-302"><a id="__codelineno-0-302" name="__codelineno-0-302"></a><span style="color: #616E87">            Whether to ensure the schema is ASCII-only.</span>
+</span><span id="__span-0-303"><a id="__codelineno-0-303" name="__codelineno-0-303"></a>
+</span><span id="__span-0-304"><a id="__codelineno-0-304" name="__codelineno-0-304"></a><span style="color: #616E87">        &quot;&quot;&quot;</span>
+</span><span id="__span-0-305"><a id="__codelineno-0-305" name="__codelineno-0-305"></a>        <span style="color: #D8DEE9">schema_str</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">str</span>
+</span><span id="__span-0-306"><a id="__codelineno-0-306" name="__codelineno-0-306"></a>
+</span><span id="__span-0-307"><a id="__codelineno-0-307" name="__codelineno-0-307"></a>        <span style="color: #81A1C1; font-weight: bold">if</span> <span style="color: #D8DEE9">is_dict_instance</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">schema</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-0-308"><a id="__codelineno-0-308" name="__codelineno-0-308"></a>            <span style="color: #D8DEE9">schema_str</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">json</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">dumps</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">schema</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">ensure_ascii</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #D8DEE9">ensure_ascii</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-0-309"><a id="__codelineno-0-309" name="__codelineno-0-309"></a>        <span style="color: #81A1C1; font-weight: bold">elif</span> <span style="color: #D8DEE9">is_str_instance</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">schema</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-0-310"><a id="__codelineno-0-310" name="__codelineno-0-310"></a>            <span style="color: #D8DEE9">schema_str</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #81A1C1">str</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">schema</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-0-311"><a id="__codelineno-0-311" name="__codelineno-0-311"></a>        <span style="color: #81A1C1; font-weight: bold">elif</span> <span style="color: #D8DEE9">is_pydantic_model</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">schema</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-0-312"><a id="__codelineno-0-312" name="__codelineno-0-312"></a>            <span style="color: #D8DEE9">schema_str</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">json</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">dumps</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">schema</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">model_json_schema</span><span style="color: #ECEFF4">(),</span> <span style="color: #D8DEE9">ensure_ascii</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #D8DEE9">ensure_ascii</span><span style="color: #ECEFF4">)</span> <span style="color: #616E87; font-style: italic"># type: ignore</span>
+</span><span id="__span-0-313"><a id="__codelineno-0-313" name="__codelineno-0-313"></a>        <span style="color: #81A1C1; font-weight: bold">elif</span> <span style="color: #D8DEE9">is_typed_dict</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">schema</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-0-314"><a id="__codelineno-0-314" name="__codelineno-0-314"></a>            <span style="color: #D8DEE9">schema_str</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">json</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">dumps</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">TypeAdapter</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">schema</span><span style="color: #ECEFF4">)</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">json_schema</span><span style="color: #ECEFF4">(),</span> <span style="color: #D8DEE9">ensure_ascii</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #D8DEE9">ensure_ascii</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-0-315"><a id="__codelineno-0-315" name="__codelineno-0-315"></a>        <span style="color: #81A1C1; font-weight: bold">elif</span> <span style="color: #D8DEE9">is_dataclass</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">schema</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-0-316"><a id="__codelineno-0-316" name="__codelineno-0-316"></a>            <span style="color: #D8DEE9">schema_str</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">json</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">dumps</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">TypeAdapter</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">schema</span><span style="color: #ECEFF4">)</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">json_schema</span><span style="color: #ECEFF4">(),</span> <span style="color: #D8DEE9">ensure_ascii</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #D8DEE9">ensure_ascii</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-0-317"><a id="__codelineno-0-317" name="__codelineno-0-317"></a>        <span style="color: #81A1C1; font-weight: bold">elif</span> <span style="color: #D8DEE9">is_genson_schema_builder</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">schema</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-0-318"><a id="__codelineno-0-318" name="__codelineno-0-318"></a>            <span style="color: #D8DEE9">schema_str</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">schema</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">to_json</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">ensure_ascii</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #D8DEE9">ensure_ascii</span><span style="color: #ECEFF4">)</span>  <span style="color: #616E87; font-style: italic"># type: ignore</span>
+</span><span id="__span-0-319"><a id="__codelineno-0-319" name="__codelineno-0-319"></a>        <span style="color: #81A1C1; font-weight: bold">else</span><span style="color: #ECEFF4">:</span>
+</span><span id="__span-0-320"><a id="__codelineno-0-320" name="__codelineno-0-320"></a>            <span style="color: #81A1C1; font-weight: bold">raise</span> <span style="color: #BF616A">ValueError</span><span style="color: #ECEFF4">(</span>
+</span><span id="__span-0-321"><a id="__codelineno-0-321" name="__codelineno-0-321"></a>                <span style="color: #A3BE8C">f&quot;Cannot parse schema {</span><span style="color: #D8DEE9">schema</span><span style="color: #A3BE8C">}. The schema must be either &quot;</span>
+</span><span id="__span-0-322"><a id="__codelineno-0-322" name="__codelineno-0-322"></a>                <span style="color: #81A1C1; font-weight: bold">+</span> <span style="color: #A3BE8C">&quot;a Pydantic class, typed dict, a dataclass, a genSON schema &quot;</span>
+</span><span id="__span-0-323"><a id="__codelineno-0-323" name="__codelineno-0-323"></a>                <span style="color: #81A1C1; font-weight: bold">+</span> <span style="color: #A3BE8C">&quot;builder or a string or dict that contains the JSON schema &quot;</span>
+</span><span id="__span-0-324"><a id="__codelineno-0-324" name="__codelineno-0-324"></a>                <span style="color: #81A1C1; font-weight: bold">+</span> <span style="color: #A3BE8C">&quot;specification&quot;</span>
+</span><span id="__span-0-325"><a id="__codelineno-0-325" name="__codelineno-0-325"></a>            <span style="color: #ECEFF4">)</span>
+</span><span id="__span-0-326"><a id="__codelineno-0-326" name="__codelineno-0-326"></a>
+</span><span id="__span-0-327"><a id="__codelineno-0-327" name="__codelineno-0-327"></a>        <span style="color: #616E87; font-style: italic"># Preprocess the schema to handle union types</span>
+</span><span id="__span-0-328"><a id="__codelineno-0-328" name="__codelineno-0-328"></a>        <span style="color: #81A1C1">self</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">schema</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">preprocess_schema_for_union_types</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">schema_str</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">ensure_ascii</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #D8DEE9">ensure_ascii</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-0-329"><a id="__codelineno-0-329" name="__codelineno-0-329"></a>        <span style="color: #81A1C1">self</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">whitespace_pattern</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">whitespace_pattern</span>
+</span><span id="__span-0-330"><a id="__codelineno-0-330" name="__codelineno-0-330"></a>
+</span><span id="__span-0-331"><a id="__codelineno-0-331" name="__codelineno-0-331"></a>    <span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">__post_init__</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">self</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-0-332"><a id="__codelineno-0-332" name="__codelineno-0-332"></a>        <span style="color: #D8DEE9">jsonschema</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">Draft7Validator</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">check_schema</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">json</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">loads</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">self</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">schema</span><span style="color: #ECEFF4">))</span>
+</span><span id="__span-0-333"><a id="__codelineno-0-333" name="__codelineno-0-333"></a>
+</span><span id="__span-0-334"><a id="__codelineno-0-334" name="__codelineno-0-334"></a>    <span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">_display_node</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">self</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #81A1C1">str</span><span style="color: #ECEFF4">:</span>
+</span><span id="__span-0-335"><a id="__codelineno-0-335" name="__codelineno-0-335"></a>        <span style="color: #81A1C1; font-weight: bold">return</span> <span style="color: #A3BE8C">f&quot;JsonSchema(&#39;{</span><span style="color: #81A1C1">self</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">schema</span><span style="color: #A3BE8C">}&#39;)&quot;</span>
+</span><span id="__span-0-336"><a id="__codelineno-0-336" name="__codelineno-0-336"></a>
+</span><span id="__span-0-337"><a id="__codelineno-0-337" name="__codelineno-0-337"></a>    <span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">__repr__</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">self</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-0-338"><a id="__codelineno-0-338" name="__codelineno-0-338"></a>        <span style="color: #81A1C1; font-weight: bold">return</span> <span style="color: #A3BE8C">f&quot;JsonSchema(schema=&#39;{</span><span style="color: #81A1C1">self</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">schema</span><span style="color: #A3BE8C">}&#39;)&quot;</span>
+</span><span id="__span-0-339"><a id="__codelineno-0-339" name="__codelineno-0-339"></a>
+</span><span id="__span-0-340"><a id="__codelineno-0-340" name="__codelineno-0-340"></a>    <span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">__eq__</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">self</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">other</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-0-341"><a id="__codelineno-0-341" name="__codelineno-0-341"></a>        <span style="color: #81A1C1; font-weight: bold">if</span> <span style="color: #81A1C1; font-weight: bold">not</span> <span style="color: #81A1C1">isinstance</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">other</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">JsonSchema</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-0-342"><a id="__codelineno-0-342" name="__codelineno-0-342"></a>            <span style="color: #81A1C1; font-weight: bold">return</span> <span style="color: #81A1C1; font-weight: bold">False</span>
+</span><span id="__span-0-343"><a id="__codelineno-0-343" name="__codelineno-0-343"></a>        <span style="color: #81A1C1; font-weight: bold">try</span><span style="color: #ECEFF4">:</span>
+</span><span id="__span-0-344"><a id="__codelineno-0-344" name="__codelineno-0-344"></a>            <span style="color: #D8DEE9">self_dict</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">json</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">loads</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">self</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">schema</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-0-345"><a id="__codelineno-0-345" name="__codelineno-0-345"></a>            <span style="color: #D8DEE9">other_dict</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">json</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">loads</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">other</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">schema</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-0-346"><a id="__codelineno-0-346" name="__codelineno-0-346"></a>            <span style="color: #81A1C1; font-weight: bold">return</span> <span style="color: #D8DEE9">self_dict</span> <span style="color: #81A1C1; font-weight: bold">==</span> <span style="color: #D8DEE9">other_dict</span>
+</span><span id="__span-0-347"><a id="__codelineno-0-347" name="__codelineno-0-347"></a>        <span style="color: #81A1C1; font-weight: bold">except</span> <span style="color: #D8DEE9">json</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">JSONDecodeError</span><span style="color: #ECEFF4">:</span>  <span style="color: #616E87; font-style: italic"># pragma: no cover</span>
+</span><span id="__span-0-348"><a id="__codelineno-0-348" name="__codelineno-0-348"></a>            <span style="color: #81A1C1; font-weight: bold">return</span> <span style="color: #81A1C1">self</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">schema</span> <span style="color: #81A1C1; font-weight: bold">==</span> <span style="color: #D8DEE9">other</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">schema</span>
+</span><span id="__span-0-349"><a id="__codelineno-0-349" name="__codelineno-0-349"></a>
+</span><span id="__span-0-350"><a id="__codelineno-0-350" name="__codelineno-0-350"></a>    <span style="color: #D08770">@classmethod</span>
+</span><span id="__span-0-351"><a id="__codelineno-0-351" name="__codelineno-0-351"></a>    <span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">from_file</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">cls</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">path</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">str</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #A3BE8C">&quot;JsonSchema&quot;</span><span style="color: #ECEFF4">:</span>
+</span><span id="__span-0-352"><a id="__codelineno-0-352" name="__codelineno-0-352"></a><span style="color: #D8DEE9">        </span><span style="color: #616E87">&quot;&quot;&quot;Create a JsonSchema instance from a .json file containing a JSON</span>
+</span><span id="__span-0-353"><a id="__codelineno-0-353" name="__codelineno-0-353"></a><span style="color: #616E87">        schema.</span>
+</span><span id="__span-0-354"><a id="__codelineno-0-354" name="__codelineno-0-354"></a>
+</span><span id="__span-0-355"><a id="__codelineno-0-355" name="__codelineno-0-355"></a><span style="color: #616E87">        Parameters</span>
+</span><span id="__span-0-356"><a id="__codelineno-0-356" name="__codelineno-0-356"></a><span style="color: #616E87">        ----------</span>
+</span><span id="__span-0-357"><a id="__codelineno-0-357" name="__codelineno-0-357"></a><span style="color: #616E87">        path:</span>
+</span><span id="__span-0-358"><a id="__codelineno-0-358" name="__codelineno-0-358"></a><span style="color: #616E87">            The path to the file containing the JSON schema.</span>
+</span><span id="__span-0-359"><a id="__codelineno-0-359" name="__codelineno-0-359"></a><span style="color: #616E87">        Returns</span>
+</span><span id="__span-0-360"><a id="__codelineno-0-360" name="__codelineno-0-360"></a><span style="color: #616E87">        -------</span>
+</span><span id="__span-0-361"><a id="__codelineno-0-361" name="__codelineno-0-361"></a><span style="color: #616E87">        JsonSchema</span>
+</span><span id="__span-0-362"><a id="__codelineno-0-362" name="__codelineno-0-362"></a><span style="color: #616E87">            A JsonSchema instance.</span>
+</span><span id="__span-0-363"><a id="__codelineno-0-363" name="__codelineno-0-363"></a>
+</span><span id="__span-0-364"><a id="__codelineno-0-364" name="__codelineno-0-364"></a><span style="color: #616E87">        &quot;&quot;&quot;</span>
+</span><span id="__span-0-365"><a id="__codelineno-0-365" name="__codelineno-0-365"></a>        <span style="color: #81A1C1; font-weight: bold">with</span> <span style="color: #81A1C1">open</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">path</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;r&quot;</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">as</span> <span style="color: #D8DEE9">f</span><span style="color: #ECEFF4">:</span>
+</span><span id="__span-0-366"><a id="__codelineno-0-366" name="__codelineno-0-366"></a>            <span style="color: #D8DEE9">schema</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">json</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">load</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">f</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-0-367"><a id="__codelineno-0-367" name="__codelineno-0-367"></a>        <span style="color: #81A1C1; font-weight: bold">return</span> <span style="color: #81A1C1">cls</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">schema</span><span style="color: #ECEFF4">)</span>
+</span></code></pre></div></td></tr></table></div>
+              </details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="outlines.types.JsonSchema.__init__" class="doc doc-heading">
+            <code class="highlight language-python"><span style="color: #88C0D0">__init__</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">schema</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">whitespace_pattern</span><span style="color: #81A1C1; font-weight: bold">=None</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">ensure_ascii</span><span style="color: #81A1C1; font-weight: bold">=True</span><span style="color: #ECEFF4">)</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>schema</code>
+            </td>
+            <td>
+                  <code><span title="typing.Union">Union</span>[<span title="dict">dict</span>, <span title="str">str</span>, <span title="type">type</span>[<span title="pydantic.BaseModel">BaseModel</span>], <span title="typing_extensions._TypedDictMeta">_TypedDictMeta</span>, <span title="type">type</span>, <span title="genson.SchemaBuilder">SchemaBuilder</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The object containing the JSON schema.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>whitespace_pattern</code>
+            </td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<span title="str">str</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The pattern to use to match whitespace characters.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>ensure_ascii</code>
+            </td>
+            <td>
+                  <code><span title="bool">bool</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Whether to ensure the schema is ASCII-only.</p>
+              </div>
+            </td>
+            <td>
+                  <code>True</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+            <details class="quote">
+              <summary>Source code in <code>outlines/types/dsl.py</code></summary>
+              <div class="language-python highlight" style="background: #2E3440"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-286">286</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-287">287</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-288">288</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-289">289</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-290">290</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-291">291</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-292">292</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-293">293</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-294">294</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-295">295</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-296">296</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-297">297</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-298">298</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-299">299</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-300">300</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-301">301</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-302">302</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-303">303</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-304">304</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-305">305</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-306">306</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-307">307</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-308">308</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-309">309</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-310">310</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-311">311</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-312">312</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-313">313</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-314">314</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-315">315</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-316">316</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-317">317</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-318">318</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-319">319</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-320">320</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-321">321</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-322">322</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-323">323</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-324">324</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-325">325</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-326">326</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-327">327</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-328">328</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-329">329</a></span></pre></div></td><td class="code"><div><pre style="line-height: 125%;"><span></span><code><span id="__span-0-286"><a id="__codelineno-0-286" name="__codelineno-0-286"></a><span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">__init__</span><span style="color: #ECEFF4">(</span>
+</span><span id="__span-0-287"><a id="__codelineno-0-287" name="__codelineno-0-287"></a>    <span style="color: #81A1C1">self</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-0-288"><a id="__codelineno-0-288" name="__codelineno-0-288"></a>    <span style="color: #D8DEE9">schema</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">Union</span><span style="color: #ECEFF4">[</span>
+</span><span id="__span-0-289"><a id="__codelineno-0-289" name="__codelineno-0-289"></a>        <span style="color: #81A1C1">dict</span><span style="color: #ECEFF4">,</span> <span style="color: #81A1C1">str</span><span style="color: #ECEFF4">,</span> <span style="color: #81A1C1">type</span><span style="color: #ECEFF4">[</span><span style="color: #D8DEE9">BaseModel</span><span style="color: #ECEFF4">],</span> <span style="color: #D8DEE9">_TypedDictMeta</span><span style="color: #ECEFF4">,</span> <span style="color: #81A1C1">type</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">SchemaBuilder</span>
+</span><span id="__span-0-290"><a id="__codelineno-0-290" name="__codelineno-0-290"></a>    <span style="color: #ECEFF4">],</span>
+</span><span id="__span-0-291"><a id="__codelineno-0-291" name="__codelineno-0-291"></a>    <span style="color: #D8DEE9">whitespace_pattern</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">OptionalType</span><span style="color: #ECEFF4">[</span><span style="color: #81A1C1">str</span><span style="color: #ECEFF4">]</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #81A1C1; font-weight: bold">None</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-0-292"><a id="__codelineno-0-292" name="__codelineno-0-292"></a>    <span style="color: #D8DEE9">ensure_ascii</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">bool</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #81A1C1; font-weight: bold">True</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-0-293"><a id="__codelineno-0-293" name="__codelineno-0-293"></a><span style="color: #ECEFF4">):</span>
+</span><span id="__span-0-294"><a id="__codelineno-0-294" name="__codelineno-0-294"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">&quot;&quot;&quot;</span>
+</span><span id="__span-0-295"><a id="__codelineno-0-295" name="__codelineno-0-295"></a><span style="color: #616E87">    Parameters</span>
+</span><span id="__span-0-296"><a id="__codelineno-0-296" name="__codelineno-0-296"></a><span style="color: #616E87">    ----------</span>
+</span><span id="__span-0-297"><a id="__codelineno-0-297" name="__codelineno-0-297"></a><span style="color: #616E87">    schema</span>
+</span><span id="__span-0-298"><a id="__codelineno-0-298" name="__codelineno-0-298"></a><span style="color: #616E87">        The object containing the JSON schema.</span>
+</span><span id="__span-0-299"><a id="__codelineno-0-299" name="__codelineno-0-299"></a><span style="color: #616E87">    whitespace_pattern</span>
+</span><span id="__span-0-300"><a id="__codelineno-0-300" name="__codelineno-0-300"></a><span style="color: #616E87">        The pattern to use to match whitespace characters.</span>
+</span><span id="__span-0-301"><a id="__codelineno-0-301" name="__codelineno-0-301"></a><span style="color: #616E87">    ensure_ascii</span>
+</span><span id="__span-0-302"><a id="__codelineno-0-302" name="__codelineno-0-302"></a><span style="color: #616E87">        Whether to ensure the schema is ASCII-only.</span>
+</span><span id="__span-0-303"><a id="__codelineno-0-303" name="__codelineno-0-303"></a>
+</span><span id="__span-0-304"><a id="__codelineno-0-304" name="__codelineno-0-304"></a><span style="color: #616E87">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-305"><a id="__codelineno-0-305" name="__codelineno-0-305"></a>    <span style="color: #D8DEE9">schema_str</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">str</span>
+</span><span id="__span-0-306"><a id="__codelineno-0-306" name="__codelineno-0-306"></a>
+</span><span id="__span-0-307"><a id="__codelineno-0-307" name="__codelineno-0-307"></a>    <span style="color: #81A1C1; font-weight: bold">if</span> <span style="color: #D8DEE9">is_dict_instance</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">schema</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-0-308"><a id="__codelineno-0-308" name="__codelineno-0-308"></a>        <span style="color: #D8DEE9">schema_str</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">json</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">dumps</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">schema</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">ensure_ascii</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #D8DEE9">ensure_ascii</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-0-309"><a id="__codelineno-0-309" name="__codelineno-0-309"></a>    <span style="color: #81A1C1; font-weight: bold">elif</span> <span style="color: #D8DEE9">is_str_instance</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">schema</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-0-310"><a id="__codelineno-0-310" name="__codelineno-0-310"></a>        <span style="color: #D8DEE9">schema_str</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #81A1C1">str</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">schema</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-0-311"><a id="__codelineno-0-311" name="__codelineno-0-311"></a>    <span style="color: #81A1C1; font-weight: bold">elif</span> <span style="color: #D8DEE9">is_pydantic_model</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">schema</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-0-312"><a id="__codelineno-0-312" name="__codelineno-0-312"></a>        <span style="color: #D8DEE9">schema_str</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">json</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">dumps</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">schema</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">model_json_schema</span><span style="color: #ECEFF4">(),</span> <span style="color: #D8DEE9">ensure_ascii</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #D8DEE9">ensure_ascii</span><span style="color: #ECEFF4">)</span> <span style="color: #616E87; font-style: italic"># type: ignore</span>
+</span><span id="__span-0-313"><a id="__codelineno-0-313" name="__codelineno-0-313"></a>    <span style="color: #81A1C1; font-weight: bold">elif</span> <span style="color: #D8DEE9">is_typed_dict</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">schema</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-0-314"><a id="__codelineno-0-314" name="__codelineno-0-314"></a>        <span style="color: #D8DEE9">schema_str</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">json</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">dumps</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">TypeAdapter</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">schema</span><span style="color: #ECEFF4">)</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">json_schema</span><span style="color: #ECEFF4">(),</span> <span style="color: #D8DEE9">ensure_ascii</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #D8DEE9">ensure_ascii</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-0-315"><a id="__codelineno-0-315" name="__codelineno-0-315"></a>    <span style="color: #81A1C1; font-weight: bold">elif</span> <span style="color: #D8DEE9">is_dataclass</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">schema</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-0-316"><a id="__codelineno-0-316" name="__codelineno-0-316"></a>        <span style="color: #D8DEE9">schema_str</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">json</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">dumps</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">TypeAdapter</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">schema</span><span style="color: #ECEFF4">)</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">json_schema</span><span style="color: #ECEFF4">(),</span> <span style="color: #D8DEE9">ensure_ascii</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #D8DEE9">ensure_ascii</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-0-317"><a id="__codelineno-0-317" name="__codelineno-0-317"></a>    <span style="color: #81A1C1; font-weight: bold">elif</span> <span style="color: #D8DEE9">is_genson_schema_builder</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">schema</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-0-318"><a id="__codelineno-0-318" name="__codelineno-0-318"></a>        <span style="color: #D8DEE9">schema_str</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">schema</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">to_json</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">ensure_ascii</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #D8DEE9">ensure_ascii</span><span style="color: #ECEFF4">)</span>  <span style="color: #616E87; font-style: italic"># type: ignore</span>
+</span><span id="__span-0-319"><a id="__codelineno-0-319" name="__codelineno-0-319"></a>    <span style="color: #81A1C1; font-weight: bold">else</span><span style="color: #ECEFF4">:</span>
+</span><span id="__span-0-320"><a id="__codelineno-0-320" name="__codelineno-0-320"></a>        <span style="color: #81A1C1; font-weight: bold">raise</span> <span style="color: #BF616A">ValueError</span><span style="color: #ECEFF4">(</span>
+</span><span id="__span-0-321"><a id="__codelineno-0-321" name="__codelineno-0-321"></a>            <span style="color: #A3BE8C">f&quot;Cannot parse schema {</span><span style="color: #D8DEE9">schema</span><span style="color: #A3BE8C">}. The schema must be either &quot;</span>
+</span><span id="__span-0-322"><a id="__codelineno-0-322" name="__codelineno-0-322"></a>            <span style="color: #81A1C1; font-weight: bold">+</span> <span style="color: #A3BE8C">&quot;a Pydantic class, typed dict, a dataclass, a genSON schema &quot;</span>
+</span><span id="__span-0-323"><a id="__codelineno-0-323" name="__codelineno-0-323"></a>            <span style="color: #81A1C1; font-weight: bold">+</span> <span style="color: #A3BE8C">&quot;builder or a string or dict that contains the JSON schema &quot;</span>
+</span><span id="__span-0-324"><a id="__codelineno-0-324" name="__codelineno-0-324"></a>            <span style="color: #81A1C1; font-weight: bold">+</span> <span style="color: #A3BE8C">&quot;specification&quot;</span>
+</span><span id="__span-0-325"><a id="__codelineno-0-325" name="__codelineno-0-325"></a>        <span style="color: #ECEFF4">)</span>
+</span><span id="__span-0-326"><a id="__codelineno-0-326" name="__codelineno-0-326"></a>
+</span><span id="__span-0-327"><a id="__codelineno-0-327" name="__codelineno-0-327"></a>    <span style="color: #616E87; font-style: italic"># Preprocess the schema to handle union types</span>
+</span><span id="__span-0-328"><a id="__codelineno-0-328" name="__codelineno-0-328"></a>    <span style="color: #81A1C1">self</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">schema</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">preprocess_schema_for_union_types</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">schema_str</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">ensure_ascii</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #D8DEE9">ensure_ascii</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-0-329"><a id="__codelineno-0-329" name="__codelineno-0-329"></a>    <span style="color: #81A1C1">self</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">whitespace_pattern</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">whitespace_pattern</span>
+</span></code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="outlines.types.JsonSchema.from_file" class="doc doc-heading">
+            <code class="highlight language-python"><span style="color: #D8DEE9">from_file</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">path</span><span style="color: #ECEFF4">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
+  </span>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Create a JsonSchema instance from a .json file containing a JSON
+schema.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>path</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The path to the file containing the JSON schema.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="JsonSchema (outlines.types.dsl.JsonSchema)" href="../#outlines.types.dsl.JsonSchema">JsonSchema</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A JsonSchema instance.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+            <details class="quote">
+              <summary>Source code in <code>outlines/types/dsl.py</code></summary>
+              <div class="language-python highlight" style="background: #2E3440"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-350">350</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-351">351</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-352">352</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-353">353</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-354">354</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-355">355</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-356">356</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-357">357</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-358">358</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-359">359</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-360">360</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-361">361</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-362">362</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-363">363</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-364">364</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-365">365</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-366">366</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-367">367</a></span></pre></div></td><td class="code"><div><pre style="line-height: 125%;"><span></span><code><span id="__span-0-350"><a id="__codelineno-0-350" name="__codelineno-0-350"></a><span style="color: #D08770">@classmethod</span>
+</span><span id="__span-0-351"><a id="__codelineno-0-351" name="__codelineno-0-351"></a><span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">from_file</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">cls</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">path</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">str</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #A3BE8C">&quot;JsonSchema&quot;</span><span style="color: #ECEFF4">:</span>
+</span><span id="__span-0-352"><a id="__codelineno-0-352" name="__codelineno-0-352"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">&quot;&quot;&quot;Create a JsonSchema instance from a .json file containing a JSON</span>
+</span><span id="__span-0-353"><a id="__codelineno-0-353" name="__codelineno-0-353"></a><span style="color: #616E87">    schema.</span>
+</span><span id="__span-0-354"><a id="__codelineno-0-354" name="__codelineno-0-354"></a>
+</span><span id="__span-0-355"><a id="__codelineno-0-355" name="__codelineno-0-355"></a><span style="color: #616E87">    Parameters</span>
+</span><span id="__span-0-356"><a id="__codelineno-0-356" name="__codelineno-0-356"></a><span style="color: #616E87">    ----------</span>
+</span><span id="__span-0-357"><a id="__codelineno-0-357" name="__codelineno-0-357"></a><span style="color: #616E87">    path:</span>
+</span><span id="__span-0-358"><a id="__codelineno-0-358" name="__codelineno-0-358"></a><span style="color: #616E87">        The path to the file containing the JSON schema.</span>
+</span><span id="__span-0-359"><a id="__codelineno-0-359" name="__codelineno-0-359"></a><span style="color: #616E87">    Returns</span>
+</span><span id="__span-0-360"><a id="__codelineno-0-360" name="__codelineno-0-360"></a><span style="color: #616E87">    -------</span>
+</span><span id="__span-0-361"><a id="__codelineno-0-361" name="__codelineno-0-361"></a><span style="color: #616E87">    JsonSchema</span>
+</span><span id="__span-0-362"><a id="__codelineno-0-362" name="__codelineno-0-362"></a><span style="color: #616E87">        A JsonSchema instance.</span>
+</span><span id="__span-0-363"><a id="__codelineno-0-363" name="__codelineno-0-363"></a>
+</span><span id="__span-0-364"><a id="__codelineno-0-364" name="__codelineno-0-364"></a><span style="color: #616E87">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-365"><a id="__codelineno-0-365" name="__codelineno-0-365"></a>    <span style="color: #81A1C1; font-weight: bold">with</span> <span style="color: #81A1C1">open</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">path</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;r&quot;</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">as</span> <span style="color: #D8DEE9">f</span><span style="color: #ECEFF4">:</span>
+</span><span id="__span-0-366"><a id="__codelineno-0-366" name="__codelineno-0-366"></a>        <span style="color: #D8DEE9">schema</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">json</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">load</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">f</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-0-367"><a id="__codelineno-0-367" name="__codelineno-0-367"></a>    <span style="color: #81A1C1; font-weight: bold">return</span> <span style="color: #81A1C1">cls</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">schema</span><span style="color: #ECEFF4">)</span>
+</span></code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="outlines.types.Regex" class="doc doc-heading">
+            <code>Regex</code>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="Term (outlines.types.dsl.Term)" href="../#outlines.types.dsl.Term">Term</a></code></p>
+
+
+        <p>Class representing a regular expression.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>pattern</code>
+            </td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The regular expression as a string.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+              <details class="quote">
+                <summary>Source code in <code>outlines/types/dsl.py</code></summary>
+                <div class="language-python highlight" style="background: #2E3440"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-217">217</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-218">218</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-219">219</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-220">220</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-221">221</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-222">222</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-223">223</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-224">224</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-225">225</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-226">226</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-227">227</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-228">228</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-229">229</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-230">230</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-231">231</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-232">232</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-233">233</a></span></pre></div></td><td class="code"><div><pre style="line-height: 125%;"><span></span><code><span id="__span-0-217"><a id="__codelineno-0-217" name="__codelineno-0-217"></a><span style="color: #D08770">@dataclass</span>
+</span><span id="__span-0-218"><a id="__codelineno-0-218" name="__codelineno-0-218"></a><span style="color: #81A1C1; font-weight: bold">class</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">Regex</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">Term</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-0-219"><a id="__codelineno-0-219" name="__codelineno-0-219"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">&quot;&quot;&quot;Class representing a regular expression.</span>
+</span><span id="__span-0-220"><a id="__codelineno-0-220" name="__codelineno-0-220"></a>
+</span><span id="__span-0-221"><a id="__codelineno-0-221" name="__codelineno-0-221"></a><span style="color: #616E87">    Parameters</span>
+</span><span id="__span-0-222"><a id="__codelineno-0-222" name="__codelineno-0-222"></a><span style="color: #616E87">    ----------</span>
+</span><span id="__span-0-223"><a id="__codelineno-0-223" name="__codelineno-0-223"></a><span style="color: #616E87">    pattern</span>
+</span><span id="__span-0-224"><a id="__codelineno-0-224" name="__codelineno-0-224"></a><span style="color: #616E87">        The regular expression as a string.</span>
+</span><span id="__span-0-225"><a id="__codelineno-0-225" name="__codelineno-0-225"></a>
+</span><span id="__span-0-226"><a id="__codelineno-0-226" name="__codelineno-0-226"></a><span style="color: #616E87">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-227"><a id="__codelineno-0-227" name="__codelineno-0-227"></a>    <span style="color: #D8DEE9">pattern</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">str</span>
+</span><span id="__span-0-228"><a id="__codelineno-0-228" name="__codelineno-0-228"></a>
+</span><span id="__span-0-229"><a id="__codelineno-0-229" name="__codelineno-0-229"></a>    <span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">_display_node</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">self</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #81A1C1">str</span><span style="color: #ECEFF4">:</span>
+</span><span id="__span-0-230"><a id="__codelineno-0-230" name="__codelineno-0-230"></a>        <span style="color: #81A1C1; font-weight: bold">return</span> <span style="color: #A3BE8C">f&quot;Regex(&#39;{</span><span style="color: #81A1C1">self</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">pattern</span><span style="color: #A3BE8C">}&#39;)&quot;</span>
+</span><span id="__span-0-231"><a id="__codelineno-0-231" name="__codelineno-0-231"></a>
+</span><span id="__span-0-232"><a id="__codelineno-0-232" name="__codelineno-0-232"></a>    <span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">__repr__</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">self</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-0-233"><a id="__codelineno-0-233" name="__codelineno-0-233"></a>        <span style="color: #81A1C1; font-weight: bold">return</span> <span style="color: #A3BE8C">f&quot;Regex(pattern=&#39;{</span><span style="color: #81A1C1">self</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">pattern</span><span style="color: #A3BE8C">}&#39;)&quot;</span>
+</span></code></pre></div></td></tr></table></div>
+              </details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="outlines.types.at_least" class="doc doc-heading">
+            <code class="highlight language-python"><span style="color: #D8DEE9">at_least</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">count</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">term</span><span style="color: #ECEFF4">)</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Repeat the term at least <code>count</code> times.</p>
+
+
+            <details class="quote">
+              <summary>Source code in <code>outlines/types/dsl.py</code></summary>
+              <div class="language-python highlight" style="background: #2E3440"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-570">570</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-571">571</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-572">572</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-573">573</a></span></pre></div></td><td class="code"><div><pre style="line-height: 125%;"><span></span><code><span id="__span-0-570"><a id="__codelineno-0-570" name="__codelineno-0-570"></a><span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">at_least</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">count</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">int</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">term</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">Union</span><span style="color: #ECEFF4">[</span><span style="color: #D8DEE9">Term</span><span style="color: #ECEFF4">,</span> <span style="color: #81A1C1">str</span><span style="color: #ECEFF4">])</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #D8DEE9">QuantifyMinimum</span><span style="color: #ECEFF4">:</span>
+</span><span id="__span-0-571"><a id="__codelineno-0-571" name="__codelineno-0-571"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">&quot;&quot;&quot;Repeat the term at least `count` times.&quot;&quot;&quot;</span>
+</span><span id="__span-0-572"><a id="__codelineno-0-572" name="__codelineno-0-572"></a>    <span style="color: #D8DEE9">term</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">String</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">term</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">if</span> <span style="color: #81A1C1">isinstance</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">term</span><span style="color: #ECEFF4">,</span> <span style="color: #81A1C1">str</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">else</span> <span style="color: #D8DEE9">term</span>
+</span><span id="__span-0-573"><a id="__codelineno-0-573" name="__codelineno-0-573"></a>    <span style="color: #81A1C1; font-weight: bold">return</span> <span style="color: #D8DEE9">QuantifyMinimum</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">term</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">count</span><span style="color: #ECEFF4">)</span>
+</span></code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="outlines.types.at_most" class="doc doc-heading">
+            <code class="highlight language-python"><span style="color: #D8DEE9">at_most</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">count</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">term</span><span style="color: #ECEFF4">)</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Repeat the term exactly <code>count</code> times.</p>
+
+
+            <details class="quote">
+              <summary>Source code in <code>outlines/types/dsl.py</code></summary>
+              <div class="language-python highlight" style="background: #2E3440"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-576">576</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-577">577</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-578">578</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-579">579</a></span></pre></div></td><td class="code"><div><pre style="line-height: 125%;"><span></span><code><span id="__span-0-576"><a id="__codelineno-0-576" name="__codelineno-0-576"></a><span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">at_most</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">count</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">int</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">term</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">Union</span><span style="color: #ECEFF4">[</span><span style="color: #D8DEE9">Term</span><span style="color: #ECEFF4">,</span> <span style="color: #81A1C1">str</span><span style="color: #ECEFF4">])</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #D8DEE9">QuantifyMaximum</span><span style="color: #ECEFF4">:</span>
+</span><span id="__span-0-577"><a id="__codelineno-0-577" name="__codelineno-0-577"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">&quot;&quot;&quot;Repeat the term exactly `count` times.&quot;&quot;&quot;</span>
+</span><span id="__span-0-578"><a id="__codelineno-0-578" name="__codelineno-0-578"></a>    <span style="color: #D8DEE9">term</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">String</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">term</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">if</span> <span style="color: #81A1C1">isinstance</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">term</span><span style="color: #ECEFF4">,</span> <span style="color: #81A1C1">str</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">else</span> <span style="color: #D8DEE9">term</span>
+</span><span id="__span-0-579"><a id="__codelineno-0-579" name="__codelineno-0-579"></a>    <span style="color: #81A1C1; font-weight: bold">return</span> <span style="color: #D8DEE9">QuantifyMaximum</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">term</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">count</span><span style="color: #ECEFF4">)</span>
+</span></code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="outlines.types.either" class="doc doc-heading">
+            <code class="highlight language-python"><span style="color: #D8DEE9">either</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1; font-weight: bold">*</span><span style="color: #D8DEE9">terms</span><span style="color: #ECEFF4">)</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Represents an alternative between different terms or strings.</p>
+<p>This factory function automatically translates string arguments
+into <code>String</code> objects.</p>
+
+
+            <details class="quote">
+              <summary>Source code in <code>outlines/types/dsl.py</code></summary>
+              <div class="language-python highlight" style="background: #2E3440"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-548">548</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-549">549</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-550">550</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-551">551</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-552">552</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-553">553</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-554">554</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-555">555</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-556">556</a></span></pre></div></td><td class="code"><div><pre style="line-height: 125%;"><span></span><code><span id="__span-0-548"><a id="__codelineno-0-548" name="__codelineno-0-548"></a><span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">either</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1; font-weight: bold">*</span><span style="color: #D8DEE9">terms</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">Union</span><span style="color: #ECEFF4">[</span><span style="color: #81A1C1">str</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">Term</span><span style="color: #ECEFF4">]):</span>
+</span><span id="__span-0-549"><a id="__codelineno-0-549" name="__codelineno-0-549"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">&quot;&quot;&quot;Represents an alternative between different terms or strings.</span>
+</span><span id="__span-0-550"><a id="__codelineno-0-550" name="__codelineno-0-550"></a>
+</span><span id="__span-0-551"><a id="__codelineno-0-551" name="__codelineno-0-551"></a><span style="color: #616E87">    This factory function automatically translates string arguments</span>
+</span><span id="__span-0-552"><a id="__codelineno-0-552" name="__codelineno-0-552"></a><span style="color: #616E87">    into `String` objects.</span>
+</span><span id="__span-0-553"><a id="__codelineno-0-553" name="__codelineno-0-553"></a>
+</span><span id="__span-0-554"><a id="__codelineno-0-554" name="__codelineno-0-554"></a><span style="color: #616E87">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-555"><a id="__codelineno-0-555" name="__codelineno-0-555"></a>    <span style="color: #D8DEE9">terms</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #ECEFF4">[</span><span style="color: #D8DEE9">String</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">arg</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">if</span> <span style="color: #81A1C1">isinstance</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">arg</span><span style="color: #ECEFF4">,</span> <span style="color: #81A1C1">str</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">else</span> <span style="color: #D8DEE9">arg</span> <span style="color: #81A1C1; font-weight: bold">for</span> <span style="color: #D8DEE9">arg</span> <span style="color: #81A1C1; font-weight: bold">in</span> <span style="color: #D8DEE9">terms</span><span style="color: #ECEFF4">]</span>
+</span><span id="__span-0-556"><a id="__codelineno-0-556" name="__codelineno-0-556"></a>    <span style="color: #81A1C1; font-weight: bold">return</span> <span style="color: #D8DEE9">Alternatives</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">terms</span><span style="color: #ECEFF4">)</span>
+</span></code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h2 id="outlines.types.exactly" class="doc doc-heading">
+            <code class="highlight language-python"><span style="color: #D8DEE9">exactly</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">count</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">term</span><span style="color: #ECEFF4">)</span></code>
+
+</h2>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Repeat the term exactly <code>count</code> times.</p>
+
+
+            <details class="quote">
+              <summary>Source code in <code>outlines/types/dsl.py</code></summary>
+              <div class="language-python highlight" style="background: #2E3440"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-564">564</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-565">565</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-566">566</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-567">567</a></span></pre></div></td><td class="code"><div><pre style="line-height: 125%;"><span></span><code><span id="__span-0-564"><a id="__codelineno-0-564" name="__codelineno-0-564"></a><span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">exactly</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">count</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">int</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">term</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">Union</span><span style="color: #ECEFF4">[</span><span style="color: #D8DEE9">Term</span><span style="color: #ECEFF4">,</span> <span style="color: #81A1C1">str</span><span style="color: #ECEFF4">])</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #D8DEE9">QuantifyExact</span><span style="color: #ECEFF4">:</span>
+</span><span id="__span-0-565"><a id="__codelineno-0-565" name="__codelineno-0-565"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">&quot;&quot;&quot;Repeat the term exactly `count` times.&quot;&quot;&quot;</span>
+</span><span id="__span-0-566"><a id="__codelineno-0-566" name="__codelineno-0-566"></a>    <span style="color: #D8DEE9">term</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">String</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">term</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">if</span> <span style="color: #81A1C1">isinstance</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">term</span><span style="color: #ECEFF4">,</span> <span style="color: #81A1C1">str</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">else</span> <span style="color: #D8DEE9">term</span>
+</span><span id="__span-0-567"><a id="__codelineno-0-567" name="__codelineno-0-567"></a>    <span style="color: #81A1C1; font-weight: bold">return</span> <span style="color: #D8DEE9">QuantifyExact</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">term</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">count</span><span style="color: #ECEFF4">)</span>
+</span></code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
 
 
 <div class="doc doc-object doc-module">
@@ -4186,7 +5458,7 @@ output types for structured generation:</p>
 
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
-              Bases: <code><a class="autorefs autorefs-internal" title="Term (outlines.types.dsl.Term)" href="#outlines.types.dsl.Term">Term</a></code></p>
+              Bases: <code><a class="autorefs autorefs-internal" title="Term (outlines.types.dsl.Term)" href="../#outlines.types.dsl.Term">Term</a></code></p>
 
 
         <p>Class representing a context-free grammar.</p>
@@ -4389,7 +5661,7 @@ output types for structured generation:</p>
 
   
       dataclass
-   (outlines.types.dsl.CFG)" href="#outlines.types.dsl.CFG">CFG</a></code>
+   (outlines.types.dsl.CFG)" href="../#outlines.types.dsl.CFG">CFG</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -4467,7 +5739,7 @@ output types for structured generation:</p>
 
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
-              Bases: <code><a class="autorefs autorefs-internal" title="Term (outlines.types.dsl.Term)" href="#outlines.types.dsl.Term">Term</a></code></p>
+              Bases: <code><a class="autorefs autorefs-internal" title="Term (outlines.types.dsl.Term)" href="../#outlines.types.dsl.Term">Term</a></code></p>
 
 
         <p>Class representing a choice between different items.</p>
@@ -4580,7 +5852,7 @@ output types for structured generation:</p>
 
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
-              Bases: <code><a class="autorefs autorefs-internal" title="Term (outlines.types.dsl.Term)" href="#outlines.types.dsl.Term">Term</a></code></p>
+              Bases: <code><a class="autorefs autorefs-internal" title="Term (outlines.types.dsl.Term)" href="../#outlines.types.dsl.Term">Term</a></code></p>
 
 
         <p>Class representing a JSON schema.</p>
@@ -5022,7 +6294,7 @@ schema.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><a class="autorefs autorefs-internal" title="JsonSchema (outlines.types.dsl.JsonSchema)" href="#outlines.types.dsl.JsonSchema">JsonSchema</a></code>
+                  <code><a class="autorefs autorefs-internal" title="JsonSchema (outlines.types.dsl.JsonSchema)" href="../#outlines.types.dsl.JsonSchema">JsonSchema</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -5102,7 +6374,7 @@ schema.</p>
 
     <div class="doc doc-contents ">
             <p class="doc doc-class-bases">
-              Bases: <code><a class="autorefs autorefs-internal" title="Term (outlines.types.dsl.Term)" href="#outlines.types.dsl.Term">Term</a></code></p>
+              Bases: <code><a class="autorefs autorefs-internal" title="Term (outlines.types.dsl.Term)" href="../#outlines.types.dsl.Term">Term</a></code></p>
 
 
         <p>Class representing a regular expression.</p>
@@ -5807,7 +7079,7 @@ into <code>String</code> objects.</p>
       <tbody>
           <tr class="doc-section-item">
             <td>
-                  <code><a class="autorefs autorefs-internal" title="Term (outlines.types.dsl.Term)" href="#outlines.types.dsl.Term">Term</a></code>
+                  <code><a class="autorefs autorefs-internal" title="Term (outlines.types.dsl.Term)" href="../#outlines.types.dsl.Term">Term</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -6041,7 +7313,7 @@ into <code>String</code> objects.</p>
                 <code>term</code>
             </td>
             <td>
-                  <code><a class="autorefs autorefs-internal" title="Term (outlines.types.dsl.Term)" href="#outlines.types.dsl.Term">Term</a></code>
+                  <code><a class="autorefs autorefs-internal" title="Term (outlines.types.dsl.Term)" href="../#outlines.types.dsl.Term">Term</a></code>
             </td>
             <td>
               <div class="doc-md-description">
@@ -6658,7 +7930,7 @@ to <code>fn</code> using the ** unpacking syntax.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="August 23, 2025 11:53:57 UTC"><span class="timeago" datetime="2025-08-23T11:53:57+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="August 23, 2025 11:53:57 UTC">2025-08-23</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="August 23, 2025 22:51:12 UTC"><span class="timeago" datetime="2025-08-23T22:51:12+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="August 23, 2025 22:51:12 UTC">2025-08-23</span>
   </span>
 
     
@@ -6668,7 +7940,7 @@ to <code>fn</code> using the ** unpacking syntax.</p>
     <span class="md-icon" title="Created">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="August 23, 2025 11:53:57 UTC"><span class="timeago" datetime="2025-08-23T11:53:57+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="August 23, 2025 11:53:57 UTC">2025-08-23</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="August 23, 2025 22:51:12 UTC"><span class="timeago" datetime="2025-08-23T22:51:12+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="August 23, 2025 22:51:12 UTC">2025-08-23</span>
   </span>
 
     
