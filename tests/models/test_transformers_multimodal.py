@@ -46,8 +46,6 @@ def model():
         LlavaForConditionalGeneration.from_pretrained(TEST_MODEL),
         AutoProcessor.from_pretrained(TEST_MODEL),
     )
-    chat_template = '{% for message in messages %}{{ message.role }}: {{ message.content }}{% endfor %}'
-    model.type_adapter.tokenizer.chat_template = chat_template
 
     return model
 
@@ -103,8 +101,8 @@ def test_transformers_multimodal_chat(model, images):
             {
                 "role": "user",
                 "content": [
-                    "What's on this image?<image>",
-                    Image(images[0]),
+                    {"type": "text", "text": "What's on this image?"},
+                    {"type": "image", "image": Image(images[0])},
                 ],
             },
         ]),
@@ -224,8 +222,8 @@ def test_transformers_multimodal_batch(model, images):
                 {
                     "role": "user",
                     "content": [
-                        "What's on this image?<image>",
-                        Image(images[0]),
+                        {"type": "text", "text": "What's on this image?"},
+                        {"type": "image", "image": Image(images[0])},
                     ],
                 },
             ]),
@@ -234,8 +232,8 @@ def test_transformers_multimodal_batch(model, images):
                 {
                     "role": "user",
                     "content": [
-                        "What's on this image?<image>",
-                        Image(images[1]),
+                        {"type": "text", "text": "What's on this image?"},
+                        {"type": "image", "image": Image(images[1])},
                     ],
                 },
             ]),
@@ -244,16 +242,3 @@ def test_transformers_multimodal_batch(model, images):
     )
     assert isinstance(result, list)
     assert len(result) == 2
-
-
-def test_transformers_multimodal_deprecated_input_type(model, images):
-    with pytest.warns(DeprecationWarning):
-        result = model.generate(
-            {
-                "text": "<image>Describe this image in one sentence:",
-                "images": images[0],
-            },
-            None,
-            max_new_tokens=2,
-        )
-        assert isinstance(result, str)
