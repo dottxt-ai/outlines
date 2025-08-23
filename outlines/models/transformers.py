@@ -432,15 +432,33 @@ class TransformersMultiModalTypeAdapter(ModelTypeAdapter):
 
     @format_input.register(Chat)
     def format_chat_input(self, model_input: Chat) -> dict:
-        # we need to separate the assets from the messages
-        # to apply the chat template to the messages without assets
+        SUPPORTED_ASSETS = {
+            "type": ["image", "video", "audio"],
+            "class": (Image, Video, Audio)
+        }
         messages = model_input.messages
         assets = []
+
+        # we need to collect assets from model_input messages for HF processor
         for message in messages:
             if isinstance(message["content"], list):
                 for item in message["content"]:
-                    if item["type"] != "text":
-                        assets.append(item[item["type"]])
+                    if item["type"] == "text":
+                        continue
+                    elif item["type"] in SUPPORTED_ASSETS["type"]:
+                        asset_key = item["type"]
+                        if isinstance(item[asset_key], SUPPORTED_ASSETS["class"]):
+                            assets.append(item[asset_key])
+                        else:
+                            raise ValueError(
+                                f"Assets must be of type {SUPPORTED_ASSETS['class']}. "
+                                + f"Unsupported asset type: {asset_key}"
+                            )
+                    else:
+                        raise ValueError(
+                            f"Content must be 'text', {SUPPORTED_ASSETS["type"]}. "
+                            + f"Unsupported content type: {item['type']}")
+
         formatted_prompt = self.tokenizer.apply_chat_template(
             messages, # full message for applying chat template
             tokenize=False,
