@@ -445,9 +445,9 @@ class TransformersMultiModalTypeAdapter(ModelTypeAdapter):
                 for item in message["content"]:
                     if item["type"] == "text":
                         continue
-                    elif item["type"] in SUPPORTED_ASSETS["type"]:
+                    elif item["type"] in SUPPORTED_ASSETS['type']:
                         asset_key = item["type"]
-                        if isinstance(item[asset_key], SUPPORTED_ASSETS["class"]):
+                        if isinstance(item[asset_key], SUPPORTED_ASSETS['class']):
                             assets.append(item[asset_key])
                         else:
                             raise ValueError(
@@ -456,7 +456,7 @@ class TransformersMultiModalTypeAdapter(ModelTypeAdapter):
                             )
                     else:
                         raise ValueError(
-                            f"Content must be 'text', {SUPPORTED_ASSETS["type"]}. "
+                            f"Content must be 'text', {SUPPORTED_ASSETS['type']}. "
                             + f"Unsupported content type: {item['type']}")
 
         formatted_prompt = self.tokenizer.apply_chat_template(
