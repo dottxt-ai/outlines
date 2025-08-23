@@ -81,14 +81,14 @@ def test_transformers_multimodal_type_adapter_format_input_empty_assets(adapter)
 def test_transformers_multimodal_type_adapter_format_input_chat_invalid_asset_type(adapter, image):
     class MockAsset:
         pass
-    
+
     chat_prompt = Chat(messages=[
         {"role": "user", "content": [
             {"type": "text", "text": "Hello"},
             {"type": "image", "image": MockAsset()}  # Wrong type
         ]}
     ])
-    
+
     with pytest.raises(ValueError, match="Assets must be of type"):
         adapter.format_input(chat_prompt)
 
@@ -100,7 +100,7 @@ def test_transformers_multimodal_type_adapter_format_input_chat_unsupported_cont
             {"type": "unsupported", "data": "some_data"}  # Unsupported type
         ]}
     ])
-    
+
     with pytest.raises(ValueError, match="Content must be 'text'"):
         adapter.format_input(chat_prompt)
 
