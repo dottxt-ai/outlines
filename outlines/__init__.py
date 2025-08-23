@@ -20,16 +20,3 @@ from outlines.templates import Vision as Vision
 from outlines.types import cfg as cfg
 from outlines.types import json_schema as json_schema
 from outlines.types import regex as regex
-
-model_list = [
-    "from_anthropic",
-    "from_dottxt",
-    "from_gemini",
-    "from_llamacpp",
-    "from_mlxlm",
-    "from_ollama",
-    "from_openai",
-    "from_tgi",
-    "from_transformers",
-    "from_vllm",
-]
