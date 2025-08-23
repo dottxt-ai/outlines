@@ -82,7 +82,7 @@ print(Animal.model_validate_json(result)) # specie=cat, color=white, weight=4
 
 
 ### Chat
-The `Chat` interface offers a more convenient way to work with multimodal inputs. You don't need to manually add asset tags like `<image>`. The model's HF processor handles the chat templating and asset placement for you automatically. 
+The `Chat` interface offers a more convenient way to work with multimodal inputs. You don't need to manually add asset tags like `<image>`. The model's HF processor handles the chat templating and asset placement for you automatically.
 To do so, call the model with a `Chat` instance using a multimodal chat format. Assets must be pre-processed as `outlines.inputs.{Image, Audio, Video}` format, and only `image`, `video`, and `audio` types are supported.
 
 For instance:
@@ -107,7 +107,7 @@ def get_image_from_url(image_url):
     image = PILImage.open(img_byte_stream).convert("RGB")
     image.format = "PNG"
     return image
-    
+
 # Create the model
 model = outlines.from_transformers(
     AutoModelForImageTextToText.from_pretrained("Qwen/Qwen2.5-VL-3B-Instruct", **model_kwargs),
@@ -162,7 +162,7 @@ def get_image_from_url(image_url):
     image = PILImage.open(img_byte_stream).convert("RGB")
     image.format = "PNG"
     return image
-    
+
 # Create the model
 model = outlines.from_transformers(
     AutoModelForImageTextToText.from_pretrained("Qwen/Qwen2.5-VL-3B-Instruct", **model_kwargs),
