@@ -6,7 +6,6 @@ from .mlx import MLXTensorAdapter
 from .numpy import NumpyTensorAdapter
 from .torch import TorchTensorAdapter
 
-
 tensor_adapters = {
     "mlx": MLXTensorAdapter,
     "numpy": NumpyTensorAdapter,
@@ -17,4 +16,12 @@ TensorAdapterImplementation = Union[
     MLXTensorAdapter,
     NumpyTensorAdapter,
     TorchTensorAdapter,
+]
+
+__all__ = [
+    "MLXTensorAdapter",
+    "NumpyTensorAdapter",
+    "TorchTensorAdapter",
+    "tensor_adapters",
+    "TensorAdapterImplementation",
 ]
