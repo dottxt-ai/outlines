@@ -43,9 +43,8 @@ def test_transformers_multimodal_type_adapter_format_input(adapter, image):
     with pytest.raises(TypeError):
         adapter.format_input("hello")
 
-    with pytest.raises(ValueError):
-        with pytest.deprecated_call():
-            adapter.format_input({"foo": "bar"})
+    with pytest.raises(TypeError):
+        adapter.format_input({"foo": "bar"})
 
     with pytest.raises(ValueError, match="All assets must be of the same type"):
         adapter.format_input(["foo", Image(image), Video("")])
@@ -64,7 +63,7 @@ def test_transformers_multimodal_type_adapter_format_input(adapter, image):
 
     chat_prompt = Chat(messages=[
         {"role": "system", "content": "foo"},
-        {"role": "user", "content": ["bar", image_asset]},
+        {"role": "user", "content": [{"type": "text", "text": "bar"}, {"type": "image", "image": image_asset}]},
     ])
     result = adapter.format_input(chat_prompt)
     assert isinstance(result, dict)
@@ -72,6 +71,38 @@ def test_transformers_multimodal_type_adapter_format_input(adapter, image):
     assert isinstance(result["images"], list)
     assert len(result["images"]) == 1
     assert result["images"][0] == image_asset.image
+
+
+def test_transformers_multimodal_type_adapter_format_input_empty_assets(adapter):
+    result = adapter.format_input(["Just text prompt"])
+    assert result == {"text": "Just text prompt"}
+
+
+def test_transformers_multimodal_type_adapter_format_input_chat_invalid_asset_type(adapter, image):
+    class MockAsset:
+        pass
+
+    chat_prompt = Chat(messages=[
+        {"role": "user", "content": [
+            {"type": "text", "text": "Hello"},
+            {"type": "image", "image": MockAsset()}  # Wrong type
+        ]}
+    ])
+
+    with pytest.raises(ValueError, match="Assets must be of type"):
+        adapter.format_input(chat_prompt)
+
+
+def test_transformers_multimodal_type_adapter_format_input_chat_unsupported_content_type(adapter):
+    chat_prompt = Chat(messages=[
+        {"role": "user", "content": [
+            {"type": "text", "text": "Hello"},
+            {"type": "unsupported", "data": "some_data"}  # Unsupported type
+        ]}
+    ])
+
+    with pytest.raises(ValueError, match="Content must be 'text'"):
+        adapter.format_input(chat_prompt)
 
 
 def test_transformers_multimodal_type_adapter_format_output_type(

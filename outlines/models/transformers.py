@@ -430,60 +430,46 @@ class TransformersMultiModalTypeAdapter(ModelTypeAdapter):
             + "model or a `Chat` instance."
         )
 
-    @format_input.register(dict)
-    def format_dict_input(self, model_input: dict) -> dict:
-        warnings.warn("""
-            Providing the input as a dict is deprecated. Support for this will
-            be removed in the v1.2.0 release of Outlines. Use a list containing
-            a text prompt and assets (`Image`, `Audio` or `Video` instances)
-            instead.
-            For instance:
-            ```python
-            from outlines import Image
-            model = from_transformers(mymodel, myprocessor)
-            response = model([
-                "A beautiful image of a cat",
-                Image(my_image),
-            ])
-            ```
-            """,
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        if "text" not in model_input:
-            raise ValueError(
-                "The input must contain the 'text' key along with the other "
-                + "keys required by your processor."
-            )
-        return model_input
-
     @format_input.register(Chat)
     def format_chat_input(self, model_input: Chat) -> dict:
-        # we need to separate the images from the messages
-        # to apply the chat template to the messages without images
         messages = model_input.messages
-        images = []
-        messages_without_images = []
+        assets = []
+
+        # we need to collect assets from model_input messages for HF processor
         for message in messages:
             if isinstance(message["content"], list):
-                images.extend(message["content"][1:])
-                messages_without_images.append({
-                    "role": message["role"],
-                    "content": message["content"][0],
-                })
-            else:
-                messages_without_images.append(message)
+                for item in message["content"]:
+                    if item["type"] == "text":
+                        continue
+                    elif item["type"] in ["image", "video", "audio"]:
+                        asset_key = item["type"]
+                        if isinstance(item[asset_key], (Image, Video, Audio)):
+                            assets.append(item[asset_key])
+                        else:
+                            raise ValueError(
+                                "Assets must be of type `Image`, `Video` or `Audio`. "
+                                + f"Unsupported asset type: {asset_key}"
+                            )
+                    else:
+                        raise ValueError(
+                            "Content must be 'text', 'image', 'video' or 'audio'. "
+                            + f"Unsupported content type: {item['type']}")
+
         formatted_prompt = self.tokenizer.apply_chat_template(
-            messages_without_images,
-            tokenize=False
+            messages, # full message for applying chat template
+            tokenize=False,
+            add_generation_prompt=True
         )
-        # use the formatted prompt and the images to format the input
-        return self.format_list_input([formatted_prompt, *images])
+        # use the formatted prompt and the assets to format the input
+        return self.format_list_input([formatted_prompt, *assets])
 
     @format_input.register(list)
     def format_list_input(self, model_input: list) -> dict:
         prompt = model_input[0]
         assets = model_input[1:]
+
+        if not assets:  # handle empty assets case
+            return {"text": prompt}
 
         asset_types = set(type(asset) for asset in assets)
         if len(asset_types) > 1:
