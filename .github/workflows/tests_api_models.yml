@@ -1,16 +1,11 @@
-name: API Model Tests
+name: API Models Tests
 
 on:
   workflow_dispatch:
-    inputs:
-      branch_name:
-        description: 'Name of the branch to test'
-        required: true
-        type: string
 
 jobs:
   tests:
-    name: Run API Model Tests
+    name: Run API Models Tests
     runs-on: ubuntu-latest
     env:
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
@@ -25,7 +20,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
       with:
-        ref: ${{ github.event.inputs.branch_name }}
+        ref: ${{ github.ref }}
 
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
@@ -57,6 +52,6 @@ jobs:
 
     - name: Run tests
       run: |
-        uv run pytest -x --cov=outlines -m 'api_call' --ignore=tests/models/test_dottxt.py
+        uv run pytest -m 'api_call' --ignore=tests/models/test_dottxt.py
       env:
         COVERAGE_FILE: .coverage.${{ steps.matrix-id.outputs.id }}
