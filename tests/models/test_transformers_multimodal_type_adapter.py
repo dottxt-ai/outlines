@@ -2,22 +2,24 @@ import pytest
 
 from PIL import Image as PILImage
 from outlines_core import Index, Vocabulary
-from transformers import AutoTokenizer, LogitsProcessorList
+from transformers import (
+    AutoProcessor,
+    LogitsProcessorList,
+)
 
-from outlines.inputs import Chat, Image, Video
+from outlines.inputs import Audio, Chat, Image, Video
 from outlines.models.transformers import TransformersMultiModalTypeAdapter
 from outlines.backends.outlines_core import OutlinesCoreLogitsProcessor
 
 
-MODEL_NAME = "erwanf/gpt2-mini"
+MODEL_NAME = "trl-internal-testing/tiny-LlavaForConditionalGeneration"
 
 
 @pytest.fixture
 def adapter():
-    tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+    processor = AutoProcessor.from_pretrained(MODEL_NAME)
+    tokenizer = processor.tokenizer
     type_adapter = TransformersMultiModalTypeAdapter(tokenizer=tokenizer)
-    chat_template = '{% for message in messages %}{{ message.role }}: {{ message.content }}{% endfor %}'
-    type_adapter.tokenizer.chat_template = chat_template
 
     return type_adapter
 
@@ -37,6 +39,18 @@ def image():
     image.format = "PNG"
 
     return image
+
+
+@pytest.fixture
+def video():
+    # Simple mock video data
+    return "mock_video_data"
+
+
+@pytest.fixture
+def audio():
+    # Simple mock audio data
+    return "mock_audio_data"
 
 
 def test_transformers_multimodal_type_adapter_format_input(adapter, image):
@@ -187,6 +201,23 @@ def test_transformers_multimodal_type_adapter_format_input_invalid_content_type(
 
     with pytest.raises(ValueError, match="Invalid content type"):
         adapter.format_input(chat_prompt)
+
+
+def test_transformers_multimodal_type_adapter_format_asset_for_template(adapter, image, video, audio):
+    # Test Image asset
+    image_asset = Image(image)
+    formatted_image = adapter._format_asset_for_template(image_asset)
+    assert formatted_image == {"type": "image", "image": image_asset}
+
+    # Test Video asset
+    video_asset = Video(video)
+    formatted_video = adapter._format_asset_for_template(video_asset)
+    assert formatted_video == {"type": "video", "video": video_asset}
+
+    # Test Audio asset
+    audio_asset = Audio(audio)
+    formatted_audio = adapter._format_asset_for_template(audio_asset)
+    assert formatted_audio == {"type": "audio", "audio": audio_asset}
 
 
 def test_transformers_multimodal_type_adapter_format_asset_for_template_invalid_type(adapter):
