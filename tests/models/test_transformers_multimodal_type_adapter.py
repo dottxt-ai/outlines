@@ -230,3 +230,39 @@ def test_transformers_multimodal_type_adapter_format_asset_for_template_invalid_
 
     with pytest.raises(ValueError, match="Assets must be of type `Image`, `Video` or `Audio`"):
         adapter._format_asset_for_template(unsupported_asset)
+
+
+def test_transformers_multimodal_type_adapter_multiple_assets_in_single_item(adapter, image):
+    image_asset = Image(image)
+    video_asset = Video("dummy_video")
+
+    chat_prompt = Chat(messages=[
+        {"role": "user", "content": [
+            {"type": "text", "text": "What's in this?"},
+            {"type": "image", "image": image_asset, "video": video_asset}  # Multiple asset types
+        ]}
+    ])
+
+    with pytest.raises(ValueError, match="Found item with multiple keys:"):
+        adapter.format_input(chat_prompt)
+
+
+
+def test_transformers_multimodal_type_adapter_correct_multiple_assets_usage(adapter, image):
+    image_asset1 = Image(image)
+    image_asset2 = Image(image)
+
+    # Correct way: separate dictionary items for each asset
+    chat_prompt = Chat(messages=[
+        {"role": "user", "content": [
+            {"type": "text", "text": "What's in these images?"},
+            {"type": "image", "image": image_asset1},
+            {"type": "image", "image": image_asset2}
+        ]}
+    ])
+
+    result = adapter.format_input(chat_prompt)
+    assert isinstance(result, dict)
+    assert "text" in result
+    assert "images" in result
+    assert len(result["images"]) == 2
