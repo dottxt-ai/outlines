@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from PIL import Image as PILImage
 from outlines.inputs import Chat, Image
 from outlines.models.anthropic import AnthropicTypeAdapter
+from outlines.tools import ToolDef
 
 
 @pytest.fixture
@@ -116,3 +117,49 @@ def test_anthropic_type_adapter_output(adapter):
         match="is not available with Anthropic"
     ):
         adapter.format_output_type(str)
+
+
+def test_anthropic_type_adapter_format_tools(adapter):
+    tools = [
+        ToolDef(
+            name="tool_name",
+            description="tool_description",
+            parameters={"foo": {"type": "string"}},
+            required=["foo"],
+        ),
+        ToolDef(
+            name="tool_name_2",
+            description="tool_description_2",
+            parameters={
+                "foo": {"type": "string"},
+                "bar": {"type": "integer"}
+            },
+            required=["bar"],
+        ),
+    ]
+    result = adapter.format_tools(tools)
+    assert result == [
+        {
+            "name": "tool_name",
+            "description": "tool_description",
+            "input_schema": {
+                "type": "object",
+                "properties": {
+                    "foo": {"type": "string"}
+                },
+                "required": ["foo"],
+            },
+        },
+        {
+            "name": "tool_name_2",
+            "description": "tool_description_2",
+            "input_schema": {
+                "type": "object",
+                "properties": {
+                    "foo": {"type": "string"},
+                    "bar": {"type": "integer"}
+                },
+                "required": ["bar"],
+            },
+        },
+    ]

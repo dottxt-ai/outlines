@@ -8,6 +8,7 @@ import pytest
 import outlines
 from outlines.inputs import Chat, Image, Video
 from outlines.models.anthropic import Anthropic
+from outlines.tools import ToolDef
 
 
 MODEL_NAME = "claude-3-haiku-20240307"
@@ -36,6 +37,27 @@ def image():
     image = PILImage.open(buffer)
 
     return image
+
+
+@pytest.fixture
+def tools():
+    return [
+        ToolDef(
+            name="get_weather",
+            description="Get the current weather for a given city",
+            parameters={"city": {"type": "string"}},
+            required=["city"],
+        ),
+        ToolDef(
+            name="get_user_info",
+            description="Get the current user info",
+            parameters={
+                "first_name": {"type": "string"},
+                "last_name": {"type": "string"}
+            },
+            required=["last_name"],
+        ),
+    ]
 
 
 def test_init_from_client():
@@ -86,7 +108,9 @@ def test_anthropic_wrong_output_type():
 @pytest.mark.api_call
 def test_anthropic_simple_call(model):
     result = model.generate("Respond with one word. Not more.", max_tokens=1024)
-    assert isinstance(result, str)
+    assert isinstance(result, dict)
+    assert result["type"] == "assistant"
+    assert isinstance(result["content"], str)
 
 
 @pytest.mark.xfail(reason="Anthropic requires the `max_tokens` parameter to be set")
@@ -97,7 +121,9 @@ def test_anthropic_direct_call(model_no_model_name):
         model_name=MODEL_NAME,
         max_tokens=1024,
     )
-    assert isinstance(result, str)
+    assert isinstance(result, dict)
+    assert result["type"] == "assistant"
+    assert isinstance(result["content"], str)
 
 
 @pytest.mark.api_call
@@ -109,7 +135,26 @@ def test_anthropic_simple_vision(model, image):
         ],
         max_tokens=1024,
     )
-    assert isinstance(result, str)
+    assert isinstance(result, dict)
+    assert result["type"] == "assistant"
+    assert isinstance(result["content"], str)
+
+
+@pytest.mark.api_call
+def test_anthropic_tools(model, tools):
+    result = model.generate(
+        "What is the weather in Tokyo?",
+        tools=tools,
+        max_tokens=1024,
+    )
+    assert isinstance(result, dict)
+    assert result["type"] == "assistant"
+    assert result["tool_calls"] is not None
+    assert len(result["tool_calls"]) == 1
+    tool_call = result["tool_calls"][0]
+    assert tool_call["name"] == "get_weather"
+    assert tool_call["args"] == {"city": "Tokyo"}
+    assert tool_call["tool_call_id"] is not None
 
 
 @pytest.mark.api_call
@@ -121,14 +166,40 @@ def test_anthropic_chat(model, image):
             "content": ["What does this logo represent?", Image(image)]
         },
     ]), max_tokens=10)
-    assert isinstance(result, str)
+    assert isinstance(result, dict)
+    assert result["type"] == "assistant"
+    assert isinstance(result["content"], str)
+
 
 
 @pytest.mark.api_call
 def test_anthopic_streaming(model):
-    result = model.stream("Respond with one word. Not more.", max_tokens=1024)
+    result = model.stream("Respond with one sentence. Not more.", max_tokens=50)
     assert isinstance(result, Generator)
-    assert isinstance(next(result), str)
+    for chunk in result:
+        assert isinstance(chunk, dict)
+        assert chunk["type"] == "assistant"
+        assert isinstance(chunk["content"], str)
+
+
+@pytest.mark.api_call
+def test_anthopic_streaming_tools(model, tools):
+    result = model.stream(
+        "What is the weather in Tokyo?",
+        tools=tools,
+        max_tokens=1024,
+    )
+    assert isinstance(result, Generator)
+    for chunk in result:
+        assert isinstance(chunk, dict)
+        assert chunk["type"] == "assistant"
+        assert chunk["content"] is None
+        assert chunk["tool_calls"] is not None
+        assert len(chunk["tool_calls"]) == 1
+        tool_call = chunk["tool_calls"][0]
+        assert tool_call["name"] == "get_weather"
+        assert isinstance(tool_call["args"], str)
+        assert tool_call["tool_call_id"] is not None
 
 
 def test_anthropic_batch(model):
