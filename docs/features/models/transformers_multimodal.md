@@ -132,6 +132,58 @@ response = model(prompt, max_new_tokens=50)
 print(response) # 'A Siamese cat with blue eyes is sitting on a cat tree, looking alert and curious.'
 ```
 
+Or using a list containing text and assets:
+
+```python
+import outlines
+from outlines.inputs import Chat, Image
+from transformers import AutoModelForImageTextToText, AutoProcessor
+from PIL import Image as PILImage
+from io import BytesIO
+import requests
+import torch
+
+
+TEST_MODEL = "Qwen/Qwen2.5-VL-7B-Instruct"
+
+# Function to get an image
+def get_image(url):
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+    }
+    r = requests.get(url, headers=headers)
+    image = PILImage.open(BytesIO(r.content)).convert("RGB")
+    image.format = "PNG"
+    return image
+
+model_kwargs = {
+        "torch_dtype": torch.bfloat16,
+        # "attn_implementation": "flash_attention_2",
+        "device_map": "auto",
+    }
+
+# Create a model
+model = outlines.from_transformers(
+    AutoModelForImageTextToText.from_pretrained(TEST_MODEL, **model_kwargs),
+    AutoProcessor.from_pretrained(TEST_MODEL, **model_kwargs),
+)
+
+# Create the chat input
+prompt = Chat([
+    {"role": "user", "content": "You are a helpful assistant that helps me described pictures."},
+    {"role": "assistant", "content": "I'd be happy to help you describe pictures! Please go ahead and share an image"},
+    {
+        "role": "user",
+        "content": ["Describe briefly the image", Image(get_image("https://upload.wikimedia.org/wikipedia/commons/2/25/Siam_lilacpoint.jpg"))]
+    },
+])
+
+# Call the model to generate a response
+response = model(prompt, max_new_tokens=50)
+print(response) # 'The image shows a light-colored cat with a white chest...'
+```
+
+
 ### Batching
 The `TransformersMultiModal` model supports batching through the `batch` method. To use it, provide a list of prompts (using the formats described above) to the `batch` method. You will receive as a result a list of completions.
 
