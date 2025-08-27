@@ -472,20 +472,29 @@ class TransformersMultiModalTypeAdapter(ModelTypeAdapter):
         else:
             raise ValueError(
                 f"Invalid content type: {type(content)}. "
-                "The content must be a string or a list containing text and assets "
-                "or a list of dict items with explicit types."
+                + "The content must be a string or a list containing text and assets "
+                + "or a list of dict items with explicit types."
             )
 
     def _extract_assets_from_content(self, content: list) -> list:
         """Process a list of dict items."""
         assets = []
+
         for item in content:
+            if len(item) > 2:
+                raise ValueError(
+                    f"Found item with multiple keys: {item}. "
+                    + "Each item in the content list must be a dictionary with a 'type' key and a single asset key. "
+                    + "To include multiple assets, use separate dictionary items. "
+                    + "For example: [{{'type': 'image', 'image': image1}}, {{'type': 'image', 'image': image2}}]. "
+                )
+
             if "type" not in item:
                 raise ValueError(
                     "Each item in the content list must be a dictionary with a 'type' key. "
-                    "Valid types are 'text', 'image', 'video', or 'audio'. "
-                    f"For instance {{'type': 'text', 'text': 'your message'}}. "
-                    f"Found item without 'type' key: {item}"
+                    + "Valid types are 'text', 'image', 'video', or 'audio'. "
+                    + "For instance {{'type': 'text', 'text': 'your message'}}. "
+                    + f"Found item without 'type' key: {item}"
                 )
             if item["type"] == "text":
                 continue
@@ -494,7 +503,7 @@ class TransformersMultiModalTypeAdapter(ModelTypeAdapter):
                 if asset_key not in item:
                     raise ValueError(
                         f"Item with type '{asset_key}' must contain a '{asset_key}' key. "
-                        f"Found item: {item}"
+                        + f"Found item: {item}"
                     )
                 if isinstance(item[asset_key], (Image, Video, Audio)):
                     assets.append(item[asset_key])
