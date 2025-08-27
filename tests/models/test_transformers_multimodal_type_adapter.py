@@ -170,3 +170,32 @@ def test_transformers_multimodal_type_adapter_format_input_chat_missing_type_key
 
     with pytest.raises(ValueError, match="Each item in the content list must be a dictionary with a 'type' key"):
         adapter.format_input(chat_prompt)
+
+
+def test_transformers_multimodal_type_adapter_format_input_invalid_content_type(adapter):
+    chat_prompt = Chat(messages=[
+        {"role": "user", "content": 42}  # Invalid content type (integer)
+    ])
+
+    with pytest.raises(ValueError, match="Invalid content type"):
+        adapter.format_input(chat_prompt)
+
+    # Test with another invalid type
+    chat_prompt = Chat(messages=[
+        {"role": "user", "content": {"invalid": "dict"}}  # Invalid content type (dict not in list)
+    ])
+
+    with pytest.raises(ValueError, match="Invalid content type"):
+        adapter.format_input(chat_prompt)
+
+
+def test_transformers_multimodal_type_adapter_format_asset_for_template_invalid_type(adapter):
+    class MockUnsupportedAsset:
+        pass
+
+    # This test requires accessing the private method directly since the error
+    # would normally be caught earlier in the validation chain
+    unsupported_asset = MockUnsupportedAsset()
+
+    with pytest.raises(ValueError, match="Assets must be of type `Image`, `Video` or `Audio`"):
+        adapter._format_asset_for_template(unsupported_asset)
