@@ -63,6 +63,17 @@ def test_transformers_multimodal_type_adapter_format_input(adapter, image):
 
     chat_prompt = Chat(messages=[
         {"role": "system", "content": "foo"},
+        {"role": "user", "content": ["bar", image_asset]},
+    ])
+    result = adapter.format_input(chat_prompt)
+    assert isinstance(result, dict)
+    assert isinstance(result["text"], str)
+    assert isinstance(result["images"], list)
+    assert len(result["images"]) == 1
+    assert result["images"][0] == image_asset.image
+
+    chat_prompt = Chat(messages=[
+        {"role": "system", "content": "foo"},
         {"role": "user", "content": [{"type": "text", "text": "bar"}, {"type": "image", "image": image_asset}]},
     ])
     result = adapter.format_input(chat_prompt)
@@ -71,6 +82,8 @@ def test_transformers_multimodal_type_adapter_format_input(adapter, image):
     assert isinstance(result["images"], list)
     assert len(result["images"]) == 1
     assert result["images"][0] == image_asset.image
+
+
 
 
 def test_transformers_multimodal_type_adapter_format_input_empty_assets(adapter):
@@ -116,3 +129,44 @@ def test_transformers_multimodal_type_adapter_format_output_type(
 
     formatted = adapter.format_output_type(None)
     assert formatted is None
+
+
+def test_transformers_multimodal_type_adapter_format_input_chat_missing_asset_key(adapter, image):
+    image_asset = Image(image)
+
+    # Test missing 'image' key when type is 'image'
+    chat_prompt = Chat(messages=[
+        {"role": "user", "content": [
+            {"type": "text", "text": "What's in this image?"},
+            {"type": "image", "txt": image_asset}  # Wrong key: 'txt' instead of 'image'
+        ]}
+    ])
+
+    with pytest.raises(ValueError, match="Item with type 'image' must contain a 'image' key"):
+        adapter.format_input(chat_prompt)
+
+    # Test missing 'video' key when type is 'video'
+    video_asset = Video("dummy_video")
+    chat_prompt = Chat(messages=[
+        {"role": "user", "content": [
+            {"type": "text", "text": "What's in this video?"},
+            {"type": "video", "vid": video_asset}  # Wrong key: 'vid' instead of 'video'
+        ]}
+    ])
+
+    with pytest.raises(ValueError, match="Item with type 'video' must contain a 'video' key"):
+        adapter.format_input(chat_prompt)
+
+
+def test_transformers_multimodal_type_adapter_format_input_chat_missing_type_key(adapter, image):
+    image_asset = Image(image)
+
+    chat_prompt = Chat(messages=[
+        {"role": "user", "content": [
+            {"text": "What's in this image?"},  # Missing 'type' key
+            {"type": "image", "image": image_asset}
+        ]}
+    ])
+
+    with pytest.raises(ValueError, match="Each item in the content list must be a dictionary with a 'type' key"):
+        adapter.format_input(chat_prompt)
