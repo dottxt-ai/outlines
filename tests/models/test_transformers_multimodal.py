@@ -3,8 +3,7 @@
 import re
 from enum import Enum
 from io import BytesIO
-from urllib.request import urlopen
-
+import requests
 import pytest
 from PIL import Image as PILImage
 from pydantic import BaseModel
@@ -32,8 +31,11 @@ IMAGE_URLS = [
 @pytest.fixture
 def images():
     def img_from_url(url):
-        img_byte_stream = BytesIO(urlopen(url).read())
-        image = PILImage.open(img_byte_stream).convert("RGB")
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+        r = requests.get(url, headers=headers)
+        image = PILImage.open(BytesIO(r.content)).convert("RGB")
         image.format = "PNG"
         return image
 
@@ -95,6 +97,21 @@ def test_transformers_multimodal_wrong_input_type(model):
 
 
 def test_transformers_multimodal_chat(model, images):
+    result = model(
+        Chat(messages=[
+            {"role": "system", "content": "You are a helpful assistant."},
+            {
+                "role": "user",
+                "content": [
+                    "What's on this image?",
+                    Image(images[0]),
+                ],
+            },
+        ]),
+        max_new_tokens=2,
+    )
+    assert isinstance(result, str)
+
     result = model(
         Chat(messages=[
             {"role": "system", "content": "You are a helpful assistant."},
@@ -214,6 +231,34 @@ def test_transformers_multimodal_batch(model, images):
     for item in result:
         assert isinstance(item, list)
         assert len(item) == 2
+
+    result = model.batch(
+        [
+            Chat(messages=[
+                {"role": "system", "content": "You are a helpful assistant."},
+                {
+                    "role": "user",
+                    "content": [
+                        "What's on this image?",
+                        Image(images[0]),
+                    ],
+                },
+            ]),
+            Chat(messages=[
+                {"role": "system", "content": "You are a helpful assistant."},
+                {
+                    "role": "user",
+                    "content": [
+                        "What's on this image?",
+                        Image(images[1]),
+                    ],
+                },
+            ]),
+        ],
+        max_new_tokens=2,
+    )
+    assert isinstance(result, list)
+    assert len(result) == 2
 
     result = model.batch(
         [
