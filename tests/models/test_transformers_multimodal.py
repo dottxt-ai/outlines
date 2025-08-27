@@ -98,8 +98,23 @@ def test_transformers_multimodal_chat(model, image):
             {
                 "role": "user",
                 "content": [
+                    "What's on this image?",
+                    Image(image),
+                ],
+            },
+        ]),
+        max_new_tokens=2,
+    )
+    assert isinstance(result, str)
+
+    result = model(
+        Chat(messages=[
+            {"role": "system", "content": "You are a helpful assistant."},
+            {
+                "role": "user",
+                "content": [
                     {"type": "text", "text": "What's on this image?"},
-                    {"type": "image", "image": Image(images[0])},
+                    {"type": "image", "image": Image(image)},
                 ],
             },
         ]),
@@ -219,8 +234,36 @@ def test_transformers_multimodal_batch(model, image):
                 {
                     "role": "user",
                     "content": [
+                        "What's on this image?",
+                        Image(image),
+                    ],
+                },
+            ]),
+            Chat(messages=[
+                {"role": "system", "content": "You are a helpful assistant."},
+                {
+                    "role": "user",
+                    "content": [
+                        "What's on this image?",
+                        Image(image),
+                    ],
+                },
+            ]),
+        ],
+        max_new_tokens=2,
+    )
+    assert isinstance(result, list)
+    assert len(result) == 2
+
+    result = model.batch(
+        [
+            Chat(messages=[
+                {"role": "system", "content": "You are a helpful assistant."},
+                {
+                    "role": "user",
+                    "content": [
                         {"type": "text", "text": "What's on this image?"},
-                        {"type": "image", "image": Image(images[0])},
+                        {"type": "image", "image": Image(image)},
                     ],
                 },
             ]),
@@ -230,7 +273,7 @@ def test_transformers_multimodal_batch(model, image):
                     "role": "user",
                     "content": [
                         {"type": "text", "text": "What's on this image?"},
-                        {"type": "image", "image": Image(images[1])},
+                        {"type": "image", "image": Image(image)},
                     ],
                 },
             ]),
