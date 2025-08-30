@@ -3,8 +3,7 @@
 import re
 from enum import Enum
 from io import BytesIO
-from urllib.request import urlopen
-
+import requests
 import pytest
 from PIL import Image as PILImage
 from pydantic import BaseModel
@@ -32,8 +31,11 @@ IMAGE_URLS = [
 @pytest.fixture
 def images():
     def img_from_url(url):
-        img_byte_stream = BytesIO(urlopen(url).read())
-        image = PILImage.open(img_byte_stream).convert("RGB")
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+        }
+        r = requests.get(url, headers=headers)
+        image = PILImage.open(BytesIO(r.content)).convert("RGB")
         image.format = "PNG"
         return image
 
@@ -46,8 +48,6 @@ def model():
         LlavaForConditionalGeneration.from_pretrained(TEST_MODEL),
         AutoProcessor.from_pretrained(TEST_MODEL),
     )
-    chat_template = '{% for message in messages %}{{ message.role }}: {{ message.content }}{% endfor %}'
-    model.type_adapter.tokenizer.chat_template = chat_template
 
     return model
 
@@ -103,8 +103,23 @@ def test_transformers_multimodal_chat(model, images):
             {
                 "role": "user",
                 "content": [
-                    "What's on this image?<image>",
+                    "What's on this image?",
                     Image(images[0]),
+                ],
+            },
+        ]),
+        max_new_tokens=2,
+    )
+    assert isinstance(result, str)
+
+    result = model(
+        Chat(messages=[
+            {"role": "system", "content": "You are a helpful assistant."},
+            {
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": "What's on this image?"},
+                    {"type": "image", "image": Image(images[0])},
                 ],
             },
         ]),
@@ -224,7 +239,7 @@ def test_transformers_multimodal_batch(model, images):
                 {
                     "role": "user",
                     "content": [
-                        "What's on this image?<image>",
+                        "What's on this image?",
                         Image(images[0]),
                     ],
                 },
@@ -234,7 +249,7 @@ def test_transformers_multimodal_batch(model, images):
                 {
                     "role": "user",
                     "content": [
-                        "What's on this image?<image>",
+                        "What's on this image?",
                         Image(images[1]),
                     ],
                 },
@@ -245,15 +260,30 @@ def test_transformers_multimodal_batch(model, images):
     assert isinstance(result, list)
     assert len(result) == 2
 
-
-def test_transformers_multimodal_deprecated_input_type(model, images):
-    with pytest.warns(DeprecationWarning):
-        result = model.generate(
-            {
-                "text": "<image>Describe this image in one sentence:",
-                "images": images[0],
-            },
-            None,
-            max_new_tokens=2,
-        )
-        assert isinstance(result, str)
+    result = model.batch(
+        [
+            Chat(messages=[
+                {"role": "system", "content": "You are a helpful assistant."},
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": "What's on this image?"},
+                        {"type": "image", "image": Image(images[0])},
+                    ],
+                },
+            ]),
+            Chat(messages=[
+                {"role": "system", "content": "You are a helpful assistant."},
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": "What's on this image?"},
+                        {"type": "image", "image": Image(images[1])},
+                    ],
+                },
+            ]),
+        ],
+        max_new_tokens=2,
+    )
+    assert isinstance(result, list)
+    assert len(result) == 2
