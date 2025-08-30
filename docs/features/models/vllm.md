@@ -11,7 +11,7 @@ The Outlines `VLLM` model is intended to be used along with a vLLM instance runn
 ```shell
 pip install vllm
 
-vllm serve NousResearch/Meta-Llama-3-8B-Instruct \
+vllm serve microsoft/Phi-3-mini-4k-instruct \
   --dtype auto \
   --api-key token-abc123
 ```
@@ -35,15 +35,15 @@ import openai
 import outlines
 
 # Create the OpenAI client
-sync_openai_client = openai.OpenAI(base_url="http://0.0.0.0:8000/v1", "microsoft/Phi-3-mini-4k-instruct")
-async_openai_client = openai.AsyncOpenAI(base_url="http://0.0.0.0:8000/v1", "microsoft/Phi-3-mini-4k-instruct")
+sync_openai_client = openai.OpenAI(base_url="http://0.0.0.0:8000/v1", api_key="token-abc123")
+async_openai_client = openai.AsyncOpenAI(base_url="http://0.0.0.0:8000/v1", api_key="token-abc123")
 
 # Create a sync model
-sync_model = outlines.from_vllm(sync_openai_client)
+sync_model = outlines.from_vllm(sync_openai_client, "microsoft/Phi-3-mini-4k-instruct")
 print(type(sync_model)) # <class 'outlines.models.vllm.VLLM'>
 
 # Create an async model
-async_model = outlines.from_vllm(async_openai_client)
+async_model = outlines.from_vllm(async_openai_client, "microsoft/Phi-3-mini-4k-instruct")
 print(type(async_model)) # <class 'outlines.models.vllm.AsyncVLLM'>
 ```
 
@@ -58,11 +58,11 @@ import openai
 import outlines
 
 # Create the model
-model = outlines.from_openai(openai.OpenAI(base_url="http://0.0.0.0:8000/v1", "microsoft/Phi-3-mini-4k-instruct"))
+model = outlines.from_vllm(openai.OpenAI(base_url="http://0.0.0.0:8000/v1", api_key="token-abc123"), "microsoft/Phi-3-mini-4k-instruct")
 
 # Call it to generate text
 response = model("What's the capital of Latvia?", max_tokens=20)
-print(response) # 'Riga'
+print(response) # 'The capital of Latvia is Riga.'
 ```
 
 #### Vision
@@ -80,7 +80,10 @@ import openai
 from outlines.inputs import Image
 
 # Create the model
-model = outlines.from_openai(openai.OpenAI(base_url="http://0.0.0.0:8000/v1", "microsoft/Phi-3-mini-4k-instruct"))
+model = outlines.from_vllm(
+    openai.OpenAI(base_url="http://0.0.0.0:8000/v1", api_key="token-abc123"), 
+    "Qwen/Qwen2.5-VL-3B-Instruct"
+)
 
 # Function to get an image
 def get_image(url):
@@ -95,7 +98,7 @@ prompt = [
 
 # Call the model to generate a response
 response = model(prompt, max_tokens=50)
-print(response) # 'This is a picture of a black dog.'
+print(response) # 'The image shows a black puppy lying on a wooden surface...'
 ```
 
 #### Chat
@@ -113,7 +116,10 @@ import outlines
 from outlines.inputs import Chat, Image
 
 # Create the model
-model = outlines.from_openai(openai.OpenAI(base_url="http://0.0.0.0:8000/v1", "microsoft/Phi-3-mini-4k-instruct"))
+model = outlines.from_vllm(
+    openai.OpenAI(base_url="http://0.0.0.0:8000/v1", api_key="token-abc123"), 
+    "Qwen/Qwen2.5-VL-3B-Instruct"
+)
 
 # Function to get an image
 def get_image(url):
@@ -131,7 +137,7 @@ prompt = Chat([
 
 # Call the model to generate a response
 response = model(prompt, max_tokens=50)
-print(response) # 'This is a picture of a black dog.'
+print(response) # 'The image shows a black puppy lying on a wooden surface...'
 ```
 
 #### Streaming
@@ -145,11 +151,15 @@ import openai
 import outlines
 
 # Create the model
-model = outlines.from_openai(openai.OpenAI(base_url="http://0.0.0.0:8000/v1", "microsoft/Phi-3-mini-4k-instruct"))
+model = outlines.from_vllm(
+    openai.OpenAI(base_url="http://0.0.0.0:8000/v1", api_key="token-abc123"), 
+    "microsoft/Phi-3-mini-4k-instruct"
+)
 
 # Stream the response
 for chunk in model.stream("Tell me a short story about a cat.", max_tokens=50):
-    print(chunk) # 'Once...'
+    print(chunk, end="") # 'Once upon a time...'
+print()
 ```
 
 ## Asynchronous Calls
@@ -164,8 +174,8 @@ import openai
 import outlines
 
 async def generate_text():
-    async_client = openai.AsyncOpenAI(base_url="http://0.0.0.0:8000/v1", "microsoft/Phi-3-mini-4k-instruct")
-    async_model = outlines.from_vllm(async_client)
+    async_client = openai.AsyncOpenAI(base_url="http://0.0.0.0:8000/v1", api_key="token-abc123")
+    async_model = outlines.from_vllm(async_client, "microsoft/Phi-3-mini-4k-instruct")
 
     result = await async_model("Write a haiku about Python.", max_tokens=50)
     print(result)
@@ -183,8 +193,8 @@ import openai
 import outlines
 
 async def stream_text():
-    async_client = openai.AsyncOpenAI(base_url="http://0.0.0.0:8000/v1", "microsoft/Phi-3-mini-4k-instruct")
-    async_model = outlines.from_vllm(async_client)
+    async_client = openai.AsyncOpenAI(base_url="http://0.0.0.0:8000/v1", api_key="token-abc123")
+    async_model = outlines.from_vllm(async_client, "microsoft/Phi-3-mini-4k-instruct")
 
     async for chunk in async_model.stream("Tell me a story about a robot.", max_tokens=100):
         print(chunk, end="")
@@ -202,8 +212,8 @@ import openai
 import outlines
 
 async def generate_multiple():
-    async_client = openai.AsyncOpenAI(base_url="http://0.0.0.0:8000/v1", "microsoft/Phi-3-mini-4k-instruct")
-    async_model = outlines.from_vllm(async_client)
+    async_client = openai.AsyncOpenAI(base_url="http://0.0.0.0:8000/v1", api_key="token-abc123")
+    async_model = outlines.from_vllm(async_client, "microsoft/Phi-3-mini-4k-instruct")
 
     prompts = [
         "Write a tagline for a coffee shop.",
@@ -232,8 +242,8 @@ import outlines
 
 output_type = int
 
-openai_client = openai.OpenAI(base_url="http://0.0.0.0:8000/v1", "microsoft/Phi-3-mini-4k-instruct")
-model = outlines.from_vllm(openai_client)
+openai_client = openai.OpenAI(base_url="http://0.0.0.0:8000/v1", api_key="token-abc123")
+model = outlines.from_vllm(openai_client, "microsoft/Phi-3-mini-4k-instruct")
 
 result = model("How many countries are there in the world?", output_type)
 print(result) # '200'
@@ -252,8 +262,8 @@ class Character(BaseModel):
     age: int
     skills: List[str]
 
-openai_client = openai.OpenAI(base_url="http://0.0.0.0:8000/v1", "microsoft/Phi-3-mini-4k-instruct")
-model = outlines.from_vllm(openai_client)
+openai_client = openai.OpenAI(base_url="http://0.0.0.0:8000/v1", api_key="token-abc123")
+model = outlines.from_vllm(openai_client, "microsoft/Phi-3-mini-4k-instruct")
 
 result = model("Create a character.", output_type=Character, frequency_penalty=1.5)
 print(result) # '{"name": "Evelyn", "age": 34, "skills": ["archery", "stealth", "alchemy"]}'
@@ -269,8 +279,8 @@ import outlines
 
 output_type = Literal["Paris", "London", "Rome", "Berlin"]
 
-openai_client = openai.OpenAI(base_url="http://0.0.0.0:8000/v1", "microsoft/Phi-3-mini-4k-instruct")
-model = outlines.from_vllm(openai_client)
+openai_client = openai.OpenAI(base_url="http://0.0.0.0:8000/v1", api_key="token-abc123")
+model = outlines.from_vllm(openai_client, "microsoft/Phi-3-mini-4k-instruct")
 
 result = model("What is the capital of France?", output_type, temperature=0)
 print(result) # 'Paris'
@@ -285,8 +295,8 @@ from outlines.types import Regex
 
 output_type = Regex(r"\d{3}-\d{2}-\d{4}")
 
-openai_client = openai.OpenAI(base_url="http://0.0.0.0:8000/v1", "microsoft/Phi-3-mini-4k-instruct")
-model = outlines.from_vllm(openai_client)
+openai_client = openai.OpenAI(base_url="http://0.0.0.0:8000/v1", api_key="token-abc123")
+model = outlines.from_vllm(openai_client, "microsoft/Phi-3-mini-4k-instruct")
 
 result = model("Generate a fake social security number.", output_type, top_p=0.1)
 print(result) # '782-32-3789'
@@ -321,8 +331,8 @@ arithmetic_grammar = """
 """
 output_type = CFG(arithmetic_grammar)
 
-openai_client = openai.OpenAI(base_url="http://0.0.0.0:8000/v1", "microsoft/Phi-3-mini-4k-instruct")
-model = outlines.from_vllm(openai_client)
+openai_client = openai.OpenAI(base_url="http://0.0.0.0:8000/v1", api_key="token-abc123")
+model = outlines.from_vllm(openai_client, "microsoft/Phi-3-mini-4k-instruct")
 
 result = model("Write an addition.", output_type, extra_body={"guided_decoding_backend": "outlines"})
 print(result) # '23 + 48'
@@ -344,8 +354,8 @@ class User(BaseModel):
     age: int
 
 async def generate_user():
-    async_client = openai.AsyncOpenAI(base_url="http://0.0.0.0:8000/v1", "microsoft/Phi-3-mini-4k-instruct")
-    async_model = outlines.from_vllm(async_client)
+    async_client = openai.AsyncOpenAI(base_url="http://0.0.0.0:8000/v1", api_key="token-abc123")
+    async_model = outlines.from_vllm(async_client, "microsoft/Phi-3-mini-4k-instruct")
 
     result = await async_model("Generate a random user profile.", output_type=User)
     user = User.model_validate_json(result)
