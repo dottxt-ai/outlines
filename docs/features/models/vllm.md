@@ -81,7 +81,7 @@ from outlines.inputs import Image
 
 # Create the model
 model = outlines.from_vllm(
-    openai.OpenAI(base_url="http://0.0.0.0:8000/v1", api_key="token-abc123"), 
+    openai.OpenAI(base_url="http://0.0.0.0:8000/v1", api_key="token-abc123"),
     "Qwen/Qwen2.5-VL-3B-Instruct"
 )
 
@@ -117,7 +117,7 @@ from outlines.inputs import Chat, Image
 
 # Create the model
 model = outlines.from_vllm(
-    openai.OpenAI(base_url="http://0.0.0.0:8000/v1", api_key="token-abc123"), 
+    openai.OpenAI(base_url="http://0.0.0.0:8000/v1", api_key="token-abc123"),
     "Qwen/Qwen2.5-VL-3B-Instruct"
 )
 
@@ -152,7 +152,7 @@ import outlines
 
 # Create the model
 model = outlines.from_vllm(
-    openai.OpenAI(base_url="http://0.0.0.0:8000/v1", api_key="token-abc123"), 
+    openai.OpenAI(base_url="http://0.0.0.0:8000/v1", api_key="token-abc123"),
     "microsoft/Phi-3-mini-4k-instruct"
 )
 
