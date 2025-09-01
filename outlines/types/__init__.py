@@ -18,7 +18,33 @@ from outlines.types.dsl import (
     zero_or_more,
 )
 
-from . import airports, countries, locale
+from . import locale
+
+try:
+    from . import airports
+except ImportError:  # pragma: no cover
+    class AirportImportError:
+        """Dummy module that raises an error when accessed."""
+        def __getattr__(self, name):
+            raise ImportError(
+                "The 'airportsdata' package is required to use airport types. "
+                "Install it with: pip install 'outlines[airports]'"
+            )
+
+    airports = AirportImportError()  # type: ignore
+
+try:
+    from . import countries
+except ImportError:  # pragma: no cover
+    class CountryImportError:
+        """Dummy module that raises an error when accessed."""
+        def __getattr__(self, name):
+            raise ImportError(
+                "The 'iso3166' package is required to use country types. "
+                "Install it with: pip install 'outlines[countries]'"
+            )
+
+    countries = CountryImportError()  # type: ignore
 
 __all__ = [
     # Submodules

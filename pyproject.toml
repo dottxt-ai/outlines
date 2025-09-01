@@ -28,13 +28,9 @@ dependencies = [
    "cloudpickle",
    "diskcache",
    "pydantic>=2.0",
-   "referencing",
    "jsonschema",
-   "requests",
    "pillow",
    "typing_extensions",
-   "iso3166",
-   "airportsdata",
    "outlines_core==0.2.11",
    "genson",
    "jsonpath_ng",
@@ -55,6 +51,8 @@ transformers = ["accelerate", "datasets", "transformers"]
 vllm = ["openai"]
 xgrammar = ["xgrammar"]
 llguidance = ["llguidance"]
+airports = ["airportsdata"]
+countries = ["iso3166"]
 test = [
     "pre-commit",
     "pytest",
@@ -74,13 +72,13 @@ test = [
     "datasets",
     "anthropic",
     "google-genai",
-    "transformers<=4.52.1",
+    "transformers",
     "pillow",
     "jax",
     "flax",
     "numpy>=2.0.0,<2.2.0",
     "numba",
-    "torch",
+    "torch>2.3.0",
     "tensorflow",
     "tf-keras",
     "ollama",
@@ -89,6 +87,9 @@ test = [
     "mkdocs_gen_files",
     "llguidance",
     "xgrammar",
+    "airportsdata",
+    "iso3166",
+    "requests",
 ]
 test-gpu=["outlines[test]", "vllm; sys_platform == 'linux'"]
 
