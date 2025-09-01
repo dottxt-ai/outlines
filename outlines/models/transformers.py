@@ -242,7 +242,7 @@ class Transformers(Model):
         if (
             FlaxPreTrainedModel is not None
             and isinstance(model, FlaxPreTrainedModel)
-        ):
+        ):  # pragma: no cover
             self.tensor_library_name = "jax"
             warnings.warn("""
                 Support for `jax` has been deprecated and will be removed in
@@ -256,7 +256,7 @@ class Transformers(Model):
         elif (
             TFPreTrainedModel is not None
             and isinstance(model, TFPreTrainedModel)
-        ):
+        ):  # pragma: no cover
             self.tensor_library_name = "tensorflow"
             warnings.warn("""
                 Support for `tensorflow` has been deprecated and will be removed in
