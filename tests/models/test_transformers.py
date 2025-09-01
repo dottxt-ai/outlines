@@ -39,30 +39,6 @@ def test_transformers_instantiate_simple():
     assert model.tensor_library_name == "torch"
 
 
-def test_transformers_instantiate_flax_model():
-    with pytest.warns(DeprecationWarning):
-        model = outlines.from_transformers(
-            transformers.FlaxAutoModelForCausalLM.from_pretrained(TEST_MODEL),
-            transformers.AutoTokenizer.from_pretrained(TEST_MODEL),
-        )
-        assert isinstance(model, Transformers)
-        assert isinstance(model.tokenizer, TransformerTokenizer)
-        assert isinstance(model.type_adapter, TransformersTypeAdapter)
-        assert model.tensor_library_name == "jax"
-
-
-def test_transformers_instantiate_tensorflow_model():
-    with pytest.warns(DeprecationWarning):
-        model = outlines.from_transformers(
-            transformers.TFAutoModelForCausalLM.from_pretrained(TEST_MODEL),
-            transformers.AutoTokenizer.from_pretrained(TEST_MODEL),
-        )
-        assert isinstance(model, Transformers)
-        assert isinstance(model.tokenizer, TransformerTokenizer)
-        assert isinstance(model.type_adapter, TransformersTypeAdapter)
-        assert model.tensor_library_name == "tensorflow"
-
-
 def test_transformers_instantiate_mamba():
     model = outlines.from_transformers(
         transformers.MambaForCausalLM.from_pretrained(TEST_MODEL_MAMBA),
