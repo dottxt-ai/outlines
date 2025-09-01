@@ -81,7 +81,7 @@ prompt = Chat([
 
 # Call the model to generate a response
 response = model(prompt, max_tokens=50)
-print(response) # 'This is a picture of a black dog.'
+print(response) # 'Riga.'
 ```
 
 #### Streaming

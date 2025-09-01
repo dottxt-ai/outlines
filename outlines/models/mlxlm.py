@@ -3,6 +3,7 @@
 from functools import singledispatchmethod
 from typing import TYPE_CHECKING, Iterator, List, Optional
 
+from outlines.inputs import Chat
 from outlines.models.base import Model, ModelTypeAdapter
 from outlines.models.transformers import TransformerTokenizer
 from outlines.processors import OutlinesLogitsProcessor
@@ -16,6 +17,9 @@ __all__ = ["MLXLM", "from_mlxlm"]
 
 class MLXLMTypeAdapter(ModelTypeAdapter):
     """Type adapter for the `MLXLM` model."""
+
+    def __init__(self, **kwargs):
+        self.tokenizer = kwargs.get("tokenizer")
 
     @singledispatchmethod
     def format_input(self, model_input):
@@ -34,12 +38,29 @@ class MLXLMTypeAdapter(ModelTypeAdapter):
         """
         raise NotImplementedError(
             f"The input type {input} is not available with mlx-lm. "
-            "The only available type is `str`."
+            "The available types are `str` and `Chat`."
         )
 
     @format_input.register(str)
     def format_str_input(self, model_input: str):
         return model_input
+
+    @format_input.register(Chat)
+    def format_chat_input(self, model_input: Chat) -> str:
+        if not all(
+            isinstance(message["content"], str)
+            for message in model_input.messages
+        ):
+            raise ValueError(
+                "mlx-lm does not support multi-modal messages."
+                + "The content of each message must be a string."
+            )
+
+        return self.tokenizer.apply_chat_template(
+            model_input.messages,
+            tokenize=False,
+            add_generation_prompt=True,
+        )
 
     def format_output_type(
         self, output_type: Optional[OutlinesLogitsProcessor] = None,
@@ -92,7 +113,7 @@ class MLXLM(Model):
         self.mlx_tokenizer = tokenizer
         # self.tokenizer is used by the logits processor
         self.tokenizer = TransformerTokenizer(tokenizer._tokenizer)
-        self.type_adapter = MLXLMTypeAdapter()
+        self.type_adapter = MLXLMTypeAdapter(tokenizer=tokenizer)
 
     def generate(
         self,
