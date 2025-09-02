@@ -12,6 +12,7 @@ from pydantic import BaseModel
 from outlines import cfg, json_schema, regex
 from outlines.inputs import Chat, Image
 from outlines.models.openai import OpenAITypeAdapter
+from outlines.tools import ToolDef
 
 if sys.version_info >= (3, 12):
     from typing import TypedDict
@@ -230,3 +231,55 @@ def test_openai_type_adapter_json_schema_dict(adapter, schema):
     assert isinstance(result, dict)
     assert result["response_format"]["json_schema"]["strict"] is True
     assert result["response_format"]["json_schema"]["schema"] == schema
+
+
+def test_openai_type_adapter_format_tools(adapter):
+    tools = [
+        ToolDef(
+            name="tool_name",
+            description="tool_description",
+            parameters={"foo": {"type": "string"}},
+            required=["foo"],
+        ),
+        ToolDef(
+            name="tool_name_2",
+            description="tool_description_2",
+            parameters={
+                "foo": {"type": "string"},
+                "bar": {"type": "integer"}
+            },
+            required=["bar"],
+        ),
+    ]
+    result = adapter.format_tools(tools)
+    assert result == [
+        {
+            "type": "function",
+            "function": {
+                "name": "tool_name",
+                "description": "tool_description",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "foo": {"type": "string"}
+                    },
+                    "required": ["foo"],
+                },
+            },
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "tool_name_2",
+                "description": "tool_description_2",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "foo": {"type": "string"},
+                        "bar": {"type": "integer"},
+                    },
+                    "required": ["bar"],
+                },
+            },
+        },
+    ]

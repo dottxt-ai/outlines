@@ -14,6 +14,7 @@ import outlines
 from outlines.inputs import Chat, Image, Video
 from outlines.models.gemini import Gemini
 from outlines.types import Choice
+from outlines.tools import ToolDef
 
 if sys.version_info >= (3, 12):
     from typing import TypedDict
@@ -48,6 +49,27 @@ def image():
     return image
 
 
+@pytest.fixture
+def tools():
+    return [
+        ToolDef(
+            name="get_weather",
+            description="Get the current weather for a given city",
+            parameters={"city": {"type": "string"}},
+            required=["city"],
+        ),
+        ToolDef(
+            name="get_user_info",
+            description="Get the current user info",
+            parameters={
+                "first_name": {"type": "string"},
+                "last_name": {"type": "string"}
+            },
+            required=["last_name"],
+        ),
+    ]
+
+
 @pytest.mark.api_call
 def test_gemini_init_from_client():
     client = Client()
@@ -80,7 +102,9 @@ def test_gemini_wrong_input_type(model, image):
 @pytest.mark.api_call
 def test_gemini_simple_call(model):
     result = model.generate("Respond with one word. Not more.")
-    assert isinstance(result, str)
+    assert isinstance(result, dict)
+    assert result["type"] == "assistant"
+    assert isinstance(result["content"], str)
 
 
 @pytest.mark.api_call
@@ -89,13 +113,17 @@ def test_gemini_direct_call(model_no_model_name):
         "Respond with one word. Not more.",
         model=MODEL_NAME
     )
-    assert isinstance(result, str)
+    assert isinstance(result, dict)
+    assert result["type"] == "assistant"
+    assert isinstance(result["content"], str)
 
 
 @pytest.mark.api_call
 def test_gemini_simple_vision(model, image):
     result = model.generate(["What does this logo represent?", Image(image)])
-    assert isinstance(result, str)
+    assert isinstance(result, dict)
+    assert result["type"] == "assistant"
+    assert isinstance(result["content"], str)
 
 
 @pytest.mark.api_call
@@ -107,7 +135,9 @@ def test_gemini_chat(model, image):
             "content": ["What does this logo represent?", Image(image)]
         },
     ]))
-    assert isinstance(result, str)
+    assert isinstance(result, dict)
+    assert result["type"] == "assistant"
+    assert isinstance(result["content"], str)
 
 
 @pytest.mark.api_call
@@ -116,8 +146,10 @@ def test_gemini_simple_pydantic(model):
         bar: int
 
     result = model.generate("foo?", Foo)
-    assert isinstance(result, str)
-    assert "bar" in json.loads(result)
+    assert isinstance(result, dict)
+    assert result["type"] == "assistant"
+    assert isinstance(result["content"], str)
+    assert "bar" in json.loads(result["content"])
 
 
 @pytest.mark.api_call
@@ -126,8 +158,10 @@ def test_gemini_simple_vision_pydantic(model, image):
         name: int
 
     result = model.generate(["What does this logo represent?", Image(image)], Logo)
-    assert isinstance(result, str)
-    assert "name" in json.loads(result)
+    assert isinstance(result, dict)
+    assert result["type"] == "assistant"
+    assert isinstance(result["content"], str)
+    assert "name" in json.loads(result["content"])
 
 
 @pytest.mark.api_call
@@ -140,10 +174,12 @@ def test_gemini_nested_pydantic(model):
         bar: Bar
 
     result = model.generate("foo?", Foo)
-    assert isinstance(result, str)
-    assert "sna" in json.loads(result)
-    assert "bar" in json.loads(result)
-    assert "fu" in json.loads(result)["bar"]
+    assert isinstance(result, dict)
+    assert result["type"] == "assistant"
+    assert isinstance(result["content"], str)
+    assert "sna" in json.loads(result["content"])
+    assert "bar" in json.loads(result["content"])
+    assert "fu" in json.loads(result["content"])["bar"]
 
 
 @pytest.mark.xfail(
@@ -153,8 +189,10 @@ def test_gemini_nested_pydantic(model):
 def test_gemini_simple_json_schema_string(model):
     schema = "{'properties': {'bar': {'title': 'Bar', 'type': 'integer'}}, 'required': ['bar'], 'title': 'Foo', 'type': 'object'}"
     result = model.generate("foo?", schema)
-    assert isinstance(result, str)
-    assert "bar" in json.loads(result)
+    assert isinstance(result, dict)
+    assert result["type"] == "assistant"
+    assert isinstance(result["content"], str)
+    assert "bar" in json.loads(result["content"])
 
 
 @pytest.mark.xfail(
@@ -168,8 +206,10 @@ def test_gemini_simple_json_schema_dict(model):
         "type": "object",
     }
     result = model.generate("foo?", schema)
-    assert isinstance(result, str)
-    assert "bar" in json.loads(result)
+    assert isinstance(result, dict)
+    assert result["type"] == "assistant"
+    assert isinstance(result["content"], str)
+    assert "bar" in json.loads(result["content"])
 
 
 @pytest.mark.api_call
@@ -178,8 +218,10 @@ def test_gemini_simple_typed_dict(model):
         bar: int
 
     result = model.generate("foo?", Foo)
-    assert isinstance(result, str)
-    assert "bar" in json.loads(result)
+    assert isinstance(result, dict)
+    assert result["type"] == "assistant"
+    assert isinstance(result["content"], str)
+    assert "bar" in json.loads(result["content"])
 
 
 @pytest.mark.api_call
@@ -189,8 +231,10 @@ def test_gemini_simple_dataclass(model):
         bar: int
 
     result = model.generate("foo?", Foo)
-    assert isinstance(result, str)
-    assert "bar" in json.loads(result)
+    assert isinstance(result, dict)
+    assert result["type"] == "assistant"
+    assert isinstance(result["content"], str)
+    assert "bar" in json.loads(result["content"])
 
 
 @pytest.mark.api_call
@@ -200,22 +244,28 @@ def test_gemini_simple_choice_enum(model):
         foor = "Foo"
 
     result = model.generate("foo?", Foo)
-    assert isinstance(result, str)
-    assert result == "Foo" or result == "Bar"
+    assert isinstance(result, dict)
+    assert result["type"] == "assistant"
+    assert isinstance(result["content"], str)
+    assert result["content"] == "Foo" or result["content"] == "Bar"
 
 
 @pytest.mark.api_call
 def test_gemini_simple_choice_choice(model):
     result = model.generate("foo?", Choice(["Foo", "Bar"]))
-    assert isinstance(result, str)
-    assert result == "Foo" or result == "Bar"
+    assert isinstance(result, dict)
+    assert result["type"] == "assistant"
+    assert isinstance(result["content"], str)
+    assert result["content"] == "Foo" or result["content"] == "Bar"
 
 
 @pytest.mark.api_call
 def test_gemini_sample_choice_literal(model):
     result = model.generate("foo?", Literal["Foo", "Bar"])
-    assert isinstance(result, str)
-    assert result == "Foo" or result == "Bar"
+    assert isinstance(result, dict)
+    assert result["type"] == "assistant"
+    assert isinstance(result["content"], str)
+    assert result["content"] == "Foo" or result["content"] == "Bar"
 
 
 @pytest.mark.xfail(
@@ -225,8 +275,10 @@ def test_gemini_sample_choice_literal(model):
 def test_gemini_simple_choice_list(model):
     choices = ["Foo", "Bar"]
     result = model.generate("foo?", choices)
-    assert isinstance(result, str)
-    assert result == "Foo" or result == "Bar"
+    assert isinstance(result, dict)
+    assert result["type"] == "assistant"
+    assert isinstance(result["content"], str)
+    assert result["content"] == "Foo" or result["content"] == "Bar"
 
 
 @pytest.mark.api_call
@@ -235,16 +287,56 @@ def test_gemini_simple_list_pydantic(model):
         bar: int
 
     result = model.generate("foo?", list[Foo])
-    assert isinstance(json.loads(result), list)
-    assert isinstance(json.loads(result)[0], dict)
-    assert "bar" in json.loads(result)[0]
+    assert isinstance(result, dict)
+    assert result["type"] == "assistant"
+    assert isinstance(result["content"], str)
+    assert "bar" in json.loads(result["content"])
+
+
+@pytest.mark.api_call
+def test_gemini_tools(model, tools):
+    result = model.generate(
+        "What is the weather in Tokyo?",
+        tools=tools,
+        max_tokens=1024,
+    )
+    assert isinstance(result, dict)
+    assert result["type"] == "assistant"
+    assert result["tool_calls"] is not None
+    assert len(result["tool_calls"]) == 1
+    tool_call = result["tool_calls"][0]
+    assert tool_call["name"] == "get_weather"
+    assert tool_call["args"] == {"city": "Tokyo"}
+    assert tool_call["tool_call_id"] is not None
 
 
 @pytest.mark.api_call
 def test_gemini_streaming(model):
     result = model.stream("Respond with one word. Not more.")
     assert isinstance(result, Generator)
-    assert isinstance(next(result), str)
+    assert isinstance(next(result), dict)
+    assert next(result)["type"] == "assistant"
+    assert isinstance(next(result)["content"], str)
+
+
+@pytest.mark.api_call
+def test_gemini_streaming_tools(model, tools):
+    result = model.stream(
+        "What is the weather in Tokyo?",
+        tools=tools,
+        max_tokens=1024,
+    )
+    assert isinstance(result, Generator)
+    for chunk in result:
+        assert isinstance(chunk, dict)
+        assert chunk["type"] == "assistant"
+        assert chunk["content"] is None
+        assert chunk["tool_calls"] is not None
+        assert len(chunk["tool_calls"]) == 1
+        tool_call = chunk["tool_calls"][0]
+        assert tool_call["name"] == "get_weather"
+        assert isinstance(tool_call["args"], str)
+        assert tool_call["tool_call_id"] is not None
 
 
 @pytest.mark.api_call

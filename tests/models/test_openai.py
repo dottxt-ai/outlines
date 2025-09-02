@@ -11,6 +11,7 @@ from pydantic import BaseModel, Field
 import outlines
 from outlines.inputs import Chat, Image, Video
 from outlines.models.openai import AsyncOpenAI, OpenAI
+from outlines.tools import ToolDef
 from outlines.types import json_schema
 
 MODEL_NAME = "gpt-4o-mini-2024-07-18"
@@ -43,6 +44,27 @@ def image():
     image = PILImage.open(buffer)
 
     return image
+
+
+@pytest.fixture
+def tools():
+    return [
+        ToolDef(
+            name="get_weather",
+            description="Get the current weather for a given city",
+            parameters={"city": {"type": "string"}},
+            required=["city"],
+        ),
+        ToolDef(
+            name="get_user_info",
+            description="Get the current user info",
+            parameters={
+                "first_name": {"type": "string"},
+                "last_name": {"type": "string"}
+            },
+            required=["last_name"],
+        ),
+    ]
 
 
 @pytest.fixture(scope="session")
@@ -110,7 +132,9 @@ def test_openai_wrong_output_type(model):
 @pytest.mark.api_call
 def test_openai_simple_call(model):
     result = model.generate("Respond with one word. Not more.")
-    assert isinstance(result, str)
+    assert isinstance(result, dict)
+    assert result["type"] == "assistant"
+    assert isinstance(result["content"], str)
 
 
 @pytest.mark.api_call
@@ -118,8 +142,10 @@ def test_openai_simple_call_multiple_samples(model):
     result = model.generate("Respond with one word. Not more.", n=2)
     assert isinstance(result, list)
     assert len(result) == 2
-    assert isinstance(result[0], str)
-    assert isinstance(result[1], str)
+    for output in result:
+        assert isinstance(output, dict)
+        assert output["type"] == "assistant"
+        assert isinstance(output["content"], str)
 
 
 @pytest.mark.api_call
@@ -128,13 +154,17 @@ def test_openai_direct_call(model_no_model_name):
         "Respond with one word. Not more.",
         model=MODEL_NAME,
     )
-    assert isinstance(result, str)
+    assert isinstance(result, dict)
+    assert result["type"] == "assistant"
+    assert isinstance(result["content"], str)
 
 
 @pytest.mark.api_call
 def test_openai_simple_vision(image, model):
     result = model.generate(["What does this logo represent?", Image(image)])
-    assert isinstance(result, str)
+    assert isinstance(result, dict)
+    assert result["type"] == "assistant"
+    assert isinstance(result["content"], str)
 
 
 @pytest.mark.api_call
@@ -146,7 +176,9 @@ def test_openai_chat(image, model):
             "content": ["What does this logo represent?", Image(image)]
         },
     ]), max_tokens=10)
-    assert isinstance(result, str)
+    assert isinstance(result, dict)
+    assert result["type"] == "assistant"
+    assert isinstance(result["content"], str)
 
 
 @pytest.mark.api_call
@@ -155,8 +187,10 @@ def test_openai_simple_pydantic(model):
         bar: int
 
     result = model.generate("foo?", Foo)
-    assert isinstance(result, str)
-    assert "bar" in json.loads(result)
+    assert isinstance(result, dict)
+    assert result["type"] == "assistant"
+    assert isinstance(result["content"], str)
+    assert "bar" in json.loads(result["content"])
 
 
 @pytest.mark.api_call
@@ -174,8 +208,10 @@ def test_openai_simple_vision_pydantic(image, model):
         name: int
 
     result = model.generate(["What does this logo represent?", Image(image)], Logo)
-    assert isinstance(result, str)
-    assert "name" in json.loads(result)
+    assert isinstance(result, dict)
+    assert result["type"] == "assistant"
+    assert isinstance(result["content"], str)
+    assert "name" in json.loads(result["content"])
 
 
 @pytest.mark.api_call
@@ -186,15 +222,56 @@ def test_openai_simple_json_schema(model):
     schema = json.dumps(Foo.model_json_schema())
 
     result = model.generate("foo?", json_schema(schema))
-    assert isinstance(result, str)
-    assert "bar" in json.loads(result)
+    assert isinstance(result, dict)
+    assert result["type"] == "assistant"
+    assert isinstance(result["content"], str)
+    assert "bar" in json.loads(result["content"])
+
+
+@pytest.mark.api_call
+def test_openai_tools(model, tools):
+    result = model.generate(
+        "What is the weather in Tokyo?",
+        tools=tools,
+        max_tokens=1024,
+    )
+    assert isinstance(result, dict)
+    assert result["type"] == "assistant"
+    assert result["tool_calls"] is not None
+    assert len(result["tool_calls"]) == 1
+    tool_call = result["tool_calls"][0]
+    assert tool_call["name"] == "get_weather"
+    assert tool_call["args"] == {"city": "Tokyo"}
+    assert tool_call["tool_call_id"] is not None
 
 
 @pytest.mark.api_call
 def test_openai_streaming(model):
     result = model.stream("Respond with one word. Not more.")
     assert isinstance(result, Generator)
-    assert isinstance(next(result), str)
+    assert isinstance(next(result), dict)
+    assert next(result)["type"] == "assistant"
+    assert isinstance(next(result)["content"], str)
+
+
+@pytest.mark.api_call
+def test_openai_streaming_tools(model, tools):
+    result = model.stream(
+        "What is the weather in Tokyo?",
+        tools=tools,
+        max_tokens=1024,
+    )
+    assert isinstance(result, Generator)
+    for chunk in result:
+        assert isinstance(chunk, dict)
+        assert chunk["type"] == "assistant"
+        assert chunk["content"] is None
+        assert chunk["tool_calls"] is not None
+        assert len(chunk["tool_calls"]) == 1
+        tool_call = chunk["tool_calls"][0]
+        assert tool_call["name"] == "get_weather"
+        assert isinstance(tool_call["args"], str)
+        assert tool_call["tool_call_id"] is not None
 
 
 def test_openai_batch(model):
@@ -253,7 +330,9 @@ async def test_openai_async_wrong_output_type(async_model):
 @pytest.mark.api_call
 async def test_openai_async_simple_call(async_model):
     result = await async_model.generate("Respond with one word. Not more.")
-    assert isinstance(result, str)
+    assert isinstance(result, dict)
+    assert result["type"] == "assistant"
+    assert isinstance(result["content"], str)
 
 
 @pytest.mark.asyncio
@@ -262,8 +341,10 @@ async def test_openai_async_simple_call_multiple_samples(async_model):
     result = await async_model.generate("Respond with one word. Not more.", n=2)
     assert isinstance(result, list)
     assert len(result) == 2
-    assert isinstance(result[0], str)
-    assert isinstance(result[1], str)
+    for output in result:
+        assert isinstance(output, dict)
+        assert output["type"] == "assistant"
+        assert isinstance(output["content"], str)
 
 
 @pytest.mark.asyncio
@@ -273,14 +354,18 @@ async def test_openai_async_direct_call(async_model_no_model_name):
         "Respond with one word. Not more.",
         model=MODEL_NAME,
     )
-    assert isinstance(result, str)
+    assert isinstance(result, dict)
+    assert result["type"] == "assistant"
+    assert isinstance(result["content"], str)
 
 
 @pytest.mark.asyncio
 @pytest.mark.api_call
 async def test_openai_async_simple_vision(image, async_model):
     result = await async_model.generate(["What does this logo represent?", Image(image)])
-    assert isinstance(result, str)
+    assert isinstance(result, dict)
+    assert result["type"] == "assistant"
+    assert isinstance(result["content"], str)
 
 
 @pytest.mark.asyncio
@@ -293,7 +378,9 @@ async def test_openai_async_chat(image, async_model):
             "content": ["What does this logo represent?", Image(image)]
         },
     ]), max_tokens=10)
-    assert isinstance(result, str)
+    assert isinstance(result, dict)
+    assert result["type"] == "assistant"
+    assert isinstance(result["content"], str)
 
 
 @pytest.mark.asyncio
@@ -303,8 +390,10 @@ async def test_openai_async_simple_pydantic(async_model):
         bar: int
 
     result = await async_model.generate("foo?", Foo)
-    assert isinstance(result, str)
-    assert "bar" in json.loads(result)
+    assert isinstance(result, dict)
+    assert result["type"] == "assistant"
+    assert isinstance(result["content"], str)
+    assert "bar" in json.loads(result["content"])
 
 
 @pytest.mark.asyncio
@@ -324,8 +413,10 @@ async def test_openai_async_simple_vision_pydantic(image, async_model):
         name: int
 
     result = await async_model.generate(["What does this logo represent?", Image(image)], Logo)
-    assert isinstance(result, str)
-    assert "name" in json.loads(result)
+    assert isinstance(result, dict)
+    assert result["type"] == "assistant"
+    assert isinstance(result["content"], str)
+    assert "name" in json.loads(result["content"])
 
 
 @pytest.mark.asyncio
@@ -337,8 +428,28 @@ async def test_openai_async_simple_json_schema(async_model):
     schema = json.dumps(Foo.model_json_schema())
 
     result = await async_model.generate("foo?", json_schema(schema))
-    assert isinstance(result, str)
-    assert "bar" in json.loads(result)
+    assert isinstance(result, dict)
+    assert result["type"] == "assistant"
+    assert isinstance(result["content"], str)
+    assert "bar" in json.loads(result["content"])
+
+
+@pytest.mark.asyncio
+@pytest.mark.api_call
+async def test_openai_async_tools(async_model, tools):
+    result = await async_model.generate(
+        "What is the weather in Tokyo?",
+        tools=tools,
+        max_tokens=1024,
+    )
+    assert isinstance(result, dict)
+    assert result["type"] == "assistant"
+    assert result["tool_calls"] is not None
+    assert len(result["tool_calls"]) == 1
+    tool_call = result["tool_calls"][0]
+    assert tool_call["name"] == "get_weather"
+    assert tool_call["args"] == {"city": "Tokyo"}
+    assert tool_call["tool_call_id"] is not None
 
 
 @pytest.mark.asyncio
@@ -347,8 +458,31 @@ async def test_openai_async_streaming(async_model):
     result = async_model.stream("Respond with a single word.")
     assert isinstance(result, AsyncGenerator)
     async for chunk in result:
-        assert isinstance(chunk, str)
+        assert isinstance(chunk, dict)
+        assert chunk["type"] == "assistant"
+        assert isinstance(chunk["content"], str)
         break  # Just check the first chunk
+
+
+@pytest.mark.asyncio
+@pytest.mark.api_call
+async def test_openai_async_streaming_tools(async_model, tools):
+    result = async_model.stream(
+        "What is the weather in Tokyo?",
+        tools=tools,
+        max_tokens=1024,
+    )
+    assert isinstance(result, AsyncGenerator)
+    async for chunk in result:
+        assert isinstance(chunk, dict)
+        assert chunk["type"] == "assistant"
+        assert chunk["content"] is None
+        assert chunk["tool_calls"] is not None
+        assert len(chunk["tool_calls"]) == 1
+        tool_call = chunk["tool_calls"][0]
+        assert tool_call["name"] == "get_weather"
+        assert isinstance(tool_call["args"], str)
+        assert tool_call["tool_call_id"] is not None
 
 
 @pytest.mark.asyncio
