@@ -45,7 +45,7 @@ generator = Generator(model, Event)
 prompt = prompt_template(now=now, message=message)
 
 # Extract the event information
-event = generator(prompt)
+event = generator(prompt).content # type: ignore
 
 # Print the current date and time
 print(f"Today: {now}")

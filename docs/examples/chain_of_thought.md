@@ -111,7 +111,7 @@ We obtain a series of intermediate reasoning steps as well as the conclusion:
 ```python
 import json
 
-json_response = json.loads(response)
+json_response = json.loads(response.content)
 
 print(json_response["reasoning"])
 print(json_response["conclusion"])

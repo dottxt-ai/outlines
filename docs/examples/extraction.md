@@ -79,7 +79,7 @@ prompts = [take_order(order=order) for order in orders]
 generator = outlines.Generator(model, Order)
 
 results = generator(prompts)
-print(results)
+print(results.content)
 # ['{"pizza": "Pepperoni", "number": 2}',
 # '{"pizza": "Margherita", "number": 12}']
 ```

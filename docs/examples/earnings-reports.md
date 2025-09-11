@@ -246,7 +246,7 @@ Provide the prompt to the model and run it:
 csv_data = csv_extractor(
     extract_financial_data_prompt(columns_to_extract, income_statement),
     max_new_tokens=1024,
-)
+).content
 
 print(csv_data)
 ```

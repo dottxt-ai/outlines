@@ -225,7 +225,7 @@ result = receipt_summary_generator(
     {"text": prompt, "images": image},
     max_new_tokens=1024
 )
-print(result)
+print(result.content)
 ```
 
 ## Output

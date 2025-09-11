@@ -33,7 +33,7 @@ With our prompt ready we can now generate 10 example phone numbers
 ```python
 phone_generator_unstruct = outlines.Generator(model)
 for _ in range(3):
-    print(phone_generator_unstruct(prompt_phone, max_new_tokens=12))
+    print(phone_generator_unstruct(prompt_phone, max_new_tokens=12).content)
 ```
 
 > I'd be happy to help you generate a realistic phone\
@@ -105,7 +105,7 @@ We're ready to see if structured generation can make an improvement over our ini
 phone_generator_v1 = outlines.Generator(model, phone_regex_1)
 
 for _ in range(3):
-    print(phone_generator_v1(prompt_phone))
+    print(phone_generator_v1(prompt_phone).content)
 ```
 > (206) 555-1234\
 (206) 555-1234\
@@ -146,7 +146,7 @@ Now that we've validated, let's generate with this new regex!
 phone_generator_v2 = outlines.Generator(model, phone_regex_2)
 
 for _ in range(3):
-    print(phone_generator_v2(prompt_phone))
+    print(phone_generator_v2(prompt_phone).content)
 ```
 
 > (206) 867-5309\
@@ -178,9 +178,9 @@ if not re.match(phone_regex_3_error, phone_number):
 else:
     matched_string = re.match(phone_regex_3_error, phone_number)[0]
     if matched_string == phone_number:
-    print("Successful match")
+        print("Successful match")
     else:
-    print(f"Error {matched_string} != {phone_number}")
+        print(f"Error {matched_string} != {phone_number}")
 ```
 This prints out:
 >  Error (206) 386-463 != (206) 386-4636
@@ -192,7 +192,7 @@ phone_regex_3_fixed = Regex(r'\([0-9]{3}\) [2-4][7-9][4-6]-[3-6][2-8][1-4][6-9]'
 phone_generator_v3 = outlines.Generator(model, phone_regex_3_fixed)
 
 for _ in range(3):
-    print(phone_generator_v3(prompt_phone))
+    print(phone_generator_v3(prompt_phone).content)
 ```
 
 >(206) 494-3216\

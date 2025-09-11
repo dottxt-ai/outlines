@@ -67,13 +67,13 @@ model = outlines.from_transformers(
     transformers.AutoTokenizer.from_pretrained(MODEL_NAME)
 )
 prompt = chain_of_density(article=article)
-result = model(prompt, Summaries, max_new_tokens=2000)
+result = model(prompt, Summaries, max_new_tokens=2000).content
 ```
 
 We can now check the results:
 
 ```python
-print(result)
+print(result.content)
 # {'summaries': [
 #     {
 #       'missing_entities': 'English mathematician, cryptanalyst, philosopher',

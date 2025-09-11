@@ -209,7 +209,7 @@ page_summary_generator = outlines.Generator(model, PageSummary)
 
 for image in images:
     result = page_summary_generator({"text": prompt, "images": image})
-    print(result)
+    print(result.content)
 ```
 
 ### Regular expressions to extract the arxiv paper identifier
@@ -317,7 +317,7 @@ categorizer = outlines.Generator(model, Literal["llms", "cell biology", "other"]
 
 # Categorize the paper
 category = categorizer({"text": categorization_instruction, "images": images[0]})
-print(category)
+print(category.content)
 ```
 
 Which should return:
@@ -357,7 +357,7 @@ two_image_prompt = tf_processor.apply_chat_template(
 generator = outlines.Generator(model, Literal["hot dog", "not hot dog"])
 
 result = generator({"text": two_image_prompt, "images": [images[0], images[1]]})
-print(result)
+print(result.content)
 ```
 
 Using the first to pages of the paper (they are not images of hot dogs), we should get

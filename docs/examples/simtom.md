@@ -87,7 +87,7 @@ perspective_prompt = perspective_taking(story=story, character=character)
 
 # Call Mistral 7B with the first prompt
 generator = outlines.Generator(model, PerspectiveTaking)
-perspective = generator(perspective_prompt, max_new_tokens=1024)
+perspective = generator(perspective_prompt, max_new_tokens=1024).content
 
 print(perspective)
 # {'character': 'Aria', 'events': ['1 Aria entered the front_yard.', '3 The grapefruit is in the green_bucket.', '4 Aria moved the grapefruit to the blue_container.']}
@@ -104,7 +104,7 @@ sim_prompt = simulation(events=json.loads(perspective)["events"], name=character
 generator = outlines.Generator(model, Simulation)
 result = generator(sim_prompt, max_new_tokens=1024)
 
-print(result)
+print(result.content)
 # {'answer': 'green_bucket'}
 ```
 

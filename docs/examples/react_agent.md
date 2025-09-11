@@ -133,7 +133,7 @@ class ChatBot:
     def execute(self):
         generator = outlines.Generator(model, Decision)
         result = generator(self.prompt, max_tokens=1024, temperature=0, seed=42)
-        return result
+        return result.content
 ```
 
 We define a query function:

@@ -72,7 +72,7 @@ import json
 
 generator = outlines.Generator(model, Users)
 response = generator("Create 5 fake users", max_tokens=1024, temperature=0, seed=42)
-response = json.loads(response)
+response = json.loads(response.content)
 print(response['users'])
 # [{'id': 1, 'first_name': 'John', 'last_name': 'Doe', 'age': 25},
 # {'id': 2, 'first_name': 'Jane', 'last_name': 'Doe', 'age': 30},
@@ -164,7 +164,7 @@ I also started the Data Science club at the University of Waterloo and I was the
 generator = outlines.Generator(model, QuestionAnswer)
 prompt = hermes_prompt(question=question, context=context, schema=schema)
 response = generator(prompt, max_tokens=1024, temperature=0, seed=42)
-print(response)
+print(response.content)
 # {"question": "What did the author do during college?", "answer": "The author studied Computational Mathematics and physics in university and was also involved in starting the Data Science club, serving as its president for 2 years.", "citations": ["I went to an arts high school but in university I studied Computational Mathematics and physics.", "I also started the Data Science club at the University of Waterloo and I was the president of the club for 2 years."]}
 ```
 
@@ -222,7 +222,7 @@ for question, context in [
     prompt = hermes_prompt(question=question, context=context, schema=schema)
     generator = outlines.Generator(model, QuestionAnswer)
     response = generator(prompt, max_tokens=1024, temperature=0, seed=42)
-    response = json.loads(response)
+    response = json.loads(response.content)
     print(question)
     print(response['answer'])
     print(response['citations'])

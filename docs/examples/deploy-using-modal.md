@@ -161,7 +161,7 @@ def generate(
     # by models, so make sure to check the model's documentation.
     character = generator(
         f"<s>[INST]Give me a character description. Describe {prompt}.[/INST]"
-    )
+    ).content
 
     # Print out the generated character.
     print(character)
