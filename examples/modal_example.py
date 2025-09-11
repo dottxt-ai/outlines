@@ -76,7 +76,7 @@ def generate(
     character = model(
         f"<s>[INST]Give me a character description. Describe {prompt}.[/INST]",
         outlines.json_schema(schema),
-    )
+    ).content
 
     print(character)
 

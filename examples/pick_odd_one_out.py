@@ -39,8 +39,8 @@ gen_choice = Generator(model, options_schema)
 
 prompt = build_ooo_prompt(options=options)
 reasoning = gen_text(prompt, stop=["Pick the odd word", "So the odd one"])
-prompt += reasoning
+prompt += reasoning.content
 raw_result = gen_choice(prompt)
-result = json.loads(raw_result)["result"]
+result = json.loads(raw_result.content)["result"]
 prompt += result
 print(result)

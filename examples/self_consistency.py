@@ -54,7 +54,7 @@ answers = generator(prompt, n=10)
 digits = []
 for answer in answers:
     try:
-        match = re.findall(r"\d+", answer)[-1]
+        match = re.findall(r"\d+", answer.content)[-1]
         if match is not None:
             digit = int(match)
             digits.append(digit)
