@@ -10,6 +10,7 @@ from pydantic import BaseModel
 
 from outlines.inputs import Image
 from outlines.models.dottxt import DottxtTypeAdapter
+from outlines.tools import ToolDef
 from outlines.types import cfg, json_schema, regex
 
 if sys.version_info >= (3, 12):
@@ -58,7 +59,7 @@ def test_dottxt_type_adapter_input_text(adapter):
 
 
 def test_dottxt_type_adapter_input_invalid(adapter, image):
-    prompt = ["prompt", image]
+    prompt = ["prompt", Image(image)]
     with pytest.raises(TypeError, match="The input type"):
         _ = adapter.format_input(prompt)
 
@@ -135,3 +136,15 @@ def test_dottxt_type_adapter_json_schema_str(adapter, schema):
 def test_dottxt_type_adapter_json_schema_dict(adapter, schema):
     result = adapter.format_output_type(json_schema(schema))
     assert result == json.dumps(schema)
+
+
+def test_dottxt_type_adapter_tools(adapter):
+    with pytest.raises(
+        NotImplementedError,
+        match="Dottxt does not support tools."
+    ):
+        adapter.format_tools(
+            [ToolDef(name="test", description="test", parameters={})]
+        )
+
+    adapter.format_tools(None)

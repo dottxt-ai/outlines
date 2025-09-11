@@ -8,6 +8,7 @@ from pydantic import BaseModel
 import outlines
 from outlines import Generator
 from outlines.models.dottxt import Dottxt
+from outlines.outputs import Output
 
 
 MODEL_NAME = "dottxt/dottxt-v1-alpha"
@@ -99,7 +100,8 @@ def test_dottxt_wrong_inference_parameters(model_no_model_name):
 @pytest.mark.api_call
 def test_dottxt_direct_pydantic_call(model_no_model_name):
     result = model_no_model_name("Create a user", User)
-    assert "first_name" in json.loads(result)
+    assert isinstance(result, Output)
+    assert "first_name" in json.loads(result.content)
 
 
 @pytest.mark.api_call
@@ -112,14 +114,16 @@ def test_dottxt_direct_jsonschema_call(
         model_name=model_name_and_revision[0],
         model_revision=model_name_and_revision[1],
     )
-    assert "first_name" in json.loads(result)
+    assert isinstance(result, Output)
+    assert "first_name" in json.loads(result.content)
 
 
 @pytest.mark.api_call
 def test_dottxt_generator_pydantic_call(model):
     generator = Generator(model, User)
     result = generator("Create a user")
-    assert "first_name" in json.loads(result)
+    assert isinstance(result, Output)
+    assert "first_name" in json.loads(result.content)
 
 
 @pytest.mark.api_call
