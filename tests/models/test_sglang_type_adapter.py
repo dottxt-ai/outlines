@@ -7,6 +7,7 @@ from PIL import Image as PILImage
 
 from outlines.inputs import Chat, Image
 from outlines.models.sglang import SGLangTypeAdapter
+from outlines.tools import ToolDef
 from outlines.types import CFG, JsonSchema
 
 
@@ -166,3 +167,15 @@ def test_sglang_type_adapter_output_type(
     assert type_adapter.format_output_type(int) == {
         "extra_body": {"regex": "([+-]?(0|[1-9][0-9]*))"}
     }
+
+
+def test_sglang_type_adapter_tools(type_adapter):
+    with pytest.raises(
+        NotImplementedError,
+        match="Tools are not available for SGLang."
+    ):
+        type_adapter.format_tools(
+            [ToolDef(name="test", description="test", parameters={})]
+        )
+
+    type_adapter.format_tools(None)
