@@ -12,6 +12,7 @@ from pydantic import BaseModel
 from outlines import cfg, json_schema, regex
 from outlines.inputs import Chat, Image
 from outlines.models.openai import OpenAITypeAdapter
+from outlines.tools import ToolDef
 
 if sys.version_info >= (3, 12):
     from typing import TypedDict
@@ -87,7 +88,11 @@ def test_openai_type_adapter_input_chat(adapter, image):
             "hello",
             image_input,
         ]},
-        {"role": "assistant", "content": "response"},
+        {"role": "assistant", "tool_calls": [
+            {"tool_name": "tool_name", "tool_call_id": "abc", "args": {"foo": "bar"}}
+        ]},
+        {"role": "tool", "content": "response", "tool_call_id": "abc"},
+        {"role": "user", "content": "prompt"},
     ])
     result = adapter.format_input(model_input)
     assert result == [
@@ -104,31 +109,65 @@ def test_openai_type_adapter_input_chat(adapter, image):
                 },
             ]
         },
-        {"role": "assistant", "content": "response"},
+        {"role": "assistant", "tool_calls": [
+            {
+                "type": "function",
+                "function": {
+                    "name": "tool_name",
+                    "arguments": "{'foo': 'bar'}"
+                },
+                "id": "abc"
+            }
+        ]},
+        {"role": "tool", "content": "response", "tool_call_id": "abc"},
+        {"role": "user", "content": "prompt"},
     ]
 
 
-def test_openai_type_adapter_input_invalid(adapter):
+def test_openai_type_adapter_input_invalid(adapter, image):
+
     @dataclass
     class Audio:
         file: str
 
+    # Invalid input type
     with pytest.raises(TypeError, match="is not available"):
-        _ = adapter.format_input(Audio("file"))
+        _ = adapter.format_input(image)
 
+    # Invalid type within list input
     with pytest.raises(
         ValueError,
         match="All assets provided must be of type Image",
     ):
         _ = adapter.format_input(["prompt", Audio("file")])
 
-    with pytest.raises(
-        ValueError,
-        match="The content must be a string or a list",
-    ):
-        _ = adapter.format_input(
-            Chat(messages=[{"role": "user", "content": {"foo": "bar"}}])
-        )
+    # Chat message with invalid role
+    with pytest.raises(ValueError, match="Invalid message role"):
+        _ = adapter.format_input(Chat(messages=[{"content": "prompt"}]))
+
+    # Chat message with invalid content type
+    with pytest.raises(ValueError, match="Invalid content type"):
+        _ = adapter.format_input(Chat(messages=[{"role": "user", "content": {"foo": "bar"}}]))
+
+    # Chat message with user role and no content
+    with pytest.raises(ValueError, match="Content is required for user messages"):
+        _ = adapter.format_input(Chat(messages=[{"role": "user"}]))
+
+    # Chat message with system role and no content
+    with pytest.raises(ValueError, match="Content is required for system messages"):
+        _ = adapter.format_input(Chat(messages=[{"role": "system"}]))
+
+    # Chat message with assistant role and neither content nor tool calls
+    with pytest.raises(ValueError, match="Either content or tool calls is required for assistant messages"):
+        _ = adapter.format_input(Chat(messages=[{"role": "assistant"}]))
+
+    # Chat message with tool role and no content
+    with pytest.raises(ValueError, match="Content and tool call id are required for tool messages"):
+        _ = adapter.format_input(Chat(messages=[{"role": "tool", "tool_call_id": "abc"}]))
+
+    # Chat message with tool role and no tool call id
+    with pytest.raises(ValueError, match="Content and tool call id are required for tool messages"):
+        _ = adapter.format_input(Chat(messages=[{"role": "tool", "content": "response"}]))
 
 
 def test_openai_type_adapter_output_invalid(adapter):
@@ -230,3 +269,55 @@ def test_openai_type_adapter_json_schema_dict(adapter, schema):
     assert isinstance(result, dict)
     assert result["response_format"]["json_schema"]["strict"] is True
     assert result["response_format"]["json_schema"]["schema"] == schema
+
+
+def test_openai_type_adapter_format_tools(adapter):
+    tools = [
+        ToolDef(
+            name="tool_name",
+            description="tool_description",
+            parameters={"foo": {"type": "string"}},
+            required=["foo"],
+        ),
+        ToolDef(
+            name="tool_name_2",
+            description="tool_description_2",
+            parameters={
+                "foo": {"type": "string"},
+                "bar": {"type": "integer"}
+            },
+            required=["bar"],
+        ),
+    ]
+    result = adapter.format_tools(tools)
+    assert result == [
+        {
+            "type": "function",
+            "function": {
+                "name": "tool_name",
+                "description": "tool_description",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "foo": {"type": "string"}
+                    },
+                    "required": ["foo"],
+                },
+            },
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "tool_name_2",
+                "description": "tool_description_2",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "foo": {"type": "string"},
+                        "bar": {"type": "integer"},
+                    },
+                    "required": ["bar"],
+                },
+            },
+        },
+    ]
