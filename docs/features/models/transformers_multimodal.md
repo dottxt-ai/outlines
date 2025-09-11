@@ -73,8 +73,8 @@ result = model(
     Animal,
     max_new_tokens=100
 )
-print(result) # '{"specie": "cat", "color": "white", "weight": 4}'
-print(Animal.model_validate_json(result)) # specie=cat, color=white, weight=4
+print(result.content) # '{"specie": "cat", "color": "white", "weight": 4}'
+print(Animal.model_validate_json(result.content)) # specie=cat, color=white, weight=4
 ```
 
 The `TransformersMultiModal` model supports batch generation. To use it, invoke the `batch` method with a list of lists. You will receive as a result a list of completions.
@@ -117,7 +117,7 @@ result = model.batch(
         ["<image>Describe the image.", Image(get_image_from_url(IMAGE_URL_2))],
     ]
 )
-print(result) # ['The image shows a cat', 'The image shows an astronaut']
+print(result.content) # ['The image shows a cat', 'The image shows an astronaut']
 ```
 
 !!! Warning

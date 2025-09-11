@@ -1,14 +1,13 @@
 """Unit tests for the inputs module."""
 
 import base64
-import tempfile
 from io import BytesIO
-from typing import Dict, List, Any
 
 import pytest
 from PIL import Image as PILImage
 
 from outlines.inputs import Image, Video, Audio, Chat
+from outlines.outputs import ToolCallOutput, Output
 
 
 @pytest.fixture
@@ -18,6 +17,15 @@ def image_input():
     buffer = BytesIO()
     image.save(buffer, format="PNG")
     return Image(image=image)
+
+
+@pytest.fixture
+def tool_call():
+    return {
+        "tool_name": "foo",
+        "tool_call_id": "abc",
+        "args": {"bar": 1}
+    }
 
 
 def test_image_initialization():
@@ -98,6 +106,7 @@ def test_chat_append():
     assert len(chat.messages) == 1
     assert chat.messages[0] == message
 
+
 def test_chat_extend():
     chat = Chat(messages=[])
     messages = [
@@ -107,6 +116,7 @@ def test_chat_extend():
     chat.extend(messages)
     assert len(chat.messages) == 2
     assert chat.messages == messages
+
 
 def test_chat_pop():
     # Pop from non-empty chat
@@ -126,31 +136,23 @@ def test_chat_pop():
         chat.pop()
 
 
-def test_chat_add_system_message(image_input):
-    # Add a string
+def test_chat_add_system_message():
     chat = Chat(messages=[])
     chat.add_system_message("You are a helpful assistant.")
     assert len(chat.messages) == 1
     assert chat.messages[0]["role"] == "system"
     assert chat.messages[0]["content"] == "You are a helpful assistant."
 
-    # Add a list
-    chat = Chat(messages=[])
-    chat.add_system_message(["prompt", image_input])
-    assert len(chat.messages) == 1
-    assert chat.messages[0]["role"] == "system"
-    assert chat.messages[0]["content"] == ["prompt", image_input]
 
-
-def test_add_user_message_string(image_input):
-    # Add a string
+def test_add_user_message(image_input):
+    # String content
     chat = Chat(messages=[])
     chat.add_user_message("Hello, how are you?")
     assert len(chat.messages) == 1
     assert chat.messages[0]["role"] == "user"
     assert chat.messages[0]["content"] == "Hello, how are you?"
 
-    # Add a list
+    # List content
     chat = Chat(messages=[])
     chat.add_user_message(["prompt", image_input])
     assert len(chat.messages) == 1
@@ -158,17 +160,56 @@ def test_add_user_message_string(image_input):
     assert chat.messages[0]["content"] == ["prompt", image_input]
 
 
-def test_add_assistant_message_string(image_input):
-    # Add a string
+def test_add_assistant_message(image_input, tool_call):
+    # String content
     chat = Chat(messages=[])
     chat.add_assistant_message("I'm doing well, thank you!")
     assert len(chat.messages) == 1
     assert chat.messages[0]["role"] == "assistant"
     assert chat.messages[0]["content"] == "I'm doing well, thank you!"
 
-    # Add a list
+    # List content
     chat = Chat(messages=[])
     chat.add_assistant_message(["prompt", image_input])
     assert len(chat.messages) == 1
     assert chat.messages[0]["role"] == "assistant"
     assert chat.messages[0]["content"] == ["prompt", image_input]
+
+    # Tool calls
+    chat = Chat()
+    chat.add_assistant_message("hello", tool_calls=[tool_call])
+    assert len(chat.messages) == 1
+    assert chat.messages[0]["role"] == "assistant"
+    assert chat.messages[0]["content"] == "hello"
+    assert chat.messages[0]["tool_calls"] == [tool_call]
+
+
+def test_add_tool_message():
+    chat = Chat()
+    chat.add_tool_message("response", tool_call_id="abc", tool_name="foo")
+    assert len(chat.messages) == 1
+    assert chat.messages[0]["role"] == "tool"
+    assert chat.messages[0]["content"] == "response"
+    assert chat.messages[0]["tool_call_id"] == "abc"
+    assert chat.messages[0]["tool_name"] == "foo"
+
+
+def test_add_output(tool_call):
+    # Without tool calls
+    output = Output(content="response")
+    chat = Chat()
+    chat.add_output(output)
+    assert len(chat.messages) == 1
+    assert chat.messages[0]["role"] == "assistant"
+    assert chat.messages[0]["content"] == "response"
+    assert chat.messages[0]["tool_calls"] is None
+
+    # With tool calls
+    tool_call_output = ToolCallOutput(name="foo", args={"bar": 1}, id="abc")
+    output = Output(content="response", tool_calls=[tool_call_output])
+    chat = Chat()
+    chat.add_output(output)
+    assert len(chat.messages) == 1
+    assert chat.messages[0]["role"] == "assistant"
+    assert chat.messages[0]["content"] == "response"
+    assert chat.messages[0]["tool_calls"] == [tool_call]

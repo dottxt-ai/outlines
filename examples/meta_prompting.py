@@ -31,12 +31,12 @@ def split_into_steps(question, model_name: str):
     model = outlines.from_openai(client, model_name)
 
     prompt = solve(question=question)
-    answer = model(prompt, max_tokens=500)
+    answer = model(prompt, max_tokens=500).content
     prompt += (
         answer
         + "\n what is the only option that displays the same type of relationship as : :?"
     )
-    answer = model(prompt, max_tokens=500)
+    answer = model(prompt, max_tokens=500).content
     completed = prompt + answer
 
     return completed
@@ -55,9 +55,9 @@ def fill_in_the_blanks(question, model_name: str):
     model = outlines.from_openai(client, model_name)
 
     prompt = determine_goal(question=question)
-    answer = model(prompt, stop=["."])
+    answer = model(prompt, stop=["."]).content
     prompt = solve(memory=prompt + answer)
-    answer = model(prompt, max_tokens=500)
+    answer = model(prompt, max_tokens=500).content
     completed = prompt + answer
 
     return completed
@@ -94,9 +94,9 @@ def ask_an_expert(question, model_name: str):
     model = outlines.from_openai(client, model_name)
 
     prompt = find_expert(question=question)
-    expert = model(prompt, stop=['"'])
+    expert = model(prompt, stop=['"']).content
     prompt = get_answer(question=question, expert=expert, memory=prompt+expert)
-    answer = model(prompt, max_tokens=500)
+    answer = model(prompt, max_tokens=500).content
     completed = prompt + answer
 
     return completed
@@ -121,9 +121,9 @@ def ask_an_expert_simple(question, model_name: str):
     model = outlines.from_openai(client, model_name)
 
     prompt = find_expert(question=question)
-    expert = model(prompt, stop=["\n", "."])
+    expert = model(prompt, stop=["\n", "."]).content
     prompt = get_answer(expert=expert, memory=prompt+expert)
-    answer = model(prompt, max_tokens=500)
+    answer = model(prompt, max_tokens=500).content
     completed = prompt + answer
 
     return completed

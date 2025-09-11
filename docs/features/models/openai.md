@@ -58,7 +58,7 @@ model = outlines.from_openai(
 
 # Call it to generate text
 response = model("What's the capital of Latvia?", max_tokens=20)
-print(response) # 'Riga'
+print(response.content) # 'Riga'
 ```
 
 #### Vision
@@ -94,7 +94,7 @@ prompt = [
 
 # Call the model to generate a response
 response = model(prompt, max_tokens=50)
-print(response) # 'This is a picture of a black dog.'
+print(response.content) # 'This is a picture of a black dog.'
 ```
 
 #### Chat
@@ -133,7 +133,7 @@ prompt = Chat([
 
 # Call the model to generate a response
 response = model(prompt, max_tokens=50)
-print(response) # 'This is a picture of a black dog.'
+print(response.content) # 'This is a picture of a black dog.'
 ```
 
 #### Streaming
@@ -154,7 +154,7 @@ model = outlines.from_openai(
 
 # Stream the response
 for chunk in model.stream("Tell me a short story about a cat.", max_tokens=50):
-    print(chunk) # 'Once...'
+    print(chunk.content) # 'Once...'
 ```
 
 ## Structured Generation
@@ -179,8 +179,8 @@ model = outlines.from_openai(openai.OpenAI(), "gpt-4o")
 
 # Call it with the output type to generate structured text
 result = model("Create a character, use the json format.", Character, top_p=0.1)
-print(result) # '{"name": "Evelyn", "age": 34, "skills": ["archery", "stealth", "alchemy"]}'
-print(Character.model_validate_json(result)) # name=Evelyn, age=34, skills=['archery', 'stealth', 'alchemy']
+print(result.content) # '{"name": "Evelyn", "age": 34, "skills": ["archery", "stealth", "alchemy"]}'
+print(Character.model_validate_json(result.content)) # name=Evelyn, age=34, skills=['archery', 'stealth', 'alchemy']
 ```
 
 #### JSON Syntax
@@ -196,7 +196,7 @@ model = outlines.from_openai(openai.OpenAI(), "gpt-4o")
 
 # Call it with the output type to generate structured text
 result = model("Create a character, use the json format.", dict, temperature=0.5)
-print(result) # '{"first_name": "Henri", "last_name": "Smith", "height": "170"}'
+print(result.content) # '{"first_name": "Henri", "last_name": "Smith", "height": "170"}'
 ```
 
 ## Asynchronous Calls
@@ -226,18 +226,50 @@ model = outlines.from_openai(
 async def text_generation():
     # Regular generation
     response = await model("What's the capital of Latvia?", max_tokens=20)
-    print(response) # 'Riga'
+    print(response.content) # 'Riga'
 
     # Streaming
     async for chunk in  model.stream("Tell me a short story about a cat.", max_tokens=50):
-        print(chunk, end="") # 'Once...'
+        print(chunk.content, end="") # 'Once...'
 
     # Structured generation
     result = await model("Create a character, use the json format.", Character, top_p=0.1)
-    print(result) # '{"name": "Evelyn", "age": 34, "skills": ["archery", "stealth", "alchemy"]}'
-    print(Character.model_validate_json(result)) # name=Evelyn, age=34, skills=['archery', 'stealth', 'alchemy']
+    print(result.content) # '{"name": "Evelyn", "age": 34, "skills": ["archery", "stealth", "alchemy"]}'
+    print(Character.model_validate_json(result.content)) # name=Evelyn, age=34, skills=['archery', 'stealth', 'alchemy']
 
 asyncio.run(text_generation())
+```
+
+#### Tools
+
+Anthropic supports tool calling. To use it, provide a list of `tools` to the model.
+
+For instance:
+
+```python
+from openai import OpenAI
+from outlines import from_openai
+from outlines.inputs import Chat
+from typing import Optional
+
+# Our tool
+def get_weather(city: str, hour: Optional[int] = None):
+    """Give the weather for a given city, and optionally for a specific hour of the day"""
+    return "20 degrees"
+
+# Create the model
+model = from_openai(
+    OpenAI(),
+    "gpt-4o"
+)
+
+# Call the model with the tool defined above
+chat = Chat([
+    {"role": "system", "content": "You are a helpful assistant."},
+    {"role": "user", "content": "What's the weather in Tokyo?"},
+])
+response = model(chat, tools=[get_weather], max_tokens=100)
+print(response.tool_calls) # [ToolCallOutput(name='get_weather', id='toolu_01WDUo65vCXkrmjD3Yehbc5v', args={'city': 'Tokyo'})]
 ```
 
 ## Inference arguments

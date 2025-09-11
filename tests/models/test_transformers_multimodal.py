@@ -19,6 +19,7 @@ from outlines.models.transformers import (
     TransformerTokenizer,
     TransformersMultiModalTypeAdapter,
 )
+from outlines.outputs import Output, StreamingOutput
 from outlines.types import Regex
 
 TEST_MODEL = "trl-internal-testing/tiny-LlavaForConditionalGeneration"
@@ -61,12 +62,12 @@ def test_transformers_multimodal_instantiate_simple():
 
 
 def test_transformers_multimodal_simple(model, image):
-    result = model.generate(
+    result = model(
         ["<image>Describe this image in one sentence:", Image(image)],
         None,
         max_new_tokens=2,
     )
-    assert isinstance(result, str)
+    assert isinstance(result, Output)
 
 
 def test_transformers_multimodal_call(model, image):
@@ -74,7 +75,7 @@ def test_transformers_multimodal_call(model, image):
         ["<image>Describe this image in one sentence:", Image(image)],
         max_new_tokens=2,
     )
-    assert isinstance(result, str)
+    assert isinstance(result, Output)
 
 
 def test_transformers_multimodal_wrong_number_image(model, image):
@@ -90,7 +91,7 @@ def test_transformers_multimodal_wrong_number_image(model, image):
 
 def test_transformers_multimodal_wrong_input_type(model):
     with pytest.raises(TypeError):
-        model.generate("invalid input", None)
+        model("invalid input", None)
 
 
 def test_transformers_multimodal_chat(model, image):
@@ -107,7 +108,7 @@ def test_transformers_multimodal_chat(model, image):
         ]),
         max_new_tokens=2,
     )
-    assert isinstance(result, str)
+    assert isinstance(result, Output)
 
 
 def test_transformers_inference_kwargs(model, image):
@@ -115,7 +116,7 @@ def test_transformers_inference_kwargs(model, image):
         ["<image>Describe this image in one sentence:", Image(image)],
         max_new_tokens=2,
     )
-    assert isinstance(result, str)
+    assert isinstance(result, Output)
 
 
 def test_transformers_invalid_inference_kwargs(model, image):
@@ -138,7 +139,7 @@ def test_transformers_several_image(model, image):
         ],
         max_new_tokens=2,
     )
-    assert isinstance(result, str)
+    assert isinstance(result, Output)
 
 
 def test_transformers_multimodal_json(model, image):
@@ -150,7 +151,8 @@ def test_transformers_multimodal_json(model, image):
         Foo,
         max_new_tokens=10,
     )
-    assert "name" in result
+    assert isinstance(result, Output)
+    assert "name" in result.content
 
 
 def test_transformers_multimodal_regex(model, image):
@@ -159,8 +161,8 @@ def test_transformers_multimodal_regex(model, image):
         Regex(r"[0-9]")
     )
 
-    assert isinstance(result, str)
-    assert re.match(r"[0-9]", result)
+    assert isinstance(result, Output)
+    assert re.match(r"[0-9]", result.content)
 
 
 def test_transformers_multimodal_choice(model, image):
@@ -173,8 +175,8 @@ def test_transformers_multimodal_choice(model, image):
         Foo,
     )
 
-    assert isinstance(result, str)
-    assert result in ["white", "blue"]
+    assert isinstance(result, Output)
+    assert result.content in ["white", "blue"]
 
 
 def test_transformers_multimodal_multiple_samples(model, image):
@@ -245,7 +247,7 @@ def test_transformers_multimodal_batch(model, image):
 
 def test_transformers_multimodal_deprecated_input_type(model, image):
     with pytest.warns(DeprecationWarning):
-        result = model.generate(
+        result = model(
             {
                 "text": "<image>Describe this image in one sentence:",
                 "image": image,
@@ -253,4 +255,4 @@ def test_transformers_multimodal_deprecated_input_type(model, image):
             None,
             max_new_tokens=2,
         )
-        assert isinstance(result, str)
+        assert isinstance(result, Output)

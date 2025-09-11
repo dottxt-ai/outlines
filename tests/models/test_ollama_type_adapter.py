@@ -10,6 +10,7 @@ from pydantic import BaseModel
 
 from outlines.inputs import Chat, Image
 from outlines.models.ollama import OllamaTypeAdapter
+from outlines.tools import ToolDef
 from outlines.types import cfg, json_schema, regex
 
 if sys.version_info >= (3, 12):
@@ -168,3 +169,15 @@ def test_ollama_type_adapter_json_schema_str(adapter, schema):
 def test_ollama_type_adapter_json_schema_dict(adapter, schema):
     result = adapter.format_output_type(json_schema(schema))
     assert result == schema
+
+
+def test_ollama_type_adapter_tools(adapter):
+    with pytest.raises(
+        NotImplementedError,
+        match="Tools are not available for Ollama."
+    ):
+        adapter.format_tools(
+            [ToolDef(name="test", description="test", parameters={})]
+        )
+
+    adapter.format_tools(None)

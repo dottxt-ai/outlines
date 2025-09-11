@@ -66,7 +66,7 @@ board_state = " "
 turn_number = 0
 while not board.is_game_over():
     regex_pattern = legal_moves_regex(board)
-    structured = model(prompt + board_state, regex_pattern)
+    structured = model(prompt + board_state, regex_pattern).content
     move = board.parse_san(structured)
 
     if turn_number % 2 == 0 :  # It's White's turn

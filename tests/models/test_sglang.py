@@ -15,6 +15,7 @@ from openai import AsyncOpenAI, OpenAI
 
 from outlines.inputs import Chat, Image
 from outlines.models.sglang import SGLang, AsyncSGLang, from_sglang
+from outlines.outputs import Output, StreamingOutput
 from outlines.types.dsl import CFG, Regex, JsonSchema
 from tests.test_utils.mock_openai_client import MockOpenAIClient, MockAsyncOpenAIClient
 
@@ -231,7 +232,7 @@ def test_sglang_init():
 
 def test_sglang_sync_simple_call(sync_model):
     result = sync_model("Respond with a single word.",)
-    assert isinstance(result, str)
+    assert isinstance(result, Output)
 
 
 def test_sglang_sync_streaming(sync_model_no_model_name):
@@ -240,7 +241,7 @@ def test_sglang_sync_streaming(sync_model_no_model_name):
         model=sglang_model_name,
     )
     assert isinstance(result, Generator)
-    assert isinstance(next(result), str)
+    assert isinstance(next(result), StreamingOutput)
 
 
 def test_sglang_sync_batch(sync_model):
@@ -252,7 +253,7 @@ def test_sglang_sync_batch(sync_model):
 
 def test_sglang_sync_vision(sync_model):
     result = sync_model(["hello", image_input], max_tokens=10)
-    assert isinstance(result, str)
+    assert isinstance(result, Output)
 
 
 def test_sglang_sync_vision_chat(sync_model):
@@ -267,15 +268,15 @@ def test_sglang_sync_vision_chat(sync_model):
         ]),
         max_tokens=10,
     )
-    assert isinstance(result, str)
+    assert isinstance(result, Output)
 
 
 def test_sglang_sync_multiple_samples(sync_model):
     result = sync_model("Respond with a single word.", n=2)
     assert isinstance(result, list)
     assert len(result) == 2
-    assert isinstance(result[0], str)
-    assert isinstance(result[1], str)
+    assert isinstance(result[0], Output)
+    assert isinstance(result[1], Output)
 
 
 def test_sglang_sync_json(sync_model):
@@ -284,14 +285,14 @@ def test_sglang_sync_json(sync_model):
         + ' {"bar": {"type": "string"}}}'
     )
     result = sync_model("foo?", JsonSchema(json_string), max_tokens=10)
-    assert isinstance(result, str)
-    assert "bar" in result
+    assert isinstance(result, Output)
+    assert "bar" in result.content
 
 
 def test_sglang_sync_regex(sync_model):
     result = sync_model("foo?", Regex(r"[0-9]{3}"), max_tokens=10)
-    assert isinstance(result, str)
-    assert re.match(r"[0-9]{3}", result)
+    assert isinstance(result, Output)
+    assert re.match(r"[0-9]{3}", result.content)
 
 
 def test_sglang_sync_cfg(sync_model):
@@ -300,14 +301,14 @@ def test_sglang_sync_cfg(sync_model):
         match="SGLang grammar-based structured outputs expects an EBNF"
     ):
         result = sync_model("foo?", CFG(EBNF_YES_NO_GRAMMAR), max_tokens=10)
-        assert isinstance(result, str)
-        assert result in ["yes", "no"]
+        assert isinstance(result, Output)
+        assert result.content in ["yes", "no"]
 
 
 @pytest.mark.asyncio
 async def test_sglang_async_simple_call(async_model):
     result = await async_model("Respond with a single word.",)
-    assert isinstance(result, str)
+    assert isinstance(result, Output)
 
 
 @pytest.mark.asyncio
@@ -318,7 +319,7 @@ async def test_sglang_async_streaming(async_model_no_model_name):
     )
     assert isinstance(result, AsyncGenerator)
     async for chunk in result:
-        assert isinstance(chunk, str)
+        assert isinstance(chunk, StreamingOutput)
         break  # Just check the first chunk
 
 
@@ -333,7 +334,7 @@ async def test_sglang_async_batch(async_model):
 @pytest.mark.asyncio
 async def test_sglang_async_vision(async_model):
     result = await async_model(["hello", image_input], max_tokens=10)
-    assert isinstance(result, str)
+    assert isinstance(result, Output)
 
 
 @pytest.mark.asyncio
@@ -349,7 +350,7 @@ async def test_sglang_async_vision_chat(async_model):
         ]),
         max_tokens=10,
     )
-    assert isinstance(result, str)
+    assert isinstance(result, Output)
 
 
 @pytest.mark.asyncio
@@ -357,8 +358,8 @@ async def test_sglang_async_multiple_samples(async_model):
     result = await async_model("Respond with a single word.", n=2)
     assert isinstance(result, list)
     assert len(result) == 2
-    assert isinstance(result[0], str)
-    assert isinstance(result[1], str)
+    assert isinstance(result[0], Output)
+    assert isinstance(result[1], Output)
 
 
 @pytest.mark.asyncio
@@ -368,19 +369,19 @@ async def test_sglang_async_json(async_model):
         + ' {"bar": {"type": "string"}}}'
     )
     result = await async_model("foo?", JsonSchema(json_string), max_tokens=10)
-    assert isinstance(result, str)
-    assert "bar" in result
+    assert isinstance(result, Output)
+    assert "bar" in result.content
 
 
 @pytest.mark.asyncio
 async def test_sglang_async_regex(async_model):
     result = await async_model("foo?", Regex(r"[0-9]{3}"), max_tokens=10)
-    assert isinstance(result, str)
-    assert re.match(r"[0-9]{3}", result)
+    assert isinstance(result, Output)
+    assert re.match(r"[0-9]{3}", result.content)
 
 
 @pytest.mark.asyncio
 async def test_sglang_async_cfg(async_model):
     result = await async_model("foo?", CFG(EBNF_YES_NO_GRAMMAR), max_tokens=10)
-    assert isinstance(result, str)
-    assert result in ["yes", "no"]
+    assert isinstance(result, Output)
+    assert result.content in ["yes", "no"]

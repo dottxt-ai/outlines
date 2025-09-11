@@ -47,7 +47,7 @@ generator = Generator(model)
 result = generator("Write a short poem about AI.")
 
 # Print the result
-print(result)
+print(result.content)
 ```
 
 ## Structured Generation
@@ -77,7 +77,7 @@ generator = Generator(model, BookRecommendation)
 result = generator("Recommend a science fiction book.")
 
 # Parse the JSON result into a Pydantic model
-book = BookRecommendation.model_validate_json(result)
+book = BookRecommendation.model_validate_json(result.content)
 print(f"{book.title} by {book.author} ({book.year})")
 ```
 
@@ -109,7 +109,7 @@ result = generator(
 
 ## Return Value
 
-The generator always returns a raw string containing the generated text. When generating structured outputs, you need to parse this string into the desired format.
+The generator returns an `Output` instance (or a iterator containing `StreamingOutput` instances in case of streaming). The `content` field contains the generated text as a string. When generating structured outputs, you need to parse this string into the desired format.
 
 Unlike in Outlines v0, where the return type could be a parsed object, in v1 you are responsible for parsing the output when needed:
 
@@ -126,7 +126,7 @@ generator = Generator(model, Person)
 result = generator("Generate a person:")
 
 # Parse the result yourself
-person = Person.model_validate_json(result)
+person = Person.model_validate_json(result.content)
 ```
 
 ::: outlines.generator.Generator

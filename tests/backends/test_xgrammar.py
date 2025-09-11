@@ -125,23 +125,23 @@ def test_xgrammar_backend(model, tensor_library_name, json_schema, regex, cfg):
     assert isinstance(processor, XGrammarLogitsProcessor)
     generator = outlines.Generator(model, backend="xgrammar", processor=processor)
     response = generator("Hello, how are you?")
-    assert response[0] == "{"
-    assert "name" in response
+    assert response.content[0] == "{"
+    assert "name" in response.content
 
     # regex
     processor = backend.get_regex_logits_processor(regex)
     assert isinstance(processor, XGrammarLogitsProcessor)
     generator = outlines.Generator(model, backend="xgrammar", processor=processor)
     response = generator("Hello, how are you?")
-    assert len(response) == 3
-    assert int(response)
+    assert len(response.content) == 3
+    assert int(response.content)
 
     # cfg
     processor = backend.get_cfg_logits_processor(cfg)
     assert isinstance(processor, XGrammarLogitsProcessor)
     generator = outlines.Generator(model, backend="xgrammar", processor=processor)
     response = generator("Hello, how are you?")
-    assert response == "yes" or response == "no"
+    assert response.content == "yes" or response.content == "no"
 
     # batch + multiple generations
     processor = backend.get_json_schema_logits_processor(json_schema)
@@ -151,12 +151,12 @@ def test_xgrammar_backend(model, tensor_library_name, json_schema, regex, cfg):
             response = generator.batch(["Create a character", "Hello, how are you?"], max_new_tokens=200)
             assert len(response) == 2
             for r in response:
-                assert r[0] == "{"
-                assert "name" in r
+                assert r.content[0] == "{"
+                assert "name" in r.content
         else:
             response = generator("Create a character", max_tokens=20)
-            assert response[0] == "{"
-            assert "name" in response
+            assert response.content[0] == "{"
+            assert "name" in response.content
 
 
 def test_xgrammar_backend_invalid_model():

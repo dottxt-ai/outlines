@@ -123,7 +123,7 @@ response = generator(prompt, max_tokens=1024, temperature=0, seed=42)
 We obtain the nodes and edges of the knowledge graph:
 
 ```python
-print(response)
+print(response.content)
 # {"nodes":[{"id":1,"label":"Alice","property":"loves,hates"},
 # {"id":2,"label":"Bob","property":"loved_by"},
 # {"id":3,"label":"Charlie","property":"hated_by"}],
@@ -137,12 +137,14 @@ print(response)
 We can use the [Graphviz library](https://graphviz.readthedocs.io/en/stable/) to visualize the generated knowledge graph. For detailed installation instructions, see [here](https://graphviz.readthedocs.io/en/stable/#installation).
 
 ```python
+import json
 from graphviz import Digraph
 
+json_response = json.loads(response.content)
 dot = Digraph()
-for node in response["nodes"]:
+for node in json_response["nodes"]:
     dot.node(str(node["id"]), node["label"], shape='circle', width='1', height='1')
-for edge in response["edges"]:
+for edge in json_response["edges"]:
     dot.edge(str(edge["source"]), str(edge["target"]), label=edge["label"])
 
 dot.render('knowledge-graph.gv', view=True)

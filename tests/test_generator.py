@@ -13,6 +13,7 @@ from outlines.generator import (
     AsyncBlackBoxGenerator,
 )
 from outlines.models import AsyncVLLM, VLLM
+from outlines.outputs import Output, StreamingOutput
 from outlines.processors import (
     OutlinesLogitsProcessor,
 )
@@ -113,7 +114,7 @@ def test_steerable_generator_init_invalid_output_type(steerable_model, sample_pr
 def test_steerable_generator_call(steerable_model):
     generator = SteerableGenerator(steerable_model, Literal["foo", "bar"])
     result = generator("foo", max_new_tokens=10)
-    assert isinstance(result, str)
+    assert isinstance(result, Output)
 
 
 def test_steerable_generator_stream(steerable_model):
@@ -121,7 +122,7 @@ def test_steerable_generator_stream(steerable_model):
         generator = SteerableGenerator(steerable_model, Literal["foo", "bar"])
         result = generator.stream("foo", max_tokens=10)
         assert isinstance(result, TypingGenerator)
-        assert isinstance(next(result), str)
+        assert isinstance(next(result), StreamingOutput)
 
 
 # BlackBoxGenerator
@@ -135,14 +136,14 @@ def test_black_box_generator_init(black_box_sync_model):
 def test_black_box_generator_call(black_box_sync_model):
     generator = BlackBoxGenerator(black_box_sync_model, str)
     result = generator("Write a very short sentence", max_tokens=10)
-    assert isinstance(result, str)
+    assert isinstance(result, Output)
 
 
 def test_black_box_generator_stream(black_box_sync_model):
     generator = BlackBoxGenerator(black_box_sync_model, str)
     result = generator.stream("Write a very short sentence", max_tokens=10)
     assert isinstance(result, TypingGenerator)
-    assert isinstance(next(result), str)
+    assert isinstance(next(result), StreamingOutput)
 
 
 # AsyncBlackBoxGenerator
@@ -158,7 +159,7 @@ def test_async_black_box_generator_init(black_box_async_model):
 async def test_async_black_box_generator_call(black_box_async_model):
     generator = AsyncBlackBoxGenerator(black_box_async_model, str)
     result = await generator("Write a very short sentence", max_tokens=10)
-    assert isinstance(result, str)
+    assert isinstance(result, Output)
 
 
 @pytest.mark.asyncio
@@ -167,7 +168,7 @@ async def test_async_black_box_generator_stream(black_box_async_model):
     result = generator.stream("Write a very short sentence", max_tokens=10)
     assert isinstance(result, AsyncGenerator)
     async for chunk in result:
-        assert isinstance(chunk, str)
+        assert isinstance(chunk.content, str)
         break  # Just check the first chunk
 
 

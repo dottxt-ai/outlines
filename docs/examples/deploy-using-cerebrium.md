@@ -110,7 +110,7 @@ def generate(
 
     character = generator(
         f"<s>[INST]Give me a character description. Describe {prompt}.[/INST]"
-    )
+    ).content
 
     return character
 ```

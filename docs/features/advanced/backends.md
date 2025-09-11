@@ -25,11 +25,11 @@ model = outlines.from_transformers(
 )
 
 result = model("What is the capital of France?", output_type, backend="llguidance")
-print(result) # 'Paris'
+print(result.content) # 'Paris'
 
 generator = outlines.Generaor(model, output_type)
 result = generator("What is the capital of France?", backend="xgrammar")
-print(result) # 'Paris'
+print(result.content) # 'Paris'
 ```
 
 If you do not provide a value for the `backend` argument, the default value will be used. The default value depends on the type of output type:

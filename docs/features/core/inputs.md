@@ -32,7 +32,7 @@ model = outlines.from_transformers(
 
 # Simple text prompt
 response = model("What's the capital of France?", max_new_tokens=20)
-print(response)  # 'Paris'
+print(response.content)  # 'Paris'
 ```
 
 ## Multimodal Inputs (Vision)
@@ -76,16 +76,22 @@ prompt = [
 
 # Call the model to generate a response
 response = model(prompt, max_tokens=50)
-print(response) # 'This is a picture of a black dog.'
+print(response.content) # 'This is a picture of a black dog.'
 ```
 
 ## Chat Inputs
 
 For conversational models, you can use the `Chat` class to provide a conversation history with multiple messages.
 
-A `Chat` instance is instantiated with an optional list of messages. Each message must be a dictionary containing two mandatory keys:
-- `role`: must be one of `system`, `assistant` or `user`
-- `content`: must be either a string or a multimodal input (if the model supports it)
+A `Chat` is instantiated with an optional list of messages. The type of each message is defined by the value of the mandatory `role` key. There are 4 types of messages that each have their associated keys:
+- `system`: system instructions to give context to the LLM on the task to perform. The only other key is `content` (mandatory).
+- `user`: a message from you in the conversation. The only other key is `content` (mandatory).
+- `assistant`: a response from the LLM. The other keys are `content` and `tool_calls` (a list of `ToolCall` instances). At least one of those two must be provided.
+- `tool`: a tool call response. The other keys are `content` (mandatory), `tool_name` and `tool_call_id`. Depending on the models you are using, one of those two is mandatory.
+
+Support for the various message types and fields described above depends on the capabilities of the model you are using. Tool calling is limited to a few models at the moment for instance. To know more about tools, consult the dedicated section on [tools](./tools.md).
+
+An `Output` instance returned by a model can also be added to a `Chat`. It will automatically be turned into a user message. To know more about model outputs, consult the dedicated section on [outputs](./outputs.md).
 
 For instance:
 
@@ -149,13 +155,15 @@ print(prompt)
 # {'role': 'assistant', 'content': 'Excellent, thanks!'}
 ```
 
-Finally, there are three convenience method to easily add a message:
+There are four convenience method to easily add a message:
 
-- add_system_message
-- add_user_message
-- add_assistant_message
+- `add_system_message`
+- `add_user_message`
+- `add_assistant_message`
+- `add_tool_message`
+- `add_output`
 
-As the role is already set, you only need to provide the content.
+As the role is already set, you only need to provide values for the other keys of the message type, except for the `add_output` for which you would just provide the model call output.
 
 For instance:
 
@@ -200,5 +208,5 @@ prompts = [
 
 # Call it to generate text
 result = model.batch(prompts, max_new_tokens=20)
-print(result) # ['Vilnius', 'Riga', 'Tallinn']
+print([item.content for item in result]) # ['Vilnius', 'Riga', 'Tallinn']
 ```

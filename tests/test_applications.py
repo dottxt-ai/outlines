@@ -6,6 +6,7 @@ import transformers
 
 from outlines import from_transformers
 from outlines.applications import Application
+from outlines.outputs import Output
 from outlines.templates import Template
 
 
@@ -51,7 +52,7 @@ def test_application_template_call(model):
     application = Application(template, output_type)
     result = application(model, {"value": "example"}, max_new_tokens=10)
 
-    assert isinstance(result, str)
+    assert isinstance(result, Output)
 
 
 def test_application_callable_call(model):
@@ -62,7 +63,7 @@ def test_application_callable_call(model):
     application = Application(template, output_type)
     result = application(model, {"value": "example"}, max_new_tokens=10)
 
-    assert isinstance(result, str)
+    assert isinstance(result, Output)
 
 
 def test_application_template_error(model):

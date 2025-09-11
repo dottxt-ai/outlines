@@ -42,4 +42,4 @@ if __name__ == "__main__":
     prompt = "Instruct: You are a leading role play gamer. You have seen thousands of different characters and their attributes.\nPlease return a JSON object with common attributes of an RPG character. Give me a character description\nOutput:"
 
     sequence = generator(prompt, seed=seed, max_tokens=512)
-    print(sequence)
+    print(sequence.content)

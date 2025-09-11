@@ -61,7 +61,7 @@ model = outlines.from_tgi(client)
 
 # Call it to generate text
 result = model("Write a short story about a cat.", stop_sequences=["."])
-print(result) # 'In a quiet village where the cobblestones hummed softly beneath the morning mist...'
+print(result.content) # 'In a quiet village where the cobblestones hummed softly beneath the morning mist...'
 ```
 
 The `TGI` model supports streaming. For instance:
@@ -76,7 +76,7 @@ model = outlines.from_tgi(client)
 
 # Stream text
 for chunk in model.stream("Write a short story about a cat.", stop_sequences=["."]):
-    print(chunk) # 'In ...'
+    print(chunk.content) # 'In ...'
 ```
 
 ## Asynchronous Calls
@@ -96,7 +96,7 @@ async def generate_text():
     async_model = outlines.from_tgi(async_client)
 
     result = await async_model("Write a haiku about Python.", max_new_tokens=50)
-    print(result)
+    print(result.content)
 
 asyncio.run(generate_text())
 ```
@@ -115,7 +115,7 @@ async def stream_text():
     async_model = outlines.from_tgi(async_client)
 
     async for chunk in async_model.stream("Tell me a story about a robot.", max_new_tokens=100):
-        print(chunk, end="")
+        print(chunk.content, end="")
 
 asyncio.run(stream_text())
 ```
@@ -144,7 +144,7 @@ async def generate_multiple():
     results = await asyncio.gather(*tasks)
 
     for prompt, result in zip(prompts, results):
-        print(f"{prompt}\n{result}\n")
+        print(f"{prompt}\n{result.content}\n")
 
 asyncio.run(generate_multiple())
 ```
@@ -165,7 +165,7 @@ tgi_client = huggingface_hub.InferenceClient("http://localhost:8080")
 model = outlines.from_tgi(tgi_client)
 
 result = model("How many countries are there in the world?", output_type)
-print(result) # '200'
+print(result.content) # '200'
 ```### JSON Schema
 
 ```python
@@ -183,8 +183,8 @@ tgi_client = huggingface_hub.InferenceClient("http://localhost:8080")
 model = outlines.from_tgi(tgi_client)
 
 result = model("Create a character.", output_type=Character, frequency_penalty=1.5)
-print(result) # '{"name": "Evelyn", "age": 34, "skills": ["archery", "stealth", "alchemy"]}'
-print(Character.model_validate_json(result)) # name=Evelyn, age=34, skills=['archery', 'stealth', 'alchemy']
+print(result.content) # '{"name": "Evelyn", "age": 34, "skills": ["archery", "stealth", "alchemy"]}'
+print(Character.model_validate_json(result.content)) # name=Evelyn, age=34, skills=['archery', 'stealth', 'alchemy']
 ```### Multiple Choice
 
 ```python
@@ -198,7 +198,7 @@ tgi_client = huggingface_hub.InferenceClient("http://localhost:8080")
 model = outlines.from_tgi(tgi_client)
 
 result = model("What is the capital of France?", output_type, temperature=0)
-print(result) # 'Paris'
+print(result.content) # 'Paris'
 ```### Regex
 
 ```python
@@ -212,7 +212,7 @@ tgi_client = huggingface_hub.InferenceClient("http://localhost:8080")
 model = outlines.from_tgi(tgi_client)
 
 result = model("Generate a fake social security number.", output_type, top_p=0.1)
-print(result) # '782-32-3789'
+print(result.content) # '782-32-3789'
 ```
 
 ### Async Structured Generation
@@ -235,7 +235,7 @@ async def generate_user():
     async_model = outlines.from_tgi(async_client)
 
     result = await async_model("Generate a random user profile.", output_type=User)
-    user = User.model_validate_json(result)
+    user = User.model_validate_json(result.content)
     print(f"Name: {user.name}, Email: {user.email}, Age: {user.age}")
 
 asyncio.run(generate_user())

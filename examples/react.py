@@ -80,20 +80,20 @@ text_generator = Generator(model)
 
 for i in range(1, 10):
     mode_output = mode_generator(prompt, max_tokens=128)
-    mode = json.loads(mode_output)["result"]  # Extract the result from the JSON output
+    mode = json.loads(mode_output.content)["result"]  # Extract the result from the JSON output
     prompt = add_mode(i=i, mode=mode, result="", prompt=prompt)
 
     if mode == "Tho":
         thought = text_generator(prompt, stop="\n", max_tokens=128)
-        prompt += f"{thought}"
+        prompt += f"{thought.content}"
     elif mode == "Act":
         action_output = action_generator(prompt, max_tokens=128)
-        action = json.loads(action_output)["result"]  # Extract the result from the JSON output
+        action = json.loads(action_output.content)["result"]  # Extract the result from the JSON output
         prompt += f"{action} '"
 
         subject = text_generator(prompt, stop=["'"], max_tokens=128)
         # Apple Computers headquartered
-        subject = " ".join(subject.split()[:2])
+        subject = " ".join(subject.content.split()[:2])
         prompt += f"{subject}'"
 
         if action == "Search":

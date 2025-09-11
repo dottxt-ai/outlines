@@ -12,6 +12,7 @@ from outlines.models.llamacpp import (
     LlamaCppTypeAdapter,
     from_llamacpp
 )
+from outlines.outputs import Output, StreamingOutput
 from outlines.types.dsl import Regex, CFG
 
 
@@ -71,12 +72,12 @@ answer ::= "yes" | "no"
 
 
 def test_llamacpp_simple(model):
-    result = model.generate("Respond with one word. Not more.", None)
-    assert isinstance(result, str)
+    result = model("Respond with one word. Not more.", None)
+    assert isinstance(result, Output)
 
 
 def test_llamacpp_chat(model):
-    result = model.generate(
+    result = model(
         Chat(
             messages=[
                 {"role": "system", "content": "You are a helpful assistant."},
@@ -85,14 +86,14 @@ def test_llamacpp_chat(model):
         ),
         max_tokens=10
     )
-    assert isinstance(result, str)
+    assert isinstance(result, Output)
 
 
 def test_llamacpp_regex(model):
     result = model("Respond with one word. Not more.", Regex(r"[0-9]"))
-    assert isinstance(result, str)
-    assert int(result)
-    assert len(result) == 1
+    assert isinstance(result, Output)
+    assert int(result.content)
+    assert len(result.content) == 1
 
 
 def test_llamacpp_json(model):
@@ -100,8 +101,8 @@ def test_llamacpp_json(model):
         bar: str
 
     result = model("foo? Respond with one word.", Foo, max_tokens=100)
-    assert isinstance(result, str)
-    assert "bar" in json.loads(result)
+    assert isinstance(result, Output)
+    assert "bar" in json.loads(result.content)
 
 
 def test_llamacpp_choice(model):
@@ -110,12 +111,14 @@ def test_llamacpp_choice(model):
         foor = "Foo"
 
     result = model("foo?", Foo)
-    assert result == "Foo" or result == "Bar"
+    assert isinstance(result, Output)
+    assert result.content == "Foo" or result.content == "Bar"
 
 
 def test_llamacpp_cfg(model, ebnf_grammar):
     response = model("Respond with one word. Not more.", CFG(ebnf_grammar))
-    assert response in ["yes", "no"]
+    assert isinstance(response, Output)
+    assert response.content in ["yes", "no"]
 
 
 def test_llamacpp_cfg_outlines_core(model, lark_grammar):
@@ -131,15 +134,16 @@ def test_llamacpp_cfg_outlines_core(model, lark_grammar):
 
 
 def test_llamacpp_text_stop(model):
-    result = model.generate("Write the letter a.", None, stop="a", max_tokens=100)
-    assert "a" not in result
+    result = model("Write the letter a.", None, stop="a", max_tokens=100)
+    assert isinstance(result, Output)
+    assert "a" not in result.content
 
 
 def test_llamacpp_stream_simple(model):
     generator = model.stream("Respond with one word. Not more.", None)
 
     for x in generator:
-        assert isinstance(x, str)
+        assert isinstance(x, StreamingOutput)
 
 
 def test_llamacpp_stream_chat(model):
@@ -153,14 +157,16 @@ def test_llamacpp_stream_chat(model):
         max_tokens=10
     )
     for x in generator:
-        assert isinstance(x, str)
+        assert isinstance(x, StreamingOutput)
 
 
 def test_llamacpp_stream_regex(model):
     generator = model.stream("Respond with one word. Not more.", Regex(r"[0-9]"))
 
     x = next(generator)
-    assert isinstance(x, str)
+    assert isinstance(x, StreamingOutput)
+    assert int(x.content)
+    assert len(x.content) == 1
 
 
 def test_llamacpp_stream_json(model):
@@ -170,7 +176,8 @@ def test_llamacpp_stream_json(model):
     generator = model.stream("foo?", Foo)
 
     x = next(generator)
-    assert x == "{"
+    assert isinstance(x, StreamingOutput)
+    assert "{" in x.content
 
 
 def test_llamacpp_stream_cfg(model, ebnf_grammar):
@@ -178,7 +185,8 @@ def test_llamacpp_stream_cfg(model, ebnf_grammar):
     for chunk in model.stream(
         "Respond with one word. Not more.", CFG(ebnf_grammar)
     ):
-        response += chunk
+        assert isinstance(chunk, StreamingOutput)
+        response += chunk.content
     assert response in ["yes", "no"]
 
 
@@ -187,7 +195,7 @@ def test_llamacpp_stream_cfg_outlines_core(model, lark_grammar):
         NotImplementedError,
         match="Outlines Core does not support context-free grammar."
     ):
-        for chunk in model.stream(
+        for _ in model.stream(
             "Respond with one word. Not more.",
             CFG(lark_grammar),
             backend="outlines_core"
@@ -203,15 +211,16 @@ def test_llamacpp_stream_choice(model):
     generator = model.stream("foo?", Foo)
 
     x = next(generator)
-    assert x[0] in ("B", "F")
+    assert isinstance(x, StreamingOutput)
+    assert x.content[0] in ("B", "F")
 
 
 def test_llamacpp_stream_text_stop(model):
     generator = model.stream("Write the letter a.", None, stop="a", max_tokens=100)
 
     result = next(generator)
-    assert isinstance(result, str)
-    assert result != "a"
+    assert isinstance(result, StreamingOutput)
+    assert result.content != "a"
 
 
 def test_llamacpp_batch(model):

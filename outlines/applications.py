@@ -48,7 +48,7 @@ class Application:
     application = Application(template, JsonType(OutputModel))
 
     result = application(model, {"num": 3}, max_new_tokens=20)
-    print(result)  # Expected output: { "result" : 6 }
+    print(result.content)  # Expected output: '{ "result" : 6 }'
     ```
 
     """

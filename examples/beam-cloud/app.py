@@ -42,5 +42,5 @@ def predict(context, **inputs):
     model = context.on_start_value
     # Inference
     generator = outlines.Generator(model, Literal["Positive", "Negative"])
-    answer = generator(prompt)
+    answer = generator(prompt).content
     return {"answer": answer}

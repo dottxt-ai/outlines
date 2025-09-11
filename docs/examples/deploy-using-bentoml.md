@@ -154,7 +154,7 @@ We then need to define an HTTP endpoint using `@bentoml.api` to decorate the met
         from outlines.types import JsonSchema
 
         generator = outlines.Generator(self.model, JsonSchema(json_schema))
-        character = generator(prompt)
+        character = generator(prompt).content
 
         return json.loads(character)
 ```
@@ -200,7 +200,7 @@ with bentoml.SyncHTTPClient("http://localhost:3000") as client:
     response = client.generate(
         prompt="Give me a character description"
     )
-    print(response)
+    print(response.content)
 ```
 
 </details>

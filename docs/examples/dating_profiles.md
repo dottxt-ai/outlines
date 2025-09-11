@@ -165,7 +165,7 @@ it's  a good excuse for a date. I watch the latest series because I'm paying,
 with my hard-earned money, for every streaming service."""
 
 prompt = dating_profile_prompt(description=new_description, examples=samples)
-profile = model(prompt, DatingProfile)
+profile = model(prompt, DatingProfile).content
 parsed_profile = DatingProfile.model_validate_json(json.loads(profile))
 ```
 

@@ -12,6 +12,7 @@ from outlines.models.transformers import (
     TransformerTokenizer,
     TransformersTypeAdapter,
 )
+from outlines.outputs import Output, StreamingOutput
 from outlines.types import Regex
 
 
@@ -80,16 +81,16 @@ def model_bart():
 
 
 def test_transformers_simple(model):
-    result = model.generate("Respond with one word. Not more.", None)
-    assert isinstance(result, str)
+    result = model("Respond with one word. Not more.", None)
+    assert isinstance(result, Output)
 
 
 def test_transformers_call(model, model_bart):
     result = model("Respond with one word. Not more.")
-    assert isinstance(result, str)
+    assert isinstance(result, Output)
 
     result = model_bart("Respond with one word. Not more.")
-    assert isinstance(result, str)
+    assert isinstance(result, Output)
 
 
 def test_transformers_chat(model):
@@ -99,12 +100,12 @@ def test_transformers_chat(model):
             {"role": "user", "content": "What is the capital of France?"},
         ])
     )
-    assert isinstance(result, str)
+    assert isinstance(result, Output)
 
 
 def test_transformers_inference_kwargs(model):
     result = model("Respond with one word. Not more.", max_new_tokens=100)
-    assert isinstance(result, str)
+    assert isinstance(result, Output)
 
 
 def test_transformers_invalid_inference_kwargs(model):
@@ -114,8 +115,8 @@ def test_transformers_invalid_inference_kwargs(model):
 
 def test_transformers_regex(model):
     result = model("Give a number between 0 and 9.", Regex(r"[0-9]"))
-    assert isinstance(result, str)
-    assert re.match(r"[0-9]", result)
+    assert isinstance(result, Output)
+    assert re.match(r"[0-9]", result.content)
 
 
 def test_transformers_json(model):
@@ -123,7 +124,7 @@ def test_transformers_json(model):
         name: str
 
     result = model("Create a character with a name.", Character)
-    assert "name" in result
+    assert "name" in result.content
 
 
 def test_transformers_choice(model):
@@ -132,12 +133,12 @@ def test_transformers_choice(model):
         dog = "dog"
 
     result = model("Cat or dog?", Foo)
-    assert result in ["cat", "dog"]
+    assert result.content in ["cat", "dog"]
 
 
 def test_transformers_multiple_samples(model):
     result = model("Respond with one word. Not more.")
-    assert isinstance(result, str)
+    assert isinstance(result, Output)
     result = model(
         "Respond with one word. Not more.", num_return_sequences=2, do_sample=True
     )
@@ -187,8 +188,8 @@ def test_transformers_multiple_samples_constrained(model):
     result = model("Cat or dog?", Foo, num_return_sequences=2, do_sample=True)
     assert isinstance(result, list)
     assert len(result) == 2
-    assert result[0] in ["cat", "dog"]
-    assert result[1] in ["cat", "dog"]
+    assert result[0].content in ["cat", "dog"]
+    assert result[1].content in ["cat", "dog"]
 
 
 def test_transformers_batch_constrained(model):
@@ -202,8 +203,8 @@ def test_transformers_batch_constrained(model):
     )
     assert isinstance(result, list)
     assert len(result) == 2
-    assert result[0] in ["cat", "dog"]
-    assert result[1] in ["cat", "dog"]
+    assert result[0].content in ["cat", "dog"]
+    assert result[1].content in ["cat", "dog"]
 
     result = model.batch(
         ["Cat or dog?", "Cat or dog?"],
@@ -216,8 +217,8 @@ def test_transformers_batch_constrained(model):
     for item in result:
         assert isinstance(item, list)
         assert len(item) == 2
-        assert item[0] in ["cat", "dog"]
-        assert item[1] in ["cat", "dog"]
+        assert item[0].content in ["cat", "dog"]
+        assert item[1].content in ["cat", "dog"]
 
 
 def test_transformers_streaming(model):

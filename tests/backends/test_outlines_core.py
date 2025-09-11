@@ -149,15 +149,15 @@ def test_outlines_core_backend(model, tensor_library_name, json_schema, regex, c
     assert isinstance(processor, OutlinesCoreLogitsProcessor)
     generator = outlines.Generator(model, backend="outlines_core", processor=processor)
     response = generator("Hello, how are you?")
-    assert "name" in response
+    assert "name" in response.content
 
     # regex
     processor = backend.get_regex_logits_processor(regex)
     assert isinstance(processor, OutlinesCoreLogitsProcessor)
     generator = outlines.Generator(model, backend="outlines_core", processor=processor)
     response = generator("Hello, how are you?")
-    assert len(response) == 3
-    assert int(response)
+    assert len(response.content) == 3
+    assert int(response.content)
 
     # cfg
     with pytest.raises(
@@ -174,9 +174,9 @@ def test_outlines_core_backend(model, tensor_library_name, json_schema, regex, c
             response = generator.batch(["Create a character", "Hello, how are you?"], max_new_tokens=200)
             assert len(response) == 2
             for r in response:
-                assert r[0] == "{"
-                assert "name" in r
+                assert r.content[0] == "{"
+                assert "name" in r.content
         else:
             response = generator("Create a character", max_tokens=20)
-            assert response[0] == "{"
-            assert "name" in response
+            assert response.content[0] == "{"
+            assert "name" in response.content

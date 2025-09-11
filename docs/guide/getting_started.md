@@ -182,7 +182,7 @@ model = <your_model_as_defined_above>
 
 # Call the model to generate text
 result = model("Write a short story about a cat.")
-print(result) # 'In a quiet village where the cobblestones hummed softly beneath the morning mist...'
+print(result.content) # 'In a quiet village where the cobblestones hummed softly beneath the morning mist...'
 ```
 
 Most models also support streaming through the use of a `streaming` method. You can directly use with a prompt just like regular text generation. For instance:
@@ -192,7 +192,7 @@ model = <your_model_as_defined_above>
 
 # Stream text
 for chunk in model.streaming("Write a short story about a cat.")
-    print(chunk) # 'In ...'
+    print(chunk.content) # 'In ...'
 ```
 
 ## Structured Generation
@@ -218,7 +218,7 @@ In the meantime, you can find below examples of using each of the five output ty
 
     # Generate an integer
     result = model("How many countries are there in the world?", int)
-    print(result) # '200'
+    print(result.content) # '200'
     ```
 
 === "Multiple Choice"
@@ -235,7 +235,7 @@ In the meantime, you can find below examples of using each of the five output ty
 
     # Generate text corresponding to either of the choices defined above
     result = model("What do you want to eat, a pizza or a burger?", PizzaOrBurger)
-    print(result) # 'pizza'
+    print(result.content) # 'pizza'
     ```
 
 === "JSON Schemas"
@@ -255,8 +255,8 @@ In the meantime, you can find below examples of using each of the five output ty
 
     # Generate a character
     result = model("Create a character", Character)
-    print(result) # '{"name": "Aurora", "birth_date": "1990-06-15", "skills": ["Stealth", "Diplomacy"]}'
-    print(Character.model_validate_json(result)) # name=Aurora birth_date=datetime.date(1990, 6, 15) skills=['Stealth', 'Diplomacy']
+    print(result.content) # '{"name": "Aurora", "birth_date": "1990-06-15", "skills": ["Stealth", "Diplomacy"]}'
+    print(Character.model_validate_json(result.content)) # name=Aurora birth_date=datetime.date(1990, 6, 15) skills=['Stealth', 'Diplomacy']
     ```
 
 === "Regex"
@@ -271,7 +271,7 @@ In the meantime, you can find below examples of using each of the five output ty
 
     # Generate the number
     result = model("Write a 3 digit number", output_type)
-    print(result) # '236'
+    print(result.content) # '236'
     ```
 
 === "Context-free Grammars"
@@ -305,7 +305,7 @@ In the meantime, you can find below examples of using each of the five output ty
 
     # Generate an arithmetic operation
     result = model("Write an arithmetic operation", CFG(grammar_string))
-    print(result) # '2 + 3'
+    print(result.content) # '2 + 3'
     ```
 
 It's important to note that not all output types are available for all models due to limitations in the underlying inference engines. The [Models](../features/models/index.md) section of the features documentation includes a features matrix that summarize the availability of output types.
@@ -329,7 +329,7 @@ generator = Generator(model, Literal["pizza", "burger"])
 
 # Call it as you would call a model
 result = generator("What do you want to eat, a pizza or a burger?")
-print(result) # pizza
+print(result.content) # pizza
 ```
 
 You can find more information on generators in the dedicated page on [Generators](../features/core/generator.md) in the features documentation.

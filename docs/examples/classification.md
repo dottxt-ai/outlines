@@ -52,7 +52,7 @@ prompts = [customer_support(request=request) for request in requests]
 We can now ask the model to classify the requests:
 
 ```python
-labels = generator(prompts)
+labels = generator(prompts).content
 print(labels)
 # ['URGENT', 'STANDARD']
 ```
@@ -79,7 +79,7 @@ We can then create a generator with the Pydantic model we just defined and call 
 
 ```python
 generator = outlines.Generator(model, Classification)
-labels = generator(prompts)
+labels = generator(prompts).content
 print(labels)
 # ['{"label":"URGENT"}', '{ "label": "STANDARD" }']
 ```

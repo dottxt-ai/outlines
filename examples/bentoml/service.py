@@ -77,6 +77,6 @@ class Outlines:
         import outlines
 
         generator = outlines.Generator(self.model, outlines.json_schema(json_schema))
-        character = generator(prompt)
+        character = generator(prompt).content
 
         return character
