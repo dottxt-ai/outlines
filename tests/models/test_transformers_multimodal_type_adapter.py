@@ -4,9 +4,10 @@ from PIL import Image as PILImage
 from outlines_core import Index, Vocabulary
 from transformers import AutoTokenizer, LogitsProcessorList
 
+from outlines.backends.outlines_core import OutlinesCoreLogitsProcessor
 from outlines.inputs import Chat, Image, Video
 from outlines.models.transformers import TransformersMultiModalTypeAdapter
-from outlines.backends.outlines_core import OutlinesCoreLogitsProcessor
+from outlines.tools import ToolDef
 
 
 MODEL_NAME = "erwanf/gpt2-mini"
@@ -85,3 +86,15 @@ def test_transformers_multimodal_type_adapter_format_output_type(
 
     formatted = adapter.format_output_type(None)
     assert formatted is None
+
+
+def test_transformers_multimodal_type_adapter_tools(adapter):
+    with pytest.raises(
+        NotImplementedError,
+        match="TransformersMultiModal does not support tools."
+    ):
+        adapter.format_tools(
+            [ToolDef(name="test", description="test", parameters={})]
+        )
+
+    adapter.format_tools(None)
