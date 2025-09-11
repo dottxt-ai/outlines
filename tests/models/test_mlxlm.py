@@ -3,6 +3,8 @@ import re
 from enum import Enum
 from typing import Generator
 
+from pydantic import BaseModel
+
 import outlines
 from outlines.types import Regex
 from outlines.models.mlxlm import (
@@ -11,7 +13,7 @@ from outlines.models.mlxlm import (
     from_mlxlm
 )
 from outlines.models.transformers import TransformerTokenizer
-from pydantic import BaseModel
+from outlines.outputs import Output, StreamingOutput
 
 try:
     import mlx_lm
@@ -55,14 +57,14 @@ def test_mlxlm_tokenizer(model):
 
 @pytest.mark.skipif(not HAS_MLX, reason="MLX tests require Apple Silicon")
 def test_mlxlm_simple(model):
-    result = model.generate("Respond with one word. Not more.", None)
-    assert isinstance(result, str)
+    result = model("Respond with one word. Not more.", None)
+    assert isinstance(result, Output)
 
 
 @pytest.mark.skipif(not HAS_MLX, reason="MLX tests require Apple Silicon")
 def test_mlxlm_call(model):
     result = model("Respond with one word. Not more.")
-    assert isinstance(result, str)
+    assert isinstance(result, Output)
 
 
 @pytest.mark.skipif(not HAS_MLX, reason="MLX tests require Apple Silicon")
@@ -80,15 +82,15 @@ def test_mlxlm_invalid_inference_kwargs(model):
 @pytest.mark.skipif(not HAS_MLX, reason="MLX tests require Apple Silicon")
 def test_mlxlm_inference_kwargs(model):
     result = model("Write a short story about a cat.", max_tokens=2)
-    assert isinstance(result, str)
-    assert len(result) < 20
+    assert isinstance(result, Output)
+    assert len(result.content) < 20
 
 
 @pytest.mark.skipif(not HAS_MLX, reason="MLX tests require Apple Silicon")
 def test_mlxlm_regex(model):
     result = model("Give a number between 0 and 9.", Regex(r"[0-9]"))
-    assert isinstance(result, str)
-    assert re.match(r"[0-9]", result)
+    assert isinstance(result, Output)
+    assert re.match(r"[0-9]", result.content)
 
 
 @pytest.mark.skipif(not HAS_MLX, reason="MLX tests require Apple Silicon")
@@ -97,7 +99,7 @@ def test_mlxlm_json_schema(model):
         name: str
 
     result = model("Create a character with a name.", Character)
-    assert "name" in result
+    assert "name" in result.content
 
 
 @pytest.mark.skipif(not HAS_MLX, reason="MLX tests require Apple Silicon")
@@ -107,7 +109,7 @@ def test_mlxlm_choice(model):
         dog = "dog"
 
     result = model("Cat or dog?", Foo)
-    assert result in ["cat", "dog"]
+    assert result.content in ["cat", "dog"]
 
 
 @pytest.mark.skipif(not HAS_MLX, reason="MLX tests require Apple Silicon")
@@ -116,7 +118,7 @@ def test_mlxlm_stream_text_stop(model):
         "Respond with one word. Not more.", None, max_tokens=100
     )
     assert isinstance(generator, Generator)
-    assert isinstance(next(generator), str)
+    assert isinstance(next(generator), StreamingOutput)
 
 
 @pytest.mark.skipif(not HAS_MLX, reason="MLX tests require Apple Silicon")

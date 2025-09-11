@@ -1,5 +1,5 @@
-import pytest
 import io
+import pytest
 
 from outlines_core import Index, Vocabulary
 from PIL import Image as PILImage
@@ -7,6 +7,7 @@ from PIL import Image as PILImage
 from outlines.backends.outlines_core import OutlinesCoreLogitsProcessor
 from outlines.inputs import Chat, Image
 from outlines.models.mlxlm import MLXLMTypeAdapter
+from outlines.tools import ToolDef
 
 try:
     import mlx_lm
@@ -82,3 +83,16 @@ def test_mlxlm_type_adapter_format_output_type(adapter, logits_processor):
     assert isinstance(formatted, list)
     assert len(formatted) == 1
     assert isinstance(formatted[0], OutlinesCoreLogitsProcessor)
+
+
+@pytest.mark.skipif(not HAS_MLX, reason="MLX tests require Apple Silicon")
+def test_mlxlm_type_adapter_tools(adapter):
+    with pytest.raises(
+        NotImplementedError,
+        match="MLXLM does not support tools."
+    ):
+        adapter.format_tools(
+            [ToolDef(name="test", description="test", parameters={})]
+        )
+
+    adapter.format_tools(None)
