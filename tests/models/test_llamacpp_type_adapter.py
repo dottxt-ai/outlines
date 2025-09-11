@@ -8,6 +8,7 @@ from outlines_core import Index, Vocabulary
 from outlines.backends.outlines_core import OutlinesCoreLogitsProcessor
 from outlines.inputs import Chat, Image
 from outlines.models.llamacpp import LlamaCppTypeAdapter
+from outlines.tools import ToolDef
 
 
 @pytest.fixture
@@ -67,3 +68,15 @@ def test_llamacpp_type_adapter_format_output_type(adapter, logits_processor):
     assert isinstance(formatted, LogitsProcessorList)
     assert formatted[0].index == logits_processor.index
     assert formatted[0].tensor_library_name == logits_processor.tensor_library_name
+
+
+def test_llamacpp_type_adapter_tools(adapter):
+    with pytest.raises(
+        NotImplementedError,
+        match="LlamaCpp does not support tools."
+    ):
+        adapter.format_tools(
+            [ToolDef(name="test", description="test", parameters={})]
+        )
+
+    adapter.format_tools(None)
