@@ -50,7 +50,7 @@ model = outlines.from_mlxlm(
 
 # Call it to generate text
 result = model("What's the capital of Latvia?", max_tokens=20)
-print(result) # 'Riga'
+print(result.content) # 'Riga'
 ```
 
 #### Chat
@@ -77,7 +77,7 @@ prompt = Chat([
 
 # Call the model to generate a response
 response = model(prompt, max_tokens=50)
-print(response) # 'Riga.'
+print(response.content) # 'Riga.'
 ```
 
 #### Streaming
@@ -95,7 +95,7 @@ model = outlines.from_mlxlm(
 
 # Stream text
 for chunk in model.stream("Write a short story about a cat.", max_tokens=100):
-    print(chunk) # 'In...'
+    print(chunk.content) # 'In...'
 ```
 
 ## Structured Generation
@@ -115,7 +115,7 @@ model = outlines.from_mlxlm(
 )
 
 result = model("How many countries are there in the world?", output_type)
-print(result) # '200'
+print(result.content) # '200'
 ```
 
 #### JSON Schema
@@ -136,8 +136,8 @@ model = outlines.from_mlxlm(
 )
 
 result = model("Create a character.", output_type=Character)
-print(result) # '{"name": "Evelyn", "age": 34, "skills": ["archery", "stealth", "alchemy"]}'
-print(Character.model_validate_json(result)) # name=Evelyn, age=34, skills=['archery', 'stealth', 'alchemy']
+print(result.content) # '{"name": "Evelyn", "age": 34, "skills": ["archery", "stealth", "alchemy"]}'
+print(Character.model_validate_json(result.content)) # name=Evelyn, age=34, skills=['archery', 'stealth', 'alchemy']
 ```
 
 #### Multiple Choice
@@ -154,7 +154,7 @@ model = outlines.from_mlxlm(
 )
 
 result = model("What is the capital of France?", output_type)
-print(result) # 'Paris'
+print(result.content) # 'Paris'
 ```
 
 #### Regex
@@ -171,7 +171,7 @@ model = outlines.from_mlxlm(
 )
 
 result = model("Generate a fake social security number.", output_type)
-print(result) # '782-32-3789'
+print(result.content) # '782-32-3789'
 ```
 
 #### Context-Free Grammar
@@ -208,7 +208,7 @@ model = outlines.from_mlxlm(
 )
 
 result = model("Write an addition.", output_type, max_tokens=20)
-print(result) # '23 + 48'
+print(result.content) # '23 + 48'
 ```
 
 ## Inference Arguments

@@ -62,7 +62,7 @@ model = outlines.from_ollama(ollama.Client(), "qwen2.5vl:3b")
 
 # Call it to generate text
 response = model("What's the capital of Latvia?")
-print(response) # 'Riga'
+print(response.content) # 'Riga'
 ```
 
 #### Vision
@@ -96,7 +96,7 @@ prompt = [
 
 # Generate text
 response = model(prompt)
-print(response) # The image shows a black puppy with a curious and attentive expression.
+print(response.content) # The image shows a black puppy with a curious and attentive expression.
 ```
 
 #### Chat
@@ -135,7 +135,7 @@ prompt = Chat([
 
 # Call the model to generate a response
 response = model(prompt)
-print(response) # 'This is a picture of a black dog.'
+print(response.content) # 'This is a picture of a black dog.'
 ```
 
 #### Streaming
@@ -151,7 +151,7 @@ model = outlines.from_ollama(ollama.Client(), "qwen2.5vl:3b")
 
 # Stream text
 for chunk in model.stream("Write a short story about a cat"):
-    print(chunk) # 'In...'
+    print(chunk.content) # 'In...'
 ```
 
 ## Asynchronous Calls
@@ -171,7 +171,7 @@ async def generate_text():
     async_model = outlines.from_ollama(async_client, "qwen2.5vl:3b")
 
     result = await async_model("Write a haiku about Python.")
-    print(result)
+    print(result.content)
 
 asyncio.run(generate_text())
 ```
@@ -190,7 +190,7 @@ async def stream_text():
     async_model = outlines.from_ollama(async_client, "qwen2.5vl:3b")
 
     async for chunk in async_model.stream("Tell me a story about a robot."):
-        print(chunk, end="")
+        print(chunk.content, end="")
 
 asyncio.run(stream_text())
 ```
@@ -219,7 +219,7 @@ async def generate_multiple():
     results = await asyncio.gather(*tasks)
 
     for prompt, result in zip(prompts, results):
-        print(f"{prompt}\n{result}\n")
+        print(f"{prompt}\n{result.content}\n")
 
 asyncio.run(generate_multiple())
 ```
@@ -246,8 +246,8 @@ model = outlines.from_ollama(ollama.Client(), "tinyllama")
 
 # Call it with the output type to generate structured text
 result = model("Create a character", Character)
-print(result) # '{"name": "Evelyn", "age": 34, "skills": ["archery", "stealth", "alchemy"]}'
-print(Character.model_validate_json(result)) # name=Evelyn, age=34, skills=['archery', 'stealth', 'alchemy']
+print(result.content) # '{"name": "Evelyn", "age": 34, "skills": ["archery", "stealth", "alchemy"]}'
+print(Character.model_validate_json(result.content)) # name=Evelyn, age=34, skills=['archery', 'stealth', 'alchemy']
 ```
 
 ## Inference arguments

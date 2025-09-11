@@ -51,7 +51,7 @@ model = outlines.from_transformers(
 
 # Call it to generate text
 result = model("What's the capital of Latvia?", max_new_tokens=20)
-print(result) # 'Riga'
+print(result.content) # 'Riga'
 ```
 
 #### Chat
@@ -79,7 +79,7 @@ prompt = Chat([
 
 # Call the model to generate a response
 response = model(prompt, max_new_tokens=50)
-print(response) # 'This is a picture of a black dog.'
+print(response.content) # 'This is a picture of a black dog.'
 ```
 
 #### Batching
@@ -107,7 +107,7 @@ prompts = [
 
 # Call it to generate text
 result = model.batch(prompts, max_new_tokens=20)
-print(result) # ['Vilnius', 'Riga', 'Tallinn']
+print(result.content) # ['Vilnius', 'Riga', 'Tallinn']
 ```
 
 ## Structured Generation
@@ -128,7 +128,7 @@ model = outlines.from_transformers(
 )
 
 result = model("How many countries are there in the world?", output_type, max_new_tokens=5)
-print(result) # '200'
+print(result.content) # '200'
 ```
 
 ### JSON Schema
@@ -150,8 +150,8 @@ model = outlines.from_transformers(
 )
 
 result = model("Create a character.", output_type=Character, max_new_tokens=200, repetition_penalty=0.5)
-print(result) # '{"name": "Evelyn", "age": 34, "skills": ["archery", "stealth", "alchemy"]}'
-print(Character.model_validate_json(result)) # name=Evelyn, age=34, skills=['archery', 'stealth', 'alchemy']
+print(result.content) # '{"name": "Evelyn", "age": 34, "skills": ["archery", "stealth", "alchemy"]}'
+print(Character.model_validate_json(result.content)) # name=Evelyn, age=34, skills=['archery', 'stealth', 'alchemy']
 ```
 
 ### Multiple Choice
@@ -169,7 +169,7 @@ model = outlines.from_transformers(
 )
 
 result = model("What is the capital of France?", output_type, max_new_tokens=10, temperature=0)
-print(result) # 'Paris'
+print(result.content) # 'Paris'
 ```
 
 ### Regex
@@ -187,7 +187,7 @@ model = outlines.from_transformers(
 )
 
 result = model("Generate a fake social security number.", output_type, max_new_tokens=20, top_p=0.5)
-print(result) # '782-32-3789'
+print(result.content) # '782-32-3789'
 ```
 
 ### Context-Free Grammar
@@ -225,7 +225,7 @@ model = outlines.from_transformers(
 )
 
 result = model("Write an addition.", output_type, max_new_tokens=100)
-print(result) # '23 + 48'
+print(result.content) # '23 + 48'
 ```
 
 ## Inference Arguments

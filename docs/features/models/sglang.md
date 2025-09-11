@@ -63,7 +63,7 @@ model = outlines.from_openai(openai.OpenAI(base_url="http://localhost:11434"))
 
 # Call it to generate text
 response = model("What's the capital of Latvia?", max_tokens=20)
-print(response) # 'Riga'
+print(response.content) # 'Riga'
 ```
 
 #### Vision
@@ -96,7 +96,7 @@ prompt = [
 
 # Call the model to generate a response
 response = model(prompt, max_tokens=50)
-print(response) # 'This is a picture of a black dog.'
+print(response.content) # 'This is a picture of a black dog.'
 ```
 
 #### Chat
@@ -132,7 +132,7 @@ prompt = Chat([
 
 # Call the model to generate a response
 response = model(prompt, max_tokens=50)
-print(response) # 'This is a picture of a black dog.'
+print(response.content) # 'This is a picture of a black dog.'
 ```
 
 #### Streaming
@@ -150,7 +150,7 @@ model = outlines.from_openai(openai.OpenAI(base_url="http://localhost:11434"))
 
 # Stream the response
 for chunk in model.stream("Tell me a short story about a cat.", max_tokens=50):
-    print(chunk) # 'Once...'
+    print(chunk.content) # 'Once...'
 ```
 
 ## Structured Generation
@@ -169,7 +169,7 @@ openai_client = openai.OpenAI(base_url="http://localhost:11434")
 model = outlines.from_sglang(openai_client)
 
 result = model("How many countries are there in the world?", output_type)
-print(result) # '200'
+print(result.content) # '200'
 ```
 
 ### JSON Schema
@@ -188,8 +188,8 @@ openai_client = openai.OpenAI(base_url="http://localhost:11434")
 model = outlines.from_sglang(openai_client)
 
 result = model("Create a character.", Character, frequency_penalty=1.5)
-print(result) # '{"name": "Evelyn", "age": 34, "skills": ["archery", "stealth", "alchemy"]}'
-print(Character.model_validate_json(result)) # name=Evelyn, age=34, skills=['archery', 'stealth', 'alchemy']
+print(result.content) # '{"name": "Evelyn", "age": 34, "skills": ["archery", "stealth", "alchemy"]}'
+print(Character.model_validate_json(result.content)) # name=Evelyn, age=34, skills=['archery', 'stealth', 'alchemy']
 ```
 
 ### Multiple Choice
@@ -205,7 +205,7 @@ openai_client = openai.OpenAI(base_url="http://localhost:11434")
 model = outlines.from_sglang(openai_client)
 
 result = model("What is the capital of France?", output_type, temperature=0)
-print(result) # 'Paris'
+print(result.content) # 'Paris'
 ```
 
 ### Regex
@@ -221,7 +221,7 @@ openai_client = openai.OpenAI(base_url="http://localhost:11434")
 model = outlines.from_sglang(openai_client)
 
 result = model("Generate a fake social security number.", output_type, top_p=0.1)
-print(result) # '782-32-3789'
+print(result.content) # '782-32-3789'
 ```
 
 ### Context-Free Grammar
@@ -243,7 +243,7 @@ openai_client = openai.OpenAI(base_url="http://localhost:11434")
 model = outlines.from_sglang(openai_client)
 
 result = model("Is the weather good today?", output_type)
-print(result) # 'yes'
+print(result.content) # 'yes'
 ```
 
 ### Async Structured Generation
@@ -267,7 +267,7 @@ async def generate_user():
     async_model = outlines.from_sglang(async_client)
 
     result = await async_model("Generate a random user profile.", output_type=User)
-    user = User.model_validate_json(result)
+    user = User.model_validate_json(result.content)
     print(f"Name: {user.name}, Email: {user.email}, Age: {user.age}")
 
 asyncio.run(generate_user())

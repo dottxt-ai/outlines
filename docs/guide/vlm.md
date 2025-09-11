@@ -157,7 +157,7 @@ result = image_data_generator({
     "text": pixtral_instruction,
     "images": image
 })
-print(result)
+print(result.content)
 ```
 
 This code loads an image from a URL, passes it to our vision multi-modal model along with the instruction prompt, and generates a structured output based on the defined schema. We end up with an output like this, ready to be used for the next stage in your pipeline:

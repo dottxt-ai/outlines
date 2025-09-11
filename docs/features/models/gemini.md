@@ -49,7 +49,7 @@ model = outlines.from_gemini(
 
 # Call it to generate text
 result = model("What's the capital of Latvia?", max_output_tokens=20)
-print(result) # 'Riga'
+print(result.content) # 'Riga'
 ```
 
 #### Vision
@@ -85,7 +85,7 @@ prompt = [
 
 # Call the model to generate a response
 response = model(prompt, max_output_tokens=50)
-print(response) # 'This is a picture of a black dog.'
+print(response.content) # 'This is a picture of a black dog.'
 ```
 
 #### Chat
@@ -125,7 +125,7 @@ prompt = Chat([
 
 # Call the model to generate a response
 response = model(prompt, max_output_tokens=50)
-print(response) # 'This is a picture of a black dog.'
+print(response.content) # 'This is a picture of a black dog.'
 ```
 
 #### Streaming
@@ -146,7 +146,7 @@ model = outlines.from_gemini(
 
 # Stream text
 for chunk in model.stream("Write a short story about a cat.", max_output_tokens=20):
-    print(chunk) # 'In...'
+    print(chunk.content) # 'In...'
 ```
 
 ## Structured Generation
@@ -169,7 +169,7 @@ model = outlines.from_gemini(genai.Client(), "gemini-1.5-flash-latest")
 
 # Call it with the ouput type to generate structured text
 result = model("Pizza or burger?", PizzaOrBurger, max_output_tokens=20)
-print(result) # 'pizza'
+print(result.content) # 'pizza'
 ```
 
 #### JSON Schema
@@ -196,8 +196,8 @@ model = outlines.from_gemini(genai.Client(), "gemini-1.5-flash-latest")
 
 # Call it with the ouput type to generate structured text
 result = model("Create a character", Character)
-print(result) # '{"name": "Evelyn", "age": 34, "skills": ["archery", "stealth", "alchemy"]}'
-print(Character.model_validate_json(result)) # name=Evelyn, age=34, skills=['archery', 'stealth', 'alchemy']
+print(result.content) # '{"name": "Evelyn", "age": 34, "skills": ["archery", "stealth", "alchemy"]}'
+print(Character.model_validate_json(result.content)) # name=Evelyn, age=34, skills=['archery', 'stealth', 'alchemy']
 ```
 
 #### Lists of Structured Objects
@@ -220,7 +220,39 @@ model = outlines.from_gemini(genai.Client(), "gemini-1.5-flash-latest")
 
 # Call it with the ouput type to generate structured text
 result = model("Create a character", list[Character])
-print(result) # '[{"name": "Evelyn", "age": 34, "skills": ["archery", "stealth", "alchemy"]}, {["name":...'
+print(result.content) # '[{"name": "Evelyn", "age": 34, "skills": ["archery", "stealth", "alchemy"]}, {["name":...'
+```
+
+## Tools
+
+Gemini supports tool calling. To use it, provide a list of `tools` to the model.
+
+For instance:
+
+```python
+from google import genai
+from outlines import from_gemini
+from outlines.inputs import Chat
+from typing import Optional
+
+# Our tool
+def get_weather(city: str, hour: Optional[int] = None):
+    """Give the weather for a given city, and optionally for a specific hour of the day"""
+    return "20 degrees"
+
+# Create the model
+model = outlines.from_gemini(
+    genai.Client(),
+    "gemini-1.5-flash-latest"
+)
+
+# Call the model with the tool defined above
+chat = Chat([
+    {"role": "system", "content": "You are a helpful assistant."},
+    {"role": "user", "content": "What's the weather in Tokyo?"},
+])
+response = model(chat, tools=[get_weather], max_tokens=100)
+print(response.tool_calls) # [ToolCallOutput(name='get_weather', id='toolu_01WDUo65vCXkrmjD3Yehbc5v', args={'city': 'Tokyo'})]
 ```
 
 !!! Attention

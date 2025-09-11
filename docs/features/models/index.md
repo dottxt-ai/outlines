@@ -30,16 +30,16 @@ model = from_transformers(
 
 # Call it directly
 response = model("How many countries are there in the world", max_new_tokens=20)
-print(response) # 'There are 200 countries in the world.'
+print(response.content) # 'There are 200 countries in the world.'
 
 # Call it directly with an output_type
 response = model("How many countries are there in the world", int, max_new_tokens=20)
-print(response) # '200'
+print(response.content) # '200'
 
 # Create a generator first and then call it
 generator = Generator(model, int)
 response = generator("How many countries are there in the world")
-print(response) # '200'
+print(response.content) # '200'
 ```
 
 Some models support streaming through a `stream` method. It takes the same argument as the `__call__` method, but returns an iterator instead of a string.
@@ -58,7 +58,7 @@ model = from_openai(
 
 # Stream the response
 for chunk in model.stream("Tell a short story about a cat.", max_tokens=50):
-    print(chunk) # 'This...'
+    print(chunk.content) # 'This...'
 ```
 
 Additionally, some models support batch processing through a `batch` method. It's similar to the `__call__` method, but takes a list of prompts instead of a single prompt and returns a list of strings.
@@ -77,7 +77,7 @@ model = from_transformers(
 
 # Call it directly
 response = model.batch(["What's the capital of Latvia?", "What's the capital of Estonia?"], max_new_tokens=20)
-print(response) # ['Riga', 'Tallinn']
+print(response.content) # ['Riga', 'Tallinn']
 ```
 
 ## Features Matrix

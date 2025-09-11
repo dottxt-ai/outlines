@@ -48,9 +48,9 @@ def create_character() -> Character:
 With an Outlines model, you can generate text that respects the type hints above by providing those as the output type:
 
 ```python
-model("How many minutes are there in one hour", int) # "60"
-model("Pizza or burger", Literal["pizza", "burger"]) # "pizza"
-model("Create a character", Character, max_new_tokens=100) # '{"name": "James", "birth_date": "1980-05-10)", "skills": ["archery", "negotiation"]}'
+model("How many minutes are there in one hour", int).content # "60"
+model("Pizza or burger", Literal["pizza", "burger"]).content # "pizza"
+model("Create a character", Character, max_new_tokens=100).content # '{"name": "James", "birth_date": "1980-05-10)", "skills": ["archery", "negotiation"]}'
 ```
 
 An important difference with function type hints though is that an Outlines generator always returns a string.
@@ -61,8 +61,8 @@ For instance:
 ```python
 result = model("Create a character", Character, max_new_tokens=100)
 casted_result = Character.model_validate_json(result)
-print(result) # '{"name": "Aurora", "birth_date": "1990-06-15", "skills": ["Stealth", "Diplomacy"]}'
-print(casted_result) # name=Aurora birth_date=datetime.date(1990, 6, 15) skills=['Stealth', 'Diplomacy']
+print(result).content # '{"name": "Aurora", "birth_date": "1990-06-15", "skills": ["Stealth", "Diplomacy"]}'
+print(casted_result).content # name=Aurora birth_date=datetime.date(1990, 6, 15) skills=['Stealth', 'Diplomacy']
 ```
 
 ## Output Type Categories

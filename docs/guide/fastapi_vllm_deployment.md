@@ -146,7 +146,7 @@ async def analyze_ticket(request: TicketRequest):
     try:
         # Generate and parse a structured response
         result = await async_model(prompt, TicketAnalysis, max_tokens=5000)
-        analysis = TicketAnalysis.model_validate_json(result)
+        analysis = TicketAnalysis.model_validate_json(result.content)
 
         return analysis
 
@@ -174,7 +174,7 @@ async def generate_response(
     try:
         # Generate and parse a structured response
         result = await async_model(prompt, SupportResponse, max_tokens=5000)
-        response = SupportResponse.model_validate_json(result)
+        response = SupportResponse.model_validate_json(result.content)
 
         return response
 

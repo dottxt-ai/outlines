@@ -62,7 +62,7 @@ model = outlines.from_vllm(openai.OpenAI(base_url="http://0.0.0.0:8000/v1", api_
 
 # Call it to generate text
 response = model("What's the capital of Latvia?", max_tokens=20)
-print(response) # 'The capital of Latvia is Riga.'
+print(response.content) # 'The capital of Latvia is Riga.'
 ```
 
 #### Vision
@@ -98,7 +98,7 @@ prompt = [
 
 # Call the model to generate a response
 response = model(prompt, max_tokens=50)
-print(response) # 'The image shows a black puppy lying on a wooden surface...'
+print(response.content) # 'The image shows a black puppy lying on a wooden surface...'
 ```
 
 #### Chat
@@ -137,7 +137,7 @@ prompt = Chat([
 
 # Call the model to generate a response
 response = model(prompt, max_tokens=50)
-print(response) # 'The image shows a black puppy lying on a wooden surface...'
+print(response.content) # 'The image shows a black puppy lying on a wooden surface...'
 ```
 
 #### Streaming
@@ -158,8 +158,7 @@ model = outlines.from_vllm(
 
 # Stream the response
 for chunk in model.stream("Tell me a short story about a cat.", max_tokens=50):
-    print(chunk, end="") # 'Once upon a time...'
-print()
+    print(chunk.content, end="") # 'Once upon a time...'
 ```
 
 ## Asynchronous Calls
@@ -178,7 +177,7 @@ async def generate_text():
     async_model = outlines.from_vllm(async_client, "microsoft/Phi-3-mini-4k-instruct")
 
     result = await async_model("Write a haiku about Python.", max_tokens=50)
-    print(result)
+    print(result.content)
 
 asyncio.run(generate_text())
 ```
@@ -197,7 +196,7 @@ async def stream_text():
     async_model = outlines.from_vllm(async_client, "microsoft/Phi-3-mini-4k-instruct")
 
     async for chunk in async_model.stream("Tell me a story about a robot.", max_tokens=100):
-        print(chunk, end="")
+        print(chunk.content, end="")
 
 asyncio.run(stream_text())
 ```
@@ -225,7 +224,7 @@ async def generate_multiple():
     results = await asyncio.gather(*tasks)
 
     for prompt, result in zip(prompts, results):
-        print(f"{prompt}\n{result}\n")
+        print(f"{prompt}\n{result.content}\n")
 
 asyncio.run(generate_multiple())
 ```
@@ -246,7 +245,7 @@ openai_client = openai.OpenAI(base_url="http://0.0.0.0:8000/v1", api_key="token-
 model = outlines.from_vllm(openai_client, "microsoft/Phi-3-mini-4k-instruct")
 
 result = model("How many countries are there in the world?", output_type)
-print(result) # '200'
+print(result.content) # '200'
 ```
 
 ### JSON Schema
@@ -266,8 +265,8 @@ openai_client = openai.OpenAI(base_url="http://0.0.0.0:8000/v1", api_key="token-
 model = outlines.from_vllm(openai_client, "microsoft/Phi-3-mini-4k-instruct")
 
 result = model("Create a character.", output_type=Character, frequency_penalty=1.5)
-print(result) # '{"name": "Evelyn", "age": 34, "skills": ["archery", "stealth", "alchemy"]}'
-print(Character.model_validate_json(result)) # name=Evelyn, age=34, skills=['archery', 'stealth', 'alchemy']
+print(result.content) # '{"name": "Evelyn", "age": 34, "skills": ["archery", "stealth", "alchemy"]}'
+print(Character.model_validate_json(result.content)) # name=Evelyn, age=34, skills=['archery', 'stealth', 'alchemy']
 ```
 
 ### Multiple Choice
@@ -283,7 +282,7 @@ openai_client = openai.OpenAI(base_url="http://0.0.0.0:8000/v1", api_key="token-
 model = outlines.from_vllm(openai_client, "microsoft/Phi-3-mini-4k-instruct")
 
 result = model("What is the capital of France?", output_type, temperature=0)
-print(result) # 'Paris'
+print(result.content) # 'Paris'
 ```
 
 ### Regex
@@ -299,7 +298,7 @@ openai_client = openai.OpenAI(base_url="http://0.0.0.0:8000/v1", api_key="token-
 model = outlines.from_vllm(openai_client, "microsoft/Phi-3-mini-4k-instruct")
 
 result = model("Generate a fake social security number.", output_type, top_p=0.1)
-print(result) # '782-32-3789'
+print(result.content) # '782-32-3789'
 ```
 
 ### Context-Free Grammar
@@ -335,7 +334,7 @@ openai_client = openai.OpenAI(base_url="http://0.0.0.0:8000/v1", api_key="token-
 model = outlines.from_vllm(openai_client, "microsoft/Phi-3-mini-4k-instruct")
 
 result = model("Write an addition.", output_type, extra_body={"guided_decoding_backend": "outlines"})
-print(result) # '23 + 48'
+print(result.content) # '23 + 48'
 ```
 
 ### Async Structured Generation
@@ -358,7 +357,7 @@ async def generate_user():
     async_model = outlines.from_vllm(async_client, "microsoft/Phi-3-mini-4k-instruct")
 
     result = await async_model("Generate a random user profile.", output_type=User)
-    user = User.model_validate_json(result)
+    user = User.model_validate_json(result.content)
     print(f"Name: {user.name}, Email: {user.email}, Age: {user.age}")
 
 asyncio.run(generate_user())

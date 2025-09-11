@@ -44,7 +44,7 @@ logits_processor = RegexLogitsProcessor(r"U\+[0-9A-Fa-f]{4,6}", model.tokenizer,
 generator = Generator(model, processor=logits_processor)
 response = generator("What's the unicode for the hugging face emoji")
 
-print(response) # U+1F917
+print(response.content) # U+1F917
 ```
 
 ## Creating Custom Logits Processors
@@ -95,5 +95,5 @@ formatted_prompt = tf_tokenizer.apply_chat_template(
 generator = Generator(model, processor=logits_processor)
 response = generator(formatted_prompt)
 
-print(response) # "101111"
+print(response.content) # "101111"
 ```

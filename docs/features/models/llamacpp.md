@@ -51,7 +51,7 @@ model = outlines.from_llamacpp(
 
 # Call it to generate text
 result = model("What's the capital of Latvia?", max_tokens=20)
-print(result) # 'Riga'
+print(result.content) # 'Riga'
 ```
 
 #### Chat
@@ -81,7 +81,7 @@ prompt = Chat([
 
 # Call the model to generate a response
 response = model(prompt, max_tokens=50)
-print(response) # 'Riga.'
+print(response.content) # 'Riga.'
 ```
 
 #### Streaming
@@ -104,7 +104,7 @@ model = outlines.from_llamacpp(
 
 # Stream text
 for chunk in model.stream("Write a short story about a cat.", max_tokens=100):
-    print(chunk) # 'In...'
+    print(chunk.content) # 'In...'
 ```
 
 ## Structured Generation
@@ -127,7 +127,7 @@ model = outlines.from_llamacpp(
 )
 
 result = model("How many countries are there in the world?", output_type)
-print(result) # '200'
+print(result.content) # '200'
 ```
 
 ### JSON Schema
@@ -151,8 +151,8 @@ model = outlines.from_llamacpp(
 )
 
 result = model("Create a character.", output_type=Character, max_tokens=200)
-print(result) # '{"name": "Evelyn", "age": 34, "skills": ["archery", "stealth", "alchemy"]}'
-print(Character.model_validate_json(result)) # name=Evelyn, age=34, skills=['archery', 'stealth', 'alchemy']
+print(result.content) # '{"name": "Evelyn", "age": 34, "skills": ["archery", "stealth", "alchemy"]}'
+print(Character.model_validate_json(result.content)) # name=Evelyn, age=34, skills=['archery', 'stealth', 'alchemy']
 ```
 
 ### Multiple Choice
@@ -172,7 +172,7 @@ model = outlines.from_llamacpp(
 )
 
 result = model("What is the capital of France?", output_type)
-print(result) # 'Paris'
+print(result.content) # 'Paris'
 ```
 
 ### Regex
@@ -192,7 +192,7 @@ model = outlines.from_llamacpp(
 )
 
 result = model("Generate a fake social security number.", output_type)
-print(result) # '782-32-3789'
+print(result.content) # '782-32-3789'
 ```
 
 ### Context-free grammar
@@ -215,7 +215,7 @@ model = outlines.from_llamacpp(
 )
 
 result = model("Are you feeling good today?", output_type)
-print(result) # 'yes'
+print(result.content) # 'yes'
 ```
 
 ## Inference Arguments
