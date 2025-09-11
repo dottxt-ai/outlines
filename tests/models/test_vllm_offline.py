@@ -19,6 +19,7 @@ from outlines.models.vllm_offline import (
     VLLMOfflineTypeAdapter,
     from_vllm_offline
 )
+from outlines.outputs import Output, StreamingOutput
 from outlines.types import Regex
 
 
@@ -58,13 +59,13 @@ def model(tmp_path_factory):
 
 
 def test_vllm_simple(model):
-    result = model.generate("Respond with one word. Not more.", None)
-    assert isinstance(result, str)
+    result = model("Respond with one word. Not more.", None)
+    assert isinstance(result, Output)
 
 
 def test_vllm_call(model):
     result = model("Respond with one word. Not more.")
-    assert isinstance(result, str)
+    assert isinstance(result, Output)
 
 
 def test_vllm_inference_kwargs(model):
@@ -73,8 +74,8 @@ def test_vllm_inference_kwargs(model):
         sampling_params=SamplingParams(max_tokens=2),
         use_tqdm=True
     )
-    assert isinstance(result, str)
-    assert len(result) <= 20
+    assert isinstance(result, Output)
+    assert len(result.content) <= 20
 
 
 def test_vllm_chat(model):
@@ -86,7 +87,7 @@ def test_vllm_chat(model):
         ]),
         sampling_params=SamplingParams(max_tokens=2),
     )
-    assert isinstance(result, str)
+    assert isinstance(result, Output)
 
 
 def test_vllm_invalid_inference_kwargs(model):
@@ -96,8 +97,8 @@ def test_vllm_invalid_inference_kwargs(model):
 
 def test_vllm_regex(model):
     result = model("Give a number between 0 and 9.", Regex(r"[0-9]"))
-    assert isinstance(result, str)
-    assert re.match(r"[0-9]", result)
+    assert isinstance(result, Output)
+    assert re.match(r"[0-9]", result.content)
 
 
 def test_vllm_json(model):
@@ -105,7 +106,7 @@ def test_vllm_json(model):
         name: str
 
     result = model("Create a character with a name.", Character)
-    assert "name" in result
+    assert "name" in result.content
 
 
 def test_vllm_choice(model):
@@ -114,7 +115,7 @@ def test_vllm_choice(model):
         dog = "dog"
 
     result = model("Cat or dog?", Foo)
-    assert result in ["cat", "dog"]
+    assert result.content in ["cat", "dog"]
 
 
 def test_vllm_multiple_samples(model):
