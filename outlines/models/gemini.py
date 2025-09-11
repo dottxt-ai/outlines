@@ -8,11 +8,26 @@ from typing import (
     Optional,
     Union,
     get_args,
+    List,
 )
 
-from outlines.inputs import Image, Chat
+from outlines.inputs import (
+    Chat,
+    Image,
+    Message,
+    UserMessage,
+    ToolCall,
+    ToolMessage,
+)
 from outlines.models.base import Model, ModelTypeAdapter
+from outlines.outputs import (
+    Output,
+    StreamingOutput,
+    StreamingToolCallOutput,
+    ToolCallOutput
+)
 from outlines.types import CFG, Choice, JsonSchema, Regex
+from outlines.tools import ToolDef
 from outlines.types.utils import (
     is_dataclass,
     is_enum,
@@ -63,62 +78,112 @@ class GeminiTypeAdapter(ModelTypeAdapter):
 
     @format_input.register(str)
     def format_str_model_input(self, model_input: str) -> dict:
-        return {"contents": [self._create_text_part(model_input)]}
+        return {
+            "contents": [
+                self._create_message(UserMessage(
+                    role="user",
+                    content=model_input
+                ))
+            ]
+        }
 
     @format_input.register(list)
     def format_list_model_input(self, model_input: list) -> dict:
         return {
             "contents": [
-                self._create_message("user", model_input)
+                self._create_message(UserMessage(
+                    role="user",
+                    content=model_input
+                ))
             ]
         }
 
     @format_input.register(Chat)
     def format_chat_model_input(self, model_input: Chat) -> dict:
-        """Generate the `contents` argument to pass to the client when the user
-        passes a Chat instance.
-
-        """
         return {
             "contents": [
-                self._create_message(message["role"], message["content"])
+                self._create_message(message)
                 for message in model_input.messages
             ]
         }
 
-    def _create_message(self, role: str, content: str | list) -> dict:
-        """Create a message."""
+    def _create_message(self, message: Message) -> dict:
+        """Create a Gemini message."""
+        role = message.get("role", None)
+        content = message.get("content", None)
+        tool_calls = message.get("tool_calls", None)
+        tool_name = message.get("tool_name", None)
 
-        # Gemini uses "model" instead of "assistant"
-        if role == "assistant":
-            role = "model"
+        content_parts = self._create_content_parts(content)
+        tool_call_parts = self._create_tool_call_parts(
+            tool_calls if isinstance(tool_calls, list) else None
+        )
 
-        if isinstance(content, str):
+        if role == "system":
+            raise ValueError(
+                "System messages are not supported in Chat inputs for "
+                + "Gemini. Use the `system_instruction` inference argument "
+                + "instead."
+            )
+        elif role == "user":
+            if not content:
+                raise ValueError(
+                    "Content is required for user messages"
+                )
             return {
                 "role": role,
-                "parts": [self._create_text_part(content)],
+                "parts": content_parts,
             }
+        elif role == "assistant":
+            if not content and not tool_calls:
+                raise ValueError(
+                    "Either content or tool calls is required for "
+                    + "assistant messages"
+                )
+            return {
+                "role": "model",
+                "parts": [
+                    *content_parts,
+                    *tool_call_parts,
+                ],
+            }
+        elif role == "tool":
+            if not content or not tool_name:
+                raise ValueError(
+                    "Content and tool name are required for "
+                    + "tool messages"
+                )
+            return {
+                "role": "user",
+                "parts": [self._create_tool_response_part(message)],  # type: ignore
+            }
+        else:
+            raise ValueError(
+                f"Invalid message role: {role}. "
+                "The role must be one of 'user', 'assistant' or 'tool'."
+            )
 
+    def _create_content_parts(
+        self, content: Optional[str | list]
+    ) -> List[dict]:
+        """Create Gemini message parts from a content."""
+        if content is None:
+            return []
+        if isinstance(content, str):
+            return [self._create_text_part(content)]
         elif isinstance(content, list):
-            prompt = content[0]
+            text = content[0]
             images = content[1:]
-
             if not all(isinstance(image, Image) for image in images):
                 raise ValueError("All assets provided must be of type Image")
-
             image_parts = [
                 self._create_img_part(image)
                 for image in images
             ]
-
-            return {
-                "role": role,
-                "parts": [
-                    self._create_text_part(prompt),
-                    *image_parts,
-                ],
-            }
-
+            return [
+                self._create_text_part(text),
+                *image_parts,
+            ]
         else:
             raise ValueError(
                 f"Invalid content type: {type(content)}. "
@@ -126,8 +191,15 @@ class GeminiTypeAdapter(ModelTypeAdapter):
                 "and a list of images."
             )
 
-        return {"contents": [prompt, *image_parts]}
-
+    def _create_tool_call_parts(self, tool_calls: Optional[List[ToolCall]]) -> List[dict]:
+        """Create Gemini message parts from tool calls."""
+        if tool_calls is None:
+            return []
+        else:
+            return [
+                self._create_tool_call_part(tool_call)
+                for tool_call in tool_calls
+            ]
 
     def _create_text_part(self, text: str) -> dict:
         """Create a text input part for a message."""
@@ -144,7 +216,27 @@ class GeminiTypeAdapter(ModelTypeAdapter):
             }
         }
 
-    def format_output_type(self, output_type: Optional[Any] = None) -> dict:
+    def _create_tool_call_part(self, tool_call: ToolCall) -> dict:
+        """Create a tool call input part for a message."""
+        return {
+            "function_call": {
+                "id": tool_call["tool_call_id"],
+                "name": tool_call["tool_name"],
+                "args": tool_call["args"],
+            }
+        }
+
+    def _create_tool_response_part(self, tool_message: ToolMessage) -> dict:
+        """Create a tool response input part for a message."""
+        return {
+            "function_response": {
+                "id": tool_message.get("tool_call_id", None),
+                "name": tool_message["tool_name"],
+                "response": tool_message["content"],
+            }
+        }
+
+    def format_output_type(self, output_type: Optional[Any]) -> dict:
         """Generate the `generation_config` argument to pass to the client.
 
         Parameters
@@ -256,6 +348,40 @@ class GeminiTypeAdapter(ModelTypeAdapter):
             f"Got {output_type} instead."
         )
 
+    def format_tools(self, tools: Optional[List[ToolDef]]) -> Optional[list]:
+        """Format the tools for the Gemini client.
+
+        Parameters
+        ----------
+        tools
+            A list of ToolDef instances.
+
+        Returns
+        -------
+        Optional[list]
+            The formatted tools to pass to the Gemini client. If no tools are
+            provided, returns `None`.
+
+        """
+        if not tools:
+            return None
+
+        formatted_tools = []
+        for tool in tools:
+            formatted_tools.append({
+                "function_declarations": [{
+                    "name": tool["name"],
+                    "description": tool["description"],
+                    "parameters": {
+                        "type": "object",
+                        "properties": tool["parameters"],
+                        "required": tool["required"],
+                    },
+                }]
+            })
+
+        return formatted_tools
+
 
 class Gemini(Model):
     """Thin wrapper around the `google.genai.Client` client.
@@ -283,9 +409,10 @@ class Gemini(Model):
     def generate(
         self,
         model_input: Union[Chat, list, str],
-        output_type: Optional[Any] = None,
+        output_type: Optional[Any],
+        tools: Optional[List[ToolDef]],
         **inference_kwargs,
-    ) -> str:
+    ) -> Output:
         """Generate a response from the model.
 
         Parameters
@@ -296,30 +423,39 @@ class Gemini(Model):
             The desired format of the response generated by the model. The
             output type must be of a type that can be converted to a JSON
             schema, a list of such types, or a multiple choice type.
+        tools
+            The tools to use for the generation.
         **inference_kwargs
             Additional keyword arguments to pass to the client.
 
         Returns
         -------
-        str
+        Output
             The response generated by the model.
 
         """
         contents = self.type_adapter.format_input(model_input)
         generation_config = self.type_adapter.format_output_type(output_type)
+        tools = self.type_adapter.format_tools(tools)
+
+        inference_kwargs.update(**generation_config)
+
+        if tools:
+            inference_kwargs["tools"] = tools
 
         completion = self.client.models.generate_content(
             **contents,
             model=inference_kwargs.pop("model", self.model_name),
-            config={**generation_config, **inference_kwargs}
+            config=inference_kwargs
         )
 
-        return completion.text
+        return self._handle_gemini_response(completion)
 
     def generate_batch(
         self,
         model_input,
-        output_type = None,
+        output_type,
+        tools: Optional[List[ToolDef]],
         **inference_kwargs,
     ):
         raise NotImplementedError(
@@ -329,9 +465,10 @@ class Gemini(Model):
     def generate_stream(
         self,
         model_input: Union[Chat, list, str],
-        output_type: Optional[Any] = None,
+        output_type: Optional[Any],
+        tools: Optional[List[ToolDef]],
         **inference_kwargs,
-    ) -> Iterator[str]:
+    ) -> Iterator[StreamingOutput]:
         """Generate a stream of responses from the model.
 
         Parameters
@@ -342,17 +479,26 @@ class Gemini(Model):
             The desired format of the response generated by the model. The
             output type must be of a type that can be converted to a JSON
             schema, a list of such types, or a multiple choice type.
+        tools
+            The tools to use for the generation.
         **inference_kwargs
             Additional keyword arguments to pass to the client.
 
         Returns
         -------
-        Iterator[str]
-            An iterator that yields the text generated by the model.
+        Iterator[StreamingOutput]
+            An iterator that yields the StreamingOutput generated by the model.
 
         """
         contents = self.type_adapter.format_input(model_input)
         generation_config = self.type_adapter.format_output_type(output_type)
+        tools = self.type_adapter.format_tools(tools)
+
+        if "model" not in inference_kwargs and self.model_name is not None:
+            inference_kwargs["model"] = self.model_name
+
+        if tools:
+            generation_config["tools"] = tools
 
         stream = self.client.models.generate_content_stream(
             **contents,
@@ -361,8 +507,79 @@ class Gemini(Model):
         )
 
         for chunk in stream:
-            if hasattr(chunk, "text") and chunk.text:
-                yield chunk.text
+            streaming_output = self._handle_gemini_stream_chunk(chunk)
+            if streaming_output is not None:
+                yield streaming_output
+
+    def _handle_gemini_response(self, response) -> Output:
+        """Convert the response from the Gemini API to an Output.
+
+        Parameters
+        ----------
+        response
+            The response from the Gemini API.
+
+        Returns
+        -------
+        Output
+            The Output.
+
+        """
+        if hasattr(response, "candidates") and response.candidates:
+            candidate = response.candidates[0]
+            if hasattr(candidate, "content") and candidate.content:
+                tool_calls = []
+                content = None
+
+                for part in candidate.content.parts:
+                    if hasattr(part, "function_call") and part.function_call:
+                        tool_calls.append(
+                            ToolCallOutput(
+                                name=part.function_call.name,
+                                args=part.function_call.args,
+                            )
+                        )
+                    elif hasattr(part, "text") and part.text:
+                        content = part.text
+
+                return Output(
+                    content=content,
+                    tool_calls=tool_calls,  # type: ignore
+                )
+
+        return Output(content=response.text)
+
+    def _handle_gemini_stream_chunk(self, chunk) -> Optional[StreamingOutput]:
+        """Convert the streaming chunk from the Gemini API to a StreamingOutput.
+
+        Parameters
+        ----------
+        chunk
+            The streaming chunk from the Gemini API.
+
+        Returns
+        -------
+        Optional[StreamingOutput]
+            The text generated by the model.
+
+        """
+        if hasattr(chunk, "candidates") and chunk.candidates:
+            candidate = chunk.candidates[0]
+            if hasattr(candidate, "content") and candidate.content:
+                for part in candidate.content.parts:
+                    if hasattr(part, "function_call") and part.function_call:
+                        return StreamingOutput(
+                            tool_calls=[
+                                StreamingToolCallOutput(
+                                    name=part.function_call.name,
+                                    args=str(part.function_call.args),
+                                )
+                            ],
+                        )
+                    elif hasattr(part, "text") and part.text:
+                        return StreamingOutput(content=part.text)
+
+        return None
 
 
 def from_gemini(client: "Client", model_name: Optional[str] = None) -> Gemini:
