@@ -11,6 +11,7 @@ from pydantic import BaseModel, Field
 import outlines
 from outlines.inputs import Chat, Image, Video
 from outlines.models import AsyncOllama, Ollama
+from outlines.outputs import Output, StreamingOutput
 
 
 MODEL_NAME = "tinyllama"
@@ -73,16 +74,16 @@ def test_ollama_init_from_client():
 
 def test_ollama_wrong_inference_parameters(model):
     with pytest.raises(TypeError, match="got an unexpected"):
-        model.generate(
+        model(
             "Respond with one word. Not more.", None, foo=10
         )
 
 
 def test_ollama_simple(model):
-    result = model.generate(
+    result = model(
         "Respond with one word. Not more.", None
     )
-    assert isinstance(result, str)
+    assert isinstance(result, Output)
 
 
 def test_ollama_direct(model_no_model_name):
@@ -91,21 +92,21 @@ def test_ollama_direct(model_no_model_name):
         None,
         model=MODEL_NAME,
     )
-    assert isinstance(result, str)
+    assert isinstance(result, Output)
 
 
 def test_ollama_simple_vision(image, model):
     # This is not using a vision model, so it's not able to describe
     # the image, but we're still checking the model input syntax
-    result = model.generate(
+    result = model(
         ["What does this logo represent?", Image(image)],
         model=MODEL_NAME,
     )
-    assert isinstance(result, str)
+    assert isinstance(result, Output)
 
 
 def test_ollama_chat(image, model):
-    result = model.generate(
+    result = model(
         Chat(
             [
                 {"role": "system", "content": "You are a helpful assistant."},
@@ -117,7 +118,7 @@ def test_ollama_chat(image, model):
         ),
         model=MODEL_NAME,
     )
-    assert isinstance(result, str)
+    assert isinstance(result, Output)
 
 
 def test_ollama_json(model):
@@ -125,8 +126,8 @@ def test_ollama_json(model):
         foo: Annotated[str, Field(max_length=1)]
 
     result = model("Respond with one word. Not more.", Foo)
-    assert isinstance(result, str)
-    assert "foo" in json.loads(result)
+    assert isinstance(result, Output)
+    assert "foo" in json.loads(result.content)
 
 
 def test_ollama_wrong_output_type(model):
@@ -135,20 +136,20 @@ def test_ollama_wrong_output_type(model):
         foor = "Foo"
 
     with pytest.raises(TypeError, match="is not supported"):
-        model.generate("foo?", Foo)
+        model("foo?", Foo)
 
 
 def test_ollama_wrong_input_type(model, image):
     with pytest.raises(TypeError, match="is not available"):
-        model.generate({"foo?": "bar?"}, None)
+        model({"foo?": "bar?"}, None)
 
     with pytest.raises(ValueError, match="All assets provided must be of type Image"):
-        model.generate(["foo?", Image(image), Video("")], None)
+        model(["foo?", Image(image), Video("")], None)
 
 
 def test_ollama_stream(model):
     generator = model.stream("Write a sentence about a cat.")
-    assert isinstance(next(generator), str)
+    assert isinstance(next(generator), StreamingOutput)
 
 
 def test_ollama_stream_json(model_no_model_name):
@@ -157,8 +158,8 @@ def test_ollama_stream_json(model_no_model_name):
 
     generator = model_no_model_name.stream("Create a character.", Foo, model=MODEL_NAME)
     generated_text = []
-    for text in generator:
-        generated_text.append(text)
+    for chunk in generator:
+        generated_text.append(chunk.content)
     assert "foo" in json.loads("".join(generated_text))
 
 
@@ -188,17 +189,17 @@ def test_ollama_async_init_from_client():
 @pytest.mark.asyncio
 async def test_ollama_async_wrong_inference_parameters(async_model):
     with pytest.raises(TypeError, match="got an unexpected"):
-        await async_model.generate(
+        await async_model(
             "Respond with one word. Not more.", None, foo=10
         )
 
 
 @pytest.mark.asyncio
 async def test_ollama_async_simple(async_model):
-    result = await async_model.generate(
+    result = await async_model(
         "Respond with one word. Not more.", None
     )
-    assert isinstance(result, str)
+    assert isinstance(result, Output)
 
 
 @pytest.mark.asyncio
@@ -208,23 +209,23 @@ async def test_ollama_async_direct(async_model_no_model_name):
         None,
         model=MODEL_NAME,
     )
-    assert isinstance(result, str)
+    assert isinstance(result, Output)
 
 
 @pytest.mark.asyncio
 async def test_ollama_async_simple_vision(image, async_model):
     # This is not using a vision model, so it's not able to describe
     # the image, but we're still checking the model input syntax
-    result = await async_model.generate(
+    result = await async_model(
         ["What does this logo represent?", Image(image)],
         model=MODEL_NAME,
     )
-    assert isinstance(result, str)
+    assert isinstance(result, Output)
 
 
 @pytest.mark.asyncio
 async def test_ollama_async_chat(image, async_model):
-    result = await async_model.generate(
+    result = await async_model(
         Chat(
             [
                 {"role": "system", "content": "You are a helpful assistant."},
@@ -236,7 +237,7 @@ async def test_ollama_async_chat(image, async_model):
         ),
         model=MODEL_NAME,
     )
-    assert isinstance(result, str)
+    assert isinstance(result, Output)
 
 
 @pytest.mark.asyncio
@@ -245,8 +246,8 @@ async def test_ollama_async_json(async_model):
         foo: Annotated[str, Field(max_length=1)]
 
     result = await async_model("Respond with one word. Not more.", Foo)
-    assert isinstance(result, str)
-    assert "foo" in json.loads(result)
+    assert isinstance(result, Output)
+    assert "foo" in json.loads(result.content)
 
 
 @pytest.mark.asyncio
@@ -256,19 +257,19 @@ async def test_ollama_async_wrong_output_type(async_model):
         foor = "Foo"
 
     with pytest.raises(TypeError, match="is not supported"):
-        await async_model.generate("foo?", Foo)
+        await async_model("foo?", Foo)
 
 
 @pytest.mark.asyncio
 async def test_ollama_async_wrong_input_type(async_model):
     with pytest.raises(TypeError, match="is not available"):
-        await async_model.generate({"foo?": "bar?"}, None)
+        await async_model({"foo?": "bar?"}, None)
 
 
 @pytest.mark.asyncio
 async def test_ollama_async_stream(async_model):
     async_generator = async_model.stream("Write a sentence about a cat.")
-    assert isinstance(await async_generator.__anext__(), str)
+    assert isinstance(await async_generator.__anext__(), StreamingOutput)
 
 
 @pytest.mark.asyncio
@@ -279,7 +280,7 @@ async def test_ollama_async_stream_json(async_model_no_model_name):
     async_generator = async_model_no_model_name.stream("Create a character.", Foo, model=MODEL_NAME)
     generated_text = []
     async for chunk in async_generator:
-        generated_text.append(chunk)
+        generated_text.append(chunk.content)
     assert "foo" in json.loads("".join(generated_text))
 
 
