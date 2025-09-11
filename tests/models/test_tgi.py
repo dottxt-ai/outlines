@@ -7,6 +7,7 @@ import pytest
 from huggingface_hub import InferenceClient, AsyncInferenceClient
 
 from outlines.models.tgi import TGI, AsyncTGI, from_tgi
+from outlines.outputs import Output, StreamingOutput
 from outlines.types.dsl import CFG, Regex, JsonSchema
 from tests.test_utils.mock_tgi_client import MockTGIInferenceClient, MockAsyncTGIInferenceClient
 
@@ -42,7 +43,7 @@ mock_responses = [
             'max_new_tokens': 10,
             'stream': True
         },
-        ["foo", "bar"]
+        [Output(content="foo"), Output(content="bar")]
     ),
     (
         {
@@ -108,7 +109,7 @@ def test_tgi_init():
 
 def test_tgi_sync_simple_call(sync_model):
     result = sync_model("Respond with a single word.", max_new_tokens=10)
-    assert isinstance(result, str)
+    assert isinstance(result, Output)
 
 
 def test_tgi_sync_streaming(sync_model):
@@ -117,7 +118,7 @@ def test_tgi_sync_streaming(sync_model):
         max_new_tokens=10,
     )
     assert isinstance(result, Generator)
-    assert isinstance(next(result), str)
+    assert isinstance(next(result), StreamingOutput)
 
 
 def test_tgi_sync_batch(sync_model):
@@ -130,14 +131,14 @@ def test_tgi_sync_batch(sync_model):
 def test_tgi_sync_json(sync_model):
     json_string = '{"type": "object", "properties": {"bar": {"type": "string"}}, "required": ["bar"]}'
     result = sync_model("foo?", JsonSchema(json_string), max_new_tokens=10)
-    assert isinstance(result, str)
-    assert "bar" in result
+    assert isinstance(result, Output)
+    assert "bar" in result.content
 
 
 def test_tgi_sync_regex(sync_model):
     result = sync_model("foo?", Regex(r"[0-9]{3}"), max_new_tokens=10)
-    assert isinstance(result, str)
-    assert re.match(r"[0-9]{3}", result)
+    assert isinstance(result, Output)
+    assert re.match(r"[0-9]{3}", result.content)
 
 
 def test_tgi_sync_cfg(sync_model):
@@ -151,7 +152,7 @@ def test_tgi_sync_cfg(sync_model):
 @pytest.mark.asyncio
 async def test_tgi_async_simple_call(async_model):
     result = await async_model("Respond with a single word.", max_new_tokens=10)
-    assert isinstance(result, str)
+    assert isinstance(result, Output)
 
 
 @pytest.mark.asyncio
@@ -159,7 +160,7 @@ async def test_tgi_async_streaming(async_model):
     result = async_model.stream("Respond with a single word.", max_new_tokens=10)
     assert isinstance(result, AsyncGenerator)
     async for chunk in result:
-        assert isinstance(chunk, str)
+        assert isinstance(chunk, StreamingOutput)
         break  # Just check the first chunk
 
 
@@ -175,15 +176,15 @@ async def test_tgi_async_batch(async_model):
 async def test_tgi_async_json(async_model):
     json_string = '{"type": "object", "properties": {"bar": {"type": "string"}}, "required": ["bar"]}'
     result = await async_model("foo?", JsonSchema(json_string), max_new_tokens=10)
-    assert isinstance(result, str)
-    assert "bar" in result
+    assert isinstance(result, Output)
+    assert "bar" in result.content
 
 
 @pytest.mark.asyncio
 async def test_tgi_async_regex(async_model):
     result = await async_model("foo?", Regex(r"[0-9]{3}"), max_new_tokens=10)
-    assert isinstance(result, str)
-    assert re.match(r"[0-9]{3}", result)
+    assert isinstance(result, Output)
+    assert re.match(r"[0-9]{3}", result.content)
 
 
 @pytest.mark.asyncio

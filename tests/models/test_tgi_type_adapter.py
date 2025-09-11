@@ -2,6 +2,7 @@ import json
 import pytest
 
 from outlines.models.tgi import TGITypeAdapter
+from outlines.tools import ToolDef
 from outlines.types import CFG, JsonSchema
 
 
@@ -86,3 +87,15 @@ def test_tgi_type_adapter_output_type_invalid(
         match="TGI does not support CFG-based structured outputs.",
     ):
         type_adapter.format_output_type(cfg_instance)
+
+
+def test_tgi_type_adapter_tools(type_adapter):
+    with pytest.raises(
+        NotImplementedError,
+        match="Tools are not available for TGI.",
+    ):
+        type_adapter.format_tools(
+            [ToolDef(name="test", description="test", parameters={})]
+        )
+
+    type_adapter.format_tools(None)
