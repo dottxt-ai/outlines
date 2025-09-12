@@ -98,7 +98,7 @@ def test_transformers_multimodal_chat(model, image):
             {
                 "role": "user",
                 "content": [
-                    "What's on this image?",
+                    "Describe this image in one sentence:",
                     Image(image),
                 ],
             },
@@ -113,7 +113,7 @@ def test_transformers_multimodal_chat(model, image):
             {
                 "role": "user",
                 "content": [
-                    {"type": "text", "text": "What's on this image?"},
+                    {"type": "text", "text": "Describe this image in one sentence:"},
                     {"type": "image", "image": Image(image)},
                 ],
             },
@@ -234,7 +234,7 @@ def test_transformers_multimodal_batch(model, image):
                 {
                     "role": "user",
                     "content": [
-                        "What's on this image?",
+                        "Describe this image in one sentence:",
                         Image(image),
                     ],
                 },
@@ -244,7 +244,7 @@ def test_transformers_multimodal_batch(model, image):
                 {
                     "role": "user",
                     "content": [
-                        "What's on this image?",
+                        "Describe this image in one sentence:",
                         Image(image),
                     ],
                 },
@@ -262,7 +262,7 @@ def test_transformers_multimodal_batch(model, image):
                 {
                     "role": "user",
                     "content": [
-                        {"type": "text", "text": "What's on this image?"},
+                        {"type": "text", "text": "Describe this image in one sentence:"},
                         {"type": "image", "image": Image(image)},
                     ],
                 },
@@ -272,7 +272,7 @@ def test_transformers_multimodal_batch(model, image):
                 {
                     "role": "user",
                     "content": [
-                        {"type": "text", "text": "What's on this image?"},
+                        {"type": "text", "text": "Describe this image in one sentence:"},
                         {"type": "image", "image": Image(image)},
                     ],
                 },
