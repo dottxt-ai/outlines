@@ -35,6 +35,7 @@ BlackBoxModel = Union[
     Gemini,
     Ollama,
     OpenAI,
+    Mistral,
     SGLang,
     TGI,
     VLLM,

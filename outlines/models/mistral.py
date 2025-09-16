@@ -35,9 +35,19 @@ class MistralTypeAdapter(ModelTypeAdapter):
 
     `MistralTypeAdapter` is responsible for preparing the arguments to Mistral's
     `chat.complete` methods: the input (prompt and possibly image), as well as 
-    the output type (only JSON, TODO: multiple choice?).
+    the output type (structured JSON outputs via response_format).
 
     """
+
+    def __init__(self, system_prompt: Optional[str] = None):
+        """Initialize the type adapter with optional system prompt.
+        
+        Parameters
+        ----------
+        system_prompt
+            Optional system prompt to prepend to conversations.
+        """
+        self.system_prompt = system_prompt
 
     @singledispatchmethod
     def format_input(self, model_input):
@@ -65,8 +75,13 @@ class MistralTypeAdapter(ModelTypeAdapter):
         client when the user only passes a prompt.
 
         """
-        from mistralai import UserMessage
-        return [UserMessage(content=model_input)]
+        from mistralai import UserMessage, SystemMessage
+        
+        messages = []
+        if self.system_prompt:
+            messages.append(SystemMessage(content=self.system_prompt))
+        messages.append(UserMessage(content=model_input))
+        return messages
 
     @format_input.register(list)
     def format_list_model_input(self, model_input: list) -> list:
@@ -74,8 +89,13 @@ class MistralTypeAdapter(ModelTypeAdapter):
         client when the user passes a prompt and images.
 
         """
-        from mistralai import UserMessage
-        return [UserMessage(content=self._create_message_content(model_input))]
+        from mistralai import UserMessage, SystemMessage
+        
+        messages = []
+        if self.system_prompt:
+            messages.append(SystemMessage(content=self.system_prompt))
+        messages.append(UserMessage(content=self._create_message_content(model_input)))
+        return messages
 
     @format_input.register(Chat)
     def format_chat_model_input(self, model_input: Chat) -> list:
@@ -86,6 +106,12 @@ class MistralTypeAdapter(ModelTypeAdapter):
         from mistralai import UserMessage, AssistantMessage, SystemMessage
         
         messages = []
+        
+        # Add system prompt if provided and not already in chat
+        has_system = any(msg["role"] == "system" for msg in model_input.messages)
+        if self.system_prompt and not has_system:
+            messages.append(SystemMessage(content=self.system_prompt))
+        
         for message in model_input.messages:
             role = message["role"]
             content = message["content"]
@@ -156,19 +182,20 @@ class MistralTypeAdapter(ModelTypeAdapter):
         elif is_native_dict(output_type):
             return self.format_json_mode_type()
         elif is_dataclass(output_type):
-            output_type = TypeAdapter(output_type).json_schema()
-            return self.format_json_output_type(output_type)
+            schema = TypeAdapter(output_type).json_schema()
+            return self.format_json_schema_type(schema, output_type.__name__)
         elif is_typed_dict(output_type):
-            output_type = TypeAdapter(output_type).json_schema()
-            return self.format_json_output_type(output_type)
+            schema = TypeAdapter(output_type).json_schema()
+            return self.format_json_schema_type(schema, getattr(output_type, "__name__", "Schema"))
         elif is_pydantic_model(output_type):
-            output_type = output_type.model_json_schema()
-            return self.format_json_output_type(output_type)
+            schema = output_type.model_json_schema()
+            return self.format_json_schema_type(schema, output_type.__name__)
         elif is_genson_schema_builder(output_type):
             schema = json.loads(output_type.to_json())
-            return self.format_json_output_type(schema)
+            return self.format_json_schema_type(schema, "Schema")
         elif isinstance(output_type, JsonSchema):
-            return self.format_json_output_type(json.loads(output_type.schema))
+            schema = json.loads(output_type.schema)
+            return self.format_json_schema_type(schema, "Schema")
         else:
             type_name = getattr(output_type, "__name__", output_type)
             raise TypeError(
@@ -176,26 +203,29 @@ class MistralTypeAdapter(ModelTypeAdapter):
                 "Use an open source model or dottxt instead."
             )
 
-    def format_json_output_type(self, schema: dict) -> dict:
-        """Generate the `response_format` argument to the client when the user
-        specified a structured output type.
+    def format_json_schema_type(self, schema: dict, schema_name: str = "Schema") -> dict:
+        """Generate the `response_format` argument for structured JSON schema output.
 
+        According to Mistral docs, this uses the json_schema format with strict mode.
         """
-        # Mistral requires `additionalProperties` to be set to False for structured outputs
+        # Ensure additionalProperties is set to False for structured outputs
         schema = set_additional_properties_false_json_schema(schema)
 
         return {
             "response_format": {
-                "type": "json_object",
-                "schema": schema,
+                "type": "json_schema",
+                "json_schema": {
+                    "schema": schema,
+                    "name": schema_name.lower(),
+                    "strict": True
+                }
             }
         }
 
     def format_json_mode_type(self) -> dict:
-        """Generate the `response_format` argument to the client when the user
-        specified the output type should be a JSON but without specifying the
-        schema (also called "JSON mode").
+        """Generate the `response_format` argument for basic JSON mode.
 
+        This is for when users want JSON output but don't specify a schema.
         """
         return {"response_format": {"type": "json_object"}}
 
@@ -203,8 +233,8 @@ class MistralTypeAdapter(ModelTypeAdapter):
 class Mistral(Model):
     """Thin wrapper around the `mistralai.Mistral` client.
 
-    This wrapper is used to convert the input and output types specified by the
-    users at a higher level to arguments to the `mistralai.Mistral` client.
+    This wrapper converts input and output types specified by users to arguments
+    for the `mistralai.Mistral` client, following the official API patterns.
 
     """
 
@@ -212,6 +242,8 @@ class Mistral(Model):
         self,
         client: "MistralClient",
         model_name: Optional[str] = None,
+        system_prompt: Optional[str] = None,
+        config: Optional[dict] = None,
     ):
         """
         Parameters
@@ -220,11 +252,17 @@ class Mistral(Model):
             The `mistralai.Mistral` client.
         model_name
             The name of the model to use.
+        system_prompt
+            Optional system prompt to prepend to conversations.
+        config
+            Optional configuration dictionary for default parameters.
 
         """
         self.client = client
         self.model_name = model_name
-        self.type_adapter = MistralTypeAdapter()
+        self.system_prompt = system_prompt
+        self.config = config or {}
+        self.type_adapter = MistralTypeAdapter(system_prompt=system_prompt)
 
     def generate(
         self,
@@ -254,18 +292,33 @@ class Mistral(Model):
         messages = self.type_adapter.format_input(model_input)
         response_format = self.type_adapter.format_output_type(output_type)
 
-        if "model" not in inference_kwargs and self.model_name is not None:
-            inference_kwargs["model"] = self.model_name
+        # Merge config defaults with inference kwargs
+        merged_kwargs = {**self.config, **inference_kwargs}
+        
+        if "model" not in merged_kwargs and self.model_name is not None:
+            merged_kwargs["model"] = self.model_name
 
         try:
+            # Use chat.parse for structured outputs with Pydantic models
+            if is_pydantic_model(output_type):
+                result = self.client.chat.parse(
+                    messages=messages,
+                    response_format=output_type,
+                    **merged_kwargs,
+                )
+                # Return the parsed Pydantic object's JSON representation
+                if hasattr(result.choices[0].message, 'parsed') and result.choices[0].message.parsed:
+                    return result.choices[0].message.parsed.model_dump_json()
+            
+            # Use regular chat.complete for other cases
             result = self.client.chat.complete(
                 messages=messages,
                 **response_format,
-                **inference_kwargs,
+                **merged_kwargs,
             )
         except Exception as e:
-            # Handle potential API errors similar to OpenAI
-            if "schema" in str(e).lower():
+            # Handle potential API errors
+            if "schema" in str(e).lower() or "json_schema" in str(e).lower():
                 raise TypeError(
                     f"Mistral does not support your schema: {e}. "
                     "Try a local model or dottxt instead."
@@ -319,17 +372,21 @@ class Mistral(Model):
         messages = self.type_adapter.format_input(model_input)
         response_format = self.type_adapter.format_output_type(output_type)
 
-        if "model" not in inference_kwargs and self.model_name is not None:
-            inference_kwargs["model"] = self.model_name
+        # Merge config defaults with inference kwargs
+        merged_kwargs = {**self.config, **inference_kwargs}
+        
+        if "model" not in merged_kwargs and self.model_name is not None:
+            merged_kwargs["model"] = self.model_name
 
         try:
+            # Note: chat.parse doesn't support streaming, so we use chat.stream
             stream = self.client.chat.stream(
                 messages=messages,
                 **response_format,
-                **inference_kwargs
+                **merged_kwargs
             )
         except Exception as e:
-            if "schema" in str(e).lower():
+            if "schema" in str(e).lower() or "json_schema" in str(e).lower():
                 raise TypeError(
                     f"Mistral does not support your schema: {e}. "
                     "Try a local model or dottxt instead."
@@ -338,13 +395,27 @@ class Mistral(Model):
                 raise RuntimeError(f"Error calling Mistral API: {e}") from e
 
         for chunk in stream:
-            if chunk.data.choices and chunk.data.choices[0].delta.content is not None:
+            if (hasattr(chunk, 'data') and 
+                chunk.data.choices and 
+                chunk.data.choices[0].delta.content is not None):
                 yield chunk.data.choices[0].delta.content
+
+    def supports_structured_output(self, model_name: Optional[str] = None) -> bool:
+        """Check if the model supports structured outputs.
+        
+        According to Mistral docs, all models except codestral-mamba support structured outputs.
+        """
+        model = model_name or self.model_name
+        if model is None:
+            return True  # Default to True if no model specified
+        return "codestral-mamba" not in model.lower()
 
 
 def from_mistral(
     client: "MistralClient",
     model_name: Optional[str] = None,
+    system_prompt: Optional[str] = None,
+    config: Optional[dict] = None,
 ) -> Mistral:
     """Create an Outlines `Mistral` model instance from a
     `mistralai.Mistral` client.
@@ -355,6 +426,10 @@ def from_mistral(
         A `mistralai.Mistral` client instance.
     model_name
         The name of the model to use.
+    system_prompt
+        Optional system prompt to prepend to conversations.
+    config
+        Optional configuration dictionary for default parameters.
 
     Returns
     -------
@@ -365,7 +440,11 @@ def from_mistral(
     --------
     >>> from mistralai import Mistral as MistralClient
     >>> client = MistralClient(api_key="your-api-key")
-    >>> model = from_mistral(client, "mistral-large-latest")
+    >>> model = from_mistral(
+    ...     client, 
+    ...     "mistral-large-latest",
+    ...     system_prompt="You are a helpful assistant"
+    ... )
 
     """
-    return Mistral(client, model_name)
+    return Mistral(client, model_name, system_prompt, config)
