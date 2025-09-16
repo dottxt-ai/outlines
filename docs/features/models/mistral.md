@@ -1,51 +1,52 @@
-# Mistral AI
 
-Outlines supports models from Mistral AI's API. You'll need to install the `mistralai` package and set up your API key.
+# Mistral AI Integration
+Outlines now supports models from [Mistral AI](https://mistral.ai) via the official `mistralai` package.
+This integration provides a thin wrapper around the `mistralai.Mistral` client, handling prompt formatting, structured outputs, and streaming.
 
 ## Installation
 
 ```bash
 pip install mistralai
 ```
-
-## Basic Usage
+Basic Usage
 
 ```python
 import os
 import outlines
+from mistralai import Mistral as MistralClient
+
+# ...
 
 # Set your API key
 os.environ["MISTRAL_API_KEY"] = "your-api-key-here"
+# or in terminal: export MISTRAL_API_KEY=YourRawKeyHere
 
-# Initialize the model
-model = outlines.models.mistral("mistral-large-latest")
+# Initialize the client and model
+client = MistralClient(api_key=os.environ["MISTRAL_API_KEY"])
+model = outlines.models.mistral.from_mistral(client, "mistral-large-latest")
 
 # Generate text
-result = model("What is the capital of France?")
+result = model.generate("What is the capital of France?")
 print(result)
 ```
-
 ## Available Models
-
-Mistral AI offers several models through their API:
-
-- `mistral-tiny` - Fastest model for simple tasks
-- `mistral-small` - Balanced speed and capability
-- `mistral-medium` - More capable model
-- `mistral-large` - Most capable model
-- `mistral-large-latest` - Latest version of the large model
-- `open-mistral-7b` - Open source 7B model
-- `open-mixtral-8x7b` - Open source 8x7B mixture of experts
-- `open-mixtral-8x22b` - Open source 8x22B mixture of experts
+Mistral AI offers several models:
+ - mistral-tiny
+ - mistral-small
+ - mistral-medium
+ - mistral-large
+ - mistral-large-latest
+ - open-mistral-7b
+ - open-mixtral-8x7b
+ - open-mixtral-8x22b
+ - codestral-mamba (⚠ does not support structured outputs, AVOID)
 
 ## Configuration
-
-You can configure various parameters when creating the model:
-
+You can set default inference parameters when creating the model:
 ```python
-model = outlines.models.mistral(
+model = outlines.models.mistral.from_mistral(
+    client,
     "mistral-large-latest",
-    api_key="your-api-key",
     system_prompt="You are a helpful assistant specialized in data analysis.",
     config={
         "temperature": 0.7,
@@ -54,137 +55,104 @@ model = outlines.models.mistral(
     }
 )
 ```
-
 ## Structured Generation
-
-Use Mistral models with Outlines' structured generation features:
+Mistral supports structured JSON outputs. Outlines automatically converts Pydantic models, dataclasses, and TypedDicts into JSON schemas.
 
 ```python
 from typing import Literal
 from pydantic import BaseModel
 
-model = outlines.models.mistral("mistral-large-latest")
-
 # Multiple choice
-sentiment = model(
+sentiment = model.generate(
     "The movie was absolutely fantastic!",
     Literal["positive", "negative", "neutral"]
 )
 
-# Structured objects
+# Structured object
 class Person(BaseModel):
     name: str
     age: int
     occupation: str
 
-person = model(
+person = model.generate(
     "Generate information about a software engineer",
     Person
 )
+
 ```
+ ⚠️ Note: Regex and CFG-based structured outputs are not currently supported by the mistralai API.
 
 ## Streaming
-
-Mistral models support streaming generation:
+Stream responses chunk by chunk:
 
 ```python
-model = outlines.models.mistral("mistral-large-latest")
-
-for chunk in model.stream("Write a short story about AI"):
+for chunk in model.generate_stream("Write a short story about AI"):
     print(chunk, end="", flush=True)
 ```
-
 ## Batch Processing
-
-You can process multiple prompts at once:
-
-```python
-model = outlines.models.mistral("mistral-large-latest")
-
-prompts = [
-    "What is Python?",
-    "What is JavaScript?",
-    "What is Rust?"
-]
-
-results = model(prompts)
-for prompt, result in zip(prompts, results):
-    print(f"Q: {prompt}")
-    print(f"A: {result}\n")
-```
+Batch inference is currently not supported by the mistralai API.
+Please use multiple calls to generate if you need to process a list of prompts.
 
 ## Error Handling
-
-The Mistral integration includes proper error handling for API issues:
-
+The Mistral integration raises helpful exceptions for schema issues or API errors:
 ```python
 try:
-    model = outlines.models.mistral("mistral-large-latest", api_key="invalid-key")
-    result = model("Hello")
+    result = model.generate("Hello")
 except RuntimeError as e:
     print(f"API Error: {e}")
-```
-
-## Environment Variables
-
-You can set your Mistral API key using environment variables:
-
-```bash
-export MISTRAL_API_KEY="your-api-key-here"
-```
-
-Then use the model without explicitly passing the API key:
-
-```python
-model = outlines.models.mistral("mistral-large-latest")
+except TypeError as e:
+    print(f"Schema Error: {e}")
+```from_mistral(client, "mistral-large-latest")
 ```
 
 ## Advanced Usage
-
 ### Custom System Prompts
-
-```python
-model = outlines.models.mistral(
+``` python
+model = from_mistral(
+    client,
     "mistral-large-latest",
-    system_prompt="You are an expert Python programmer. Always provide clean, efficient code with explanations."
+    system_prompt="You are an expert Python programmer."
 )
 
-code = model("Write a function to calculate fibonacci numbers")
+code = model.generate("Write a function to calculate fibonacci numbers")
 ```
-
 ### Temperature and Randomness Control
-
-```python
-# More deterministic responses
-model_deterministic = outlines.models.mistral(
+``` python
+# Deterministic
+det_model = from_mistral(
+    client,
     "mistral-large-latest",
     config={"temperature": 0.1, "top_p": 0.1}
 )
 
-# More creative responses  
-model_creative = outlines.models.mistral(
+# Creative
+creative_model = from_mistral(
+    client,
     "mistral-large-latest",
     config={"temperature": 0.9, "top_p": 0.95}
 )
 ```
 
-## Rate Limits and Best Practices
-
-- Mistral AI has rate limits on their API. Handle rate limit errors appropriately.
-- Use batch processing when possible to reduce the number of API calls.
-- Consider using smaller models (mistral-small, mistral-tiny) for simpler tasks to reduce costs.
-- Cache results when appropriate to avoid redundant API calls.
-
 ## Troubleshooting
+***ImportError: No module named 'mistralai'***
+→ Install with pip install mistralai
 
-**ImportError: No module named 'mistralai'**
-Install the Mistral AI package: `pip install mistralai`
+***Authentication Error***
+→ Ensure your API key is set correctly
 
-**Authentication Error**
-Make sure your API key is set correctly in the environment or passed to the model.
+***Schema Error***
+→ Regex and CFG-based schemas are not supported by Mistral
 
-**Rate Limit Error**
-Implement exponential backoff or reduce the frequency of your requests.
+***Model Not Found Error***
+→ Check that the model name is valid and available in your plan
 
-**Model Not Found Error**  
-Verify that the model name is correct and available in your Mistral AI plan.
+## Notes
+Structured outputs are supported for all models except codestral-mamba.
+
+generate_batch is not available due to API limitations.
+
+Outlines automatically disables additionalProperties in JSON schemas for stricter outputs.
+
+Author: Steven E. Elliott aka see (seeyallc6c@gmail.com)
+
+---

@@ -34,14 +34,14 @@ class MistralTypeAdapter(ModelTypeAdapter):
     """Type adapter for the `Mistral` model.
 
     `MistralTypeAdapter` is responsible for preparing the arguments to Mistral's
-    `chat.complete` methods: the input (prompt and possibly image), as well as 
+    `chat.complete` methods: the input (prompt and possibly image), as well as
     the output type (structured JSON outputs via response_format).
 
     """
 
     def __init__(self, system_prompt: Optional[str] = None):
         """Initialize the type adapter with optional system prompt.
-        
+
         Parameters
         ----------
         system_prompt
@@ -76,7 +76,7 @@ class MistralTypeAdapter(ModelTypeAdapter):
 
         """
         from mistralai import UserMessage, SystemMessage
-        
+
         messages = []
         if self.system_prompt:
             messages.append(SystemMessage(content=self.system_prompt))
@@ -90,7 +90,7 @@ class MistralTypeAdapter(ModelTypeAdapter):
 
         """
         from mistralai import UserMessage, SystemMessage
-        
+
         messages = []
         if self.system_prompt:
             messages.append(SystemMessage(content=self.system_prompt))
@@ -104,18 +104,18 @@ class MistralTypeAdapter(ModelTypeAdapter):
 
         """
         from mistralai import UserMessage, AssistantMessage, SystemMessage
-        
+
         messages = []
-        
+
         # Add system prompt if provided and not already in chat
         has_system = any(msg["role"] == "system" for msg in model_input.messages)
         if self.system_prompt and not has_system:
             messages.append(SystemMessage(content=self.system_prompt))
-        
+
         for message in model_input.messages:
             role = message["role"]
             content = message["content"]
-            
+
             if role == "user":
                 messages.append(UserMessage(content=self._create_message_content(content)))
             elif role == "assistant":
@@ -124,12 +124,12 @@ class MistralTypeAdapter(ModelTypeAdapter):
                 messages.append(SystemMessage(content=content))
             else:
                 raise ValueError(f"Unsupported role: {role}")
-                
+
         return messages
 
     def _create_message_content(self, content: Union[str, list]) -> Union[str, list]:
         """Create message content, handling both text and multimodal inputs."""
-        
+
         if isinstance(content, str):
             return content
         elif isinstance(content, list):
@@ -294,7 +294,7 @@ class Mistral(Model):
 
         # Merge config defaults with inference kwargs
         merged_kwargs = {**self.config, **inference_kwargs}
-        
+
         if "model" not in merged_kwargs and self.model_name is not None:
             merged_kwargs["model"] = self.model_name
 
@@ -309,7 +309,7 @@ class Mistral(Model):
                 # Return the parsed Pydantic object's JSON representation
                 if hasattr(result.choices[0].message, 'parsed') and result.choices[0].message.parsed:
                     return result.choices[0].message.parsed.model_dump_json()
-            
+
             # Use regular chat.complete for other cases
             result = self.client.chat.complete(
                 messages=messages,
@@ -374,7 +374,7 @@ class Mistral(Model):
 
         # Merge config defaults with inference kwargs
         merged_kwargs = {**self.config, **inference_kwargs}
-        
+
         if "model" not in merged_kwargs and self.model_name is not None:
             merged_kwargs["model"] = self.model_name
 
@@ -395,14 +395,14 @@ class Mistral(Model):
                 raise RuntimeError(f"Error calling Mistral API: {e}") from e
 
         for chunk in stream:
-            if (hasattr(chunk, 'data') and 
-                chunk.data.choices and 
+            if (hasattr(chunk, 'data') and
+                chunk.data.choices and
                 chunk.data.choices[0].delta.content is not None):
                 yield chunk.data.choices[0].delta.content
 
     def supports_structured_output(self, model_name: Optional[str] = None) -> bool:
         """Check if the model supports structured outputs.
-        
+
         According to Mistral docs, all models except codestral-mamba support structured outputs.
         """
         model = model_name or self.model_name
@@ -441,7 +441,7 @@ def from_mistral(
     >>> from mistralai import Mistral as MistralClient
     >>> client = MistralClient(api_key="your-api-key")
     >>> model = from_mistral(
-    ...     client, 
+    ...     client,
     ...     "mistral-large-latest",
     ...     system_prompt="You are a helpful assistant"
     ... )

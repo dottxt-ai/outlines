@@ -24,7 +24,7 @@ def mock_mistral_client():
     mock_choice.message = mock_message
     mock_response.choices = [mock_choice]
     mock_client.chat.complete.return_value = mock_response
-    
+
     # Mock streaming response
     mock_stream_chunk = Mock()
     mock_stream_data = Mock()
@@ -35,7 +35,7 @@ def mock_mistral_client():
     mock_stream_data.choices = [mock_stream_choice]
     mock_stream_chunk.data = mock_stream_data
     mock_client.chat.stream.return_value = [mock_stream_chunk, mock_stream_chunk]
-    
+
     # Mock parse response
     mock_parse_response = Mock()
     mock_parse_choice = Mock()
@@ -45,7 +45,7 @@ def mock_mistral_client():
     mock_parse_choice.message = mock_parse_message
     mock_parse_response.choices = [mock_parse_choice]
     mock_client.chat.parse.return_value = mock_parse_response
-    
+
     return mock_client
 
 def mock_mistral_client_0():
@@ -54,26 +54,26 @@ def mock_mistral_client_0():
     mock_response = Mock()
     mock_choice = Mock()
     mock_message = Mock()
-    
+
     mock_message.content = "Test response"
     mock_choice.message = mock_message
     mock_response.choices = [mock_choice]
-    
+
     mock_client.chat.complete.return_value = mock_response
-    
+
     # Mock streaming response
     mock_stream_chunk = Mock()
     mock_stream_data = Mock()
     mock_stream_choice = Mock()
     mock_stream_delta = Mock()
-    
+
     mock_stream_delta.content = "Streamed "
     mock_stream_choice.delta = mock_stream_delta
     mock_stream_data.choices = [mock_stream_choice]
     mock_stream_chunk.data = mock_stream_data
-    
+
     mock_client.chat.stream.return_value = [mock_stream_chunk, mock_stream_chunk]
-    
+
     return mock_client
 
 
@@ -96,9 +96,10 @@ class TestMistralTypeAdapter:
     def test_format_str_input_without_system(self, mock_user_msg):
         """Test formatting string input without system prompt."""
         adapter = MistralTypeAdapter()
-        
+
         result = adapter.format_input("Hello world")
-        
+        assert result is not None
+
         mock_user_msg.assert_called_once_with(content="Hello world")
 
     # @patch('mistralai.SystemMessage')
@@ -109,9 +110,10 @@ class TestMistralTypeAdapter:
         """Test formatting string input with system prompt."""
         system_prompt = "You are helpful"
         adapter = MistralTypeAdapter(system_prompt=system_prompt)
-        
+
         result = adapter.format_input("Hello world")
-        
+        assert result is not None
+
         mock_system_msg.assert_called_once_with(content=system_prompt)
         mock_user_msg.assert_called_once_with(content="Hello world")
 
@@ -119,9 +121,10 @@ class TestMistralTypeAdapter:
     def test_format_list_input(self, mock_user_msg):
         """Test formatting list input."""
         adapter = MistralTypeAdapter()
-        
+
         result = adapter.format_input(["Hello world"])
-        
+        assert result is not None
+
         mock_user_msg.assert_called_once_with(content="Hello world")
 
     @patch('mistralai.UserMessage')
@@ -130,16 +133,17 @@ class TestMistralTypeAdapter:
     def test_format_chat_input(self, mock_system_msg, mock_assistant_msg, mock_user_msg):
         """Test formatting Chat input."""
         adapter = MistralTypeAdapter()
-        
+
         chat = Chat([
             {"role": "system", "content": "You are helpful"},
             {"role": "user", "content": "Hello"},
             {"role": "assistant", "content": "Hi there"},
             {"role": "user", "content": "How are you?"}
         ])
-        
+
         result = adapter.format_input(chat)
-        
+        assert result is not None
+
         mock_system_msg.assert_called_once_with(content="You are helpful")
         assert mock_user_msg.call_count == 2
         mock_assistant_msg.assert_called_once_with(content="Hi there")
@@ -150,13 +154,14 @@ class TestMistralTypeAdapter:
         """Test formatting Chat input with adapter system prompt when chat has no system message."""
         system_prompt = "You are helpful"
         adapter = MistralTypeAdapter(system_prompt=system_prompt)
-        
+
         chat = Chat([
             {"role": "user", "content": "Hello"}
         ])
-        
+
         result = adapter.format_input(chat)
-        
+        assert result is not None
+
         # Should add system prompt since chat doesn't have one
         mock_system_msg.assert_called_once_with(content=system_prompt)
         mock_user_msg.assert_called_once_with(content="Hello")
@@ -164,24 +169,24 @@ class TestMistralTypeAdapter:
     def test_format_invalid_input_type(self):
         """Test formatting invalid input type."""
         adapter = MistralTypeAdapter()
-        
+
         with pytest.raises(TypeError, match="The input type .* is not available"):
             adapter.format_input(123)
 
     def test_format_output_type_none(self):
         """Test formatting None output type."""
         adapter = MistralTypeAdapter()
-        
+
         result = adapter.format_output_type(None)
-        
+
         assert result == {}
 
     def test_format_output_type_dict(self):
         """Test formatting dict output type."""
         adapter = MistralTypeAdapter()
-        
+
         result = adapter.format_output_type(dict)
-        
+
         assert result == {"response_format": {"type": "json_object"}}
 
     def test_format_output_type_pydantic(self):
@@ -218,9 +223,9 @@ class TestMistralTypeAdapter:
     def test_format_output_type_unsupported_cfg(self):
         """Test formatting unsupported CFG output type."""
         from outlines.types import CFG
-        
+
         adapter = MistralTypeAdapter()
-        
+
         with pytest.raises(TypeError, match="CFG-based structured outputs.*not available"):
             adapter.format_output_type(CFG("grammar"))
 
@@ -231,7 +236,7 @@ class TestMistral:
     def test_init_basic(self, mock_mistral_client):
         """Test basic Mistral initialization."""
         model = Mistral(client=mock_mistral_client, model_name="mistral-large-latest")
-        
+
         assert model.client == mock_mistral_client
         assert model.model_name == "mistral-large-latest"
         assert model.system_prompt is None
@@ -241,14 +246,14 @@ class TestMistral:
         """Test Mistral initialization with system prompt and config."""
         system_prompt = "You are a helpful assistant"
         config = {"temperature": 0.7, "max_tokens": 100}
-        
+
         model = Mistral(
             client=mock_mistral_client,
             model_name="mistral-large-latest",
             system_prompt=system_prompt,
             config=config
         )
-        
+
         assert model.client == mock_mistral_client
         assert model.model_name == "mistral-large-latest"
         assert model.system_prompt == system_prompt
@@ -258,12 +263,12 @@ class TestMistral:
     def test_generate_single_string(self, mock_mistral_client):
         """Test generating with a single string prompt."""
         model = Mistral(client=mock_mistral_client, model_name="mistral-large-latest")
-        
+
         result = model.generate("Hello world")
-        
+
         assert result == "Test response"
         mock_mistral_client.chat.complete.assert_called_once()
-        
+
         call_args = mock_mistral_client.chat.complete.call_args[1]
         assert call_args["model"] == "mistral-large-latest"
 
@@ -271,14 +276,15 @@ class TestMistral:
         """Test that config is properly merged with inference kwargs."""
         config = {"temperature": 0.5, "max_tokens": 50}
         model = Mistral(
-            client=mock_mistral_client, 
+            client=mock_mistral_client,
             model_name="mistral-large-latest",
             config=config
         )
-        
+
         # Override one config value and add a new one
         result = model.generate("Hello", temperature=0.8, top_p=0.9)
-        
+        assert result is not None
+
         call_args = mock_mistral_client.chat.complete.call_args[1]
         assert call_args["temperature"] == 0.8  # overridden
         assert call_args["max_tokens"] == 50     # from config
@@ -302,53 +308,53 @@ class TestMistral:
         mock_choice2 = Mock()
         mock_message1 = Mock()
         mock_message2 = Mock()
-        
+
         mock_message1.content = "Response 1"
         mock_message2.content = "Response 2"
         mock_choice1.message = mock_message1
         mock_choice2.message = mock_message2
-        
+
         mock_response = Mock()
         mock_response.choices = [mock_choice1, mock_choice2]
         mock_mistral_client.chat.complete.return_value = mock_response
-        
+
         model = Mistral(client=mock_mistral_client)
-        
+
         result = model.generate("Hello")
-        
+
         assert result == ["Response 1", "Response 2"]
 
     def test_generate_stream(self, mock_mistral_client):
         """Test streaming generation."""
         model = Mistral(client=mock_mistral_client, model_name="mistral-large-latest")
-        
+
         chunks = list(model.generate_stream("Hello world"))
-        
+
         assert chunks == ["Streamed ", "Streamed "]
         mock_mistral_client.chat.stream.assert_called_once()
 
     def test_generate_api_error(self, mock_mistral_client):
         """Test API error handling."""
         mock_mistral_client.chat.complete.side_effect = Exception("API Error")
-        
+
         model = Mistral(client=mock_mistral_client)
-        
+
         with pytest.raises(RuntimeError, match="Error calling Mistral API"):
             model.generate("Hello")
 
     def test_generate_schema_error(self, mock_mistral_client):
         """Test schema error handling."""
         mock_mistral_client.chat.complete.side_effect = Exception("Invalid schema format")
-        
+
         model = Mistral(client=mock_mistral_client)
-        
+
         with pytest.raises(TypeError, match="Mistral does not support your schema"):
             model.generate("Hello")
 
     def test_generate_batch_not_implemented(self, mock_mistral_client):
         """Test that batch generation raises NotImplementedError."""
         model = Mistral(client=mock_mistral_client)
-        
+
         with pytest.raises(NotImplementedError, match="does not support batch inference"):
             model.generate_batch(["Hello", "World"])
 
@@ -359,7 +365,7 @@ class TestFromMistral:
     def test_from_mistral_basic(self, mock_mistral_client):
         """Test basic from_mistral function."""
         model = from_mistral(mock_mistral_client, "mistral-large-latest")
-        
+
         assert isinstance(model, Mistral)
         assert model.client == mock_mistral_client
         assert model.model_name == "mistral-large-latest"
@@ -370,14 +376,14 @@ class TestFromMistral:
         """Test from_mistral with system prompt and config."""
         system_prompt = "You are helpful"
         config = {"temperature": 0.8}
-        
+
         model = from_mistral(
-            mock_mistral_client, 
+            mock_mistral_client,
             "mistral-large-latest",
             system_prompt=system_prompt,
             config=config
         )
-        
+
         assert model.system_prompt == system_prompt
         assert model.config == config
 
@@ -388,24 +394,24 @@ class TestMistralInputTypes:
     def test_chat_input(self, mock_mistral_client):
         """Test Chat input type."""
         model = Mistral(client=mock_mistral_client)
-        
+
         chat = Chat([
             {"role": "user", "content": "Hello"},
             {"role": "assistant", "content": "Hi!"},
             {"role": "user", "content": "How are you?"}
         ])
-        
+
         result = model.generate(chat)
-        
+
         assert result == "Test response"
         mock_mistral_client.chat.complete.assert_called_once()
 
     def test_list_input(self, mock_mistral_client):
         """Test list input type."""
         model = Mistral(client=mock_mistral_client)
-        
+
         result = model.generate(["Hello world"])
-        
+
         assert result == "Test response"
         mock_mistral_client.chat.complete.assert_called_once()
 
@@ -413,7 +419,7 @@ class TestMistralInputTypes:
 @pytest.mark.integration
 class TestMistralIntegration:
     """Integration tests for Mistral AI models (require API key)."""
-    
+
     @pytest.fixture
     def api_key(self):
         """Get API key from environment."""
@@ -422,7 +428,7 @@ class TestMistralIntegration:
             pytest.skip("MISTRAL_API_KEY environment variable not set")
         return api_key
 
-    @pytest.fixture 
+    @pytest.fixture
     def mistral_client(self, api_key):
         """Create real Mistral client."""
         try:
@@ -488,11 +494,8 @@ def test_mistral_with_outlines():
         mock_response.choices = [mock_choice]
         mock_model.generate.return_value = mock_message.content
         mock_from_mistral.return_value = mock_model
-        
+
         from outlines.models.mistral import from_mistral
         model = from_mistral(Mock(), "mistral-large-latest", api_key="test")
         result = model.generate("Generate a person")
         assert result == '{"name": "John", "age": 30}'
-
-
-    
