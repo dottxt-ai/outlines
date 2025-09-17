@@ -48,7 +48,7 @@ def set_additional_properties_false_json_schema(schema: dict) -> dict:
     new_schema = schema.copy()
     if new_schema.get("type") == "object":
         new_schema["additionalProperties"] = False
-    
+
     for key, value in new_schema.items():
         if key == "properties" and isinstance(value, dict):
             new_schema[key] = {k: set_additional_properties_false_json_schema(v) for k, v in value.items()}
@@ -56,7 +56,7 @@ def set_additional_properties_false_json_schema(schema: dict) -> dict:
             new_schema[key] = set_additional_properties_false_json_schema(value)
         elif isinstance(value, list):
             new_schema[key] = [set_additional_properties_false_json_schema(item) for item in value]
-    
+
     return new_schema
 
 class MistralTypeAdapter(ModelTypeAdapter):

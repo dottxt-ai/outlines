@@ -463,7 +463,7 @@ class TestMistralIntegration:
         # Ensure we don't use multi-response for this test
         if hasattr(client, '_return_multi'):
             delattr(client, '_return_multi')
-        
+
         # Override the mock response to return JSON and remove side_effect
         json_response = Mock()
         json_choice = Mock()
@@ -471,11 +471,11 @@ class TestMistralIntegration:
         json_message.content = '{"name": "John", "age": 30}'
         json_choice.message = json_message
         json_response.choices = [json_choice]
-        
+
         # Clear the side_effect and set direct return_value
         client.chat.complete.side_effect = None
         client.chat.complete.return_value = json_response
-        
+
         model = from_mistral(client, "mistral-large-latest")
         result = model.generate("Generate a person")
         assert isinstance(result, str)
