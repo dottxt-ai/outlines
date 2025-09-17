@@ -197,7 +197,7 @@ class LlamaCppTypeAdapter(ModelTypeAdapter):
 
     def format_output_type(
         self, output_type: Optional[OutlinesLogitsProcessor] = None,
-    ) -> "LogitsProcessorList":
+    ) -> Optional["LogitsProcessorList"]:
         """Generate the logits processor argument to pass to the model.
 
         Parameters
@@ -213,7 +213,9 @@ class LlamaCppTypeAdapter(ModelTypeAdapter):
         """
         from llama_cpp import LogitsProcessorList
 
-        return LogitsProcessorList([output_type])
+        if output_type is not None:
+            return LogitsProcessorList([output_type])
+        return None
 
 
 class LlamaCpp(Model):
