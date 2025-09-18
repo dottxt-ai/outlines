@@ -59,13 +59,7 @@ You can set default inference parameters when creating the model:
 ```python
 model = from_mistral(
     client,
-    "mistral-large-latest",
-    system_prompt="You are a helpful assistant specialized in data analysis.",
-    config={
-        "temperature": 0.7,
-        "top_p": 0.9,
-        "max_tokens": 1000
-    }
+    "mistral-large-latest"
 )
 ```
 
@@ -80,8 +74,9 @@ from pydantic import BaseModel
 # Multiple choice (via enum in JSON schema)
 sentiment = model.generate(
     "The movie was absolutely fantastic!",
-    Literal["positive", "negative", "neutral"]
+    output_type=Literal["positive", "negative", "neutral"]
 )
+
 
 # Structured object (Pydantic model)
 class Person(BaseModel):

@@ -1,4 +1,4 @@
-#test_mistral_type_adapter.py
+"""Tests for MistralTypeAdapter class."""
 
 import json
 import pytest
@@ -40,42 +40,23 @@ def adapter():
     return MistralTypeAdapter()
 
 
-@pytest.fixture
-def adapter_with_system():
-    return MistralTypeAdapter(system_prompt="You are a helpful assistant")
-
-
-def test_mistral_type_adapter_init_without_system():
-    adapter = MistralTypeAdapter()
-    assert adapter.system_prompt is None
-
-
-def test_mistral_type_adapter_init_with_system():
-    system_prompt = "You are helpful"
-    adapter = MistralTypeAdapter(system_prompt=system_prompt)
-    assert adapter.system_prompt == system_prompt
+def test_mistral_type_adapter_init(adapter):
+    """Test MistralTypeAdapter initialization."""
+    assert isinstance(adapter, MistralTypeAdapter)
 
 
 @patch('mistralai.UserMessage')
 def test_mistral_type_adapter_input_text(mock_user_msg, adapter):
+    """Test formatting string input."""
     message = "Hello world"
     result = adapter.format_input(message)
     assert result is not None
     mock_user_msg.assert_called_once_with(content=message)
 
 
-@patch('mistralai.SystemMessage')
-@patch('mistralai.UserMessage')
-def test_mistral_type_adapter_input_text_with_system(mock_user_msg, mock_system_msg, adapter_with_system):
-    message = "Hello world"
-    result = adapter_with_system.format_input(message)
-    assert result is not None
-    mock_system_msg.assert_called_once_with(content="You are a helpful assistant")
-    mock_user_msg.assert_called_once_with(content=message)
-
-
 @patch('mistralai.UserMessage')
 def test_mistral_type_adapter_input_list(mock_user_msg, adapter):
+    """Test formatting list input."""
     message_list = ["Hello world"]
     result = adapter.format_input(message_list)
     assert result is not None
@@ -86,6 +67,7 @@ def test_mistral_type_adapter_input_list(mock_user_msg, adapter):
 @patch('mistralai.AssistantMessage')
 @patch('mistralai.SystemMessage')
 def test_mistral_type_adapter_input_chat(mock_system_msg, mock_assistant_msg, mock_user_msg, adapter):
+    """Test formatting Chat input with system message."""
     chat = Chat([
         {"role": "system", "content": "You are helpful"},
         {"role": "user", "content": "Hello"},
@@ -99,17 +81,8 @@ def test_mistral_type_adapter_input_chat(mock_system_msg, mock_assistant_msg, mo
     mock_assistant_msg.assert_called_once_with(content="Hi there")
 
 
-@patch('mistralai.UserMessage')
-@patch('mistralai.SystemMessage')
-def test_mistral_type_adapter_input_chat_with_adapter_system(mock_system_msg, mock_user_msg, adapter_with_system):
-    chat = Chat([{"role": "user", "content": "Hello"}])
-    result = adapter_with_system.format_input(chat)
-    assert result is not None
-    mock_system_msg.assert_called_once_with(content="You are a helpful assistant")
-    mock_user_msg.assert_called_once_with(content="Hello")
-
-
 def test_mistral_type_adapter_input_invalid(adapter):
+    """Test formatting invalid input types."""
     @dataclass
     class Audio:
         file: str
@@ -122,6 +95,7 @@ def test_mistral_type_adapter_input_invalid(adapter):
 
 
 def test_mistral_type_adapter_input_list_invalid_content(adapter):
+    """Test formatting list input with invalid content."""
     with pytest.raises(ValueError, match="The first item in the list should be a string"):
         adapter.format_input([123])
 
@@ -130,31 +104,42 @@ def test_mistral_type_adapter_input_list_invalid_content(adapter):
 
 
 def test_mistral_type_adapter_input_chat_invalid_role(adapter):
+    """Test formatting Chat input with invalid role."""
     chat = Chat([{"role": "invalid", "content": "Hello"}])
     with pytest.raises(ValueError, match="Unsupported role: invalid"):
         adapter.format_input(chat)
 
 
 def test_mistral_type_adapter_output_none(adapter):
+    """Test formatting None output type."""
     result = adapter.format_output_type(None)
     assert result == {}
 
 
 def test_mistral_type_adapter_output_dict(adapter):
+    """Test formatting dict output type."""
     result = adapter.format_output_type(dict)
     assert result == {"type": "json_object"}
 
 
 def test_mistral_type_adapter_output_pydantic(adapter):
+    """Test formatting Pydantic model output type."""
     class TestModel(BaseModel):
         name: str
         age: int
 
     result = adapter.format_output_type(TestModel)
-    assert result == TestModel
+    assert isinstance(result, dict)
+    assert result["type"] == "json_schema"
+    assert result["json_schema"]["name"] == "testmodel"
+    assert result["json_schema"]["strict"] is True
+    assert "properties" in result["json_schema"]["schema"]
+    assert "name" in result["json_schema"]["schema"]["properties"]
+    assert "age" in result["json_schema"]["schema"]["properties"]
 
 
 def test_mistral_type_adapter_output_dataclass(adapter, schema):
+    """Test formatting dataclass output type."""
     @dataclass
     class User:
         user_id: int
@@ -169,6 +154,7 @@ def test_mistral_type_adapter_output_dataclass(adapter, schema):
 
 
 def test_mistral_type_adapter_output_typed_dict(adapter, schema):
+    """Test formatting TypedDict output type."""
     class User(TypedDict):
         user_id: int
         name: str
@@ -182,6 +168,7 @@ def test_mistral_type_adapter_output_typed_dict(adapter, schema):
 
 
 def test_mistral_type_adapter_output_genson_schema_builder(adapter):
+    """Test formatting Genson SchemaBuilder output type."""
     builder = SchemaBuilder()
     builder.add_schema({"type": "object", "properties": {}})
     builder.add_object({"hi": "there"})
@@ -203,6 +190,7 @@ def test_mistral_type_adapter_output_genson_schema_builder(adapter):
 
 
 def test_mistral_type_adapter_output_json_schema_str(adapter, schema):
+    """Test formatting JsonSchema output type from string."""
     schema_str = json.dumps(schema)
     result = adapter.format_output_type(JsonSchema(schema_str))
     assert isinstance(result, dict)
@@ -213,6 +201,7 @@ def test_mistral_type_adapter_output_json_schema_str(adapter, schema):
 
 
 def test_mistral_type_adapter_output_json_schema_dict(adapter, schema):
+    """Test formatting JsonSchema output type from dict."""
     result = adapter.format_output_type(JsonSchema(json.dumps(schema)))
     assert isinstance(result, dict)
     assert result["type"] == "json_schema"
@@ -222,6 +211,7 @@ def test_mistral_type_adapter_output_json_schema_dict(adapter, schema):
 
 
 def test_mistral_type_adapter_output_literal(adapter):
+    """Test formatting Literal output type."""
     result = adapter.format_output_type(Literal["Yes", "Maybe", "No"])
     assert isinstance(result, dict)
     assert result["type"] == "json_schema"
@@ -239,24 +229,28 @@ def test_mistral_type_adapter_output_literal(adapter):
 
 
 def test_mistral_type_adapter_output_unsupported_regex(adapter):
+    """Test formatting unsupported regex output type."""
     with pytest.raises(TypeError, match="Neither regex-based structured outputs.*dottxt instead"):
         adapter.format_output_type(regex(r"\d+"))
 
 
 def test_mistral_type_adapter_output_unsupported_cfg(adapter):
+    """Test formatting unsupported CFG output type."""
     with pytest.raises(TypeError, match="CFG-based structured outputs.*not available"):
         adapter.format_output_type(cfg("grammar"))
 
 
 def test_mistral_type_adapter_output_unsupported_type(adapter):
-    with pytest.raises(TypeError, match="The type `str` is not available"):
+    """Test formatting unsupported output types."""
+    with pytest.raises(TypeError, match="The type str is not available"):
         adapter.format_output_type(str)
 
-    with pytest.raises(TypeError, match="The type `int` is not available"):
+    with pytest.raises(TypeError, match="The type int is not available"):
         adapter.format_output_type(int)
 
 
 def test_mistral_type_adapter_format_json_schema_type(adapter):
+    """Test formatting JSON schema type."""
     schema_dict = {
         "type": "object",
         "properties": {"name": {"type": "string"}},
@@ -280,11 +274,13 @@ def test_mistral_type_adapter_format_json_schema_type(adapter):
 
 
 def test_mistral_type_adapter_format_json_mode_type(adapter):
+    """Test formatting JSON mode output type."""
     result = adapter.format_json_mode_type()
     assert result == {"type": "json_object"}
 
 
 def test_mistral_type_adapter_format_enum_output_type(adapter):
+    """Test formatting enum output type."""
     from enum import Enum
 
     class Color(Enum):
@@ -312,22 +308,27 @@ def test_mistral_type_adapter_format_enum_output_type(adapter):
 
 
 def test_mistral_type_adapter_create_message_content_string(adapter):
+    """Test creating message content from string."""
     result = adapter._create_message_content("Hello")
     assert result == "Hello"
 
 
 def test_mistral_type_adapter_create_message_content_list_valid(adapter):
+    """Test creating message content from valid list."""
     result = adapter._create_message_content(["Hello", "world"])
     assert result == "Hello"
 
 
 def test_mistral_type_adapter_create_message_content_list_invalid(adapter):
+    """Test creating message content from invalid list."""
     with pytest.raises(ValueError, match="The first item in the list should be a string"):
         adapter._create_message_content([123, "world"])
 
     with pytest.raises(ValueError, match="The first item in the list should be a string"):
         adapter._create_message_content([])
 
+
 def test_mistral_type_adapter_create_message_content_invalid_type(adapter):
+    """Test creating message content from invalid type."""
     with pytest.raises(ValueError, match="Invalid content type"):
         adapter._create_message_content(123)

@@ -36,16 +36,13 @@ def mock_mistral_client():
     mock_stream_chunk.data = mock_stream_data
     mock_client.chat.stream.return_value = [mock_stream_chunk, mock_stream_chunk]
 
-    # Parse response for Pydantic output
-    mock_parse_response = Mock()
-    mock_parse_choice = Mock()
-    mock_parse_message = Mock()
-    # Will be overridden in tests needing specific Pydantic models
-    mock_parse_message.parsed = None
-    mock_parse_message.content = '{"name": "Test", "age": 30}'
-    mock_parse_choice.message = mock_parse_message
-    mock_parse_response.choices = [mock_parse_choice]
-    mock_client.chat.parse.return_value = mock_parse_response
+    # Structured response (returns raw JSON string)
+    mock_structured_response = Mock()
+    mock_structured_choice = Mock()
+    mock_structured_message = Mock()
+    mock_structured_message.content = '{"name": "Test", "age": 30}'
+    mock_structured_choice.message = mock_structured_message
+    mock_structured_response.choices = [mock_structured_choice]
 
     # Literal response
     mock_literal_response = Mock()
@@ -68,8 +65,10 @@ def mock_mistral_client():
     mock_multi_response.choices = [mock_multi_choice1, mock_multi_choice2]
 
     def complete_side_effect(*args, **kwargs):
-        if 'response_format' in kwargs and kwargs['response_format'].get('type') == 'json_schema' and kwargs['response_format']['json_schema']['name'] == 'choice_schema':
-            return mock_literal_response
+        if 'response_format' in kwargs and kwargs['response_format'].get('type') == 'json_schema':
+            if kwargs['response_format']['json_schema']['name'] == 'choice_schema':
+                return mock_literal_response
+            return mock_structured_response
         # Check if we should return multi-response (only when explicitly set)
         if hasattr(mock_client, '_return_multi') and mock_client._return_multi:
             return mock_multi_response
@@ -77,39 +76,22 @@ def mock_mistral_client():
         return mock_response
 
     mock_client.chat.complete.side_effect = complete_side_effect
-    return mock_client, mock_multi_response, mock_parse_response
+    return mock_client, mock_multi_response
 
 class TestMistralTypeAdapter:
     """Test the MistralTypeAdapter class."""
 
-    def test_init_without_system_prompt(self):
-        """Test MistralTypeAdapter initialization without system prompt."""
+    def test_init(self):
+        """Test MistralTypeAdapter initialization."""
         adapter = MistralTypeAdapter()
-        assert adapter.system_prompt is None
-
-    def test_init_with_system_prompt(self):
-        """Test MistralTypeAdapter initialization with system prompt."""
-        system_prompt = "You are a helpful assistant"
-        adapter = MistralTypeAdapter(system_prompt=system_prompt)
-        assert adapter.system_prompt == system_prompt
+        assert isinstance(adapter, MistralTypeAdapter)
 
     @patch('mistralai.UserMessage')
-    def test_format_str_input_without_system(self, mock_user_msg):
-        """Test formatting string input without system prompt."""
+    def test_format_str_input(self, mock_user_msg):
+        """Test formatting string input."""
         adapter = MistralTypeAdapter()
         result = adapter.format_input("Hello world")
         assert result is not None
-        mock_user_msg.assert_called_once_with(content="Hello world")
-
-    @patch('mistralai.SystemMessage')
-    @patch('mistralai.UserMessage')
-    def test_format_str_input_with_system(self, mock_user_msg, mock_system_msg):
-        """Test formatting string input with system prompt."""
-        system_prompt = "You are helpful"
-        adapter = MistralTypeAdapter(system_prompt=system_prompt)
-        result = adapter.format_input("Hello world")
-        assert result is not None
-        mock_system_msg.assert_called_once_with(content=system_prompt)
         mock_user_msg.assert_called_once_with(content="Hello world")
 
     @patch('mistralai.UserMessage')
@@ -124,7 +106,7 @@ class TestMistralTypeAdapter:
     @patch('mistralai.AssistantMessage')
     @patch('mistralai.SystemMessage')
     def test_format_chat_input(self, mock_system_msg, mock_assistant_msg, mock_user_msg):
-        """Test formatting Chat input."""
+        """Test formatting Chat input with system message."""
         adapter = MistralTypeAdapter()
         chat = Chat([
             {"role": "system", "content": "You are helpful"},
@@ -137,20 +119,6 @@ class TestMistralTypeAdapter:
         mock_system_msg.assert_called_once_with(content="You are helpful")
         assert mock_user_msg.call_count == 2
         mock_assistant_msg.assert_called_once_with(content="Hi there")
-
-    @patch('mistralai.UserMessage')
-    @patch('mistralai.SystemMessage')
-    def test_format_chat_input_with_adapter_system_prompt(self, mock_system_msg, mock_user_msg):
-        """Test formatting Chat input with adapter system prompt when chat has no system message."""
-        system_prompt = "You are helpful"
-        adapter = MistralTypeAdapter(system_prompt=system_prompt)
-        chat = Chat([
-            {"role": "user", "content": "Hello"}
-        ])
-        result = adapter.format_input(chat)
-        assert result is not None
-        mock_system_msg.assert_called_once_with(content=system_prompt)
-        mock_user_msg.assert_called_once_with(content="Hello")
 
     def test_format_invalid_input_type(self):
         """Test formatting invalid input type."""
@@ -177,7 +145,12 @@ class TestMistralTypeAdapter:
             age: int
         adapter = MistralTypeAdapter()
         result = adapter.format_output_type(TestModel)
-        assert result == TestModel
+        assert result["type"] == "json_schema"
+        assert result["json_schema"]["name"] == "testmodel"
+        assert result["json_schema"]["strict"] is True
+        assert "properties" in result["json_schema"]["schema"]
+        assert "name" in result["json_schema"]["schema"]["properties"]
+        assert "age" in result["json_schema"]["schema"]["properties"]
 
     def test_format_output_type_json_schema(self):
         """Test formatting JsonSchema output type."""
@@ -221,33 +194,14 @@ class TestMistral:
 
     def test_init_basic(self, mock_mistral_client):
         """Test basic Mistral initialization."""
-        client, _, _ = mock_mistral_client
+        client, _ = mock_mistral_client
         model = Mistral(client=client, model_name="mistral-large-latest")
         assert model.client == client
         assert model.model_name == "mistral-large-latest"
-        assert model.system_prompt is None
-        assert model.config == {}
-
-    def test_init_with_system_prompt_and_config(self, mock_mistral_client):
-        """Test Mistral initialization with system prompt and config."""
-        client, _, _ = mock_mistral_client
-        system_prompt = "You are a helpful assistant"
-        config = {"temperature": 0.7, "max_tokens": 100}
-        model = Mistral(
-            client=client,
-            model_name="mistral-large-latest",
-            system_prompt=system_prompt,
-            config=config
-        )
-        assert model.client == client
-        assert model.model_name == "mistral-large-latest"
-        assert model.system_prompt == system_prompt
-        assert model.config == config
-        assert model.type_adapter.system_prompt == system_prompt
 
     def test_generate_single_string(self, mock_mistral_client):
         """Test generating with a single string prompt."""
-        client, _, _ = mock_mistral_client
+        client, _ = mock_mistral_client
         # Ensure we don't use multi-response for this test
         if hasattr(client, '_return_multi'):
             delattr(client, '_return_multi')
@@ -258,51 +212,48 @@ class TestMistral:
         call_args = client.chat.complete.call_args[1]
         assert call_args["model"] == "mistral-large-latest"
 
-    def test_generate_with_config_merge(self, mock_mistral_client):
-        """Test that config is properly merged with inference kwargs."""
-        client, _, _ = mock_mistral_client
+    def test_generate_with_kwargs(self, mock_mistral_client):
+        """Test generating with inference kwargs."""
+        client, _ = mock_mistral_client
         # Ensure we don't use multi-response for this test
         if hasattr(client, '_return_multi'):
             delattr(client, '_return_multi')
-        config = {"temperature": 0.5, "max_tokens": 50}
-        model = Mistral(
-            client=client,
-            model_name="mistral-large-latest",
-            config=config
-        )
-        result = model.generate("Hello", temperature=0.8, top_p=0.9)
-        assert result is not None
+        model = Mistral(client=client, model_name="mistral-large-latest")
+        result = model.generate("Hello", temperature=0.8, max_tokens=50, top_p=0.9)
+        assert result == "Test response"
         call_args = client.chat.complete.call_args[1]
-        assert call_args["temperature"] == 0.8  # overridden
-        assert call_args["max_tokens"] == 50     # from config
-        assert call_args["top_p"] == 0.9         # new parameter
+        assert call_args["temperature"] == 0.8
+        assert call_args["max_tokens"] == 50
+        assert call_args["top_p"] == 0.9
 
     def test_generate_with_output_type(self, mock_mistral_client):
         """Test generating with structured output type."""
-        client, _, mock_parse_response = mock_mistral_client
+        client, _ = mock_mistral_client
         class Person(BaseModel):
             name: str
             age: int
-        # Set the parsed response to match the test's Person class
-        mock_parse_response.choices[0].message.parsed = Person(name="Test", age=30)
         model = Mistral(client=client)
         result = model.generate("Create a person", output_type=Person)
-        assert isinstance(result, Person)
-        assert result.name == "Test"
-        assert result.age == 30
-        client.chat.parse.assert_called_once()
+        assert isinstance(result, str)
+        parsed = json.loads(result)
+        assert isinstance(parsed, dict)
+        assert parsed["name"] == "Test"
+        assert parsed["age"] == 30
+        client.chat.complete.assert_called_once()
 
     def test_generate_with_literal(self, mock_mistral_client):
         """Test generating with Literal output type."""
-        client, _, _ = mock_mistral_client
+        client, _ = mock_mistral_client
         model = Mistral(client=client)
         result = model.generate("Is this an income statement?", output_type=Literal["Yes", "Maybe", "No"])
-        assert result == "Yes"
+        assert isinstance(result, str)
+        parsed = json.loads(result)
+        assert parsed["choice"] == "Yes"
         client.chat.complete.assert_called_once()
 
     def test_generate_multiple_choices(self, mock_mistral_client):
         """Test generating with multiple choices returned."""
-        client, mock_multi_response, _ = mock_mistral_client
+        client, mock_multi_response = mock_mistral_client
         client._return_multi = True  # Set flag for multi-response
         model = Mistral(client=client)
         result = model.generate("Hello")
@@ -311,7 +262,7 @@ class TestMistral:
 
     def test_generate_stream(self, mock_mistral_client):
         """Test streaming generation."""
-        client, _, _ = mock_mistral_client
+        client, _ = mock_mistral_client
         model = Mistral(client=client, model_name="mistral-large-latest")
         chunks = list(model.generate_stream("Hello world"))
         assert chunks == ["Streamed ", "Streamed "]
@@ -319,7 +270,7 @@ class TestMistral:
 
     def test_generate_api_error(self, mock_mistral_client):
         """Test API error handling."""
-        client, _, _ = mock_mistral_client
+        client, _ = mock_mistral_client
         client.chat.complete.side_effect = Exception("API Error")
         model = Mistral(client=client)
         with pytest.raises(RuntimeError, match="Error calling Mistral API"):
@@ -327,7 +278,7 @@ class TestMistral:
 
     def test_generate_schema_error(self, mock_mistral_client):
         """Test schema error handling."""
-        client, _, _ = mock_mistral_client
+        client, _ = mock_mistral_client
         client.chat.complete.side_effect = Exception("Invalid schema format")
         model = Mistral(client=client)
         with pytest.raises(TypeError, match="Mistral does not support your schema"):
@@ -335,7 +286,7 @@ class TestMistral:
 
     def test_generate_batch_not_implemented(self, mock_mistral_client):
         """Test that batch generation raises NotImplementedError."""
-        client, _, _ = mock_mistral_client
+        client, _ = mock_mistral_client
         model = Mistral(client=client)
         with pytest.raises(NotImplementedError, match="does not support batch inference"):
             model.generate_batch(["Hello", "World"])
@@ -345,39 +296,24 @@ class TestFromMistral:
 
     def test_from_mistral_basic(self, mock_mistral_client):
         """Test basic from_mistral function."""
-        client, _, _ = mock_mistral_client
+        client, _ = mock_mistral_client
         model = from_mistral(client, "mistral-large-latest")
         assert isinstance(model, Mistral)
         assert model.client == client
         assert model.model_name == "mistral-large-latest"
-        assert model.system_prompt is None
-        assert model.config == {}
-
-    def test_from_mistral_with_system_prompt_and_config(self, mock_mistral_client):
-        """Test from_mistral with system prompt and config."""
-        client, _, _ = mock_mistral_client
-        system_prompt = "You are helpful"
-        config = {"temperature": 0.8}
-        model = from_mistral(
-            client,
-            "mistral-large-latest",
-            system_prompt=system_prompt,
-            config=config
-        )
-        assert model.system_prompt == system_prompt
-        assert model.config == config
 
 class TestMistralInputTypes:
     """Test different input types with Mistral model."""
 
     def test_chat_input(self, mock_mistral_client):
-        """Test Chat input type."""
-        client, _, _ = mock_mistral_client
+        """Test Chat input type with system message."""
+        client, _ = mock_mistral_client
         # Ensure we don't use multi-response for this test
         if hasattr(client, '_return_multi'):
             delattr(client, '_return_multi')
         model = Mistral(client=client)
         chat = Chat([
+            {"role": "system", "content": "You are helpful"},
             {"role": "user", "content": "Hello"},
             {"role": "assistant", "content": "Hi!"},
             {"role": "user", "content": "How are you?"}
@@ -388,7 +324,7 @@ class TestMistralInputTypes:
 
     def test_list_input(self, mock_mistral_client):
         """Test list input type."""
-        client, _, _ = mock_mistral_client
+        client, _ = mock_mistral_client
         # Ensure we don't use multi-response for this test
         if hasattr(client, '_return_multi'):
             delattr(client, '_return_multi')
@@ -435,15 +371,17 @@ class TestMistralIntegration:
         prompt = """Generate a JSON object representing a person with name and age.
         Return only the JSON, no other text."""
         result = model.generate(prompt, output_type=Person)
-        assert isinstance(result, Person)
-        assert hasattr(result, "name")
-        assert hasattr(result, "age")
-        assert isinstance(result.name, str)
-        assert isinstance(result.age, int)
+        assert isinstance(result, str)
+        parsed = json.loads(result)
+        assert isinstance(parsed, dict)
+        assert "name" in parsed
+        assert isinstance(parsed["name"], str)
+        assert "age" in parsed
+        assert isinstance(parsed["age"], int)
 
     def test_streaming_generation(self, mock_mistral_client):
         """Test streaming text generation."""
-        client, _, _ = mock_mistral_client
+        client, _ = mock_mistral_client
         model = Mistral(client=client, model_name="mistral-large-latest")
         chunks = list(model.generate_stream("Write a short story about a robot."))
         assert len(chunks) > 0
@@ -459,12 +397,12 @@ class TestMistralIntegration:
 
     def test_mistral_with_outlines(self, mock_mistral_client):
         """Test Mistral integration with outlines generation functions."""
-        client, _, _ = mock_mistral_client
+        client, _ = mock_mistral_client
         # Ensure we don't use multi-response for this test
         if hasattr(client, '_return_multi'):
             delattr(client, '_return_multi')
 
-        # Override the mock response to return JSON and remove side_effect
+        # Override the mock response to return JSON
         json_response = Mock()
         json_choice = Mock()
         json_message = Mock()
@@ -504,23 +442,19 @@ class TestMistralIntegration:
             company_name: str
             employees: list[Employee]
 
-        # System prompt to enforce constraints
-        system_prompt = "You are a business data generator. All employees must work in the IT department, and addresses must include a valid US city."
-
         # Create model with real Mistral client
-        model = from_mistral(
-            mistral_client,
-            model_name="mistral-large-latest",
-            system_prompt=system_prompt
-        )
+        model = from_mistral(mistral_client, model_name="mistral-large-latest")
 
-        # Generate the output
-        prompt = "Generate a JSON object representing a company with at least two employees, including their names, roles, IT department, and addresses with valid US cities. Return only the JSON, no other text."
+        # Generate the output with system message in Chat
+        prompt = Chat([
+            {"role": "system", "content": "You are a business data generator. All employees must work in the IT department, and addresses must include a valid US city."},
+            {"role": "user", "content": "Generate a JSON object representing a company with at least two employees, including their names, roles, IT department, and addresses with valid US cities. Return only the JSON, no other text."}
+        ])
         result = model.generate(prompt, output_type=Company)
 
         # Verify the output
-        assert isinstance(result, Company)
-        parsed = result.model_dump()
+        assert isinstance(result, str)
+        parsed = json.loads(result)
         assert isinstance(parsed, dict)
         assert "company_name" in parsed
         assert "employees" in parsed
