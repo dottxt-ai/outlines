@@ -4,14 +4,22 @@ import json
 from typing import (
     TYPE_CHECKING,
     Any,
+    AsyncGenerator,
+    AsyncIterator,
+    Coroutine,
     Iterator,
+    List,
+    Dict,
     Optional,
     Union,
 )
 from functools import singledispatchmethod
+
 from pydantic import BaseModel, TypeAdapter
+
 from outlines.inputs import Chat, Image
-from outlines.models.base import Model, ModelTypeAdapter
+from outlines.models.base import AsyncModel, Model, ModelTypeAdapter
+from outlines.models.utils import set_additional_properties_false_json_schema
 from outlines.types import JsonSchema, Regex, CFG
 from outlines.types.utils import (
     is_dataclass,
@@ -22,22 +30,18 @@ from outlines.types.utils import (
     is_literal,
     get_enum_from_literal,
 )
-from outlines.models.utils import (
-    set_additional_properties_false_json_schema
-)
 
 if TYPE_CHECKING:
     from mistralai import Mistral as MistralClient
 
-__all__ = ["Mistral", "from_mistral"]
+__all__ = ["Mistral", "AsyncMistral", "from_mistral"]
 
 
 class MistralTypeAdapter(ModelTypeAdapter):
     """Type adapter for the `Mistral` model.
 
-    `MistralTypeAdapter` is responsible for preparing the arguments to Mistral's
-    client `chat.complete` or `chat.parse` methods: the input (prompt or chat messages),
-    as well as the output type (JSON schema, Pydantic model, or enum-based choices).
+    Prepares arguments for Mistral's client `chat.complete`, `chat.complete_async`, or `chat.stream` methods.
+    Handles input (prompt or chat messages) and output type (JSON schema, Pydantic model, or enum-based choices).
     """
 
     @singledispatchmethod
@@ -83,7 +87,7 @@ class MistralTypeAdapter(ModelTypeAdapter):
         Parameters
         ----------
         model_input : list
-            The input list, where the first element is a string prompt.
+            The input list, containing a string prompt and optionally Image objects.
 
         Returns
         -------
@@ -122,41 +126,54 @@ class MistralTypeAdapter(ModelTypeAdapter):
                 raise ValueError(f"Unsupported role: {role}")
         return messages
 
-    def _create_message_content(self, content: Union[str, list]) -> Union[str, list]:
+    def _create_message_content(self, content: Union[str, list]) -> Union[str, List[Dict[str, Union[str, Dict[str, str]]]]]:
         """Create message content from an input.
 
         Parameters
         ----------
         content : Union[str, list]
-            The content to format, either a string or a list starting with a string.
+            The content to format, either a string or a list containing a string and optionally Image objects.
 
         Returns
         -------
-        Union[str, list]
-            The formatted content.
+        Union[str, List[Dict[str, Union[str, Dict[str, str]]]]]
+            The formatted content, either a string or a list of content parts (text and image URLs).
 
         Raises
         ------
         ValueError
-            If the content type is invalid or the list doesn't start with a string.
+            If the content type is invalid, the list is empty, or contains unsupported types.
         """
         if isinstance(content, str):
             return content
         elif isinstance(content, list):
-            if content and isinstance(content[0], str):
+            if not content:
+                raise ValueError("Content list cannot be empty.")
+            if not isinstance(content[0], str):
+                raise ValueError("The first item in the list should be a string.")
+            if len(content) == 1:
                 return content[0]
-            else:
-                raise ValueError(
-                    "Mistral API currently supports text inputs. "
-                    "The first item in the list should be a string."
-                )
+            content_parts: List[Dict[str, Union[str, Dict[str, str]]]] = [{"type": "text", "text": content[0]}]
+            for item in content[1:]:
+                if isinstance(item, Image):
+                    data_url = f"data:{item.image_format};base64,{item.image_str}"
+                    content_parts.append({
+                        "type": "image_url",
+                        "image_url": {"url": data_url}
+                    })
+                else:
+                    raise ValueError(
+                        f"Invalid item type in content list: {type(item)}. "
+                        "Expected Image objects after the first string."
+                    )
+            return content_parts
         else:
             raise ValueError(
                 f"Invalid content type: {type(content)}. "
-                "The content must be a string or a list starting with a string."
+                "Content must be a string or a list starting with a string followed by optional Image objects."
             )
 
-    def format_output_type(self, output_type: Optional[Any] = None) -> Union[dict, Any]:
+    def format_output_type(self, output_type: Optional[Any] = None) -> dict:
         """Generate the `response_format` argument to pass to the client.
 
         Parameters
@@ -166,8 +183,8 @@ class MistralTypeAdapter(ModelTypeAdapter):
 
         Returns
         -------
-        Union[dict, Any]
-            The `response_format` dict or a Pydantic model for chat.parse.
+        dict
+            The `response_format` dict to pass to the client.
         """
         if isinstance(output_type, Regex):
             raise TypeError(
@@ -192,7 +209,7 @@ class MistralTypeAdapter(ModelTypeAdapter):
             return {"type": "json_object"}
         elif is_dataclass(output_type):
             schema = TypeAdapter(output_type).json_schema()
-            return self.format_json_schema_type(schema, output_type.__name__)
+            return self.format_json_schema_type(schema, getattr(output_type, "__name__", "Schema"))
         elif is_typed_dict(output_type):
             schema = TypeAdapter(output_type).json_schema()
             return self.format_json_schema_type(schema, getattr(output_type, "__name__", "Schema"))
@@ -279,9 +296,9 @@ class MistralTypeAdapter(ModelTypeAdapter):
 class Mistral(Model):
     """Thin wrapper around the `mistralai.Mistral` client.
 
-    This wrapper converts input and output types specified by the user to
-    arguments for the `mistralai.Mistral` client's `chat.complete` or `chat.parse` methods.
+    Converts input and output types to arguments for the `mistralai.Mistral` client's `chat.complete` or `chat.stream` methods.
     """
+
     def __init__(self, client: "MistralClient", model_name: Optional[str] = None):
         """
         Parameters
@@ -431,6 +448,167 @@ class Mistral(Model):
         """
         model = model_name or self.model_name
         if model is None:
+            return False
+        return "codestral-mamba" not in model.lower()
+
+
+class AsyncMistral(AsyncModel):
+    """Async thin wrapper around the `mistralai.Mistral` client.
+
+    Converts input and output types to arguments for the `mistralai.Mistral` client's async methods (`chat.complete_async` or `chat.stream`).
+    """
+
+    def __init__(self, client: "MistralClient", model_name: Optional[str] = None):
+        """
+        Parameters
+        ----------
+        client : MistralClient
+            A mistralai.Mistral client instance.
+        model_name : Optional[str]
+            The name of the model to use.
+        """
+        self.client = client
+        self.model_name = model_name
+        self.type_adapter = MistralTypeAdapter()
+
+    async def generate(
+        self,
+        model_input: Union[Chat, list, str],
+        output_type: Optional[Any] = None,
+        **inference_kwargs: Any,
+    ) -> Union[str, list[str]]:
+        """Generate a response from the model asynchronously.
+
+        Parameters
+        ----------
+        model_input : Union[Chat, list, str]
+            The prompt or chat messages to generate a response from.
+        output_type : Optional[Any]
+            The desired format of the response (e.g., JSON schema).
+        **inference_kwargs : Any
+            Additional keyword arguments to pass to the client.
+
+        Returns
+        -------
+        Union[str, list[str]]
+            The response generated by the model as text.
+        """
+        messages = self.type_adapter.format_input(model_input)
+        response_format = self.type_adapter.format_output_type(output_type)
+        if "model" not in inference_kwargs and self.model_name is not None:
+            inference_kwargs["model"] = self.model_name
+
+        try:
+            # Remove async context manager since client may not support it
+            result = await self.client.chat.complete_async(
+                messages=messages,
+                response_format=response_format,
+                stream=False,
+                **inference_kwargs,
+            )
+        except Exception as e:
+            if "schema" in str(e).lower() or "json_schema" in str(e).lower():
+                raise TypeError(
+                    f"Mistral does not support your schema: {e}. "
+                    "Try a local model or dottxt instead."
+                )
+            else:
+                raise RuntimeError(f"Mistral API error: {e}") from e
+
+        messages = [choice.message for choice in result.choices]
+        return messages[0].content if len(messages) == 1 else [m.content for m in messages]
+
+    async def generate_batch(
+        self,
+        model_input,
+        output_type=None,
+        **inference_kwargs,
+    ):
+        """Generate responses for a batch of inputs asynchronously.
+
+        Parameters
+        ----------
+        model_input
+            The batch of inputs to generate responses from.
+        output_type
+            The desired format of the responses.
+        **inference_kwargs
+            Additional keyword arguments to pass to the client.
+
+        Raises
+        ------
+        NotImplementedError
+            Batch inference is not supported by the Mistral API.
+        """
+        raise NotImplementedError(
+            "The mistralai library does not support batch inference."
+        )
+
+    async def generate_stream(self, model_input, output_type=None, **inference_kwargs):
+        """
+        Generate text from the model as an async stream of chunks.
+
+        Uses `stream_async` if streaming, otherwise `complete_async`.
+
+        Args:
+            model_input: str, list, or chat input to generate from.
+            output_type: Optional type for structured output.
+            **inference_kwargs: Extra kwargs like "model" name.
+
+        Yields:
+            str: chunks of text as they are streamed.
+        """
+        messages = self.type_adapter.format_input(model_input)
+        self.type_adapter.format_output_type(output_type)  # for side-effects if needed
+
+        model_name = inference_kwargs.get("model", self.model_name)
+        stream = inference_kwargs.get("stream", True)  # default to streaming
+
+        try:
+            if stream:
+                # async iterator for streaming
+                response = await self.client.chat.stream_async(
+                    model=model_name,
+                    messages=messages
+                )
+                async for chunk in response:
+                    # Only yield non-empty chunks
+                    if (
+                        hasattr(chunk, "data")
+                        and chunk.data.choices
+                        and len(chunk.data.choices) > 0
+                        and hasattr(chunk.data.choices[0], "delta")
+                        and chunk.data.choices[0].delta.content is not None
+                    ):
+                        yield chunk.data.choices[0].delta.content
+            else:
+                # non-streaming call
+                res = await self.client.chat.complete_async(
+                    model=model_name,
+                    messages=messages
+                )
+                # The SDK response has choices -> message -> content
+                content = res.choices[0].message.content
+                yield content
+
+        except Exception as e:
+            raise RuntimeError(f"Mistral API error: {e}") from e
+
+    def supports_structured_output(self, model_name: Optional[str] = None) -> bool:
+        """Check if the model supports structured output.
+
+        Parameters
+        ----------
+        model_name : Optional[str]
+            The name of the model to check (defaults to instance's model_name).
+
+        Returns
+        -------
+        bool
+            True if the model supports structured output, False otherwise.
+        """
+        model = model_name or self.model_name
+        if model is None:
             return True
         return "codestral-mamba" not in model.lower()
 
@@ -438,7 +616,8 @@ class Mistral(Model):
 def from_mistral(
     client: "MistralClient",
     model_name: Optional[str] = None,
-) -> Mistral:
+    async_client: bool = False,
+) -> Union[Mistral, AsyncMistral]:
     """Create an Outlines Mistral model instance from a mistralai.Mistral client.
 
     Parameters
@@ -447,10 +626,19 @@ def from_mistral(
         A mistralai.Mistral client instance.
     model_name : Optional[str]
         The name of the model to use.
+    async_client : bool
+        If True, return an AsyncMistral instance; otherwise, return a Mistral instance.
 
     Returns
     -------
-    Mistral
-        An Outlines Mistral model instance.
+    Union[Mistral, AsyncMistral]
+        An Outlines Mistral or AsyncMistral model instance.
     """
-    return Mistral(client, model_name)
+    from mistralai import Mistral as MistralClient
+
+    if not isinstance(client, MistralClient):
+        raise ValueError(
+            "Invalid client type. The client must be an instance of mistralai.Mistral."
+        )
+
+    return AsyncMistral(client, model_name) if async_client else Mistral(client, model_name)

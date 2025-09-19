@@ -99,8 +99,9 @@ def test_mistral_type_adapter_input_list_invalid_content(adapter):
     with pytest.raises(ValueError, match="The first item in the list should be a string"):
         adapter.format_input([123])
 
-    with pytest.raises(ValueError, match="The first item in the list should be a string"):
+    with pytest.raises(ValueError, match="Content list cannot be empty."):
         adapter.format_input([])
+
 
 
 def test_mistral_type_adapter_input_chat_invalid_role(adapter):
@@ -313,9 +314,11 @@ def test_mistral_type_adapter_create_message_content_string(adapter):
     assert result == "Hello"
 
 
+
 def test_mistral_type_adapter_create_message_content_list_valid(adapter):
     """Test creating message content from valid list."""
-    result = adapter._create_message_content(["Hello", "world"])
+    # Test with single string (should return the string)
+    result = adapter._create_message_content(["Hello"])
     assert result == "Hello"
 
 
@@ -324,9 +327,18 @@ def test_mistral_type_adapter_create_message_content_list_invalid(adapter):
     with pytest.raises(ValueError, match="The first item in the list should be a string"):
         adapter._create_message_content([123, "world"])
 
-    with pytest.raises(ValueError, match="The first item in the list should be a string"):
+    with pytest.raises(ValueError, match="Content list cannot be empty."):
         adapter._create_message_content([])
 
+    # Test that additional non-Image items are rejected
+    from outlines.inputs import Image
+    from PIL import Image as PILImage
+
+    # Mock an Image object
+    mock_image = type('MockImage', (), {'image_format': 'jpeg', 'image_str': 'mock_base64'})()
+
+    with pytest.raises(ValueError, match="Invalid item type in content list"):
+        adapter._create_message_content(["Hello", "world", mock_image])
 
 def test_mistral_type_adapter_create_message_content_invalid_type(adapter):
     """Test creating message content from invalid type."""
