@@ -421,178 +421,8 @@ class TestMistralInputTypes:
 
 
 class AnimalClassification(BaseModel):
-    image_subject: Literal["cat", "dog", "other", "not an animal"]
+    image_subject: Literal["dog", "not an animal", "cat", "other"]
     specific_kind: str
-
-
-@pytest.mark.integration
-class TestMistralIntegration:
-    @pytest.fixture
-    def api_key(self):
-        api_key = os.getenv("MISTRAL_API_KEY")
-        if not api_key:
-            pytest.skip("MISTRAL_API_KEY environment variable not set")
-        return api_key
-
-    @pytest.fixture
-    def mistral_client(self, api_key):
-        try:
-            from mistralai import Mistral as MistralClient
-            return MistralClient(api_key=api_key)
-        except ImportError:
-            pytest.skip("mistralai package not installed")
-
-    def test_simple_generation(self, mistral_client):
-        model = from_mistral(mistral_client, "mistral-small-latest")
-        result = model.generate("What is 2+2? Answer in one sentence.")
-        assert isinstance(result, str)
-        assert len(result) > 0
-        assert "4" in result
-
-    def test_structured_generation_json(self, mistral_client):
-        class Person(BaseModel):
-            name: str
-            age: int
-        model = from_mistral(mistral_client, "mistral-large-latest")
-        prompt = """Generate a JSON object representing a person with name and age.
-        Return only the JSON, no other text."""
-        result = model.generate(prompt, output_type=Person)
-        assert isinstance(result, str)
-        parsed = json.loads(result)
-        assert isinstance(parsed, dict)
-        assert "name" in parsed
-        assert isinstance(parsed["name"], str)
-        assert "age" in parsed
-        assert isinstance(parsed["age"], int)
-
-    def test_streaming_generation(self, mock_mistral_client):
-        client, _ = mock_mistral_client
-        model = Mistral(client=client, model_name="mistral-large-latest")
-        chunks = list(model.generate_stream("Write a short story about a robot."))
-        assert len(chunks) > 0
-        assert all(isinstance(chunk, str) for chunk in chunks)
-        client.chat.stream.assert_called_once()
-
-    def test_batch_generation(self, mistral_client):
-        model = from_mistral(mistral_client, "mistral-large-latest")
-        prompts = ["What is Python?", "What is JavaScript?"]
-        with pytest.raises(NotImplementedError, match="does not support batch inference"):
-            model.generate_batch(prompts)
-
-    def test_mistral_with_outlines(self, mock_mistral_client):
-        client, _ = mock_mistral_client
-        if hasattr(client, '_return_multi'):
-            delattr(client, '_return_multi')
-
-        json_response = Mock()
-        json_choice = Mock()
-        json_message = Mock()
-        json_message.content = '{"name": "John", "age": 30}'
-        json_choice.message = json_message
-        json_response.choices = [json_choice]
-        client.chat.complete.side_effect = None
-        client.chat.complete.return_value = json_response
-
-        model = from_mistral(client, "mistral-large-latest")
-        result = model.generate("Generate a person")
-        assert isinstance(result, str)
-        parsed = json.loads(result)
-        assert isinstance(parsed, dict)
-        assert "name" in parsed
-        assert parsed["name"] == "John"
-        assert "age" in parsed
-        assert parsed["age"] == 30
-
-    def test_mistral_with_outlines_real(self, mistral_client):
-        class Address(BaseModel):
-            street: str
-            city: str
-            zip_code: str
-
-        class Employee(BaseModel):
-            name: str
-            role: str
-            department: str
-            address: Address
-
-        class Company(BaseModel):
-            company_name: str
-            employees: list[Employee]
-
-        model = from_mistral(mistral_client, model_name="mistral-large-latest")
-        prompt = Chat([
-            {"role": "system", "content": "You are a business data generator. All employees must work in the IT department, and addresses must include a valid US city."},
-            {"role": "user", "content": "Generate a JSON object representing a company with at least two employees, including their names, roles, IT department, and addresses with valid US cities. Return only the JSON, no other text."}
-        ])
-        result = model.generate(prompt, output_type=Company)
-        assert isinstance(result, str)
-        parsed = json.loads(result)
-        assert isinstance(parsed, dict)
-        assert "company_name" in parsed
-        assert "employees" in parsed
-        assert isinstance(parsed["employees"], list)
-        assert len(parsed["employees"]) >= 2
-        for employee in parsed["employees"]:
-            assert employee["department"] == "IT"
-            assert isinstance(employee["name"], str)
-            assert len(employee["name"]) > 0
-            assert isinstance(employee["role"], str)
-            assert len(employee["role"]) > 0
-            assert isinstance(employee["address"], dict)
-            assert isinstance(employee["address"]["city"], str)
-            assert len(employee["address"]["city"]) > 0
-            assert isinstance(employee["address"]["street"], str)
-            assert len(employee["address"]["street"]) > 0
-            assert isinstance(employee["address"]["zip_code"], str)
-            assert len(employee["address"]["zip_code"]) > 0
-
-    def test_real_image_classification(self, mistral_client):
-        image_url = "https://upload.wikimedia.org/wikipedia/commons/7/71/Charmonty_Norfolkterrier.jpg"
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
-                          'AppleWebKit/537.36 (KHTML, like Gecko) '
-                          'Chrome/91.0.4472.124 Safari/537.36'
-        }
-        response = requests.get(image_url, headers=headers, timeout=30)
-        response.raise_for_status()
-        content_type = response.headers.get('content-type', '').lower()
-        if not any(img_type in content_type for img_type in ['image/', 'jpeg', 'jpg', 'png']):
-            raise ValueError(f"Expected image content, got: {content_type}")
-        pil_image = PILImage.open(io.BytesIO(response.content))
-
-        image = Image(pil_image)
-        model = from_mistral(mistral_client, "pixtral-12b-2409")
-        prompt = """Look at this image and classify what you see.
-        Respond with JSON in exactly this format:
-        {
-            "image_subject": "cat" | "dog" | "other" | "not an animal",
-            "specific_kind": "breed name if cat/dog, species if other, or 'hotdog' if not an animal"
-        }"""
-        result = model.generate([prompt, image], output_type=AnimalClassification)
-        parsed = json.loads(result)
-        assert parsed["image_subject"] == "dog"
-        assert isinstance(parsed["specific_kind"], str)
-        assert len(parsed["specific_kind"]) > 0
-
-    def test_image_classification_simple(self, mistral_client):
-        pil_image = PILImage.new('RGB', (100, 100), color='red')
-        buffer = io.BytesIO()
-        pil_image.save(buffer, format="PNG")
-        buffer.seek(0)
-        pil_image = PILImage.open(buffer)
-
-        image = Image(pil_image)
-        model = from_mistral(mistral_client, "pixtral-12b-2409")
-        prompt = """Look at this image and classify what you see. If the image does not clearly depict a cat or dog, classify it as 'not an animal' with 'hotdog' as the specific kind.
-        Respond with JSON in exactly this format:
-        {
-            "image_subject": "cat" | "dog" | "not an animal",
-            "specific_kind": "breed name if cat/dog, or 'hotdog' if not an animal"
-        }"""
-        result = model.generate([prompt, image], output_type=AnimalClassification)
-        parsed = json.loads(result)
-        assert parsed["image_subject"] == "not an animal"
-        assert parsed["specific_kind"] == "hotdog"
 
 
 class TestAsyncMistral:
@@ -789,6 +619,187 @@ class TestAsyncMistral:
 
 
 @pytest.mark.integration
+class TestMistralIntegration:
+    @pytest.fixture
+    def api_key(self):
+        api_key = os.getenv("MISTRAL_API_KEY")
+        if not api_key:
+            pytest.skip("MISTRAL_API_KEY environment variable not set")
+        return api_key
+
+    @pytest.fixture
+    def mistral_client(self, api_key):
+        try:
+            from mistralai import Mistral as MistralClient
+            return MistralClient(api_key=api_key)
+        except ImportError:
+            pytest.skip("mistralai package not installed")
+
+    def test_simple_generation(self, mistral_client):
+        model = from_mistral(mistral_client, "mistral-small-latest")
+        result = model.generate("What is 2+2? Answer in one sentence.")
+        assert isinstance(result, str)
+        assert len(result) > 0
+        assert "4" in result
+
+    def test_structured_generation_json(self, mistral_client):
+        class Person(BaseModel):
+            name: str
+            age: int
+        model = from_mistral(mistral_client, "mistral-large-latest")
+        prompt = """Generate a JSON object representing a person with name and age.
+        Return only the JSON, no other text."""
+        result = model.generate(prompt, output_type=Person)
+        assert isinstance(result, str)
+        parsed = json.loads(result)
+        assert isinstance(parsed, dict)
+        assert "name" in parsed
+        assert isinstance(parsed["name"], str)
+        assert "age" in parsed
+        assert isinstance(parsed["age"], int)
+
+    def test_streaming_generation(self, mock_mistral_client):
+        client, _ = mock_mistral_client
+        model = Mistral(client=client, model_name="mistral-large-latest")
+        chunks = list(model.generate_stream("Write a short story about a robot."))
+        assert len(chunks) > 0
+        assert all(isinstance(chunk, str) for chunk in chunks)
+        client.chat.stream.assert_called_once()
+
+    def test_batch_generation(self, mistral_client):
+        model = from_mistral(mistral_client, "mistral-large-latest")
+        prompts = ["What is Python?", "What is JavaScript?"]
+        with pytest.raises(NotImplementedError, match="does not support batch inference"):
+            model.generate_batch(prompts)
+
+    def test_mistral_with_outlines(self, mock_mistral_client):
+        client, _ = mock_mistral_client
+        if hasattr(client, '_return_multi'):
+            delattr(client, '_return_multi')
+
+        json_response = Mock()
+        json_choice = Mock()
+        json_message = Mock()
+        json_message.content = '{"name": "John", "age": 30}'
+        json_choice.message = json_message
+        json_response.choices = [json_choice]
+        client.chat.complete.side_effect = None
+        client.chat.complete.return_value = json_response
+
+        model = from_mistral(client, "mistral-large-latest")
+        result = model.generate("Generate a person")
+        assert isinstance(result, str)
+        parsed = json.loads(result)
+        assert isinstance(parsed, dict)
+        assert "name" in parsed
+        assert parsed["name"] == "John"
+        assert "age" in parsed
+        assert parsed["age"] == 30
+
+    def test_mistral_with_outlines_real(self, mistral_client):
+        class Address(BaseModel):
+            street: str
+            city: str
+            zip_code: str
+
+        class Employee(BaseModel):
+            name: str
+            role: str
+            department: str
+            address: Address
+
+        class Company(BaseModel):
+            company_name: str
+            employees: list[Employee]
+
+        model = from_mistral(mistral_client, model_name="mistral-large-latest")
+        prompt = Chat([
+            {"role": "system", "content": "You are a business data generator. All employees must work in the IT department, and addresses must include a valid US city."},
+            {"role": "user", "content": "Generate a JSON object representing a company with at least two employees, including their names, roles, IT department, and addresses with valid US cities. Return only the JSON, no other text."}
+        ])
+        result = model.generate(prompt, output_type=Company)
+        assert isinstance(result, str)
+        parsed = json.loads(result)
+        assert isinstance(parsed, dict)
+        assert "company_name" in parsed
+        assert "employees" in parsed
+        assert isinstance(parsed["employees"], list)
+        assert len(parsed["employees"]) >= 2
+        for employee in parsed["employees"]:
+            assert employee["department"] == "IT"
+            assert isinstance(employee["name"], str)
+            assert len(employee["name"]) > 0
+            assert isinstance(employee["role"], str)
+            assert len(employee["role"]) > 0
+            assert isinstance(employee["address"], dict)
+            assert isinstance(employee["address"]["city"], str)
+            assert len(employee["address"]["city"]) > 0
+            assert isinstance(employee["address"]["street"], str)
+            assert len(employee["address"]["street"]) > 0
+            assert isinstance(employee["address"]["zip_code"], str)
+            assert len(employee["address"]["zip_code"]) > 0
+
+    def test_real_image_classification(self, mistral_client):
+        image_url = "https://upload.wikimedia.org/wikipedia/commons/7/71/Charmonty_Norfolkterrier.jpg"
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
+                          'AppleWebKit/537.36 (KHTML, like Gecko) '
+                          'Chrome/91.0.4472.124 Safari/537.36'
+        }
+        response = requests.get(image_url, headers=headers, timeout=30)
+        response.raise_for_status()
+        content_type = response.headers.get('content-type', '').lower()
+        if not any(img_type in content_type for img_type in ['image/', 'jpeg', 'jpg', 'png']):
+            raise ValueError(f"Expected image content, got: {content_type}")
+        pil_image = PILImage.open(io.BytesIO(response.content))
+
+        image = Image(pil_image)
+        model = from_mistral(mistral_client, "mistral-small-2503")
+        prompt = "Classify this image as a cat, dog, other, or not an animal. For a cat and dog, classify the kind of species; otherwise the kind is hotdog"
+        result = model.generate([prompt, image], output_type=AnimalClassification)
+        parsed = json.loads(result)
+        assert parsed["image_subject"] == "dog"
+        assert isinstance(parsed["specific_kind"], str)
+        assert len(parsed["specific_kind"]) > 0
+
+    def test_image_classification_simple(self, mistral_client):
+        pil_image = PILImage.new('RGB', (100, 100), color='red')
+        buffer = io.BytesIO()
+        pil_image.save(buffer, format="PNG")
+        buffer.seek(0)
+        pil_image = PILImage.open(buffer)
+
+        image = Image(pil_image)
+        model = from_mistral(mistral_client, "mistral-small-2503")
+        prompt = "Classify this image as a cat, dog, other, or not an animal. For a cat and dog, classify the kind of species; otherwise the kind is hotdog"
+        result = model.generate([prompt, image], output_type=AnimalClassification)
+        parsed = json.loads(result)
+        assert parsed["image_subject"] == "not an animal"
+        assert parsed["specific_kind"] == "hotdog"
+
+    def test_sync_streaming_structured_generation(self, mistral_client):
+        class Person(BaseModel):
+            name: str
+            age: int
+
+        model = from_mistral(mistral_client, "mistral-large-latest", async_client=False)
+        prompt = """Generate a JSON object representing a person with name and age.
+        Return only the JSON, no other text."""
+
+        chunks = []
+        for chunk in model.generate_stream(prompt, output_type=Person):
+            chunks.append(chunk)
+
+        result = "".join(chunks)
+        parsed = json.loads(result)
+        assert isinstance(parsed, dict)
+        assert "name" in parsed
+        assert isinstance(parsed["name"], str)
+        assert "age" in parsed
+        assert isinstance(parsed["age"], int)
+
+
+@pytest.mark.integration
 class TestAsyncMistralIntegration:
     @pytest.fixture
     def api_key(self):
@@ -855,13 +866,8 @@ class TestAsyncMistralIntegration:
         pil_image = PILImage.open(io.BytesIO(response.content))
 
         image = Image(pil_image)
-        model = from_mistral(mistral_client, "pixtral-12b-2409", async_client=True)
-        prompt = """Look at this image and classify what you see.
-        Respond with JSON in exactly this format:
-        {
-            "image_subject": "cat" | "dog" | "other" | "not an animal",
-            "specific_kind": "breed name if cat/dog, species if other, or 'hotdog' if not an animal"
-        }"""
+        model = from_mistral(mistral_client, "mistral-small-2503", async_client=True)
+        prompt = "Classify this image as a cat, dog, other, or not an animal. For a cat and dog, classify the kind of species; otherwise the kind is hotdog"
         result = await model.generate([prompt, image], output_type=AnimalClassification)
         parsed = json.loads(result)
         assert parsed["image_subject"] == "dog"
@@ -927,3 +933,25 @@ class TestAsyncMistralIntegration:
             assert len(employee["address"]["street"]) > 0
             assert isinstance(employee["address"]["zip_code"], str)
             assert len(employee["address"]["zip_code"]) > 0
+
+    @pytest.mark.asyncio
+    async def test_async_streaming_structured_generation(self, mistral_client):
+        class Person(BaseModel):
+            name: str
+            age: int
+
+        model = from_mistral(mistral_client, "mistral-large-latest", async_client=True)
+        prompt = """Generate a JSON object representing a person with name and age.
+        Return only the JSON, no other text."""
+
+        chunks = []
+        async for chunk in model.generate_stream(prompt, output_type=Person):
+            chunks.append(chunk)
+
+        result = "".join(chunks)
+        parsed = json.loads(result)
+        assert isinstance(parsed, dict)
+        assert "name" in parsed
+        assert isinstance(parsed["name"], str)
+        assert "age" in parsed
+        assert isinstance(parsed["age"], int)
