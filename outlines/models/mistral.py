@@ -499,7 +499,6 @@ class AsyncMistral(AsyncModel):
             inference_kwargs["model"] = self.model_name
 
         try:
-            # Remove async context manager since client may not support it
             result = await self.client.chat.complete_async(
                 messages=messages,
                 response_format=response_format,
@@ -562,26 +561,22 @@ class AsyncMistral(AsyncModel):
         response_format = self.type_adapter.format_output_type(output_type)
 
         model_name = inference_kwargs.get("model", self.model_name)
-        stream = inference_kwargs.get("stream", True)  # default to streaming
+        stream = inference_kwargs.get("stream", True)
 
         try:
             if stream:
-                # async iterator for streaming
-                # Pass response_format as named parameter, not unpacked
                 stream_kwargs = {
                     "model": model_name,
                     "messages": messages,
                     **inference_kwargs
                 }
 
-                # Only add response_format if it's not empty
                 if response_format:
                     stream_kwargs["response_format"] = response_format
 
                 response = await self.client.chat.stream_async(**stream_kwargs)
 
                 async for chunk in response:
-                    # Only yield non-empty chunks
                     if (
                         hasattr(chunk, "data")
                         and chunk.data.choices
@@ -591,7 +586,6 @@ class AsyncMistral(AsyncModel):
                     ):
                         yield chunk.data.choices[0].delta.content
             else:
-                # non-streaming call
                 complete_kwargs = {
                     "model": model_name,
                     "messages": messages,
@@ -602,7 +596,6 @@ class AsyncMistral(AsyncModel):
                     complete_kwargs["response_format"] = response_format
 
                 res = await self.client.chat.complete_async(**complete_kwargs)
-                # The SDK response has choices -> message -> content
                 content = res.choices[0].message.content
                 yield content
 

@@ -955,3 +955,200 @@ class TestAsyncMistralIntegration:
         assert isinstance(parsed["name"], str)
         assert "age" in parsed
         assert isinstance(parsed["age"], int)
+
+
+
+@pytest.mark.integration
+class TestMistralAdditionalFeatures:
+    @pytest.fixture
+    def api_key(self):
+        api_key = os.getenv("MISTRAL_API_KEY")
+        if not api_key:
+            pytest.skip("MISTRAL_API_KEY environment variable not set")
+        return api_key
+
+    @pytest.fixture
+    def mistral_client(self, api_key):
+        try:
+            from mistralai import Mistral as MistralClient
+            return MistralClient(api_key=api_key)
+        except ImportError:
+            pytest.skip("mistralai package not installed")
+
+    def test_custom_inference_parameters(self, mistral_client):
+        """Test custom inference parameters like temperature, max_tokens, top_p"""
+        model = from_mistral(mistral_client, "mistral-large-latest")
+
+        # Test with custom parameters
+        result = model.generate(
+            "Write a very short creative story about a robot.",
+            temperature=0.9,
+            max_tokens=50,
+            top_p=0.95
+        )
+
+        assert isinstance(result, str)
+        assert len(result) > 0
+        # With max_tokens=50, result should be relatively short
+        assert len(result.split()) <= 100  # Rough estimate allowing for variation
+
+    def test_text_only_streaming(self, mistral_client):
+        """Test streaming without structured output"""
+        model = from_mistral(mistral_client, "mistral-large-latest")
+
+        chunks = []
+        for chunk in model.generate_stream("Count from 1 to 5 with spaces: "):
+            chunks.append(chunk)
+
+        assert len(chunks) > 0
+        assert all(isinstance(chunk, str) for chunk in chunks)
+
+        full_text = "".join(chunks)
+        assert len(full_text) > 0
+        # Should contain numbers
+        assert any(str(i) in full_text for i in range(1, 6))
+
+    def test_multi_role_chat(self, mistral_client):
+        """Test Chat with system, user, and assistant roles"""
+        from outlines.inputs import Chat
+
+        model = from_mistral(mistral_client, "mistral-large-latest")
+
+        chat = Chat([
+            {"role": "system", "content": "You are a helpful math tutor. Always end responses with 'Happy learning!'"},
+            {"role": "user", "content": "What is 5 + 3?"},
+            {"role": "assistant", "content": "5 + 3 = 8. Happy learning!"},
+            {"role": "user", "content": "What about 10 - 4?"}
+        ])
+
+        result = model.generate(chat)
+        assert isinstance(result, str)
+        assert len(result) > 0
+        assert "6" in result  # Should contain the answer
+        assert "Happy learning!" in result  # Should follow system instruction
+
+    def test_invalid_chat_role_error(self, mistral_client):
+        """Test that invalid chat roles raise ValueError"""
+        from outlines.inputs import Chat
+
+        model = from_mistral(mistral_client, "mistral-large-latest")
+
+        # Test invalid role
+        invalid_chat = Chat([
+            {"role": "invalid_role", "content": "This should fail"}
+        ])
+
+        with pytest.raises(ValueError, match="role"):
+            model.generate(invalid_chat)
+
+    def test_model_compatibility_check(self, mistral_client):
+        """Test supports_structured_output method"""
+        model = from_mistral(mistral_client, "mistral-large-latest")
+
+        # This should return True for mistral-large-latest
+        supports_structured = model.supports_structured_output()
+        assert isinstance(supports_structured, bool)
+        assert supports_structured is True  # mistral-large-latest should support it
+
+    @pytest.mark.asyncio
+    async def test_async_custom_inference_parameters(self, mistral_client):
+        """Test async custom inference parameters"""
+        model = from_mistral(mistral_client, "mistral-large-latest", async_client=True)
+
+        result = await model.generate(
+            "Write a very short creative story about a robot.",
+            temperature=0.9,
+            max_tokens=50,
+            top_p=0.95
+        )
+
+        assert isinstance(result, str)
+        assert len(result) > 0
+        assert len(result.split()) <= 100
+
+    @pytest.mark.asyncio
+    async def test_async_text_only_streaming(self, mistral_client):
+        """Test async streaming without structured output"""
+        model = from_mistral(mistral_client, "mistral-large-latest", async_client=True)
+
+        chunks = []
+        async for chunk in model.generate_stream("Count from 1 to 5 with spaces: "):
+            chunks.append(chunk)
+
+        assert len(chunks) > 0
+        assert all(isinstance(chunk, str) for chunk in chunks)
+
+        full_text = "".join(chunks)
+        assert len(full_text) > 0
+        assert any(str(i) in full_text for i in range(1, 6))
+
+    @pytest.mark.asyncio
+    async def test_async_multi_role_chat(self, mistral_client):
+        """Test async Chat with multiple roles"""
+        from outlines.inputs import Chat
+
+        model = from_mistral(mistral_client, "mistral-large-latest", async_client=True)
+
+        chat = Chat([
+            {"role": "system", "content": "You are a helpful math tutor. Always end responses with 'Happy learning!'"},
+            {"role": "user", "content": "What is 5 + 3?"},
+            {"role": "assistant", "content": "5 + 3 = 8. Happy learning!"},
+            {"role": "user", "content": "What about 10 - 4?"}
+        ])
+
+        result = await model.generate(chat)
+        assert isinstance(result, str)
+        assert len(result) > 0
+        assert "6" in result
+        assert "Happy learning!" in result
+
+    def test_empty_input_error(self, mistral_client):
+        """Test behavior with empty inputs"""
+        #TODO: this is model dependent, test a list of them
+        model = from_mistral(mistral_client, "open-mistral-nemo")
+
+        # Test empty string - check if it actually returns output or hangs/errors
+        try:
+            result = model.generate("")
+            # If we get here, empty string was accepted and returned output
+            print(f"Empty string result: '{result}'")
+            print(f"Result type: {type(result)}")
+            print(f"Result length: {len(result)}")
+            assert isinstance(result, str)
+            # This suggests the API accepts empty strings.
+        except Exception as e:
+            # If it raises an exception, that's also valid behavior to document
+            print(f"Empty string exception raised: {type(e).__name__}: {e}")
+            # Accept any exception type since behavior may vary
+            assert False, f"Empty string unexpectedly failed with result: '{e}'"
+
+        # Test empty list - this should definitely raise an error
+        with pytest.raises(ValueError):
+            model.generate([])
+
+    def test_mixed_content_list_validation(self, mistral_client):
+        """Test validation for mixed content lists (text + images)"""
+        from outlines.inputs import Image
+        from PIL import Image as PILImage
+        import io
+
+        model = from_mistral(mistral_client, "mistral-small-2503")  # Vision model
+
+        # Create a simple test image with proper format
+        pil_image = PILImage.new('RGB', (100, 100), color='blue')
+        # Save to buffer to give it a format
+        buffer = io.BytesIO()
+        pil_image.save(buffer, format="PNG")
+        buffer.seek(0)
+        pil_image = PILImage.open(buffer)
+
+        image = Image(pil_image)
+
+        # Valid: starts with string
+        result = model.generate(["Describe this color", image])
+        assert isinstance(result, str)
+        assert len(result) > 0
+
+        # Invalid: starts with image (should raise error)
+        with pytest.raises(ValueError):
+            model.generate([image, "Describe this color"])
