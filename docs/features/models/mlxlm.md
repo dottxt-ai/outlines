@@ -98,6 +98,24 @@ for chunk in model.stream("Write a short story about a cat.", max_tokens=100):
     print(chunk) # 'In...'
 ```
 
+#### Batch Generation
+
+The `MLXLM` model supports generating text in batches. To do so, use the `batch` method and provide a list of strings as a model input. For instance:
+
+```python
+import outlines
+import mlx_lm
+
+# Load the model
+model = outlines.from_mlxlm(
+    *mlx_lm.load("mlx-community/TinyLlama-1.1B-Chat-v1.0-4bit")
+)
+
+# Generate text in batches
+result = model.batch(["What's the capital of Lithuania?", "What's the capital of Latvia?"], max_tokens=20)
+print(result) # ['Vilnius', 'Riga']
+```
+
 ## Structured Generation
 
 As a local model, `MLXLM` supports all forms of structured generation available in Outlines.
