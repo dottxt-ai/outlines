@@ -600,7 +600,7 @@ class TransformersMultiModal(Transformers):
 
     """
 
-    def __init__(self, model: "PreTrainedModel", processor):
+    def __init__(self, model: "PreTrainedModel", processor, device_dtype=torch.float32):
         """Create a TransformersMultiModal model instance
 
         We rely on the `__init__` method of the `Transformers` class to handle
@@ -619,6 +619,7 @@ class TransformersMultiModal(Transformers):
         self.processor = processor
         self.processor.padding_side = "left"
         self.processor.pad_token = "[PAD]"
+        self.device_dtype = device_dtype
 
         tokenizer: "PreTrainedTokenizer" = self.processor.tokenizer
 
@@ -655,7 +656,7 @@ class TransformersMultiModal(Transformers):
 
         inputs = self.processor(
             **merged_prompts, padding=True, return_tensors="pt"
-        ).to(self.model.device)
+        ).to(self.model.device, dtype=self.device_dtype)
 
         return merged_prompts["text"], inputs
 
