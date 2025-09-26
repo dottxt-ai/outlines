@@ -5,8 +5,6 @@ import tempfile
 from dataclasses import dataclass
 from enum import Enum
 from typing import (
-    Dict,
-    List,
     Literal,
     Tuple,
     Union,
@@ -52,6 +50,11 @@ from outlines.types.dsl import (
     regex,
     python_types_to_terms,
     to_regex,
+)
+from outlines.types.utils import (
+    is_pydantic_model,
+    is_typed_dict,
+    is_dataclass,
 )
 
 if sys.version_info >= (3, 12):
@@ -401,6 +404,21 @@ def test_cfg():
 
 
 def test_json_schema():
+    # variables to be used in the tests
+    json_schema = types.json_schema('{"type": "object", "properties": {"foo": {"type": "string"}, "bar": {"type": "integer"}}, "required": ["foo"]}')
+    schema_builder_instance = SchemaBuilder()
+    schema_builder_instance.add_schema({"type": "object", "properties": {"foo": {"type": "string"}, "bar": {"type": "integer"}}, "required": ["foo"]})
+    class MyPydanticModel(BaseModel):
+        foo: str
+        bar: PyOptional[int] = None
+    class MyTypedDict(TypedDict):
+        foo: str
+        bar: int
+    @dataclass
+    class MyDataClass:
+        foo: str
+        bar: PyOptional[int] = None
+
     # init dict
     schema = types.json_schema({"type": "string"})
     assert schema.schema == '{"type": "string"}'
@@ -410,33 +428,49 @@ def test_json_schema():
     assert schema.schema == '{"type": "string"}'
 
     # init Pydantic model
-    class PydanticModel(BaseModel):
-        foo: str
-    schema = types.json_schema(PydanticModel)
-    assert schema.schema == '{"properties": {"foo": {"title": "Foo", "type": "string"}}, "required": ["foo"], "title": "PydanticModel", "type": "object"}'
+    schema = types.json_schema(MyPydanticModel)
+    assert schema.schema == '{"properties": {"foo": {"title": "Foo", "type": "string"}, "bar": {"anyOf": [{"type": "integer"}, {"type": "null"}], "default": null, "title": "Bar"}}, "required": ["foo"], "title": "MyPydanticModel", "type": "object"}'
 
     # init TypedDict
-    class SomeTypedDict(TypedDict):
-        foo: str
-    schema = types.json_schema(SomeTypedDict)
-    assert schema.schema == '{"properties": {"foo": {"title": "Foo", "type": "string"}}, "required": ["foo"], "title": "SomeTypedDict", "type": "object"}'
+    schema = types.json_schema(MyTypedDict)
+    assert schema.schema == '{"properties": {"foo": {"title": "Foo", "type": "string"}, "bar": {"title": "Bar", "type": "integer"}}, "required": ["foo", "bar"], "title": "MyTypedDict", "type": "object"}'
 
     # init dataclass
-    @dataclass
-    class DataClass:
-        foo: str
-    schema = types.json_schema(DataClass)
-    assert schema.schema == '{"properties": {"foo": {"title": "Foo", "type": "string"}}, "required": ["foo"], "title": "DataClass", "type": "object"}'
+    schema = types.json_schema(MyDataClass)
+    assert schema.schema == '{"properties": {"foo": {"title": "Foo", "type": "string"}, "bar": {"anyOf": [{"type": "integer"}, {"type": "null"}], "default": null, "title": "Bar"}}, "required": ["foo"], "title": "MyDataClass", "type": "object"}'
 
     # init SchemaBuilder
-    builder = SchemaBuilder()
-    builder.add_schema({"type": "object", "properties": {}})
-    schema = types.json_schema(builder)
-    assert schema.schema == '{"$schema": "http://json-schema.org/schema#", "type": "object"}'
+    schema = types.json_schema(schema_builder_instance)
+    assert schema.schema == '{"$schema": "http://json-schema.org/schema#", "type": "object", "properties": {"foo": {"type": "string"}, "bar": {"type": "integer"}}, "required": ["foo"]}'
 
     # init unsupported type
     with pytest.raises(ValueError, match="Cannot parse schema"):
         types.json_schema(1)
+
+    # is_json_schema
+    assert not JsonSchema.is_json_schema(None)
+    assert not JsonSchema.is_json_schema('{"type": "string"}')
+    assert not JsonSchema.is_json_schema({"type": "string"})
+    assert JsonSchema.is_json_schema(json_schema)
+    assert JsonSchema.is_json_schema(schema_builder_instance)
+    assert JsonSchema.is_json_schema(MyPydanticModel)
+    assert JsonSchema.is_json_schema(MyTypedDict)
+    assert JsonSchema.is_json_schema(MyDataClass)
+
+    # convert_to
+    assert JsonSchema.convert_to(json_schema, ["str"]) == json_schema.schema
+    assert JsonSchema.convert_to(json_schema, ["dict"]) == json.loads(json_schema.schema)
+    assert JsonSchema.convert_to(MyPydanticModel, ["pydantic"]) == MyPydanticModel
+    assert JsonSchema.convert_to(MyTypedDict, ["typeddict"]) == MyTypedDict
+    assert JsonSchema.convert_to(MyDataClass, ["dataclass"]) == MyDataClass
+    assert JsonSchema.convert_to(schema_builder_instance, ["genson"]) == schema_builder_instance
+    assert JsonSchema.convert_to(MyPydanticModel, ["str"]) == JsonSchema(MyPydanticModel).schema
+    assert JsonSchema.convert_to(MyPydanticModel, ["dict"]) == json.loads(JsonSchema(MyPydanticModel).schema)
+    assert is_pydantic_model(JsonSchema.convert_to(json_schema, ["pydantic"]))
+    assert is_typed_dict(JsonSchema.convert_to(json_schema, ["typeddict"]))
+    assert is_dataclass(JsonSchema.convert_to(json_schema, ["dataclass"]))
+    with pytest.raises(ValueError, match="Cannot convert schema type"):
+        JsonSchema.convert_to(json_schema, ["genson"])
 
     # other methods
     schema = types.json_schema('{"type": "string"}')
