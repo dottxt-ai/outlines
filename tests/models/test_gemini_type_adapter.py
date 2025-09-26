@@ -3,16 +3,16 @@ import pytest
 import sys
 from dataclasses import dataclass
 from enum import Enum, EnumMeta
-from typing import Literal
+from typing import Literal, get_args
 
 from PIL import Image as PILImage
 from genson import SchemaBuilder
-from google.genai import types
 from pydantic import BaseModel
 
 from outlines import cfg, json_schema, regex
 from outlines.inputs import Chat, Image
 from outlines.models.gemini import GeminiTypeAdapter
+from outlines.types.utils import is_dataclass
 
 if sys.version_info >= (3, 12):
     from typing import TypedDict
@@ -135,19 +135,29 @@ def test_gemini_type_adapter_output_invalid(adapter):
     with pytest.raises(TypeError, match="CFG-based structured outputs"):
         adapter.format_output_type(cfg(""))
 
-    with pytest.raises(TypeError, match="The Gemini SDK does not accept"):
-        adapter.format_output_type(SchemaBuilder())
-
-    with pytest.raises(TypeError, match="The Gemini SDK does not"):
-        adapter.format_output_type(json_schema(""))
-
 
 def test_gemini_type_adapter_output_none(adapter):
     result = adapter.format_output_type(None)
     assert result == {}
 
 
-def test_gemini_type_adapter_output_dataclass(adapter, schema):
+def test_gemini_type_adapter_output_json_schema(adapter, schema):
+    result = adapter.format_output_type(json_schema(schema))
+    assert isinstance(result, dict)
+    assert result["response_mime_type"] == "application/json"
+    assert is_dataclass(result["response_schema"])
+
+
+def test_gemini_type_adapter_output_list_json_schema(adapter, schema):
+    result = adapter.format_output_type(list[json_schema(schema)])
+    assert isinstance(result, dict)
+    assert result["response_mime_type"] == "application/json"
+    args = get_args(result["response_schema"])
+    assert len(args) == 1
+    assert is_dataclass(args[0])
+
+
+def test_gemini_type_adapter_output_dataclass(adapter):
     @dataclass
     class User:
         user_id: int
@@ -160,7 +170,7 @@ def test_gemini_type_adapter_output_dataclass(adapter, schema):
     }
 
 
-def test_gemini_type_adapter_output_list_dataclass(adapter, schema):
+def test_gemini_type_adapter_output_list_dataclass(adapter):
     class User(BaseModel):
         user_id: int
         name: str
@@ -172,7 +182,7 @@ def test_gemini_type_adapter_output_list_dataclass(adapter, schema):
     }
 
 
-def test_gemini_type_adapter_output_typed_dict(adapter, schema):
+def test_gemini_type_adapter_output_typed_dict(adapter):
     class User(TypedDict):
         user_id: int
         name: str
@@ -184,7 +194,7 @@ def test_gemini_type_adapter_output_typed_dict(adapter, schema):
     }
 
 
-def test_gemini_type_adapter_output_list_typed_dict(adapter, schema):
+def test_gemini_type_adapter_output_list_typed_dict(adapter):
     class User(BaseModel):
         user_id: int
         name: str
@@ -196,7 +206,7 @@ def test_gemini_type_adapter_output_list_typed_dict(adapter, schema):
     }
 
 
-def test_gemini_type_adapter_output_pydantic(adapter, schema):
+def test_gemini_type_adapter_output_pydantic(adapter):
     class User(BaseModel):
         user_id: int
         name: str
@@ -208,7 +218,7 @@ def test_gemini_type_adapter_output_pydantic(adapter, schema):
     }
 
 
-def test_gemini_type_adapter_output_list_pydantic(adapter, schema):
+def test_gemini_type_adapter_output_list_pydantic(adapter):
     class User(BaseModel):
         user_id: int
         name: str
@@ -218,6 +228,26 @@ def test_gemini_type_adapter_output_list_pydantic(adapter, schema):
         "response_mime_type": "application/json",
         "response_schema": list[User],
     }
+
+
+def test_gemini_type_adapter_output_genson_schema_builder(adapter):
+    builder = SchemaBuilder()
+    builder.add_schema({"type": "object", "properties": {"foo": {"type": "string"}, "bar": {"type": "integer"}}, "required": ["foo"]})
+    result = adapter.format_output_type(builder)
+    assert isinstance(result, dict)
+    assert result["response_mime_type"] == "application/json"
+    assert is_dataclass(result["response_schema"])
+
+
+def test_gemini_type_adapter_output_list_genson_schema_builder(adapter):
+    builder = SchemaBuilder()
+    builder.add_schema({"type": "object", "properties": {"foo": {"type": "string"}, "bar": {"type": "integer"}}, "required": ["foo"]})
+    result = adapter.format_output_type(list[builder])
+    assert isinstance(result, dict)
+    assert result["response_mime_type"] == "application/json"
+    args = get_args(result["response_schema"])
+    assert len(args) == 1
+    assert is_dataclass(args[0])
 
 
 def test_gemini_type_adapter_output_enum(adapter):
