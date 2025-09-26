@@ -209,6 +209,8 @@ class Transformers(Model):
         self,
         model: "PreTrainedModel",
         tokenizer: "PreTrainedTokenizer",
+        *,
+        device_dtype: Optional["torch.dtype"] = None,
     ):
         """
         Parameters:
@@ -219,6 +221,9 @@ class Transformers(Model):
         tokenizer
             A `PreTrainedTokenizer`, or any tokenizer that is compatible with
             the `transformers` API for tokenizers.
+        device_dtype
+            The dtype to use for the model. If not provided, the model will use
+            the default dtype.
 
         """
         # We need to handle the cases in which jax/flax or tensorflow
@@ -237,6 +242,7 @@ class Transformers(Model):
         self.model = model
         self.hf_tokenizer = tokenizer
         self.tokenizer = TransformerTokenizer(tokenizer)
+        self.device_dtype = device_dtype
         self.type_adapter = TransformersTypeAdapter(tokenizer=tokenizer)
 
         if (
@@ -287,7 +293,11 @@ class Transformers(Model):
         input_ids, attention_mask = self.tokenizer.encode(prompts)
         inputs = {
             "input_ids": input_ids.to(self.model.device),
-            "attention_mask": attention_mask.to(self.model.device),
+            "attention_mask": (
+                attention_mask.to(self.model.device, dtype=self.device_dtype)
+                if self.device_dtype is not None
+                else attention_mask.to(self.model.device)
+            ),
         }
 
         return prompts, inputs
@@ -600,7 +610,13 @@ class TransformersMultiModal(Transformers):
 
     """
 
-    def __init__(self, model: "PreTrainedModel", processor):
+    def __init__(
+        self,
+        model: "PreTrainedModel",
+        processor,
+        *,
+        device_dtype: Optional["torch.dtype"] = None,
+    ):
         """Create a TransformersMultiModal model instance
 
         We rely on the `__init__` method of the `Transformers` class to handle
@@ -614,6 +630,9 @@ class TransformersMultiModal(Transformers):
             `transformers` API for models.
         processor
             A `ProcessorMixin` instance.
+        device_dtype
+            The dtype to use for the model. If not provided, the model will use
+            the default dtype.
 
         """
         self.processor = processor
@@ -622,7 +641,7 @@ class TransformersMultiModal(Transformers):
 
         tokenizer: "PreTrainedTokenizer" = self.processor.tokenizer
 
-        super().__init__(model, tokenizer)
+        super().__init__(model, tokenizer, device_dtype=device_dtype)
 
         self.type_adapter = TransformersMultiModalTypeAdapter(
             tokenizer=tokenizer
@@ -655,7 +674,11 @@ class TransformersMultiModal(Transformers):
 
         inputs = self.processor(
             **merged_prompts, padding=True, return_tensors="pt"
-        ).to(self.model.device)
+        )
+        if self.device_dtype is not None:
+            inputs = inputs.to(self.model.device, dtype=self.device_dtype)
+        else:
+            inputs = inputs.to(self.model.device)
 
         return merged_prompts["text"], inputs
 
@@ -663,6 +686,8 @@ class TransformersMultiModal(Transformers):
 def from_transformers(
     model: "PreTrainedModel",
     tokenizer_or_processor: Union["PreTrainedTokenizer", "ProcessorMixin"],
+    *,
+    device_dtype: Optional["torch.dtype"] = None,
 ) -> Union[Transformers, TransformersMultiModal]:
     """Create an Outlines `Transformers` or `TransformersMultiModal` model
     instance from a `PreTrainedModel` instance and a `PreTrainedTokenizer` or
@@ -679,6 +704,9 @@ def from_transformers(
     tokenizer_or_processor
         A `transformers.PreTrainedTokenizer` or
         `transformers.ProcessorMixin` instance.
+    device_dtype
+        The dtype to use for the model. If not provided, the model will use
+        the default dtype.
 
     Returns
     -------
@@ -693,10 +721,10 @@ def from_transformers(
         tokenizer_or_processor, (PreTrainedTokenizer, PreTrainedTokenizerFast)
     ):
         tokenizer = tokenizer_or_processor
-        return Transformers(model, tokenizer)
+        return Transformers(model, tokenizer, device_dtype=device_dtype)
     elif isinstance(tokenizer_or_processor, ProcessorMixin):
         processor = tokenizer_or_processor
-        return TransformersMultiModal(model, processor)
+        return TransformersMultiModal(model, processor, device_dtype=device_dtype)
     else:
         raise ValueError(
             "We could determine whether the model passed to `from_transformers`"
