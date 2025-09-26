@@ -22,6 +22,7 @@ from types import FunctionType
 from typing import (
     Any,
     List,
+    Literal,
     Optional as OptionalType,
     Union,
     get_args,
@@ -41,6 +42,11 @@ from pydantic_core import core_schema as cs
 
 import outlines.types as types
 from outlines import grammars
+from outlines.types.json_schema_utils import (
+    json_schema_dict_to_pydantic,
+    json_schema_dict_to_typeddict,
+    json_schema_dict_to_dataclass,
+)
 from outlines.types.utils import (
     get_schema_from_signature,
     is_int,
@@ -282,6 +288,9 @@ class JsonSchema(Term):
     genSON schema builder.
 
     """
+    schema: str
+    whitespace_pattern: OptionalType[str]
+
     def __init__(
         self,
         schema: Union[
@@ -328,6 +337,109 @@ class JsonSchema(Term):
 
     def __post_init__(self):
         jsonschema.Draft7Validator.check_schema(json.loads(self.schema))
+
+    @classmethod
+    def is_json_schema(cls, obj: Any) -> bool:
+        """Check if the object provided is a JSON schema type.
+
+        Parameters
+        ----------
+        obj: Any
+            The object to check
+
+        Returns
+        -------
+        bool
+            True if the object is a JSON schema type, False otherwise
+
+        """
+        return (
+            isinstance(obj, cls)
+            or is_pydantic_model(obj)
+            or is_typed_dict(obj)
+            or is_dataclass(obj)
+            or is_genson_schema_builder(obj)
+        )
+
+    @classmethod
+    def convert_to(
+        cls,
+        schema: Union[
+            "JsonSchema",
+            type[BaseModel],
+            _TypedDictMeta,
+            type,
+            SchemaBuilder,
+        ],
+        target_types: List[Literal[
+            "str",
+            "dict",
+            "pydantic",
+            "typeddict",
+            "dataclass",
+            "genson",
+        ]],
+    ) -> Union[str, dict, type[BaseModel], _TypedDictMeta, type, SchemaBuilder]:
+        """Convert a JSON schema type to a different JSON schema type.
+
+        If the schema provided is already of a type in the target_types, return
+        it unchanged.
+
+        Parameters
+        ----------
+        schema: Union[JsonSchema, type[BaseModel], _TypedDictMeta, type, SchemaBuilder]
+            The schema to convert
+        target_types: List[Literal["str", "dict", "pydantic", "typeddict", "dataclass", "genson"]]
+            The target types to convert to
+
+        """
+        # If the schema provided is already of a type in the target_types,
+        # just return it
+        if isinstance(schema, cls):
+            if "str" in target_types:
+                return schema.schema
+            elif "dict" in target_types:
+                return json.loads(schema.schema)
+        elif is_pydantic_model(schema) and "pydantic" in target_types:
+            return schema
+        elif is_typed_dict(schema) and "typeddict" in target_types:
+            return schema
+        elif is_dataclass(schema) and "dataclass" in target_types:
+            return schema
+        elif is_genson_schema_builder(schema) and "genson" in target_types:
+            return schema
+
+        # Convert the schema to a JSON schema string/dict
+        if isinstance(schema, cls):
+            schema_str = schema.schema
+        else:
+            schema_str = cls(schema).schema
+        schema_dict = json.loads(schema_str)
+
+        for target_type in target_types:
+            try:
+                # Convert the JSON schema string to the target type
+                if target_type == "str":
+                    return schema_str
+                elif target_type == "dict":
+                    return schema_dict
+                elif target_type == "pydantic":
+                    return json_schema_dict_to_pydantic(schema_dict)
+                elif target_type == "typeddict":
+                    return json_schema_dict_to_typeddict(schema_dict)
+                elif target_type == "dataclass":
+                    return json_schema_dict_to_dataclass(schema_dict)
+                # No conversion available for genson
+            except Exception as e:  # pragma: no cover
+                warnings.warn(
+                    f"Cannot convert schema type {type(schema)} to {target_type}: {e}"
+                )
+                continue
+
+        raise ValueError(
+            f"Cannot convert schema type {type(schema)} to any of the target "
+            f"types {target_types}"
+        )
 
     def _display_node(self) -> str:
         return f"JsonSchema('{self.schema}')"
