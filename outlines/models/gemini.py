@@ -14,14 +14,11 @@ from outlines.inputs import Image, Chat
 from outlines.models.base import Model, ModelTypeAdapter
 from outlines.types import CFG, Choice, JsonSchema, Regex
 from outlines.types.utils import (
-    is_dataclass,
     is_enum,
     get_enum_from_choice,
     get_enum_from_literal,
     is_genson_schema_builder,
     is_literal,
-    is_pydantic_model,
-    is_typed_dict,
     is_typing_list,
 )
 
@@ -171,28 +168,18 @@ class GeminiTypeAdapter(ModelTypeAdapter):
                 "CFG-based structured outputs are not available with Gemini. "
                 "Use an open source model or dottxt instead."
             )
-        elif is_genson_schema_builder(output_type):
-            raise TypeError(
-                "The Gemini SDK does not accept Genson schema builders as an "
-                "input. Pass a Pydantic model, typed dict or dataclass "
-                "instead."
-            )
-        elif isinstance(output_type, JsonSchema):
-            raise TypeError(
-                "The Gemini SDK does not accept Json Schemas as an input. "
-                "Pass a Pydantic model, typed dict or dataclass instead."
-            )
 
         if output_type is None:
             return {}
 
-        # Structured types
-        elif is_dataclass(output_type):
-            return self.format_json_output_type(output_type)
-        elif is_typed_dict(output_type):
-            return self.format_json_output_type(output_type)
-        elif is_pydantic_model(output_type):
-            return self.format_json_output_type(output_type)
+        # JSON schema types
+        elif JsonSchema.is_json_schema(output_type):
+            return self.format_json_output_type(
+                JsonSchema.convert_to(
+                    output_type,
+                    ["dataclass", "typeddict", "pydantic"]
+                )
+            )
 
         # List of structured types
         elif is_typing_list(output_type):
@@ -233,21 +220,20 @@ class GeminiTypeAdapter(ModelTypeAdapter):
         if len(args) == 1:
             item_type = args[0]
 
-            # Check if list item type is supported
-            if (
-                is_pydantic_model(item_type)
-                or is_typed_dict(item_type)
-                or is_dataclass(item_type)
-            ):
+            if JsonSchema.is_json_schema(item_type):
                 return {
                     "response_mime_type": "application/json",
-                    "response_schema": output_type,
+                    "response_schema": list[  # type: ignore
+                        JsonSchema.convert_to(
+                            item_type,
+                            ["dataclass", "typeddict", "pydantic"]
+                        )
+                    ],
                 }
-
             else:
                 raise TypeError(
-                    "The only supported types for list items are Pydantic "
-                    + "models, typed dicts and dataclasses."
+                    "The list items output type must contain a JSON schema "
+                    "type."
                 )
 
         raise TypeError(

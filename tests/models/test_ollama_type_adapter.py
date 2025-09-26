@@ -144,19 +144,19 @@ def test_ollama_type_adapter_output_pydantic(adapter, schema):
     assert result == schema
 
 
-def test_ollama_type_adapter_output_genson_schema_builder(adapter, schema):
+def test_ollama_type_adapter_output_genson_schema_builder(adapter):
     builder = SchemaBuilder()
     builder.add_schema({"type": "object", "properties": {}})
     builder.add_object({"hi": "there"})
     builder.add_object({"hi": 5})
 
     result = adapter.format_output_type(builder)
-    assert result == json.dumps({
+    assert result == {
         "$schema": "http://json-schema.org/schema#",
         "type": "object",
         "properties": {"hi": {"type": ["integer", "string"]}},
         "required": ["hi"]
-    })
+    }
 
 
 def test_ollama_type_adapter_json_schema_str(adapter, schema):

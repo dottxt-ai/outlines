@@ -1,20 +1,19 @@
 """Integration with the `ollama` library."""
 
-import json
 from functools import singledispatchmethod
-from typing import TYPE_CHECKING, Any, AsyncIterator, Iterator, Optional, Union
-
-from pydantic import TypeAdapter
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    AsyncIterator,
+    Iterator,
+    Optional,
+    Union,
+    cast,
+)
 
 from outlines.inputs import Chat, Image
 from outlines.models.base import AsyncModel, Model, ModelTypeAdapter
 from outlines.types import CFG, JsonSchema, Regex
-from outlines.types.utils import (
-    is_dataclass,
-    is_genson_schema_builder,
-    is_pydantic_model,
-    is_typed_dict,
-)
 
 if TYPE_CHECKING:
     from ollama import Client
@@ -109,7 +108,7 @@ class OllamaTypeAdapter(ModelTypeAdapter):
 
     def format_output_type(
         self, output_type: Optional[Any] = None
-    ) -> Optional[str]:
+    ) -> Optional[dict]:
         """Format the output type to pass to the client.
 
         TODO: `int`, `float` and other Python types could be supported via
@@ -126,7 +125,9 @@ class OllamaTypeAdapter(ModelTypeAdapter):
             The formatted output type to be passed to the model.
 
         """
-        if isinstance(output_type, Regex):
+        if output_type is None:
+            return None
+        elif isinstance(output_type, Regex):
             raise TypeError(
                 "Regex-based structured outputs are not supported by Ollama. "
                 "Use an open source model in the meantime."
@@ -136,22 +137,8 @@ class OllamaTypeAdapter(ModelTypeAdapter):
                 "CFG-based structured outputs are not supported by Ollama. "
                 "Use an open source model in the meantime."
             )
-
-        if output_type is None:
-            return None
-        elif isinstance(output_type, JsonSchema):
-            return json.loads(output_type.schema)
-        elif is_dataclass(output_type):
-            schema = TypeAdapter(output_type).json_schema()
-            return schema
-        elif is_typed_dict(output_type):
-            schema = TypeAdapter(output_type).json_schema()
-            return schema
-        elif is_pydantic_model(output_type):
-            schema = output_type.model_json_schema()
-            return schema
-        elif is_genson_schema_builder(output_type):
-            return output_type.to_json()
+        elif JsonSchema.is_json_schema(output_type):
+            return cast(dict, JsonSchema.convert_to(output_type, ["dict"]))
         else:
             type_name = getattr(output_type, "__name__", output_type)
             raise TypeError(

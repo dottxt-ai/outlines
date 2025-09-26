@@ -1,6 +1,5 @@
 """Integration with OpenAI's API."""
 
-import json
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -8,22 +7,17 @@ from typing import (
     Iterator,
     Optional,
     Union,
+    cast,
 )
 from functools import singledispatchmethod
 
-from pydantic import BaseModel, TypeAdapter
+from pydantic import BaseModel
 
 from outlines.inputs import Chat, Image
 from outlines.models.base import AsyncModel, Model, ModelTypeAdapter
 from outlines.models.utils import set_additional_properties_false_json_schema
 from outlines.types import JsonSchema, Regex, CFG
-from outlines.types.utils import (
-    is_dataclass,
-    is_typed_dict,
-    is_pydantic_model,
-    is_genson_schema_builder,
-    is_native_dict
-)
+from outlines.types.utils import is_native_dict
 
 if TYPE_CHECKING:
     from openai import (
@@ -176,20 +170,10 @@ class OpenAITypeAdapter(ModelTypeAdapter):
             return {}
         elif is_native_dict(output_type):
             return self.format_json_mode_type()
-        elif is_dataclass(output_type):
-            output_type = TypeAdapter(output_type).json_schema()
-            return self.format_json_output_type(output_type)
-        elif is_typed_dict(output_type):
-            output_type = TypeAdapter(output_type).json_schema()
-            return self.format_json_output_type(output_type)
-        elif is_pydantic_model(output_type):
-            output_type = output_type.model_json_schema()
-            return self.format_json_output_type(output_type)
-        elif is_genson_schema_builder(output_type):
-            schema = json.loads(output_type.to_json())
-            return self.format_json_output_type(schema)
-        elif isinstance(output_type, JsonSchema):
-            return self.format_json_output_type(json.loads(output_type.schema))
+        elif JsonSchema.is_json_schema(output_type):
+            return self.format_json_output_type(
+                cast(dict, JsonSchema.convert_to(output_type, ["dict"]))
+            )
         else:
             type_name = getattr(output_type, "__name__", output_type)
             raise TypeError(
