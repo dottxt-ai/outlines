@@ -2248,6 +2248,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#outlines.models.mlxlm.MLXLM.generate_batch" class="md-nav__link">
+    <span class="md-ellipsis">
+      generate_batch
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#outlines.models.mlxlm.MLXLM.generate_stream" class="md-nav__link">
     <span class="md-ellipsis">
       generate_stream
@@ -3840,6 +3849,15 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#outlines.models.mlxlm.MLXLM.generate_batch" class="md-nav__link">
+    <span class="md-ellipsis">
+      generate_batch
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#outlines.models.mlxlm.MLXLM.generate_stream" class="md-nav__link">
     <span class="md-ellipsis">
       generate_stream
@@ -4082,7 +4100,31 @@ users at a higher level to arguments to the <code>mlx_lm</code> library.</p>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-192">192</a></span>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-193">193</a></span>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-194">194</a></span>
-<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-195">195</a></span></pre></div></td><td class="code"><div><pre style="line-height: 125%;"><span></span><code><span id="__span-0-86"><a id="__codelineno-0-86" name="__codelineno-0-86"></a><span style="color: #81A1C1; font-weight: bold">class</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">MLXLM</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">Model</span><span style="color: #ECEFF4">):</span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-195">195</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-196">196</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-197">197</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-198">198</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-199">199</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-200">200</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-201">201</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-202">202</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-203">203</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-204">204</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-205">205</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-206">206</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-207">207</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-208">208</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-209">209</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-210">210</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-211">211</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-212">212</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-213">213</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-214">214</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-215">215</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-216">216</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-217">217</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-218">218</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-219">219</a></span></pre></div></td><td class="code"><div><pre style="line-height: 125%;"><span></span><code><span id="__span-0-86"><a id="__codelineno-0-86" name="__codelineno-0-86"></a><span style="color: #81A1C1; font-weight: bold">class</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">MLXLM</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">Model</span><span style="color: #ECEFF4">):</span>
 </span><span id="__span-0-87"><a id="__codelineno-0-87" name="__codelineno-0-87"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">&quot;&quot;&quot;Thin wrapper around an `mlx_lm` model.</span>
 </span><span id="__span-0-88"><a id="__codelineno-0-88" name="__codelineno-0-88"></a>
 </span><span id="__span-0-89"><a id="__codelineno-0-89" name="__codelineno-0-89"></a><span style="color: #616E87">    This wrapper is used to convert the input and output types specified by the</span>
@@ -4150,48 +4192,72 @@ users at a higher level to arguments to the <code>mlx_lm</code> library.</p>
 </span><span id="__span-0-151"><a id="__codelineno-0-151" name="__codelineno-0-151"></a>
 </span><span id="__span-0-152"><a id="__codelineno-0-152" name="__codelineno-0-152"></a>    <span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">generate_batch</span><span style="color: #ECEFF4">(</span>
 </span><span id="__span-0-153"><a id="__codelineno-0-153" name="__codelineno-0-153"></a>        <span style="color: #81A1C1">self</span><span style="color: #ECEFF4">,</span>
-</span><span id="__span-0-154"><a id="__codelineno-0-154" name="__codelineno-0-154"></a>        <span style="color: #D8DEE9">model_input</span><span style="color: #ECEFF4">,</span>
-</span><span id="__span-0-155"><a id="__codelineno-0-155" name="__codelineno-0-155"></a>        <span style="color: #D8DEE9">output_type</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #81A1C1; font-weight: bold">None</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-0-154"><a id="__codelineno-0-154" name="__codelineno-0-154"></a>        <span style="color: #D8DEE9">model_input</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">list</span><span style="color: #ECEFF4">[</span><span style="color: #81A1C1">str</span><span style="color: #ECEFF4">],</span>
+</span><span id="__span-0-155"><a id="__codelineno-0-155" name="__codelineno-0-155"></a>        <span style="color: #D8DEE9">output_type</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">Optional</span><span style="color: #ECEFF4">[</span><span style="color: #D8DEE9">OutlinesLogitsProcessor</span><span style="color: #ECEFF4">]</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #81A1C1; font-weight: bold">None</span><span style="color: #ECEFF4">,</span>
 </span><span id="__span-0-156"><a id="__codelineno-0-156" name="__codelineno-0-156"></a>        <span style="color: #81A1C1; font-weight: bold">**</span><span style="color: #D8DEE9">kwargs</span><span style="color: #ECEFF4">,</span>
-</span><span id="__span-0-157"><a id="__codelineno-0-157" name="__codelineno-0-157"></a>    <span style="color: #ECEFF4">):</span>
-</span><span id="__span-0-158"><a id="__codelineno-0-158" name="__codelineno-0-158"></a>        <span style="color: #81A1C1; font-weight: bold">raise</span> <span style="color: #BF616A">NotImplementedError</span><span style="color: #ECEFF4">(</span>
-</span><span id="__span-0-159"><a id="__codelineno-0-159" name="__codelineno-0-159"></a>            <span style="color: #A3BE8C">&quot;The `mlx_lm` library does not support batch inference.&quot;</span>
-</span><span id="__span-0-160"><a id="__codelineno-0-160" name="__codelineno-0-160"></a>        <span style="color: #ECEFF4">)</span>
-</span><span id="__span-0-161"><a id="__codelineno-0-161" name="__codelineno-0-161"></a>
-</span><span id="__span-0-162"><a id="__codelineno-0-162" name="__codelineno-0-162"></a>    <span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">generate_stream</span><span style="color: #ECEFF4">(</span>
-</span><span id="__span-0-163"><a id="__codelineno-0-163" name="__codelineno-0-163"></a>        <span style="color: #81A1C1">self</span><span style="color: #ECEFF4">,</span>
-</span><span id="__span-0-164"><a id="__codelineno-0-164" name="__codelineno-0-164"></a>        <span style="color: #D8DEE9">model_input</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">str</span><span style="color: #ECEFF4">,</span>
-</span><span id="__span-0-165"><a id="__codelineno-0-165" name="__codelineno-0-165"></a>        <span style="color: #D8DEE9">output_type</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">Optional</span><span style="color: #ECEFF4">[</span><span style="color: #D8DEE9">OutlinesLogitsProcessor</span><span style="color: #ECEFF4">]</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #81A1C1; font-weight: bold">None</span><span style="color: #ECEFF4">,</span>
-</span><span id="__span-0-166"><a id="__codelineno-0-166" name="__codelineno-0-166"></a>        <span style="color: #81A1C1; font-weight: bold">**</span><span style="color: #D8DEE9">kwargs</span><span style="color: #ECEFF4">,</span>
-</span><span id="__span-0-167"><a id="__codelineno-0-167" name="__codelineno-0-167"></a>    <span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #D8DEE9">Iterator</span><span style="color: #ECEFF4">[</span><span style="color: #81A1C1">str</span><span style="color: #ECEFF4">]:</span>
-</span><span id="__span-0-168"><a id="__codelineno-0-168" name="__codelineno-0-168"></a><span style="color: #D8DEE9">        </span><span style="color: #616E87">&quot;&quot;&quot;Stream text using `mlx-lm`.</span>
+</span><span id="__span-0-157"><a id="__codelineno-0-157" name="__codelineno-0-157"></a>    <span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #81A1C1">list</span><span style="color: #ECEFF4">[</span><span style="color: #81A1C1">str</span><span style="color: #ECEFF4">]:</span>
+</span><span id="__span-0-158"><a id="__codelineno-0-158" name="__codelineno-0-158"></a><span style="color: #D8DEE9">        </span><span style="color: #616E87">&quot;&quot;&quot;Generate a batch of text using `mlx-lm`.</span>
+</span><span id="__span-0-159"><a id="__codelineno-0-159" name="__codelineno-0-159"></a>
+</span><span id="__span-0-160"><a id="__codelineno-0-160" name="__codelineno-0-160"></a><span style="color: #616E87">        Parameters</span>
+</span><span id="__span-0-161"><a id="__codelineno-0-161" name="__codelineno-0-161"></a><span style="color: #616E87">        ----------</span>
+</span><span id="__span-0-162"><a id="__codelineno-0-162" name="__codelineno-0-162"></a><span style="color: #616E87">        model_input</span>
+</span><span id="__span-0-163"><a id="__codelineno-0-163" name="__codelineno-0-163"></a><span style="color: #616E87">            The list of prompts based on which the model will generate a response.</span>
+</span><span id="__span-0-164"><a id="__codelineno-0-164" name="__codelineno-0-164"></a><span style="color: #616E87">        output_type</span>
+</span><span id="__span-0-165"><a id="__codelineno-0-165" name="__codelineno-0-165"></a><span style="color: #616E87">            The logits processor the model will use to constrain the format of</span>
+</span><span id="__span-0-166"><a id="__codelineno-0-166" name="__codelineno-0-166"></a><span style="color: #616E87">            the generated text.</span>
+</span><span id="__span-0-167"><a id="__codelineno-0-167" name="__codelineno-0-167"></a><span style="color: #616E87">        kwargs</span>
+</span><span id="__span-0-168"><a id="__codelineno-0-168" name="__codelineno-0-168"></a><span style="color: #616E87">            Additional keyword arguments to pass to the `mlx-lm` library.</span>
 </span><span id="__span-0-169"><a id="__codelineno-0-169" name="__codelineno-0-169"></a>
-</span><span id="__span-0-170"><a id="__codelineno-0-170" name="__codelineno-0-170"></a><span style="color: #616E87">        Parameters</span>
-</span><span id="__span-0-171"><a id="__codelineno-0-171" name="__codelineno-0-171"></a><span style="color: #616E87">        ----------</span>
-</span><span id="__span-0-172"><a id="__codelineno-0-172" name="__codelineno-0-172"></a><span style="color: #616E87">        model_input</span>
-</span><span id="__span-0-173"><a id="__codelineno-0-173" name="__codelineno-0-173"></a><span style="color: #616E87">            The prompt based on which the model will generate a response.</span>
-</span><span id="__span-0-174"><a id="__codelineno-0-174" name="__codelineno-0-174"></a><span style="color: #616E87">        output_type</span>
-</span><span id="__span-0-175"><a id="__codelineno-0-175" name="__codelineno-0-175"></a><span style="color: #616E87">            The logits processor the model will use to constrain the format of</span>
-</span><span id="__span-0-176"><a id="__codelineno-0-176" name="__codelineno-0-176"></a><span style="color: #616E87">            the generated text.</span>
-</span><span id="__span-0-177"><a id="__codelineno-0-177" name="__codelineno-0-177"></a><span style="color: #616E87">        kwargs</span>
-</span><span id="__span-0-178"><a id="__codelineno-0-178" name="__codelineno-0-178"></a><span style="color: #616E87">            Additional keyword arguments to pass to the `mlx-lm` library.</span>
-</span><span id="__span-0-179"><a id="__codelineno-0-179" name="__codelineno-0-179"></a>
-</span><span id="__span-0-180"><a id="__codelineno-0-180" name="__codelineno-0-180"></a><span style="color: #616E87">        Returns</span>
-</span><span id="__span-0-181"><a id="__codelineno-0-181" name="__codelineno-0-181"></a><span style="color: #616E87">        -------</span>
-</span><span id="__span-0-182"><a id="__codelineno-0-182" name="__codelineno-0-182"></a><span style="color: #616E87">        Iterator[str]</span>
-</span><span id="__span-0-183"><a id="__codelineno-0-183" name="__codelineno-0-183"></a><span style="color: #616E87">            An iterator that yields the text generated by the model.</span>
-</span><span id="__span-0-184"><a id="__codelineno-0-184" name="__codelineno-0-184"></a>
-</span><span id="__span-0-185"><a id="__codelineno-0-185" name="__codelineno-0-185"></a><span style="color: #616E87">        &quot;&quot;&quot;</span>
-</span><span id="__span-0-186"><a id="__codelineno-0-186" name="__codelineno-0-186"></a>        <span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">mlx_lm</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">stream_generate</span>
-</span><span id="__span-0-187"><a id="__codelineno-0-187" name="__codelineno-0-187"></a>
-</span><span id="__span-0-188"><a id="__codelineno-0-188" name="__codelineno-0-188"></a>        <span style="color: #81A1C1; font-weight: bold">for</span> <span style="color: #D8DEE9">gen_response</span> <span style="color: #81A1C1; font-weight: bold">in</span> <span style="color: #D8DEE9">stream_generate</span><span style="color: #ECEFF4">(</span>
-</span><span id="__span-0-189"><a id="__codelineno-0-189" name="__codelineno-0-189"></a>            <span style="color: #81A1C1">self</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">,</span>
-</span><span id="__span-0-190"><a id="__codelineno-0-190" name="__codelineno-0-190"></a>            <span style="color: #81A1C1">self</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">mlx_tokenizer</span><span style="color: #ECEFF4">,</span>
-</span><span id="__span-0-191"><a id="__codelineno-0-191" name="__codelineno-0-191"></a>            <span style="color: #81A1C1">self</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">type_adapter</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">format_input</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">model_input</span><span style="color: #ECEFF4">),</span>
-</span><span id="__span-0-192"><a id="__codelineno-0-192" name="__codelineno-0-192"></a>            <span style="color: #D8DEE9">logits_processors</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #81A1C1">self</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">type_adapter</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">format_output_type</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">output_type</span><span style="color: #ECEFF4">),</span>
-</span><span id="__span-0-193"><a id="__codelineno-0-193" name="__codelineno-0-193"></a>            <span style="color: #81A1C1; font-weight: bold">**</span><span style="color: #D8DEE9">kwargs</span><span style="color: #ECEFF4">,</span>
-</span><span id="__span-0-194"><a id="__codelineno-0-194" name="__codelineno-0-194"></a>        <span style="color: #ECEFF4">):</span>
-</span><span id="__span-0-195"><a id="__codelineno-0-195" name="__codelineno-0-195"></a>            <span style="color: #81A1C1; font-weight: bold">yield</span> <span style="color: #D8DEE9">gen_response</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">text</span>
+</span><span id="__span-0-170"><a id="__codelineno-0-170" name="__codelineno-0-170"></a><span style="color: #616E87">        Returns</span>
+</span><span id="__span-0-171"><a id="__codelineno-0-171" name="__codelineno-0-171"></a><span style="color: #616E87">        -------</span>
+</span><span id="__span-0-172"><a id="__codelineno-0-172" name="__codelineno-0-172"></a><span style="color: #616E87">        list[str]</span>
+</span><span id="__span-0-173"><a id="__codelineno-0-173" name="__codelineno-0-173"></a><span style="color: #616E87">            The list of text generated by the model.</span>
+</span><span id="__span-0-174"><a id="__codelineno-0-174" name="__codelineno-0-174"></a>
+</span><span id="__span-0-175"><a id="__codelineno-0-175" name="__codelineno-0-175"></a><span style="color: #616E87">        &quot;&quot;&quot;</span>
+</span><span id="__span-0-176"><a id="__codelineno-0-176" name="__codelineno-0-176"></a>        <span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">mlx_lm</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">generate_batch</span>
+</span><span id="__span-0-177"><a id="__codelineno-0-177" name="__codelineno-0-177"></a>
+</span><span id="__span-0-178"><a id="__codelineno-0-178" name="__codelineno-0-178"></a>        <span style="color: #81A1C1; font-weight: bold">return</span> <span style="color: #D8DEE9">generate_batch</span><span style="color: #ECEFF4">(</span>
+</span><span id="__span-0-179"><a id="__codelineno-0-179" name="__codelineno-0-179"></a>            <span style="color: #81A1C1">self</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-0-180"><a id="__codelineno-0-180" name="__codelineno-0-180"></a>            <span style="color: #81A1C1">self</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">mlx_tokenizer</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-0-181"><a id="__codelineno-0-181" name="__codelineno-0-181"></a>            <span style="color: #ECEFF4">[</span><span style="color: #81A1C1">self</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">type_adapter</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">format_input</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">item</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">for</span> <span style="color: #D8DEE9">item</span> <span style="color: #81A1C1; font-weight: bold">in</span> <span style="color: #D8DEE9">model_input</span><span style="color: #ECEFF4">],</span>
+</span><span id="__span-0-182"><a id="__codelineno-0-182" name="__codelineno-0-182"></a>            <span style="color: #D8DEE9">logits_processors</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #81A1C1">self</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">type_adapter</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">format_output_type</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">output_type</span><span style="color: #ECEFF4">),</span>
+</span><span id="__span-0-183"><a id="__codelineno-0-183" name="__codelineno-0-183"></a>            <span style="color: #81A1C1; font-weight: bold">**</span><span style="color: #D8DEE9">kwargs</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-0-184"><a id="__codelineno-0-184" name="__codelineno-0-184"></a>        <span style="color: #ECEFF4">)</span>
+</span><span id="__span-0-185"><a id="__codelineno-0-185" name="__codelineno-0-185"></a>
+</span><span id="__span-0-186"><a id="__codelineno-0-186" name="__codelineno-0-186"></a>    <span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">generate_stream</span><span style="color: #ECEFF4">(</span>
+</span><span id="__span-0-187"><a id="__codelineno-0-187" name="__codelineno-0-187"></a>        <span style="color: #81A1C1">self</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-0-188"><a id="__codelineno-0-188" name="__codelineno-0-188"></a>        <span style="color: #D8DEE9">model_input</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">str</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-0-189"><a id="__codelineno-0-189" name="__codelineno-0-189"></a>        <span style="color: #D8DEE9">output_type</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">Optional</span><span style="color: #ECEFF4">[</span><span style="color: #D8DEE9">OutlinesLogitsProcessor</span><span style="color: #ECEFF4">]</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #81A1C1; font-weight: bold">None</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-0-190"><a id="__codelineno-0-190" name="__codelineno-0-190"></a>        <span style="color: #81A1C1; font-weight: bold">**</span><span style="color: #D8DEE9">kwargs</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-0-191"><a id="__codelineno-0-191" name="__codelineno-0-191"></a>    <span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #D8DEE9">Iterator</span><span style="color: #ECEFF4">[</span><span style="color: #81A1C1">str</span><span style="color: #ECEFF4">]:</span>
+</span><span id="__span-0-192"><a id="__codelineno-0-192" name="__codelineno-0-192"></a><span style="color: #D8DEE9">        </span><span style="color: #616E87">&quot;&quot;&quot;Stream text using `mlx-lm`.</span>
+</span><span id="__span-0-193"><a id="__codelineno-0-193" name="__codelineno-0-193"></a>
+</span><span id="__span-0-194"><a id="__codelineno-0-194" name="__codelineno-0-194"></a><span style="color: #616E87">        Parameters</span>
+</span><span id="__span-0-195"><a id="__codelineno-0-195" name="__codelineno-0-195"></a><span style="color: #616E87">        ----------</span>
+</span><span id="__span-0-196"><a id="__codelineno-0-196" name="__codelineno-0-196"></a><span style="color: #616E87">        model_input</span>
+</span><span id="__span-0-197"><a id="__codelineno-0-197" name="__codelineno-0-197"></a><span style="color: #616E87">            The prompt based on which the model will generate a response.</span>
+</span><span id="__span-0-198"><a id="__codelineno-0-198" name="__codelineno-0-198"></a><span style="color: #616E87">        output_type</span>
+</span><span id="__span-0-199"><a id="__codelineno-0-199" name="__codelineno-0-199"></a><span style="color: #616E87">            The logits processor the model will use to constrain the format of</span>
+</span><span id="__span-0-200"><a id="__codelineno-0-200" name="__codelineno-0-200"></a><span style="color: #616E87">            the generated text.</span>
+</span><span id="__span-0-201"><a id="__codelineno-0-201" name="__codelineno-0-201"></a><span style="color: #616E87">        kwargs</span>
+</span><span id="__span-0-202"><a id="__codelineno-0-202" name="__codelineno-0-202"></a><span style="color: #616E87">            Additional keyword arguments to pass to the `mlx-lm` library.</span>
+</span><span id="__span-0-203"><a id="__codelineno-0-203" name="__codelineno-0-203"></a>
+</span><span id="__span-0-204"><a id="__codelineno-0-204" name="__codelineno-0-204"></a><span style="color: #616E87">        Returns</span>
+</span><span id="__span-0-205"><a id="__codelineno-0-205" name="__codelineno-0-205"></a><span style="color: #616E87">        -------</span>
+</span><span id="__span-0-206"><a id="__codelineno-0-206" name="__codelineno-0-206"></a><span style="color: #616E87">        Iterator[str]</span>
+</span><span id="__span-0-207"><a id="__codelineno-0-207" name="__codelineno-0-207"></a><span style="color: #616E87">            An iterator that yields the text generated by the model.</span>
+</span><span id="__span-0-208"><a id="__codelineno-0-208" name="__codelineno-0-208"></a>
+</span><span id="__span-0-209"><a id="__codelineno-0-209" name="__codelineno-0-209"></a><span style="color: #616E87">        &quot;&quot;&quot;</span>
+</span><span id="__span-0-210"><a id="__codelineno-0-210" name="__codelineno-0-210"></a>        <span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">mlx_lm</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">stream_generate</span>
+</span><span id="__span-0-211"><a id="__codelineno-0-211" name="__codelineno-0-211"></a>
+</span><span id="__span-0-212"><a id="__codelineno-0-212" name="__codelineno-0-212"></a>        <span style="color: #81A1C1; font-weight: bold">for</span> <span style="color: #D8DEE9">gen_response</span> <span style="color: #81A1C1; font-weight: bold">in</span> <span style="color: #D8DEE9">stream_generate</span><span style="color: #ECEFF4">(</span>
+</span><span id="__span-0-213"><a id="__codelineno-0-213" name="__codelineno-0-213"></a>            <span style="color: #81A1C1">self</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-0-214"><a id="__codelineno-0-214" name="__codelineno-0-214"></a>            <span style="color: #81A1C1">self</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">mlx_tokenizer</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-0-215"><a id="__codelineno-0-215" name="__codelineno-0-215"></a>            <span style="color: #81A1C1">self</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">type_adapter</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">format_input</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">model_input</span><span style="color: #ECEFF4">),</span>
+</span><span id="__span-0-216"><a id="__codelineno-0-216" name="__codelineno-0-216"></a>            <span style="color: #D8DEE9">logits_processors</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #81A1C1">self</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">type_adapter</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">format_output_type</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">output_type</span><span style="color: #ECEFF4">),</span>
+</span><span id="__span-0-217"><a id="__codelineno-0-217" name="__codelineno-0-217"></a>            <span style="color: #81A1C1; font-weight: bold">**</span><span style="color: #D8DEE9">kwargs</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-0-218"><a id="__codelineno-0-218" name="__codelineno-0-218"></a>        <span style="color: #ECEFF4">):</span>
+</span><span id="__span-0-219"><a id="__codelineno-0-219" name="__codelineno-0-219"></a>            <span style="color: #81A1C1; font-weight: bold">yield</span> <span style="color: #D8DEE9">gen_response</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">text</span>
 </span></code></pre></div></td></tr></table></div>
               </details>
 
@@ -4494,6 +4560,179 @@ the generated text.</p>
 <div class="doc doc-object doc-function">
 
 
+<h3 id="outlines.models.mlxlm.MLXLM.generate_batch" class="doc doc-heading">
+            <code class="highlight language-python"><span style="color: #D8DEE9">generate_batch</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">model_input</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">output_type</span><span style="color: #81A1C1; font-weight: bold">=None</span><span style="color: #ECEFF4">,</span> <span style="color: #81A1C1; font-weight: bold">**</span><span style="color: #D8DEE9">kwargs</span><span style="color: #ECEFF4">)</span></code>
+
+</h3>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Generate a batch of text using <code>mlx-lm</code>.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>model_input</code>
+            </td>
+            <td>
+                  <code><span title="list">list</span>[<span title="str">str</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The list of prompts based on which the model will generate a response.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>output_type</code>
+            </td>
+            <td>
+                  <code><span title="typing.Optional">Optional</span>[<a class="autorefs autorefs-internal" title="OutlinesLogitsProcessor (outlines.processors.OutlinesLogitsProcessor)" href="../../#outlines.processors.OutlinesLogitsProcessor">OutlinesLogitsProcessor</a>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The logits processor the model will use to constrain the format of
+the generated text.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>kwargs</code>
+            </td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Additional keyword arguments to pass to the <code>mlx-lm</code> library.</p>
+              </div>
+            </td>
+            <td>
+                  <code>{}</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="list">list</span>[<span title="str">str</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The list of text generated by the model.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+            <details class="quote">
+              <summary>Source code in <code>outlines/models/mlxlm.py</code></summary>
+              <div class="language-python highlight" style="background: #2E3440"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-152">152</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-153">153</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-154">154</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-155">155</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-156">156</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-157">157</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-158">158</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-159">159</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-160">160</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-161">161</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-162">162</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-163">163</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-164">164</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-165">165</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-166">166</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-167">167</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-168">168</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-169">169</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-170">170</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-171">171</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-172">172</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-173">173</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-174">174</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-175">175</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-176">176</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-177">177</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-178">178</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-179">179</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-180">180</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-181">181</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-182">182</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-183">183</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-184">184</a></span></pre></div></td><td class="code"><div><pre style="line-height: 125%;"><span></span><code><span id="__span-0-152"><a id="__codelineno-0-152" name="__codelineno-0-152"></a><span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">generate_batch</span><span style="color: #ECEFF4">(</span>
+</span><span id="__span-0-153"><a id="__codelineno-0-153" name="__codelineno-0-153"></a>    <span style="color: #81A1C1">self</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-0-154"><a id="__codelineno-0-154" name="__codelineno-0-154"></a>    <span style="color: #D8DEE9">model_input</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">list</span><span style="color: #ECEFF4">[</span><span style="color: #81A1C1">str</span><span style="color: #ECEFF4">],</span>
+</span><span id="__span-0-155"><a id="__codelineno-0-155" name="__codelineno-0-155"></a>    <span style="color: #D8DEE9">output_type</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">Optional</span><span style="color: #ECEFF4">[</span><span style="color: #D8DEE9">OutlinesLogitsProcessor</span><span style="color: #ECEFF4">]</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #81A1C1; font-weight: bold">None</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-0-156"><a id="__codelineno-0-156" name="__codelineno-0-156"></a>    <span style="color: #81A1C1; font-weight: bold">**</span><span style="color: #D8DEE9">kwargs</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-0-157"><a id="__codelineno-0-157" name="__codelineno-0-157"></a><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #81A1C1">list</span><span style="color: #ECEFF4">[</span><span style="color: #81A1C1">str</span><span style="color: #ECEFF4">]:</span>
+</span><span id="__span-0-158"><a id="__codelineno-0-158" name="__codelineno-0-158"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">&quot;&quot;&quot;Generate a batch of text using `mlx-lm`.</span>
+</span><span id="__span-0-159"><a id="__codelineno-0-159" name="__codelineno-0-159"></a>
+</span><span id="__span-0-160"><a id="__codelineno-0-160" name="__codelineno-0-160"></a><span style="color: #616E87">    Parameters</span>
+</span><span id="__span-0-161"><a id="__codelineno-0-161" name="__codelineno-0-161"></a><span style="color: #616E87">    ----------</span>
+</span><span id="__span-0-162"><a id="__codelineno-0-162" name="__codelineno-0-162"></a><span style="color: #616E87">    model_input</span>
+</span><span id="__span-0-163"><a id="__codelineno-0-163" name="__codelineno-0-163"></a><span style="color: #616E87">        The list of prompts based on which the model will generate a response.</span>
+</span><span id="__span-0-164"><a id="__codelineno-0-164" name="__codelineno-0-164"></a><span style="color: #616E87">    output_type</span>
+</span><span id="__span-0-165"><a id="__codelineno-0-165" name="__codelineno-0-165"></a><span style="color: #616E87">        The logits processor the model will use to constrain the format of</span>
+</span><span id="__span-0-166"><a id="__codelineno-0-166" name="__codelineno-0-166"></a><span style="color: #616E87">        the generated text.</span>
+</span><span id="__span-0-167"><a id="__codelineno-0-167" name="__codelineno-0-167"></a><span style="color: #616E87">    kwargs</span>
+</span><span id="__span-0-168"><a id="__codelineno-0-168" name="__codelineno-0-168"></a><span style="color: #616E87">        Additional keyword arguments to pass to the `mlx-lm` library.</span>
+</span><span id="__span-0-169"><a id="__codelineno-0-169" name="__codelineno-0-169"></a>
+</span><span id="__span-0-170"><a id="__codelineno-0-170" name="__codelineno-0-170"></a><span style="color: #616E87">    Returns</span>
+</span><span id="__span-0-171"><a id="__codelineno-0-171" name="__codelineno-0-171"></a><span style="color: #616E87">    -------</span>
+</span><span id="__span-0-172"><a id="__codelineno-0-172" name="__codelineno-0-172"></a><span style="color: #616E87">    list[str]</span>
+</span><span id="__span-0-173"><a id="__codelineno-0-173" name="__codelineno-0-173"></a><span style="color: #616E87">        The list of text generated by the model.</span>
+</span><span id="__span-0-174"><a id="__codelineno-0-174" name="__codelineno-0-174"></a>
+</span><span id="__span-0-175"><a id="__codelineno-0-175" name="__codelineno-0-175"></a><span style="color: #616E87">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-176"><a id="__codelineno-0-176" name="__codelineno-0-176"></a>    <span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">mlx_lm</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">generate_batch</span>
+</span><span id="__span-0-177"><a id="__codelineno-0-177" name="__codelineno-0-177"></a>
+</span><span id="__span-0-178"><a id="__codelineno-0-178" name="__codelineno-0-178"></a>    <span style="color: #81A1C1; font-weight: bold">return</span> <span style="color: #D8DEE9">generate_batch</span><span style="color: #ECEFF4">(</span>
+</span><span id="__span-0-179"><a id="__codelineno-0-179" name="__codelineno-0-179"></a>        <span style="color: #81A1C1">self</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-0-180"><a id="__codelineno-0-180" name="__codelineno-0-180"></a>        <span style="color: #81A1C1">self</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">mlx_tokenizer</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-0-181"><a id="__codelineno-0-181" name="__codelineno-0-181"></a>        <span style="color: #ECEFF4">[</span><span style="color: #81A1C1">self</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">type_adapter</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">format_input</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">item</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">for</span> <span style="color: #D8DEE9">item</span> <span style="color: #81A1C1; font-weight: bold">in</span> <span style="color: #D8DEE9">model_input</span><span style="color: #ECEFF4">],</span>
+</span><span id="__span-0-182"><a id="__codelineno-0-182" name="__codelineno-0-182"></a>        <span style="color: #D8DEE9">logits_processors</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #81A1C1">self</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">type_adapter</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">format_output_type</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">output_type</span><span style="color: #ECEFF4">),</span>
+</span><span id="__span-0-183"><a id="__codelineno-0-183" name="__codelineno-0-183"></a>        <span style="color: #81A1C1; font-weight: bold">**</span><span style="color: #D8DEE9">kwargs</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-0-184"><a id="__codelineno-0-184" name="__codelineno-0-184"></a>    <span style="color: #ECEFF4">)</span>
+</span></code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
 <h3 id="outlines.models.mlxlm.MLXLM.generate_stream" class="doc doc-heading">
             <code class="highlight language-python"><span style="color: #D8DEE9">generate_stream</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">model_input</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">output_type</span><span style="color: #81A1C1; font-weight: bold">=None</span><span style="color: #ECEFF4">,</span> <span style="color: #81A1C1; font-weight: bold">**</span><span style="color: #D8DEE9">kwargs</span><span style="color: #ECEFF4">)</span></code>
 
@@ -4593,31 +4832,7 @@ the generated text.</p>
 
             <details class="quote">
               <summary>Source code in <code>outlines/models/mlxlm.py</code></summary>
-              <div class="language-python highlight" style="background: #2E3440"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-162">162</a></span>
-<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-163">163</a></span>
-<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-164">164</a></span>
-<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-165">165</a></span>
-<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-166">166</a></span>
-<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-167">167</a></span>
-<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-168">168</a></span>
-<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-169">169</a></span>
-<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-170">170</a></span>
-<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-171">171</a></span>
-<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-172">172</a></span>
-<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-173">173</a></span>
-<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-174">174</a></span>
-<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-175">175</a></span>
-<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-176">176</a></span>
-<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-177">177</a></span>
-<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-178">178</a></span>
-<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-179">179</a></span>
-<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-180">180</a></span>
-<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-181">181</a></span>
-<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-182">182</a></span>
-<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-183">183</a></span>
-<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-184">184</a></span>
-<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-185">185</a></span>
-<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-186">186</a></span>
+              <div class="language-python highlight" style="background: #2E3440"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-186">186</a></span>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-187">187</a></span>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-188">188</a></span>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-189">189</a></span>
@@ -4626,40 +4841,64 @@ the generated text.</p>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-192">192</a></span>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-193">193</a></span>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-194">194</a></span>
-<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-195">195</a></span></pre></div></td><td class="code"><div><pre style="line-height: 125%;"><span></span><code><span id="__span-0-162"><a id="__codelineno-0-162" name="__codelineno-0-162"></a><span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">generate_stream</span><span style="color: #ECEFF4">(</span>
-</span><span id="__span-0-163"><a id="__codelineno-0-163" name="__codelineno-0-163"></a>    <span style="color: #81A1C1">self</span><span style="color: #ECEFF4">,</span>
-</span><span id="__span-0-164"><a id="__codelineno-0-164" name="__codelineno-0-164"></a>    <span style="color: #D8DEE9">model_input</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">str</span><span style="color: #ECEFF4">,</span>
-</span><span id="__span-0-165"><a id="__codelineno-0-165" name="__codelineno-0-165"></a>    <span style="color: #D8DEE9">output_type</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">Optional</span><span style="color: #ECEFF4">[</span><span style="color: #D8DEE9">OutlinesLogitsProcessor</span><span style="color: #ECEFF4">]</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #81A1C1; font-weight: bold">None</span><span style="color: #ECEFF4">,</span>
-</span><span id="__span-0-166"><a id="__codelineno-0-166" name="__codelineno-0-166"></a>    <span style="color: #81A1C1; font-weight: bold">**</span><span style="color: #D8DEE9">kwargs</span><span style="color: #ECEFF4">,</span>
-</span><span id="__span-0-167"><a id="__codelineno-0-167" name="__codelineno-0-167"></a><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #D8DEE9">Iterator</span><span style="color: #ECEFF4">[</span><span style="color: #81A1C1">str</span><span style="color: #ECEFF4">]:</span>
-</span><span id="__span-0-168"><a id="__codelineno-0-168" name="__codelineno-0-168"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">&quot;&quot;&quot;Stream text using `mlx-lm`.</span>
-</span><span id="__span-0-169"><a id="__codelineno-0-169" name="__codelineno-0-169"></a>
-</span><span id="__span-0-170"><a id="__codelineno-0-170" name="__codelineno-0-170"></a><span style="color: #616E87">    Parameters</span>
-</span><span id="__span-0-171"><a id="__codelineno-0-171" name="__codelineno-0-171"></a><span style="color: #616E87">    ----------</span>
-</span><span id="__span-0-172"><a id="__codelineno-0-172" name="__codelineno-0-172"></a><span style="color: #616E87">    model_input</span>
-</span><span id="__span-0-173"><a id="__codelineno-0-173" name="__codelineno-0-173"></a><span style="color: #616E87">        The prompt based on which the model will generate a response.</span>
-</span><span id="__span-0-174"><a id="__codelineno-0-174" name="__codelineno-0-174"></a><span style="color: #616E87">    output_type</span>
-</span><span id="__span-0-175"><a id="__codelineno-0-175" name="__codelineno-0-175"></a><span style="color: #616E87">        The logits processor the model will use to constrain the format of</span>
-</span><span id="__span-0-176"><a id="__codelineno-0-176" name="__codelineno-0-176"></a><span style="color: #616E87">        the generated text.</span>
-</span><span id="__span-0-177"><a id="__codelineno-0-177" name="__codelineno-0-177"></a><span style="color: #616E87">    kwargs</span>
-</span><span id="__span-0-178"><a id="__codelineno-0-178" name="__codelineno-0-178"></a><span style="color: #616E87">        Additional keyword arguments to pass to the `mlx-lm` library.</span>
-</span><span id="__span-0-179"><a id="__codelineno-0-179" name="__codelineno-0-179"></a>
-</span><span id="__span-0-180"><a id="__codelineno-0-180" name="__codelineno-0-180"></a><span style="color: #616E87">    Returns</span>
-</span><span id="__span-0-181"><a id="__codelineno-0-181" name="__codelineno-0-181"></a><span style="color: #616E87">    -------</span>
-</span><span id="__span-0-182"><a id="__codelineno-0-182" name="__codelineno-0-182"></a><span style="color: #616E87">    Iterator[str]</span>
-</span><span id="__span-0-183"><a id="__codelineno-0-183" name="__codelineno-0-183"></a><span style="color: #616E87">        An iterator that yields the text generated by the model.</span>
-</span><span id="__span-0-184"><a id="__codelineno-0-184" name="__codelineno-0-184"></a>
-</span><span id="__span-0-185"><a id="__codelineno-0-185" name="__codelineno-0-185"></a><span style="color: #616E87">    &quot;&quot;&quot;</span>
-</span><span id="__span-0-186"><a id="__codelineno-0-186" name="__codelineno-0-186"></a>    <span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">mlx_lm</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">stream_generate</span>
-</span><span id="__span-0-187"><a id="__codelineno-0-187" name="__codelineno-0-187"></a>
-</span><span id="__span-0-188"><a id="__codelineno-0-188" name="__codelineno-0-188"></a>    <span style="color: #81A1C1; font-weight: bold">for</span> <span style="color: #D8DEE9">gen_response</span> <span style="color: #81A1C1; font-weight: bold">in</span> <span style="color: #D8DEE9">stream_generate</span><span style="color: #ECEFF4">(</span>
-</span><span id="__span-0-189"><a id="__codelineno-0-189" name="__codelineno-0-189"></a>        <span style="color: #81A1C1">self</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">,</span>
-</span><span id="__span-0-190"><a id="__codelineno-0-190" name="__codelineno-0-190"></a>        <span style="color: #81A1C1">self</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">mlx_tokenizer</span><span style="color: #ECEFF4">,</span>
-</span><span id="__span-0-191"><a id="__codelineno-0-191" name="__codelineno-0-191"></a>        <span style="color: #81A1C1">self</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">type_adapter</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">format_input</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">model_input</span><span style="color: #ECEFF4">),</span>
-</span><span id="__span-0-192"><a id="__codelineno-0-192" name="__codelineno-0-192"></a>        <span style="color: #D8DEE9">logits_processors</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #81A1C1">self</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">type_adapter</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">format_output_type</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">output_type</span><span style="color: #ECEFF4">),</span>
-</span><span id="__span-0-193"><a id="__codelineno-0-193" name="__codelineno-0-193"></a>        <span style="color: #81A1C1; font-weight: bold">**</span><span style="color: #D8DEE9">kwargs</span><span style="color: #ECEFF4">,</span>
-</span><span id="__span-0-194"><a id="__codelineno-0-194" name="__codelineno-0-194"></a>    <span style="color: #ECEFF4">):</span>
-</span><span id="__span-0-195"><a id="__codelineno-0-195" name="__codelineno-0-195"></a>        <span style="color: #81A1C1; font-weight: bold">yield</span> <span style="color: #D8DEE9">gen_response</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">text</span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-195">195</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-196">196</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-197">197</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-198">198</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-199">199</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-200">200</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-201">201</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-202">202</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-203">203</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-204">204</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-205">205</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-206">206</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-207">207</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-208">208</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-209">209</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-210">210</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-211">211</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-212">212</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-213">213</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-214">214</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-215">215</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-216">216</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-217">217</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-218">218</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-219">219</a></span></pre></div></td><td class="code"><div><pre style="line-height: 125%;"><span></span><code><span id="__span-0-186"><a id="__codelineno-0-186" name="__codelineno-0-186"></a><span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">generate_stream</span><span style="color: #ECEFF4">(</span>
+</span><span id="__span-0-187"><a id="__codelineno-0-187" name="__codelineno-0-187"></a>    <span style="color: #81A1C1">self</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-0-188"><a id="__codelineno-0-188" name="__codelineno-0-188"></a>    <span style="color: #D8DEE9">model_input</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">str</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-0-189"><a id="__codelineno-0-189" name="__codelineno-0-189"></a>    <span style="color: #D8DEE9">output_type</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">Optional</span><span style="color: #ECEFF4">[</span><span style="color: #D8DEE9">OutlinesLogitsProcessor</span><span style="color: #ECEFF4">]</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #81A1C1; font-weight: bold">None</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-0-190"><a id="__codelineno-0-190" name="__codelineno-0-190"></a>    <span style="color: #81A1C1; font-weight: bold">**</span><span style="color: #D8DEE9">kwargs</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-0-191"><a id="__codelineno-0-191" name="__codelineno-0-191"></a><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #D8DEE9">Iterator</span><span style="color: #ECEFF4">[</span><span style="color: #81A1C1">str</span><span style="color: #ECEFF4">]:</span>
+</span><span id="__span-0-192"><a id="__codelineno-0-192" name="__codelineno-0-192"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">&quot;&quot;&quot;Stream text using `mlx-lm`.</span>
+</span><span id="__span-0-193"><a id="__codelineno-0-193" name="__codelineno-0-193"></a>
+</span><span id="__span-0-194"><a id="__codelineno-0-194" name="__codelineno-0-194"></a><span style="color: #616E87">    Parameters</span>
+</span><span id="__span-0-195"><a id="__codelineno-0-195" name="__codelineno-0-195"></a><span style="color: #616E87">    ----------</span>
+</span><span id="__span-0-196"><a id="__codelineno-0-196" name="__codelineno-0-196"></a><span style="color: #616E87">    model_input</span>
+</span><span id="__span-0-197"><a id="__codelineno-0-197" name="__codelineno-0-197"></a><span style="color: #616E87">        The prompt based on which the model will generate a response.</span>
+</span><span id="__span-0-198"><a id="__codelineno-0-198" name="__codelineno-0-198"></a><span style="color: #616E87">    output_type</span>
+</span><span id="__span-0-199"><a id="__codelineno-0-199" name="__codelineno-0-199"></a><span style="color: #616E87">        The logits processor the model will use to constrain the format of</span>
+</span><span id="__span-0-200"><a id="__codelineno-0-200" name="__codelineno-0-200"></a><span style="color: #616E87">        the generated text.</span>
+</span><span id="__span-0-201"><a id="__codelineno-0-201" name="__codelineno-0-201"></a><span style="color: #616E87">    kwargs</span>
+</span><span id="__span-0-202"><a id="__codelineno-0-202" name="__codelineno-0-202"></a><span style="color: #616E87">        Additional keyword arguments to pass to the `mlx-lm` library.</span>
+</span><span id="__span-0-203"><a id="__codelineno-0-203" name="__codelineno-0-203"></a>
+</span><span id="__span-0-204"><a id="__codelineno-0-204" name="__codelineno-0-204"></a><span style="color: #616E87">    Returns</span>
+</span><span id="__span-0-205"><a id="__codelineno-0-205" name="__codelineno-0-205"></a><span style="color: #616E87">    -------</span>
+</span><span id="__span-0-206"><a id="__codelineno-0-206" name="__codelineno-0-206"></a><span style="color: #616E87">    Iterator[str]</span>
+</span><span id="__span-0-207"><a id="__codelineno-0-207" name="__codelineno-0-207"></a><span style="color: #616E87">        An iterator that yields the text generated by the model.</span>
+</span><span id="__span-0-208"><a id="__codelineno-0-208" name="__codelineno-0-208"></a>
+</span><span id="__span-0-209"><a id="__codelineno-0-209" name="__codelineno-0-209"></a><span style="color: #616E87">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-210"><a id="__codelineno-0-210" name="__codelineno-0-210"></a>    <span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">mlx_lm</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">stream_generate</span>
+</span><span id="__span-0-211"><a id="__codelineno-0-211" name="__codelineno-0-211"></a>
+</span><span id="__span-0-212"><a id="__codelineno-0-212" name="__codelineno-0-212"></a>    <span style="color: #81A1C1; font-weight: bold">for</span> <span style="color: #D8DEE9">gen_response</span> <span style="color: #81A1C1; font-weight: bold">in</span> <span style="color: #D8DEE9">stream_generate</span><span style="color: #ECEFF4">(</span>
+</span><span id="__span-0-213"><a id="__codelineno-0-213" name="__codelineno-0-213"></a>        <span style="color: #81A1C1">self</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-0-214"><a id="__codelineno-0-214" name="__codelineno-0-214"></a>        <span style="color: #81A1C1">self</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">mlx_tokenizer</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-0-215"><a id="__codelineno-0-215" name="__codelineno-0-215"></a>        <span style="color: #81A1C1">self</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">type_adapter</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">format_input</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">model_input</span><span style="color: #ECEFF4">),</span>
+</span><span id="__span-0-216"><a id="__codelineno-0-216" name="__codelineno-0-216"></a>        <span style="color: #D8DEE9">logits_processors</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #81A1C1">self</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">type_adapter</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">format_output_type</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">output_type</span><span style="color: #ECEFF4">),</span>
+</span><span id="__span-0-217"><a id="__codelineno-0-217" name="__codelineno-0-217"></a>        <span style="color: #81A1C1; font-weight: bold">**</span><span style="color: #D8DEE9">kwargs</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-0-218"><a id="__codelineno-0-218" name="__codelineno-0-218"></a>    <span style="color: #ECEFF4">):</span>
+</span><span id="__span-0-219"><a id="__codelineno-0-219" name="__codelineno-0-219"></a>        <span style="color: #81A1C1; font-weight: bold">yield</span> <span style="color: #D8DEE9">gen_response</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">text</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -4788,8 +5027,8 @@ the generated text.</p>
 </span><span id="__span-0-37"><a id="__codelineno-0-37" name="__codelineno-0-37"></a>
 </span><span id="__span-0-38"><a id="__codelineno-0-38" name="__codelineno-0-38"></a><span style="color: #616E87">        &quot;&quot;&quot;</span>
 </span><span id="__span-0-39"><a id="__codelineno-0-39" name="__codelineno-0-39"></a>        <span style="color: #81A1C1; font-weight: bold">raise</span> <span style="color: #BF616A">NotImplementedError</span><span style="color: #ECEFF4">(</span>
-</span><span id="__span-0-40"><a id="__codelineno-0-40" name="__codelineno-0-40"></a>            <span style="color: #A3BE8C">f&quot;The input type {</span><span style="color: #81A1C1">input</span><span style="color: #A3BE8C">} is not available with mlx-lm. &quot;</span>
-</span><span id="__span-0-41"><a id="__codelineno-0-41" name="__codelineno-0-41"></a>            <span style="color: #A3BE8C">&quot;The available types are `str` and `Chat`.&quot;</span>
+</span><span id="__span-0-40"><a id="__codelineno-0-40" name="__codelineno-0-40"></a>            <span style="color: #A3BE8C">f&quot;The input type {</span><span style="color: #81A1C1">type</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">model_input</span><span style="color: #ECEFF4">)</span><span style="color: #A3BE8C">} is not available with &quot;</span>
+</span><span id="__span-0-41"><a id="__codelineno-0-41" name="__codelineno-0-41"></a>            <span style="color: #A3BE8C">&quot;mlx-lm. The available types are `str` and `Chat`.&quot;</span>
 </span><span id="__span-0-42"><a id="__codelineno-0-42" name="__codelineno-0-42"></a>        <span style="color: #ECEFF4">)</span>
 </span><span id="__span-0-43"><a id="__codelineno-0-43" name="__codelineno-0-43"></a>
 </span><span id="__span-0-44"><a id="__codelineno-0-44" name="__codelineno-0-44"></a>    <span style="color: #D08770">@format_input</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">register</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">str</span><span style="color: #ECEFF4">)</span>
@@ -4951,8 +5190,8 @@ the generated text.</p>
 </span><span id="__span-0-37"><a id="__codelineno-0-37" name="__codelineno-0-37"></a>
 </span><span id="__span-0-38"><a id="__codelineno-0-38" name="__codelineno-0-38"></a><span style="color: #616E87">    &quot;&quot;&quot;</span>
 </span><span id="__span-0-39"><a id="__codelineno-0-39" name="__codelineno-0-39"></a>    <span style="color: #81A1C1; font-weight: bold">raise</span> <span style="color: #BF616A">NotImplementedError</span><span style="color: #ECEFF4">(</span>
-</span><span id="__span-0-40"><a id="__codelineno-0-40" name="__codelineno-0-40"></a>        <span style="color: #A3BE8C">f&quot;The input type {</span><span style="color: #81A1C1">input</span><span style="color: #A3BE8C">} is not available with mlx-lm. &quot;</span>
-</span><span id="__span-0-41"><a id="__codelineno-0-41" name="__codelineno-0-41"></a>        <span style="color: #A3BE8C">&quot;The available types are `str` and `Chat`.&quot;</span>
+</span><span id="__span-0-40"><a id="__codelineno-0-40" name="__codelineno-0-40"></a>        <span style="color: #A3BE8C">f&quot;The input type {</span><span style="color: #81A1C1">type</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">model_input</span><span style="color: #ECEFF4">)</span><span style="color: #A3BE8C">} is not available with &quot;</span>
+</span><span id="__span-0-41"><a id="__codelineno-0-41" name="__codelineno-0-41"></a>        <span style="color: #A3BE8C">&quot;mlx-lm. The available types are `str` and `Chat`.&quot;</span>
 </span><span id="__span-0-42"><a id="__codelineno-0-42" name="__codelineno-0-42"></a>    <span style="color: #ECEFF4">)</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
@@ -5170,43 +5409,43 @@ transformers tokenizer.</p>
 
             <details class="quote">
               <summary>Source code in <code>outlines/models/mlxlm.py</code></summary>
-              <div class="language-python highlight" style="background: #2E3440"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-198">198</a></span>
-<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-199">199</a></span>
-<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-200">200</a></span>
-<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-201">201</a></span>
-<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-202">202</a></span>
-<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-203">203</a></span>
-<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-204">204</a></span>
-<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-205">205</a></span>
-<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-206">206</a></span>
-<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-207">207</a></span>
-<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-208">208</a></span>
-<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-209">209</a></span>
-<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-210">210</a></span>
-<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-211">211</a></span>
-<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-212">212</a></span>
-<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-213">213</a></span>
-<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-214">214</a></span>
-<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-215">215</a></span>
-<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-216">216</a></span></pre></div></td><td class="code"><div><pre style="line-height: 125%;"><span></span><code><span id="__span-0-198"><a id="__codelineno-0-198" name="__codelineno-0-198"></a><span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">from_mlxlm</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;nn.Module&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">tokenizer</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;PreTrainedTokenizer&quot;</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #D8DEE9">MLXLM</span><span style="color: #ECEFF4">:</span>
-</span><span id="__span-0-199"><a id="__codelineno-0-199" name="__codelineno-0-199"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">&quot;&quot;&quot;Create an Outlines `MLXLM` model instance from an `mlx_lm` model and a</span>
-</span><span id="__span-0-200"><a id="__codelineno-0-200" name="__codelineno-0-200"></a><span style="color: #616E87">    tokenizer.</span>
-</span><span id="__span-0-201"><a id="__codelineno-0-201" name="__codelineno-0-201"></a>
-</span><span id="__span-0-202"><a id="__codelineno-0-202" name="__codelineno-0-202"></a><span style="color: #616E87">    Parameters</span>
-</span><span id="__span-0-203"><a id="__codelineno-0-203" name="__codelineno-0-203"></a><span style="color: #616E87">    ----------</span>
-</span><span id="__span-0-204"><a id="__codelineno-0-204" name="__codelineno-0-204"></a><span style="color: #616E87">    model</span>
-</span><span id="__span-0-205"><a id="__codelineno-0-205" name="__codelineno-0-205"></a><span style="color: #616E87">        An instance of an `mlx_lm` model.</span>
-</span><span id="__span-0-206"><a id="__codelineno-0-206" name="__codelineno-0-206"></a><span style="color: #616E87">    tokenizer</span>
-</span><span id="__span-0-207"><a id="__codelineno-0-207" name="__codelineno-0-207"></a><span style="color: #616E87">        An instance of an `mlx_lm` tokenizer or of a compatible</span>
-</span><span id="__span-0-208"><a id="__codelineno-0-208" name="__codelineno-0-208"></a><span style="color: #616E87">        transformers tokenizer.</span>
-</span><span id="__span-0-209"><a id="__codelineno-0-209" name="__codelineno-0-209"></a>
-</span><span id="__span-0-210"><a id="__codelineno-0-210" name="__codelineno-0-210"></a><span style="color: #616E87">    Returns</span>
-</span><span id="__span-0-211"><a id="__codelineno-0-211" name="__codelineno-0-211"></a><span style="color: #616E87">    -------</span>
-</span><span id="__span-0-212"><a id="__codelineno-0-212" name="__codelineno-0-212"></a><span style="color: #616E87">    MLXLM</span>
-</span><span id="__span-0-213"><a id="__codelineno-0-213" name="__codelineno-0-213"></a><span style="color: #616E87">        An Outlines `MLXLM` model instance.</span>
-</span><span id="__span-0-214"><a id="__codelineno-0-214" name="__codelineno-0-214"></a>
-</span><span id="__span-0-215"><a id="__codelineno-0-215" name="__codelineno-0-215"></a><span style="color: #616E87">    &quot;&quot;&quot;</span>
-</span><span id="__span-0-216"><a id="__codelineno-0-216" name="__codelineno-0-216"></a>    <span style="color: #81A1C1; font-weight: bold">return</span> <span style="color: #D8DEE9">MLXLM</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">tokenizer</span><span style="color: #ECEFF4">)</span>
+              <div class="language-python highlight" style="background: #2E3440"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-222">222</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-223">223</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-224">224</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-225">225</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-226">226</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-227">227</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-228">228</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-229">229</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-230">230</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-231">231</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-232">232</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-233">233</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-234">234</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-235">235</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-236">236</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-237">237</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-238">238</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-239">239</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-240">240</a></span></pre></div></td><td class="code"><div><pre style="line-height: 125%;"><span></span><code><span id="__span-0-222"><a id="__codelineno-0-222" name="__codelineno-0-222"></a><span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">from_mlxlm</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;nn.Module&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">tokenizer</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;PreTrainedTokenizer&quot;</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #D8DEE9">MLXLM</span><span style="color: #ECEFF4">:</span>
+</span><span id="__span-0-223"><a id="__codelineno-0-223" name="__codelineno-0-223"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">&quot;&quot;&quot;Create an Outlines `MLXLM` model instance from an `mlx_lm` model and a</span>
+</span><span id="__span-0-224"><a id="__codelineno-0-224" name="__codelineno-0-224"></a><span style="color: #616E87">    tokenizer.</span>
+</span><span id="__span-0-225"><a id="__codelineno-0-225" name="__codelineno-0-225"></a>
+</span><span id="__span-0-226"><a id="__codelineno-0-226" name="__codelineno-0-226"></a><span style="color: #616E87">    Parameters</span>
+</span><span id="__span-0-227"><a id="__codelineno-0-227" name="__codelineno-0-227"></a><span style="color: #616E87">    ----------</span>
+</span><span id="__span-0-228"><a id="__codelineno-0-228" name="__codelineno-0-228"></a><span style="color: #616E87">    model</span>
+</span><span id="__span-0-229"><a id="__codelineno-0-229" name="__codelineno-0-229"></a><span style="color: #616E87">        An instance of an `mlx_lm` model.</span>
+</span><span id="__span-0-230"><a id="__codelineno-0-230" name="__codelineno-0-230"></a><span style="color: #616E87">    tokenizer</span>
+</span><span id="__span-0-231"><a id="__codelineno-0-231" name="__codelineno-0-231"></a><span style="color: #616E87">        An instance of an `mlx_lm` tokenizer or of a compatible</span>
+</span><span id="__span-0-232"><a id="__codelineno-0-232" name="__codelineno-0-232"></a><span style="color: #616E87">        transformers tokenizer.</span>
+</span><span id="__span-0-233"><a id="__codelineno-0-233" name="__codelineno-0-233"></a>
+</span><span id="__span-0-234"><a id="__codelineno-0-234" name="__codelineno-0-234"></a><span style="color: #616E87">    Returns</span>
+</span><span id="__span-0-235"><a id="__codelineno-0-235" name="__codelineno-0-235"></a><span style="color: #616E87">    -------</span>
+</span><span id="__span-0-236"><a id="__codelineno-0-236" name="__codelineno-0-236"></a><span style="color: #616E87">    MLXLM</span>
+</span><span id="__span-0-237"><a id="__codelineno-0-237" name="__codelineno-0-237"></a><span style="color: #616E87">        An Outlines `MLXLM` model instance.</span>
+</span><span id="__span-0-238"><a id="__codelineno-0-238" name="__codelineno-0-238"></a>
+</span><span id="__span-0-239"><a id="__codelineno-0-239" name="__codelineno-0-239"></a><span style="color: #616E87">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-240"><a id="__codelineno-0-240" name="__codelineno-0-240"></a>    <span style="color: #81A1C1; font-weight: bold">return</span> <span style="color: #D8DEE9">MLXLM</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">tokenizer</span><span style="color: #ECEFF4">)</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -5242,7 +5481,7 @@ transformers tokenizer.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="September 18, 2025 07:50:34 UTC"><span class="timeago" datetime="2025-09-18T07:50:34+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="September 18, 2025 07:50:34 UTC">2025-09-18</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="September 26, 2025 12:50:50 UTC"><span class="timeago" datetime="2025-09-26T12:50:50+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="September 26, 2025 12:50:50 UTC">2025-09-26</span>
   </span>
 
     
@@ -5252,7 +5491,7 @@ transformers tokenizer.</p>
     <span class="md-icon" title="Created">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="September 18, 2025 07:50:34 UTC"><span class="timeago" datetime="2025-09-18T07:50:34+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="September 18, 2025 07:50:34 UTC">2025-09-18</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="September 26, 2025 12:50:50 UTC"><span class="timeago" datetime="2025-09-26T12:50:50+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="September 26, 2025 12:50:50 UTC">2025-09-26</span>
   </span>
 
     
