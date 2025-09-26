@@ -3,6 +3,7 @@ from enum import Enum
 
 from pydantic import BaseModel
 import pytest
+import torch
 import transformers
 
 import outlines
@@ -47,15 +48,17 @@ def test_transformers_instantiate_mamba():
     assert isinstance(model, Transformers)
 
 
-def test_transformers_instantiate_tokenizer_kwargs():
+def test_transformers_instantiate_tokenizer_kwargs_dtype():
     model = outlines.from_transformers(
         transformers.AutoModelForCausalLM.from_pretrained(TEST_MODEL),
         transformers.AutoTokenizer.from_pretrained(
             TEST_MODEL, additional_special_tokens=["<t1>", "<t2>"]
         ),
+        device_dtype=torch.bfloat16,
     )
     assert "<t1>" in model.tokenizer.special_tokens
     assert "<t2>" in model.tokenizer.special_tokens
+    assert model.device_dtype == torch.bfloat16
 
 
 @pytest.fixture
@@ -85,6 +88,10 @@ def test_transformers_simple(model):
 
 
 def test_transformers_call(model, model_bart):
+    result = model("Respond with one word. Not more.")
+    assert isinstance(result, str)
+
+    model.device_dtype = torch.bfloat16
     result = model("Respond with one word. Not more.")
     assert isinstance(result, str)
 

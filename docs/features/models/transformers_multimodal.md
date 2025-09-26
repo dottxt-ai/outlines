@@ -12,6 +12,7 @@ To load the model, you can use the `from_transformers` function. It takes 2 argu
 
 - `model`: a `transformers` model (created with `AutoModelForImageTextToText` for instance)
 - `tokenizer_or_processor`: a `transformers` processor (created with `AutoProcessor` for instance, it must be an instance of `ProcessorMixin`)
+- `device_dtype` (optional): the tensor dtype to use for inference. If not provided, the model will use the default dtype.
 
 For instance:
 

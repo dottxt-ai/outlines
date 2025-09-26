@@ -2,6 +2,7 @@
 
 import io
 import re
+import torch
 from enum import Enum
 
 import pytest
@@ -47,15 +48,17 @@ def model():
     return model
 
 
-def test_transformers_multimodal_instantiate_simple():
+def test_transformers_multimodal_instantiate():
     model = outlines.from_transformers(
         LlavaForConditionalGeneration.from_pretrained(TEST_MODEL),
         AutoProcessor.from_pretrained(TEST_MODEL),
+        device_dtype=torch.bfloat16,
     )
     assert isinstance(model, TransformersMultiModal)
     assert isinstance(model.tokenizer, TransformerTokenizer)
     assert isinstance(model.type_adapter, TransformersMultiModalTypeAdapter)
     assert model.tensor_library_name == "torch"
+    assert model.device_dtype == torch.bfloat16
 
 
 def test_transformers_multimodal_simple(model, image):
@@ -68,6 +71,13 @@ def test_transformers_multimodal_simple(model, image):
 
 
 def test_transformers_multimodal_call(model, image):
+    result = model(
+        ["<image>Describe this image in one sentence:", Image(image)],
+        max_new_tokens=2,
+    )
+    assert isinstance(result, str)
+
+    model.device_dtype = torch.bfloat16
     result = model(
         ["<image>Describe this image in one sentence:", Image(image)],
         max_new_tokens=2,
