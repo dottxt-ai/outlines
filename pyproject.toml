@@ -45,6 +45,7 @@ llamacpp = ["huggingface-hub", "llama-cpp-python", "numba"]
 mlxlm = ["datasets", "mlx", "mlx-lm"]
 ollama = ["ollama"]
 openai = ["openai"]
+mistral = ["mistralai"]
 sglang = ["openai"]
 tgi = ["huggingface_hub"]
 transformers = ["accelerate", "datasets", "transformers", "setuptools"]
@@ -72,6 +73,7 @@ test = [
     "datasets",
     "anthropic",
     "google-genai",
+    "mistralai",
     "transformers",
     "pillow",
     "jax",
@@ -137,6 +139,7 @@ module = [
     "jsonschema.*",
     "anthropic.*",
     "google.*",
+    "mistralai.*",
     "mamba_ssm.*",
     "mlx_lm.*",
     "mlx.*",
@@ -183,6 +186,7 @@ omit = [
     "outlines/models/gemini.py",
     "outlines/models/mlxlm.py",
     "outlines/models/openai.py",
+    "outlines/models/mistral.py",
     "outlines/models/vllm_offline.py",
     "outlines/processors/tensor_adapters/mlx.py",
     "tests/*",
