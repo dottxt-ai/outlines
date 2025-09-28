@@ -322,7 +322,6 @@ class Transformers(Model):
         """
         prompts, inputs = self._prepare_model_inputs(model_input, False)
         logits_processor = self.type_adapter.format_output_type(output_type)
-
         generated_ids = self._generate_output_seq(
             prompts,
             inputs,
