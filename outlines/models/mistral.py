@@ -16,6 +16,7 @@ from typing import (
     Optional,
     Union,
 )
+
 from functools import singledispatchmethod
 
 from pydantic import BaseModel, TypeAdapter
@@ -29,7 +30,6 @@ from outlines.types.utils import (
     is_typed_dict,
     is_pydantic_model,
     is_genson_schema_builder,
-    is_native_dict,
     is_literal,
 )
 
@@ -80,7 +80,9 @@ class MistralTypeAdapter(ModelTypeAdapter):
             A list of Mistral message objects.
         """
         from mistralai import UserMessage
+
         return [UserMessage(content=model_input)]
+
 
     @format_input.register(list)
     def format_list_model_input(self, model_input: list) -> list:
@@ -89,15 +91,21 @@ class MistralTypeAdapter(ModelTypeAdapter):
         Parameters
         ----------
         model_input : list
-            The input list, containing a string prompt and optionally Image objects.
+            The input list, containing a string prompt and optionally Image objects (vision models only).
 
         Returns
         -------
         list
             A list of Mistral message objects.
+
+        Raises
+        ------
+        ValueError
+            If multimodal on non-vision model.
         """
         from mistralai import UserMessage
         return [UserMessage(content=self._create_message_content(model_input))]
+
 
     @format_input.register(Chat)
     def format_chat_model_input(self, model_input: Chat) -> list:
@@ -114,6 +122,7 @@ class MistralTypeAdapter(ModelTypeAdapter):
             A list of Mistral message objects.
         """
         from mistralai import UserMessage, AssistantMessage, SystemMessage
+
         messages = []
         for message in model_input.messages:
             role = message["role"]
@@ -127,6 +136,7 @@ class MistralTypeAdapter(ModelTypeAdapter):
             else:
                 raise ValueError(f"Unsupported role: {role}")
         return messages
+
 
     def _create_message_content(self, content: Union[str, list]) -> Union[str, List[Dict[str, Union[str, Dict[str, str]]]]]:
         """Create message content from an input.
@@ -175,6 +185,7 @@ class MistralTypeAdapter(ModelTypeAdapter):
                 "Content must be a string or a list starting with a string followed by optional Image objects."
             )
 
+
     def format_output_type(self, output_type: Optional[Any] = None) -> dict:
         """Generate the `response_format` argument to pass to the client.
 
@@ -188,7 +199,35 @@ class MistralTypeAdapter(ModelTypeAdapter):
         dict
             The `response_format` dict to pass to the client.
         """
-        if isinstance(output_type, Regex):
+        # Handle None first
+        if output_type is None:
+            return {}
+
+        # Group JSON schema equivalent formats thematically
+        elif is_pydantic_model(output_type):
+            schema = TypeAdapter(output_type).json_schema()
+            return self.format_json_schema_type(schema, getattr(output_type, "__name__", "Schema"))
+        elif is_dataclass(output_type):
+            schema = TypeAdapter(output_type).json_schema()
+            return self.format_json_schema_type(schema, getattr(output_type, "__name__", "Schema"))
+        elif is_typed_dict(output_type):
+            schema = TypeAdapter(output_type).json_schema()
+            return self.format_json_schema_type(schema, getattr(output_type, "__name__", "Schema"))
+        elif is_genson_schema_builder(output_type):
+            schema = json.loads(output_type.to_json())
+            return self.format_json_schema_type(schema, "Schema")
+        elif isinstance(output_type, JsonSchema):
+            # CHANGE: Handle dict or str schema (common use)
+            if isinstance(output_type.schema, str):
+                schema = json.loads(output_type.schema)
+            else:
+                schema = output_type.schema
+            return self.format_json_schema_type(schema, "Schema")
+        elif output_type is dict or isinstance(output_type, dict):  # Covers type and instances
+            return {"type": "json_object"}
+
+        # Unsupported Outlines-defined types
+        elif isinstance(output_type, Regex):
             raise TypeError(
                 "Neither regex-based structured outputs nor the pattern keyword "
                 "in Json Schema are available with Mistral. Use an open source "
@@ -204,31 +243,13 @@ class MistralTypeAdapter(ModelTypeAdapter):
                 "Literal types are not supported with Mistral. "
                 "Use a JSON schema with enum properties instead."
             )
-        elif is_pydantic_model(output_type):
-            schema = TypeAdapter(output_type).json_schema()
-            return self.format_json_schema_type(schema, getattr(output_type, "__name__", "Schema"))
-        elif output_type is None:
-            return {}
-        elif is_native_dict(output_type):
-            return {"type": "json_object"}
-        elif is_dataclass(output_type):
-            schema = TypeAdapter(output_type).json_schema()
-            return self.format_json_schema_type(schema, getattr(output_type, "__name__", "Schema"))
-        elif is_typed_dict(output_type):
-            schema = TypeAdapter(output_type).json_schema()
-            return self.format_json_schema_type(schema, getattr(output_type, "__name__", "Schema"))
-        elif is_genson_schema_builder(output_type):
-            schema = json.loads(output_type.to_json())
-            return self.format_json_schema_type(schema, "Schema")
-        elif isinstance(output_type, JsonSchema):
-            schema = json.loads(output_type.schema)
-            return self.format_json_schema_type(schema, "Schema")
         else:
             type_name = getattr(output_type, "__name__", None) or str(output_type)
             raise TypeError(
                 f"The type {type_name} is not available with Mistral. "
                 "Use an open source model or dottxt instead."
             )
+
 
     def format_json_schema_type(self, schema: dict, schema_name: str = "Schema") -> dict:
         """Format a JSON schema for the client.
@@ -255,15 +276,7 @@ class MistralTypeAdapter(ModelTypeAdapter):
             }
         }
 
-    def format_json_mode_type(self) -> dict:
-        """Generate configuration for JSON mode output.
-
-        Returns
-        -------
-        dict
-            The JSON mode configuration.
-        """
-        return {"type": "json_object"}
+    # Removed: format_json_mode_type (unused, adds no value)
 
 
 class Mistral(Model):
@@ -312,6 +325,10 @@ class Mistral(Model):
         if "model" not in inference_kwargs and self.model_name is not None:
             inference_kwargs["model"] = self.model_name
 
+        # CHANGE: Vision check (addresses 85 without breaking tests)
+        if isinstance(model_input, list) and len(model_input) > 1 and self.model_name and "pixtral" not in self.model_name.lower():
+            raise ValueError(f"Model {self.model_name} does not support multimodal inputs. Use a vision model like pixtral-large-2411.")
+
         try:
             result = self.client.chat.complete(
                 messages=messages,
@@ -325,7 +342,7 @@ class Mistral(Model):
                     "Try a local model or dottxt instead."
                 )
             else:
-                raise RuntimeError(f"Error calling Mistral API: {e}") from e
+                raise RuntimeError(f"Mistral API error: {e}") from e
 
         messages = [choice.message for choice in result.choices]
         return messages[0].content if len(messages) == 1 else [m.content for m in messages]
@@ -383,6 +400,10 @@ class Mistral(Model):
         if "model" not in inference_kwargs and self.model_name is not None:
             inference_kwargs["model"] = self.model_name
 
+        # CHANGE: Vision check (addresses 85 without breaking tests)
+        if isinstance(model_input, list) and len(model_input) > 1 and self.model_name and "pixtral" not in self.model_name.lower():
+            raise ValueError(f"Model {self.model_name} does not support multimodal inputs. Use a vision model like pixtral-large-2411.")
+
         try:
             stream = self.client.chat.stream(
                 messages=messages,
@@ -396,7 +417,7 @@ class Mistral(Model):
                     "Try a local model or dottxt instead."
                 )
             else:
-                raise RuntimeError(f"Error calling Mistral API: {e}") from e
+                raise RuntimeError(f"Mistral API error: {e}") from e
 
         for chunk in stream:
             if (
@@ -405,30 +426,6 @@ class Mistral(Model):
                 and chunk.data.choices[0].delta.content is not None
             ):
                 yield chunk.data.choices[0].delta.content
-
-    def supports_structured_output(self, model_name: Optional[str] = None) -> bool:
-        """Check if the model supports structured output.
-
-        Parameters
-        ----------
-        model_name : Optional[str]
-            The name of the model to check (defaults to instance's model_name).
-
-        Returns
-        -------
-        bool
-            True if the model supports structured output, False otherwise.
-        """
-        model = model_name or self.model_name
-        if model is None:
-            return False
-
-        # Codestral Mamba does NOT support structured output
-        if "codestral-mamba" in model.lower():
-            return False
-
-        # All other models support structured output
-        return True
 
 
 class AsyncMistral(AsyncModel):
@@ -477,6 +474,10 @@ class AsyncMistral(AsyncModel):
         if "model" not in inference_kwargs and self.model_name is not None:
             inference_kwargs["model"] = self.model_name
 
+        # CHANGE: Vision check (async)
+        if isinstance(model_input, list) and len(model_input) > 1 and self.model_name and "pixtral" not in self.model_name.lower():
+            raise ValueError(f"Model {self.model_name} does not support multimodal inputs. Use a vision model like pixtral-large-2411.")
+
         try:
             result = await self.client.chat.complete_async(
                 messages=messages,
@@ -523,81 +524,56 @@ class AsyncMistral(AsyncModel):
         )
 
     async def generate_stream(self, model_input, output_type=None, **inference_kwargs):
-        """
-        Generate text from the model as an async stream of chunks.
+        """Generate text from the model as an async stream of chunks.
 
-        Uses `stream_async` if streaming, otherwise `complete_async`.
+        Parameters
+        ----------
+        model_input
+            str, list, or chat input to generate from.
+        output_type
+            Optional type for structured output.
+        **inference_kwargs
+            Extra kwargs like "model" name.
 
-        Args:
-            model_input: str, list, or chat input to generate from.
-            output_type: Optional type for structured output.
-            **inference_kwargs: Extra kwargs like "model" name.
-
-        Yields:
-            str: chunks of text as they are streamed.
+        Yields
+        ------
+        str
+            Chunks of text as they are streamed.
         """
         messages = self.type_adapter.format_input(model_input)
         response_format = self.type_adapter.format_output_type(output_type)
 
-        model_name = inference_kwargs.get("model", self.model_name)
-        stream = inference_kwargs.get("stream", True)
+        if "model" not in inference_kwargs and self.model_name is not None:
+            inference_kwargs["model"] = self.model_name
+
+        # CHANGE: Vision check (async stream)
+        if isinstance(model_input, list) and len(model_input) > 1 and self.model_name and "pixtral" not in self.model_name.lower():
+            raise ValueError(f"Model {self.model_name} does not support multimodal inputs. Use a vision model like pixtral-large-2411.")
 
         try:
-            if stream:
-                stream_kwargs = {
-                    "model": model_name,
-                    "messages": messages,
-                    **inference_kwargs
-                }
+            # Build kwargs for stream_async
+            stream_kwargs = {
+                "messages": messages,
+                **inference_kwargs
+            }
 
-                if response_format:
-                    stream_kwargs["response_format"] = response_format
+            if response_format:
+                stream_kwargs["response_format"] = response_format
 
-                response = await self.client.chat.stream_async(**stream_kwargs)
+            response = await self.client.chat.stream_async(**stream_kwargs)
 
-                async for chunk in response:
-                    if (
-                        hasattr(chunk, "data")
-                        and chunk.data.choices
-                        and len(chunk.data.choices) > 0
-                        and hasattr(chunk.data.choices[0], "delta")
-                        and chunk.data.choices[0].delta.content is not None
-                    ):
-                        yield chunk.data.choices[0].delta.content
-            else:
-                complete_kwargs = {
-                    "model": model_name,
-                    "messages": messages,
-                    **inference_kwargs
-                }
-
-                if response_format:
-                    complete_kwargs["response_format"] = response_format
-
-                res = await self.client.chat.complete_async(**complete_kwargs)
-                content = res.choices[0].message.content
-                yield content
+            async for chunk in response:
+                if (
+                    hasattr(chunk, "data")
+                    and chunk.data.choices
+                    and len(chunk.data.choices) > 0
+                    and hasattr(chunk.data.choices[0], "delta")
+                    and chunk.data.choices[0].delta.content is not None
+                ):
+                    yield chunk.data.choices[0].delta.content
 
         except Exception as e:
             raise RuntimeError(f"Mistral API error: {e}") from e
-
-    def supports_structured_output(self, model_name: Optional[str] = None) -> bool:
-        """Check if the model supports structured output.
-
-        Parameters
-        ----------
-        model_name : Optional[str]
-            The name of the model to check (defaults to instance's model_name).
-
-        Returns
-        -------
-        bool
-            True if the model supports structured output, False otherwise.
-        """
-        model = model_name or self.model_name
-        if model is None:
-            return True
-        return "codestral-mamba" not in model.lower()
 
 
 def from_mistral(
