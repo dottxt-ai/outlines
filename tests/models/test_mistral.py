@@ -1,703 +1,354 @@
-"""
-outlines/tests/models/test_mistral.py
-Integration tests for outlines mistral api
-"""
-
-import json
-import base64
-import os
-from typing import Dict, List, Literal, Iterator, AsyncIterator
-import requests
 import io
-from PIL import Image as PILImage
+import json
+import os
+from typing import Annotated, Generator, AsyncGenerator
+
 import pytest
+from PIL import Image as PILImage
+from mistralai import Mistral as MistralClient
 from pydantic import BaseModel, Field
 
-from outlines.inputs import Chat, Image
-from outlines.models.mistral import from_mistral
-from outlines.types import JsonSchema
+import outlines
+from outlines.inputs import Chat, Image, Video
+from outlines.models.mistral import AsyncMistral, Mistral
+from outlines.types import JsonSchema, Regex
+
 
 MODEL_NAME = "mistral-large-latest"
 VISION_MODEL = "pixtral-large-latest"
 
-class AnimalClassification(BaseModel):
-    image_subject: Literal["dog", "not an animal", "cat", "other"]
-    specific_kind: str
 
-def get_fallback_model(mistral_client):
-    """Dynamic fallback: Pick first stable chat model if primary rate-limits."""
-    try:
-        available_models = mistral_client.models.list()
-        # Prefer large/stable; avoid codestral (non-chat)
-        fallback = next((m.id for m in available_models if "large" in m.id.lower() and "codestral" not in m.id.lower()),
-                        next((m.id for m in available_models if "codestral" not in m.id.lower()), None))
-        return fallback
-    except Exception:
-        return None
+@pytest.fixture(scope="session")
+def api_key():
+    """Get the Mistral API key from the environment, providing a default value if not found.
 
-@pytest.mark.integration
+    This fixture should be used for tests that do not make actual api calls,
+    but still require to initialize the Mistral client.
+
+    """
+    api_key = os.getenv("MISTRAL_API_KEY")
+    if not api_key:
+        return "MOCK_VALUE"
+    return api_key
+
+
+@pytest.fixture(scope="session")
+def image():
+    width, height = 1, 1
+    white_background = (255, 255, 255)
+    image = PILImage.new("RGB", (width, height), white_background)
+
+    buffer = io.BytesIO()
+    image.save(buffer, format="PNG")
+    buffer.seek(0)
+    image = PILImage.open(buffer)
+
+    return image
+
+
+@pytest.fixture(scope="session")
+def model(api_key):
+    return Mistral(MistralClient(api_key=api_key), MODEL_NAME)
+
+
+@pytest.fixture(scope="session")
+def vision_model(api_key):
+    return Mistral(MistralClient(api_key=api_key), VISION_MODEL)
+
+
+@pytest.fixture(scope="session")
+def async_model(api_key):
+    return AsyncMistral(MistralClient(api_key=api_key), MODEL_NAME)
+
+
+@pytest.fixture(scope="session")
+def async_vision_model(api_key):
+    return AsyncMistral(MistralClient(api_key=api_key), VISION_MODEL)
+
+
+@pytest.fixture(scope="session")
+def model_no_model_name(api_key):
+    return Mistral(MistralClient(api_key=api_key))
+
+
+@pytest.fixture(scope="session")
+def async_model_no_model_name(api_key):
+    return AsyncMistral(MistralClient(api_key=api_key))
+
+
+def test_mistral_init_from_client(api_key):
+    client = MistralClient(api_key=api_key)
+
+    # With model name
+    model = outlines.from_mistral(client, MODEL_NAME)
+    assert isinstance(model, Mistral)
+    assert model.client == client
+    assert model.model_name == MODEL_NAME
+
+    # Without model name
+    model = outlines.from_mistral(client)
+    assert isinstance(model, Mistral)
+    assert model.client == client
+    assert model.model_name is None
+
+
+def test_mistral_wrong_inference_parameters(model):
+    with pytest.raises(RuntimeError, match="got an unexpected"):
+        model("prompt", foo=10)
+
+
+def test_mistral_wrong_input_type(model):
+    with pytest.raises(TypeError, match="is not available"):
+        model(123)
+
+
+def test_mistral_wrong_output_type(model):
+    with pytest.raises(
+        TypeError,
+        match="Regex-based structured outputs are not available with Mistral.",
+    ):
+        model("prompt", Regex("^.*$"))
+
+
 @pytest.mark.api_call
-class TestMistralIntegration:
-    @pytest.mark.api_call
-    @pytest.fixture
-    def api_key(self):
-        api_key = os.getenv("MISTRAL_API_KEY")
-        if not api_key:
-            pytest.skip("MISTRAL_API_KEY environment variable not set")
-        return api_key
-
-    @pytest.mark.api_call
-    @pytest.fixture
-    def mistral_client(self, api_key):
-        try:
-            from mistralai import Mistral as MistralClient
-            return MistralClient(api_key=api_key)
-        except ImportError:
-            pytest.skip("mistralai package not installed")
-
-    @pytest.mark.api_call
-    def test_simple_generation(self, mistral_client):
-        model_name = MODEL_NAME
-        try:
-            model = from_mistral(mistral_client, model_name)
-            result = model.generate("What is 2+2? Answer in one sentence.")
-        except Exception as e:
-            if "429" in str(e):
-                fallback = get_fallback_model(mistral_client)
-                if fallback:
-                    model = from_mistral(mistral_client, fallback)
-                    result = model.generate("What is 2+2? Answer in one sentence.")
-                else:
-                    raise
-            else:
-                raise
-        assert isinstance(result, str)
-        assert len(result) > 0
-        assert "4" in result
-
-    @pytest.mark.api_call
-    def test_structured_generation_json(self, mistral_client):
-        class Person(BaseModel):
-            name: str
-            age: int
-
-        model_name = MODEL_NAME
-        try:
-            model = from_mistral(mistral_client, model_name)
-            result = model.generate(
-                """Generate a JSON object representing a person with name and age.
-                Return only the JSON, no other text.""",
-                output_type=Person
-            )
-        except Exception as e:
-            if "429" in str(e):
-                fallback = get_fallback_model(mistral_client)
-                if fallback:
-                    model = from_mistral(mistral_client, fallback)
-                    result = model.generate(
-                        """Generate a JSON object representing a person with name and age.
-                        Return only the JSON, no other text.""",
-                        output_type=Person
-                    )
-                else:
-                    raise
-            else:
-                raise
-        assert isinstance(result, str)
-        parsed = json.loads(result)
-        assert isinstance(parsed, dict)
-        assert "name" in parsed
-        assert isinstance(parsed["name"], str)
-        assert "age" in parsed
-        assert isinstance(parsed["age"], int)
-
-    @pytest.mark.api_call
-    def test_streaming_generation(self, mistral_client):
-        model_name = MODEL_NAME
-        try:
-            model = from_mistral(mistral_client, model_name)
-            chunks = list(model.generate_stream("Write a short story about a robot."))
-        except Exception as e:
-            if "429" in str(e):
-                fallback = get_fallback_model(mistral_client)
-                if fallback:
-                    model = from_mistral(mistral_client, fallback)
-                    chunks = list(model.generate_stream("Write a short story about a robot."))
-                else:
-                    raise
-            else:
-                raise
-        assert len(chunks) > 0
-        assert all(isinstance(chunk, str) for chunk in chunks)
-        full_text = "".join(chunks)
-        assert len(full_text) > 0
-
-    @pytest.mark.api_call
-    def test_mistral_with_outlines(self, mistral_client):
-        class Person(BaseModel):
-            name: str
-            age: int
-
-        model_name = MODEL_NAME
-        try:
-            model = from_mistral(mistral_client, model_name)
-            result = model.generate(
-                """Generate a JSON object representing a person with name and age.
-                Return only the JSON, no other text.""",
-                output_type=Person
-            )
-        except Exception as e:
-            if "429" in str(e):
-                fallback = get_fallback_model(mistral_client)
-                if fallback:
-                    model = from_mistral(mistral_client, fallback)
-                    result = model.generate(
-                        """Generate a JSON object representing a person with name and age.
-                        Return only the JSON, no other text.""",
-                        output_type=Person
-                    )
-                else:
-                    raise
-            else:
-                raise
-        assert isinstance(result, str)
-        parsed = json.loads(result)
-        assert isinstance(parsed, dict)
-        assert "name" in parsed
-        assert isinstance(parsed["name"], str)
-        assert len(parsed["name"]) > 0
-        assert "age" in parsed
-        assert isinstance(parsed["age"], int)
-
-    @pytest.mark.api_call
-    def test_mistral_with_outlines_real(self, mistral_client):
-        class Address(BaseModel):
-            street: str
-            city: str
-            zip_code: str
-
-        class Employee(BaseModel):
-            name: str
-            role: str
-            department: str
-            address: Address
-
-        class Company(BaseModel):
-            company_name: str
-            employees: list[Employee]
-
-        model_name = MODEL_NAME
-        try:
-            model = from_mistral(mistral_client, model_name)
-            result = model.generate(
-                Chat([
-                    {"role": "system", "content": "You are a business data generator. All employees must work in the IT department, and addresses must include a valid US city."},
-                    {"role": "user", "content": "Generate a JSON object representing a company with at least two employees, including their names, roles, IT department, and addresses with valid US cities. Return only the JSON, no other text."}
-                ]),
-                output_type=Company
-            )
-        except Exception as e:
-            if "429" in str(e):
-                fallback = get_fallback_model(mistral_client)
-                if fallback:
-                    model = from_mistral(mistral_client, fallback)
-                    result = model.generate(
-                        Chat([
-                            {"role": "system", "content": "You are a business data generator. All employees must work in the IT department, and addresses must include a valid US city."},
-                            {"role": "user", "content": "Generate a JSON object representing a company with at least two employees, including their names, roles, IT department, and addresses with valid US cities. Return only the JSON, no other text."}
-                        ]),
-                        output_type=Company
-                    )
-                else:
-                    raise
-            else:
-                raise
-        assert isinstance(result, str)
-        parsed = json.loads(result)
-        assert isinstance(parsed, dict)
-        assert "company_name" in parsed
-        assert "employees" in parsed
-        assert isinstance(parsed["employees"], list)
-        assert len(parsed["employees"]) >= 2
-        for employee in parsed["employees"]:
-            assert employee["department"] == "IT"
-            assert isinstance(employee["name"], str)
-            assert len(employee["name"]) > 0
-            assert isinstance(employee["role"], str)
-            assert len(employee["role"]) > 0
-            assert isinstance(employee["address"], dict)
-            assert isinstance(employee["address"]["city"], str)
-            assert len(employee["address"]["city"]) > 0
-            assert isinstance(employee["address"]["street"], str)
-            assert len(employee["address"]["street"]) > 0
-            assert isinstance(employee["address"]["zip_code"], str)
-            assert len(employee["address"]["zip_code"]) > 0
-
-    @pytest.mark.api_call
-    def test_custom_inference_parameters(self, mistral_client):
-        """Test custom inference parameters like temperature, max_tokens, top_p"""
-        model_name = MODEL_NAME
-        try:
-            model = from_mistral(mistral_client, model_name)
-            result = model.generate(
-                "Write a very short creative story about a robot.",
-                temperature=0.9,
-                max_tokens=50,
-                top_p=0.95
-            )
-        except Exception as e:
-            if "429" in str(e):
-                fallback = get_fallback_model(mistral_client)
-                if fallback:
-                    model = from_mistral(mistral_client, fallback)
-                    result = model.generate(
-                        "Write a very short creative story about a robot.",
-                        temperature=0.9,
-                        max_tokens=50,
-                        top_p=0.95
-                    )
-                else:
-                    raise
-            else:
-                raise
-        assert isinstance(result, str)
-        assert len(result) > 0
-        assert len(result.split()) <= 100
-
-    @pytest.mark.api_call
-    def test_text_only_streaming(self, mistral_client):
-        """Test streaming without structured output"""
-        model_name = MODEL_NAME
-        try:
-            model = from_mistral(mistral_client, model_name)
-            chunks = list(model.generate_stream("Count from 1 to 5 with spaces: "))
-        except Exception as e:
-            if "429" in str(e):
-                fallback = get_fallback_model(mistral_client)
-                if fallback:
-                    model = from_mistral(mistral_client, fallback)
-                    chunks = list(model.generate_stream("Count from 1 to 5 with spaces: "))
-                else:
-                    raise
-            else:
-                raise
-        assert len(chunks) > 0
-        assert all(isinstance(chunk, str) for chunk in chunks)
-        full_text = "".join(chunks)
-        assert len(full_text) > 0
-        assert any(str(i) in full_text for i in range(1, 6))
-
-    @pytest.mark.api_call
-    def test_multi_role_chat(self, mistral_client):
-        """Test Chat with system, user, and assistant roles"""
-        model_name = MODEL_NAME
-        try:
-            model = from_mistral(mistral_client, model_name)
-            result = model.generate(
-                Chat([
-                    {"role": "system", "content": "You are a helpful math tutor. Always end responses with 'Happy learning!'"},
-                    {"role": "user", "content": "What is 5 + 3?"},
-                    {"role": "assistant", "content": "5 + 3 = 8. Happy learning!"},
-                    {"role": "user", "content": "What about 10 - 4?"}
-                ])
-            )
-        except Exception as e:
-            if "429" in str(e):
-                fallback = get_fallback_model(mistral_client)
-                if fallback:
-                    model = from_mistral(mistral_client, fallback)
-                    result = model.generate(
-                        Chat([
-                            {"role": "system", "content": "You are a helpful math tutor. Always end responses with 'Happy learning!'"},
-                            {"role": "user", "content": "What is 5 + 3?"},
-                            {"role": "assistant", "content": "5 + 3 = 8. Happy learning!"},
-                            {"role": "user", "content": "What about 10 - 4?"}
-                        ])
-                    )
-                else:
-                    raise
-            else:
-                raise
-        assert isinstance(result, str)
-        assert len(result) > 0
-        assert "6" in result
-        assert "Happy learning!" in result
-
-    @pytest.mark.api_call
-    def test_empty_input_error(self, mistral_client):
-        """Test behavior with empty inputs"""
-        model = from_mistral(mistral_client, MODEL_NAME)
-        try:
-            result = model.generate("")
-            assert isinstance(result, str)
-        except Exception as e:
-            assert False, f"Empty string unexpectedly failed: {e}"
-
-        with pytest.raises(ValueError):
-            model.generate([])
-
-    @pytest.mark.api_call
-    def test_real_image_classification(self, mistral_client):
-        # CHANGE: Incorporated Claude's real image test for better coverage
-        image_url = "https://upload.wikimedia.org/wikipedia/commons/7/71/Charmonty_Norfolkterrier.jpg"
-        headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
-                          'AppleWebKit/537.36 (KHTML, like Gecko) '
-                          'Chrome/91.0.4472.124 Safari/537.36'
-        }
-        response = requests.get(image_url, headers=headers, timeout=30)
-        response.raise_for_status()
-        content_type = response.headers.get('content-type', '').lower()
-        if not any(img_type in content_type for img_type in ['image/', 'jpeg', 'jpg', 'png']):
-            raise ValueError(f"Expected image content, got: {content_type}")
-        pil_image = PILImage.open(io.BytesIO(response.content))
-        image = Image(pil_image)
-
-        model_name = VISION_MODEL
-        try:
-            model = from_mistral(mistral_client, model_name)
-            prompt = ["Classify this image as a cat, dog, other, or not an animal. For a cat and dog, classify the kind of species; otherwise the kind is hotdog", image]
-            result = model.generate(prompt, output_type=AnimalClassification)
-            parsed = json.loads(result)
-            assert parsed["image_subject"] == "dog"
-            assert isinstance(parsed["specific_kind"], str)
-            assert len(parsed["specific_kind"]) > 0
-        except Exception as e:
-            if "429" in str(e):
-                fallback = get_fallback_model(mistral_client)
-                if fallback and "pixtral" in fallback.lower():
-                    model = from_mistral(mistral_client, fallback)
-                    prompt = ["Classify this image as a cat, dog, other, or not an animal. For a cat and dog, classify the kind of species; otherwise the kind is hotdog", image]
-                    result = model.generate(prompt, output_type=AnimalClassification)
-                    parsed = json.loads(result)
-                    assert parsed["image_subject"] == "dog"
-                    assert isinstance(parsed["specific_kind"], str)
-                    assert len(parsed["specific_kind"]) > 0
-                else:
-                    raise
-            else:
-                raise
-
-    @pytest.mark.api_call
-    def test_image_classification_simple(self, mistral_client):
-        # CHANGE: Incorporated Claude's simple image test
-        pil_image = PILImage.new('RGB', (100, 100), color='red')
-        buffer = io.BytesIO()
-        pil_image.save(buffer, format="PNG")
-        buffer.seek(0)
-        pil_image = PILImage.open(buffer)
-        image = Image(pil_image)
-
-        model_name = VISION_MODEL
-        try:
-            model = from_mistral(mistral_client, model_name)
-            prompt = ["Classify this image as a cat, dog, other, or not an animal. For a cat and dog, classify the kind of species; otherwise the kind is hotdog", image]
-            result = model.generate(prompt, output_type=AnimalClassification)
-            parsed = json.loads(result)
-            assert parsed["image_subject"] == "not an animal"
-            assert parsed["specific_kind"] == "hotdog"
-        except Exception as e:
-            if "429" in str(e):
-                fallback = get_fallback_model(mistral_client)
-                if fallback and "pixtral" in fallback.lower():
-                    model = from_mistral(mistral_client, fallback)
-                    prompt = ["Classify this image as a cat, dog, other, or not an animal. For a cat and dog, classify the kind of species; otherwise the kind is hotdog", image]
-                    result = model.generate(prompt, output_type=AnimalClassification)
-                    parsed = json.loads(result)
-                    assert parsed["image_subject"] == "not an animal"
-                    assert parsed["specific_kind"] == "hotdog"
-                else:
-                    raise
-            else:
-                raise
+def test_mistral_call(model):
+    result = model("Respond with one word. Not more.")
+    assert isinstance(result, str)
 
 
-@pytest.mark.integration
 @pytest.mark.api_call
-class TestAsyncMistralIntegration:
-    @pytest.mark.api_call
-    @pytest.fixture
-    def api_key(self):
-        api_key = os.getenv("MISTRAL_API_KEY")
-        if not api_key:
-            pytest.skip("MISTRAL_API_KEY environment variable not set")
-        return api_key
+def test_mistral_call_model_name(model_no_model_name):
+    result = model_no_model_name(
+        "Respond with one word. Not more.",
+        model=MODEL_NAME
+    )
+    assert isinstance(result, str)
 
-    @pytest.mark.api_call
-    @pytest.fixture
-    def mistral_client(self, api_key):
-        try:
-            from mistralai import Mistral as MistralClient
-            return MistralClient(api_key=api_key)
-        except ImportError:
-            pytest.skip("mistralai package not installed")
 
-    @pytest.mark.api_call
-    @pytest.mark.asyncio
-    async def test_async_init_from_client(self, api_key):
-        """Test async client initialization."""
-        from mistralai import Mistral as MistralClient
+@pytest.mark.api_call
+def test_mistral_multiple_samples(model):
+    result = model("Respond with one word. Not more.", n=2)
+    assert isinstance(result, list)
+    assert len(result) == 2
+    assert isinstance(result[0], str)
+    assert isinstance(result[1], str)
 
-        client = MistralClient(api_key=api_key)
-        model = from_mistral(client, MODEL_NAME, async_client=True)
-        assert model.client == client
-        assert model.model_name == MODEL_NAME
 
-    @pytest.mark.api_call
-    @pytest.mark.asyncio
-    async def test_async_wrong_input_type(self, mistral_client):
-        """Test async wrong input type error."""
-        model = from_mistral(mistral_client, MODEL_NAME, async_client=True)
+@pytest.mark.api_call
+def test_mistral_vision(image, vision_model):
+    result = vision_model(["What does this logo represent?", Image(image)])
+    assert isinstance(result, str)
 
-        with pytest.raises(TypeError, match="is not available"):
-            await model.generate(123)
 
-    @pytest.mark.api_call
-    @pytest.mark.asyncio
-    async def test_async_simple_generation(self, mistral_client):
-        model_name = MODEL_NAME
-        try:
-            model = from_mistral(mistral_client, model_name, async_client=True)
-            result = await model.generate("What is 2+2? Answer in one sentence.")
-        except Exception as e:
-            if "429" in str(e):
-                fallback = get_fallback_model(mistral_client)
-                if fallback:
-                    model = from_mistral(mistral_client, fallback, async_client=True)
-                    result = await model.generate("What is 2+2? Answer in one sentence.")
-                else:
-                    raise
-            else:
-                raise
-        assert isinstance(result, str)
-        assert len(result) > 0
-        assert "4" in result
+@pytest.mark.api_call
+def test_mistral_chat(image, vision_model):
+    result = vision_model(Chat(messages=[
+        {"role": "system", "content": "You are a helpful assistant."},
+        {
+            "role": "user",
+            "content": ["What does this logo represent?", Image(image)]
+        },
+    ]), max_tokens=10)
+    assert isinstance(result, str)
 
-    @pytest.mark.api_call
-    @pytest.mark.asyncio
-    async def test_async_structured_generation(self, mistral_client):
-        class Person(BaseModel):
-            name: str
-            age: int
-        model_name = MODEL_NAME
-        try:
-            model = from_mistral(mistral_client, model_name, async_client=True)
-            result = await model.generate(
-                """Generate a JSON object representing a person with name and age.
-                Return only the JSON, no other text.""",
-                output_type=Person
-            )
-        except Exception as e:
-            if "429" in str(e):
-                fallback = get_fallback_model(mistral_client)
-                if fallback:
-                    model = from_mistral(mistral_client, fallback, async_client=True)
-                    result = await model.generate(
-                        """Generate a JSON object representing a person with name and age.
-                        Return only the JSON, no other text.""",
-                        output_type=Person
-                    )
-                else:
-                    raise
-            else:
-                raise
-        assert isinstance(result, str)
-        parsed = json.loads(result)
-        assert isinstance(parsed, dict)
-        assert "name" in parsed
-        assert isinstance(parsed["name"], str)
-        assert "age" in parsed
-        assert isinstance(parsed["age"], int)
 
-    @pytest.mark.api_call
-    @pytest.mark.asyncio
-    async def test_async_streaming_generation(self, mistral_client):
-        model_name = MODEL_NAME
-        try:
-            model = from_mistral(mistral_client, model_name, async_client=True)
-            chunks = []
-            async for chunk in model.generate_stream("Write a short story about a robot."):
-                chunks.append(chunk)
-        except Exception as e:
-            if "429" in str(e):
-                fallback = get_fallback_model(mistral_client)
-                if fallback:
-                    model = from_mistral(mistral_client, fallback, async_client=True)
-                    chunks = []
-                    async for chunk in model.generate_stream("Write a short story about a robot."):
-                        chunks.append(chunk)
-                else:
-                    raise
-            else:
-                raise
-        assert len(chunks) > 0
-        assert all(isinstance(chunk, str) for chunk in chunks)
+@pytest.mark.api_call
+def test_mistral_pydantic(model):
+    class Foo(BaseModel):
+        bar: int
 
-    @pytest.mark.api_call
-    @pytest.mark.asyncio
-    async def test_async_vision_generation(self, mistral_client):
-        """Test async vision generation."""
-        pil_image = PILImage.new('RGB', (100, 100), color='blue')
-        buffer = io.BytesIO()
-        pil_image.save(buffer, format="PNG")
-        buffer.seek(0)
-        pil_image = PILImage.open(buffer)
+    result = model("foo?", Foo)
+    assert isinstance(result, str)
+    assert "bar" in json.loads(result)
 
-        image = Image(pil_image)
-        model_name = VISION_MODEL
-        try:
-            model = from_mistral(mistral_client, model_name, async_client=True)
-            result = await model.generate(["Describe this color", image])
-            assert isinstance(result, str)
-            assert len(result) > 0
-        except Exception as e:
-            if "429" in str(e):
-                fallback = get_fallback_model(mistral_client)
-                if fallback and "pixtral" in fallback.lower():
-                    model = from_mistral(mistral_client, fallback, async_client=True)
-                    result = await model.generate(["Describe this color", image])
-                    assert isinstance(result, str)
-                    assert len(result) > 0
-                else:
-                    raise
-            else:
-                raise
 
-    @pytest.mark.api_call
-    @pytest.mark.asyncio
-    async def test_async_structured_schema_error(self, mistral_client):
-        """Test schema error handling in async mode."""
-        class InvalidModel(BaseModel):
-            value: str = Field(pattern=r"^\d+$")
-        model = from_mistral(mistral_client, MODEL_NAME, async_client=True)
-        with pytest.raises(TypeError, match="Mistral does not support your schema"):
-            await model.generate("Generate a number string", output_type=InvalidModel)
+@pytest.mark.api_call
+def test_mistral_pydantic_refusal(model):
+    class Foo(BaseModel):
+        bar: Annotated[str, Field(int, pattern=r"^\d+$")]
 
-    @pytest.mark.api_call
-    @pytest.mark.asyncio
-    async def test_async_batch_not_supported(self, mistral_client):
-        """Test async batch generation raises NotImplementedError."""
-        model = from_mistral(mistral_client, MODEL_NAME, async_client=True)
-        with pytest.raises(NotImplementedError, match="does not support batch inference"):
-            await model.generate_batch(["Hello", "World"])
+    with pytest.raises(TypeError, match="Mistral does not support your schema"):
+        _ = model("foo?", Foo)
 
-    @pytest.mark.api_call
-    @pytest.mark.asyncio
-    async def test_async_streaming_structured_generation(self, mistral_client):
-        """Test async streaming with structured output."""
-        class Person(BaseModel):
-            name: str
-            age: int
 
-        model = from_mistral(mistral_client, MODEL_NAME, async_client=True)
-        prompt = """Generate a JSON object representing a person with name and age.
-        Return only the JSON, no other text."""
+@pytest.mark.api_call
+def test_mistral_vision_pydantic(vision_model, image):
+    class Logo(BaseModel):
+        name: int
 
-        chunks = []
-        async for chunk in model.generate_stream(prompt, output_type=Person):
-            chunks.append(chunk)
+    result = vision_model(["What does this logo represent?", Image(image)], Logo)
+    assert isinstance(result, str)
+    assert "name" in json.loads(result)
 
-        result = "".join(chunks)
-        parsed = json.loads(result)
-        assert isinstance(parsed, dict)
-        assert "name" in parsed
-        assert isinstance(parsed["name"], str)
-        assert "age" in parsed
-        assert isinstance(parsed["age"], int)
 
-    @pytest.mark.api_call
-    @pytest.mark.asyncio
-    async def test_async_custom_inference_parameters(self, mistral_client):
-        """Test async custom inference parameters"""
-        model_name = MODEL_NAME
-        try:
-            model = from_mistral(mistral_client, model_name, async_client=True)
-            result = await model.generate(
-                "Write a very short creative story about a robot.",
-                temperature=0.9,
-                max_tokens=50,
-                top_p=0.95
-            )
-        except Exception as e:
-            if "429" in str(e):
-                fallback = get_fallback_model(mistral_client)
-                if fallback:
-                    model = from_mistral(mistral_client, fallback, async_client=True)
-                    result = await model.generate(
-                        "Write a very short creative story about a robot.",
-                        temperature=0.9,
-                        max_tokens=50,
-                        top_p=0.95
-                    )
-                else:
-                    raise
-            else:
-                raise
-        assert isinstance(result, str)
-        assert len(result) > 0
-        assert len(result.split()) <= 100
+@pytest.mark.api_call
+def test_mistral_json_schema(model):
+    class Foo(BaseModel):
+        bar: int
 
-    @pytest.mark.api_call
-    @pytest.mark.asyncio
-    async def test_async_text_only_streaming(self, mistral_client):
-        """Test async streaming without structured output"""
-        model_name = MODEL_NAME
-        try:
-            model = from_mistral(mistral_client, model_name, async_client=True)
-            chunks = []
-            async for chunk in model.generate_stream("Count from 1 to 5 with spaces: "):
-                chunks.append(chunk)
-        except Exception as e:
-            if "429" in str(e):
-                fallback = get_fallback_model(mistral_client)
-                if fallback:
-                    model = from_mistral(mistral_client, fallback, async_client=True)
-                    chunks = []
-                    async for chunk in model.generate_stream("Count from 1 to 5 with spaces: "):
-                        chunks.append(chunk)
-                else:
-                    raise
-            else:
-                raise
-        assert len(chunks) > 0
-        assert all(isinstance(chunk, str) for chunk in chunks)
-        full_text = "".join(chunks)
-        assert len(full_text) > 0
-        assert any(str(i) in full_text for i in range(1, 6))
+    schema = json.dumps(Foo.model_json_schema())
 
-    @pytest.mark.api_call
-    @pytest.mark.asyncio
-    async def test_async_multi_role_chat(self, mistral_client):
-        """Test async Chat with multiple roles"""
-        model_name = MODEL_NAME
-        try:
-            model = from_mistral(mistral_client, model_name, async_client=True)
-            result = await model.generate(
-                Chat([
-                    {"role": "system", "content": "You are a helpful math tutor. Always end responses with 'Happy learning!'"},
-                    {"role": "user", "content": "What is 5 + 3?"},
-                    {"role": "assistant", "content": "5 + 3 = 8. Happy learning!"},
-                    {"role": "user", "content": "What about 10 - 4?"}
-                ])
-            )
-        except Exception as e:
-            if "429" in str(e):
-                fallback = get_fallback_model(mistral_client)
-                if fallback:
-                    model = from_mistral(mistral_client, fallback, async_client=True)
-                    result = await model.generate(
-                        Chat([
-                            {"role": "system", "content": "You are a helpful math tutor. Always end responses with 'Happy learning!'"},
-                            {"role": "user", "content": "What is 5 + 3?"},
-                            {"role": "assistant", "content": "5 + 3 = 8. Happy learning!"},
-                            {"role": "user", "content": "What about 10 - 4?"}
-                        ])
-                    )
-                else:
-                    raise
-            else:
-                raise
-        assert isinstance(result, str)
-        assert len(result) > 0
-        assert "6" in result
-        assert "Happy learning!" in result
+    result = model("foo?", JsonSchema(schema))
+    assert isinstance(result, str)
+    assert "bar" in json.loads(result)
+
+
+@pytest.mark.api_call
+def test_mistral_streaming(model):
+    result = model.stream("Respond with one word. Not more.")
+    assert isinstance(result, Generator)
+    assert isinstance(next(result), str)
+
+
+def test_mistral_batch(model):
+    with pytest.raises(NotImplementedError, match="does not support"):
+        model.batch(
+            ["Respond with one word.", "Respond with one word."],
+        )
+
+
+def test_mistral_async_init_from_client(api_key):
+    client = MistralClient(api_key=api_key)
+
+    # Async with model name
+    model = outlines.from_mistral(client, MODEL_NAME, async_client=True)
+    assert isinstance(model, AsyncMistral)
+    assert model.client == client
+    assert model.model_name == MODEL_NAME
+
+    # Async without model name
+    model = outlines.from_mistral(client, async_client=True)
+    assert isinstance(model, AsyncMistral)
+    assert model.client == client
+    assert model.model_name is None
+
+
+@pytest.mark.asyncio
+async def test_mistral_async_wrong_inference_parameters(async_model):
+    with pytest.raises(RuntimeError, match="got an unexpected"):
+        await async_model("prompt", foo=10)
+
+
+@pytest.mark.asyncio
+async def test_mistral_async_wrong_input_type(async_model):
+    with pytest.raises(TypeError, match="is not available"):
+        await async_model(123)
+
+
+@pytest.mark.asyncio
+async def test_mistral_async_wrong_output_type(async_model):
+    with pytest.raises(
+        TypeError,
+        match="Regex-based structured outputs are not available with Mistral.",
+    ):
+        await async_model("prompt", Regex("^.*$"))
+
+
+@pytest.mark.asyncio
+@pytest.mark.api_call
+async def test_mistral_async_call(async_model):
+    result = await async_model("Respond with one word. Not more.")
+    assert isinstance(result, str)
+
+
+@pytest.mark.asyncio
+@pytest.mark.api_call
+async def test_mistral_async_call_model_name(async_model_no_model_name):
+    result = await async_model_no_model_name(
+        "Respond with one word. Not more.",
+        model=MODEL_NAME,
+    )
+    assert isinstance(result, str)
+
+
+@pytest.mark.asyncio
+@pytest.mark.api_call
+async def test_mistral_async_multiple_samples(async_model):
+    result = await async_model("Respond with one word. Not more.", n=2)
+    assert isinstance(result, list)
+    assert len(result) == 2
+    assert isinstance(result[0], str)
+    assert isinstance(result[1], str)
+
+
+@pytest.mark.asyncio
+@pytest.mark.api_call
+async def test_mistral_async_vision(async_vision_model, image):
+    result = await async_vision_model(["What does this logo represent?", Image(image)])
+    assert isinstance(result, str)
+
+
+@pytest.mark.asyncio
+@pytest.mark.api_call
+async def test_mistral_async_chat(async_vision_model, image):
+    result = await async_vision_model(Chat(messages=[
+        {"role": "system", "content": "You are a helpful assistant."},
+        {
+            "role": "user",
+            "content": ["What does this logo represent?", Image(image)]
+        },
+    ]), max_tokens=10)
+    assert isinstance(result, str)
+
+
+@pytest.mark.asyncio
+@pytest.mark.api_call
+async def test_mistral_async_pydantic(async_model):
+    class Foo(BaseModel):
+        bar: int
+
+    result = await async_model("foo?", Foo)
+    assert isinstance(result, str)
+    assert "bar" in json.loads(result)
+
+
+@pytest.mark.asyncio
+@pytest.mark.api_call
+async def test_mistral_async_pydantic_refusal(async_model):
+    class Foo(BaseModel):
+        bar: Annotated[str, Field(int, pattern=r"^\d+$")]
+
+    with pytest.raises(TypeError, match="Mistral does not support your schema"):
+        _ = await async_model("foo?", Foo)
+
+
+@pytest.mark.asyncio
+@pytest.mark.api_call
+async def test_mistral_async_vision_pydantic(async_vision_model, image):
+    class Logo(BaseModel):
+        name: int
+
+    result = await async_vision_model(["What does this logo represent?", Image(image)], Logo)
+    assert isinstance(result, str)
+    assert "name" in json.loads(result)
+
+
+@pytest.mark.asyncio
+@pytest.mark.api_call
+async def test_mistral_async_json_schema(async_model):
+    class Foo(BaseModel):
+        bar: int
+
+    schema = json.dumps(Foo.model_json_schema())
+
+    result = await async_model("foo?", JsonSchema(schema))
+    assert isinstance(result, str)
+    assert "bar" in json.loads(result)
+
+
+@pytest.mark.asyncio
+@pytest.mark.api_call
+async def test_mistral_async_streaming(async_model):
+    result = async_model.stream("Respond with one word. Not more.")
+    assert isinstance(result, AsyncGenerator)
+    async for chunk in result:
+        assert isinstance(chunk, str)
+        break  # Just check the first chunk
+
+
+@pytest.mark.asyncio
+async def test_mistral_async_batch(async_model):
+    with pytest.raises(NotImplementedError, match="does not support"):
+        _ = await async_model.batch(
+            ["Respond with one word.", "Respond with one word."],
+        )
