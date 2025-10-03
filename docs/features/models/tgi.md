@@ -18,7 +18,7 @@ docker run \
 ```
 
 Please consult the [installation guide](https://huggingface.co/docs/text-generation-inference/en/quicktour) for more information about how to run TGI with your particular setup.
-As the TGI client relies on the `huggingface_hub` python package, you need to have it installed. Install all optional dependencoes of the `TGI` model with: `pip install outlines[tgi]`
+As the TGI client relies on the `huggingface_hub` python package, you need to have it installed. Install all optional dependencoes of the `TGI` model with: `pip install "outlines[tgi]"`
 
 ## Model Initialization
 

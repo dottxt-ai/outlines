@@ -8,7 +8,7 @@ OpenAI-compatible APIs implement the same REST endpoints and request/response fo
 
 !!! Installation
 
-    You need to install the `openai` library to be able to use the OpenAI-compatible APIs in Outlines. Install all optional dependencies of the `OpenAI` model with: `pip install outlines[openai]`.
+    You need to install the `openai` library to be able to use the OpenAI-compatible APIs in Outlines. Install all optional dependencies of the `OpenAI` model with: `pip install "outlines[openai]"`.
 
 ## General Usage Pattern
 

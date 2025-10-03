@@ -2,7 +2,7 @@
 
 !!! Installation
 
-    You need to install the `openai` library to be able to use the OpenAI API in Outlines. Install all optional dependencies of the `OpenAI` model with: `pip install outlines[openai]`.
+    You need to install the `openai` library to be able to use the OpenAI API in Outlines. Install all optional dependencies of the `OpenAI` model with: `pip install "outlines[openai]"`.
 
     You also need to have an OpenAI API key. This API key must either be set as an environment variable called `OPENAI_API_KEY` or be provided to the `openai.OpenAI` class when instantiating it.
 

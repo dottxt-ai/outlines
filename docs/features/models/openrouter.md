@@ -2,7 +2,7 @@
 
 !!! Installation
 
-    [OpenRouter](https://openrouter.ai/docs/api-reference/overview) uses the same API as OpenAI, so both services are [interoperable](./openai_compatible.md) using the `openai` library. Install all optional dependencies of the `OpenAI` model with: `pip install outlines[openai]`.
+    [OpenRouter](https://openrouter.ai/docs/api-reference/overview) uses the same API as OpenAI, so both services are [interoperable](./openai_compatible.md) using the `openai` library. Install all optional dependencies of the `OpenAI` model with: `pip install "outlines[openai]"`.
 
     You also need to have an Openrouter API key. This API key must either be set as an environment variable called `OPENAI_API_KEY` or be provided to the `openai.OpenAI` class when instantiating it.
 
