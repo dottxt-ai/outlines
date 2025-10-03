@@ -1,140 +1,175 @@
-"""Utilities for handling JSON schema compatibility."""
+"""Convert JSON Schema dicts to Python types."""
 
-import json
-from typing import Any, Union
+import sys
+from dataclasses import dataclass, field
+from typing import Any, Dict, List, Literal, Optional
 
+from pydantic import BaseModel, create_model
 
-def preprocess_schema_for_union_types(
-    schema: Union[str, dict], ensure_ascii: bool = True
-) -> str:
-    """
-    Preprocess a JSON schema to handle union types (array type specifications).
-
-    This is a temporary workaround for the limitation in outlines-core 0.1.26
-    which doesn't support JSON schema type arrays like ["string", "null"].
-    This function converts such arrays into the equivalent anyOf format.
-
-    Parameters
-    ----------
-    schema
-        The JSON schema as a string or dictionary
-    ensure_ascii
-        Whether to ensure the output JSON is ASCII-only
-
-    Returns
-    -------
-    str
-        The preprocessed JSON schema string
-
-    Examples
-    --------
-    >>> schema = {"type": ["string", "null"]}
-    >>> preprocess_schema_for_union_types(schema)
-    '{"anyOf":[{"type":"string"},{"type":"null"}]}'
-    """
-    # Convert to dict if string
-    if isinstance(schema, str):
-        original_str = schema
-        try:
-            schema_dict = json.loads(schema)
-        except (json.JSONDecodeError, ValueError):
-            # If JSON parsing fails, return original string unchanged
-            # This preserves original error handling behavior
-            return original_str
-    else:
-        original_str = None
-        schema_dict = schema
-
-    # Process the schema
-    preprocessed = _convert_type_arrays_to_anyof(schema_dict)
-
-    # If no changes were made, return the original string (if it was a string)
-    if preprocessed == schema_dict and original_str is not None: # pragma: no cover
-        return original_str
-
-    # Return as JSON string with proper formatting
-    return json.dumps(preprocessed, ensure_ascii=ensure_ascii, separators=(",", ":"))
+if sys.version_info >= (3, 12):  # pragma: no cover
+    from typing import _TypedDictMeta, TypedDict  # type: ignore
+else:  # pragma: no cover
+    from typing_extensions import _TypedDictMeta, TypedDict  # type: ignore
 
 
-def _convert_type_arrays_to_anyof(obj: Any) -> Any:
-    """
-    Recursively convert type arrays to anyOf format.
+def schema_type_to_python(
+    schema: dict,
+    caller_target_type: Literal["pydantic", "typeddict", "dataclass"]
+) -> Any:
+    """Get a Python type from a JSON Schema dict.
 
     Parameters
     ----------
-    obj
-        The JSON schema object or sub-object to process
+    schema: dict
+        The JSON Schema dict to convert to a Python type
+    caller_target_type: Literal["pydantic", "typeddict", "dataclass"]
+        The type of the caller
 
     Returns
     -------
     Any
-        The processed object with type arrays converted to anyOf
+        The Python type
+
     """
-    if isinstance(obj, dict):
-        # Check if this object has a type array that needs conversion
-        if "type" in obj and isinstance(obj["type"], list):
-            # Convert type array to anyOf
-            types = obj["type"]
-            new_obj = {}
+    if "enum" in schema:
+        values = schema["enum"]
+        return Literal[tuple(values)]
 
-            # Copy over non-type-specific properties
-            type_specific_keys = {
-                "properties", "required", "additionalProperties",  # object
-                "items", "minItems", "maxItems", "uniqueItems",  # array
-                "minLength", "maxLength", "pattern", "format",  # string
-                "minimum", "maximum", "exclusiveMinimum", "exclusiveMaximum", "multipleOf"  # number/integer
-            }
+    t = schema.get("type")
 
-            for k, v in obj.items():
-                if k != "type" and k not in type_specific_keys:
-                    new_obj[k] = v
-
-            # Create anyOf array
-            any_of = []
-            for t in types:
-                if t == "null":
-                    # null is a special case - just type
-                    any_of.append({"type": "null"})
-                else:
-                    # For other types, preserve any type-specific constraints
-                    type_schema = {"type": t}
-
-                    # Copy over type-specific constraints
-                    if t == "string":
-                        for k in ["minLength", "maxLength", "pattern", "format"]:
-                            if k in obj:
-                                type_schema[k] = obj[k]
-                    elif t == "number" or t == "integer":
-                        for k in ["minimum", "maximum", "exclusiveMinimum", "exclusiveMaximum", "multipleOf"]:
-                            if k in obj:
-                                type_schema[k] = obj[k]
-                    elif t == "array":
-                        for k in ["items", "minItems", "maxItems", "uniqueItems"]:
-                            if k in obj:
-                                # Recursively process items if present
-                                if k == "items":
-                                    type_schema[k] = _convert_type_arrays_to_anyof(obj[k])
-                                else:
-                                    type_schema[k] = obj[k]
-                    elif t == "object": # pragma: no cover
-                        for k in ["properties", "required", "additionalProperties"]:
-                            if k in obj:
-                                # Recursively process properties if present
-                                if k == "properties":
-                                    type_schema[k] = _convert_type_arrays_to_anyof(obj[k])
-                                else:
-                                    type_schema[k] = obj[k]
-
-                    any_of.append(type_schema)
-
-            new_obj["anyOf"] = any_of
-            return new_obj
+    if t == "string":
+        return str
+    elif t == "integer":
+        return int
+    elif t == "number":
+        return float
+    elif t == "boolean":
+        return bool
+    elif t == "array":
+        items = schema.get("items", {})
+        if items:
+            item_type = schema_type_to_python(items, caller_target_type)
         else:
-            # Recursively process all values
-            return {k: _convert_type_arrays_to_anyof(v) for k, v in obj.items()}
-    elif isinstance(obj, list):
-        # Process each item in the list
-        return [_convert_type_arrays_to_anyof(item) for item in obj]
-    else:
-        # Return primitive values as-is
-        return obj
+            item_type = Any
+        return List[item_type]  # type: ignore
+    elif t == "object":
+        name = schema.get("title")
+        if caller_target_type == "pydantic":
+            return json_schema_dict_to_pydantic(schema, name)
+        elif caller_target_type == "typeddict":
+            return json_schema_dict_to_typeddict(schema, name)
+        elif caller_target_type == "dataclass":
+            return json_schema_dict_to_dataclass(schema, name)
+
+    return Any
+
+
+def json_schema_dict_to_typeddict(
+    schema: dict,
+    name: Optional[str] = None
+) -> _TypedDictMeta:
+    """Convert a JSON Schema dict into a TypedDict class.
+
+    Parameters
+    ----------
+    schema: dict
+        The JSON Schema dict to convert to a TypedDict
+    name: Optional[str]
+        The name of the TypedDict
+
+    Returns
+    -------
+    _TypedDictMeta
+        The TypedDict class
+
+    """
+    required = set(schema.get("required", []))
+    properties = schema.get("properties", {})
+
+    annotations: Dict[str, Any] = {}
+
+    for property, details in properties.items():
+        typ = schema_type_to_python(details, "typeddict")
+        if property not in required:
+            typ = Optional[typ]
+        annotations[property] = typ
+
+    return TypedDict(name or "AnonymousTypedDict", annotations)  # type: ignore
+
+
+def json_schema_dict_to_pydantic(
+    schema: dict,
+    name: Optional[str] = None
+) -> type[BaseModel]:
+    """Convert a JSON Schema dict into a Pydantic BaseModel class.
+
+    Parameters
+    ----------
+    schema: dict
+        The JSON Schema dict to convert to a Pydantic BaseModel
+    name: Optional[str]
+        The name of the Pydantic BaseModel
+
+    Returns
+    -------
+    type[BaseModel]
+        The Pydantic BaseModel class
+
+    """
+    required = set(schema.get("required", []))
+    properties = schema.get("properties", {})
+
+    field_definitions: Dict[str, Any] = {}
+
+    for property, details in properties.items():
+        typ = schema_type_to_python(details, "pydantic")
+        if property not in required:
+            field_definitions[property] = (Optional[typ], None)
+        else:
+            field_definitions[property] = (typ, ...)
+
+    return create_model(name or "AnonymousPydanticModel", **field_definitions)
+
+
+def json_schema_dict_to_dataclass(
+    schema: dict,
+    name: Optional[str] = None
+) -> type:
+    """Convert a JSON Schema dict into a dataclass.
+
+    Parameters
+    ----------
+    schema: dict
+        The JSON Schema dict to convert to a dataclass
+    name: Optional[str]
+        The name of the dataclass
+
+    Returns
+    -------
+    type
+        The dataclass
+
+    """
+    required = set(schema.get("required", []))
+    properties = schema.get("properties", {})
+
+    annotations: Dict[str, Any] = {}
+    defaults: Dict[str, Any] = {}
+
+    for property, details in properties.items():
+        typ = schema_type_to_python(details, "dataclass")
+        annotations[property] = typ
+
+        if property not in required:
+            defaults[property] = None
+
+    class_dict = {
+        '__annotations__': annotations,
+        '__module__': __name__,
+    }
+
+    for property, default_val in defaults.items():
+        class_dict[property] = field(default=default_val)
+
+    cls = type(name or "AnonymousDataclass", (), class_dict)
+    return dataclass(cls)

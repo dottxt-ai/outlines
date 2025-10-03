@@ -1,18 +1,9 @@
 """Integration with Dottxt's API."""
 
-import json
-from typing import TYPE_CHECKING, Any, Optional
-
-from pydantic import TypeAdapter
+from typing import TYPE_CHECKING, Any, Optional, cast
 
 from outlines.models.base import Model, ModelTypeAdapter
 from outlines.types import CFG, JsonSchema, Regex
-from outlines.types.utils import (
-    is_dataclass,
-    is_genson_schema_builder,
-    is_pydantic_model,
-    is_typed_dict,
-)
 
 if TYPE_CHECKING:
     from dottxt import Dottxt as DottxtClient
@@ -77,20 +68,8 @@ class DottxtTypeAdapter(ModelTypeAdapter):
                 "CFG-based structured outputs will soon be available with "
                 "Dottxt. Use an open source model in the meantime."
             )
-
-        elif isinstance(output_type, JsonSchema):
-            return output_type.schema
-        elif is_dataclass(output_type):
-            schema = TypeAdapter(output_type).json_schema()
-            return json.dumps(schema)
-        elif is_typed_dict(output_type):
-            schema = TypeAdapter(output_type).json_schema()
-            return json.dumps(schema)
-        elif is_pydantic_model(output_type):
-            schema = output_type.model_json_schema()
-            return json.dumps(schema)
-        elif is_genson_schema_builder(output_type):
-            return output_type.to_json()
+        elif JsonSchema.is_json_schema(output_type):
+            return cast(str, JsonSchema.convert_to(output_type, ["str"]))
         else:
             type_name = getattr(output_type, "__name__", output_type)
             raise TypeError(
