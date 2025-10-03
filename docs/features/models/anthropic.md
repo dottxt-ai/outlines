@@ -6,7 +6,7 @@ title: Anthropic
 
 !!! Installation
 
-    You need to install the `anthropic` library to be able to use the Anthropic API in Outlines. Install all optional dependencies of the `Anthropic` model with: `pip install outlines[anthropic]`.
+    You need to install the `anthropic` library to be able to use the Anthropic API in Outlines. Install all optional dependencies of the `Anthropic` model with: `pip install "outlines[anthropic]"`.
 
     You also need to have an Anthropic API key. This API key must either be set as an environment variable called `ANTHROPIC_API_KEY` or be provided to the `anthropic.Anthropic` class when instantiating it.
 

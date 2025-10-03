@@ -38,7 +38,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install uv
         uv venv
-        uv pip install -e .[test]
+        uv pip install -e ".[test]"
 
     - name: Create matrix id
       id: matrix-id

@@ -19,7 +19,7 @@ python -m sglang.launch_server \
 
 Follow the [Installation instructions](https://docs.sglang.ai/start/install.html) for more information on how to set up a SGLang server for your particular setup.
 
-As the SGLang client relies on the `openai` python sdk, you need to have the `openai` package installed. Install all optional dependencies of the `SGLang` model with: `pip install outlines[sglang]`.
+As the SGLang client relies on the `openai` python sdk, you need to have the `openai` package installed. Install all optional dependencies of the `SGLang` model with: `pip install "outlines[sglang]"`.
 
 When launching your SGLang server, you can specify the backend engine to use for structured generation through the `grammar-backend` cli argument. Add `--grammar-backend outlines` to your command to use Outlines instead of the default engine.
 

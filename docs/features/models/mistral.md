@@ -2,7 +2,7 @@
 
 !!! Installation
 
-    You need to install the `mistralai` library to be able to use the Mistral API in Outlines. Install all optional dependencies of the `Mistral` model with: `pip install outlines[mistral]`.
+    You need to install the `mistralai` library to be able to use the Mistral API in Outlines. Install all optional dependencies of the `Mistral` model with: `pip install "outlines[mistral]"`.
 
     You also need to have an Mistral API key. This API key must either be set as an environment variable called `MISTRAL_API_KEY` or be provided to the `mistralai.Mistral` class when instantiating it.
 
