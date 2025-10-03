@@ -35,12 +35,16 @@ class OutlinesCoreLogitsProcessor(OutlinesLogitsProcessor):
         """
         self.index = index
         self.tensor_library_name = tensor_library_name
-        self.is_first_token = True
+        self.reset()
         super().__init__(tensor_library_name)
 
     def reset(self) -> None:
-        """Reset the logits processor."""
+        """Reset the logits processor to prepare for a new generation."""
         self.is_first_token = True
+        self._guides = None
+        self._bitmasks = None
+        self.bias_logits = None
+        self.allocate_token_bitmask = None
 
     def _setup(self, batch_size: int, vocab_size: int) -> None:
         """Set the guides, bitmasks and some functions used in the
@@ -192,6 +196,18 @@ class OutlinesCoreLogitsProcessor(OutlinesLogitsProcessor):
                     )
 
         return self.bias_logits(batch_size, logits)
+
+    def __getstate__(self):
+        """Create a picklable representation of the processor."""
+        self.reset()
+        state = self.__dict__.copy()
+        del state["tensor_adapter"]
+        return state
+
+    def __setstate__(self, state):
+        """Restore the processor from a pickled state."""
+        self.__dict__.update(state)
+        super().__init__(self.tensor_library_name)
 
 
 class OutlinesCoreBackend(BaseBackend):
