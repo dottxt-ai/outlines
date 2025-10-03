@@ -12,10 +12,11 @@ title: Transformers
 
 ## Model Initialization
 
-To load the model, you can use the `from_transformers` function. It takes 2 arguments:
+To load the model, you can use the `from_transformers` function. It takes 3 arguments:
 
 - `model`: a `transformers` model (created with `AutoModelForCausalLM` for instance)
 - `tokenizer_or_processor`: a `transformers` tokenizer (created with `AutoTokenizer` for instance, it must be an instance of either `PreTrainedTokenizer` or `PreTrainedTokenizerFast`)
+- `device_dtype` (optional): the tensor dtype to use for inference. If not provided, the model will use the default dtype.
 
 For instance:
 
