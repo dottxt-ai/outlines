@@ -84,19 +84,19 @@ print(response) # ['Riga', 'Tallinn']
 
 In alphabetical order:
 
-| | [Anthropic](../../models/anthropic) | [Dottxt](../../models/dottxt) | [Gemini](../../models/gemini) | [LlamaCpp](../../models/llamacpp) | [MLXLM](../../models/mlxlm) | [Ollama](../../models/ollama) | [OpenAI](../../models/openai) | [SGLang](../../models/sglang) | [TGI](../../models/tgi) | [Transformers](../../models/transformers) | [Transformers MultiModal](../../models/transformers_multimodal) | [VLLM](../../models/vllm) | [VLLMOffline](../../models/vllm_offline) |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| **Output Types** | | | | | | | | | | | | | |
-| Simple Types | ❌ | ❌ | ❌ | ✅ | ✅ | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| JSON Schema | ❌ | ✅ | 🟠 | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Multiple Choice | ❌ | ❌ | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Regex | ❌ | ❌ | ❌ | ✅ | ✅ | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Grammar | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | 🟠 | ❌ | ✅ | ✅ | ✅ | ✅ |
-| **Generation Features** | | | | | | | | | | | | | |
-| Async | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ | ❌ |
-| Streaming | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ | ❌ |
-| Vision | ✅ | ❌ | ✅ | ❌ | ❌ | ✅ | ✅ | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ |
-| Batching | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ | ❌ | ✅ |
+| | [Anthropic](../../models/anthropic) | [Dottxt](../../models/dottxt) | [Gemini](../../models/gemini) | [LlamaCpp](../../models/llamacpp) | [MLXLM](../../models/mlxlm) | [Mistral](../../models/mistral) | [Ollama](../../models/ollama) | [OpenAI](../../models/openai) | [SGLang](../../models/sglang) | [TGI](../../models/tgi) | [Transformers](../../models/transformers) | [Transformers MultiModal](../../models/transformers_multimodal) | [VLLM](../../models/vllm) | [VLLMOffline](../../models/vllm_offline) |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| **Output Types** | | | | | | | | | | | | | | |
+| Simple Types | ❌ | ❌ | ❌ | ✅ | ✅ | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| JSON Schema | ❌ | ✅ | 🟠 | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Multiple Choice | ❌ | ❌ | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Regex | ❌ | ❌ | ❌ | ✅ | ✅ | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Grammar | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | 🟠 | ❌ | ✅ | ✅ | ✅ | ✅ |
+| **Generation Features** | | | | | | | | | | | | | | |
+| Async | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ | ❌ |
+| Streaming | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ | ❌ |
+| Vision | ✅ | ❌ | ✅ | ❌ | ❌ | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ |
+| Batching | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ | ❌ | ✅ |
 
 ## Model Types
 
@@ -119,6 +119,7 @@ The server-based models available are the following:
 - Anthropic
 - Dottxt
 - Gemini
+- Mistral
 - Ollama
 - OpenAI
 - SgLang
@@ -141,6 +142,7 @@ print(type(model)) # outlines.models.tgi.AsyncTGI
 
 The models that have an async version are the following:
 
+- Mistral
 - Ollama
 - OpenAI
 - SgLang
