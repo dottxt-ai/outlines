@@ -6,7 +6,7 @@ title: Dottxt
 
 !!! Installation
 
-    You need to install the `dottxt` python sdk to be able to use the Dottxt API in Outlines. Install all optional dependencies of the `Dottxt` model with: `pip install outlines[dottxt]`.
+    You need to install the `dottxt` python sdk to be able to use the Dottxt API in Outlines. Install all optional dependencies of the `Dottxt` model with: `pip install "outlines[dottxt]"`.
 
     You also need to have a Dottxt API key. This API key must either be set as an environment variable called `DOTTXT_API_KEY` or be provided to the `dottxt.client.Dottxt` class when instantiating it.
 

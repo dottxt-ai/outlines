@@ -2,7 +2,7 @@
 
 !!! Installation
 
-    You need to install the `google.genai` libray to be able to use the Gemini API in Outlines. Install all optional dependencies of the `Gemini` model with: `pip install outlines[gemini]`.
+    You need to install the `google.genai` libray to be able to use the Gemini API in Outlines. Install all optional dependencies of the `Gemini` model with: `pip install "outlines[gemini]"`.
 
     You also need to have a Gemini API key. This API key must either be set as an environment variable called `GEMINI_API_KEY` or be provided to the `google.genai.Client` class when instantiating it.
 

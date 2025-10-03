@@ -10,7 +10,7 @@ Outlines provides an integration with [mlx-lm](https://github.com/ml-explore/mlx
 
     You need a device that [supports Metal](https://support.apple.com/en-us/102894) to use the mlx-lm integration.
 
-    You need to install the `mlx` and `mlx-lm` libraries to be able to use mlx in Outlines. Install all optional dependencies of the `MLXLM` model with: `pip install outlines[mlxlm]`.
+    You need to install the `mlx` and `mlx-lm` libraries to be able to use mlx in Outlines. Install all optional dependencies of the `MLXLM` model with: `pip install "outlines[mlxlm]"`.
 
 ## Model Initialization
 
