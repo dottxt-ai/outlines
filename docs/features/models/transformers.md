@@ -6,7 +6,7 @@ title: Transformers
 
 !!! Installation
 
-    You need to install the `transformers` library to be able to use the Transformers in Outlines. Install all optional dependencies of the `Transformers` model with: `pip install outlines[transformers]`.
+    You need to install the `transformers` library to be able to use the Transformers in Outlines. Install all optional dependencies of the `Transformers` model with: `pip install "outlines[transformers]"`.
 
     See the [HuggingFace documentation](https://huggingface.co/docs/transformers/en/installation) for more information on installing `transformers` with CPU, GPU...
 
