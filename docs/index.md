@@ -11,6 +11,7 @@ hide:
 ![](assets/images/logo-dark-mode.svg#only-dark){ width="500" }
 </figure>
 
+
 LLMs are powerful but their outputs are unpredictable. Most solutions attempt to fix bad outputs after generation using parsing, regex, or fragile code that breaks easily.
 
 Outlines guarantees structured outputs during generation — directly from any LLM.
@@ -27,6 +28,14 @@ Outlines guarantees structured outputs during generation — directly from any L
 [API Reference](api_reference/){ .md-button }
 [GitHub](https://github.com/dottxt-ai/outlines){ .md-button }
 </figure>
+
+## 🚀 Building the future of structured generation
+
+We're working with select partners to develop new interfaces to structured generation.
+
+Need XML, FHIR, custom schemas or grammars? Let's talk.
+
+[Become a design partner](mailto:contact@dottxt.ai)
 
 ## See it in action
 
