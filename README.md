@@ -21,7 +21,13 @@ Made with ❤👷️ by the team at [.txt](https://dottxt.co)
 
 </div>
 
-Need a high-performance commercial solution for structured outputs? Email us at [contact@dottxt.co](mailto:contact@dottxt.co), or [schedule a call](https://cal.com/team/dottxt/sales).
+## 🚀 Building the future of structured generation
+
+We're working with select partners to develop new interfaces to structured generation.
+
+Need XML, FHIR, custom schemas or grammars? Let's talk.
+
+[Become a design partner](mailto:contact@dottxt.ai)
 
 ## Table of Contents
 
