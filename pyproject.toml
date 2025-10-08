@@ -93,7 +93,9 @@ test = [
     "iso3166",
     "requests",
 ]
-test-gpu=["outlines[test]", "vllm; sys_platform == 'linux'"]
+
+[dependency-groups]
+test-gpu = ["outlines[test]", "vllm; sys_platform == 'linux'"]
 
 [project.urls]
 homepage = "https://github.com/dottxt-ai/outlines"
