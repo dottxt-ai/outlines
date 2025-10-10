@@ -5,6 +5,7 @@ from outlines.types.dsl import (
     Choice,
     JsonSchema,
     Regex,
+    StructuralTags,
     at_least,
     at_most,
     between,

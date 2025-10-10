@@ -207,3 +207,14 @@ class XGrammarBackend(BaseBackend):
             compiled_grammar,
             self.tensor_library_name
         )
+
+    def get_structural_tags_logits_processor(
+        self, schema: str
+    ) -> XGrammarLogitsProcessor:
+        """Create a logits processor from a structural tags schema.
+        """
+        compiled_grammar = self.grammar_compiler.compile_structural_tag(schema)
+        return XGrammarLogitsProcessor(
+            compiled_grammar,
+            self.tensor_library_name
+        )

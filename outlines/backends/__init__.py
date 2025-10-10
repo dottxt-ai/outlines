@@ -27,6 +27,7 @@ __all__ = [
 CFG_DEFAULT_BACKEND = "llguidance"
 JSON_SCHEMA_DEFAULT_BACKEND = "outlines_core"
 REGEX_DEFAULT_BACKEND = "outlines_core"
+STRUCTURAL_TAGS_DEFAULT_BACKEND = "xgrammar"
 
 
 def _get_backend(backend_name: str, model: SteerableModel) -> BaseBackend:
@@ -140,3 +141,14 @@ def get_cfg_logits_processor(
         model,
     )
     return backend.get_cfg_logits_processor(grammar)
+
+
+def get_structural_tags_logits_processor(
+    backend_name: str | None,
+    model: SteerableModel,
+    schema: str,
+) -> LogitsProcessorType:
+    """Create a logits processor from a structural tags schema.
+    """
+    backend = _get_backend(backend_name or STRUCTURAL_TAGS_DEFAULT_BACKEND, model)
+    return backend.get_structural_tags_logits_processor(schema)

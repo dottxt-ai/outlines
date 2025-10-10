@@ -19,9 +19,10 @@ from outlines.backends import (
     get_cfg_logits_processor,
     get_json_schema_logits_processor,
     get_regex_logits_processor,
+    get_structural_tags_logits_processor,
 )
 from outlines.backends.base import LogitsProcessorType
-from outlines.types import CFG, JsonSchema
+from outlines.types import CFG, JsonSchema, StructuralTags
 from outlines.types.dsl import python_types_to_terms, to_regex
 
 
@@ -244,6 +245,12 @@ class SteerableGenerator:
                 )
             elif isinstance(term, JsonSchema):
                 self.logits_processor = get_json_schema_logits_processor(
+                    backend_name,
+                    model,
+                    term.schema,
+                )
+            elif isinstance(term, StructuralTags):
+                self.logits_processor = get_structural_tags_logits_processor(
                     backend_name,
                     model,
                     term.schema,

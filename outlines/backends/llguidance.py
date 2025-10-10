@@ -300,3 +300,8 @@ class LLGuidanceBackend(BaseBackend):
         return LLGuidanceLogitsProcessor(
             grammar_spec, self.llg_tokenizer, self.tensor_library_name
         )
+
+    def get_structural_tags_logits_processor(
+        self, schema: str
+    ) -> LLGuidanceLogitsProcessor:
+        return NotImplementedError("LLGuidance does not support structural tags.")

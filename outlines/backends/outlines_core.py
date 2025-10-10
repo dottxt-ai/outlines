@@ -309,3 +309,8 @@ class OutlinesCoreBackend(BaseBackend):
             formatted_vocab[token_as_str] = [token_id]
         formatted_vocab.pop(eos_token)
         return Vocabulary(eos_token_id, formatted_vocab)
+
+    def get_structural_tags_logits_processor(
+        self, schema: str
+    ) -> OutlinesCoreLogitsProcessor:
+        return NotImplementedError("Outlines Core does not support structural tags.")

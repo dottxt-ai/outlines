@@ -67,3 +67,20 @@ class BaseBackend(ABC):
 
         """
         ...
+
+    @abstractmethod
+    def get_structural_tags_logits_processor(self, schema: str) -> LogitsProcessorType:
+        """Create a logits processor from a structural tags schema.
+
+        Parameters
+        ----------
+        schema: str
+            The structural tags schema to create a logits processor from.
+
+        Returns
+        -------
+        LogitsProcessorType
+            The logits processor.
+
+        """
+        ...

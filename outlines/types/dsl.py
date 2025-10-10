@@ -280,6 +280,11 @@ class CFG(Term):
         return cls(definition)
 
 
+@dataclass
+class StructuralTags(Term):
+    schema: str
+
+
 class JsonSchema(Term):
     """Class representing a JSON schema.
 
