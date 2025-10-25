@@ -100,7 +100,7 @@ for chunk in model.stream("Write a short story about a cat.", max_tokens=100):
 
 #### Batch Generation
 
-The `MLXLM` model supports generating text in batches. To do so, use the `batch` method and provide a list of strings as a model input. For instance:
+The `MLXLM` model supports generating text in batches. To do so, use the `batch` method and provide a list of strings as a model input. However, constrained generation is not supported with batching, so you cannot provide an `output_type`. For instance:
 
 ```python
 import outlines
