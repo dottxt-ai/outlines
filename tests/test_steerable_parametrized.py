@@ -24,7 +24,8 @@ def hf_cache_dir():
 @pytest.mark.flaky(reruns=2)
 def test_parametrized_steerable_model(backend, model_name, hf_cache_dir):
     hf_model = AutoModelForCausalLM.from_pretrained(model_name, cache_dir=hf_cache_dir)
-    tokenizer = AutoTokenizer.from_pretrained(model_name, cache_dir=hf_cache_dir)
+    tokenizer = Au
+    toTokenizer.from_pretrained(model_name, cache_dir=hf_cache_dir)
 
     model = outlines.models.transformers.Transformers(hf_model, tokenizer)
 
