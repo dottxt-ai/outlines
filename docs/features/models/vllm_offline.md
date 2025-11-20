@@ -44,7 +44,7 @@ For instance:
 
 ```python
 import outlines
-from vllm import LLM
+from vllm import LLM, SamplingParams
 
 # Create the model
 model = outlines.from_vllm_offline(
@@ -52,7 +52,7 @@ model = outlines.from_vllm_offline(
 )
 
 # Call it to generate text
-response = model("What's the capital of Latvia?", max_tokens=20)
+response = model("What's the capital of Latvia?", sampling_params=SamplingParams(max_tokens=20))
 print(response) # 'Riga'
 ```
 
@@ -64,7 +64,7 @@ For instance:
 
 ```python
 import outlines
-from vllm import LLM
+from vllm import LLM, SamplingParams
 from outlines.inputs import Chat
 
 # Create the model
@@ -79,7 +79,7 @@ prompt = Chat([
 ])
 
 # Call the model to generate a response
-response = model(prompt, max_tokens=50)
+response = model(prompt, sampling_params=SamplingParams(max_tokens=50))
 print(response) # 'Riga'
 ```
 
@@ -91,7 +91,7 @@ For instance:
 
 ```python
 import outlines
-from vllm import LLM
+from vllm import LLM, SamplingParams
 
 # Create the model
 model = outlines.from_vllm_offline(
@@ -99,7 +99,7 @@ model = outlines.from_vllm_offline(
 )
 
 # Stream the response
-for chunk in model.stream("Tell me a short story about a cat.", max_tokens=50):
+for chunk in model.stream("Tell me a short story about a cat.", sampling_params=SamplingParams(max_tokens=50)):
     print(chunk) # 'Once...'
 ```
 
