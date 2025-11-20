@@ -44,7 +44,7 @@ For instance:
 
 ```python
 import outlines
-from vllm import LLM
+from vllm import LLM, SamplingParams
 
 # Create the model
 model = outlines.from_vllm_offline(
@@ -52,7 +52,7 @@ model = outlines.from_vllm_offline(
 )
 
 # Call it to generate text
-response = model("What's the capital of Latvia?", max_tokens=20)
+response = model("What's the capital of Latvia?", sampling_params=SamplingParams(max_tokens=20))
 print(response) # 'Riga'
 ```
 
