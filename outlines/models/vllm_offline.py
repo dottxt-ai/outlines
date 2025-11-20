@@ -118,7 +118,7 @@ class VLLMOffline(Model):
     ) -> "SamplingParams":
         """Create the `SamplingParams` object to pass to the `generate` method
         of the `vllm.LLM` model."""
-        from vllm.sampling_params import GuidedDecodingParams, SamplingParams
+        from vllm.sampling_params import StructuredOutputsParams, SamplingParams
 
         sampling_params = inference_kwargs.pop("sampling_params", None)
 
@@ -127,7 +127,9 @@ class VLLMOffline(Model):
 
         output_type_args = self.type_adapter.format_output_type(output_type)
         if output_type_args:
-            sampling_params.guided_decoding = GuidedDecodingParams(**output_type_args)
+            original_sampling_params_dict = {f: getattr(sampling_params, f) for f in sampling_params.__struct_fields__}
+            sampling_params_dict = {**original_sampling_params_dict, "structured_outputs": StructuredOutputsParams(**output_type_args)}
+            sampling_params = SamplingParams(**sampling_params_dict)
 
         return sampling_params
 
