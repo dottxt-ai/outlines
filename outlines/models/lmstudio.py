@@ -1,0 +1,380 @@
+"""Integration with the `lmstudio` library."""
+
+from functools import singledispatchmethod
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    AsyncIterator,
+    Iterator,
+    Optional,
+    Union,
+    cast,
+)
+
+from outlines.inputs import Chat
+from outlines.models.base import AsyncModel, Model, ModelTypeAdapter
+from outlines.types import CFG, JsonSchema, Regex
+
+if TYPE_CHECKING:
+    import lmstudio as lms
+
+__all__ = ["LMStudio", "AsyncLMStudio", "from_lmstudio"]
+
+
+class LMStudioTypeAdapter(ModelTypeAdapter):
+    """Type adapter for the `LMStudio` model.
+
+    TODO: Add multimodal (Image) support. LMStudio SDK supports images via
+    `lms.prepare_image()` and `chat.add_user_message(prompt, images=[...])`.
+    See: https://lmstudio.ai/docs/python/llm-prediction/image-input
+    """
+
+    @singledispatchmethod
+    def format_input(self, model_input):
+        """Format input for LMStudio model.
+
+        Parameters
+        ----------
+        model_input
+            The input provided by the user.
+
+        Returns
+        -------
+        str | lms.Chat
+            The formatted input to be passed to the model.
+
+        """
+        raise TypeError(
+            f"The input type {type(model_input)} is not available with "
+            "LMStudio. The only available types are `str` and `Chat`."
+        )
+
+    @format_input.register(str)
+    def format_str_model_input(self, model_input: str) -> str:
+        """Pass through string input directly to LMStudio."""
+        return model_input
+
+    @format_input.register(Chat)
+    def format_chat_model_input(self, model_input: Chat) -> "lms.Chat":
+        """Convert Outlines Chat to LMStudio Chat."""
+        import lmstudio as lms
+
+        system_prompt = None
+        messages = model_input.messages
+
+        if messages and messages[0]["role"] == "system":
+            system_prompt = messages[0]["content"]
+            messages = messages[1:]
+
+        chat = lms.Chat(system_prompt) if system_prompt else lms.Chat()
+
+        for message in messages:
+            role = message["role"]
+            content = message["content"]
+
+            if role == "user":
+                chat.add_user_message(content)
+            elif role == "assistant":
+                chat.add_assistant_response(content)
+
+        return chat
+
+    def format_output_type(
+        self, output_type: Optional[Any] = None
+    ) -> Optional[dict]:
+        """Format the output type to pass to the model.
+
+        Parameters
+        ----------
+        output_type
+            The output type provided by the user.
+
+        Returns
+        -------
+        Optional[dict]
+            The formatted output type (JSON schema) to be passed to the model.
+
+        """
+        if output_type is None:
+            return None
+        elif isinstance(output_type, Regex):
+            raise TypeError(
+                "Regex-based structured outputs are not supported by LMStudio. "
+                "Use an open source model in the meantime."
+            )
+        elif isinstance(output_type, CFG):
+            raise TypeError(
+                "CFG-based structured outputs are not supported by LMStudio. "
+                "Use an open source model in the meantime."
+            )
+        elif JsonSchema.is_json_schema(output_type):
+            return cast(dict, JsonSchema.convert_to(output_type, ["dict"]))
+        else:
+            type_name = getattr(output_type, "__name__", output_type)
+            raise TypeError(
+                f"The type `{type_name}` is not supported by LMStudio. "
+                "Consider using a local model instead."
+            )
+
+
+class LMStudio(Model):
+    """Thin wrapper around a `lmstudio.Client` client.
+
+    This wrapper is used to convert the input and output types specified by the
+    users at a higher level to arguments to the LMStudio client.
+
+    """
+
+    def __init__(self, client: "lms.Client", model_name: Optional[str] = None):
+        """
+        Parameters
+        ----------
+        client
+            A LMStudio Client instance obtained via `lms.Client()` or
+            `lms.get_default_client()`.
+        model_name
+            The name of the model to use. If not provided, uses the default
+            loaded model in LMStudio.
+
+        """
+        self.client = client
+        self.model_name = model_name
+        self.type_adapter = LMStudioTypeAdapter()
+        self.model = client.llm.model(model_name) if model_name else client.llm.model()
+
+    def generate(
+        self,
+        model_input: Chat | str,
+        output_type: Optional[Any] = None,
+        **kwargs: Any,
+    ) -> str:
+        """Generate text using LMStudio.
+
+        Parameters
+        ----------
+        model_input
+            The prompt based on which the model will generate a response.
+        output_type
+            The desired format of the response generated by the model. The
+            output type must be of a type that can be converted to a JSON
+            schema.
+        **kwargs
+            Additional keyword arguments to pass to the model.
+
+        Returns
+        -------
+        str
+            The text generated by the model.
+
+        """
+        formatted_input = self.type_adapter.format_input(model_input)
+        response_format = self.type_adapter.format_output_type(output_type)
+
+        if response_format is not None:
+            kwargs["response_format"] = response_format
+
+        result = self.model.respond(formatted_input, **kwargs)
+        return result.content
+
+    def generate_batch(
+        self,
+        model_input,
+        output_type=None,
+        **kwargs,
+    ):
+        raise NotImplementedError(
+            "The `lmstudio` library does not support batch inference."
+        )
+
+    def generate_stream(
+        self,
+        model_input: Chat | str,
+        output_type: Optional[Any] = None,
+        **kwargs: Any,
+    ) -> Iterator[str]:
+        """Stream text using LMStudio.
+
+        Parameters
+        ----------
+        model_input
+            The prompt based on which the model will generate a response.
+        output_type
+            The desired format of the response generated by the model. The
+            output type must be of a type that can be converted to a JSON
+            schema.
+        **kwargs
+            Additional keyword arguments to pass to the model.
+
+        Returns
+        -------
+        Iterator[str]
+            An iterator that yields the text generated by the model.
+
+        """
+        formatted_input = self.type_adapter.format_input(model_input)
+        response_format = self.type_adapter.format_output_type(output_type)
+
+        if response_format is not None:
+            kwargs["response_format"] = response_format
+
+        stream = self.model.respond_stream(formatted_input, **kwargs)
+        for fragment in stream:
+            yield fragment.content
+
+
+class AsyncLMStudio(AsyncModel):
+    """Thin wrapper around a `lmstudio.AsyncClient` client.
+
+    This wrapper is used to convert the input and output types specified by the
+    users at a higher level to arguments to the LMStudio async client.
+
+    """
+
+    def __init__(
+        self, client: "lms.AsyncClient", model_name: Optional[str] = None
+    ):
+        """
+        Parameters
+        ----------
+        client
+            A LMStudio AsyncClient instance.
+        model_name
+            The name of the model to use. If not provided, uses the default
+            loaded model in LMStudio.
+
+        """
+        self.client = client
+        self.model_name = model_name
+        self.type_adapter = LMStudioTypeAdapter()
+        self._model = None
+        self._context_entered = False
+
+    async def _ensure_context(self):
+        """Ensure the async client context is entered."""
+        if not self._context_entered:
+            await self.client.__aenter__()
+            self._context_entered = True
+
+    async def _get_model(self):
+        """Get or create the model handle."""
+        await self._ensure_context()
+        if self._model is None:
+            if self.model_name:
+                self._model = await self.client.llm.model(self.model_name)
+            else:
+                self._model = await self.client.llm.model()
+        return self._model
+
+    async def generate(
+        self,
+        model_input: Chat | str,
+        output_type: Optional[Any] = None,
+        **kwargs: Any,
+    ) -> str:
+        """Generate text using LMStudio asynchronously.
+
+        Parameters
+        ----------
+        model_input
+            The prompt based on which the model will generate a response.
+        output_type
+            The desired format of the response generated by the model. The
+            output type must be of a type that can be converted to a JSON
+            schema.
+        **kwargs
+            Additional keyword arguments to pass to the model.
+
+        Returns
+        -------
+        str
+            The text generated by the model.
+
+        """
+        formatted_input = self.type_adapter.format_input(model_input)
+        response_format = self.type_adapter.format_output_type(output_type)
+
+        if response_format is not None:
+            kwargs["response_format"] = response_format
+
+        model = await self._get_model()
+        result = await model.respond(formatted_input, **kwargs)
+        return result.content
+
+    async def generate_batch(
+        self,
+        model_input,
+        output_type=None,
+        **kwargs,
+    ):
+        raise NotImplementedError(
+            "The `lmstudio` library does not support batch inference."
+        )
+
+    async def generate_stream(  # type: ignore
+        self,
+        model_input: Chat | str,
+        output_type: Optional[Any] = None,
+        **kwargs: Any,
+    ) -> AsyncIterator[str]:
+        """Stream text using LMStudio asynchronously.
+
+        Parameters
+        ----------
+        model_input
+            The prompt based on which the model will generate a response.
+        output_type
+            The desired format of the response generated by the model. The
+            output type must be of a type that can be converted to a JSON
+            schema.
+        **kwargs
+            Additional keyword arguments to pass to the model.
+
+        Returns
+        -------
+        AsyncIterator[str]
+            An async iterator that yields the text generated by the model.
+
+        """
+        formatted_input = self.type_adapter.format_input(model_input)
+        response_format = self.type_adapter.format_output_type(output_type)
+
+        if response_format is not None:
+            kwargs["response_format"] = response_format
+
+        model = await self._get_model()
+        stream = await model.respond_stream(formatted_input, **kwargs)
+        async for fragment in stream:
+            yield fragment.content
+
+
+def from_lmstudio(
+    client: Union["lms.Client", "lms.AsyncClient"],
+    model_name: Optional[str] = None,
+) -> Union[LMStudio, AsyncLMStudio]:
+    """Create an Outlines `LMStudio` model instance from a
+    `lmstudio.Client` or `lmstudio.AsyncClient` instance.
+
+    Parameters
+    ----------
+    client
+        A `lmstudio.Client` or `lmstudio.AsyncClient` instance.
+    model_name
+        The name of the model to use.
+
+    Returns
+    -------
+    Union[LMStudio, AsyncLMStudio]
+        An Outlines `LMStudio` or `AsyncLMStudio` model instance.
+
+    """
+    import lmstudio as lms
+
+    if isinstance(client, lms.Client):
+        return LMStudio(client, model_name)
+    elif isinstance(client, lms.AsyncClient):
+        return AsyncLMStudio(client, model_name)
+    else:
+        raise ValueError(
+            "Invalid client type, the client must be an instance of "
+            "`lmstudio.Client` or `lmstudio.AsyncClient`."
+        )
