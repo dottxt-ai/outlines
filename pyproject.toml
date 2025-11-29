@@ -43,6 +43,7 @@ dottxt = ["dottxt"]
 gemini = ["google-genai"]
 llamacpp = ["huggingface-hub", "llama-cpp-python", "numba"]
 mlxlm = ["datasets", "mlx", "mlx-lm"]
+lmstudio = ["lmstudio"]
 ollama = ["ollama"]
 openai = ["openai"]
 mistral = ["mistralai"]
@@ -165,6 +166,7 @@ module = [
     "airportsdata.*",
     "outlines_core.*",
     "genson",
+    "lmstudio.*",
     "ollama.*",
     "dottxt.*",
     "tensorflow",

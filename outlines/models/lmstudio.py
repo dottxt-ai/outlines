@@ -82,6 +82,9 @@ class LMStudioTypeAdapter(ModelTypeAdapter):
     ) -> Optional[dict]:
         """Format the output type to pass to the model.
 
+        TODO: `int`, `float` and other Python types could be supported via
+        JSON Schema.
+
         Parameters
         ----------
         output_type
