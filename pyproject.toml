@@ -85,7 +85,7 @@ test = [
     "tensorflow",
     "tf-keras",
     "ollama",
-    "lmstudio",
+    "lmstudio; python_version >= '3.10'",
     "dottxt",
     "sentencepiece",
     "mkdocs_gen_files",
