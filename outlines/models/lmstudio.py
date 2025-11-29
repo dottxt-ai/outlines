@@ -16,7 +16,7 @@ from outlines.models.base import AsyncModel, Model, ModelTypeAdapter
 from outlines.types import CFG, JsonSchema, Regex
 
 if TYPE_CHECKING:
-    import lmstudio as lms
+    from lmstudio import AsyncClient, Chat as LMStudioChat, Client
 
 __all__ = ["LMStudio", "AsyncLMStudio", "from_lmstudio"]
 
@@ -24,9 +24,7 @@ __all__ = ["LMStudio", "AsyncLMStudio", "from_lmstudio"]
 class LMStudioTypeAdapter(ModelTypeAdapter):
     """Type adapter for the `LMStudio` model.
 
-    TODO: Add multimodal (Image) support. LMStudio SDK supports images via
-    `lms.prepare_image()` and `chat.add_user_message(prompt, images=[...])`.
-    See: https://lmstudio.ai/docs/python/llm-prediction/image-input
+    TODO: Add multimodal (Image) support.
     """
 
     @singledispatchmethod
@@ -40,7 +38,7 @@ class LMStudioTypeAdapter(ModelTypeAdapter):
 
         Returns
         -------
-        str | lms.Chat
+        str | LMStudioChat
             The formatted input to be passed to the model.
 
         """
@@ -55,9 +53,9 @@ class LMStudioTypeAdapter(ModelTypeAdapter):
         return model_input
 
     @format_input.register(Chat)
-    def format_chat_model_input(self, model_input: Chat) -> "lms.Chat":
+    def format_chat_model_input(self, model_input: Chat) -> "LMStudioChat":
         """Convert Outlines Chat to LMStudio Chat."""
-        import lmstudio as lms
+        from lmstudio import Chat as LMSChat
 
         system_prompt = None
         messages = model_input.messages
@@ -66,7 +64,7 @@ class LMStudioTypeAdapter(ModelTypeAdapter):
             system_prompt = messages[0]["content"]
             messages = messages[1:]
 
-        chat = lms.Chat(system_prompt) if system_prompt else lms.Chat()
+        chat = LMSChat(system_prompt) if system_prompt else LMSChat()
 
         for message in messages:
             role = message["role"]
@@ -125,13 +123,13 @@ class LMStudio(Model):
 
     """
 
-    def __init__(self, client: "lms.Client", model_name: Optional[str] = None):
+    def __init__(self, client: "Client", model_name: Optional[str] = None):
         """
         Parameters
         ----------
         client
-            A LMStudio Client instance obtained via `lms.Client()` or
-            `lms.get_default_client()`.
+            A LMStudio Client instance obtained via `lmstudio.Client()` or
+            `lmstudio.get_default_client()`.
         model_name
             The name of the model to use. If not provided, uses the default
             loaded model in LMStudio.
@@ -231,7 +229,7 @@ class AsyncLMStudio(AsyncModel):
     """
 
     def __init__(
-        self, client: "lms.AsyncClient", model_name: Optional[str] = None
+        self, client: "AsyncClient", model_name: Optional[str] = None
     ):
         """
         Parameters
@@ -348,7 +346,7 @@ class AsyncLMStudio(AsyncModel):
 
 
 def from_lmstudio(
-    client: Union["lms.Client", "lms.AsyncClient"],
+    client: Union["Client", "AsyncClient"],
     model_name: Optional[str] = None,
 ) -> Union[LMStudio, AsyncLMStudio]:
     """Create an Outlines `LMStudio` model instance from a
@@ -367,11 +365,11 @@ def from_lmstudio(
         An Outlines `LMStudio` or `AsyncLMStudio` model instance.
 
     """
-    import lmstudio as lms
+    from lmstudio import AsyncClient, Client
 
-    if isinstance(client, lms.Client):
+    if isinstance(client, Client):
         return LMStudio(client, model_name)
-    elif isinstance(client, lms.AsyncClient):
+    elif isinstance(client, AsyncClient):
         return AsyncLMStudio(client, model_name)
     else:
         raise ValueError(
