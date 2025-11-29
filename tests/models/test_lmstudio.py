@@ -23,6 +23,7 @@ def async_model():
     return AsyncLMStudio(client)
 
 
+@pytest.mark.api_call
 def test_lmstudio_init_from_client():
     client = lms.get_default_client()
 
@@ -33,6 +34,7 @@ def test_lmstudio_init_from_client():
     assert model.model_name is None
 
 
+@pytest.mark.api_call
 def test_lmstudio_init_from_async_client():
     host = lms.Client.find_default_local_api_host()
     client = lms.AsyncClient(host)
@@ -49,16 +51,19 @@ def test_lmstudio_init_invalid_client():
         outlines.from_lmstudio(object())
 
 
+@pytest.mark.api_call
 def test_lmstudio_simple(model):
     result = model.generate("Respond with one word. Not more.", None)
     assert isinstance(result, str)
 
 
+@pytest.mark.api_call
 def test_lmstudio_call(model):
     result = model("Respond with one word. Not more.")
     assert isinstance(result, str)
 
 
+@pytest.mark.api_call
 def test_lmstudio_chat(model):
     chat = Chat(messages=[
         {"role": "system", "content": "You are a helpful assistant."},
@@ -68,6 +73,7 @@ def test_lmstudio_chat(model):
     assert isinstance(result, str)
 
 
+@pytest.mark.api_call
 def test_lmstudio_json(model):
     class Foo(BaseModel):
         foo: Annotated[str, Field(max_length=10)]
@@ -77,6 +83,7 @@ def test_lmstudio_json(model):
     assert "foo" in json.loads(result)
 
 
+@pytest.mark.api_call
 def test_lmstudio_wrong_output_type(model):
     class Foo(Enum):
         bar = "Bar"
@@ -86,16 +93,19 @@ def test_lmstudio_wrong_output_type(model):
         model.generate("foo?", Foo)
 
 
+@pytest.mark.api_call
 def test_lmstudio_wrong_input_type(model):
     with pytest.raises(TypeError, match="is not available"):
         model.generate({"foo?": "bar?"}, None)
 
 
+@pytest.mark.api_call
 def test_lmstudio_stream(model):
     generator = model.stream("Write a sentence about a cat.")
     assert isinstance(next(generator), str)
 
 
+@pytest.mark.api_call
 def test_lmstudio_stream_json(model):
     class Foo(BaseModel):
         foo: Annotated[str, Field(max_length=10)]
@@ -107,11 +117,13 @@ def test_lmstudio_stream_json(model):
     assert "foo" in json.loads("".join(generated_text))
 
 
+@pytest.mark.api_call
 def test_lmstudio_batch(model):
     with pytest.raises(NotImplementedError, match="does not support"):
         model.batch(["Respond with one word.", "Respond with one word."])
 
 
+@pytest.mark.api_call
 def test_lmstudio_async_init_from_client():
     host = lms.Client.find_default_local_api_host()
     client = lms.AsyncClient(host)
@@ -122,18 +134,21 @@ def test_lmstudio_async_init_from_client():
     assert model.model_name is None
 
 
+@pytest.mark.api_call
 @pytest.mark.asyncio
 async def test_lmstudio_async_simple(async_model):
     result = await async_model.generate("Respond with one word. Not more.", None)
     assert isinstance(result, str)
 
 
+@pytest.mark.api_call
 @pytest.mark.asyncio
 async def test_lmstudio_async_call(async_model):
     result = await async_model("Respond with one word. Not more.")
     assert isinstance(result, str)
 
 
+@pytest.mark.api_call
 @pytest.mark.asyncio
 async def test_lmstudio_async_chat(async_model):
     chat = Chat(messages=[
@@ -144,6 +159,7 @@ async def test_lmstudio_async_chat(async_model):
     assert isinstance(result, str)
 
 
+@pytest.mark.api_call
 @pytest.mark.asyncio
 async def test_lmstudio_async_json(async_model):
     class Foo(BaseModel):
@@ -154,6 +170,7 @@ async def test_lmstudio_async_json(async_model):
     assert "foo" in json.loads(result)
 
 
+@pytest.mark.api_call
 @pytest.mark.asyncio
 async def test_lmstudio_async_wrong_output_type(async_model):
     class Foo(Enum):
@@ -164,18 +181,21 @@ async def test_lmstudio_async_wrong_output_type(async_model):
         await async_model.generate("foo?", Foo)
 
 
+@pytest.mark.api_call
 @pytest.mark.asyncio
 async def test_lmstudio_async_wrong_input_type(async_model):
     with pytest.raises(TypeError, match="is not available"):
         await async_model.generate({"foo?": "bar?"}, None)
 
 
+@pytest.mark.api_call
 @pytest.mark.asyncio
 async def test_lmstudio_async_stream(async_model):
     async_generator = async_model.stream("Write a sentence about a cat.")
     assert isinstance(await async_generator.__anext__(), str)
 
 
+@pytest.mark.api_call
 @pytest.mark.asyncio
 async def test_lmstudio_async_batch(async_model):
     with pytest.raises(NotImplementedError, match="does not support"):
