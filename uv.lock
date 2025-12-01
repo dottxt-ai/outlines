@@ -3832,7 +3832,7 @@ wheels = [
 
 [[package]]
 name = "outlines"
-version = "1.2.10.dev6+g7764ac619.d20251129"
+version = "1.2.10.dev8+g206451562.d20251201"
 source = { editable = "." }
 dependencies = [
     { name = "cloudpickle" },
