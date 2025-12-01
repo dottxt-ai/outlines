@@ -189,6 +189,7 @@ omit = [
     "outlines/models/anthropic.py",
     "outlines/models/dottxt.py",
     "outlines/models/gemini.py",
+    "outlines/models/lmstudio.py",
     "outlines/models/mlxlm.py",
     "outlines/models/openai.py",
     "outlines/models/mistral.py",
