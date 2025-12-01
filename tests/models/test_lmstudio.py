@@ -10,9 +10,17 @@ import outlines
 from outlines.inputs import Chat
 from outlines.models import AsyncLMStudio, LMStudio
 
+MODEL_NAME = "qwen2.5-coder-1.5b-instruct-mlx"
+
 
 @pytest.fixture
 def model():
+    client = lms.get_default_client()
+    return LMStudio(client, MODEL_NAME)
+
+
+@pytest.fixture
+def model_no_model_name():
     client = lms.get_default_client()
     return LMStudio(client)
 
@@ -20,12 +28,23 @@ def model():
 @pytest.fixture
 def async_model():
     client = lms.AsyncClient(lms.Client.find_default_local_api_host())
+    return AsyncLMStudio(client, MODEL_NAME)
+
+
+@pytest.fixture
+def async_model_no_model_name():
+    client = lms.AsyncClient(lms.Client.find_default_local_api_host())
     return AsyncLMStudio(client)
 
 
-@pytest.mark.api_call
 def test_lmstudio_init_from_client():
     client = lms.get_default_client()
+
+    # With model name
+    model = outlines.from_lmstudio(client, MODEL_NAME)
+    assert isinstance(model, LMStudio)
+    assert model.client == client
+    assert model.model_name == MODEL_NAME
 
     # Without model name
     model = outlines.from_lmstudio(client)
@@ -33,27 +52,32 @@ def test_lmstudio_init_from_client():
     assert model.client == client
     assert model.model_name is None
 
-
-@pytest.mark.api_call
-def test_lmstudio_init_from_async_client():
-    host = lms.Client.find_default_local_api_host()
-    client = lms.AsyncClient(host)
-
-    # Without model name
-    model = outlines.from_lmstudio(client)
-    assert isinstance(model, AsyncLMStudio)
-    assert model.client == client
-    assert model.model_name is None
-
-
-def test_lmstudio_init_invalid_client():
+    # With invalid client
     with pytest.raises(ValueError, match="Invalid client type"):
         outlines.from_lmstudio(object())
 
 
 @pytest.mark.api_call
+def test_lmstudio_wrong_inference_parameters(model):
+    with pytest.raises(TypeError, match="got an unexpected"):
+        model.generate(
+            "Respond with one word. Not more.", None, foo=10
+        )
+
+
+@pytest.mark.api_call
 def test_lmstudio_simple(model):
     result = model.generate("Respond with one word. Not more.", None)
+    assert isinstance(result, str)
+
+
+@pytest.mark.api_call
+def test_lmstudio_direct(model_no_model_name):
+    result = model_no_model_name(
+        "Respond with one word. Not more.",
+        None,
+        model=MODEL_NAME,
+    )
     assert isinstance(result, str)
 
 
@@ -106,11 +130,11 @@ def test_lmstudio_stream(model):
 
 
 @pytest.mark.api_call
-def test_lmstudio_stream_json(model):
+def test_lmstudio_stream_json(model_no_model_name):
     class Foo(BaseModel):
         foo: Annotated[str, Field(max_length=10)]
 
-    generator = model.stream("Create a character.", Foo)
+    generator = model_no_model_name.stream("Create a character.", Foo, model=MODEL_NAME)
     generated_text = []
     for text in generator:
         generated_text.append(text)
@@ -123,11 +147,17 @@ def test_lmstudio_batch(model):
         model.batch(["Respond with one word.", "Respond with one word."])
 
 
-@pytest.mark.api_call
 def test_lmstudio_async_init_from_client():
     host = lms.Client.find_default_local_api_host()
     client = lms.AsyncClient(host)
 
+    # With model name
+    model = outlines.from_lmstudio(client, MODEL_NAME)
+    assert isinstance(model, AsyncLMStudio)
+    assert model.client == client
+    assert model.model_name == MODEL_NAME
+
+    # Without model name
     model = outlines.from_lmstudio(client)
     assert isinstance(model, AsyncLMStudio)
     assert model.client == client
@@ -138,6 +168,26 @@ def test_lmstudio_async_init_from_client():
 @pytest.mark.asyncio
 async def test_lmstudio_async_simple(async_model):
     result = await async_model.generate("Respond with one word. Not more.", None)
+    assert isinstance(result, str)
+
+
+@pytest.mark.api_call
+@pytest.mark.asyncio
+async def test_lmstudio_async_wrong_inference_parameters(async_model):
+    with pytest.raises(TypeError, match="got an unexpected"):
+        await async_model.generate(
+            "Respond with one word. Not more.", None, foo=10
+        )
+
+
+@pytest.mark.api_call
+@pytest.mark.asyncio
+async def test_lmstudio_async_direct(async_model_no_model_name):
+    result = await async_model_no_model_name(
+        "Respond with one word. Not more.",
+        None,
+        model=MODEL_NAME,
+    )
     assert isinstance(result, str)
 
 
@@ -193,6 +243,19 @@ async def test_lmstudio_async_wrong_input_type(async_model):
 async def test_lmstudio_async_stream(async_model):
     async_generator = async_model.stream("Write a sentence about a cat.")
     assert isinstance(await async_generator.__anext__(), str)
+
+
+@pytest.mark.api_call
+@pytest.mark.asyncio
+async def test_lmstudio_async_stream_json(async_model_no_model_name):
+    class Foo(BaseModel):
+        foo: Annotated[str, Field(max_length=10)]
+
+    async_generator = async_model_no_model_name.stream("Create a character.", Foo, model=MODEL_NAME)
+    generated_text = []
+    async for chunk in async_generator:
+        generated_text.append(chunk)
+    assert "foo" in json.loads("".join(generated_text))
 
 
 @pytest.mark.api_call
