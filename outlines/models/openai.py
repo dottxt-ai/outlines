@@ -139,9 +139,6 @@ class OpenAITypeAdapter(ModelTypeAdapter):
         """Generate the `response_format` argument to the client based on the
         output type specified by the user.
 
-        TODO: `int`, `float` and other Python types could be supported via
-        JSON Schema.
-
         Parameters
         ----------
         output_type
