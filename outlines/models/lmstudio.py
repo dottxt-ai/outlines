@@ -11,7 +11,7 @@ from typing import (
     cast,
 )
 
-from outlines.inputs import Chat
+from outlines.inputs import Chat, Image
 from outlines.models.base import AsyncModel, Model, ModelTypeAdapter
 from outlines.types import CFG, JsonSchema, Regex
 
@@ -22,10 +22,20 @@ __all__ = ["LMStudio", "AsyncLMStudio", "from_lmstudio"]
 
 
 class LMStudioTypeAdapter(ModelTypeAdapter):
-    """Type adapter for the `LMStudio` model.
+    """Type adapter for the `LMStudio` model."""
 
-    TODO: Add multimodal (Image) support.
-    """
+    def _prepare_lmstudio_image(self, image: Image):
+        """Convert Outlines Image to LMStudio image handle.
+
+        LMStudio's SDK only accepts file paths, raw bytes, or binary IO objects.
+        Unlike Ollama which accepts base64 directly, we must decode from base64.
+        """
+        import base64
+
+        import lmstudio as lms
+
+        image_bytes = base64.b64decode(image.image_str)
+        return lms.prepare_image(image_bytes)
 
     @singledispatchmethod
     def format_input(self, model_input):
@@ -44,7 +54,7 @@ class LMStudioTypeAdapter(ModelTypeAdapter):
         """
         raise TypeError(
             f"The input type {type(model_input)} is not available with "
-            "LMStudio. The only available types are `str` and `Chat`."
+            "LMStudio. The only available types are `str`, `list` and `Chat`."
         )
 
     @format_input.register(str)
@@ -52,9 +62,25 @@ class LMStudioTypeAdapter(ModelTypeAdapter):
         """Pass through string input directly to LMStudio."""
         return model_input
 
+    @format_input.register(list)
+    def format_list_model_input(self, model_input: list) -> "LMStudioChat":
+        """Handle list input containing prompt and images."""
+        from lmstudio import Chat as LMSChat
+
+        prompt = model_input[0]
+        images = model_input[1:]
+
+        if not all(isinstance(img, Image) for img in images):
+            raise ValueError("All assets provided must be of type Image")
+
+        chat = LMSChat()
+        image_handles = [self._prepare_lmstudio_image(img) for img in images]
+        chat.add_user_message(prompt, images=image_handles)
+        return chat
+
     @format_input.register(Chat)
     def format_chat_model_input(self, model_input: Chat) -> "LMStudioChat":
-        """Convert Outlines Chat to LMStudio Chat."""
+        """Convert Outlines Chat to LMStudio Chat with image support."""
         from lmstudio import Chat as LMSChat
 
         system_prompt = None
@@ -71,7 +97,15 @@ class LMStudioTypeAdapter(ModelTypeAdapter):
             content = message["content"]
 
             if role == "user":
-                chat.add_user_message(content)
+                if isinstance(content, str):
+                    chat.add_user_message(content)
+                elif isinstance(content, list):
+                    prompt = content[0]
+                    images = content[1:]
+                    if not all(isinstance(img, Image) for img in images):
+                        raise ValueError("All assets provided must be of type Image")
+                    image_handles = [self._prepare_lmstudio_image(img) for img in images]
+                    chat.add_user_message(prompt, images=image_handles)
             elif role == "assistant":
                 chat.add_assistant_response(content)
 
@@ -81,9 +115,6 @@ class LMStudioTypeAdapter(ModelTypeAdapter):
         self, output_type: Optional[Any] = None
     ) -> Optional[dict]:
         """Format the output type to pass to the model.
-
-        TODO: `int`, `float` and other Python types could be supported via
-        JSON Schema.
 
         Parameters
         ----------
@@ -144,7 +175,7 @@ class LMStudio(Model):
 
     def generate(
         self,
-        model_input: Chat | str,
+        model_input: Chat | str | list,
         output_type: Optional[Any] = None,
         **kwargs: Any,
     ) -> str:
@@ -194,7 +225,7 @@ class LMStudio(Model):
 
     def generate_stream(
         self,
-        model_input: Chat | str,
+        model_input: Chat | str | list,
         output_type: Optional[Any] = None,
         **kwargs: Any,
     ) -> Iterator[str]:
@@ -262,7 +293,7 @@ class AsyncLMStudio(AsyncModel):
 
     async def generate(
         self,
-        model_input: Chat | str,
+        model_input: Chat | str | list,
         output_type: Optional[Any] = None,
         **kwargs: Any,
     ) -> str:
@@ -316,7 +347,7 @@ class AsyncLMStudio(AsyncModel):
 
     async def generate_stream(  # type: ignore
         self,
-        model_input: Chat | str,
+        model_input: Chat | str | list,
         output_type: Optional[Any] = None,
         **kwargs: Any,
     ) -> AsyncIterator[str]:

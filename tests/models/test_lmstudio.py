@@ -1,13 +1,15 @@
+import io
 import json
 from enum import Enum
 from typing import Annotated
 
 import lmstudio as lms
 import pytest
+from PIL import Image as PILImage
 from pydantic import BaseModel, Field
 
 import outlines
-from outlines.inputs import Chat
+from outlines.inputs import Chat, Image, Video
 from outlines.models import AsyncLMStudio, LMStudio
 
 MODEL_NAME = "qwen2.5-coder-1.5b-instruct-mlx"
@@ -35,6 +37,21 @@ def async_model():
 def async_model_no_model_name():
     client = lms.AsyncClient(lms.Client.find_default_local_api_host())
     return AsyncLMStudio(client)
+
+
+@pytest.fixture(scope="session")
+def image():
+    width, height = 1, 1
+    white_background = (255, 255, 255)
+    image = PILImage.new("RGB", (width, height), white_background)
+
+    # Save to an in-memory bytes buffer and read as png
+    buffer = io.BytesIO()
+    image.save(buffer, format="PNG")
+    buffer.seek(0)
+    image = PILImage.open(buffer)
+
+    return image
 
 
 def test_lmstudio_init_from_client():
@@ -88,6 +105,34 @@ def test_lmstudio_call(model):
 
 
 @pytest.mark.api_call
+def test_lmstudio_simple_vision(image, model):
+    # This is not using a vision model, so it's not able to describe
+    # the image, but we're still checking the model input syntax
+    result = model.generate(
+        ["What does this logo represent?", Image(image)],
+        model=MODEL_NAME,
+    )
+    assert isinstance(result, str)
+
+
+@pytest.mark.api_call
+def test_lmstudio_chat_with_image(image, model):
+    result = model.generate(
+        Chat(
+            [
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": [
+                    "What does this logo represent?",
+                    Image(image)
+                ]},
+            ]
+        ),
+        model=MODEL_NAME,
+    )
+    assert isinstance(result, str)
+
+
+@pytest.mark.api_call
 def test_lmstudio_chat(model):
     chat = Chat(messages=[
         {"role": "system", "content": "You are a helpful assistant."},
@@ -118,9 +163,12 @@ def test_lmstudio_wrong_output_type(model):
 
 
 @pytest.mark.api_call
-def test_lmstudio_wrong_input_type(model):
+def test_lmstudio_wrong_input_type(model, image):
     with pytest.raises(TypeError, match="is not available"):
         model.generate({"foo?": "bar?"}, None)
+
+    with pytest.raises(ValueError, match="All assets provided must be of type Image"):
+        model.generate(["foo?", Image(image), Video("")], None)
 
 
 @pytest.mark.api_call
@@ -200,6 +248,36 @@ async def test_lmstudio_async_call(async_model):
 
 @pytest.mark.api_call
 @pytest.mark.asyncio
+async def test_lmstudio_async_simple_vision(image, async_model):
+    # This is not using a vision model, so it's not able to describe
+    # the image, but we're still checking the model input syntax
+    result = await async_model.generate(
+        ["What does this logo represent?", Image(image)],
+        model=MODEL_NAME,
+    )
+    assert isinstance(result, str)
+
+
+@pytest.mark.api_call
+@pytest.mark.asyncio
+async def test_lmstudio_async_chat_with_image(image, async_model):
+    result = await async_model.generate(
+        Chat(
+            [
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": [
+                    "What does this logo represent?",
+                    Image(image)
+                ]},
+            ]
+        ),
+        model=MODEL_NAME,
+    )
+    assert isinstance(result, str)
+
+
+@pytest.mark.api_call
+@pytest.mark.asyncio
 async def test_lmstudio_async_chat(async_model):
     chat = Chat(messages=[
         {"role": "system", "content": "You are a helpful assistant."},
@@ -233,9 +311,12 @@ async def test_lmstudio_async_wrong_output_type(async_model):
 
 @pytest.mark.api_call
 @pytest.mark.asyncio
-async def test_lmstudio_async_wrong_input_type(async_model):
+async def test_lmstudio_async_wrong_input_type(async_model, image):
     with pytest.raises(TypeError, match="is not available"):
         await async_model.generate({"foo?": "bar?"}, None)
+
+    with pytest.raises(ValueError, match="All assets provided must be of type Image"):
+        await async_model.generate(["foo?", Image(image), Video("")], None)
 
 
 @pytest.mark.api_call

@@ -1,12 +1,14 @@
+import io
 import json
 import sys
 from dataclasses import dataclass
 
 import pytest
 from genson import SchemaBuilder
+from PIL import Image as PILImage
 from pydantic import BaseModel
 
-from outlines.inputs import Chat
+from outlines.inputs import Chat, Image
 from outlines.models.lmstudio import LMStudioTypeAdapter
 from outlines.types import cfg, json_schema, regex
 
@@ -34,11 +36,35 @@ def adapter():
     return LMStudioTypeAdapter()
 
 
+@pytest.fixture
+def image():
+    width, height = 1, 1
+    white_background = (255, 255, 255)
+    image = PILImage.new("RGB", (width, height), white_background)
+
+    # Save to an in-memory bytes buffer and read as png
+    buffer = io.BytesIO()
+    image.save(buffer, format="PNG")
+    buffer.seek(0)
+    image = PILImage.open(buffer)
+
+    return image
+
+
 def test_lmstudio_type_adapter_input_text(adapter):
     text_input = "prompt"
     result = adapter.format_input(text_input)
     assert isinstance(result, str)
     assert result == text_input
+
+
+def test_lmstudio_type_adapter_input_vision(adapter, image):
+    import lmstudio as lms
+
+    image_input = Image(image)
+    text_input = "prompt"
+    result = adapter.format_input([text_input, image_input])
+    assert isinstance(result, lms.Chat)
 
 
 def test_lmstudio_type_adapter_input_chat(adapter):
@@ -63,6 +89,22 @@ def test_lmstudio_type_adapter_input_chat_no_system(adapter):
     result = adapter.format_input(chat_input)
 
     import lmstudio as lms
+    assert isinstance(result, lms.Chat)
+
+
+def test_lmstudio_type_adapter_input_chat_with_image(adapter, image):
+    import lmstudio as lms
+
+    image_input = Image(image)
+    chat_input = Chat(messages=[
+        {"role": "system", "content": "You are a helpful assistant."},
+        {"role": "user", "content": [
+            "What is in this image?",
+            image_input,
+        ]},
+        {"role": "assistant", "content": "response"},
+    ])
+    result = adapter.format_input(chat_input)
     assert isinstance(result, lms.Chat)
 
 
