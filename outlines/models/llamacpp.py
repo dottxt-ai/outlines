@@ -152,6 +152,15 @@ class LlamaCppTypeAdapter(ModelTypeAdapter):
 
     """
 
+    def __init__(self, has_chat_template: bool = False):
+        """
+        Parameters
+        ----------
+        has_chat_template
+            Whether the model has a chat template defined.
+        """
+        self.has_chat_template = has_chat_template
+
     @singledispatchmethod
     def format_input(self, model_input):
         """Generate the prompt argument to pass to the model.
@@ -173,7 +182,9 @@ class LlamaCppTypeAdapter(ModelTypeAdapter):
         )
 
     @format_input.register(str)
-    def format_str_input(self, model_input: str) -> str:
+    def format_str_input(self, model_input: str) -> str | list:
+        if self.has_chat_template:
+            return [{"role": "user", "content": model_input}]
         return model_input
 
     @format_input.register(Chat)
@@ -237,7 +248,7 @@ class LlamaCpp(Model):
         """
         self.model = model
         self.tokenizer = LlamaCppTokenizer(self.model)
-        self.type_adapter = LlamaCppTypeAdapter()
+        self.type_adapter = LlamaCppTypeAdapter(has_chat_template=self._check_chat_template())
 
     def generate(
         self,
@@ -340,6 +351,16 @@ class LlamaCpp(Model):
             for chunk in generator:
                 yield chunk["choices"][0]["delta"].get("content", "")
 
+    def _check_chat_template(self) -> bool:
+        """Check if the model has a chat template defined."""
+        return (
+            self.model.chat_format is not None
+            or self.model.chat_handler is not None
+            or (
+                hasattr(self.model, "metadata")
+                and self.model.metadata.get("tokenizer.chat_template") is not None
+            )
+        )
 
 def from_llamacpp(model: "Llama"):
     """Create an Outlines `LlamaCpp` model instance from a
