@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING, Any, List, Optional, Tuple, Union
 
 from outlines.inputs import Audio, Chat, Image, Video
 from outlines.models.base import Model, ModelTypeAdapter
-from outlines.models.tokenizer import Tokenizer
+from outlines.models.tokenizer import Tokenizer, _check_hf_chat_template
 from outlines.processors import OutlinesLogitsProcessor
 
 if TYPE_CHECKING:
@@ -136,8 +136,9 @@ class TransformerTokenizer(Tokenizer):
 class TransformersTypeAdapter(ModelTypeAdapter):
     """Type adapter for the `Transformers` model."""
 
-    def __init__(self, **kwargs):
-        self.tokenizer = kwargs.get("tokenizer")
+    def __init__(self, tokenizer: "PreTrainedTokenizer", has_chat_template: bool = False):
+        self.tokenizer = tokenizer
+        self.has_chat_template = has_chat_template
 
     @singledispatchmethod
     def format_input(self, model_input):
@@ -161,6 +162,8 @@ class TransformersTypeAdapter(ModelTypeAdapter):
 
     @format_input.register(str)
     def format_str_input(self, model_input: str) -> str:
+        if self.has_chat_template:
+            return self.format_chat_input(Chat([{"role": "user", "content": model_input}]))
         return model_input
 
     @format_input.register(Chat)
@@ -243,7 +246,10 @@ class Transformers(Model):
         self.hf_tokenizer = tokenizer
         self.tokenizer = TransformerTokenizer(tokenizer)
         self.device_dtype = device_dtype
-        self.type_adapter = TransformersTypeAdapter(tokenizer=tokenizer)
+        self.type_adapter = TransformersTypeAdapter(
+            tokenizer=tokenizer,
+            has_chat_template=_check_hf_chat_template(tokenizer)
+        )
 
         if (
             FlaxPreTrainedModel is not None
