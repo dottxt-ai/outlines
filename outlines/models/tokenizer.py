@@ -4,6 +4,7 @@ from typing import Dict, Hashable, List, Protocol, Set, Tuple, Union, TYPE_CHECK
 if TYPE_CHECKING:
     import numpy as np
     from numpy.typing import NDArray
+    from transformers import PreTrainedTokenizer, PreTrainedTokenizerFast
 
 
 class Tokenizer(Hashable, Protocol):
@@ -31,3 +32,12 @@ class Tokenizer(Hashable, Protocol):
         token that includes `Ġ` with a string.
         """
         ...
+
+
+def _check_hf_chat_template(tokenizer: "PreTrainedTokenizer | PreTrainedTokenizerFast") -> bool:
+    """Check if the HuggingFace tokenizer has a chat template."""
+    try:
+        tokenizer.get_chat_template()
+        return True
+    except ValueError:
+        return False
