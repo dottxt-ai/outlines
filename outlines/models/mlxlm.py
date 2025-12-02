@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Iterator, List, Optional
 
 from outlines.inputs import Chat
 from outlines.models.base import Model, ModelTypeAdapter
+from outlines.models.tokenizer import _check_hf_chat_template
 from outlines.models.transformers import TransformerTokenizer
 from outlines.processors import OutlinesLogitsProcessor
 
@@ -18,8 +19,9 @@ __all__ = ["MLXLM", "from_mlxlm"]
 class MLXLMTypeAdapter(ModelTypeAdapter):
     """Type adapter for the `MLXLM` model."""
 
-    def __init__(self, **kwargs):
-        self.tokenizer = kwargs.get("tokenizer")
+    def __init__(self, tokenizer: "PreTrainedTokenizer", has_chat_template: bool = False):
+        self.tokenizer = tokenizer
+        self.has_chat_template = has_chat_template
 
     @singledispatchmethod
     def format_input(self, model_input):
@@ -42,7 +44,9 @@ class MLXLMTypeAdapter(ModelTypeAdapter):
         )
 
     @format_input.register(str)
-    def format_str_input(self, model_input: str):
+    def format_str_input(self, model_input: str) -> str:
+        if self.has_chat_template:
+            return self.format_chat_input(Chat([{"role": "user", "content": model_input}]))
         return model_input
 
     @format_input.register(Chat)
@@ -113,7 +117,10 @@ class MLXLM(Model):
         self.mlx_tokenizer = tokenizer
         # self.tokenizer is used by the logits processor
         self.tokenizer = TransformerTokenizer(tokenizer._tokenizer)
-        self.type_adapter = MLXLMTypeAdapter(tokenizer=tokenizer)
+        self.type_adapter = MLXLMTypeAdapter(
+            tokenizer=tokenizer,
+            has_chat_template=_check_hf_chat_template(tokenizer)
+        )
 
     def generate(
         self,
