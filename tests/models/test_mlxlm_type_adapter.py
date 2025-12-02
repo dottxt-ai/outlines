@@ -1,5 +1,6 @@
 import pytest
 import io
+from unittest.mock import MagicMock
 
 from outlines_core import Index, Vocabulary
 from PIL import Image as PILImage
@@ -44,6 +45,34 @@ def image():
     image = PILImage.open(buffer)
 
     return image
+
+
+def test_mlxlm_type_adapter_format_input_with_template():
+    tokenizer = MagicMock()
+    tokenizer.chat_template = "some_template"
+    tokenizer.apply_chat_template.return_value = "formatted_prompt"
+
+    adapter = MLXLMTypeAdapter(tokenizer=tokenizer, has_chat_template=True)
+    message = "prompt"
+    result = adapter.format_input(message)
+
+    assert result == "formatted_prompt"
+    tokenizer.apply_chat_template.assert_called_once_with(
+        [{"role": "user", "content": "prompt"}],
+        tokenize=False,
+        add_generation_prompt=True,
+    )
+
+
+def test_mlxlm_type_adapter_format_input_without_template():
+    tokenizer = MagicMock()
+    tokenizer.chat_template = None
+
+    adapter = MLXLMTypeAdapter(tokenizer=tokenizer, has_chat_template=False)
+    message = "prompt"
+    result = adapter.format_input(message)
+
+    assert result == "prompt"
 
 
 @pytest.mark.skipif(not HAS_MLX, reason="MLX tests require Apple Silicon")
