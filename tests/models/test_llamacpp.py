@@ -20,6 +20,7 @@ def test_load_model():
         Llama.from_pretrained(
             repo_id="M4-ai/TinyMistral-248M-v2-Instruct-GGUF",
             filename="TinyMistral-248M-v2-Instruct.Q4_K_M.gguf",
+            chat_format="qwen"
         )
     )
 
@@ -36,6 +37,7 @@ def model(tmp_path_factory):
         Llama.from_pretrained(
             repo_id="M4-ai/TinyMistral-248M-v2-Instruct-GGUF",
             filename="TinyMistral-248M-v2-Instruct.Q4_K_M.gguf",
+            chat_format="qwen",
         )
     )
 
