@@ -300,6 +300,8 @@ class LlamaCpp(Model):
                 **inference_kwargs,
             )
             result = completion["choices"][0]["message"]["content"]
+        else:  # Never reached  # pragma: no cover
+            raise ValueError("Unexpected prompt type.")
 
         self.model.reset()
 
@@ -359,7 +361,8 @@ class LlamaCpp(Model):
             )
             for chunk in generator:
                 yield chunk["choices"][0]["delta"].get("content", "")
-
+        else:  # Never reached  # pragma: no cover
+            raise ValueError("Unexpected prompt type.")
 
 def from_llamacpp(model: "Llama", chat_mode: bool = True) -> LlamaCpp:
     """Create an Outlines `LlamaCpp` model instance from a

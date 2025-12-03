@@ -239,4 +239,5 @@ def test_llamacpp_no_chat(model_no_chat):
     assert isinstance(result, str)
 
     generator = model_no_chat.stream("Respond with one word. Not more.", None)
-    assert isinstance(next(generator), str)
+    for x in generator:
+        assert isinstance(x, str)
