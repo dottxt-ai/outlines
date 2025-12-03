@@ -62,6 +62,7 @@ from outlines import models
 model = models.llamacpp(
     repo_id="M4-ai/TinyMistral-248M-v2-Instruct-GGUF",
     filename="TinyMistral-248M-v2-Instruct.Q4_K_M.gguf",
+    chat_format="qwen",
 )
 ```
 
@@ -74,6 +75,7 @@ from outlines import from_llamacpp
 llamacpp_model = Llama.from_pretrained(
     repo_id="M4-ai/TinyMistral-248M-v2-Instruct-GGUF",
     filename="TinyMistral-248M-v2-Instruct.Q4_K_M.gguf",
+    chat_format="qwen",
 )
 model = from_llamacpp(llamacpp_model)
 ```
