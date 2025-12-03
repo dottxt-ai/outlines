@@ -171,8 +171,10 @@ def test_llamacpp_stream_json(model):
 
     generator = model.stream("foo?", Foo)
 
-    x = next(generator)
-    assert x == "{"
+    # NOTE: The first few chunks may be empty (role info, control tokens, finish chunks)
+    # Relavant issue: https://github.com/abetlen/llama-cpp-python/issues/372
+    first_non_empty_token = next(x for x in generator if x)
+    assert first_non_empty_token == "{"
 
 
 def test_llamacpp_stream_cfg(model, ebnf_grammar):
@@ -204,8 +206,8 @@ def test_llamacpp_stream_choice(model):
 
     generator = model.stream("foo?", Foo)
 
-    x = next(generator)
-    assert x[0] in ("B", "F")
+    first_non_empty_token = next(x for x in generator if x)
+    assert first_non_empty_token[0] in ("B", "F")
 
 
 def test_llamacpp_stream_text_stop(model):
