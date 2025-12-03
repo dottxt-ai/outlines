@@ -286,7 +286,7 @@ class LlamaCpp(Model):
         """
         prompt = self.type_adapter.format_input(model_input)
 
-        if isinstance(prompt, str):  # TODO: add tests
+        if isinstance(prompt, str):
             completion = self.model(
                 prompt,
                 logits_processor=self.type_adapter.format_output_type(output_type),
@@ -340,7 +340,7 @@ class LlamaCpp(Model):
         """
         prompt = self.type_adapter.format_input(model_input)
 
-        if isinstance(prompt, str):  # TODO: add tests
+        if isinstance(prompt, str):
             generator = self.model(
                 prompt,
                 logits_processor=self.type_adapter.format_output_type(output_type),
