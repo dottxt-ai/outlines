@@ -238,17 +238,26 @@ class LlamaCpp(Model):
 
     tensor_library_name = "numpy"
 
-    def __init__(self, model: "Llama"):
+    def __init__(self, model: "Llama", chat_mode: bool = True):
         """
         Parameters
         ----------
         model
             A `llama_cpp.Llama` model instance.
+        chat_mode
+            Whether to enable chat mode. If `False`, the model will regard
+            all `str` inputs as plain text prompts. If `True`, the model will
+            regard all `str` inputs as user messages in a chat conversation.
 
         """
         self.model = model
         self.tokenizer = LlamaCppTokenizer(self.model)
-        self.type_adapter = LlamaCppTypeAdapter(has_chat_template=self._check_chat_template())
+
+        # Note: llama-cpp-python provides a default chat-template fallback even when
+        # the user hasn't explicitly configured one:
+        # https://github.com/abetlen/llama-cpp-python/blob/c37132b/llama_cpp/llama.py#L540-L545
+        # We keep the default as True because the upstream library generally favors chat-style usage.
+        self.type_adapter = LlamaCppTypeAdapter(has_chat_template=chat_mode)
 
     def generate(
         self,
@@ -277,14 +286,14 @@ class LlamaCpp(Model):
         """
         prompt = self.type_adapter.format_input(model_input)
 
-        if isinstance(prompt, str):
+        if isinstance(prompt, str):  # TODO: add tests
             completion = self.model(
                 prompt,
                 logits_processor=self.type_adapter.format_output_type(output_type),
                 **inference_kwargs,
             )
             result = completion["choices"][0]["text"]
-        elif isinstance(prompt, list): # pragma: no cover
+        elif isinstance(prompt, list):
             completion = self.model.create_chat_completion(
                 prompt,
                 logits_processor=self.type_adapter.format_output_type(output_type),
@@ -331,7 +340,7 @@ class LlamaCpp(Model):
         """
         prompt = self.type_adapter.format_input(model_input)
 
-        if isinstance(prompt, str):
+        if isinstance(prompt, str):  # TODO: add tests
             generator = self.model(
                 prompt,
                 logits_processor=self.type_adapter.format_output_type(output_type),
@@ -341,7 +350,7 @@ class LlamaCpp(Model):
             for chunk in generator:
                 yield chunk["choices"][0]["text"]
 
-        elif isinstance(prompt, list): # pragma: no cover
+        elif isinstance(prompt, list):
             generator = self.model.create_chat_completion(
                 prompt,
                 logits_processor=self.type_adapter.format_output_type(output_type),
@@ -351,18 +360,8 @@ class LlamaCpp(Model):
             for chunk in generator:
                 yield chunk["choices"][0]["delta"].get("content", "")
 
-    def _check_chat_template(self) -> bool:
-        """Check if the model has a chat template defined."""
-        return (
-            self.model.chat_format is not None
-            or self.model.chat_handler is not None
-            or (
-                hasattr(self.model, "metadata")
-                and self.model.metadata.get("tokenizer.chat_template") is not None
-            )
-        )
 
-def from_llamacpp(model: "Llama"):
+def from_llamacpp(model: "Llama", chat_mode: bool = True) -> LlamaCpp:
     """Create an Outlines `LlamaCpp` model instance from a
     `llama_cpp.Llama` instance.
 
@@ -370,6 +369,10 @@ def from_llamacpp(model: "Llama"):
     ----------
     model
         A `llama_cpp.Llama` instance.
+    chat_mode
+        Whether to enable chat mode. If `False`, the model will regard
+        all `str` inputs as plain text prompts. If `True`, the model will
+        regard all `str` inputs as user messages in a chat conversation.
 
     Returns
     -------
@@ -377,4 +380,4 @@ def from_llamacpp(model: "Llama"):
         An Outlines `LlamaCpp` model instance.
 
     """
-    return LlamaCpp(model)
+    return LlamaCpp(model, chat_mode=chat_mode)

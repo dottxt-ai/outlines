@@ -15,7 +15,9 @@ Outlines provides an integration with [Llama.cpp](https://github.com/ggerganov/l
 
 ## Model Initialization
 
-To load the model, you can use the `from_llamacpp` function. The single argument of the function is a `Llama` model instance from the `llama_cpp` library. Consult the [Llama class API reference](https://llama-cpp-python.readthedocs.io/en/latest/api-reference/#llama_cpp.Llama) for detailed information on how to create a model instance and on the various available parameters.
+To load the model, you can use the `from_llamacpp` function. The first argument of the function is a `Llama` model instance from the `llama_cpp` library. Consult the [Llama class API reference](https://llama-cpp-python.readthedocs.io/en/latest/api-reference/#llama_cpp.Llama) for detailed information on how to create a model instance and on the various available parameters.
+
+You can also pass a `chat_mode` argument to `from_llamacpp`. If `True` (default), the model will regard all `str` inputs as user messages in a chat conversation. If `False`, the model will regard all `str` inputs as plain text prompts.
 
 For instance:
 
@@ -28,6 +30,21 @@ model = outlines.from_llamacpp(
         repo_id="TheBloke/Mistral-7B-Instruct-v0.2-GGUF",
         filename="mistral-7b-instruct-v0.2.Q5_K_M.gguf",
     )
+)
+```
+
+You can also disable chat mode:
+
+```python
+import outlines
+from llama_cpp import Llama
+
+model = outlines.from_llamacpp(
+    Llama.from_pretrained(
+        repo_id="TheBloke/Mistral-7B-Instruct-v0.2-GGUF",
+        filename="mistral-7b-instruct-v0.2.Q5_K_M.gguf",
+    ),
+    chat_mode=False,
 )
 ```
 
