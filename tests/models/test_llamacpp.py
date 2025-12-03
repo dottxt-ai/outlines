@@ -41,6 +41,16 @@ def model(tmp_path_factory):
         )
     )
 
+@pytest.fixture(scope="session")
+def model_no_chat(tmp_path_factory):
+    return LlamaCpp(
+        Llama.from_pretrained(
+            repo_id="tensorblock/Llama3-1B-Base-GGUF",
+            filename="Llama3-1B-Base-Q2_K.gguf",
+        ),
+        chat_mode=False
+    )
+
 @pytest.fixture
 def lark_grammar():
     return """
@@ -223,3 +233,10 @@ def test_llamacpp_batch(model):
         model.batch(
             ["Respond with one word.", "Respond with one word."],
         )
+
+def test_llamacpp_no_chat(model_no_chat):
+    result = model_no_chat.generate("Respond with one word. Not more.", None)
+    assert isinstance(result, str)
+
+    generator = model_no_chat.stream("Respond with one word. Not more.", None)
+    assert isinstance(next(generator), str)
