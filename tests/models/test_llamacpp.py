@@ -182,7 +182,7 @@ def test_llamacpp_stream_json(model):
     generator = model.stream("foo?", Foo)
 
     # NOTE: The first few chunks may be empty (role info, control tokens, finish chunks)
-    # Relavant issue: https://github.com/abetlen/llama-cpp-python/issues/372
+    # Relevant issue: https://github.com/abetlen/llama-cpp-python/issues/372
     first_non_empty_token = next(x for x in generator if x)
     assert first_non_empty_token == "{"
 
