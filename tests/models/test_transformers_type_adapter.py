@@ -1,6 +1,5 @@
 import io
 import pytest
-from unittest.mock import MagicMock
 
 import transformers
 from transformers import LogitsProcessorList
@@ -17,27 +16,17 @@ MODEL_NAME = "erwanf/gpt2-mini"
 
 @pytest.fixture
 def adapter():
-    tokenizer = MagicMock()
-    chat_template = "{% for message in messages %}{{ message.role }}: {{ message.content }}{% endfor %}{% if add_generation_prompt %}assistant:{% endif %}"
-    tokenizer.chat_template = chat_template
+    tokenizer = transformers.AutoTokenizer.from_pretrained(MODEL_NAME)
+    type_adapter = TransformersTypeAdapter(tokenizer=tokenizer)
+    chat_template = '{% for message in messages %}{{ message.role }}: {{ message.content }}{% endfor %}'
+    type_adapter.tokenizer.chat_template = chat_template
 
-    def apply_chat_template(messages, tokenize=False, add_generation_prompt=False):
-        res = ""
-        for msg in messages:
-            res += f"{msg['role']}: {msg['content']}"
-        if add_generation_prompt:
-            res += "assistant:"
-        return res
-
-    tokenizer.apply_chat_template.side_effect = apply_chat_template
-
-    type_adapter = TransformersTypeAdapter(tokenizer=tokenizer, has_chat_template=True)
     return type_adapter
 
 @pytest.fixture
 def logits_processor():
-    index = MagicMock()
-    index.tensor_library_name = "torch"
+    vocabulary = Vocabulary.from_pretrained("openai-community/gpt2")
+    index = Index(r"[0-9]{3}", vocabulary)
     return OutlinesCoreLogitsProcessor(index, "torch")
 
 @pytest.fixture
@@ -63,7 +52,8 @@ def test_transformers_type_adapter_format_input(adapter, image):
 
     # string with chat template
     # The fixture sets a chat template, so it should be formatted
-    assert adapter.format_input("Hello, world!") == "user: Hello, world!assistant:"
+    adapter.has_chat_template = True
+    assert adapter.format_input("Hello, world!") == "user: Hello, world!"
 
     # string without chat template
     adapter.has_chat_template = False
