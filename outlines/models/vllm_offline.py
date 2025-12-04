@@ -12,11 +12,6 @@ from outlines.types.dsl import CFG, JsonSchema, python_types_to_terms, to_regex
 if TYPE_CHECKING:
     from vllm import LLM
     from vllm.sampling_params import SamplingParams
-    from vllm.transformers_utils.tokenizer import (
-        PreTrainedTokenizer,
-        PreTrainedTokenizerFast,
-        TokenizerBase
-    )
 
 __all__ = ["VLLMOffline", "from_vllm_offline"]
 
@@ -254,6 +249,11 @@ class VLLMOffline(Model):
 
     def _check_chat_template(self) -> bool:
         """Check if the tokenizer has a chat template."""
+        from vllm.transformers_utils.tokenizer import (
+            PreTrainedTokenizer,
+            PreTrainedTokenizerFast,
+            TokenizerBase
+        )
         from outlines.models.tokenizer import _check_hf_chat_template
 
         if isinstance(self.tokenizer, (PreTrainedTokenizer, PreTrainedTokenizerFast)):
