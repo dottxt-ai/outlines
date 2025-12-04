@@ -13,7 +13,6 @@ if TYPE_CHECKING:
     from vllm import LLM
     from vllm.sampling_params import SamplingParams
     from vllm.transformers_utils.tokenizer import (
-        AnyTokenizer,
         PreTrainedTokenizer,
         PreTrainedTokenizerFast,
         TokenizerBase
