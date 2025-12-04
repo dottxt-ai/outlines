@@ -1,6 +1,5 @@
 import pytest
 import io
-from unittest.mock import MagicMock
 
 from llama_cpp import LogitsProcessorList
 from PIL import Image as PILImage
@@ -63,7 +62,7 @@ def test_llamacpp_type_adapter_format_input(adapter, image):
         ]))
 
 
-def test_llamacpp_type_adapter_format_input_with_chat_format():
+def test_llamacpp_type_adapter_format_input_with_chat_template():
     adapter = LlamaCppTypeAdapter(has_chat_template=True)
     message = "prompt"
     result = adapter.format_input(message)
@@ -71,23 +70,7 @@ def test_llamacpp_type_adapter_format_input_with_chat_format():
     assert result == [{"role": "user", "content": "prompt"}]
 
 
-def test_llamacpp_type_adapter_format_input_with_chat_handler():
-    adapter = LlamaCppTypeAdapter(has_chat_template=True)
-    message = "prompt"
-    result = adapter.format_input(message)
-
-    assert result == [{"role": "user", "content": "prompt"}]
-
-
-def test_llamacpp_type_adapter_format_input_with_metadata_template():
-    adapter = LlamaCppTypeAdapter(has_chat_template=True)
-    message = "prompt"
-    result = adapter.format_input(message)
-
-    assert result == [{"role": "user", "content": "prompt"}]
-
-
-def test_llamacpp_type_adapter_format_input_without_chat_capabilities():
+def test_llamacpp_type_adapter_format_input_without_chat_template():
     adapter = LlamaCppTypeAdapter(has_chat_template=False)
     message = "prompt"
     result = adapter.format_input(message)
