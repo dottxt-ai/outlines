@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from ollama import Client
     from ollama import AsyncClient
 
-__all__ = ["Ollama", "from_ollama"]
+__all__ = ["AsyncOllama", "Ollama", "from_ollama"]
 
 
 class OllamaTypeAdapter(ModelTypeAdapter):
