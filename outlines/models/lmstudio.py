@@ -109,12 +109,13 @@ class LMStudioTypeAdapter(ModelTypeAdapter):
                 else:
                     raise ValueError(
                         f"Invalid content type: {type(content)}. "
-                        "Content must be a string or a list."
+                        "The content must be a string or a list containing a string "
+                        "and a list of images."
                     )
             elif role == "assistant":
                 chat.add_assistant_response(content)
             else:
-                raise ValueError(f"Unsupported message role: {role}")
+                raise ValueError(f"Unsupported role: {role}")
 
         return chat
 
