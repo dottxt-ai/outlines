@@ -189,7 +189,6 @@ def test_lmstudio_stream_json(model_no_model_name):
     assert "foo" in json.loads("".join(generated_text))
 
 
-@pytest.mark.api_call
 def test_lmstudio_batch(model):
     with pytest.raises(NotImplementedError, match="does not support"):
         model.batch(["Respond with one word.", "Respond with one word."])

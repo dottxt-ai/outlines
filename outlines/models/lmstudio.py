@@ -106,8 +106,15 @@ class LMStudioTypeAdapter(ModelTypeAdapter):
                         raise ValueError("All assets provided must be of type Image")
                     image_handles = [self._prepare_lmstudio_image(img) for img in images]
                     chat.add_user_message(prompt, images=image_handles)
+                else:
+                    raise ValueError(
+                        f"Invalid content type: {type(content)}. "
+                        "Content must be a string or a list."
+                    )
             elif role == "assistant":
                 chat.add_assistant_response(content)
+            else:
+                raise ValueError(f"Unsupported message role: {role}")
 
         return chat
 
@@ -290,6 +297,12 @@ class AsyncLMStudio(AsyncModel):
         self.model_name = model_name
         self.type_adapter = LMStudioTypeAdapter()
         self._context_entered = False
+
+    async def close(self) -> None:
+        """Close the async client and release resources."""
+        if self._context_entered:
+            await self.client.__aexit__(None, None, None)
+            self._context_entered = False
 
     async def generate(
         self,
