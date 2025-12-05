@@ -99,12 +99,6 @@ def test_lmstudio_direct(model_no_model_name):
 
 
 @pytest.mark.api_call
-def test_lmstudio_call(model):
-    result = model("Respond with one word. Not more.")
-    assert isinstance(result, str)
-
-
-@pytest.mark.api_call
 def test_lmstudio_simple_vision(image, model):
     # This is not using a vision model, so it's not able to describe
     # the image, but we're still checking the model input syntax
@@ -116,7 +110,7 @@ def test_lmstudio_simple_vision(image, model):
 
 
 @pytest.mark.api_call
-def test_lmstudio_chat_with_image(image, model):
+def test_lmstudio_chat(image, model):
     result = model.generate(
         Chat(
             [
@@ -129,16 +123,6 @@ def test_lmstudio_chat_with_image(image, model):
         ),
         model=MODEL_NAME,
     )
-    assert isinstance(result, str)
-
-
-@pytest.mark.api_call
-def test_lmstudio_chat(model):
-    chat = Chat(messages=[
-        {"role": "system", "content": "You are a helpful assistant."},
-        {"role": "user", "content": "Say hello."},
-    ])
-    result = model.generate(chat, None)
     assert isinstance(result, str)
 
 
@@ -240,13 +224,6 @@ async def test_lmstudio_async_direct(async_model_no_model_name):
 
 @pytest.mark.api_call
 @pytest.mark.asyncio
-async def test_lmstudio_async_call(async_model):
-    result = await async_model("Respond with one word. Not more.")
-    assert isinstance(result, str)
-
-
-@pytest.mark.api_call
-@pytest.mark.asyncio
 async def test_lmstudio_async_simple_vision(image, async_model):
     # This is not using a vision model, so it's not able to describe
     # the image, but we're still checking the model input syntax
@@ -259,7 +236,7 @@ async def test_lmstudio_async_simple_vision(image, async_model):
 
 @pytest.mark.api_call
 @pytest.mark.asyncio
-async def test_lmstudio_async_chat_with_image(image, async_model):
+async def test_lmstudio_async_chat(image, async_model):
     result = await async_model.generate(
         Chat(
             [
@@ -272,17 +249,6 @@ async def test_lmstudio_async_chat_with_image(image, async_model):
         ),
         model=MODEL_NAME,
     )
-    assert isinstance(result, str)
-
-
-@pytest.mark.api_call
-@pytest.mark.asyncio
-async def test_lmstudio_async_chat(async_model):
-    chat = Chat(messages=[
-        {"role": "system", "content": "You are a helpful assistant."},
-        {"role": "user", "content": "Say hello."},
-    ])
-    result = await async_model.generate(chat, None)
     assert isinstance(result, str)
 
 
