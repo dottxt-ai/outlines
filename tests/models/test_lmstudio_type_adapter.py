@@ -126,7 +126,7 @@ def test_lmstudio_type_adapter_input_chat_invalid_role(adapter):
     chat_input = Chat(messages=[
         {"role": "unknown", "content": "hello"},
     ])
-    with pytest.raises(ValueError, match="Unsupported message role"):
+    with pytest.raises(ValueError, match="Unsupported role"):
         _ = adapter.format_input(chat_input)
 
 
