@@ -114,6 +114,22 @@ def test_lmstudio_type_adapter_input_invalid(adapter):
         _ = adapter.format_input(prompt)
 
 
+def test_lmstudio_type_adapter_input_chat_invalid_content(adapter):
+    chat_input = Chat(messages=[
+        {"role": "user", "content": {"foo": "bar"}},
+    ])
+    with pytest.raises(ValueError, match="Invalid content type"):
+        _ = adapter.format_input(chat_input)
+
+
+def test_lmstudio_type_adapter_input_chat_invalid_role(adapter):
+    chat_input = Chat(messages=[
+        {"role": "unknown", "content": "hello"},
+    ])
+    with pytest.raises(ValueError, match="Unsupported message role"):
+        _ = adapter.format_input(chat_input)
+
+
 def test_lmstudio_type_adapter_output_none(adapter):
     result = adapter.format_output_type(None)
     assert result is None
