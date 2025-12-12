@@ -15,3 +15,4 @@ benchmarks/results
 build
 docs/build
 logs
+.worktrees/
