@@ -65,6 +65,22 @@ def test_vllm_offline_type_adapter_input_text(type_adapter):
     assert result == message
 
 
+def test_vllm_offline_type_adapter_input_text_with_template():
+    adapter = VLLMOfflineTypeAdapter(has_chat_template=True)
+    message = "prompt"
+    result = adapter.format_input(message)
+
+    assert result == [{"role": "user", "content": "prompt"}]
+
+
+def test_vllm_offline_type_adapter_input_text_without_template():
+    adapter = VLLMOfflineTypeAdapter(has_chat_template=False)
+    message = "prompt"
+    result = adapter.format_input(message)
+
+    assert result == "prompt"
+
+
 def test_vllm_offline_type_adapter_input_chat(type_adapter):
     model_input = Chat(messages=[
         {"role": "system", "content": "prompt"},

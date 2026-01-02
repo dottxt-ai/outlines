@@ -13,6 +13,7 @@ def model():
     model = llama_cpp.Llama.from_pretrained(
         repo_id="M4-ai/TinyMistral-248M-v2-Instruct-GGUF",
         filename="TinyMistral-248M-v2-Instruct.Q4_K_M.gguf",
+        chat_format="qwen",
     )
     setattr(
         model.tokenizer_,
@@ -27,6 +28,7 @@ def model_no_hf_tokenizer():
     model = llama_cpp.Llama.from_pretrained(
         repo_id="M4-ai/TinyMistral-248M-v2-Instruct-GGUF",
         filename="TinyMistral-248M-v2-Instruct.Q4_K_M.gguf",
+        chat_format="qwen",
     )
     del model.tokenizer_
     return model

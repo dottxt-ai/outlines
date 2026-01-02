@@ -50,10 +50,18 @@ def test_transformers_type_adapter_format_input(adapter, image):
     with pytest.raises(TypeError, match="is not available."):
         adapter.format_input(["prompt", Image(image)])
 
-    # string
+    # string with chat template
+    # The fixture sets a chat template, so it should be formatted
+    adapter.has_chat_template = True
+    assert adapter.format_input("Hello, world!") == "user: Hello, world!"
+
+    # string without chat template
+    adapter.has_chat_template = False
     assert adapter.format_input("Hello, world!") == "Hello, world!"
 
     # chat
+    # Restore chat template for chat test
+    adapter.has_chat_template = True
     assert isinstance(adapter.format_input(Chat(messages=[
         {"role": "system", "content": "You are a helpful assistant."},
         {"role": "user", "content": "Hello, world!"},

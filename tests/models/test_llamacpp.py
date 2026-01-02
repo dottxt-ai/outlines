@@ -20,6 +20,7 @@ def test_load_model():
         Llama.from_pretrained(
             repo_id="M4-ai/TinyMistral-248M-v2-Instruct-GGUF",
             filename="TinyMistral-248M-v2-Instruct.Q4_K_M.gguf",
+            chat_format="qwen"
         )
     )
 
@@ -36,7 +37,18 @@ def model(tmp_path_factory):
         Llama.from_pretrained(
             repo_id="M4-ai/TinyMistral-248M-v2-Instruct-GGUF",
             filename="TinyMistral-248M-v2-Instruct.Q4_K_M.gguf",
+            chat_format="qwen",
         )
+    )
+
+@pytest.fixture(scope="session")
+def model_no_chat(tmp_path_factory):
+    return LlamaCpp(
+        Llama.from_pretrained(
+            repo_id="tensorblock/Llama3-1B-Base-GGUF",
+            filename="Llama3-1B-Base-Q2_K.gguf",
+        ),
+        chat_mode=False
     )
 
 @pytest.fixture
@@ -169,8 +181,10 @@ def test_llamacpp_stream_json(model):
 
     generator = model.stream("foo?", Foo)
 
-    x = next(generator)
-    assert x == "{"
+    # NOTE: The first few chunks may be empty (role info, control tokens, finish chunks)
+    # Relevant issue: https://github.com/abetlen/llama-cpp-python/issues/372
+    first_non_empty_token = next(x for x in generator if x)
+    assert first_non_empty_token == "{"
 
 
 def test_llamacpp_stream_cfg(model, ebnf_grammar):
@@ -202,8 +216,8 @@ def test_llamacpp_stream_choice(model):
 
     generator = model.stream("foo?", Foo)
 
-    x = next(generator)
-    assert x[0] in ("B", "F")
+    first_non_empty_token = next(x for x in generator if x)
+    assert first_non_empty_token[0] in ("B", "F")
 
 
 def test_llamacpp_stream_text_stop(model):
@@ -219,3 +233,11 @@ def test_llamacpp_batch(model):
         model.batch(
             ["Respond with one word.", "Respond with one word."],
         )
+
+def test_llamacpp_no_chat(model_no_chat):
+    result = model_no_chat.generate("Respond with one word. Not more.", None)
+    assert isinstance(result, str)
+
+    generator = model_no_chat.stream("Respond with one word. Not more.", None)
+    for x in generator:
+        assert isinstance(x, str)

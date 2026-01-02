@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from ollama import Client
     from ollama import AsyncClient
 
-__all__ = ["Ollama", "from_ollama"]
+__all__ = ["AsyncOllama", "Ollama", "from_ollama"]
 
 
 class OllamaTypeAdapter(ModelTypeAdapter):
@@ -110,9 +110,6 @@ class OllamaTypeAdapter(ModelTypeAdapter):
         self, output_type: Optional[Any] = None
     ) -> Optional[dict]:
         """Format the output type to pass to the client.
-
-        TODO: `int`, `float` and other Python types could be supported via
-        JSON Schema.
 
         Parameters
         ----------

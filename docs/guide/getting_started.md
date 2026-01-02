@@ -125,7 +125,7 @@ For a quick start, you can find below an example of how to initialize all suppor
     # Create an MLXLM model with the output of mlx_lm.load
     # The model will be downloaded from the HuggingFace hub
     model = outlines.from_mlxlm(
-        **mlx_lm.load("mlx-community/SmolLM-135M-Instruct-4bit")
+        *mlx_lm.load("mlx-community/SmolLM-135M-Instruct-4bit")
     )
     ```
 

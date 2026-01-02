@@ -19,6 +19,9 @@ __all__ = ["VLLMOffline", "from_vllm_offline"]
 class VLLMOfflineTypeAdapter(ModelTypeAdapter):
     """Type adapter for the `VLLMOffline` model."""
 
+    def __init__(self, has_chat_template: bool = False):
+        self.has_chat_template = has_chat_template
+
     @singledispatchmethod
     def format_input(self, model_input):
         """Generate the prompt argument to pass to the model.
@@ -36,10 +39,12 @@ class VLLMOfflineTypeAdapter(ModelTypeAdapter):
         )
 
     @format_input.register(str)
-    def format_input_str(self, model_input: str) -> str:
+    def format_input_str(self, model_input: str) -> str | list:
         """Format a `str` input.
 
         """
+        if self.has_chat_template:
+            return self.format_input_chat(Chat([{"role": "user", "content": model_input}]))
         return model_input
 
     @format_input.register(Chat)
@@ -109,7 +114,8 @@ class VLLMOffline(Model):
 
         """
         self.model = model
-        self.type_adapter = VLLMOfflineTypeAdapter()
+        self.tokenizer = self.model.get_tokenizer()
+        self.type_adapter = VLLMOfflineTypeAdapter(has_chat_template=self._check_chat_template())
 
     def _build_generation_args(
         self,
@@ -118,7 +124,7 @@ class VLLMOffline(Model):
     ) -> "SamplingParams":
         """Create the `SamplingParams` object to pass to the `generate` method
         of the `vllm.LLM` model."""
-        from vllm.sampling_params import GuidedDecodingParams, SamplingParams
+        from vllm.sampling_params import StructuredOutputsParams, SamplingParams
 
         sampling_params = inference_kwargs.pop("sampling_params", None)
 
@@ -127,7 +133,9 @@ class VLLMOffline(Model):
 
         output_type_args = self.type_adapter.format_output_type(output_type)
         if output_type_args:
-            sampling_params.guided_decoding = GuidedDecodingParams(**output_type_args)
+            original_sampling_params_dict = {f: getattr(sampling_params, f) for f in sampling_params.__struct_fields__}
+            sampling_params_dict = {**original_sampling_params_dict, "structured_outputs": StructuredOutputsParams(**output_type_args)}
+            sampling_params = SamplingParams(**sampling_params_dict)
 
         return sampling_params
 
@@ -161,15 +169,17 @@ class VLLMOffline(Model):
             output_type,
         )
 
-        if isinstance(model_input, Chat):
+        model_input = self.type_adapter.format_input(model_input)
+
+        if isinstance(model_input, list):
             results = self.model.chat(
-                messages=self.type_adapter.format_input(model_input),
+                messages=model_input,
                 sampling_params=sampling_params,
                 **inference_kwargs,
             )
         else:
             results = self.model.generate(
-                prompts=self.type_adapter.format_input(model_input),
+                prompts=model_input,
                 sampling_params=sampling_params,
                 **inference_kwargs,
             )
@@ -211,16 +221,20 @@ class VLLMOffline(Model):
             output_type,
         )
 
-        if any(isinstance(item, Chat) for item in model_input):
-            raise TypeError(
-                "Batch generation is not available for the `Chat` input type."
-            )
+        model_inputs = [self.type_adapter.format_input(item) for item in model_input]
 
-        results = self.model.generate(
-            prompts=[self.type_adapter.format_input(item) for item in model_input],
-            sampling_params=sampling_params,
-            **inference_kwargs,
-        )
+        if model_inputs and isinstance(model_inputs[0], list):
+            results = self.model.chat(
+                messages=model_inputs,
+                sampling_params=sampling_params,
+                **inference_kwargs,
+            )
+        else:
+            results = self.model.generate(
+                prompts=model_inputs,
+                sampling_params=sampling_params,
+                **inference_kwargs,
+            )
         return [[sample.text for sample in batch.outputs] for batch in results]
 
     def generate_stream(self, model_input, output_type, **inference_kwargs):
@@ -233,6 +247,28 @@ class VLLMOffline(Model):
             "Streaming is not available for the vLLM offline integration."
         )
 
+    def _check_chat_template(self) -> bool:
+        """Check if the tokenizer has a chat template."""
+        from vllm.transformers_utils.tokenizer import (
+            PreTrainedTokenizer,
+            PreTrainedTokenizerFast,
+            TokenizerBase
+        )
+        from outlines.models.tokenizer import _check_hf_chat_template
+
+        if isinstance(self.tokenizer, (PreTrainedTokenizer, PreTrainedTokenizerFast)):
+            return _check_hf_chat_template(self.tokenizer)
+        elif isinstance(self.tokenizer, TokenizerBase):
+            # vLLM defines its own TokenizerBase class, and only provides
+            # limited compatibility with HuggingFace tokenizers. So we
+            # need to check for chat template support differently.
+            try:
+                self.tokenizer.apply_chat_template([{"role": "user", "content": "test"}])
+                return True
+            except Exception:
+                return False
+        else:  # Never reached  # pragma: no cover
+            return False
 
 def from_vllm_offline(model: "LLM") -> VLLMOffline:
     """Create an Outlines `VLLMOffline` model instance from a `vllm.LLM`

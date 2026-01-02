@@ -152,6 +152,15 @@ class LlamaCppTypeAdapter(ModelTypeAdapter):
 
     """
 
+    def __init__(self, has_chat_template: bool = False):
+        """
+        Parameters
+        ----------
+        has_chat_template
+            Whether the model has a chat template defined.
+        """
+        self.has_chat_template = has_chat_template
+
     @singledispatchmethod
     def format_input(self, model_input):
         """Generate the prompt argument to pass to the model.
@@ -173,7 +182,9 @@ class LlamaCppTypeAdapter(ModelTypeAdapter):
         )
 
     @format_input.register(str)
-    def format_str_input(self, model_input: str) -> str:
+    def format_str_input(self, model_input: str) -> str | list:
+        if self.has_chat_template:
+            return [{"role": "user", "content": model_input}]
         return model_input
 
     @format_input.register(Chat)
@@ -227,17 +238,26 @@ class LlamaCpp(Model):
 
     tensor_library_name = "numpy"
 
-    def __init__(self, model: "Llama"):
+    def __init__(self, model: "Llama", chat_mode: bool = True):
         """
         Parameters
         ----------
         model
             A `llama_cpp.Llama` model instance.
+        chat_mode
+            Whether to enable chat mode. If `False`, the model will regard
+            all `str` inputs as plain text prompts. If `True`, the model will
+            regard all `str` inputs as user messages in a chat conversation.
 
         """
         self.model = model
         self.tokenizer = LlamaCppTokenizer(self.model)
-        self.type_adapter = LlamaCppTypeAdapter()
+
+        # Note: llama-cpp-python provides a default chat-template fallback even when
+        # the user hasn't explicitly configured one:
+        # https://github.com/abetlen/llama-cpp-python/blob/c37132b/llama_cpp/llama.py#L540-L545
+        # We keep the default as True because the upstream library generally favors chat-style usage.
+        self.type_adapter = LlamaCppTypeAdapter(has_chat_template=chat_mode)
 
     def generate(
         self,
@@ -273,13 +293,15 @@ class LlamaCpp(Model):
                 **inference_kwargs,
             )
             result = completion["choices"][0]["text"]
-        elif isinstance(prompt, list): # pragma: no cover
+        elif isinstance(prompt, list):
             completion = self.model.create_chat_completion(
                 prompt,
                 logits_processor=self.type_adapter.format_output_type(output_type),
                 **inference_kwargs,
             )
             result = completion["choices"][0]["message"]["content"]
+        else:  # Never reached  # pragma: no cover
+            raise ValueError("Unexpected prompt type.")
 
         self.model.reset()
 
@@ -330,7 +352,7 @@ class LlamaCpp(Model):
             for chunk in generator:
                 yield chunk["choices"][0]["text"]
 
-        elif isinstance(prompt, list): # pragma: no cover
+        elif isinstance(prompt, list):
             generator = self.model.create_chat_completion(
                 prompt,
                 logits_processor=self.type_adapter.format_output_type(output_type),
@@ -339,9 +361,10 @@ class LlamaCpp(Model):
             )
             for chunk in generator:
                 yield chunk["choices"][0]["delta"].get("content", "")
+        else:  # Never reached  # pragma: no cover
+            raise ValueError("Unexpected prompt type.")
 
-
-def from_llamacpp(model: "Llama"):
+def from_llamacpp(model: "Llama", chat_mode: bool = True) -> LlamaCpp:
     """Create an Outlines `LlamaCpp` model instance from a
     `llama_cpp.Llama` instance.
 
@@ -349,6 +372,10 @@ def from_llamacpp(model: "Llama"):
     ----------
     model
         A `llama_cpp.Llama` instance.
+    chat_mode
+        Whether to enable chat mode. If `False`, the model will regard
+        all `str` inputs as plain text prompts. If `True`, the model will
+        regard all `str` inputs as user messages in a chat conversation.
 
     Returns
     -------
@@ -356,4 +383,4 @@ def from_llamacpp(model: "Llama"):
         An Outlines `LlamaCpp` model instance.
 
     """
-    return LlamaCpp(model)
+    return LlamaCpp(model, chat_mode=chat_mode)

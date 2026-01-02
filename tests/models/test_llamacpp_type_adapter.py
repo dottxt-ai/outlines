@@ -62,6 +62,22 @@ def test_llamacpp_type_adapter_format_input(adapter, image):
         ]))
 
 
+def test_llamacpp_type_adapter_format_input_with_chat_template():
+    adapter = LlamaCppTypeAdapter(has_chat_template=True)
+    message = "prompt"
+    result = adapter.format_input(message)
+
+    assert result == [{"role": "user", "content": "prompt"}]
+
+
+def test_llamacpp_type_adapter_format_input_without_chat_template():
+    adapter = LlamaCppTypeAdapter(has_chat_template=False)
+    message = "prompt"
+    result = adapter.format_input(message)
+
+    assert result == "prompt"
+
+
 def test_llamacpp_type_adapter_format_output_type(adapter, logits_processor):
     formatted = adapter.format_output_type(logits_processor)
     assert isinstance(formatted, LogitsProcessorList)
