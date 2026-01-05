@@ -1,5 +1,6 @@
 import io
 import json
+import os
 import sys
 from dataclasses import dataclass
 
@@ -16,6 +17,16 @@ if sys.version_info >= (3, 12):
     from typing import TypedDict
 else:
     from typing_extensions import TypedDict
+
+
+# Skip condition for tests that require a running LM Studio server (image tests)
+requires_lmstudio_server = pytest.mark.skipif(
+    not os.environ.get("LMSTUDIO_SERVER_URL"),
+    reason=(
+        "Image tests require a running LM Studio server (lms.prepare_image "
+        + "needs connection)"
+    )
+)
 
 
 @pytest.fixture
@@ -58,6 +69,7 @@ def test_lmstudio_type_adapter_input_text(adapter):
     assert result == text_input
 
 
+@requires_lmstudio_server
 def test_lmstudio_type_adapter_input_vision(adapter, image):
     import lmstudio as lms
 
@@ -92,6 +104,7 @@ def test_lmstudio_type_adapter_input_chat_no_system(adapter):
     assert isinstance(result, lms.Chat)
 
 
+@requires_lmstudio_server
 def test_lmstudio_type_adapter_input_chat_with_image(adapter, image):
     import lmstudio as lms
 

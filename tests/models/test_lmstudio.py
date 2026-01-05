@@ -20,22 +20,25 @@ from tests.test_utils.mock_lmstudio_client import (
 )
 
 
-# Image for testing
-width, height = 1, 1
-white_background = (255, 255, 255)
-image = PILImage.new("RGB", (width, height), white_background)
-buffer = io.BytesIO()
-image.save(buffer, format="PNG")
-buffer.seek(0)
-image = PILImage.open(buffer)
-image_input = Image(image)
-
 # If the LMSTUDIO_SERVER_URL environment variable is set, use the real LMStudio server
 # Otherwise, use the mock server
 lmstudio_server_url = os.environ.get("LMSTUDIO_SERVER_URL")
 lmstudio_model_name = os.environ.get(
     "LMSTUDIO_MODEL_NAME", "openai/gpt-oss-20b"
 )
+
+# Image for testing (only create when server is available, as lms.prepare_image requires it)
+image_input = None
+if lmstudio_server_url:
+    width, height = 1, 1
+    white_background = (255, 255, 255)
+    image = PILImage.new("RGB", (width, height), white_background)
+    buffer = io.BytesIO()
+    image.save(buffer, format="PNG")
+    buffer.seek(0)
+    image = PILImage.open(buffer)
+    image_input = Image(image)
+
 if lmstudio_server_url:
     lmstudio_client = lmstudio.Client(lmstudio_server_url)
     async_lmstudio_client = lmstudio.AsyncClient(lmstudio_server_url)
@@ -50,32 +53,13 @@ class Foo(BaseModel):
 
 
 type_adapter = LMStudioTypeAdapter()
+
+# Mock responses for non-image tests (image tests require a running server
+# because lms.prepare_image() needs to connect to LM Studio)
 mock_responses = [
     (
         {
             "messages": type_adapter.format_input("Respond with one word. Not more."),
-        },
-        "foo"
-    ),
-    (
-        {
-            "messages": type_adapter.format_input(
-                ["What does this logo represent?", image_input]
-            ),
-        },
-        "foo"
-    ),
-    (
-        {
-            "messages": type_adapter.format_input(
-                Chat([
-                    {"role": "system", "content": "You are a helpful assistant."},
-                    {"role": "user", "content": [
-                        "What does this logo represent?",
-                        image_input
-                    ]},
-                ])
-            ),
         },
         "foo"
     ),
@@ -109,6 +93,16 @@ mock_responses = [
 if not lmstudio_server_url:
     lmstudio_client.add_mock_responses(mock_responses)
     async_lmstudio_client.add_mock_responses(mock_responses)
+
+
+# Skip condition for tests that require a running LM Studio server (image tests)
+requires_lmstudio_server = pytest.mark.skipif(
+    not lmstudio_server_url,
+    reason=(
+        "Image tests require a running LM Studio server (lms.prepare_image "
+        + "needs connection)"
+    )
+)
 
 
 @pytest.fixture
@@ -186,6 +180,7 @@ def test_lmstudio_direct(model_no_model_name):
     assert isinstance(result, str)
 
 
+@requires_lmstudio_server
 def test_lmstudio_simple_vision(model):
     result = model.generate(
         ["What does this logo represent?", image_input],
@@ -194,6 +189,7 @@ def test_lmstudio_simple_vision(model):
     assert isinstance(result, str)
 
 
+@requires_lmstudio_server
 def test_lmstudio_chat(model):
     result = model.generate(
         Chat(
@@ -297,6 +293,7 @@ async def test_lmstudio_async_direct(async_model_no_model_name):
     assert isinstance(result, str)
 
 
+@requires_lmstudio_server
 @pytest.mark.asyncio
 async def test_lmstudio_async_simple_vision(async_model):
     result = await async_model.generate(
@@ -306,6 +303,7 @@ async def test_lmstudio_async_simple_vision(async_model):
     assert isinstance(result, str)
 
 
+@requires_lmstudio_server
 @pytest.mark.asyncio
 async def test_lmstudio_async_chat(async_model):
     result = await async_model.generate(
