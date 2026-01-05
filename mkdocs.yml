@@ -123,6 +123,7 @@ nav:
           - Vision-Language Models: guide/vlm.md
           - Deploying with FastAPI: guide/fastapi_vllm_deployment.md
           - Chat Templating for Instruct Models: guide/chat_templating.md
+          - Architecture: guide/architecture.md
 
     - Features:
           - Overview: features/index.md
