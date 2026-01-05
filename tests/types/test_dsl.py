@@ -12,6 +12,7 @@ from typing import (
     Optional as PyOptional
 )
 
+import jsonschema
 import pytest
 from genson import SchemaBuilder
 from pydantic import BaseModel
@@ -447,6 +448,10 @@ def test_json_schema():
     with pytest.raises(ValueError, match="Cannot parse schema"):
         types.json_schema(1)
 
+    # init invalide JSON schema
+    with pytest.raises(jsonschema.exceptions.SchemaError):
+        types.json_schema({"type": "strin"})
+
     # is_json_schema
     assert not JsonSchema.is_json_schema(None)
     assert not JsonSchema.is_json_schema('{"type": "string"}')
@@ -474,7 +479,6 @@ def test_json_schema():
 
     # other methods
     schema = types.json_schema('{"type": "string"}')
-    schema.__post_init__()
     assert schema._display_node() == "JsonSchema('{\"type\": \"string\"}')"
     assert schema.__repr__() == "JsonSchema(schema='{\"type\": \"string\"}')"
     assert schema == types.json_schema('{"type": "string"}')
