@@ -332,11 +332,9 @@ class JsonSchema(Term):
                 + "specification"
             )
 
+        jsonschema.Draft7Validator.check_schema(json.loads(schema_str))
         self.schema = schema_str
         self.whitespace_pattern = whitespace_pattern
-
-    def __post_init__(self):
-        jsonschema.Draft7Validator.check_schema(json.loads(self.schema))
 
     @classmethod
     def is_json_schema(cls, obj: Any) -> bool:
