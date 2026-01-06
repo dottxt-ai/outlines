@@ -158,6 +158,7 @@ def test_is_int():
 
 def test_is_int_instance():
     assert is_int_instance(1)
+    assert not is_int_instance(True)
     assert not is_int_instance(1.0)
     assert not is_int_instance("1")
     assert not is_int_instance(int)
