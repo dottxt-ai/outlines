@@ -42,7 +42,7 @@ def is_int(value: Any) -> bool:
 
 
 def is_int_instance(value: Any) -> bool:
-    return isinstance(value, int)
+    return isinstance(value, int) and not isinstance(value, bool)
 
 
 def is_float(value: Any) -> bool:
