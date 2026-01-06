@@ -829,9 +829,10 @@ def _handle_union(args: tuple, recursion_depth: int) -> Alternatives:
 
 
 def _handle_list(args: tuple, recursion_depth: int) -> Sequence:
-    if args is None or len(args) > 1:
+    if args is None or len(args) != 1:
         raise TypeError(
-            f"Only homogeneous lists are supported. Got multiple type arguments {args}."
+            "Only homogeneous lists are supported. You should provide exactly "
+            + "one argument to `List`, got {args}."
         )
     item_type = python_types_to_terms(args[0], recursion_depth + 1)
     return Sequence(
