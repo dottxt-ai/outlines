@@ -692,6 +692,12 @@ def test_dsl_handle_union():
 
 def test_dsl_handle_list():
     with pytest.raises(TypeError):
+        _handle_list(None, recursion_depth=0)
+
+    with pytest.raises(TypeError):
+        _handle_list((), recursion_depth=0)
+
+    with pytest.raises(TypeError):
         _handle_list((int, str), recursion_depth=0)
 
     # simple type
