@@ -15,7 +15,6 @@ output types for structured generation:
 import json
 import re
 import sys
-import warnings
 from dataclasses import dataclass
 from enum import EnumMeta
 from types import FunctionType
@@ -101,6 +100,7 @@ class Term:
     >>>     age: age_type
 
     """
+    apply_quotation: bool = False
 
     def __add__(self: "Term", other: "Term") -> "Sequence":
         if is_str_instance(other):
@@ -179,6 +179,10 @@ class Term:
     def _display_node(self):
         raise NotImplementedError
 
+    @property
+    def requires_quoting(self) -> bool:
+        raise NotImplementedError
+
     def _display_children(self, indent: str) -> str:
         """Display the children of this node. Override in subclasses with children."""
         return ""
@@ -208,9 +212,16 @@ class Term:
         return zero_or_more(self)
 
 
+### Element Terms
+
+
 @dataclass
 class String(Term):
+    """Class representing a string."""
     value: str
+
+    def requires_quoting(self) -> bool:
+        return True
 
     def _display_node(self) -> str:
         return f"String('{self.value}')"
@@ -219,17 +230,17 @@ class String(Term):
         return f"String(value='{self.value}')"
 
 
-@dataclass
 class Regex(Term):
-    """Class representing a regular expression.
-
-    Parameters
-    ----------
-    pattern
-        The regular expression as a string.
-
-    """
+    """Class representing a regular expression."""
     pattern: str
+    _requires_quoting: bool = False
+
+    def __init__(self, pattern: str, requires_quoting: bool = False):
+        self.pattern = pattern
+        self._requires_quoting = requires_quoting
+
+    def requires_quoting(self) -> bool:
+        return self._requires_quoting
 
     def _display_node(self) -> str:
         return f"Regex('{self.pattern}')"
@@ -240,15 +251,11 @@ class Regex(Term):
 
 @dataclass
 class CFG(Term):
-    """Class representing a context-free grammar.
-
-    Parameters
-    ----------
-    definition
-        The definition of the context-free grammar as a string.
-
-    """
+    """Class representing a context-free grammar."""
     definition: str
+
+    def requires_quoting(self) -> bool:
+        return True
 
     def _display_node(self) -> str:
         return f"CFG('{self.definition}')"
@@ -439,6 +446,9 @@ class JsonSchema(Term):
             f"types {target_types}"
         )
 
+    def requires_quoting(self) -> bool:
+        return True
+
     def _display_node(self) -> str:
         return f"JsonSchema('{self.schema}')"
 
@@ -475,6 +485,9 @@ class JsonSchema(Term):
         return cls(schema)
 
 
+### Multiple choice terms
+
+
 @dataclass
 class Choice(Term):
     """Class representing a choice between different items.
@@ -486,6 +499,16 @@ class Choice(Term):
 
     """
     items: List[Any]
+    _requires_quoting: bool = False
+
+    def requires_quoting(self) -> bool:
+        return (
+            self._requires_quoting
+            or any(
+                python_types_to_terms(item).requires_quoting
+                for item in self.items
+            )
+        )
 
     def _display_node(self) -> str:
         return f"Choice({repr(self.items)})"
@@ -495,8 +518,38 @@ class Choice(Term):
 
 
 @dataclass
+class Alternatives(Term):
+    terms: List[Term]
+    _requires_quoting: bool = False
+
+    def requires_quoting(self) -> bool:
+        return (
+            self._requires_quoting
+            or any(term.requires_quoting for term in self.terms)
+        )
+
+    def _display_node(self) -> str:
+        return "Alternatives(|)"
+
+    def _display_children(self, indent: str) -> str:
+        return "".join(
+            term.display_ascii_tree(indent, i == len(self.terms) - 1)
+            for i, term in enumerate(self.terms)
+        )
+
+    def __repr__(self):
+        return f"Alternatives(terms={repr(self.terms)})"
+
+
+### Quantifier terms
+
+
+@dataclass
 class KleeneStar(Term):
     term: Term
+
+    def requires_quoting(self) -> bool:
+        return self.term.requires_quoting
 
     def _display_node(self) -> str:
         return "KleeneStar(*)"
@@ -512,6 +565,9 @@ class KleeneStar(Term):
 class KleenePlus(Term):
     term: Term
 
+    def requires_quoting(self) -> bool:
+        return self.term.requires_quoting
+
     def _display_node(self) -> str:
         return "KleenePlus(+)"
 
@@ -526,6 +582,9 @@ class KleenePlus(Term):
 class Optional(Term):
     term: Term
 
+    def requires_quoting(self) -> bool:
+        return self.term.requires_quoting
+
     def _display_node(self) -> str:
         return "Optional(?)"
 
@@ -537,43 +596,12 @@ class Optional(Term):
 
 
 @dataclass
-class Alternatives(Term):
-    terms: List[Term]
-
-    def _display_node(self) -> str:
-        return "Alternatives(|)"
-
-    def _display_children(self, indent: str) -> str:
-        return "".join(
-            term.display_ascii_tree(indent, i == len(self.terms) - 1)
-            for i, term in enumerate(self.terms)
-        )
-
-    def __repr__(self):
-        return f"Alternatives(terms={repr(self.terms)})"
-
-
-@dataclass
-class Sequence(Term):
-    terms: List[Term]
-
-    def _display_node(self) -> str:
-        return "Sequence"
-
-    def _display_children(self, indent: str) -> str:
-        return "".join(
-            term.display_ascii_tree(indent, i == len(self.terms) - 1)
-            for i, term in enumerate(self.terms)
-        )
-
-    def __repr__(self):
-        return f"Sequence(terms={repr(self.terms)})"
-
-
-@dataclass
 class QuantifyExact(Term):
     term: Term
     count: int
+
+    def requires_quoting(self) -> bool:
+        return self.term.requires_quoting
 
     def _display_node(self) -> str:
         return f"Quantify({{{self.count}}})"
@@ -589,6 +617,9 @@ class QuantifyExact(Term):
 class QuantifyMinimum(Term):
     term: Term
     min_count: int
+
+    def requires_quoting(self) -> bool:
+        return self.term.requires_quoting
 
     def _display_node(self) -> str:
         return f"Quantify({{{self.min_count},}})"
@@ -606,6 +637,9 @@ class QuantifyMinimum(Term):
 class QuantifyMaximum(Term):
     term: Term
     max_count: int
+
+    def requires_quoting(self) -> bool:
+        return self.term.requires_quoting
 
     def _display_node(self) -> str:
         return f"Quantify({{,{self.max_count}}})"
@@ -631,6 +665,9 @@ class QuantifyBetween(Term):
                 "QuantifyBetween: `max_count` must be greater than `min_count`."
             )
 
+    def requires_quoting(self) -> bool:
+        return self.term.requires_quoting
+
     def _display_node(self) -> str:
         return f"Quantify({{{self.min_count},{self.max_count}}})"
 
@@ -639,6 +676,30 @@ class QuantifyBetween(Term):
 
     def __repr__(self):
         return f"QuantifyBetween(term={repr(self.term)}, min_count={repr(self.min_count)}, max_count={repr(self.max_count)})"
+
+
+### Sequence terms
+
+
+@dataclass
+class Sequence(Term):
+    terms: List[Term]
+    _requires_quoting: bool = False
+
+    def requires_quoting(self) -> bool:
+        return self._requires_quoting or any(term.requires_quoting for term in self.terms)
+
+    def _display_node(self) -> str:
+        return "Sequence"
+
+    def _display_children(self, indent: str) -> str:
+        return "".join(
+            term.display_ascii_tree(indent, i == len(self.terms) - 1)
+            for i, term in enumerate(self.terms)
+        )
+
+    def __repr__(self):
+        return f"Sequence(terms={repr(self.terms)})"
 
 
 def regex(pattern: str):
@@ -835,6 +896,7 @@ def _handle_list(args: tuple, recursion_depth: int) -> Sequence:
             + "one argument to `List`, got {args}."
         )
     item_type = python_types_to_terms(args[0], recursion_depth + 1)
+    item_type.apply_quotation = True
     return Sequence(
         [
             String("["),
@@ -850,6 +912,7 @@ def _handle_tuple(args: tuple, recursion_depth: int) -> Union[Sequence, String]:
         return String("()")
     elif len(args) == 2 and args[1] is Ellipsis:
         item_term = python_types_to_terms(args[0], recursion_depth + 1)
+        item_term.apply_quotation = True
         return Sequence(
             [
                 String("("),
@@ -863,6 +926,7 @@ def _handle_tuple(args: tuple, recursion_depth: int) -> Union[Sequence, String]:
         separator = String(", ")
         elements = []
         for i, item in enumerate(items):
+            item.apply_quotation = True
             elements.append(item)
             if i < len(items) - 1:
                 elements.append(separator)
@@ -875,6 +939,8 @@ def _handle_dict(args: tuple, recursion_depth: int) -> Sequence:
     # Add dict support with key:value pairs
     key_type = python_types_to_terms(args[0], recursion_depth + 1)
     value_type = python_types_to_terms(args[1], recursion_depth + 1)
+    key_type.apply_quotation = True
+    value_type.apply_quotation = True
     return Sequence(
         [
             String("{"),
@@ -895,6 +961,12 @@ def _handle_dict(args: tuple, recursion_depth: int) -> Sequence:
     )
 
 
+def handle_quotation(term: Term, value: str) -> str:
+    if term.requires_quoting and term.apply_quotation:
+        return repr(value)
+    return value
+
+
 def to_regex(term: Term) -> str:
     """Convert a term to a regular expression.
 
@@ -912,35 +984,35 @@ def to_regex(term: Term) -> str:
 
     """
     if isinstance(term, String):
-        return re.escape(term.value)
+        return re.escape(handle_quotation(term, term.value))
     elif isinstance(term, Regex):
-        return f"({term.pattern})"
+        return f"({handle_quotation(term, term.pattern)})"
     elif isinstance(term, JsonSchema):
         regex_str = outlines_core.json_schema.build_regex_from_schema(term.schema, term.whitespace_pattern)
-        return f"({regex_str})"
+        return f"({handle_quotation(term, regex_str)})"
     elif isinstance(term, Choice):
-        regexes = [to_regex(python_types_to_terms(item)) for item in term.items]
-        return f"({'|'.join(regexes)})"
+        regexes = '|'.join([to_regex(python_types_to_terms(item)) for item in term.items])
+        return f"({handle_quotation(term, regexes)})"
     elif isinstance(term, KleeneStar):
-        return f"({to_regex(term.term)})*"
+        return f"({handle_quotation(term, to_regex(term.term))})*"
     elif isinstance(term, KleenePlus):
-        return f"({to_regex(term.term)})+"
+        return f"({handle_quotation(term, to_regex(term.term))})+"
     elif isinstance(term, Optional):
-        return f"({to_regex(term.term)})?"
+        return f"({handle_quotation(term, to_regex(term.term))})?"
     elif isinstance(term, Alternatives):
-        regexes = [to_regex(subterm) for subterm in term.terms]
-        return f"({'|'.join(regexes)})"
+        regexes = '|'.join([to_regex(subterm) for subterm in term.terms])
+        return f"({handle_quotation(term, regexes)})"
     elif isinstance(term, Sequence):
-        regexes = [to_regex(subterm) for subterm in term.terms]
-        return f"{''.join(regexes)}"
+        regexes = ''.join([to_regex(subterm) for subterm in term.terms])
+        return f"{handle_quotation(term, regexes)}"
     elif isinstance(term, QuantifyExact):
-        return f"({to_regex(term.term)}){{{term.count}}}"
+        return f"({handle_quotation(term, to_regex(term.term))}){{{term.count}}}"
     elif isinstance(term, QuantifyMinimum):
-        return f"({to_regex(term.term)}){{{term.min_count},}}"
+        return f"({handle_quotation(term, to_regex(term.term))}){{{term.min_count},}}"
     elif isinstance(term, QuantifyMaximum):
-        return f"({to_regex(term.term)}){{,{term.max_count}}}"
+        return f"({handle_quotation(term, to_regex(term.term))}){{,{term.max_count}}}"
     elif isinstance(term, QuantifyBetween):
-        return f"({to_regex(term.term)}){{{term.min_count},{term.max_count}}}"
+        return f"({handle_quotation(term, to_regex(term.term))}){{{term.min_count},{term.max_count}}}"
     else:
         raise TypeError(
             f"Cannot convert object {repr(term)} to a regular expression."
