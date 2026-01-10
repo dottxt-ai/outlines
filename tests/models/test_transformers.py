@@ -61,7 +61,7 @@ def test_transformers_instantiate_tokenizer_kwargs_dtype():
     assert model.device_dtype == torch.bfloat16
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def model():
     model = outlines.from_transformers(
         transformers.AutoModelForCausalLM.from_pretrained(TEST_MODEL),

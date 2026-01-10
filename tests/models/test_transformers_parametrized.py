@@ -1,41 +1,42 @@
 import pytest
 import outlines
-from transformers import AutoModelForCausalLM, AutoTokenizer
-from pathlib import Path
-
-
-@pytest.fixture(scope="session")
-def hf_cache_dir():
-    """Shared Hugging Face cache directory for all model downloads."""
-    path = Path(".hf_cache")
-    path.mkdir(exist_ok=True)
-    return str(path)
+import transformers
+from outlines.types import Regex
 
 
 @pytest.mark.parametrize(
-    "backend, model_name",
+    "model_name",
     [
-        ("transformers", "sshleifer/tiny-gpt2"),
-        ("transformers", "distilgpt2"),
-        pytest.param("vllm", "facebook/opt-125m", marks=pytest.mark.skipif(True, reason="vLLM not available on Windows")),
+        "gpt2",
+        "EleutherAI/pythia-70m-deduped",
     ],
 )
-@pytest.mark.slow
-@pytest.mark.flaky(reruns=2)
-def test_parametrized_steerable_model(backend, model_name, hf_cache_dir):
-    hf_model = AutoModelForCausalLM.from_pretrained(model_name, cache_dir=hf_cache_dir)
-    tokenizer = Au
-    toTokenizer.from_pretrained(model_name, cache_dir=hf_cache_dir)
+def test_transformers_parametrized_smoke(model_name, hf_cache_dir):
+    hf_model = transformers.AutoModelForCausalLM.from_pretrained(
+        model_name, cache_dir=hf_cache_dir
+    )
+    hf_model.eval()
 
-    model = outlines.models.transformers.Transformers(hf_model, tokenizer)
+    hf_tokenizer = transformers.AutoTokenizer.from_pretrained(
+        model_name, cache_dir=hf_cache_dir
+    )
 
-    prompt = "Hello world"
-    outputs = set()
+    if hf_tokenizer.pad_token is None:
+        assert hf_tokenizer.eos_token is not None
+        hf_tokenizer.pad_token = hf_tokenizer.eos_token
+        hf_model.config.pad_token_id = hf_model.config.eos_token_id
+
+    model = outlines.from_transformers(hf_model, hf_tokenizer)
+
+    prompt = "Is 1+1=2? Answer Yes or No:"
+    constraint = Regex(r"\s*(Yes|No)")
 
     for _ in range(3):
-        output = model.generate(prompt, max_new_tokens=10)
-        assert isinstance(output, str)
-        assert len(output.strip()) > 0
-        outputs.add(output)
+        out = model(
+            prompt,
+            constraint,
+            max_new_tokens=5,
+            do_sample=False,
+        )
+        assert out.strip() in {"Yes", "No"}
 
-    assert len(outputs) >= 1
