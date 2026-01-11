@@ -3333,6 +3333,7 @@ requires-dist = [
     { name = "requests", marker = "extra == 'test'" },
     { name = "responses", marker = "extra == 'test'" },
     { name = "sentencepiece", marker = "extra == 'test'" },
+    { name = "sentencepiece", marker = "extra == 'transformers'" },
     { name = "setuptools", marker = "extra == 'transformers'" },
     { name = "tensorflow", marker = "extra == 'test'" },
     { name = "tf-keras", marker = "extra == 'test'" },
