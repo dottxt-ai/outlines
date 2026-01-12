@@ -39,6 +39,14 @@ jobs:
         pip install uv
         uv sync --no-group test-gpu --extra test
 
+    - name: cache HuggingFace models
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/huggingface
+        key: hf-${{ runner.os }}-${{ hashFiles('**/pyproject.toml') }}
+        restore-keys: |
+          hf-${{ runner.os }}-
+
     - name: Create matrix id
       id: matrix-id
       env:
