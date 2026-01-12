@@ -31,7 +31,7 @@ dependencies = [
    "jsonschema",
    "pillow",
    "typing_extensions",
-   "outlines_core==0.2.11",
+   "outlines_core==0.2.14",
    "genson",
    "jsonpath_ng",
 ]
