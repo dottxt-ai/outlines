@@ -3,8 +3,7 @@
 from typing import Callable, Dict
 
 from outlines_core import Guide, Index, Vocabulary
-# TODO: change this once the import issue is fixed in outlines_core
-from outlines_core import outlines_core
+from outlines_core.json_schema import build_regex_from_schema
 
 from outlines.backends.base import BaseBackend
 from outlines.models import SteerableModel
@@ -248,7 +247,7 @@ class OutlinesCoreBackend(BaseBackend):
             The logits processor to use to constrain the generation.
 
         """
-        regex = outlines_core.json_schema.build_regex_from_schema(json_schema)
+        regex = build_regex_from_schema(json_schema)
         return self.get_regex_logits_processor(regex)
 
     def get_regex_logits_processor(self, regex: str):
