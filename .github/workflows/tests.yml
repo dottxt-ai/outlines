@@ -31,6 +31,14 @@ jobs:
         python-version: ${{ matrix.python-version }}
         cache: 'pip'
         cache-dependency-path: 'pyproject.toml'
+    - name: Free disk space
+      run: |
+        set -eux
+        sudo rm -rf /usr/share/dotnet || true
+        sudo rm -rf /opt/ghc || true
+        sudo rm -rf /usr/local/lib/android || true
+        sudo apt-get clean
+        df -h
     - name: Install Ollama
       run: |
         curl -fsSL https://ollama.com/install.sh | sh
