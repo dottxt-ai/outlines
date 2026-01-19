@@ -96,7 +96,7 @@ class OllamaTypeAdapter(ModelTypeAdapter):
             return {
                 "role": role,
                 "content": prompt,
-                "image": [image.image_str for image in images],
+                "images": [image.image_str for image in images],
             }
 
         else:
@@ -192,6 +192,8 @@ class Ollama(Model):
         """
         if "model" not in kwargs and self.model_name is not None:
             kwargs["model"] = self.model_name
+
+        print(self.type_adapter.format_input(model_input))
 
         response = self.client.chat(
             messages=self.type_adapter.format_input(model_input),
