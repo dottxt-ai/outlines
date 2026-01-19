@@ -68,7 +68,7 @@ def test_ollama_type_adapter_input_vision(adapter, image):
     assert result[0] == {
         "role": "user",
         "content": text_input,
-        "image": [image_input.image_str],
+        "images": [image_input.image_str],
     }
 
 
@@ -86,7 +86,7 @@ def test_ollama_type_adapter_input_chat(adapter, image):
     assert isinstance(result, list)
     assert len(result) == 3
     assert result[0] == {"role": "system", "content": "prompt"}
-    assert result[1] == {"role": "user", "content": "hello", "image": [image_input.image_str]}
+    assert result[1] == {"role": "user", "content": "hello", "images": [image_input.image_str]}
     assert result[2] == {"role": "assistant", "content": "response"}
 
 
