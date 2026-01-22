@@ -82,6 +82,9 @@ class Model(ABC):
         model_input: Any,
         output_type: Optional[Any] = None,
         backend: Optional[str] = None,
+        *,
+        end_thinking_tag: Optional[str] = None,
+        thinking_max_tokens: Optional[int] = None,
         **inference_kwargs: Any
     ) -> Any:
         """Call the model.
@@ -119,13 +122,22 @@ class Model(ABC):
         """
         from outlines.generator import Generator
 
-        return Generator(self, output_type, backend)(model_input, **inference_kwargs)
+        return Generator(
+            self,
+            output_type,
+            backend,
+            end_thinking_tag=end_thinking_tag,
+            thinking_max_tokens=thinking_max_tokens
+        )(model_input, **inference_kwargs)
 
     def batch(
         self,
         model_input: List[Any],
         output_type: Optional[Any] = None,
         backend: Optional[str] = None,
+        *,
+        end_thinking_tag: Optional[str] = None,
+        thinking_max_tokens: Optional[int] = None,
         **inference_kwargs: Any
     ) -> List[Any]:
         """Make a batch call to the model (several inputs at once).
@@ -164,7 +176,13 @@ class Model(ABC):
         """
         from outlines import Generator
 
-        generator = Generator(self, output_type, backend)
+        generator = Generator(
+            self,
+            output_type,
+            backend,
+            end_thinking_tag=end_thinking_tag,
+            thinking_max_tokens=thinking_max_tokens
+        )
         return generator.batch(model_input, **inference_kwargs) # type: ignore
 
     def stream(
@@ -172,6 +190,9 @@ class Model(ABC):
         model_input: Any,
         output_type: Optional[Any] = None,
         backend: Optional[str] = None,
+        *,
+        end_thinking_tag: Optional[str] = None,
+        thinking_max_tokens: Optional[int] = None,
         **inference_kwargs: Any
     ) -> Iterator[Any]:
         """Stream a response from the model.
@@ -212,7 +233,13 @@ class Model(ABC):
         """
         from outlines import Generator
 
-        generator = Generator(self, output_type, backend)
+        generator = Generator(
+            self,
+            output_type,
+            backend,
+            end_thinking_tag=end_thinking_tag,
+            thinking_max_tokens=thinking_max_tokens
+        )
         return generator.stream(model_input, **inference_kwargs) # type: ignore
 
     @abstractmethod

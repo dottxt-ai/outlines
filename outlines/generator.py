@@ -218,6 +218,9 @@ class SteerableGenerator:
         model: SteerableModel,
         output_type: Optional[Any],
         backend_name: Optional[str] = None,
+        *,
+        end_thinking_tag: Optional[str] = None,
+        thinking_max_tokens: Optional[int] = None,
     ):
         """
         Parameters
@@ -241,12 +244,16 @@ class SteerableGenerator:
                     backend_name,
                     model,
                     cfg_string,
+                    end_thinking_tag=end_thinking_tag,
+                    thinking_max_tokens=thinking_max_tokens,
                 )
             elif isinstance(term, JsonSchema):
                 self.logits_processor = get_json_schema_logits_processor(
                     backend_name,
                     model,
                     term.schema,
+                    end_thinking_tag=end_thinking_tag,
+                    thinking_max_tokens=thinking_max_tokens,
                 )
             else:
                 regex_string = to_regex(term)
@@ -254,6 +261,8 @@ class SteerableGenerator:
                     backend_name,
                     model,
                     regex_string,
+                    end_thinking_tag=end_thinking_tag,
+                    thinking_max_tokens=thinking_max_tokens,
                 )
 
     @classmethod
@@ -349,6 +358,8 @@ def Generator(
     backend: Optional[str] = None,
     *,
     processor: Optional[LogitsProcessorType] = None,
+    end_thinking_tag: Optional[str] = None,
+    thinking_max_tokens: Optional[int] = None,
 ) -> Union[SteerableGenerator, BlackBoxGenerator, AsyncBlackBoxGenerator]:
     """Create a generator for the given model and output parameters.
 
@@ -389,7 +400,13 @@ def Generator(
         if processor is not None:
             return SteerableGenerator.from_processor(model, processor) # type: ignore
         else:
-            return SteerableGenerator(model, output_type, backend) # type: ignore
+            return SteerableGenerator(
+                model,
+                output_type,
+                backend,
+                end_thinking_tag=end_thinking_tag,
+                thinking_max_tokens=thinking_max_tokens
+            )
     else:
         if processor is not None:
             raise NotImplementedError(
