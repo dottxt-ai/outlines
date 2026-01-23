@@ -97,7 +97,9 @@ test = [
 ]
 
 [dependency-groups]
-test-gpu = ["outlines[test]", "vllm; sys_platform == 'linux'"]
+# Note: vllm is excluded from the lock file due to circular dependency with outlines-core.
+# For GPU testing, install vllm manually: pip install vllm
+test-gpu = ["outlines[test]"]
 
 [project.urls]
 homepage = "https://github.com/dottxt-ai/outlines"
