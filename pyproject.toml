@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "outlines"
 authors= [{name = "Outlines Developers"}]
 description = "Probabilistic Generative Model Programming"
-requires-python = ">=3.9,<3.13"
+requires-python = ">=3.9,<3.14"
 license = {text = "Apache-2.0"}
 keywords=[
     "machine learning",
@@ -128,6 +128,7 @@ filterwarnings = [
     "ignore::DeprecationWarning:pyairports.*",
     "ignore::DeprecationWarning:jax.*",
     "ignore::DeprecationWarning:flax.*",
+    "ignore::DeprecationWarning:torch.*",
 ]
 
 [tool.mypy]
