@@ -3,6 +3,12 @@ import pytest
 import sys
 from dataclasses import dataclass
 from enum import Enum
+if sys.version_info >= (3, 11):
+    from enum import member
+else:
+    # Python < 3.11 doesn't have enum.member, but also doesn't warn about partial in enums
+    def member(x):  # type: ignore[no-redef]
+        return x
 from functools import partial
 from typing import (
     Annotated,
@@ -72,7 +78,7 @@ def sample_complex_enum():
         return a + b
 
     class SampleComplexEnum(Enum):
-        add = partial(add_func)
+        add = member(partial(add_func))
         a = "a"
         b = 2
 
