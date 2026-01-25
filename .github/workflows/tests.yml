@@ -14,7 +14,7 @@ jobs:
     - uses: actions/checkout@v3
     - uses: actions/setup-python@v4
       with:
-        python-version: "3.10"
+        python-version: "3.13"
     - uses: pre-commit/action@v3.0.0
 
   tests:
@@ -22,13 +22,23 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.10"]
+        python-version: ["3.10", "3.13"]
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
+        cache: 'pip'
+        cache-dependency-path: 'pyproject.toml'
+    - name: Free disk space
+      run: |
+        set -eux
+        sudo rm -rf /usr/share/dotnet || true
+        sudo rm -rf /opt/ghc || true
+        sudo rm -rf /usr/local/lib/android || true
+        sudo apt-get clean
+        df -h
     - name: Install Ollama
       run: |
         curl -fsSL https://ollama.com/install.sh | sh
@@ -39,6 +49,13 @@ jobs:
         python -m pip install --upgrade pip
         pip install uv
         uv sync --no-group test-gpu --extra test
+    - name: cache HuggingFace models
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/huggingface
+        key: hf-${{ runner.os }}-${{ hashFiles('**/pyproject.toml') }}
+        restore-keys: |
+          hf-${{ runner.os }}-
     - name: Create matrix id
       id: matrix-id
       env:
@@ -56,11 +73,10 @@ jobs:
     - name: Upload coverage data
       uses: actions/upload-artifact@v4
       with:
-        name: coverage-data
+        name: coverage-data-${{ matrix.python-version }}
         path: .coverage.*
         if-no-files-found: ignore
         include-hidden-files: true
-        overwrite: true
 
   coverage:
     name: Combine & check coverage.
@@ -83,7 +99,8 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          name: coverage-data
+          pattern: coverage-data-*
+          merge-multiple: true
 
       - name: Combine coverage & fail if it's <100%.
         run: |

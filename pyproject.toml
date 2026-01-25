@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "outlines"
 authors= [{name = "Outlines Developers"}]
 description = "Probabilistic Generative Model Programming"
-requires-python = ">=3.9,<3.13"
+requires-python = ">=3.10,<3.14"
 license = {text = "Apache-2.0"}
 keywords=[
     "machine learning",
@@ -31,7 +31,7 @@ dependencies = [
    "jsonschema",
    "pillow",
    "typing_extensions",
-   "outlines_core==0.2.11",
+   "outlines_core==0.2.14",
    "genson",
    "jsonpath_ng",
 ]
@@ -43,13 +43,13 @@ dottxt = ["dottxt"]
 gemini = ["google-genai"]
 llamacpp = ["huggingface-hub", "llama-cpp-python", "numba"]
 mlxlm = ["datasets", "mlx", "mlx-lm"]
-lmstudio = ["lmstudio; python_version >= '3.10'"]
+lmstudio = ["lmstudio"]
 ollama = ["ollama"]
 openai = ["openai"]
 mistral = ["mistralai"]
 sglang = ["openai"]
 tgi = ["huggingface_hub"]
-transformers = ["accelerate", "datasets", "transformers", "setuptools"]
+transformers = ["accelerate", "datasets", "transformers", "setuptools", "sentencepiece"]
 vllm = ["openai"]
 xgrammar = ["xgrammar"]
 llguidance = ["llguidance"]
@@ -85,7 +85,7 @@ test = [
     "tensorflow",
     "tf-keras",
     "ollama",
-    "lmstudio; python_version >= '3.10'",
+    "lmstudio",
     "dottxt",
     "sentencepiece",
     "mkdocs_gen_files",
@@ -97,7 +97,9 @@ test = [
 ]
 
 [dependency-groups]
-test-gpu = ["outlines[test]", "vllm; sys_platform == 'linux'"]
+# Note: vllm is excluded from the lock file due to circular dependency with outlines-core.
+# For GPU testing, install vllm manually: pip install vllm
+test-gpu = ["outlines[test]"]
 
 [project.urls]
 homepage = "https://github.com/dottxt-ai/outlines"
@@ -128,6 +130,7 @@ filterwarnings = [
     "ignore::DeprecationWarning:pyairports.*",
     "ignore::DeprecationWarning:jax.*",
     "ignore::DeprecationWarning:flax.*",
+    "ignore::DeprecationWarning:torch.*",
 ]
 
 [tool.mypy]

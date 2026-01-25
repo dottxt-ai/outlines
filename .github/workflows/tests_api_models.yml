@@ -26,6 +26,17 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
+        cache: 'pip'
+        cache-dependency-path: 'pyproject.toml'
+
+    - name: Free disk space
+      run: |
+        set -eux
+        sudo rm -rf /usr/share/dotnet || true
+        sudo rm -rf /opt/ghc || true
+        sudo rm -rf /usr/local/lib/android || true
+        sudo apt-get clean
+        df -h
 
     - name: Install Ollama
       run: |
@@ -38,6 +49,14 @@ jobs:
         python -m pip install --upgrade pip
         pip install uv
         uv sync --no-group test-gpu --extra test
+
+    - name: cache HuggingFace models
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/huggingface
+        key: hf-${{ runner.os }}-${{ hashFiles('**/pyproject.toml') }}
+        restore-keys: |
+          hf-${{ runner.os }}-
 
     - name: Create matrix id
       id: matrix-id
