@@ -230,3 +230,36 @@ def test_transformers_batch_constrained(model):
 def test_transformers_streaming(model):
     with pytest.raises(NotImplementedError, match="Streaming is not implemented"):
         model.stream("Respond with one word. Not more.")
+
+
+@pytest.mark.parametrize(
+    "model_name",
+    [
+        TEST_MODEL,
+        "EleutherAI/pythia-70m-deduped",
+    ],
+)
+def test_transformers_parametrized_smoke(model_name):
+    """
+    Smoke test to ensure basic constrained generation works across
+    different tokenizers.
+    """
+    hf_model = transformers.AutoModelForCausalLM.from_pretrained(model_name)
+    hf_model.eval()
+
+    hf_tokenizer = transformers.AutoTokenizer.from_pretrained(model_name)
+
+    model = outlines.from_transformers(hf_model, hf_tokenizer)
+
+    prompt = "Is 1+1=2? Answer Yes or No:"
+    constraint = Regex(r"\s*(Yes|No)")
+
+    out = model(
+        prompt,
+        constraint,
+        max_new_tokens=5,
+        do_sample=False,
+    )
+
+    assert out.strip() in {"Yes", "No"}
+
