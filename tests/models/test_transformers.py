@@ -61,7 +61,7 @@ def test_transformers_instantiate_tokenizer_kwargs_dtype():
     assert model.device_dtype == torch.bfloat16
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def model():
     model = outlines.from_transformers(
         transformers.AutoModelForCausalLM.from_pretrained(TEST_MODEL),
@@ -230,3 +230,40 @@ def test_transformers_batch_constrained(model):
 def test_transformers_streaming(model):
     with pytest.raises(NotImplementedError, match="Streaming is not implemented"):
         model.stream("Respond with one word. Not more.")
+
+
+@pytest.mark.parametrize(
+    "model_name",
+    [
+        TEST_MODEL,
+        "EleutherAI/pythia-70m-deduped",
+    ],
+)
+def test_transformers_parametrized_smoke(model_name):
+    """
+    Smoke test to ensure basic constrained generation works across
+    different tokenizers.
+    """
+    hf_model = transformers.AutoModelForCausalLM.from_pretrained(model_name)
+    hf_model.eval()
+
+    hf_tokenizer = transformers.AutoTokenizer.from_pretrained(model_name)
+
+    if hf_tokenizer.pad_token is None:
+        assert hf_tokenizer.eos_token is not None
+        hf_tokenizer.pad_token = hf_tokenizer.eos_token
+        hf_model.config.pad_token_id = hf_model.config.eos_token_id
+
+    model = outlines.from_transformers(hf_model, hf_tokenizer)
+
+    prompt = "Is 1+1=2? Answer Yes or No:"
+    constraint = Regex(r"\s*(Yes|No)")
+
+    for _ in range(3):
+        out = model(
+            prompt,
+            constraint,
+            max_new_tokens=5,
+            do_sample=False,
+        )
+        assert out.strip() in {"Yes", "No"}
