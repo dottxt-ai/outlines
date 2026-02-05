@@ -236,7 +236,7 @@ def test_transformers_streaming(model):
     "model_name",
     [
         TEST_MODEL,
-        "EleutherAI/pythia-70m-deduped",
+        "HuggingFaceTB/SmolLM2-135M"
     ],
 )
 def test_transformers_parametrized_smoke(model_name):

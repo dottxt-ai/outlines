@@ -103,10 +103,8 @@ class TransformerTokenizer(Tokenizer):
 
         string = self.tokenizer.convert_tokens_to_string([token])
 
-        if self.is_llama:
-            # A hack to handle missing spaces to HF's Llama tokenizers
-            if token.startswith(SPIECE_UNDERLINE) or token == "<0x20>":
-                return " " + string
+        if token.startswith(SPIECE_UNDERLINE) or token == "<0x20>":
+            return " " + string
 
         return string
 
