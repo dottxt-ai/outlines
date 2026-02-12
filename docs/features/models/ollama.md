@@ -254,4 +254,4 @@ print(Character.model_validate_json(result)) # name=Evelyn, age=34, skills=['arc
 
 When calling the model, you can provide keyword arguments that will be passed down to the `generate` method of the Ollama client.
 
-Consult the [Ollama REST API documentation](https://github.com/ollama/ollama/blob/main/docs/api.md#generate-a-completion) for the full list of inference parameters.
+Consult the [Ollama REST API documentation](https://github.com/ollama/ollama/blob/main/docs/api#generate-a-completion) for the full list of inference parameters.

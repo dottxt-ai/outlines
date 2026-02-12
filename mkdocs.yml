@@ -149,11 +149,11 @@ nav:
                 - Model Inputs: features/core/inputs.md
                 - Output Types:
                     - Overview: features/core/output_types.md
-                    - Basic Types: features/core/output_types.md#basic-python-types
-                    - Multiple-Choices: features/core/output_types.md#multiple-choices
-                    - JSON: features/core/output_types.md#json-schemas
-                    - Regex: features/core/output_types.md#regex-patterns
-                    - Context-free Grammars: features/core/output_types.md#context-free-grammars
+                    - Basic Types: features/core/output_types#basic-python-types
+                    - Multiple-Choices: features/core/output_types#multiple-choices
+                    - JSON: features/core/output_types#json-schemas
+                    - Regex: features/core/output_types#regex-patterns
+                    - Context-free Grammars: features/core/output_types#context-free-grammars
                 - Generator: features/core/generator.md
 
           - Utilities:
