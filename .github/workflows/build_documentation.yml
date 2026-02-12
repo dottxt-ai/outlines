@@ -2,22 +2,79 @@ name: Build the documentation
 
 on:
   pull_request:
+    types: [opened, synchronize, reopened, closed]
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   build:
-    name: Build
+    name: Build and Deploy Documentation Preview
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v4
         with:
           python-version: "3.10"
 
+      - name: Install dependencies
+        if: github.event.action != 'closed'
+        run: pip install -r requirements-doc.txt
+
       - name: Build the documentation
+        if: github.event.action != 'closed'
         env:
           GOOGLE_ANALYTICS_KEY: ${{ secrets.GOOGLE_ANALYTICS_KEY }}
-        run: |
-          pip install -r requirements-doc.txt
-          mkdocs build
+        run: mkdocs build
+
+      - name: Deploy to PR preview
+        if: github.event_name == 'pull_request'
+        uses: rossjrw/pr-preview-action@v1
+        with:
+          source-dir: site/
+          preview-branch: gh-pages
+          umbrella-dir: pr-preview
+          comment: false
+
+      - name: Comment PR with preview link
+        if: github.event_name == 'pull_request' && github.event.action != 'closed'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = context.issue.number;
+            const previewUrl = `https://dottxt-ai.github.io/outlines/pr-preview/pr-${prNumber}/`;
+
+            // Find existing preview comment
+            const comments = await github.rest.issues.listComments({
+              issue_number: prNumber,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+
+            const botComment = comments.data.find(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes('Documentation preview')
+            );
+
+            const commentBody = `📚 **Documentation preview**: ${previewUrl}\n\n*Preview updates automatically with each commit.*`;
+
+            // Update existing comment or create new one
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                comment_id: botComment.id,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: commentBody
+              });
+            } else {
+              await github.rest.issues.createComment({
+                issue_number: prNumber,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: commentBody
+              });
+            }
