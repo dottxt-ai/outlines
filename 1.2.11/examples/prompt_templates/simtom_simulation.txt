@@ -1,0 +1,7 @@
+<s>[INST] {% for event in events %}
+{{event}}
+{% endfor %}
+You are {{name}}.
+Based on the above information, answer the following question:
+{{question}}
+You must choose one of the above choices, do not say there is not enough information. Answer with a single word, do not output anything else. [/INST]

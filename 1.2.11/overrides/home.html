@@ -1,0 +1,155 @@
+{#-
+This file overrides the home page to use HTML tooling
+better.
+-#}
+{% extends "main.html" %}
+{% block tabs %}
+{{ super() }}
+
+<style>
+    @media screen and (min-width:60em) {
+        .md-sidebar--secondary {
+            display: none;
+        }
+    }
+
+    @media screen and (min-width:76.25em) {
+        .md-sidebar--primary {
+            display: none;
+        }
+    }
+
+    .mdx-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .mdx-hero {
+        text-align: center;
+        margin-top: 6rem;
+    }
+
+    .mdx-hero__image {
+        margin-bottom: 1rem;
+        margin-top: 1rem;
+        max-width: 80%;
+        margin: 0 auto;
+
+        @media screen and (max-width: 40em) {
+            max-width: 60%;
+        }
+    }
+
+    .mdx-hero__content {
+        max-width: 600px;
+        margin: 0 auto;
+
+        .subtitle {
+            font-size: 1rem;
+            letter-spacing: 0.025rem;
+        }
+
+        h2 {
+            max-width: 460px;
+        }
+
+        @media screen and (max-width: 40em) {
+            .subtitle {
+                font-size: 0.8rem;
+                max-width: 70%;
+                font-weight: 700;
+            }
+        }
+
+        a:hover{
+            color: #A7623A;
+        }
+    }
+
+    .md-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        flex-direction: row;
+        margin: 0 auto;
+        margin-top: 2rem;
+        flex-direction: row;
+        width: max-content;
+        font-weight: 700;
+    }
+
+    .md-team {
+        margin-top: 4rem;
+    }
+
+    /* New media query for smaller screens */
+    @media screen and (max-width: 40em) {
+        .md-buttons {
+            flex-direction: column;
+            /* Stack buttons vertically */
+            align-items: center;
+            /* Center-align the stacked buttons */
+        }
+
+        .md-buttons .md-button {
+            width: 100%;
+            /* Make buttons full-width */
+            max-width: 200px;
+            /* Limit maximum width for better appearance */
+        }
+    }
+
+    .md-button {
+        transition: background-color 0.3s ease-in-out; /* Smooth transition */
+        border-radius: 6px !important;
+        padding: 0.4rem 0.8rem !important;
+
+    }
+
+    .md-button:hover {
+        background-color: #A7623A !important; /* Desired hover background color */
+        border-color: #A7623A !important;
+    }
+</style>
+
+<section class="mdx-container">
+    <div class="md-grid md-typeset">
+        <div class="mdx-hero">
+            <div class="mdx-hero__image">
+                <img src="assets/images/logo-light-mode.svg#only-light" alt="Outlines Logo" width="600" draggable="false">
+                <img src="assets/images/logo-dark-mode.svg#only-dark" alt="Outlines Logo" width="600" draggable="false">
+            </div>
+            <div class="mdx-hero__content">
+                <h2 class="subtitle" style="font-weight: 500; padding-top: 1rem;">
+                    Structured text generation and robust prompting for language models
+                </h2>
+                <div class="md-buttons">
+                    <a href="{{ 'welcome/' | url }}" title="Get started" class="md-button md-button--primary">
+                        Get started
+                    </a>
+                    <a href="https://discord.gg/ZxBxyWmW5n" title="Join the Community" class="md-button">
+                        Join the community
+                    </a>
+                </div>
+                <div class="md-buttons">
+                    <p>
+                        Follow us on <a href="https://twitter.com/dottxtai" title="Follow us on X" target="_blank">
+                            X
+                        </a> and
+                        <a href="https://bsky.app/profile/dottxtai.bsky.social" title="Follow us on Bluesky" target="_blank">
+                            Bluesky
+                        </a>
+                    </p>
+                </div>
+
+                <p class="md-team">Made with ❤️ by the team at <a href="https://dottxt.co">.txt</a></p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+{% block content %}{% endblock %}
+{% block footer %}{% endblock %}
