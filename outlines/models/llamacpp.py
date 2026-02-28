@@ -51,16 +51,24 @@ class LlamaCppTokenizer(Tokenizer):
             self.eos_token_id = model.token_eos()
             size = 32
             buffer = (ctypes.c_char * size)()
+            vocab = llama_model_get_vocab(model.model)
             for i in range(model.n_vocab()):
                 n = llama_token_to_piece(
-                    llama_model_get_vocab(model.model),
+                    vocab,
                     i,
                     buffer,
                     size,
                     0,
                     True
                 )
-                token_piece = buffer[:n].decode("utf-8", errors="replace") # type: ignore
+                # n > size means the piece was truncated; retry with a
+                # larger buffer so distinct tokens are not collapsed.
+                if n > size:
+                    big = (ctypes.c_char * n)()
+                    llama_token_to_piece(vocab, i, big, n, 0, True)
+                    token_piece = big[:n].decode("utf-8", errors="replace")  # type: ignore
+                else:
+                    token_piece = buffer[:n].decode("utf-8", errors="replace")  # type: ignore
                 self.vocabulary[token_piece] = i
                 if i == self.eos_token_id:
                     self.eos_token = token_piece
@@ -93,10 +101,11 @@ class LlamaCppTokenizer(Tokenizer):
             add_bos=add_bos,
             special=special,
         )
-        # generate attention mask, missing from llama-cpp-python
-        attention_mask = [
-            1 if token_id != self.pad_token_id else 0 for token_id in token_ids
-        ]
+        # generate attention mask, missing from llama-cpp-python.
+        # For a single (non-batched) prompt there is no real padding, so
+        # every token — including EOS when it appears inside the prompt —
+        # should be attended.  We therefore always set the mask to 1.
+        attention_mask = [1] * len(token_ids)
         return token_ids, attention_mask
 
     def convert_token_to_string(self, token: str) -> str:
