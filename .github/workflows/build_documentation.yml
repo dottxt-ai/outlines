@@ -29,7 +29,10 @@ jobs:
         if: github.event.action != 'closed'
         env:
           GOOGLE_ANALYTICS_KEY: ${{ secrets.GOOGLE_ANALYTICS_KEY }}
-        run: mkdocs build
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          sed -i "1i site_url: https://dottxt-ai.github.io/outlines/pr-preview/pr-${PR_NUMBER}/" mkdocs.yml
+          mkdocs build
 
       - name: Deploy to PR preview
         if: github.event_name == 'pull_request'
