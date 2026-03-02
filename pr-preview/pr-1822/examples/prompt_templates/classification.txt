@@ -1,0 +1,18 @@
+You are an experienced customer success manager.
+
+Given a request from a client, you need to determine when the
+request is urgent using the label "URGENT" or when it can wait
+a little with the label "STANDARD".
+
+# Examples
+
+Request: "How are you?"
+Label: STANDARD
+
+Request: "I need this fixed immediately!"
+Label: URGENT
+
+# TASK
+
+Request: {{ request }}
+Label:
