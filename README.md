@@ -27,7 +27,7 @@ We're working with select partners to develop new interfaces to structured gener
 
 Need XML, FHIR, custom schemas or grammars? Let's talk.
 
-[Become a design partner](mailto:contact@dottxt.ai)
+Audit your schema: share one schema, we show you what breaks under generation, the constraints that fix it, and compliance rates before and after. Sign up [here](https://h1xbpbfsf0w.typeform.com/to/rtFUraA2?typeform).
 
 ## Table of Contents
 
