@@ -6,6 +6,7 @@ from typing import (
     TYPE_CHECKING, Any, AsyncIterator, Iterator, Optional, Union
 )
 
+from outlines.exceptions import APIError, normalize_provider_exception
 from outlines.inputs import Chat
 from outlines.models.base import AsyncModel, Model, ModelTypeAdapter
 from outlines.models.openai import OpenAITypeAdapter
@@ -18,6 +19,8 @@ from outlines.types.dsl import (
 
 if TYPE_CHECKING:
     from openai import AsyncOpenAI, OpenAI
+
+PROVIDER = "sglang"
 
 __all__ = ["AsyncSGLang", "SGLang", "from_sglang"]
 
@@ -134,7 +137,10 @@ class SGLang(Model):
             **inference_kwargs,
         )
 
-        response = self.client.chat.completions.create(**client_args)
+        try:
+            response = self.client.chat.completions.create(**client_args)
+        except Exception as e:
+            raise normalize_provider_exception(e, PROVIDER) from e
 
         messages = [choice.message for choice in response.choices]
         for message in messages:
@@ -188,9 +194,12 @@ class SGLang(Model):
             model_input, output_type, **inference_kwargs,
         )
 
-        stream = self.client.chat.completions.create(
-            **client_args, stream=True,
-        )
+        try:
+            stream = self.client.chat.completions.create(
+                **client_args, stream=True,
+            )
+        except Exception as e:
+            raise normalize_provider_exception(e, PROVIDER) from e
 
         for chunk in stream:  # pragma: no cover
             if chunk.choices and chunk.choices[0].delta.content is not None:
@@ -276,7 +285,10 @@ class AsyncSGLang(AsyncModel):
             model_input, output_type, **inference_kwargs,
         )
 
-        response = await self.client.chat.completions.create(**client_args)
+        try:
+            response = await self.client.chat.completions.create(**client_args)
+        except Exception as e:
+            raise normalize_provider_exception(e, PROVIDER) from e
 
         messages = [choice.message for choice in response.choices]
         for message in messages:
@@ -330,10 +342,13 @@ class AsyncSGLang(AsyncModel):
             model_input, output_type, **inference_kwargs,
         )
 
-        stream = await self.client.chat.completions.create(
-            **client_args,
-            stream=True,
-        )
+        try:
+            stream = await self.client.chat.completions.create(
+                **client_args,
+                stream=True,
+            )
+        except Exception as e:
+            raise normalize_provider_exception(e, PROVIDER) from e
 
         async for chunk in stream:  # pragma: no cover
             if chunk.choices and chunk.choices[0].delta.content is not None:
