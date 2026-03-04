@@ -155,6 +155,7 @@ nav:
                     - Regex: features/core/output_types#regex-patterns
                     - Context-free Grammars: features/core/output_types#context-free-grammars
                 - Generator: features/core/generator.md
+                - Error Handling: features/core/exceptions.md
 
           - Utilities:
                 - Application: features/utility/application.md

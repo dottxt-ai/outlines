@@ -3,11 +3,14 @@
 from functools import singledispatchmethod
 from typing import TYPE_CHECKING, Any, Iterator, Optional, Union
 
+from outlines.exceptions import APIError, normalize_provider_exception
 from outlines.inputs import Chat, Image
 from outlines.models.base import Model, ModelTypeAdapter
 
 if TYPE_CHECKING:
     from anthropic import Anthropic as AnthropicClient
+
+PROVIDER = "anthropic"
 
 __all__ = ["Anthropic", "from_anthropic"]
 
@@ -186,10 +189,13 @@ class Anthropic(Model):
         ):
             inference_kwargs["model"] = self.model_name
 
-        completion = self.client.messages.create(
-            **messages,
-            **inference_kwargs,
-        )
+        try:
+            completion = self.client.messages.create(
+                **messages,
+                **inference_kwargs,
+            )
+        except Exception as e:
+            raise normalize_provider_exception(e, PROVIDER) from e
         return completion.content[0].text
 
     def generate_batch(
@@ -240,11 +246,14 @@ class Anthropic(Model):
         ):
             inference_kwargs["model"] = self.model_name
 
-        stream = self.client.messages.create(
-            **messages,
-            stream=True,
-            **inference_kwargs,
-        )
+        try:
+            stream = self.client.messages.create(
+                **messages,
+                stream=True,
+                **inference_kwargs,
+            )
+        except Exception as e:
+            raise normalize_provider_exception(e, PROVIDER) from e
 
         for chunk in stream:
             if (

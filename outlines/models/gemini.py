@@ -10,6 +10,7 @@ from typing import (
     get_args,
 )
 
+from outlines.exceptions import APIError, normalize_provider_exception
 from outlines.inputs import Image, Chat
 from outlines.models.base import Model, ModelTypeAdapter
 from outlines.types import CFG, Choice, JsonSchema, Regex
@@ -24,6 +25,8 @@ from outlines.types.utils import (
 
 if TYPE_CHECKING:
     from google.genai import Client
+
+PROVIDER = "gemini"
 
 __all__ = ["Gemini", "from_gemini"]
 
@@ -294,11 +297,14 @@ class Gemini(Model):
         contents = self.type_adapter.format_input(model_input)
         generation_config = self.type_adapter.format_output_type(output_type)
 
-        completion = self.client.models.generate_content(
-            **contents,
-            model=inference_kwargs.pop("model", self.model_name),
-            config={**generation_config, **inference_kwargs}
-        )
+        try:
+            completion = self.client.models.generate_content(
+                **contents,
+                model=inference_kwargs.pop("model", self.model_name),
+                config={**generation_config, **inference_kwargs}
+            )
+        except Exception as e:
+            raise normalize_provider_exception(e, PROVIDER) from e
 
         return completion.text
 
@@ -340,11 +346,14 @@ class Gemini(Model):
         contents = self.type_adapter.format_input(model_input)
         generation_config = self.type_adapter.format_output_type(output_type)
 
-        stream = self.client.models.generate_content_stream(
-            **contents,
-            model=inference_kwargs.pop("model", self.model_name),
-            config={**generation_config, **inference_kwargs},
-        )
+        try:
+            stream = self.client.models.generate_content_stream(
+                **contents,
+                model=inference_kwargs.pop("model", self.model_name),
+                config={**generation_config, **inference_kwargs},
+            )
+        except Exception as e:
+            raise normalize_provider_exception(e, PROVIDER) from e
 
         for chunk in stream:
             if hasattr(chunk, "text") and chunk.text:
