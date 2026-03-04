@@ -13,6 +13,7 @@ from functools import singledispatchmethod
 
 from pydantic import BaseModel
 
+from outlines.exceptions import APIError, normalize_provider_exception
 from outlines.inputs import Chat, Image
 from outlines.models.base import AsyncModel, Model, ModelTypeAdapter
 from outlines.models.utils import set_additional_properties_false_json_schema
@@ -26,6 +27,8 @@ if TYPE_CHECKING:
         AzureOpenAI as AzureOpenAIClient,
         AsyncAzureOpenAI as AsyncAzureOpenAIClient,
     )
+
+PROVIDER = "openai"
 
 __all__ = ["AsyncOpenAI", "OpenAI", "from_openai"]
 
@@ -277,8 +280,9 @@ class OpenAI(Model):
                     f"OpenAI does not support your schema: {e.body['message']}. "
                     "Try a local model or dottxt instead."
                 )
-            else:
-                raise e
+            raise normalize_provider_exception(e, PROVIDER) from e
+        except Exception as e:
+            raise normalize_provider_exception(e, PROVIDER) from e
 
         messages = [choice.message for choice in result.choices]
         for message in messages:
@@ -348,8 +352,9 @@ class OpenAI(Model):
                     f"OpenAI does not support your schema: {e.body['message']}. "
                     "Try a local model or dottxt instead."
                 )
-            else:
-                raise e
+            raise normalize_provider_exception(e, PROVIDER) from e
+        except Exception as e:
+            raise normalize_provider_exception(e, PROVIDER) from e
 
         for chunk in stream:
             if chunk.choices and chunk.choices[0].delta.content is not None:
@@ -427,8 +432,9 @@ class AsyncOpenAI(AsyncModel):
                     f"OpenAI does not support your schema: {e.body['message']}. "
                     "Try a local model or dottxt instead."
                 )
-            else:
-                raise e
+            raise normalize_provider_exception(e, PROVIDER) from e
+        except Exception as e:
+            raise normalize_provider_exception(e, PROVIDER) from e
 
         messages = [choice.message for choice in result.choices]
         for message in messages:
@@ -498,8 +504,9 @@ class AsyncOpenAI(AsyncModel):
                     f"OpenAI does not support your schema: {e.body['message']}. "
                     "Try a local model or dottxt instead."
                 )
-            else:
-                raise e
+            raise normalize_provider_exception(e, PROVIDER) from e
+        except Exception as e:
+            raise normalize_provider_exception(e, PROVIDER) from e
 
         async for chunk in stream:
             if chunk.choices and chunk.choices[0].delta.content is not None:

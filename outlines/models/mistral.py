@@ -25,9 +25,12 @@ from outlines.types.utils import (
     is_pydantic_model,
     is_typed_dict,
 )
+from outlines.exceptions import APIError, normalize_provider_exception
 
 if TYPE_CHECKING:
     from mistralai import Mistral as MistralClient
+
+PROVIDER = "mistral"
 
 __all__ = ["AsyncMistral", "Mistral", "from_mistral"]
 
@@ -335,8 +338,7 @@ class Mistral(Model):
                     f"Mistral does not support your schema: {e}. "
                     "Try a local model or dottxt instead."
                 )
-            else:
-                raise RuntimeError(f"Mistral API error: {e}") from e
+            raise normalize_provider_exception(e, PROVIDER) from e
 
         outputs = [choice.message for choice in result.choices]
 
@@ -396,8 +398,7 @@ class Mistral(Model):
                     f"Mistral does not support your schema: {e}. "
                     "Try a local model or dottxt instead."
                 )
-            else:
-                raise RuntimeError(f"Mistral API error: {e}") from e
+            raise normalize_provider_exception(e, PROVIDER) from e
 
         for chunk in stream:
             if (
@@ -474,8 +475,7 @@ class AsyncMistral(AsyncModel):
                     f"Mistral does not support your schema: {e}. "
                     "Try a local model or dottxt instead."
                 )
-            else:
-                raise RuntimeError(f"Mistral API error: {e}") from e
+            raise normalize_provider_exception(e, PROVIDER) from e
 
         outputs = [choice.message for choice in result.choices]
 
@@ -535,8 +535,7 @@ class AsyncMistral(AsyncModel):
                     f"Mistral does not support your schema: {e}. "
                     "Try a local model or dottxt instead."
                 )
-            else:
-                raise RuntimeError(f"Mistral API error: {e}") from e
+            raise normalize_provider_exception(e, PROVIDER) from e
 
         async for chunk in response:
             if (

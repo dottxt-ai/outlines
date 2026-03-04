@@ -8,6 +8,7 @@ try:
 except ImportError:  # pragma: no cover
     PreTrainedTokenizerBase = None  # type: ignore
 
+from outlines.exceptions import APIError
 from outlines.inputs import Chat
 from outlines.models.base import Model, ModelTypeAdapter
 from outlines.models.tokenizer import _check_hf_chat_template
@@ -20,6 +21,8 @@ if TYPE_CHECKING:
     from mlx_lm.tokenizer_utils import TokenizerWrapper
     from transformers import PreTrainedTokenizer
     MLXTokenizer = Union["TokenizerWrapper", "PreTrainedTokenizer"]
+
+PROVIDER = "mlxlm"
 
 __all__ = ["MLXLM", "from_mlxlm"]
 
@@ -160,13 +163,16 @@ class MLXLM(Model):
         """
         from mlx_lm import generate
 
-        return generate(
-            self.model,
-            self.mlx_tokenizer,
-            self.type_adapter.format_input(model_input),
-            logits_processors=self.type_adapter.format_output_type(output_type),
-            **kwargs,
-        )
+        try:
+            return generate(
+                self.model,
+                self.mlx_tokenizer,
+                self.type_adapter.format_input(model_input),
+                logits_processors=self.type_adapter.format_output_type(output_type),
+                **kwargs,
+            )
+        except Exception as e:
+            raise APIError(provider=PROVIDER, original_exception=e) from e
 
     def generate_batch(
         self,
@@ -218,12 +224,15 @@ class MLXLM(Model):
             for i in range(len(model_input))
         ]
 
-        response = batch_generate(
-            self.model,
-            self.mlx_tokenizer,
-            tokenized_model_input,
-            **kwargs,
-        )
+        try:
+            response = batch_generate(
+                self.model,
+                self.mlx_tokenizer,
+                tokenized_model_input,
+                **kwargs,
+            )
+        except Exception as e:
+            raise APIError(provider=PROVIDER, original_exception=e) from e
 
         return response.texts
 
@@ -253,14 +262,17 @@ class MLXLM(Model):
         """
         from mlx_lm import stream_generate
 
-        for gen_response in stream_generate(
-            self.model,
-            self.mlx_tokenizer,
-            self.type_adapter.format_input(model_input),
-            logits_processors=self.type_adapter.format_output_type(output_type),
-            **kwargs,
-        ):
-            yield gen_response.text
+        try:
+            for gen_response in stream_generate(
+                self.model,
+                self.mlx_tokenizer,
+                self.type_adapter.format_input(model_input),
+                logits_processors=self.type_adapter.format_output_type(output_type),
+                **kwargs,
+            ):
+                yield gen_response.text
+        except Exception as e:
+            raise APIError(provider=PROVIDER, original_exception=e) from e
 
 
 def from_mlxlm(model: "nn.Module", tokenizer: "MLXTokenizer") -> MLXLM:
