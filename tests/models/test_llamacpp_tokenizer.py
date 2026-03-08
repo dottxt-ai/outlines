@@ -238,3 +238,39 @@ def test_attention_mask_all_ones_even_with_eos():
 
     assert token_ids == [0, 1]
     assert attention_mask == [1, 1]
+
+
+def test_negative_n_skips_invalid_token():
+    """Tokens that return n < 0 from llama_token_to_piece (error codes)
+    must be silently skipped instead of producing garbage vocabulary entries."""
+    eos_piece = b"</s>"
+    pieces = {0: b"ok", 1: None, 2: eos_piece}  # token 1 returns error
+    model = _make_mock_model(n_vocab=3, eos_id=2, pieces=pieces)
+
+    def fake_llama_token_to_piece(vocab, token_id, buf, buf_size, *args):
+        data = pieces[token_id]
+        if data is None:
+            return -1  # error return
+        n = len(data)
+        if buf_size >= n:
+            ctypes.memmove(buf, data, n)
+        return n
+
+    with patch.dict(
+        "sys.modules",
+        {
+            "llama_cpp": MagicMock(
+                llama_model_get_vocab=MagicMock(return_value=MagicMock()),
+                llama_token_to_piece=fake_llama_token_to_piece,
+            ),
+        },
+    ):
+        tok = LlamaCppTokenizer.__new__(LlamaCppTokenizer)
+        tok.__init__(model)
+
+    # Token 1 (error) must not appear in the vocabulary
+    assert 1 not in tok.vocabulary.values() or all(
+        v != 1 for k, v in tok.vocabulary.items() if k != ""
+    )
+    assert tok.vocabulary["ok"] == 0
+    assert tok.eos_token == eos_piece.decode()

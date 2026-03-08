@@ -61,6 +61,10 @@ class LlamaCppTokenizer(Tokenizer):
                     0,
                     True
                 )
+                # n < 0 is an error return from llama_token_to_piece;
+                # skip invalid tokens so they don't pollute the vocabulary.
+                if n < 0:
+                    continue
                 # n > size means the piece was truncated; retry with a
                 # larger buffer so distinct tokens are not collapsed.
                 if n > size:
