@@ -60,7 +60,7 @@ def get_cache():
         # OUTLINES_CACHE_DIR takes precedence
         cache_dir = outlines_cache_dir
     elif xdg_cache_home:  # pragma: no cover
-        cache_dir = os.path.join(xdg_cache_home, ".cache", "outlines")
+        cache_dir = os.path.join(xdg_cache_home, "outlines")
     elif home_dir != "/": # pragma: no cover
         cache_dir = os.path.join(home_dir, ".cache", "outlines")
     else:  # pragma: no cover
@@ -193,3 +193,4 @@ def cache_disabled():
         yield
     finally:
         _caching_enabled = original_state
+
