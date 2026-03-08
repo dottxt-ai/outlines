@@ -1,6 +1,8 @@
+import ctypes
+
 import pytest
 import sys
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import llama_cpp
 import transformers
@@ -133,3 +135,106 @@ def test_llama_cpp_tokenizer_getstate(tokenizer):
 def test_llama_cpp_tokenizer_setstate(tokenizer):
     with pytest.raises(NotImplementedError):
         tokenizer.__setstate__(None)
+
+
+def _make_mock_model(n_vocab, eos_id, pieces):
+    """Build a mock Llama model whose vocab is defined by *pieces*.
+
+    Parameters
+    ----------
+    n_vocab : int
+        Number of tokens in the vocabulary.
+    eos_id : int
+        The EOS token id.
+    pieces : dict[int, bytes]
+        Mapping from token id to the raw bytes of the token piece.
+    """
+    model = MagicMock()
+    # Remove tokenizer_ so the code falls into the C-API branch
+    del model.tokenizer_
+    model.token_eos.return_value = eos_id
+    model.n_vocab.return_value = n_vocab
+    model.model = MagicMock()
+    return model
+
+
+def test_vocab_truncation_retry_path():
+    """Tokens whose piece length exceeds the 32-byte buffer must trigger the
+    retry path with a larger buffer so their text is not collapsed."""
+    long_piece = b"x" * 40  # 40 > 32 → triggers the retry branch
+    short_piece = b"hi"
+    eos_piece = b"</s>"
+
+    pieces = {0: short_piece, 1: long_piece, 2: eos_piece}
+    model = _make_mock_model(n_vocab=3, eos_id=2, pieces=pieces)
+
+    def fake_llama_token_to_piece(vocab, token_id, buf, buf_size, *args):
+        data = pieces[token_id]
+        n = len(data)
+        # Only write into the buffer when it is large enough
+        if buf_size >= n:
+            ctypes.memmove(buf, data, n)
+        return n
+
+    with patch(
+        "outlines.models.llamacpp.llama_model_get_vocab",
+        return_value=MagicMock(),
+        create=True,
+    ), patch(
+        "outlines.models.llamacpp.llama_token_to_piece",
+        side_effect=fake_llama_token_to_piece,
+        create=True,
+    ):
+        # Patch the imports inside the __init__ else-branch
+        with patch.dict(
+            "sys.modules",
+            {
+                "llama_cpp": MagicMock(
+                    llama_model_get_vocab=MagicMock(return_value=MagicMock()),
+                    llama_token_to_piece=fake_llama_token_to_piece,
+                ),
+            },
+        ):
+            tok = LlamaCppTokenizer.__new__(LlamaCppTokenizer)
+            # Re-import inside the else-branch uses llama_cpp module
+            tok.__init__(model)
+
+    assert tok.vocabulary[long_piece.decode()] == 1
+    assert tok.vocabulary[short_piece.decode()] == 0
+    assert tok.eos_token == eos_piece.decode()
+
+
+def test_attention_mask_all_ones_even_with_eos():
+    """The attention mask must be all-ones for every token, including EOS."""
+    eos_piece = b"</s>"
+    pieces = {0: b"hello", 1: eos_piece}
+    model = _make_mock_model(n_vocab=2, eos_id=1, pieces=pieces)
+
+    def fake_llama_token_to_piece(vocab, token_id, buf, buf_size, *args):
+        data = pieces[token_id]
+        n = len(data)
+        if buf_size >= n:
+            ctypes.memmove(buf, data, n)
+        return n
+
+    with patch.dict(
+        "sys.modules",
+        {
+            "llama_cpp": MagicMock(
+                llama_model_get_vocab=MagicMock(return_value=MagicMock()),
+                llama_token_to_piece=fake_llama_token_to_piece,
+            ),
+        },
+    ):
+        tok = LlamaCppTokenizer.__new__(LlamaCppTokenizer)
+        tok.__init__(model)
+
+    # Simulate encoding that returns token ids including the EOS token
+    fake_tokenizer = MagicMock()
+    fake_tokenizer.tokenize.return_value = [0, 1]  # token 1 == eos_id
+    tok.tokenizer = fake_tokenizer
+
+    token_ids, attention_mask = tok.encode("hello</s>")
+
+    assert token_ids == [0, 1]
+    assert attention_mask == [1, 1]
