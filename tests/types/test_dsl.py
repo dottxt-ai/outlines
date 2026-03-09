@@ -40,6 +40,7 @@ from outlines.types.dsl import (
     _handle_literal,
     _handle_tuple,
     _handle_union,
+    _ensure_json_quoted,
     json_schema,
     one_or_more,
     zero_or_more,
@@ -784,6 +785,183 @@ def test_dsl_handle_dict():
     assert result.terms[1].term.terms[2] == types.string
     assert result.terms[1].term.terms[3] == KleeneStar(Sequence([String(", "), types.integer, String(":"), types.string]))
     assert result.terms[2] == String("}")
+
+
+def test_ensure_json_quoted_string():
+    """String terms are wrapped in double-quote delimiters."""
+    term = String("hello")
+    result = _ensure_json_quoted(term)
+    assert isinstance(result, Sequence)
+    assert result.terms == [String('"'), String("hello"), String('"')]
+
+
+def test_ensure_json_quoted_alternatives():
+    """Each branch of an Alternatives is independently quoted."""
+    term = Alternatives([String("a"), String("b")])
+    result = _ensure_json_quoted(term)
+    assert isinstance(result, Alternatives)
+    assert len(result.terms) == 2
+    for branch in result.terms:
+        assert isinstance(branch, Sequence)
+        assert branch.terms[0] == String('"')
+        assert branch.terms[2] == String('"')
+
+
+def test_ensure_json_quoted_passthrough():
+    """Non-String, non-Alternatives terms are returned unchanged."""
+    regex_term = types.integer
+    assert _ensure_json_quoted(regex_term) is regex_term
+
+    seq = Sequence([String("a"), String("b")])
+    assert _ensure_json_quoted(seq) is seq
+
+
+def test_list_of_literals_quoted():
+    """Literal strings inside List are JSON-quoted."""
+    list_type = list[Literal["cat", "dog"]]
+    result = _handle_list(get_args(list_type), recursion_depth=0)
+    assert isinstance(result, Sequence)
+    assert result.terms[0] == String("[")
+    item = result.terms[1]
+    assert isinstance(item, Alternatives)
+    for branch in item.terms:
+        assert isinstance(branch, Sequence)
+        assert branch.terms[0] == String('"')
+        assert branch.terms[2] == String('"')
+
+
+def test_tuple_of_literals_quoted():
+    """Literal strings inside fixed Tuple are JSON-quoted."""
+    tuple_type = Tuple[Literal["x"], Literal["y"]]
+    result = _handle_tuple(get_args(tuple_type), recursion_depth=0)
+    assert isinstance(result, Sequence)
+    assert result.terms[0] == String("(")
+    first_item = result.terms[1]
+    assert isinstance(first_item, Alternatives)
+    assert isinstance(first_item.terms[0], Sequence)
+    assert first_item.terms[0].terms[0] == String('"')
+
+
+def test_dict_literal_key_quoted():
+    """Literal string keys in Dict are JSON-quoted."""
+    dict_type = dict[Literal["k1", "k2"], int]
+    result = _handle_dict(get_args(dict_type), recursion_depth=0)
+    assert isinstance(result, Sequence)
+    inner = result.terms[1]
+    assert isinstance(inner, Optional)
+    key_term = inner.term.terms[0]
+    assert isinstance(key_term, Alternatives)
+    for branch in key_term.terms:
+        assert isinstance(branch, Sequence)
+        assert branch.terms[0] == String('"')
+
+
+def test_list_of_int_unchanged():
+    """Non-string types in List are not wrapped in quotes."""
+    list_type = list[int]
+    result = _handle_list(get_args(list_type), recursion_depth=0)
+    assert result.terms[1] == types.integer
+
+
+def test_ensure_json_quoted_sequence_passthrough():
+    """A Sequence term (already structured) passes through unchanged."""
+    seq = Sequence([String("a"), String("b")])
+    assert _ensure_json_quoted(seq) is seq
+
+
+def test_ensure_json_quoted_regex_passthrough():
+    """Regex terms (e.g. types.string) already include quotes internally."""
+    assert _ensure_json_quoted(types.string) is types.string
+    assert _ensure_json_quoted(types.integer) is types.integer
+    assert _ensure_json_quoted(types.boolean) is types.boolean
+
+
+def test_list_single_literal():
+    """A single-variant Literal inside list is still quoted."""
+    list_type = list[Literal["only"]]
+    result = _handle_list(get_args(list_type), recursion_depth=0)
+    item = result.terms[1]
+    assert isinstance(item, Alternatives)
+    branch = item.terms[0]
+    assert isinstance(branch, Sequence)
+    assert branch.terms[0] == String('"')
+    assert branch.terms[1] == String("only")
+    assert branch.terms[2] == String('"')
+
+
+def test_dict_literal_value_quoted():
+    """Literal string values (not just keys) in Dict are JSON-quoted."""
+    dict_type = dict[str, Literal["yes", "no"]]
+    result = _handle_dict(get_args(dict_type), recursion_depth=0)
+    inner = result.terms[1]
+    assert isinstance(inner, Optional)
+    value_term = inner.term.terms[2]
+    assert isinstance(value_term, Alternatives)
+    for branch in value_term.terms:
+        assert isinstance(branch, Sequence)
+        assert branch.terms[0] == String('"')
+        assert branch.terms[2] == String('"')
+
+
+def test_tuple_ellipsis_literal_quoted():
+    """Variable-length Tuple with Literal element type is JSON-quoted."""
+    tuple_type = Tuple[Literal["a", "b"], ...]
+    result = _handle_tuple(get_args(tuple_type), recursion_depth=0)
+    assert isinstance(result, Sequence)
+    item = result.terms[1]
+    assert isinstance(item, Alternatives)
+    for branch in item.terms:
+        assert isinstance(branch, Sequence)
+        assert branch.terms[0] == String('"')
+        assert branch.terms[2] == String('"')
+
+
+def test_list_of_bool_unchanged():
+    """Boolean types in List are not wrapped in quotes."""
+    list_type = list[bool]
+    result = _handle_list(get_args(list_type), recursion_depth=0)
+    assert result.terms[1] == types.boolean
+
+
+def test_dict_int_value_unchanged():
+    """Non-string value type in Dict is not wrapped in quotes."""
+    dict_type = dict[str, int]
+    result = _handle_dict(get_args(dict_type), recursion_depth=0)
+    inner = result.terms[1]
+    assert isinstance(inner, Optional)
+    value_term = inner.term.terms[2]
+    assert value_term == types.integer
+
+
+def test_ensure_json_quoted_nested_alternatives():
+    """Nested Alternatives are recursively quoted."""
+    inner_alt = Alternatives([String("x"), String("y")])
+    outer_alt = Alternatives([inner_alt, String("z")])
+    result = _ensure_json_quoted(outer_alt)
+    assert isinstance(result, Alternatives)
+    inner_result = result.terms[0]
+    assert isinstance(inner_result, Alternatives)
+    for branch in inner_result.terms:
+        assert isinstance(branch, Sequence)
+        assert branch.terms[0] == String('"')
+        assert branch.terms[2] == String('"')
+    z_result = result.terms[1]
+    assert isinstance(z_result, Sequence)
+    assert z_result.terms[0] == String('"')
+    assert z_result.terms[1] == String("z")
+
+
+def test_literal_with_special_characters():
+    """Literal strings with spaces and punctuation are quoted correctly."""
+    list_type = list[Literal["hello world", "foo-bar"]]
+    result = _handle_list(get_args(list_type), recursion_depth=0)
+    item = result.terms[1]
+    assert isinstance(item, Alternatives)
+    assert len(item.terms) == 2
+    for branch in item.terms:
+        assert isinstance(branch, Sequence)
+        assert branch.terms[0] == String('"')
+        assert branch.terms[2] == String('"')
 
 
 def test_to_regex():
