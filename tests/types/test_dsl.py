@@ -964,6 +964,122 @@ def test_literal_with_special_characters():
         assert branch.terms[2] == String('"')
 
 
+# ---------------------------------------------------------------------------
+# End-to-end regex tests for JSON quoting in containers
+# These verify the full pipeline: python_types_to_terms → to_regex → re.fullmatch
+# ---------------------------------------------------------------------------
+
+import re as _re
+
+
+def test_e2e_list_literal_matches_quoted_json():
+    """List[Literal[...]] regex matches JSON-quoted strings and rejects bare words."""
+    pattern = to_regex(python_types_to_terms(list[Literal["Paris", "London"]]))
+    assert _re.fullmatch(pattern, '["Paris"]')
+    assert _re.fullmatch(pattern, '["Paris", "London"]')
+    assert _re.fullmatch(pattern, '["London", "Paris", "London"]')
+    assert not _re.fullmatch(pattern, "[Paris]")
+    assert not _re.fullmatch(pattern, "['Paris']")
+
+
+def test_e2e_standalone_literal_no_quotes():
+    """Standalone Literal (not inside container) should NOT add quotes."""
+    pattern = to_regex(python_types_to_terms(Literal["cat", "dog"]))
+    assert _re.fullmatch(pattern, "cat")
+    assert _re.fullmatch(pattern, "dog")
+    assert not _re.fullmatch(pattern, '"cat"')
+
+
+def test_e2e_list_literal_empty_string():
+    """Empty string literal inside List produces quoted empty string."""
+    pattern = to_regex(python_types_to_terms(list[Literal[""]]))
+    assert _re.fullmatch(pattern, '[""]')
+    assert _re.fullmatch(pattern, '["", ""]')
+    assert not _re.fullmatch(pattern, "[]")
+
+
+def test_e2e_list_mixed_literal_string_and_int():
+    """Mixed Literal with string and int: only string values are quoted."""
+    pattern = to_regex(python_types_to_terms(list[Literal["a", 1]]))
+    assert _re.fullmatch(pattern, '["a"]')
+    assert _re.fullmatch(pattern, "[1]")
+    assert _re.fullmatch(pattern, '["a", 1]')
+    assert _re.fullmatch(pattern, '[1, "a"]')
+    assert not _re.fullmatch(pattern, "[a]")
+
+
+def test_e2e_dict_literal_keys_quoted():
+    """Dict with Literal keys produces JSON-quoted keys."""
+    pattern = to_regex(python_types_to_terms(dict[Literal["k1", "k2"], int]))
+    assert _re.fullmatch(pattern, '{"k1":0}')
+    assert _re.fullmatch(pattern, '{"k1":42, "k2":-7}')
+    assert not _re.fullmatch(pattern, "{k1:0}")
+
+
+def test_e2e_dict_literal_values_quoted():
+    """Dict with Literal string values produces JSON-quoted values."""
+    pattern = to_regex(python_types_to_terms(dict[str, Literal["yes", "no"]]))
+    assert _re.fullmatch(pattern, '{"answer":"yes"}')
+    assert _re.fullmatch(pattern, '{"a":"yes", "b":"no"}')
+
+
+def test_e2e_tuple_fixed_literal_quoted():
+    """Fixed-length Tuple with Literal elements produces JSON-quoted strings."""
+    pattern = to_regex(python_types_to_terms(Tuple[Literal["x"], Literal["y"]]))
+    assert _re.fullmatch(pattern, '("x", "y")')
+    assert not _re.fullmatch(pattern, "(x, y)")
+
+
+def test_e2e_tuple_variadic_literal_quoted():
+    """Variable-length Tuple with Literal produces JSON-quoted strings."""
+    pattern = to_regex(python_types_to_terms(Tuple[Literal["a", "b"], ...]))
+    assert _re.fullmatch(pattern, '("a")')
+    assert _re.fullmatch(pattern, '("a", "b", "a")')
+    assert not _re.fullmatch(pattern, "(a)")
+
+
+def test_e2e_list_enum_string_values_quoted():
+    """Enum with string members inside List produces JSON-quoted values."""
+
+    class Color(Enum):
+        RED = "red"
+        BLUE = "blue"
+
+    pattern = to_regex(python_types_to_terms(list[Color]))
+    assert _re.fullmatch(pattern, '["red"]')
+    assert _re.fullmatch(pattern, '["red", "blue"]')
+    assert not _re.fullmatch(pattern, "[red]")
+
+
+def test_e2e_list_int_not_quoted():
+    """List[int] should not have any quoting applied."""
+    pattern = to_regex(python_types_to_terms(list[int]))
+    assert _re.fullmatch(pattern, "[42]")
+    assert _re.fullmatch(pattern, "[1, 2, 3]")
+    assert not _re.fullmatch(pattern, '["1"]')
+
+
+def test_e2e_list_literal_special_characters():
+    """Literal strings with spaces and hyphens are quoted correctly in regex."""
+    pattern = to_regex(python_types_to_terms(list[Literal["hello world", "foo-bar"]]))
+    assert _re.fullmatch(pattern, '["hello world"]')
+    assert _re.fullmatch(pattern, '["hello world", "foo-bar"]')
+    assert not _re.fullmatch(pattern, "[hello world]")
+
+
+def test_e2e_dict_literal_key_and_enum_value():
+    """Dict with Literal keys and Enum values: both quoted."""
+
+    class Status(Enum):
+        ON = "on"
+        OFF = "off"
+
+    pattern = to_regex(python_types_to_terms(dict[Literal["switch"], Status]))
+    assert _re.fullmatch(pattern, '{"switch":"on"}')
+    assert _re.fullmatch(pattern, '{"switch":"off"}')
+    assert not _re.fullmatch(pattern, "{switch:on}")
+
+
 def test_to_regex():
     string_term = String("hello")
     assert to_regex(string_term) == r"hello"
