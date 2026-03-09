@@ -193,4 +193,3 @@ def cache_disabled():
         yield
     finally:
         _caching_enabled = original_state
-
