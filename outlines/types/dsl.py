@@ -812,6 +812,22 @@ def _handle_literal(args: tuple) -> Alternatives:
     return Alternatives([python_types_to_terms(arg) for arg in args])
 
 
+def _ensure_json_quoted(term: Term) -> Term:
+    """Wrap bare ``String`` terms in double quotes for JSON container contexts.
+
+    When string literal values (from ``Literal`` or ``Enum``) appear inside
+    container types (``List``, ``Tuple``, ``Dict``), they must be JSON-quoted
+    so the generated regex matches valid JSON.  ``Regex``-based terms (e.g.
+    ``types.string``) already include their own quotes and are left untouched.
+    """
+    if isinstance(term, String):
+        return Sequence([String('"'), term, String('"')])
+    if isinstance(term, Alternatives):
+        quoted = [_ensure_json_quoted(t) for t in term.terms]
+        return Alternatives(quoted)
+    return term
+
+
 def _handle_union(args: tuple, recursion_depth: int) -> Alternatives:
     # Handle the Optional[T] type
     if len(args) == 2 and (type(None) in args or None in args):
@@ -833,7 +849,7 @@ def _handle_list(args: tuple, recursion_depth: int) -> Sequence:
             "Only homogeneous lists are supported. You should provide exactly "
             + "one argument to `List`, got {args}."
         )
-    item_type = python_types_to_terms(args[0], recursion_depth + 1)
+    item_type = _ensure_json_quoted(python_types_to_terms(args[0], recursion_depth + 1))
     return Sequence(
         [
             String("["),
@@ -848,7 +864,7 @@ def _handle_tuple(args: tuple, recursion_depth: int) -> Union[Sequence, String]:
     if len(args) == 0 or args == ((),):
         return String("()")
     elif len(args) == 2 and args[1] is Ellipsis:
-        item_term = python_types_to_terms(args[0], recursion_depth + 1)
+        item_term = _ensure_json_quoted(python_types_to_terms(args[0], recursion_depth + 1))
         return Sequence(
             [
                 String("("),
@@ -858,7 +874,7 @@ def _handle_tuple(args: tuple, recursion_depth: int) -> Union[Sequence, String]:
             ]
         )
     else:
-        items = [python_types_to_terms(arg, recursion_depth + 1) for arg in args]
+        items = [_ensure_json_quoted(python_types_to_terms(arg, recursion_depth + 1)) for arg in args]
         separator = String(", ")
         elements = []
         for i, item in enumerate(items):
@@ -872,8 +888,8 @@ def _handle_dict(args: tuple, recursion_depth: int) -> Sequence:
     if args is None or len(args) != 2:
         raise TypeError(f"Dict must have exactly two type arguments. Got {args}.")
     # Add dict support with key:value pairs
-    key_type = python_types_to_terms(args[0], recursion_depth + 1)
-    value_type = python_types_to_terms(args[1], recursion_depth + 1)
+    key_type = _ensure_json_quoted(python_types_to_terms(args[0], recursion_depth + 1))
+    value_type = _ensure_json_quoted(python_types_to_terms(args[1], recursion_depth + 1))
     return Sequence(
         [
             String("{"),
