@@ -269,8 +269,6 @@ def test_negative_n_skips_invalid_token():
         tok.__init__(model)
 
     # Token 1 (error) must not appear in the vocabulary
-    assert 1 not in tok.vocabulary.values() or all(
-        v != 1 for k, v in tok.vocabulary.items() if k != ""
-    )
+    assert 1 not in tok.vocabulary.values()
     assert tok.vocabulary["ok"] == 0
     assert tok.eos_token == eos_piece.decode()
