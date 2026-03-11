@@ -305,6 +305,6 @@ class OutlinesCoreBackend(BaseBackend):
             # string representations as outlines core first builds an FSM from
             # the regex provided that only contains regular strings.
             token_as_str = token_to_str(token)
-            formatted_vocab[token_as_str] = [token_id]
+            formatted_vocab.setdefault(token_as_str, []).append(token_id)
         formatted_vocab.pop(eos_token)
         return Vocabulary(eos_token_id, formatted_vocab)
