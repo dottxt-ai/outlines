@@ -1,5 +1,6 @@
 import datetime
 import json
+import re as _re
 import sys
 import tempfile
 from dataclasses import dataclass
@@ -968,8 +969,6 @@ def test_literal_with_special_characters():
 # End-to-end regex tests for JSON quoting in containers
 # These verify the full pipeline: python_types_to_terms → to_regex → re.fullmatch
 # ---------------------------------------------------------------------------
-
-import re as _re
 
 
 def test_e2e_list_literal_matches_quoted_json():
