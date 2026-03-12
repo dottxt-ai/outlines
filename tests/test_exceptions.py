@@ -29,6 +29,7 @@ from outlines.exceptions import (
     RateLimitError,
     ServerError,
     _extract_status_code,
+    is_provider_exception,
     normalize_provider_exception,
 )
 
@@ -208,6 +209,75 @@ class TestNormalizeProviderException:
         # An unrecognised provider name returns {} from _build_exception_map,
         # so only the status-code fallback applies.
         assert isinstance(normalize_provider_exception(self._exc(429), "unknown-provider"), RateLimitError)
+
+
+# ---------------------------------------------------------------------------
+# is_provider_exception
+# ---------------------------------------------------------------------------
+
+class TestIsProviderException:
+    """is_provider_exception must return False for programmer errors and True
+    for genuine provider/transport exceptions."""
+
+    # --- programmer errors must pass through ---
+
+    def test_type_error_is_not_provider(self):
+        assert not is_provider_exception(TypeError("bad arg"), "openai")
+
+    def test_attribute_error_is_not_provider(self):
+        assert not is_provider_exception(AttributeError("no attr"), "openai")
+
+    def test_key_error_is_not_provider(self):
+        assert not is_provider_exception(KeyError("missing"), "openai")
+
+    def test_name_error_is_not_provider(self):
+        assert not is_provider_exception(NameError("undef"), "openai")
+
+    def test_assertion_error_is_not_provider(self):
+        assert not is_provider_exception(AssertionError("assert"), "openai")
+
+    def test_plain_exception_no_status_code_is_not_provider(self):
+        assert not is_provider_exception(Exception("generic"), "openai")
+
+    # --- exceptions with HTTP status codes are treated as provider errors ---
+
+    def test_status_code_429_is_provider(self):
+        class FakeSDKError(Exception):
+            status_code = 429
+        assert is_provider_exception(FakeSDKError(), "openai")
+
+    def test_status_code_500_is_provider(self):
+        class FakeSDKError(Exception):
+            status_code = 500
+        assert is_provider_exception(FakeSDKError(), "unknown-provider")
+
+    def test_status_code_on_response_is_provider(self):
+        class Resp:
+            status_code = 403
+        class FakeSDKError(Exception):
+            response = Resp()
+        assert is_provider_exception(FakeSDKError(), "openai")
+
+    def test_sentinel_minus_one_is_not_provider(self):
+        # ollama.ResponseError uses -1 when status is unknown; should not wrap
+        class FakeSDKError(Exception):
+            status_code = -1
+        assert not is_provider_exception(FakeSDKError(), "ollama")
+
+    # --- known SDK exception classes are caught by the explicit map ---
+
+    def test_openai_sdk_exception_is_provider(self):
+        openai = pytest.importorskip("openai")
+        assert is_provider_exception(Mock(spec=openai.RateLimitError), "openai")
+
+    def test_anthropic_sdk_exception_is_provider(self):
+        anthropic = pytest.importorskip("anthropic")
+        assert is_provider_exception(Mock(spec=anthropic.APITimeoutError), "anthropic")
+
+    # --- unknown provider with no status code falls through ---
+
+    def test_unknown_provider_no_status_code_is_not_provider(self):
+        assert not is_provider_exception(ValueError("oops"), "unknown-provider")
 
 
 # ---------------------------------------------------------------------------

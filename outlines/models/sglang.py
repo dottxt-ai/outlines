@@ -6,7 +6,7 @@ from typing import (
     TYPE_CHECKING, Any, AsyncIterator, Iterator, Optional, Union
 )
 
-from outlines.exceptions import APIError, normalize_provider_exception
+from outlines.exceptions import APIError, is_provider_exception, normalize_provider_exception
 from outlines.inputs import Chat
 from outlines.models.base import AsyncModel, Model, ModelTypeAdapter
 from outlines.models.openai import OpenAITypeAdapter
@@ -140,6 +140,8 @@ class SGLang(Model):
         try:
             response = self.client.chat.completions.create(**client_args)
         except Exception as e:
+            if not is_provider_exception(e, PROVIDER):
+                raise
             raise normalize_provider_exception(e, PROVIDER) from e
 
         messages = [choice.message for choice in response.choices]
@@ -199,6 +201,8 @@ class SGLang(Model):
                 **client_args, stream=True,
             )
         except Exception as e:
+            if not is_provider_exception(e, PROVIDER):
+                raise
             raise normalize_provider_exception(e, PROVIDER) from e
 
         for chunk in stream:  # pragma: no cover
@@ -288,6 +292,8 @@ class AsyncSGLang(AsyncModel):
         try:
             response = await self.client.chat.completions.create(**client_args)
         except Exception as e:
+            if not is_provider_exception(e, PROVIDER):
+                raise
             raise normalize_provider_exception(e, PROVIDER) from e
 
         messages = [choice.message for choice in response.choices]
@@ -348,6 +354,8 @@ class AsyncSGLang(AsyncModel):
                 stream=True,
             )
         except Exception as e:
+            if not is_provider_exception(e, PROVIDER):
+                raise
             raise normalize_provider_exception(e, PROVIDER) from e
 
         async for chunk in stream:  # pragma: no cover

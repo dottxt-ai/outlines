@@ -10,7 +10,7 @@ from typing import (
     get_args,
 )
 
-from outlines.exceptions import APIError, normalize_provider_exception
+from outlines.exceptions import APIError, is_provider_exception, normalize_provider_exception
 from outlines.inputs import Image, Chat
 from outlines.models.base import Model, ModelTypeAdapter
 from outlines.types import CFG, Choice, JsonSchema, Regex
@@ -304,6 +304,8 @@ class Gemini(Model):
                 config={**generation_config, **inference_kwargs}
             )
         except Exception as e:
+            if not is_provider_exception(e, PROVIDER):
+                raise
             raise normalize_provider_exception(e, PROVIDER) from e
 
         return completion.text
@@ -353,6 +355,8 @@ class Gemini(Model):
                 config={**generation_config, **inference_kwargs},
             )
         except Exception as e:
+            if not is_provider_exception(e, PROVIDER):
+                raise
             raise normalize_provider_exception(e, PROVIDER) from e
 
         for chunk in stream:
