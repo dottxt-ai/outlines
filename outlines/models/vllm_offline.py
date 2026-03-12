@@ -4,7 +4,6 @@ import json
 from functools import singledispatchmethod
 from typing import TYPE_CHECKING, Any, List, Optional, Union
 
-from outlines.exceptions import APIError
 from outlines.inputs import Chat
 from outlines.models.base import Model, ModelTypeAdapter
 from outlines.models.openai import OpenAITypeAdapter
@@ -13,8 +12,6 @@ from outlines.types.dsl import CFG, JsonSchema, python_types_to_terms, to_regex
 if TYPE_CHECKING:
     from vllm import LLM
     from vllm.sampling_params import SamplingParams
-
-PROVIDER = "vllm_offline"
 
 __all__ = ["VLLMOffline", "from_vllm_offline"]
 
@@ -174,21 +171,19 @@ class VLLMOffline(Model):
 
         model_input = self.type_adapter.format_input(model_input)
 
-        try:
-            if isinstance(model_input, list):
-                results = self.model.chat(
-                    messages=model_input,
-                    sampling_params=sampling_params,
-                    **inference_kwargs,
-                )
-            else:
-                results = self.model.generate(
-                    prompts=model_input,
-                    sampling_params=sampling_params,
-                    **inference_kwargs,
-                )
-        except Exception as e:
-            raise APIError(provider=PROVIDER, original_exception=e) from e
+        # Local runtime integration: let native exceptions propagate.
+        if isinstance(model_input, list):
+            results = self.model.chat(
+                messages=model_input,
+                sampling_params=sampling_params,
+                **inference_kwargs,
+            )
+        else:
+            results = self.model.generate(
+                prompts=model_input,
+                sampling_params=sampling_params,
+                **inference_kwargs,
+            )
         results = [completion.text for completion in results[0].outputs]
 
         if len(results) == 1:
@@ -229,21 +224,19 @@ class VLLMOffline(Model):
 
         model_inputs = [self.type_adapter.format_input(item) for item in model_input]
 
-        try:
-            if model_inputs and isinstance(model_inputs[0], list):
-                results = self.model.chat(
-                    messages=model_inputs,
-                    sampling_params=sampling_params,
-                    **inference_kwargs,
-                )
-            else:
-                results = self.model.generate(
-                    prompts=model_inputs,
-                    sampling_params=sampling_params,
-                    **inference_kwargs,
-                )
-        except Exception as e:
-            raise APIError(provider=PROVIDER, original_exception=e) from e
+        # Local runtime integration: let native exceptions propagate.
+        if model_inputs and isinstance(model_inputs[0], list):
+            results = self.model.chat(
+                messages=model_inputs,
+                sampling_params=sampling_params,
+                **inference_kwargs,
+            )
+        else:
+            results = self.model.generate(
+                prompts=model_inputs,
+                sampling_params=sampling_params,
+                **inference_kwargs,
+            )
         return [[sample.text for sample in batch.outputs] for batch in results]
 
     def generate_stream(self, model_input, output_type, **inference_kwargs):

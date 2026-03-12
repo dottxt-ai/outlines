@@ -3,7 +3,6 @@
 from functools import singledispatchmethod
 from typing import TYPE_CHECKING, Iterator, List, Optional
 
-from outlines.exceptions import APIError
 from outlines.inputs import Chat
 from outlines.models.base import Model, ModelTypeAdapter
 from outlines.models.tokenizer import _check_hf_chat_template
@@ -13,8 +12,6 @@ from outlines.processors import OutlinesLogitsProcessor
 if TYPE_CHECKING:
     import mlx.nn as nn
     from transformers import PreTrainedTokenizer
-
-PROVIDER = "mlxlm"
 
 __all__ = ["MLXLM", "from_mlxlm"]
 
@@ -151,16 +148,14 @@ class MLXLM(Model):
         """
         from mlx_lm import generate
 
-        try:
-            return generate(
-                self.model,
-                self.mlx_tokenizer,
-                self.type_adapter.format_input(model_input),
-                logits_processors=self.type_adapter.format_output_type(output_type),
-                **kwargs,
-            )
-        except Exception as e:
-            raise APIError(provider=PROVIDER, original_exception=e) from e
+        # Local runtime integration: let native exceptions propagate.
+        return generate(
+            self.model,
+            self.mlx_tokenizer,
+            self.type_adapter.format_input(model_input),
+            logits_processors=self.type_adapter.format_output_type(output_type),
+            **kwargs,
+        )
 
     def generate_batch(
         self,
@@ -212,15 +207,13 @@ class MLXLM(Model):
             for i in range(len(model_input))
         ]
 
-        try:
-            response = batch_generate(
-                self.model,
-                self.mlx_tokenizer,
-                tokenized_model_input,
-                **kwargs,
-            )
-        except Exception as e:
-            raise APIError(provider=PROVIDER, original_exception=e) from e
+        # Local runtime integration: let native exceptions propagate.
+        response = batch_generate(
+            self.model,
+            self.mlx_tokenizer,
+            tokenized_model_input,
+            **kwargs,
+        )
 
         return response.texts
 
@@ -250,17 +243,15 @@ class MLXLM(Model):
         """
         from mlx_lm import stream_generate
 
-        try:
-            for gen_response in stream_generate(
-                self.model,
-                self.mlx_tokenizer,
-                self.type_adapter.format_input(model_input),
-                logits_processors=self.type_adapter.format_output_type(output_type),
-                **kwargs,
-            ):
-                yield gen_response.text
-        except Exception as e:
-            raise APIError(provider=PROVIDER, original_exception=e) from e
+        # Local runtime integration: let native exceptions propagate.
+        for gen_response in stream_generate(
+            self.model,
+            self.mlx_tokenizer,
+            self.type_adapter.format_input(model_input),
+            logits_processors=self.type_adapter.format_output_type(output_type),
+            **kwargs,
+        ):
+            yield gen_response.text
 
 
 def from_mlxlm(model: "nn.Module", tokenizer: "PreTrainedTokenizer") -> MLXLM:

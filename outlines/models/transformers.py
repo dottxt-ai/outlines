@@ -6,7 +6,6 @@ from collections import defaultdict
 from functools import singledispatchmethod
 from typing import TYPE_CHECKING, Any, List, Optional, Tuple, Union
 
-from outlines.exceptions import APIError
 from outlines.inputs import Audio, Chat, Image, Video
 from outlines.models.base import Model, ModelTypeAdapter
 from outlines.models.tokenizer import Tokenizer, _check_hf_chat_template
@@ -20,8 +19,6 @@ if TYPE_CHECKING:
         ProcessorMixin,
         LogitsProcessorList,
     )
-
-PROVIDER = "transformers"
 
 __all__ = ["Transformers", "TransformersMultiModal", "from_transformers"]
 SPIECE_UNDERLINE = "\u2581"
@@ -388,13 +385,11 @@ class Transformers(Model):
     def _generate_output_seq(self, prompts, inputs, **inference_kwargs):
         input_ids = inputs["input_ids"]
 
-        try:
-            output_ids = self.model.generate(
-                **inputs,
-                **inference_kwargs,
-            )
-        except Exception as e:
-            raise APIError(provider=PROVIDER, original_exception=e) from e
+        # Local runtime integration: let native exceptions propagate.
+        output_ids = self.model.generate(
+            **inputs,
+            **inference_kwargs,
+        )
 
         # encoder-decoder returns output_ids only, decoder-only returns full seq ids
         if self.model.config.is_encoder_decoder:

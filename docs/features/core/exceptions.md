@@ -50,6 +50,9 @@ OutlinesError
     `normalize_provider_exception(...)` before re-raising.
     If you call a provider SDK client directly, you should expect provider-native
     exceptions.
+    Local in-process runtimes (`Transformers`, `MLXLM`, and `VLLMOffline`) do not
+    wrap exceptions into `APIError`, but intentionally **propagate native runtime
+    exceptions**.
 
 ```python
 from outlines.exceptions import (
