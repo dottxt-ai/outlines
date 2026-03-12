@@ -25,7 +25,7 @@ from outlines.types.utils import (
     is_pydantic_model,
     is_typed_dict,
 )
-from outlines.exceptions import APIError, is_provider_exception, normalize_provider_exception
+from outlines.exceptions import is_provider_exception, normalize_provider_exception
 
 if TYPE_CHECKING:
     from mistralai import Mistral as MistralClient
