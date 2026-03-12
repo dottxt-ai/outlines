@@ -10,7 +10,7 @@ from typing import (
     get_args,
 )
 
-from outlines.exceptions import APIError, is_provider_exception, normalize_provider_exception
+from outlines.exceptions import is_provider_exception, normalize_provider_exception
 from outlines.inputs import Image, Chat
 from outlines.models.base import Model, ModelTypeAdapter
 from outlines.types import CFG, Choice, JsonSchema, Regex
