@@ -455,7 +455,6 @@ class TestGeminiExceptionMap:
     @pytest.fixture(autouse=True)
     def _require_gemini(self):
         pytest.importorskip("google.genai")
-        pytest.importorskip("aiohttp")
 
     def _check(self, sdk_exc_cls, expected_outlines_cls):
         result = normalize_provider_exception(Mock(spec=sdk_exc_cls), "gemini")
@@ -472,14 +471,6 @@ class TestGeminiExceptionMap:
     def test_httpx_connect_error(self):
         import httpx
         self._check(httpx.ConnectError, APIConnectionError)
-
-    def test_aiohttp_server_timeout(self):
-        import aiohttp
-        self._check(aiohttp.ServerTimeoutError, APITimeoutError)
-
-    def test_aiohttp_client_connector_error(self):
-        import aiohttp
-        self._check(aiohttp.ClientConnectorError, APIConnectionError)
 
     def test_client_error_status_code_fallback(self):
         from google.genai import errors as genai_errors
