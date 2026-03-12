@@ -11,7 +11,7 @@ from typing import (
     cast,
 )
 
-from outlines.exceptions import APIError, is_provider_exception, normalize_provider_exception
+from outlines.exceptions import is_provider_exception, normalize_provider_exception
 from outlines.inputs import Chat, Image
 from outlines.models.base import AsyncModel, Model, ModelTypeAdapter
 from outlines.types import CFG, JsonSchema, Regex

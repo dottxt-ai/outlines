@@ -2,7 +2,7 @@
 
 from typing import TYPE_CHECKING, Any, Optional, cast
 
-from outlines.exceptions import APIError, is_provider_exception, normalize_provider_exception
+from outlines.exceptions import is_provider_exception, normalize_provider_exception
 from outlines.models.base import Model, ModelTypeAdapter
 from outlines.types import CFG, JsonSchema, Regex
 

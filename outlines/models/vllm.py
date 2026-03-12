@@ -3,7 +3,7 @@
 import json
 from typing import TYPE_CHECKING, Any, AsyncIterator, Iterator, Optional, Union
 
-from outlines.exceptions import APIError, is_provider_exception, normalize_provider_exception
+from outlines.exceptions import is_provider_exception, normalize_provider_exception
 from outlines.inputs import Chat
 from outlines.models.base import AsyncModel,Model, ModelTypeAdapter
 from outlines.models.openai import OpenAITypeAdapter

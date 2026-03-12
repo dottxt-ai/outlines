@@ -13,7 +13,7 @@ from functools import singledispatchmethod
 
 from pydantic import BaseModel
 
-from outlines.exceptions import APIError, is_provider_exception, normalize_provider_exception
+from outlines.exceptions import is_provider_exception, normalize_provider_exception
 from outlines.inputs import Chat, Image
 from outlines.models.base import AsyncModel, Model, ModelTypeAdapter
 from outlines.models.utils import set_additional_properties_false_json_schema
