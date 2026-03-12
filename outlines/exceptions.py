@@ -274,7 +274,6 @@ def _build_exception_map(provider: str) -> dict[type, type[APIError]]:
 
     if provider == "gemini":
         import httpx
-        import aiohttp
         from google.genai import errors as genai_errors
         return {
             genai_errors.ServerError: ServerError,
@@ -283,8 +282,6 @@ def _build_exception_map(provider: str) -> dict[type, type[APIError]]:
             # normalize_provider_exception, which maps it to the right subclass.
             httpx.TimeoutException: APITimeoutError,
             httpx.ConnectError: APIConnectionError,
-            aiohttp.ServerTimeoutError: APITimeoutError,
-            aiohttp.ClientConnectorError: APIConnectionError,
         }
 
     if provider == "ollama":
