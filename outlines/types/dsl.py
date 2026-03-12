@@ -821,7 +821,7 @@ def _ensure_json_quoted(term: Term) -> Term:
     ``types.string``) already include their own quotes and are left untouched.
     """
     if isinstance(term, String):
-        return Sequence([String('"'), term, String('"')])
+        return String(f'"{term.value}"')
     if isinstance(term, Alternatives):
         quoted = [_ensure_json_quoted(t) for t in term.terms]
         return Alternatives(quoted)
