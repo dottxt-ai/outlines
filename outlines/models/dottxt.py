@@ -3,7 +3,7 @@
 import json
 from typing import TYPE_CHECKING, Any, Optional, Union, cast
 
-from outlines.exceptions import APIError, normalize_provider_exception
+from outlines.exceptions import APIError, is_provider_exception, normalize_provider_exception
 from outlines.models.base import AsyncModel, Model, ModelTypeAdapter
 from outlines.types import CFG, JsonSchema, Regex
 
@@ -149,6 +149,8 @@ class Dottxt(Model):
                 **inference_kwargs,
             )
         except Exception as e:
+            if not is_provider_exception(e, PROVIDER):
+                raise
             raise normalize_provider_exception(e, PROVIDER) from e
 
         return json.dumps(result)

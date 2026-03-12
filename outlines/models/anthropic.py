@@ -3,7 +3,7 @@
 from functools import singledispatchmethod
 from typing import TYPE_CHECKING, Any, Iterator, Optional, Union
 
-from outlines.exceptions import APIError, normalize_provider_exception
+from outlines.exceptions import APIError, is_provider_exception, normalize_provider_exception
 from outlines.inputs import Chat, Image
 from outlines.models.base import Model, ModelTypeAdapter
 
@@ -195,6 +195,8 @@ class Anthropic(Model):
                 **inference_kwargs,
             )
         except Exception as e:
+            if not is_provider_exception(e, PROVIDER):
+                raise
             raise normalize_provider_exception(e, PROVIDER) from e
         return completion.content[0].text
 
@@ -253,6 +255,8 @@ class Anthropic(Model):
                 **inference_kwargs,
             )
         except Exception as e:
+            if not is_provider_exception(e, PROVIDER):
+                raise
             raise normalize_provider_exception(e, PROVIDER) from e
 
         for chunk in stream:
