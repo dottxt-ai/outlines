@@ -1,6 +1,6 @@
 """Backend class for Outlines Core."""
 
-from typing import Callable, Dict
+from typing import Callable, Dict, List
 
 from outlines_core import Guide, Index, Vocabulary
 from outlines_core.json_schema import build_regex_from_schema
@@ -276,7 +276,7 @@ class OutlinesCoreBackend(BaseBackend):
             The Outlines Core Vocabulary instance.
 
         """
-        formatted_vocab = {}
+        formatted_vocab: Dict[str, List[int]] = {}
         for token, token_id in vocab.items():
             # This step is necessary to transform special tokens into their
             # string representation, in particular for spacing. We need those
