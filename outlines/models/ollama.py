@@ -11,7 +11,7 @@ from typing import (
     cast,
 )
 
-from outlines.exceptions import APIError, normalize_provider_exception
+from outlines.exceptions import APIError, is_provider_exception, normalize_provider_exception
 from outlines.inputs import Chat, Image
 from outlines.models.base import AsyncModel, Model, ModelTypeAdapter
 from outlines.types import CFG, JsonSchema, Regex
@@ -205,6 +205,8 @@ class Ollama(Model):
                 **kwargs,
             )
         except Exception as e:
+            if not is_provider_exception(e, PROVIDER):
+                raise
             raise normalize_provider_exception(e, PROVIDER) from e
 
         return response.message.content
@@ -255,6 +257,8 @@ class Ollama(Model):
                 **kwargs,
             )
         except Exception as e:
+            if not is_provider_exception(e, PROVIDER):
+                raise
             raise normalize_provider_exception(e, PROVIDER) from e
         for chunk in response:
             yield chunk.message.content
@@ -318,6 +322,8 @@ class AsyncOllama(AsyncModel):
                 **kwargs,
             )
         except Exception as e:
+            if not is_provider_exception(e, PROVIDER):
+                raise
             raise normalize_provider_exception(e, PROVIDER) from e
         return response.message.content
 
@@ -367,6 +373,8 @@ class AsyncOllama(AsyncModel):
                 **kwargs,
             )
         except Exception as e:
+            if not is_provider_exception(e, PROVIDER):
+                raise
             raise normalize_provider_exception(e, PROVIDER) from e
         async for chunk in stream:
             yield chunk.message.content

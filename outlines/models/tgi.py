@@ -11,7 +11,7 @@ from typing import (
     Union,
 )
 
-from outlines.exceptions import APIError, normalize_provider_exception
+from outlines.exceptions import APIError, is_provider_exception, normalize_provider_exception
 from outlines.models.base import AsyncModel,Model, ModelTypeAdapter
 from outlines.types.dsl import python_types_to_terms, to_regex, JsonSchema, CFG
 
@@ -143,6 +143,8 @@ class TGI(Model):
         try:
             return self.client.text_generation(**client_args)
         except Exception as e:
+            if not is_provider_exception(e, PROVIDER):
+                raise
             raise normalize_provider_exception(e, PROVIDER) from e
 
     def generate_batch(
@@ -187,6 +189,8 @@ class TGI(Model):
                 **client_args, stream=True,
             )
         except Exception as e:
+            if not is_provider_exception(e, PROVIDER):
+                raise
             raise normalize_provider_exception(e, PROVIDER) from e
 
         for chunk in stream:  # pragma: no cover
@@ -264,6 +268,8 @@ class AsyncTGI(AsyncModel):
         try:
             response = await self.client.text_generation(**client_args)
         except Exception as e:
+            if not is_provider_exception(e, PROVIDER):
+                raise
             raise normalize_provider_exception(e, PROVIDER) from e
 
         return response
@@ -310,6 +316,8 @@ class AsyncTGI(AsyncModel):
                 **client_args, stream=True
             )
         except Exception as e:
+            if not is_provider_exception(e, PROVIDER):
+                raise
             raise normalize_provider_exception(e, PROVIDER) from e
 
         async for chunk in stream:  # pragma: no cover

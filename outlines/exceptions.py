@@ -20,6 +20,7 @@ __all__ = [
     "APIConnectionError",
     "ProviderResponseError",
     "GenerationError",
+    "is_provider_exception",
     "normalize_provider_exception",
 ]
 
@@ -321,6 +322,23 @@ def _build_exception_map(provider: str) -> dict[type, type[APIError]]:
     # Unknown provider: no SDK-specific mapping available.
     # normalize_provider_exception will fall back to status-code inspection.
     return {}
+
+
+def is_provider_exception(exc: Exception, provider: str) -> bool:
+    """Return ``True`` only for provider/transport exceptions we expect to normalize.
+
+    This prevents programmer errors (``TypeError``, ``AttributeError``, etc.)
+    from being silently re-labeled as ``APIError``.
+
+    1. If the exception matches the provider's explicit SDK map → True.
+    2. If the exception carries an HTTP status code → True (covers SDK base
+       classes not listed individually, e.g. ``ollama.ResponseError``).
+    3. Otherwise → False (let it propagate as-is).
+    """
+    exc_map = _build_exception_map(provider)
+    if isinstance(exc, tuple(exc_map.keys())):
+        return True
+    return _extract_status_code(exc) is not None
 
 
 def normalize_provider_exception(exc: Exception, provider: str) -> APIError:

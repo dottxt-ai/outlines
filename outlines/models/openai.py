@@ -13,7 +13,7 @@ from functools import singledispatchmethod
 
 from pydantic import BaseModel
 
-from outlines.exceptions import APIError, normalize_provider_exception
+from outlines.exceptions import APIError, is_provider_exception, normalize_provider_exception
 from outlines.inputs import Chat, Image
 from outlines.models.base import AsyncModel, Model, ModelTypeAdapter
 from outlines.models.utils import set_additional_properties_false_json_schema
@@ -282,6 +282,8 @@ class OpenAI(Model):
                 )
             raise normalize_provider_exception(e, PROVIDER) from e
         except Exception as e:
+            if not is_provider_exception(e, PROVIDER):
+                raise
             raise normalize_provider_exception(e, PROVIDER) from e
 
         messages = [choice.message for choice in result.choices]
@@ -354,6 +356,8 @@ class OpenAI(Model):
                 )
             raise normalize_provider_exception(e, PROVIDER) from e
         except Exception as e:
+            if not is_provider_exception(e, PROVIDER):
+                raise
             raise normalize_provider_exception(e, PROVIDER) from e
 
         for chunk in stream:
@@ -434,6 +438,8 @@ class AsyncOpenAI(AsyncModel):
                 )
             raise normalize_provider_exception(e, PROVIDER) from e
         except Exception as e:
+            if not is_provider_exception(e, PROVIDER):
+                raise
             raise normalize_provider_exception(e, PROVIDER) from e
 
         messages = [choice.message for choice in result.choices]
@@ -506,6 +512,8 @@ class AsyncOpenAI(AsyncModel):
                 )
             raise normalize_provider_exception(e, PROVIDER) from e
         except Exception as e:
+            if not is_provider_exception(e, PROVIDER):
+                raise
             raise normalize_provider_exception(e, PROVIDER) from e
 
         async for chunk in stream:
