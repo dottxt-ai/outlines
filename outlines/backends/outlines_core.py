@@ -94,7 +94,7 @@ class OutlinesCoreLogitsProcessor(OutlinesLogitsProcessor):
         for i in range(batch_size):
             fill_next_token_bitmask(self._guides[i], self._bitmasks[i])
             biased_logits = apply_token_bitmask(
-                self.tensor_adapter.unsqueeze(logits[i]),
+                self.tensor_adapter.unsqueeze(logits[i]), # type: ignore
                 self._bitmasks[i],  # type: ignore
             )
             biased_logits_array.append(biased_logits)
