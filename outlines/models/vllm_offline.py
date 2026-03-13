@@ -171,7 +171,7 @@ class VLLMOffline(Model):
 
         model_input = self.type_adapter.format_input(model_input)
 
-        # Local runtime integration: let native exceptions propagate.
+        # Local runtime: intentionally bypasses outlines.exceptions.normalize_provider_exception().
         if isinstance(model_input, list):
             results = self.model.chat(
                 messages=model_input,
@@ -224,7 +224,7 @@ class VLLMOffline(Model):
 
         model_inputs = [self.type_adapter.format_input(item) for item in model_input]
 
-        # Local runtime integration: let native exceptions propagate.
+        # Local runtime: intentionally bypasses outlines.exceptions.normalize_provider_exception().
         if model_inputs and isinstance(model_inputs[0], list):
             results = self.model.chat(
                 messages=model_inputs,
