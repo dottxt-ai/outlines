@@ -260,8 +260,13 @@ class Ollama(Model):
             if not is_provider_exception(e, PROVIDER):
                 raise
             raise normalize_provider_exception(e, PROVIDER) from e
-        for chunk in response:
-            yield chunk.message.content
+        try:
+            for chunk in response:
+                yield chunk.message.content
+        except Exception as e:
+            if not is_provider_exception(e, PROVIDER):
+                raise
+            raise normalize_provider_exception(e, PROVIDER) from e
 
 
 class AsyncOllama(AsyncModel):
@@ -376,8 +381,13 @@ class AsyncOllama(AsyncModel):
             if not is_provider_exception(e, PROVIDER):
                 raise
             raise normalize_provider_exception(e, PROVIDER) from e
-        async for chunk in stream:
-            yield chunk.message.content
+        try:
+            async for chunk in stream:
+                yield chunk.message.content
+        except Exception as e:
+            if not is_provider_exception(e, PROVIDER):
+                raise
+            raise normalize_provider_exception(e, PROVIDER) from e
 
 
 def from_ollama(

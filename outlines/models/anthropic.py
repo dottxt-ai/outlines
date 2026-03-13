@@ -259,12 +259,17 @@ class Anthropic(Model):
                 raise
             raise normalize_provider_exception(e, PROVIDER) from e
 
-        for chunk in stream:
-            if (
-                chunk.type == "content_block_delta"
-                and chunk.delta.type == "text_delta"
-            ):
-                yield chunk.delta.text
+        try:
+            for chunk in stream:
+                if (
+                    chunk.type == "content_block_delta"
+                    and chunk.delta.type == "text_delta"
+                ):
+                    yield chunk.delta.text
+        except Exception as e:
+            if not is_provider_exception(e, PROVIDER):
+                raise
+            raise normalize_provider_exception(e, PROVIDER) from e
 
 
 def from_anthropic(
