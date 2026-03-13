@@ -193,8 +193,13 @@ class TGI(Model):
                 raise
             raise normalize_provider_exception(e, PROVIDER) from e
 
-        for chunk in stream:  # pragma: no cover
-            yield chunk
+        try:
+            for chunk in stream:  # pragma: no cover
+                yield chunk
+        except Exception as e:
+            if not is_provider_exception(e, PROVIDER):
+                raise
+            raise normalize_provider_exception(e, PROVIDER) from e
 
     def _build_client_args(
         self,
@@ -320,8 +325,13 @@ class AsyncTGI(AsyncModel):
                 raise
             raise normalize_provider_exception(e, PROVIDER) from e
 
-        async for chunk in stream:  # pragma: no cover
-            yield chunk
+        try:
+            async for chunk in stream:  # pragma: no cover
+                yield chunk
+        except Exception as e:
+            if not is_provider_exception(e, PROVIDER):
+                raise
+            raise normalize_provider_exception(e, PROVIDER) from e
 
     def _build_client_args(
         self,

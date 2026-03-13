@@ -205,9 +205,14 @@ class SGLang(Model):
                 raise
             raise normalize_provider_exception(e, PROVIDER) from e
 
-        for chunk in stream:  # pragma: no cover
-            if chunk.choices and chunk.choices[0].delta.content is not None:
-                yield chunk.choices[0].delta.content
+        try:
+            for chunk in stream:  # pragma: no cover
+                if chunk.choices and chunk.choices[0].delta.content is not None:
+                    yield chunk.choices[0].delta.content
+        except Exception as e:
+            if not is_provider_exception(e, PROVIDER):
+                raise
+            raise normalize_provider_exception(e, PROVIDER) from e
 
     def _build_client_args(
         self,
@@ -358,9 +363,14 @@ class AsyncSGLang(AsyncModel):
                 raise
             raise normalize_provider_exception(e, PROVIDER) from e
 
-        async for chunk in stream:  # pragma: no cover
-            if chunk.choices and chunk.choices[0].delta.content is not None:
-                yield chunk.choices[0].delta.content
+        try:
+            async for chunk in stream:  # pragma: no cover
+                if chunk.choices and chunk.choices[0].delta.content is not None:
+                    yield chunk.choices[0].delta.content
+        except Exception as e:
+            if not is_provider_exception(e, PROVIDER):
+                raise
+            raise normalize_provider_exception(e, PROVIDER) from e
 
     def _build_client_args(
         self,
