@@ -1,6 +1,6 @@
 """Backend class for Outlines Core."""
 
-from typing import Callable, Dict
+from typing import Callable, Dict, Union
 
 from outlines_core import Guide, Index, Vocabulary
 from outlines_core.json_schema import build_regex_from_schema
@@ -89,7 +89,7 @@ class OutlinesCoreLogitsProcessor(OutlinesLogitsProcessor):
         ]
 
     def _bias_logits_mlx( # pragma: no cover
-        self, batch_size: int, logits: TensorType
+        self, batch_size: int, logits: TensorType, skip: list[bool]
     ) -> TensorType:
         """Bias the logits for MLX tensors."""
         from outlines_core.kernels.mlx import (
@@ -99,6 +99,9 @@ class OutlinesCoreLogitsProcessor(OutlinesLogitsProcessor):
 
         biased_logits_array = []
         for i in range(batch_size):
+            if skip[i]:
+                biased_logits_array.append(logits[i])
+                continue
             fill_next_token_bitmask(self._guides[i], self._bitmasks[i])
             biased_logits = apply_token_bitmask(
                 self.tensor_adapter.unsqueeze(logits[i]), self._bitmasks[i] # type: ignore
@@ -108,7 +111,7 @@ class OutlinesCoreLogitsProcessor(OutlinesLogitsProcessor):
         return self.tensor_adapter.concatenate(biased_logits_array)
 
     def _bias_logits_torch(
-        self, batch_size: int, logits: TensorType
+        self, batch_size: int, logits: TensorType, skip: list[bool]
     ) -> TensorType:
         """Bias the logits for Torch tensors."""
         from outlines_core.kernels.torch import (
@@ -117,6 +120,8 @@ class OutlinesCoreLogitsProcessor(OutlinesLogitsProcessor):
         )
 
         for i in range(batch_size):
+            if skip[i]:
+                continue
             fill_next_token_bitmask(self._guides[i], self._bitmasks[i])
             self._bitmasks[i] = self.tensor_adapter.to_device(
                 self._bitmasks[i],
@@ -134,7 +139,7 @@ class OutlinesCoreLogitsProcessor(OutlinesLogitsProcessor):
         return logits
 
     def _bias_logits_numpy(
-        self, batch_size: int, logits: TensorType
+        self, batch_size: int, logits: TensorType, skip: list[bool]
     ) -> TensorType:
         """Bias the logits for Numpy tensors."""
         from outlines_core.kernels.numpy import (
@@ -143,6 +148,8 @@ class OutlinesCoreLogitsProcessor(OutlinesLogitsProcessor):
         )
 
         for i in range(batch_size):
+            if skip[i]:
+                continue
             fill_next_token_bitmask(self._guides[i], self._bitmasks[i])
             apply_token_bitmask_inplace(
                 self.tensor_adapter.unsqueeze(logits[i]), # type: ignore
@@ -152,7 +159,7 @@ class OutlinesCoreLogitsProcessor(OutlinesLogitsProcessor):
         return logits
 
     def process_logits(
-        self, input_ids: TensorType, logits: TensorType
+        self, input_ids: TensorType, logits: TensorType, skip: Union[list[bool], None] = None
     ) -> TensorType:
         """Use the guides to bias the logits.
 
@@ -172,11 +179,16 @@ class OutlinesCoreLogitsProcessor(OutlinesLogitsProcessor):
         batch_size = self.tensor_adapter.shape(input_ids)[0]
         vocab_size = self.tensor_adapter.shape(logits)[1]
 
+        if skip is None:
+            skip = [False] * batch_size
+
         if self.is_first_token:
             self._setup(batch_size, vocab_size)
             self.is_first_token = False
         else:
             for i in range(batch_size):
+                if skip[i]:
+                    continue
                 last_token_id = self.tensor_adapter.to_scalar(input_ids[i][-1]) # type: ignore
                 # This circumvents issue #227 in outlines_core
                 # Ideally, we would be able to advance all the times as the final
@@ -190,7 +202,7 @@ class OutlinesCoreLogitsProcessor(OutlinesLogitsProcessor):
                         return_tokens=False
                     )
 
-        return self.bias_logits(batch_size, logits)
+        return self.bias_logits(batch_size, logits, skip)
 
 
 class OutlinesCoreBackend(BaseBackend):
