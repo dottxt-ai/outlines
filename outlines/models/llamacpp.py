@@ -114,7 +114,10 @@ class LlamaCppTokenizer(Tokenizer):
 
     def convert_token_to_string(self, token: str) -> str:
         if self._hf_tokenizer is not None:
-            from transformers.file_utils import SPIECE_UNDERLINE
+            try:
+                from transformers.file_utils import SPIECE_UNDERLINE
+            except ImportError:
+                SPIECE_UNDERLINE = "\u2581"
 
             token_str = self._hf_tokenizer.convert_tokens_to_string([token])
             if (

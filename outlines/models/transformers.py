@@ -99,7 +99,10 @@ class TransformerTokenizer(Tokenizer):
         return text
 
     def convert_token_to_string(self, token: str) -> str:
-        from transformers.file_utils import SPIECE_UNDERLINE
+        try:
+            from transformers.file_utils import SPIECE_UNDERLINE
+        except ImportError:
+            SPIECE_UNDERLINE = "\u2581"
 
         string = self.tokenizer.convert_tokens_to_string([token])
 
