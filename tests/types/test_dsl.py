@@ -792,8 +792,8 @@ def test_ensure_json_quoted_string():
     """String terms are wrapped in double-quote delimiters."""
     term = String("hello")
     result = _ensure_json_quoted(term)
-    assert isinstance(result, Sequence)
-    assert result.terms == [String('"'), String("hello"), String('"')]
+    assert isinstance(result, String)
+    assert result == String('"hello"')
 
 
 def test_ensure_json_quoted_alternatives():
@@ -803,9 +803,8 @@ def test_ensure_json_quoted_alternatives():
     assert isinstance(result, Alternatives)
     assert len(result.terms) == 2
     for branch in result.terms:
-        assert isinstance(branch, Sequence)
-        assert branch.terms[0] == String('"')
-        assert branch.terms[2] == String('"')
+        assert isinstance(branch, String)
+        assert branch.value.startswith('"') and branch.value.endswith('"')
 
 
 def test_ensure_json_quoted_passthrough():
@@ -826,9 +825,8 @@ def test_list_of_literals_quoted():
     item = result.terms[1]
     assert isinstance(item, Alternatives)
     for branch in item.terms:
-        assert isinstance(branch, Sequence)
-        assert branch.terms[0] == String('"')
-        assert branch.terms[2] == String('"')
+        assert isinstance(branch, String)
+        assert branch.value.startswith('"') and branch.value.endswith('"')
 
 
 def test_tuple_of_literals_quoted():
@@ -839,8 +837,8 @@ def test_tuple_of_literals_quoted():
     assert result.terms[0] == String("(")
     first_item = result.terms[1]
     assert isinstance(first_item, Alternatives)
-    assert isinstance(first_item.terms[0], Sequence)
-    assert first_item.terms[0].terms[0] == String('"')
+    assert isinstance(first_item.terms[0], String)
+    assert first_item.terms[0].value.startswith('"')
 
 
 def test_dict_literal_key_quoted():
@@ -853,8 +851,8 @@ def test_dict_literal_key_quoted():
     key_term = inner.term.terms[0]
     assert isinstance(key_term, Alternatives)
     for branch in key_term.terms:
-        assert isinstance(branch, Sequence)
-        assert branch.terms[0] == String('"')
+        assert isinstance(branch, String)
+        assert branch.value.startswith('"') and branch.value.endswith('"')
 
 
 def test_list_of_int_unchanged():
@@ -884,10 +882,8 @@ def test_list_single_literal():
     item = result.terms[1]
     assert isinstance(item, Alternatives)
     branch = item.terms[0]
-    assert isinstance(branch, Sequence)
-    assert branch.terms[0] == String('"')
-    assert branch.terms[1] == String("only")
-    assert branch.terms[2] == String('"')
+    assert isinstance(branch, String)
+    assert branch == String('"only"')
 
 
 def test_dict_literal_value_quoted():
@@ -899,9 +895,8 @@ def test_dict_literal_value_quoted():
     value_term = inner.term.terms[2]
     assert isinstance(value_term, Alternatives)
     for branch in value_term.terms:
-        assert isinstance(branch, Sequence)
-        assert branch.terms[0] == String('"')
-        assert branch.terms[2] == String('"')
+        assert isinstance(branch, String)
+        assert branch.value.startswith('"') and branch.value.endswith('"')
 
 
 def test_tuple_ellipsis_literal_quoted():
@@ -912,9 +907,8 @@ def test_tuple_ellipsis_literal_quoted():
     item = result.terms[1]
     assert isinstance(item, Alternatives)
     for branch in item.terms:
-        assert isinstance(branch, Sequence)
-        assert branch.terms[0] == String('"')
-        assert branch.terms[2] == String('"')
+        assert isinstance(branch, String)
+        assert branch.value.startswith('"') and branch.value.endswith('"')
 
 
 def test_list_of_bool_unchanged():
@@ -943,13 +937,11 @@ def test_ensure_json_quoted_nested_alternatives():
     inner_result = result.terms[0]
     assert isinstance(inner_result, Alternatives)
     for branch in inner_result.terms:
-        assert isinstance(branch, Sequence)
-        assert branch.terms[0] == String('"')
-        assert branch.terms[2] == String('"')
+        assert isinstance(branch, String)
+        assert branch.value.startswith('"') and branch.value.endswith('"')
     z_result = result.terms[1]
-    assert isinstance(z_result, Sequence)
-    assert z_result.terms[0] == String('"')
-    assert z_result.terms[1] == String("z")
+    assert isinstance(z_result, String)
+    assert z_result == String('"z"')
 
 
 def test_literal_with_special_characters():
@@ -960,9 +952,8 @@ def test_literal_with_special_characters():
     assert isinstance(item, Alternatives)
     assert len(item.terms) == 2
     for branch in item.terms:
-        assert isinstance(branch, Sequence)
-        assert branch.terms[0] == String('"')
-        assert branch.terms[2] == String('"')
+        assert isinstance(branch, String)
+        assert branch.value.startswith('"') and branch.value.endswith('"')
 
 
 # ---------------------------------------------------------------------------
