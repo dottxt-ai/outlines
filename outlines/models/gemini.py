@@ -359,9 +359,14 @@ class Gemini(Model):
                 raise
             raise normalize_provider_exception(e, PROVIDER) from e
 
-        for chunk in stream:
-            if hasattr(chunk, "text") and chunk.text:
-                yield chunk.text
+        try:
+            for chunk in stream:
+                if hasattr(chunk, "text") and chunk.text:
+                    yield chunk.text
+        except Exception as e:
+            if not is_provider_exception(e, PROVIDER):
+                raise
+            raise normalize_provider_exception(e, PROVIDER) from e
 
 
 def from_gemini(client: "Client", model_name: Optional[str] = None) -> Gemini:

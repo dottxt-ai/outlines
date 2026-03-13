@@ -404,13 +404,18 @@ class Mistral(Model):
                 raise
             raise normalize_provider_exception(e, PROVIDER) from e
 
-        for chunk in stream:
-            if (
-                hasattr(chunk, "data")
-                and chunk.data.choices
-                and chunk.data.choices[0].delta.content is not None
-            ):
-                yield chunk.data.choices[0].delta.content
+        try:
+            for chunk in stream:
+                if (
+                    hasattr(chunk, "data")
+                    and chunk.data.choices
+                    and chunk.data.choices[0].delta.content is not None
+                ):
+                    yield chunk.data.choices[0].delta.content
+        except Exception as e:
+            if not is_provider_exception(e, PROVIDER):
+                raise
+            raise normalize_provider_exception(e, PROVIDER) from e
 
 
 class AsyncMistral(AsyncModel):
@@ -545,15 +550,20 @@ class AsyncMistral(AsyncModel):
                 raise
             raise normalize_provider_exception(e, PROVIDER) from e
 
-        async for chunk in response:
-            if (
-                hasattr(chunk, "data")
-                and chunk.data.choices
-                and len(chunk.data.choices) > 0
-                and hasattr(chunk.data.choices[0], "delta")
-                and chunk.data.choices[0].delta.content is not None
-            ):
-                yield chunk.data.choices[0].delta.content
+        try:
+            async for chunk in response:
+                if (
+                    hasattr(chunk, "data")
+                    and chunk.data.choices
+                    and len(chunk.data.choices) > 0
+                    and hasattr(chunk.data.choices[0], "delta")
+                    and chunk.data.choices[0].delta.content is not None
+                ):
+                    yield chunk.data.choices[0].delta.content
+        except Exception as e:
+            if not is_provider_exception(e, PROVIDER):
+                raise
+            raise normalize_provider_exception(e, PROVIDER) from e
 
 
 def from_mistral(
