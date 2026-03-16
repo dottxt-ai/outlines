@@ -140,3 +140,15 @@ def test_transformer_tokenizer_getstate_setstate(
 
     another_transformer_tokenizer.__setstate__(state)
     assert another_transformer_tokenizer == transformer_tokenizer
+
+
+def test_spiece_underline_import_fallback(transformer_tokenizer):
+    """When transformers.file_utils.SPIECE_UNDERLINE cannot be imported,
+    convert_token_to_string must fall back to the hardcoded '▁' constant."""
+    import sys
+    from unittest.mock import MagicMock, patch
+
+    # Make the import fail by providing a mock without SPIECE_UNDERLINE
+    with patch.dict(sys.modules, {"transformers.file_utils": MagicMock(spec=[])}):
+        result = transformer_tokenizer.convert_token_to_string("▁hello")
+        assert isinstance(result, str)

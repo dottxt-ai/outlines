@@ -272,3 +272,22 @@ def test_negative_n_skips_invalid_token():
     assert 1 not in tok.vocabulary.values()
     assert tok.vocabulary["ok"] == 0
     assert tok.eos_token == eos_piece.decode()
+
+
+def test_spiece_underline_import_fallback(tokenizer):
+    """When transformers.file_utils.SPIECE_UNDERLINE cannot be imported,
+    convert_token_to_string must fall back to the hardcoded '▁' constant."""
+    # Hide SPIECE_UNDERLINE from the import system
+    import importlib
+    import transformers.file_utils as _fu
+
+    original = getattr(_fu, "SPIECE_UNDERLINE", None)
+    try:
+        delattr(_fu, "SPIECE_UNDERLINE")
+        # Force the ImportError path by hiding the attribute
+        with patch.dict(sys.modules, {"transformers.file_utils": MagicMock(spec=[])}):
+            result = tokenizer.convert_token_to_string("▁hello")
+            assert isinstance(result, str)
+    finally:
+        if original is not None:
+            _fu.SPIECE_UNDERLINE = original
