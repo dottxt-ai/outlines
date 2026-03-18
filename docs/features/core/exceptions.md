@@ -4,7 +4,17 @@ title: Error Handling
 
 # Error Handling
 
-Outlines maps provider SDK exceptions (Mistral, OpenAI, etc) to a common typed hierarchy under `OutlinesError` so you can catch specific error types without inspecting raw SDK exceptions.
+Native runtime exceptions are preserved for the following in-process local
+runtimes:
+
+  * `LlamaCpp`
+  * `MLXLM`
+  * `transformers`
+  * `LMStudio`
+
+But for the remaining **API-backed integrations** (Mistral, OpenAI, Ollama,
+etc), Outlines provides a common exception hierarchy under `OutlinesError`, as
+follows.
 
 ## Exception hierarchy
 
@@ -42,17 +52,7 @@ OutlinesError
 
 ## Usage
 
-!!! note
-
-    The exception normalization in this page happens inside Outlines model wrappers
-    (for example, `outlines.models.mistral.Mistral` and
-	`outlines.models.openai.OpenAI`), which call
-    `normalize_provider_exception(...)` before re-raising.
-    If you call a provider SDK client directly, you should expect provider-native
-    exceptions.
-    Local in-process runtimes (`Transformers`, `MLXLM`, and `VLLMOffline`) do not
-    wrap exceptions into `APIError`, but intentionally **propagate native runtime
-    exceptions**.
+Normalized `APIError` subclasses are raised by Outlines model wrappers; if you call a provider SDK directly, you should expect provider-native exceptions instead.
 
 ```python
 from outlines.exceptions import (
