@@ -24,6 +24,11 @@ if TYPE_CHECKING:
 
 __all__ = ["LlamaCpp", "from_llamacpp"]
 
+# SPIECE_UNDERLINE is U+2581 "▁", the SentencePiece word-start token prefix.
+# Defined here directly instead of importing from transformers.file_utils,
+# which is an internal/unstable API that may be removed in future versions.
+SPIECE_UNDERLINE = "\u2581"
+
 
 class LlamaCppTokenizer(Tokenizer):
     def __init__(self, model: "Llama"):
@@ -114,8 +119,6 @@ class LlamaCppTokenizer(Tokenizer):
 
     def convert_token_to_string(self, token: str) -> str:
         if self._hf_tokenizer is not None:
-            from transformers.file_utils import SPIECE_UNDERLINE
-
             token_str = self._hf_tokenizer.convert_tokens_to_string([token])
             if (
                 token.startswith(SPIECE_UNDERLINE)

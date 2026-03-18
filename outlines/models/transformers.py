@@ -22,6 +22,11 @@ if TYPE_CHECKING:
 
 __all__ = ["Transformers", "TransformersMultiModal", "from_transformers"]
 
+# SPIECE_UNDERLINE is U+2581 "▁", the SentencePiece word-start token prefix.
+# Defined here directly instead of importing from transformers.file_utils,
+# which is an internal/unstable API that may be removed in future versions.
+SPIECE_UNDERLINE = "\u2581"
+
 
 def get_llama_tokenizer_types():
     """Get all the Llama tokenizer types/classes that need work-arounds.
@@ -99,8 +104,6 @@ class TransformerTokenizer(Tokenizer):
         return text
 
     def convert_token_to_string(self, token: str) -> str:
-        from transformers.file_utils import SPIECE_UNDERLINE
-
         string = self.tokenizer.convert_tokens_to_string([token])
 
         if token.startswith(SPIECE_UNDERLINE) or token == "<0x20>":
