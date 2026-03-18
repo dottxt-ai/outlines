@@ -13,7 +13,7 @@ from outlines.inputs import Chat, Image, Video
 from outlines.models.minimax import AsyncMiniMax, MiniMax, _clamp_temperature, _strip_thinking
 from outlines.types import json_schema
 
-MODEL_NAME = "MiniMax-M2.5"
+MODEL_NAME = "MiniMax-M2.7"
 MINIMAX_BASE_URL = "https://api.minimax.io/v1"
 
 
@@ -145,10 +145,10 @@ def test_strip_thinking_plain_code_block():
 def test_minimax_init_from_client(api_key):
     client = OpenAIClient(api_key=api_key, base_url=MINIMAX_BASE_URL)
 
-    model = outlines.from_minimax(client, "MiniMax-M2.5")
+    model = outlines.from_minimax(client, "MiniMax-M2.7")
     assert isinstance(model, MiniMax)
     assert model.client == client
-    assert model.model_name == "MiniMax-M2.5"
+    assert model.model_name == "MiniMax-M2.7"
 
     model = outlines.from_minimax(client)
     assert isinstance(model, MiniMax)
@@ -159,10 +159,10 @@ def test_minimax_init_from_client(api_key):
 def test_minimax_async_init_from_client(api_key):
     client = AsyncOpenAIClient(api_key=api_key, base_url=MINIMAX_BASE_URL)
 
-    model = outlines.from_minimax(client, "MiniMax-M2.5")
+    model = outlines.from_minimax(client, "MiniMax-M2.7")
     assert isinstance(model, AsyncMiniMax)
     assert model.client == client
-    assert model.model_name == "MiniMax-M2.5"
+    assert model.model_name == "MiniMax-M2.7"
 
     model = outlines.from_minimax(client)
     assert isinstance(model, AsyncMiniMax)

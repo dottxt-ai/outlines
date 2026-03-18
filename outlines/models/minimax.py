@@ -6,7 +6,7 @@ endpoint, and adds MiniMax-specific behaviour:
 
 * **Temperature clamping** – the API requires temperature to be in the
   open-closed interval (0.0, 1.0].
-* **Thinking-tag stripping** – MiniMax M2.5 models may include
+* **Thinking-tag stripping** – MiniMax models may include
   ``<think>…</think>`` reasoning traces in their output.  These are
   automatically removed before returning the generated text.
 * **JSON-object mode** – MiniMax supports ``response_format``
@@ -14,8 +14,10 @@ endpoint, and adds MiniMax-specific behaviour:
   ``MiniMaxTypeAdapter`` transparently falls back to ``json_object``
   when a JSON schema is requested.
 
-Available models include ``MiniMax-M2.5`` and ``MiniMax-M2.5-highspeed``,
-both supporting a 204K context window.
+Available models include ``MiniMax-M2.7`` (default, latest flagship
+model with enhanced reasoning and coding), ``MiniMax-M2.7-highspeed``
+(high-speed version of M2.7 for low-latency scenarios),
+``MiniMax-M2.5``, and ``MiniMax-M2.5-highspeed``.
 """
 
 import re
@@ -407,7 +409,7 @@ def from_minimax(
             api_key="YOUR_MINIMAX_API_KEY",
             base_url="https://api.minimax.io/v1",
         )
-        model = outlines.from_minimax(client, "MiniMax-M2.5")
+        model = outlines.from_minimax(client, "MiniMax-M2.7")
 
     Parameters
     ----------
@@ -415,8 +417,8 @@ def from_minimax(
         An ``openai.OpenAI`` or ``openai.AsyncOpenAI`` instance whose
         ``base_url`` is set to the MiniMax endpoint.
     model_name
-        The MiniMax model to use, e.g. ``"MiniMax-M2.5"`` or
-        ``"MiniMax-M2.5-highspeed"``.
+        The MiniMax model to use, e.g. ``"MiniMax-M2.7"`` or
+        ``"MiniMax-M2.7-highspeed"``.
 
     Returns
     -------

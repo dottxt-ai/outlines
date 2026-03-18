@@ -244,8 +244,8 @@ def test_clamp_temperature_boundary_values():
 
 def test_clamp_temperature_preserves_other_kwargs():
     """Ensure clamping does not discard unrelated kwargs."""
-    kwargs = {"temperature": 0, "max_tokens": 512, "model": "MiniMax-M2.5"}
+    kwargs = {"temperature": 0, "max_tokens": 512, "model": "MiniMax-M2.7"}
     result = _clamp_temperature(kwargs)
     assert result["temperature"] == 0.01
     assert result["max_tokens"] == 512
-    assert result["model"] == "MiniMax-M2.5"
+    assert result["model"] == "MiniMax-M2.7"
