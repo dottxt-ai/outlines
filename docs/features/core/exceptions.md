@@ -4,21 +4,15 @@ title: Error Handling
 
 # Error Handling
 
-Native runtime exceptions are preserved for the following in-process local
-runtimes:
+For server-based models, Outlines provides a common exception hierarchy under `OutlinesError`.
 
-  * `LlamaCpp`
-  * `MLXLM`
-  * `transformers`
-  * `LMStudio`
+For local models, native runtime exceptions are preserved (see list of local and server-based models at [Model Types](../models/index.md#model-types)).
 
-But for the remaining **API-backed integrations** (Mistral, OpenAI, Ollama,
-etc), Outlines provides a common exception hierarchy under `OutlinesError`, as
-follows.
+Exceptions normalization covers both sync and async modes, and both `generate` and `generate_stream()` (or equivalent) methods.
 
-## Exception hierarchy
+## Exception Hierarchy
 
-All classes live in `outlines.exceptions`.
+The common exception classes live in `outlines.exceptions`.
 
 ```
 OutlinesError
@@ -35,7 +29,7 @@ OutlinesError
     └── GenerationError
 ```
 
-## Reference
+## Quick Reference
 
 | Class                   | Category            | HTTP status(es)               | Suggested user action                                                                       |
 | ----------------------- | ------------------- | ----------------------------- | ------------------------------------------------------------------------------------------- |
@@ -77,7 +71,7 @@ except APIError as e:
         raise
 ```
 
-## `retryable` flag
+## `retryable` Flag
 
 Four exception types set `retryable = True`: `RateLimitError`, `ServerError`, `APITimeoutError`, and `APIConnectionError`. You can branch on this attribute without hardcoding a list of types:
 
@@ -90,7 +84,7 @@ except APIError as e:
         raise
 ```
 
-## Available attributes
+## Available Attributes
 
 Every `APIError` instance exposes:
 
