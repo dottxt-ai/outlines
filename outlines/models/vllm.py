@@ -3,7 +3,7 @@
 import json
 from typing import TYPE_CHECKING, Any, AsyncIterator, Iterator, Optional, Union
 
-from outlines.exceptions import is_provider_exception, normalize_provider_exception
+from outlines.exceptions import GenerationError, is_provider_exception, normalize_provider_exception
 from outlines.inputs import Chat
 from outlines.models.base import AsyncModel,Model, ModelTypeAdapter
 from outlines.models.openai import OpenAITypeAdapter
@@ -134,9 +134,10 @@ class VLLM(Model):
         messages = [choice.message for choice in response.choices]
         for message in messages:
             if message.refusal is not None:  # pragma: no cover
-                raise ValueError(
+                raise GenerationError(
                     f"The vLLM server refused to answer the request: "
-                    f"{message.refusal}"
+                    f"{message.refusal}",
+                    provider=PROVIDER,
                 )
 
         if len(messages) == 1:
@@ -288,9 +289,10 @@ class AsyncVLLM(AsyncModel):
         messages = [choice.message for choice in response.choices]
         for message in messages:
             if message.refusal is not None:  # pragma: no cover
-                raise ValueError(
+                raise GenerationError(
                     f"The vLLM server refused to answer the request: "
-                    f"{message.refusal}"
+                    f"{message.refusal}",
+                    provider=PROVIDER,
                 )
 
         if len(messages) == 1:
