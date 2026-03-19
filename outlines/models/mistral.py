@@ -25,7 +25,7 @@ from outlines.types.utils import (
     is_pydantic_model,
     is_typed_dict,
 )
-from outlines.exceptions import is_provider_exception, normalize_provider_exception
+from outlines.exceptions import BadRequestError, is_provider_exception, normalize_provider_exception
 
 if TYPE_CHECKING:
     from mistralai import Mistral as MistralClient
@@ -334,10 +334,12 @@ class Mistral(Model):
             )
         except Exception as e:
             if "schema" in str(e).lower() or "json_schema" in str(e).lower():
-                raise TypeError(
+                raise BadRequestError(
                     f"Mistral does not support your schema: {e}. "
-                    "Try a local model or dottxt instead."
-                )
+                    "Try a local model or dottxt instead.",
+                    provider=PROVIDER,
+                    original_exception=e,
+                ) from e
             if not is_provider_exception(e, PROVIDER):
                 raise
             raise normalize_provider_exception(e, PROVIDER) from e
@@ -396,10 +398,12 @@ class Mistral(Model):
             )
         except Exception as e:
             if "schema" in str(e).lower() or "json_schema" in str(e).lower():
-                raise TypeError(
+                raise BadRequestError(
                     f"Mistral does not support your schema: {e}. "
-                    "Try a local model or dottxt instead."
-                )
+                    "Try a local model or dottxt instead.",
+                    provider=PROVIDER,
+                    original_exception=e,
+                ) from e
             if not is_provider_exception(e, PROVIDER):
                 raise
             raise normalize_provider_exception(e, PROVIDER) from e
@@ -480,10 +484,12 @@ class AsyncMistral(AsyncModel):
             )
         except Exception as e:
             if "schema" in str(e).lower() or "json_schema" in str(e).lower():
-                raise TypeError(
+                raise BadRequestError(
                     f"Mistral does not support your schema: {e}. "
-                    "Try a local model or dottxt instead."
-                )
+                    "Try a local model or dottxt instead.",
+                    provider=PROVIDER,
+                    original_exception=e,
+                ) from e
             if not is_provider_exception(e, PROVIDER):
                 raise
             raise normalize_provider_exception(e, PROVIDER) from e
@@ -542,10 +548,12 @@ class AsyncMistral(AsyncModel):
             )
         except Exception as e:
             if "schema" in str(e).lower() or "json_schema" in str(e).lower():
-                raise TypeError(
+                raise BadRequestError(
                     f"Mistral does not support your schema: {e}. "
-                    "Try a local model or dottxt instead."
-                )
+                    "Try a local model or dottxt instead.",
+                    provider=PROVIDER,
+                    original_exception=e,
+                ) from e
             if not is_provider_exception(e, PROVIDER):
                 raise
             raise normalize_provider_exception(e, PROVIDER) from e
