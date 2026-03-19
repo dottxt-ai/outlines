@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, patch
 import llama_cpp
 import transformers
 
-from outlines.models.llamacpp import LlamaCppTokenizer
+from outlines.models.llamacpp import LlamaCppTokenizer, SPIECE_UNDERLINE
 
 
 @pytest.fixture
@@ -274,20 +274,10 @@ def test_negative_n_skips_invalid_token():
     assert tok.eos_token == eos_piece.decode()
 
 
-def test_spiece_underline_import_fallback(tokenizer):
-    """When transformers.file_utils.SPIECE_UNDERLINE cannot be imported,
-    convert_token_to_string must fall back to the hardcoded '▁' constant."""
-    # Hide SPIECE_UNDERLINE from the import system
-    import importlib
-    import transformers.file_utils as _fu
+def test_spiece_underline_constant():
+    token = f"{SPIECE_UNDERLINE}hello"
+    tokenizer = LlamaCppTokenizer.__new__(LlamaCppTokenizer)
+    tokenizer._hf_tokenizer = MagicMock()
+    tokenizer._hf_tokenizer.convert_tokens_to_string.return_value = "hello"
 
-    original = getattr(_fu, "SPIECE_UNDERLINE", None)
-    try:
-        delattr(_fu, "SPIECE_UNDERLINE")
-        # Force the ImportError path by hiding the attribute
-        with patch.dict(sys.modules, {"transformers.file_utils": MagicMock(spec=[])}):
-            result = tokenizer.convert_token_to_string("▁hello")
-            assert isinstance(result, str)
-    finally:
-        if original is not None:
-            _fu.SPIECE_UNDERLINE = original
+    assert tokenizer.convert_token_to_string(token) == " hello"

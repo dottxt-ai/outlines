@@ -21,6 +21,7 @@ if TYPE_CHECKING:
     )
 
 __all__ = ["Transformers", "TransformersMultiModal", "from_transformers"]
+SPIECE_UNDERLINE = "\u2581"
 
 
 def get_llama_tokenizer_types():
@@ -99,11 +100,6 @@ class TransformerTokenizer(Tokenizer):
         return text
 
     def convert_token_to_string(self, token: str) -> str:
-        try:
-            from transformers.file_utils import SPIECE_UNDERLINE
-        except ImportError:
-            SPIECE_UNDERLINE = "\u2581"
-
         string = self.tokenizer.convert_tokens_to_string([token])
 
         if token.startswith(SPIECE_UNDERLINE) or token == "<0x20>":
