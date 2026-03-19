@@ -13,7 +13,7 @@ from functools import singledispatchmethod
 
 from pydantic import BaseModel
 
-from outlines.exceptions import BadRequestError, is_provider_exception, normalize_provider_exception
+from outlines.exceptions import BadRequestError, GenerationError, is_provider_exception, normalize_provider_exception
 from outlines.inputs import Chat, Image
 from outlines.models.base import AsyncModel, Model, ModelTypeAdapter
 from outlines.models.utils import set_additional_properties_false_json_schema
@@ -291,8 +291,9 @@ class OpenAI(Model):
         messages = [choice.message for choice in result.choices]
         for message in messages:
             if message.refusal is not None:
-                raise ValueError(
-                    f"OpenAI refused to answer the request: {message.refusal}"
+                raise GenerationError(
+                    f"OpenAI refused to answer the request: {message.refusal}",
+                    provider=PROVIDER,
                 )
 
         if len(messages) == 1:
@@ -456,8 +457,9 @@ class AsyncOpenAI(AsyncModel):
         messages = [choice.message for choice in result.choices]
         for message in messages:
             if message.refusal is not None:
-                raise ValueError(
-                    f"OpenAI refused to answer the request: {message.refusal}"
+                raise GenerationError(
+                    f"OpenAI refused to answer the request: {message.refusal}",
+                    provider=PROVIDER,
                 )
 
         if len(messages) == 1:

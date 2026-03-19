@@ -48,7 +48,7 @@ OutlinesError
 | `APITimeoutError`       | Network/transport   | — (no HTTP status)            | Retry: Provider may be overloaded.                                                           |
 | `APIConnectionError`    | Network/transport   | — (no HTTP status)            | Retry: Could not reach provider, check connection.                                           |
 | `ProviderResponseError` | Response/generation | — (no HTTP status)            | Provider bug: May be a temporary issue or schema/format mismatch.                           |
-| `GenerationError`       | Response/generation | — (no HTTP status)            | Inspect output: Output likely hit a content filter, model's max-token limit, or similar.    |
+| `GenerationError`       | Response/generation | — (no HTTP status)            | Inspect output: Output was refused, hit a content filter, reached the model's max-token limit, or similar. |
 
 ## Usage
 

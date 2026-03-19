@@ -155,8 +155,8 @@ class ProviderResponseError(APIError):
 
 
 class GenerationError(APIError):
-    """Content filter hit or length stop."""
-    hint = "Output likely hit a content filter, model's max-token limit, or similar."
+    """Content filter hit, length stop, or refusal."""
+    hint = "Output was refused, hit a content filter, reached the model's max-token limit, or similar."
 
 
 # ---------------------------------------------------------------------------
