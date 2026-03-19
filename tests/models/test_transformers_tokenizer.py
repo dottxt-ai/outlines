@@ -1,8 +1,10 @@
 import pytest
+from unittest.mock import MagicMock
 
 import transformers
 
 from outlines.models.transformers import (
+    SPIECE_UNDERLINE,
     get_llama_tokenizer_types,
     TransformerTokenizer,
 )
@@ -142,13 +144,10 @@ def test_transformer_tokenizer_getstate_setstate(
     assert another_transformer_tokenizer == transformer_tokenizer
 
 
-def test_spiece_underline_import_fallback(transformer_tokenizer):
-    """When transformers.file_utils.SPIECE_UNDERLINE cannot be imported,
-    convert_token_to_string must fall back to the hardcoded '▁' constant."""
-    import sys
-    from unittest.mock import MagicMock, patch
+def test_spiece_underline_constant():
+    token = f"{SPIECE_UNDERLINE}hello"
+    tokenizer = TransformerTokenizer.__new__(TransformerTokenizer)
+    tokenizer.tokenizer = MagicMock()
+    tokenizer.tokenizer.convert_tokens_to_string.return_value = "hello"
 
-    # Make the import fail by providing a mock without SPIECE_UNDERLINE
-    with patch.dict(sys.modules, {"transformers.file_utils": MagicMock(spec=[])}):
-        result = transformer_tokenizer.convert_token_to_string("▁hello")
-        assert isinstance(result, str)
+    assert tokenizer.convert_token_to_string(token) == " hello"
