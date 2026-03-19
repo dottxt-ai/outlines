@@ -111,6 +111,7 @@ The local models available are the following:
 - Transformers
 - TransformersMultiModal
 - VLLMOffline
+- LM Studio
 
 In the case of server-based models, the model is initialized with a client that sends a request to a server that is in charge of the actual text generation. As a result, we have limited control over text generation and some output types are not supported. The server on which the text generation happens can either be remote (with OpenAI or Anthopic for instance) or local (with SGLang for instance).
 
