@@ -2,13 +2,16 @@ import io
 import json
 import os
 from typing import Annotated, Generator, AsyncGenerator
+from unittest.mock import Mock
 
+import openai as openai_sdk
 import pytest
 from PIL import Image as PILImage
 from openai import AsyncOpenAI as AsyncOpenAIClient, OpenAI as OpenAIClient
 from pydantic import BaseModel, Field
 
 import outlines
+from outlines.exceptions import BadRequestError
 from outlines.inputs import Chat, Image, Video
 from outlines.models.openai import AsyncOpenAI, OpenAI
 from outlines.types import json_schema
@@ -164,7 +167,7 @@ def test_openai_simple_pydantic_refusal(model):
     class Foo(BaseModel):
         bar: Annotated[str, Field(int, pattern=r"^\d+$")]
 
-    with pytest.raises(TypeError, match="OpenAI does not support your schema"):
+    with pytest.raises(BadRequestError, match="OpenAI does not support your schema"):
         _ = model.generate("foo?", Foo)
 
 
@@ -313,7 +316,7 @@ async def test_openai_async_simple_pydantic_refusal(async_model):
     class Foo(BaseModel):
         bar: Annotated[str, Field(int, pattern=r"^\d+$")]
 
-    with pytest.raises(TypeError, match="OpenAI does not support your schema"):
+    with pytest.raises(BadRequestError, match="OpenAI does not support your schema"):
         _ = await async_model.generate("foo?", Foo)
 
 
@@ -357,3 +360,21 @@ async def test_openai_async_batch(async_model):
         await async_model.batch(
             ["Respond with one word.", "Respond with one word."],
         )
+
+
+# ---------------------------------------------------------------------------
+# Schema error handling
+# ---------------------------------------------------------------------------
+
+def test_openai_invalid_schema_raises_bad_request_error(api_key, monkeypatch):
+    class FakeBadRequestError(Exception):
+        body = {"message": "Invalid schema: unsupported keyword 'patternProperties'"}
+
+    monkeypatch.setattr(openai_sdk, "BadRequestError", FakeBadRequestError)
+
+    client = OpenAIClient(api_key=api_key)
+    model = OpenAI(client, model_name=MODEL_NAME)
+    model.client.chat.completions.create = Mock(side_effect=FakeBadRequestError())
+
+    with pytest.raises(BadRequestError, match="does not support your schema"):
+        model.generate("hello")

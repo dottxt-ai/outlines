@@ -2,6 +2,7 @@ import io
 import json
 import os
 from typing import Annotated, Generator, AsyncGenerator
+from unittest.mock import Mock
 
 import pytest
 from PIL import Image as PILImage
@@ -9,6 +10,7 @@ from mistralai import Mistral as MistralClient
 from pydantic import BaseModel, Field
 
 import outlines
+from outlines.exceptions import BadRequestError
 from outlines.inputs import Chat, Image, Video
 from outlines.models.mistral import AsyncMistral, Mistral
 from outlines.types import JsonSchema, Regex
@@ -352,3 +354,18 @@ async def test_mistral_async_batch(async_model):
         _ = await async_model.batch(
             ["Respond with one word.", "Respond with one word."],
         )
+
+
+# ---------------------------------------------------------------------------
+# Schema error handling
+# ---------------------------------------------------------------------------
+
+def test_mistral_schema_error_raises_bad_request_error(api_key):
+    client = MistralClient(api_key=api_key)
+    model = Mistral(client, model_name=MODEL_NAME)
+    model.client.chat.complete = Mock(
+        side_effect=ValueError("json_schema validation failed: unsupported field")
+    )
+
+    with pytest.raises(BadRequestError, match="does not support your schema"):
+        model.generate("hello")

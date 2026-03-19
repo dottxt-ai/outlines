@@ -13,7 +13,7 @@ from functools import singledispatchmethod
 
 from pydantic import BaseModel
 
-from outlines.exceptions import is_provider_exception, normalize_provider_exception
+from outlines.exceptions import BadRequestError, is_provider_exception, normalize_provider_exception
 from outlines.inputs import Chat, Image
 from outlines.models.base import AsyncModel, Model, ModelTypeAdapter
 from outlines.models.utils import set_additional_properties_false_json_schema
@@ -276,10 +276,12 @@ class OpenAI(Model):
             )
         except openai.BadRequestError as e:
             if e.body["message"].startswith("Invalid schema"):
-                raise TypeError(
+                raise BadRequestError(
                     f"OpenAI does not support your schema: {e.body['message']}. "
-                    "Try a local model or dottxt instead."
-                )
+                    "Try a local model or dottxt instead.",
+                    provider=PROVIDER,
+                    original_exception=e,
+                ) from e
             raise normalize_provider_exception(e, PROVIDER) from e
         except Exception as e:
             if not is_provider_exception(e, PROVIDER):
@@ -350,10 +352,12 @@ class OpenAI(Model):
             )
         except openai.BadRequestError as e:
             if e.body["message"].startswith("Invalid schema"):
-                raise TypeError(
+                raise BadRequestError(
                     f"OpenAI does not support your schema: {e.body['message']}. "
-                    "Try a local model or dottxt instead."
-                )
+                    "Try a local model or dottxt instead.",
+                    provider=PROVIDER,
+                    original_exception=e,
+                ) from e
             raise normalize_provider_exception(e, PROVIDER) from e
         except Exception as e:
             if not is_provider_exception(e, PROVIDER):
@@ -437,10 +441,12 @@ class AsyncOpenAI(AsyncModel):
             )
         except openai.BadRequestError as e:
             if e.body["message"].startswith("Invalid schema"):
-                raise TypeError(
+                raise BadRequestError(
                     f"OpenAI does not support your schema: {e.body['message']}. "
-                    "Try a local model or dottxt instead."
-                )
+                    "Try a local model or dottxt instead.",
+                    provider=PROVIDER,
+                    original_exception=e,
+                ) from e
             raise normalize_provider_exception(e, PROVIDER) from e
         except Exception as e:
             if not is_provider_exception(e, PROVIDER):
@@ -511,10 +517,12 @@ class AsyncOpenAI(AsyncModel):
             )
         except openai.BadRequestError as e:
             if e.body["message"].startswith("Invalid schema"):
-                raise TypeError(
+                raise BadRequestError(
                     f"OpenAI does not support your schema: {e.body['message']}. "
-                    "Try a local model or dottxt instead."
-                )
+                    "Try a local model or dottxt instead.",
+                    provider=PROVIDER,
+                    original_exception=e,
+                ) from e
             raise normalize_provider_exception(e, PROVIDER) from e
         except Exception as e:
             if not is_provider_exception(e, PROVIDER):
