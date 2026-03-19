@@ -2,7 +2,7 @@ import io
 import json
 import os
 from typing import Annotated, Generator, AsyncGenerator
-from unittest.mock import Mock
+from unittest.mock import AsyncMock, Mock
 
 import pytest
 from PIL import Image as PILImage
@@ -95,7 +95,7 @@ def test_mistral_init_from_client(api_key):
 
 
 def test_mistral_wrong_inference_parameters(model):
-    with pytest.raises(RuntimeError, match="got an unexpected"):
+    with pytest.raises(TypeError, match="got an unexpected"):
         model("prompt", foo=10)
 
 
@@ -165,15 +165,6 @@ def test_mistral_pydantic(model):
 
 
 @pytest.mark.api_call
-def test_mistral_pydantic_refusal(model):
-    class Foo(BaseModel):
-        bar: Annotated[str, Field(int, pattern=r"^\d+$")]
-
-    with pytest.raises(TypeError, match="Mistral does not support your schema"):
-        _ = model("foo?", Foo)
-
-
-@pytest.mark.api_call
 def test_mistral_vision_pydantic(vision_model, image):
     class Logo(BaseModel):
         name: int
@@ -227,7 +218,7 @@ def test_mistral_async_init_from_client(api_key):
 
 @pytest.mark.asyncio
 async def test_mistral_async_wrong_inference_parameters(async_model):
-    with pytest.raises(RuntimeError, match="got an unexpected"):
+    with pytest.raises(TypeError, match="got an unexpected"):
         await async_model("prompt", foo=10)
 
 
@@ -306,16 +297,6 @@ async def test_mistral_async_pydantic(async_model):
 
 @pytest.mark.asyncio
 @pytest.mark.api_call
-async def test_mistral_async_pydantic_refusal(async_model):
-    class Foo(BaseModel):
-        bar: Annotated[str, Field(int, pattern=r"^\d+$")]
-
-    with pytest.raises(TypeError, match="Mistral does not support your schema"):
-        _ = await async_model("foo?", Foo)
-
-
-@pytest.mark.asyncio
-@pytest.mark.api_call
 async def test_mistral_async_vision_pydantic(async_vision_model, image):
     class Logo(BaseModel):
         name: int
@@ -368,4 +349,25 @@ def test_mistral_schema_error_raises_bad_request_error(api_key):
     )
 
     with pytest.raises(BadRequestError, match="does not support your schema"):
+        model.generate("hello")
+
+
+@pytest.mark.asyncio
+async def test_mistral_async_schema_error_raises_bad_request_error(api_key):
+    client = MistralClient(api_key=api_key)
+    model = AsyncMistral(client, model_name=MODEL_NAME)
+    model.client.chat.complete_async = AsyncMock(
+        side_effect=ValueError("json_schema validation failed: unsupported field")
+    )
+
+    with pytest.raises(BadRequestError, match="does not support your schema"):
+        await model.generate("hello")
+
+
+def test_mistral_non_provider_error_passes_through(api_key):
+    client = MistralClient(api_key=api_key)
+    model = Mistral(client, model_name=MODEL_NAME)
+    model.client.chat.complete = Mock(side_effect=TypeError("programmer error"))
+
+    with pytest.raises(TypeError, match="programmer error"):
         model.generate("hello")
