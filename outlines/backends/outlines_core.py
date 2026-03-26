@@ -284,5 +284,6 @@ class OutlinesCoreBackend(BaseBackend):
             # the regex provided that only contains regular strings.
             token_as_str = token_to_str(token)
             formatted_vocab.setdefault(token_as_str, []).append(token_id)
-        formatted_vocab.pop(eos_token)
+        eos_token_as_str = token_to_str(eos_token)
+        formatted_vocab.pop(eos_token_as_str, None)
         return Vocabulary(eos_token_id, formatted_vocab)
