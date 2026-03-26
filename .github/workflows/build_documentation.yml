@@ -42,6 +42,7 @@ jobs:
           preview-branch: gh-pages
           umbrella-dir: pr-preview
           comment: false
+          token: ${{ secrets.DEPLOY_TOKEN }}
 
       - name: Comment PR with preview link
         if: github.event_name == 'pull_request' && github.event.action != 'closed'
