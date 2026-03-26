@@ -11,11 +11,14 @@ from typing import (
     Union,
 )
 
+from outlines.exceptions import is_provider_exception, normalize_provider_exception
 from outlines.models.base import AsyncModel,Model, ModelTypeAdapter
 from outlines.types.dsl import python_types_to_terms, to_regex, JsonSchema, CFG
 
 if TYPE_CHECKING:
     from huggingface_hub import AsyncInferenceClient, InferenceClient
+
+PROVIDER = "tgi"
 
 __all__ = ["AsyncTGI", "TGI", "from_tgi"]
 
@@ -137,7 +140,12 @@ class TGI(Model):
             **inference_kwargs,
         )
 
-        return self.client.text_generation(**client_args)
+        try:
+            return self.client.text_generation(**client_args)
+        except Exception as e:
+            if not is_provider_exception(e, PROVIDER):
+                raise
+            raise normalize_provider_exception(e, PROVIDER) from e
 
     def generate_batch(
         self,
@@ -176,12 +184,22 @@ class TGI(Model):
             model_input, output_type, **inference_kwargs,
         )
 
-        stream = self.client.text_generation(
-            **client_args, stream=True,
-        )
+        try:
+            stream = self.client.text_generation(
+                **client_args, stream=True,
+            )
+        except Exception as e:
+            if not is_provider_exception(e, PROVIDER):
+                raise
+            raise normalize_provider_exception(e, PROVIDER) from e
 
-        for chunk in stream:  # pragma: no cover
-            yield chunk
+        try:
+            for chunk in stream:  # pragma: no cover
+                yield chunk
+        except Exception as e:
+            if not is_provider_exception(e, PROVIDER):
+                raise
+            raise normalize_provider_exception(e, PROVIDER) from e
 
     def _build_client_args(
         self,
@@ -252,7 +270,12 @@ class AsyncTGI(AsyncModel):
             model_input, output_type, **inference_kwargs,
         )
 
-        response = await self.client.text_generation(**client_args)
+        try:
+            response = await self.client.text_generation(**client_args)
+        except Exception as e:
+            if not is_provider_exception(e, PROVIDER):
+                raise
+            raise normalize_provider_exception(e, PROVIDER) from e
 
         return response
 
@@ -293,12 +316,22 @@ class AsyncTGI(AsyncModel):
             model_input, output_type, **inference_kwargs,
         )
 
-        stream = await self.client.text_generation(
-            **client_args, stream=True
-        )
+        try:
+            stream = await self.client.text_generation(
+                **client_args, stream=True
+            )
+        except Exception as e:
+            if not is_provider_exception(e, PROVIDER):
+                raise
+            raise normalize_provider_exception(e, PROVIDER) from e
 
-        async for chunk in stream:  # pragma: no cover
-            yield chunk
+        try:
+            async for chunk in stream:  # pragma: no cover
+                yield chunk
+        except Exception as e:
+            if not is_provider_exception(e, PROVIDER):
+                raise
+            raise normalize_provider_exception(e, PROVIDER) from e
 
     def _build_client_args(
         self,

@@ -2,11 +2,14 @@
 
 from typing import TYPE_CHECKING, Any, Optional, cast
 
+from outlines.exceptions import is_provider_exception, normalize_provider_exception
 from outlines.models.base import Model, ModelTypeAdapter
 from outlines.types import CFG, JsonSchema, Regex
 
 if TYPE_CHECKING:
     from dottxt import Dottxt as DottxtClient
+
+PROVIDER = "dottxt"
 
 __all__ = ["Dottxt", "from_dottxt"]
 
@@ -145,11 +148,17 @@ class Dottxt(Model):
         ):
             inference_kwargs["model_revision"] = self.model_revision
 
-        completion = self.client.json(
-            prompt,
-            json_schema,
-            **inference_kwargs,
-        )
+        try:
+            completion = self.client.json(
+                prompt,
+                json_schema,
+                **inference_kwargs,
+            )
+        except Exception as e:
+            if not is_provider_exception(e, PROVIDER):
+                raise
+            raise normalize_provider_exception(e, PROVIDER) from e
+
         return completion.data
 
     def generate_batch(

@@ -13,6 +13,7 @@ from functools import singledispatchmethod
 
 from pydantic import BaseModel
 
+from outlines.exceptions import BadRequestError, GenerationError, is_provider_exception, normalize_provider_exception
 from outlines.inputs import Chat, Image
 from outlines.models.base import AsyncModel, Model, ModelTypeAdapter
 from outlines.models.utils import set_additional_properties_false_json_schema
@@ -26,6 +27,8 @@ if TYPE_CHECKING:
         AzureOpenAI as AzureOpenAIClient,
         AsyncAzureOpenAI as AsyncAzureOpenAIClient,
     )
+
+PROVIDER = "openai"
 
 __all__ = ["AsyncOpenAI", "OpenAI", "from_openai"]
 
@@ -273,18 +276,24 @@ class OpenAI(Model):
             )
         except openai.BadRequestError as e:
             if e.body["message"].startswith("Invalid schema"):
-                raise TypeError(
+                raise BadRequestError(
                     f"OpenAI does not support your schema: {e.body['message']}. "
-                    "Try a local model or dottxt instead."
-                )
-            else:
-                raise e
+                    "Try a local model or dottxt instead.",
+                    provider=PROVIDER,
+                    original_exception=e,
+                ) from e
+            raise normalize_provider_exception(e, PROVIDER) from e
+        except Exception as e:
+            if not is_provider_exception(e, PROVIDER):
+                raise
+            raise normalize_provider_exception(e, PROVIDER) from e
 
         messages = [choice.message for choice in result.choices]
         for message in messages:
             if message.refusal is not None:
-                raise ValueError(
-                    f"OpenAI refused to answer the request: {message.refusal}"
+                raise GenerationError(
+                    f"OpenAI refused to answer the request: {message.refusal}",
+                    provider=PROVIDER,
                 )
 
         if len(messages) == 1:
@@ -344,16 +353,26 @@ class OpenAI(Model):
             )
         except openai.BadRequestError as e:
             if e.body["message"].startswith("Invalid schema"):
-                raise TypeError(
+                raise BadRequestError(
                     f"OpenAI does not support your schema: {e.body['message']}. "
-                    "Try a local model or dottxt instead."
-                )
-            else:
-                raise e
+                    "Try a local model or dottxt instead.",
+                    provider=PROVIDER,
+                    original_exception=e,
+                ) from e
+            raise normalize_provider_exception(e, PROVIDER) from e
+        except Exception as e:
+            if not is_provider_exception(e, PROVIDER):
+                raise
+            raise normalize_provider_exception(e, PROVIDER) from e
 
-        for chunk in stream:
-            if chunk.choices and chunk.choices[0].delta.content is not None:
-                yield chunk.choices[0].delta.content
+        try:
+            for chunk in stream:
+                if chunk.choices and chunk.choices[0].delta.content is not None:
+                    yield chunk.choices[0].delta.content
+        except Exception as e:
+            if not is_provider_exception(e, PROVIDER):
+                raise
+            raise normalize_provider_exception(e, PROVIDER) from e
 
 
 class AsyncOpenAI(AsyncModel):
@@ -423,18 +442,24 @@ class AsyncOpenAI(AsyncModel):
             )
         except openai.BadRequestError as e:
             if e.body["message"].startswith("Invalid schema"):
-                raise TypeError(
+                raise BadRequestError(
                     f"OpenAI does not support your schema: {e.body['message']}. "
-                    "Try a local model or dottxt instead."
-                )
-            else:
-                raise e
+                    "Try a local model or dottxt instead.",
+                    provider=PROVIDER,
+                    original_exception=e,
+                ) from e
+            raise normalize_provider_exception(e, PROVIDER) from e
+        except Exception as e:
+            if not is_provider_exception(e, PROVIDER):
+                raise
+            raise normalize_provider_exception(e, PROVIDER) from e
 
         messages = [choice.message for choice in result.choices]
         for message in messages:
             if message.refusal is not None:
-                raise ValueError(
-                    f"OpenAI refused to answer the request: {message.refusal}"
+                raise GenerationError(
+                    f"OpenAI refused to answer the request: {message.refusal}",
+                    provider=PROVIDER,
                 )
 
         if len(messages) == 1:
@@ -494,16 +519,26 @@ class AsyncOpenAI(AsyncModel):
             )
         except openai.BadRequestError as e:
             if e.body["message"].startswith("Invalid schema"):
-                raise TypeError(
+                raise BadRequestError(
                     f"OpenAI does not support your schema: {e.body['message']}. "
-                    "Try a local model or dottxt instead."
-                )
-            else:
-                raise e
+                    "Try a local model or dottxt instead.",
+                    provider=PROVIDER,
+                    original_exception=e,
+                ) from e
+            raise normalize_provider_exception(e, PROVIDER) from e
+        except Exception as e:
+            if not is_provider_exception(e, PROVIDER):
+                raise
+            raise normalize_provider_exception(e, PROVIDER) from e
 
-        async for chunk in stream:
-            if chunk.choices and chunk.choices[0].delta.content is not None:
-                yield chunk.choices[0].delta.content
+        try:
+            async for chunk in stream:
+                if chunk.choices and chunk.choices[0].delta.content is not None:
+                    yield chunk.choices[0].delta.content
+        except Exception as e:
+            if not is_provider_exception(e, PROVIDER):
+                raise
+            raise normalize_provider_exception(e, PROVIDER) from e
 
 
 def from_openai(

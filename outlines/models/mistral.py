@@ -25,9 +25,12 @@ from outlines.types.utils import (
     is_pydantic_model,
     is_typed_dict,
 )
+from outlines.exceptions import BadRequestError, is_provider_exception, normalize_provider_exception
 
 if TYPE_CHECKING:
     from mistralai import Mistral as MistralClient
+
+PROVIDER = "mistral"
 
 __all__ = ["AsyncMistral", "Mistral", "from_mistral"]
 
@@ -331,12 +334,15 @@ class Mistral(Model):
             )
         except Exception as e:
             if "schema" in str(e).lower() or "json_schema" in str(e).lower():
-                raise TypeError(
+                raise BadRequestError(
                     f"Mistral does not support your schema: {e}. "
-                    "Try a local model or dottxt instead."
-                )
-            else:
-                raise RuntimeError(f"Mistral API error: {e}") from e
+                    "Try a local model or dottxt instead.",
+                    provider=PROVIDER,
+                    original_exception=e,
+                ) from e
+            if not is_provider_exception(e, PROVIDER):
+                raise
+            raise normalize_provider_exception(e, PROVIDER) from e
 
         outputs = [choice.message for choice in result.choices]
 
@@ -392,20 +398,28 @@ class Mistral(Model):
             )
         except Exception as e:
             if "schema" in str(e).lower() or "json_schema" in str(e).lower():
-                raise TypeError(
+                raise BadRequestError(
                     f"Mistral does not support your schema: {e}. "
-                    "Try a local model or dottxt instead."
-                )
-            else:
-                raise RuntimeError(f"Mistral API error: {e}") from e
+                    "Try a local model or dottxt instead.",
+                    provider=PROVIDER,
+                    original_exception=e,
+                ) from e
+            if not is_provider_exception(e, PROVIDER):
+                raise
+            raise normalize_provider_exception(e, PROVIDER) from e
 
-        for chunk in stream:
-            if (
-                hasattr(chunk, "data")
-                and chunk.data.choices
-                and chunk.data.choices[0].delta.content is not None
-            ):
-                yield chunk.data.choices[0].delta.content
+        try:
+            for chunk in stream:
+                if (
+                    hasattr(chunk, "data")
+                    and chunk.data.choices
+                    and chunk.data.choices[0].delta.content is not None
+                ):
+                    yield chunk.data.choices[0].delta.content
+        except Exception as e:
+            if not is_provider_exception(e, PROVIDER):
+                raise
+            raise normalize_provider_exception(e, PROVIDER) from e
 
 
 class AsyncMistral(AsyncModel):
@@ -470,12 +484,15 @@ class AsyncMistral(AsyncModel):
             )
         except Exception as e:
             if "schema" in str(e).lower() or "json_schema" in str(e).lower():
-                raise TypeError(
+                raise BadRequestError(
                     f"Mistral does not support your schema: {e}. "
-                    "Try a local model or dottxt instead."
-                )
-            else:
-                raise RuntimeError(f"Mistral API error: {e}") from e
+                    "Try a local model or dottxt instead.",
+                    provider=PROVIDER,
+                    original_exception=e,
+                ) from e
+            if not is_provider_exception(e, PROVIDER):
+                raise
+            raise normalize_provider_exception(e, PROVIDER) from e
 
         outputs = [choice.message for choice in result.choices]
 
@@ -531,22 +548,30 @@ class AsyncMistral(AsyncModel):
             )
         except Exception as e:
             if "schema" in str(e).lower() or "json_schema" in str(e).lower():
-                raise TypeError(
+                raise BadRequestError(
                     f"Mistral does not support your schema: {e}. "
-                    "Try a local model or dottxt instead."
-                )
-            else:
-                raise RuntimeError(f"Mistral API error: {e}") from e
+                    "Try a local model or dottxt instead.",
+                    provider=PROVIDER,
+                    original_exception=e,
+                ) from e
+            if not is_provider_exception(e, PROVIDER):
+                raise
+            raise normalize_provider_exception(e, PROVIDER) from e
 
-        async for chunk in response:
-            if (
-                hasattr(chunk, "data")
-                and chunk.data.choices
-                and len(chunk.data.choices) > 0
-                and hasattr(chunk.data.choices[0], "delta")
-                and chunk.data.choices[0].delta.content is not None
-            ):
-                yield chunk.data.choices[0].delta.content
+        try:
+            async for chunk in response:
+                if (
+                    hasattr(chunk, "data")
+                    and chunk.data.choices
+                    and len(chunk.data.choices) > 0
+                    and hasattr(chunk.data.choices[0], "delta")
+                    and chunk.data.choices[0].delta.content is not None
+                ):
+                    yield chunk.data.choices[0].delta.content
+        except Exception as e:
+            if not is_provider_exception(e, PROVIDER):
+                raise
+            raise normalize_provider_exception(e, PROVIDER) from e
 
 
 def from_mistral(

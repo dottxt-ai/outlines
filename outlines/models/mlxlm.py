@@ -148,6 +148,7 @@ class MLXLM(Model):
         """
         from mlx_lm import generate
 
+        # Local runtime: intentionally bypasses outlines.exceptions.normalize_provider_exception().
         return generate(
             self.model,
             self.mlx_tokenizer,
@@ -206,6 +207,7 @@ class MLXLM(Model):
             for i in range(len(model_input))
         ]
 
+        # Local runtime: intentionally bypasses outlines.exceptions.normalize_provider_exception().
         response = batch_generate(
             self.model,
             self.mlx_tokenizer,
@@ -241,6 +243,7 @@ class MLXLM(Model):
         """
         from mlx_lm import stream_generate
 
+        # Local runtime: intentionally bypasses outlines.exceptions.normalize_provider_exception().
         for gen_response in stream_generate(
             self.model,
             self.mlx_tokenizer,
