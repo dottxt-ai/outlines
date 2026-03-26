@@ -208,11 +208,9 @@ def test_create_vocabulary_preserves_distinct_decoded_strings():
     and that eos_token is correctly excluded from the vocabulary.
     """
     vocab = {
-        "▁hello": 100,
-        "hello": 200,
-        "▁world": 300,
-        "world": 400,
-        "▁the": 500,
+        "▁hello": 1,
+        "hello": 2,
+        "▁the": 3,
         "<eos>": 0,
     }
     eos_token_id = 0
@@ -237,41 +235,31 @@ def test_create_vocabulary_preserves_distinct_decoded_strings():
             vocab, eos_token_id, eos_token, token_to_str
         )
 
-    # "hello" comes from both "▁hello" (as " hello") and "hello"
-    # They decode to different strings, so each should have exactly one ID
-    assert sorted(captured[" hello"]) == [100]
-    assert sorted(captured["hello"]) == [200]
-
-    # " world" and "world" similarly
-    assert sorted(captured[" world"]) == [300]
-    assert sorted(captured["world"]) == [400]
-
-    # " the" should have one ID
-    assert captured[" the"] == [500]
-
-    # eos_token should have been removed
+    assert captured[" hello"] == [1]
+    assert captured["hello"] == [2]
+    assert captured[" the"] == [3]
     assert eos_token not in captured
+    assert len(captured) == 3
+    assert sum(len(ids) for ids in captured.values()) == 3
 
 
 def test_create_vocabulary_duplicate_decoded_strings():
     """Test that when token_to_str maps multiple tokens to the SAME string,
     all their IDs are accumulated in a single list.
-
-    This is the core bug from issue #1830.
     """
     # Both tokens decode to the exact same string "hi"
     vocab = {
-        "▁hi": 10,
-        "hi": 20,
-        "extra_hi": 30,
+        "▁hi": 1,
+        " hi": 2,
+        "hi": 3,
         "<eos>": 0,
     }
     eos_token_id = 0
     eos_token = "<eos>"
 
-    # All three non-eos tokens decode to "hi"
+    # token_to_str strips the leading "▁" (sentencepiece style)
     def token_to_str(token):
-        return "hi"
+        return token.replace("▁", " ") if token.startswith("▁") else token
 
     captured = {}
 
@@ -287,6 +275,7 @@ def test_create_vocabulary_duplicate_decoded_strings():
             vocab, eos_token_id, eos_token, token_to_str
         )
 
-    # All three non-eos tokens map to "hi", so all IDs must be present
-    # Before the fix, only the last one (30) would survive
-    assert sorted(captured["hi"]) == [10, 20, 30]
+    assert sorted(captured[" hi"]) == [1, 2]
+    assert captured["hi"] == [3]
+    assert len(captured) == 2
+    assert sum(len(ids) for ids in captured.values()) == 3
