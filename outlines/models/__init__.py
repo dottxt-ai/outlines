@@ -14,6 +14,7 @@ from .dottxt import Dottxt, from_dottxt
 from .gemini import Gemini, from_gemini
 from .llamacpp import LlamaCpp, from_llamacpp
 from .lmstudio import AsyncLMStudio, LMStudio, from_lmstudio
+from .minimax import AsyncMiniMax, MiniMax, from_minimax
 from .mistral import AsyncMistral, Mistral, from_mistral
 from .mlxlm import MLXLM, from_mlxlm
 from .ollama import AsyncOllama, Ollama, from_ollama
@@ -35,6 +36,7 @@ BlackBoxModel = Union[
     Dottxt,
     Gemini,
     LMStudio,
+    MiniMax,
     Ollama,
     OpenAI,
     Mistral,
@@ -45,6 +47,7 @@ BlackBoxModel = Union[
 ]
 AsyncBlackBoxModel = Union[
     AsyncLMStudio,
+    AsyncMiniMax,
     AsyncMistral,
     AsyncOllama,
     AsyncOpenAI,
@@ -68,6 +71,9 @@ __all__ = [
     "AsyncLMStudio",
     "LMStudio",
     "from_lmstudio",
+    "AsyncMiniMax",
+    "MiniMax",
+    "from_minimax",
     "AsyncMistral",
     "Mistral",
     "from_mistral",
