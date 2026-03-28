@@ -1,5 +1,6 @@
 """Encapsulate a model and an output type into a reusable object."""
 
+import pickle
 from typing import (
     Any,
     AsyncIterator,
@@ -276,6 +277,11 @@ class SteerableGenerator:
 
         return instance
 
+    def to_disk(self, path: str):
+        """Save the logits processor of the generator in a local file."""
+        with open(path, "wb") as f:
+            pickle.dump(self.logits_processor, f)
+
     def __call__(self, prompt: Any, **inference_kwargs) -> Any:
         """Generate a response from the model.
 
@@ -348,13 +354,14 @@ def Generator(
     output_type: Optional[Any] = None,
     backend: Optional[str] = None,
     *,
-    processor: Optional[LogitsProcessorType] = None,
+    processor: Optional[LogitsProcessorType | str] = None,
 ) -> Union[SteerableGenerator, BlackBoxGenerator, AsyncBlackBoxGenerator]:
     """Create a generator for the given model and output parameters.
 
-    The 2 parameters output_type and processor are mutually exclusive. The
-    parameters processor is only supported for SteerableModel instances
-    (typically local models) and is intended to be only used by advanced users.
+    The parameters output_type and backend on one side and processor on the
+    other side are mutually exclusive. The parameters processor is only
+    supported for SteerableModel instances (typically local models) and
+    is intended to be only used by advanced users.
 
     Parameters
     ----------
@@ -368,7 +375,8 @@ def Generator(
         used for steerable models if there is an output type and `processor` is
         not provided.
     processor
-        An instance of a logits processor.
+        An instance of a logits processor or the path to a file containing the
+        logits processor (output of `SteerableGenerator.to_disk`).
 
     Returns
     -------
@@ -387,6 +395,9 @@ def Generator(
 
     if isinstance(model, SteerableModel): # type: ignore
         if processor is not None:
+            if isinstance(processor, str):
+                with open(processor, "rb") as f:
+                    processor = pickle.load(f)
             return SteerableGenerator.from_processor(model, processor) # type: ignore
         else:
             return SteerableGenerator(model, output_type, backend) # type: ignore
