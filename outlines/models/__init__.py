@@ -10,7 +10,7 @@ from typing import Union
 
 from .anthropic import Anthropic, from_anthropic
 from .base import Model, ModelTypeAdapter
-from .dottxt import Dottxt, from_dottxt
+from .dottxt import AsyncDottxt, Dottxt, from_dottxt
 from .gemini import Gemini, from_gemini
 from .llamacpp import LlamaCpp, from_llamacpp
 from .lmstudio import AsyncLMStudio, LMStudio, from_lmstudio
@@ -44,6 +44,7 @@ BlackBoxModel = Union[
     VLLMOffline,
 ]
 AsyncBlackBoxModel = Union[
+    AsyncDottxt,
     AsyncLMStudio,
     AsyncMistral,
     AsyncOllama,
@@ -59,6 +60,7 @@ __all__ = [
     "from_anthropic",
     "Model",
     "ModelTypeAdapter",
+    "AsyncDottxt",
     "Dottxt",
     "from_dottxt",
     "Gemini",
