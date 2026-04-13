@@ -33,9 +33,17 @@ Outlines guarantees structured outputs during generation — directly from any L
 
 We're working with select partners to develop new interfaces to structured generation.
 
-Need XML, FHIR, custom schemas or grammars? Let's talk.
+### ⚡ Try the Dottxt API
 
-Audit your schema: share one schema, we show you what breaks under generation, the constraints that fix it, and compliance rates before and after. Sign up [here](https://h1xbpbfsf0w.typeform.com/to/rtFUraA2?typeform).
+Want guaranteed structured generation without running your own models? The **Dottxt API** delivers 100% schema-compliant outputs via a simple REST API — no GPU, no setup.
+
+[Request API access →](https://h1xbpbfsf0w.typeform.com/to/fwQNWmS8?utm_source=github&utm_medium=organic&utm_campaign=outlines){ .md-button .md-button--primary }
+
+### 🔍 Audit your schema
+
+Share one schema and we show you what breaks under generation, the constraints that fix it, and compliance rates before and after. Need XML, FHIR, custom schemas or grammars? Let's talk.
+
+[Sign up →](https://h1xbpbfsf0w.typeform.com/to/rtFUraA2?typeform){ .md-button }
 
 ## See it in action
 
