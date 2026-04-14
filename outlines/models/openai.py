@@ -1,5 +1,6 @@
 """Integration with OpenAI's API."""
 
+import asyncio
 from typing import (
     TYPE_CHECKING,
     Any,
@@ -298,9 +299,10 @@ class OpenAI(Model):
         output_type = None,
         **inference_kwargs,
     ):
-        raise NotImplementedError(
-            "The `openai` library does not support batch inference."
-        )
+        return [
+            self.generate(single_input, output_type, **inference_kwargs)
+            for single_input in model_input
+        ]
 
     def generate_stream(
         self,
@@ -448,9 +450,10 @@ class AsyncOpenAI(AsyncModel):
         output_type = None,
         **inference_kwargs,
     ):
-        raise NotImplementedError(
-            "The `openai` library does not support batch inference."
-        )
+        return list(await asyncio.gather(*(
+            self.generate(single_input, output_type, **inference_kwargs)
+            for single_input in model_input
+        )))
 
     async def generate_stream( # type: ignore
         self,
