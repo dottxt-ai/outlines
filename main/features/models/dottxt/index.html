@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../../../assets/images/logo-square.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-ProperDocs 1.6.7, mkdocs-material-9.7.6">
     
     
       
@@ -1015,6 +1015,34 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Model Initialization">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#synchronous" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Synchronous
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#asynchronous" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Asynchronous
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1025,6 +1053,34 @@
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Text Generation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#synchronous_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Synchronous
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#asynchronous_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Asynchronous
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -4462,6 +4518,34 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Model Initialization">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#synchronous" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Synchronous
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#asynchronous" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Asynchronous
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -4472,6 +4556,34 @@
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Text Generation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#synchronous_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Synchronous
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#asynchronous_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Asynchronous
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -4510,57 +4622,68 @@
 <div class="admonition installation">
 <p class="admonition-title">Installation</p>
 <p>You need to install the <code>dottxt</code> python sdk to be able to use the Dottxt API in Outlines. Install all optional dependencies of the <code>Dottxt</code> model with: <code>pip install "outlines[dottxt]"</code>.</p>
-<p>You also need to have a Dottxt API key. This API key must either be set as an environment variable called <code>DOTTXT_API_KEY</code> or be provided to the <code>dottxt.client.Dottxt</code> class when instantiating it.</p>
+<p>You also need to have a Dottxt API key. Request one <a href="https://h1xbpbfsf0w.typeform.com/to/fwQNWmS8?utm_source=github&amp;utm_medium=organic&amp;utm_campaign=outlines">here</a>. Once obtained, the key must either be set as an environment variable called <code>DOTTXT_API_KEY</code> or be provided to the <code>dottxt.client.DotTxt</code> class when instantiating it.</p>
 </div>
 <h2 id="model-initialization">Model Initialization</h2>
-<p>To create an Dottxt model instance, you can use the <code>from_dottxt</code> function. It takes 3 arguments:</p>
-<ul>
-<li><code>client</code>: a <code>dottxt.client.Dottxt</code> instance</li>
-<li><code>model_name</code>: the name of the model you want to use in subsequent model calls (optional)</li>
-<li><code>model_revision</code>: the name of the revision to use for the model selected (optional)</li>
-</ul>
-<p>For instance:</p>
-<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">dottxt.client</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">Dottxt</span>
+<h3 id="synchronous">Synchronous</h3>
+<p>Use <code>from_dottxt</code> to create a model instance from a <code>dottxt.DotTxt</code> client. The <code>model</code> argument is the identifier of the model to use. It can be set at initialization time or passed per call via the <code>model=</code> keyword argument — but it must be provided somewhere or a <code>ValueError</code> is raised.</p>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">dottxt.client</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">DotTxt</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines</span>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span style="color: #616E87; font-style: italic"># Create client</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span style="color: #D8DEE9">client</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">Dottxt</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">api_key</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #A3BE8C">&quot;...&quot;</span><span style="color: #ECEFF4">)</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span style="color: #616E87; font-style: italic"># Create the model</span>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span style="color: #D8DEE9">model</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">outlines</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_dottxt</span><span style="color: #ECEFF4">(</span>
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    <span style="color: #D8DEE9">client</span><span style="color: #ECEFF4">,</span>
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    <span style="color: #A3BE8C">&quot;meta-llama/Llama-3.1-8B&quot;</span><span style="color: #ECEFF4">,</span>
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    <span style="color: #A3BE8C">&quot;d04e592bb4f6aa9cfee91e2e20afa771667e1d4b&quot;</span>
-</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span style="color: #ECEFF4">)</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span style="color: #D8DEE9">client</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">DotTxt</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">api_key</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #A3BE8C">&quot;...&quot;</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span style="color: #D8DEE9">model</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">outlines</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_dottxt</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">client</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;dottxt/dottxt-v1-alpha&quot;</span><span style="color: #ECEFF4">)</span>
 </span></code></pre></div>
-<p>Use the <code>list_models</code> method of the Dottxt client to get a list of available model names and revisions for your account.</p>
+<p>Use <code>client.models.list()</code> to get the list of available model identifiers for your account.</p>
+<h3 id="asynchronous">Asynchronous</h3>
+<p>Pass a <code>dottxt.AsyncDotTxt</code> client to the same <code>from_dottxt</code> function — it detects the client type and returns an <code>AsyncDottxt</code> instance:</p>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">dottxt.client</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">AsyncDotTxt</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span style="color: #D8DEE9">client</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">AsyncDotTxt</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">api_key</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #A3BE8C">&quot;...&quot;</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span style="color: #D8DEE9">model</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">outlines</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_dottxt</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">client</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;dottxt/dottxt-v1-alpha&quot;</span><span style="color: #ECEFF4">)</span>
+</span></code></pre></div>
 <h2 id="text-generation">Text Generation</h2>
 <p>Dottxt only supports constrained generation with JSON schema output types. You must always provide a value for the <code>output_type</code> parameter as unconstrained generation is not available.</p>
-<p>For instance:</p>
-<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">typing</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">List</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">pydantic</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">BaseModel</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">dottxt.client</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">Dottxt</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines</span>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span style="color: #81A1C1; font-weight: bold">class</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">Character</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">BaseModel</span><span style="color: #ECEFF4">):</span>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span style="color: #D8DEE9">name</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">str</span>
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span style="color: #D8DEE9">age</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">int</span>
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>    <span style="color: #D8DEE9">skills</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">List</span><span style="color: #ECEFF4">[</span><span style="color: #81A1C1">str</span><span style="color: #ECEFF4">]</span>
-</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>
-</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span style="color: #616E87; font-style: italic"># Create the model</span>
-</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span style="color: #D8DEE9">model</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">outlines</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_dottxt</span><span style="color: #ECEFF4">(</span>
-</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>    <span style="color: #D8DEE9">Dottxt</span><span style="color: #ECEFF4">(),</span>
-</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>    <span style="color: #A3BE8C">&quot;meta-llama/Llama-3.1-8B&quot;</span><span style="color: #ECEFF4">,</span>
-</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>    <span style="color: #A3BE8C">&quot;d04e592bb4f6aa9cfee91e2e20afa771667e1d4b&quot;</span>
-</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span style="color: #ECEFF4">)</span>
-</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>
-</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span style="color: #616E87; font-style: italic"># Generate structured text</span>
-</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span style="color: #D8DEE9">result</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;Create a character&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">Character</span><span style="color: #ECEFF4">)</span>
-</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">result</span><span style="color: #ECEFF4">)</span> <span style="color: #616E87; font-style: italic"># &#39;{&quot;name&quot;: &quot;Evelyn&quot;, &quot;age&quot;: 34, &quot;skills&quot;: [&quot;archery&quot;, &quot;stealth&quot;, &quot;alchemy&quot;]}&#39;</span>
-</span><span id="__span-1-21"><a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">Character</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">model_validate_json</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">result</span><span style="color: #ECEFF4">))</span> <span style="color: #616E87; font-style: italic"># name=Evelyn, age=34, skills=[&#39;archery&#39;, &#39;stealth&#39;, &#39;alchemy&#39;]</span>
+<h3 id="synchronous_1">Synchronous</h3>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">typing</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">List</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">pydantic</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">BaseModel</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">dottxt.client</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">DotTxt</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span style="color: #81A1C1; font-weight: bold">class</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">Character</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">BaseModel</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span style="color: #D8DEE9">name</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">str</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span style="color: #D8DEE9">age</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">int</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>    <span style="color: #D8DEE9">skills</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">List</span><span style="color: #ECEFF4">[</span><span style="color: #81A1C1">str</span><span style="color: #ECEFF4">]</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span style="color: #D8DEE9">model</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">outlines</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_dottxt</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">DotTxt</span><span style="color: #ECEFF4">(),</span> <span style="color: #A3BE8C">&quot;dottxt/dottxt-v1-alpha&quot;</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>
+</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span style="color: #D8DEE9">result</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;Create a character&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">Character</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">result</span><span style="color: #ECEFF4">)</span>  <span style="color: #616E87; font-style: italic"># &#39;{&quot;name&quot;: &quot;Evelyn&quot;, &quot;age&quot;: 34, &quot;skills&quot;: [&quot;archery&quot;, &quot;stealth&quot;, &quot;alchemy&quot;]}&#39;</span>
+</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">Character</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">model_validate_json</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">result</span><span style="color: #ECEFF4">))</span>  <span style="color: #616E87; font-style: italic"># name=Evelyn, age=34, skills=[...]</span>
+</span></code></pre></div>
+<h3 id="asynchronous_1">Asynchronous</h3>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">typing</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">List</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">pydantic</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">BaseModel</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">dottxt.client</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">AsyncDotTxt</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span style="color: #81A1C1; font-weight: bold">class</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">Character</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">BaseModel</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    <span style="color: #D8DEE9">name</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">str</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span style="color: #D8DEE9">age</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">int</span>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>    <span style="color: #D8DEE9">skills</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">List</span><span style="color: #ECEFF4">[</span><span style="color: #81A1C1">str</span><span style="color: #ECEFF4">]</span>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span style="color: #D8DEE9">model</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">outlines</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_dottxt</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">AsyncDotTxt</span><span style="color: #ECEFF4">(),</span> <span style="color: #A3BE8C">&quot;dottxt/dottxt-v1-alpha&quot;</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>
+</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span style="color: #D8DEE9">result</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #81A1C1; font-weight: bold">await</span> <span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;Create a character&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">Character</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">result</span><span style="color: #ECEFF4">)</span>  <span style="color: #616E87; font-style: italic"># &#39;{&quot;name&quot;: &quot;Evelyn&quot;, &quot;age&quot;: 34, &quot;skills&quot;: [&quot;archery&quot;, &quot;stealth&quot;, &quot;alchemy&quot;]}&#39;</span>
 </span></code></pre></div>
 <h2 id="inference-arguments">Inference arguments</h2>
-<p>You can provide the same optional parameters you would pass to the <code>dottxt</code> sdk's client both during the initialization of the <code>Dottxt</code> class and when generating text. Some of the common inference arguments include <code>max_tokens</code>, <code>frequency_penalty</code>, <code>presence_penalty</code> and <code>temperature</code>.</p>
+<p>Optional parameters supported by the <code>dottxt</code> SDK's <code>generate</code> method can be passed at generation time as keyword arguments: <code>temperature</code>, <code>max_tokens</code>, <code>seed</code>, or any additional OpenAI-compatible chat completion parameter.</p>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span style="color: #D8DEE9">result</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;Create a character&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">Character</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">temperature</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #B48EAD">0.8</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">max_tokens</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #B48EAD">256</span><span style="color: #ECEFF4">)</span>
+</span></code></pre></div>
+<p>The <code>model</code> identifier can also be overridden per call this way:</p>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span style="color: #D8DEE9">result</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;Create a character&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">Character</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">model</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #A3BE8C">&quot;dottxt/other-model&quot;</span><span style="color: #ECEFF4">)</span>
+</span></code></pre></div>
 <p>Consult the <a href="https://github.com/dottxt-ai/dottxt-python">dottxt python sdk GitHub repository</a> for the full list of parameters.</p>
 
 
@@ -4584,7 +4707,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="October 3, 2025 08:16:51 UTC"><span class="timeago" datetime="2025-10-03T08:16:51+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="October 3, 2025 08:16:51 UTC">2025-10-03</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="April 13, 2026 15:08:10 UTC"><span class="timeago" datetime="2026-04-13T15:08:10+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="April 13, 2026 15:08:10 UTC">2026-04-13</span>
   </span>
 
     
