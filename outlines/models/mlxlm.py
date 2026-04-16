@@ -3,6 +3,11 @@
 from functools import singledispatchmethod
 from typing import TYPE_CHECKING, Iterator, List, Optional
 
+try:
+    from transformers import PreTrainedTokenizerBase
+except ImportError:  # pragma: no cover
+    PreTrainedTokenizerBase = None  # type: ignore
+
 from outlines.inputs import Chat
 from outlines.models.base import Model, ModelTypeAdapter
 from outlines.models.tokenizer import _check_hf_chat_template
@@ -10,8 +15,11 @@ from outlines.models.transformers import TransformerTokenizer
 from outlines.processors import OutlinesLogitsProcessor
 
 if TYPE_CHECKING:
+    from typing import Union
     import mlx.nn as nn
+    from mlx_lm.tokenizer_utils import TokenizerWrapper
     from transformers import PreTrainedTokenizer
+    MLXTokenizer = Union["TokenizerWrapper", "PreTrainedTokenizer"]
 
 __all__ = ["MLXLM", "from_mlxlm"]
 
@@ -100,7 +108,7 @@ class MLXLM(Model):
     def __init__(
         self,
         model: "nn.Module",
-        tokenizer: "PreTrainedTokenizer",
+        tokenizer: "MLXTokenizer",
     ):
         """
         Parameters
@@ -116,7 +124,11 @@ class MLXLM(Model):
         # self.mlx_tokenizer is used by the mlx-lm in its generate function
         self.mlx_tokenizer = tokenizer
         # self.tokenizer is used by the logits processor
-        self.tokenizer = TransformerTokenizer(tokenizer._tokenizer)
+        # tokenizer may be a mlx_lm.TokenizerWrapper (whose ._tokenizer is a
+        # PreTrainedTokenizerFast) or a PreTrainedTokenizerFast passed directly
+        inner = getattr(tokenizer, "_tokenizer", tokenizer)
+        hf_tokenizer = inner if isinstance(inner, PreTrainedTokenizerBase) else tokenizer
+        self.tokenizer = TransformerTokenizer(hf_tokenizer)
         self.type_adapter = MLXLMTypeAdapter(
             tokenizer=tokenizer,
             has_chat_template=_check_hf_chat_template(tokenizer)
@@ -251,7 +263,7 @@ class MLXLM(Model):
             yield gen_response.text
 
 
-def from_mlxlm(model: "nn.Module", tokenizer: "PreTrainedTokenizer") -> MLXLM:
+def from_mlxlm(model: "nn.Module", tokenizer: "MLXTokenizer") -> MLXLM:
     """Create an Outlines `MLXLM` model instance from an `mlx_lm` model and a
     tokenizer.
 

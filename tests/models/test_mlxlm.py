@@ -3,15 +3,17 @@ import re
 from enum import Enum
 from typing import Generator
 
+from pydantic import BaseModel
+import transformers
+
 import outlines
-from outlines.types import Regex
 from outlines.models.mlxlm import (
     MLXLM,
     MLXLMTypeAdapter,
     from_mlxlm
 )
 from outlines.models.transformers import TransformerTokenizer
-from pydantic import BaseModel
+from outlines.types import Regex
 
 try:
     import mlx_lm
@@ -36,6 +38,19 @@ def test_mlxlm_model_initialization():
     assert isinstance(model.tokenizer, TransformerTokenizer)
     assert isinstance(model.type_adapter, MLXLMTypeAdapter)
     assert model.tensor_library_name == "mlx"
+
+
+@pytest.mark.skipif(not HAS_MLX, reason="MLX tests require Apple Silicon")
+def test_mlxlm_model_initialization_with_hf_tokenizer():
+    """from_mlxlm must work when a raw HF tokenizer is passed instead of a
+    mlx_lm.TokenizerWrapper."""
+    mlx_model, _ = mlx_lm.load(TEST_MODEL)
+    hf_tokenizer = transformers.AutoTokenizer.from_pretrained(TEST_MODEL)
+    model = from_mlxlm(mlx_model, hf_tokenizer)
+    assert isinstance(model, MLXLM)
+    assert isinstance(model.tokenizer, TransformerTokenizer)
+    assert model.tokenizer.eos_token_id is not None
+    assert model.tokenizer.eos_token is not None
 
 
 @pytest.fixture(scope="session")
