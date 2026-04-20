@@ -116,7 +116,7 @@ class MLXLM(Model):
         # self.mlx_tokenizer is used by the mlx-lm in its generate function
         self.mlx_tokenizer = tokenizer
         # self.tokenizer is used by the logits processor
-        self.tokenizer = TransformerTokenizer(tokenizer._tokenizer)
+        self.tokenizer = TransformerTokenizer(tokenizer)
         self.type_adapter = MLXLMTypeAdapter(
             tokenizer=tokenizer,
             has_chat_template=_check_hf_chat_template(tokenizer)
