@@ -23,6 +23,7 @@ from outlines.backends import (
 from outlines.backends.base import LogitsProcessorType
 from outlines.types import CFG, JsonSchema
 from outlines.types.dsl import python_types_to_terms, to_regex
+from outlines.types.utils import is_pydantic_model
 
 
 class BlackBoxGenerator:
@@ -231,6 +232,7 @@ class SteerableGenerator:
 
         """
         self.model = model
+        self.output_type = output_type
         if output_type is None:
             self.logits_processor = None
         else:
@@ -272,9 +274,34 @@ class SteerableGenerator:
         """
         instance = cls.__new__(cls)
         instance.model = model
+        instance.output_type = None
         instance.logits_processor = processor
 
         return instance
+
+    def _parse_result(self, result: Any) -> Any:
+        """Parse a generated string into a Pydantic model instance if applicable.
+
+        When the output type is a Pydantic ``BaseModel`` subclass, the
+        generated JSON string is automatically validated and converted into a
+        model instance.  For all other output types the result is returned
+        unchanged.
+
+        Parameters
+        ----------
+        result
+            The raw string returned by the model.
+
+        Returns
+        -------
+        Any
+            A Pydantic model instance when ``output_type`` is a Pydantic
+            ``BaseModel`` subclass, otherwise the original string.
+
+        """
+        if is_pydantic_model(self.output_type):
+            return self.output_type.model_validate_json(result)
+        return result
 
     def __call__(self, prompt: Any, **inference_kwargs) -> Any:
         """Generate a response from the model.
@@ -294,9 +321,10 @@ class SteerableGenerator:
         """
         if self.logits_processor is not None:
             self.logits_processor.reset()
-        return self.model.generate(
+        result = self.model.generate(
             prompt, self.logits_processor, **inference_kwargs
         )
+        return self._parse_result(result)
 
     def batch(self, prompts: List[Any], **inference_kwargs) -> List[Any]:
         """Generate a batch of responses from the model.
@@ -316,9 +344,10 @@ class SteerableGenerator:
         """
         if self.logits_processor is not None:
             self.logits_processor.reset()
-        return self.model.generate_batch(
+        results = self.model.generate_batch(
             prompts, self.logits_processor, **inference_kwargs
         )
+        return [self._parse_result(r) for r in results]
 
     def stream(self, prompt: Any, **inference_kwargs) -> Iterator[Any]:
         """Generate a stream of responses from the model.

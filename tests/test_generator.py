@@ -2,6 +2,7 @@ import pytest
 from typing import AsyncGenerator, Generator as TypingGenerator, Literal
 
 import transformers
+from pydantic import BaseModel
 from outlines_core import Index, Vocabulary
 
 import outlines
@@ -91,6 +92,7 @@ def test_steerable_generator_init_valid_processor(steerable_model, sample_proces
     generator = SteerableGenerator.from_processor(steerable_model, sample_processor)
     assert generator.logits_processor == sample_processor
     assert generator.model == steerable_model
+    assert generator.output_type is None
 
 
 def test_steerable_generator_init_cfg_output_type(steerable_model):
@@ -102,6 +104,7 @@ def test_steerable_generator_init_cfg_output_type(steerable_model):
 def test_steerable_generator_init_other_output_type(steerable_model):
     generator = SteerableGenerator(steerable_model, Literal["foo", "bar"])
     assert generator.model == steerable_model
+    assert generator.output_type == Literal["foo", "bar"]
     assert isinstance(generator.logits_processor, OutlinesLogitsProcessor)
 
 
@@ -114,6 +117,33 @@ def test_steerable_generator_call(steerable_model):
     generator = SteerableGenerator(steerable_model, Literal["foo", "bar"])
     result = generator("foo", max_new_tokens=10)
     assert isinstance(result, str)
+
+
+def test_steerable_generator_call_pydantic(steerable_model):
+    class MyModel(BaseModel):
+        value: int
+
+    generator = SteerableGenerator(steerable_model, MyModel)
+    result = generator("Return a JSON object with a single integer field called value", max_new_tokens=50)
+    assert isinstance(result, MyModel)
+
+
+def test_steerable_generator_parse_result_pydantic(steerable_model):
+    class MyModel(BaseModel):
+        name: str
+        count: int
+
+    generator = SteerableGenerator(steerable_model, MyModel)
+    parsed = generator._parse_result('{"name": "test", "count": 42}')
+    assert isinstance(parsed, MyModel)
+    assert parsed.name == "test"
+    assert parsed.count == 42
+
+
+def test_steerable_generator_parse_result_non_pydantic(steerable_model):
+    generator = SteerableGenerator(steerable_model, Literal["foo", "bar"])
+    result = generator._parse_result("foo")
+    assert result == "foo"
 
 
 def test_steerable_generator_stream(steerable_model):
