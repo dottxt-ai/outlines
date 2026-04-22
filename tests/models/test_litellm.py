@@ -42,6 +42,20 @@ def test_litellm_init_with_kwargs():
     assert model.kwargs["api_base"] == "http://localhost:4000"
 
 
+def test_litellm_drop_params_default_true():
+    """drop_params=True by default so LiteLLM silently drops per-provider
+    unsupported kwargs (e.g. OpenAI's ``strict: True`` JSON schema flag that
+    Anthropic / Gemini / Bedrock reject)."""
+    model = outlines.from_litellm("anthropic/claude-3-5-sonnet-20241022")
+    assert model.kwargs.get("drop_params") is True
+
+
+def test_litellm_drop_params_user_override():
+    """User can opt out of ``drop_params=True`` for debugging."""
+    model = outlines.from_litellm("gpt-4o", drop_params=False)
+    assert model.kwargs["drop_params"] is False
+
+
 def test_litellm_batch_not_supported(model):
     with pytest.raises(NotImplementedError, match="does not support batch"):
         model.batch(["prompt1", "prompt2"])

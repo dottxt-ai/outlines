@@ -60,7 +60,11 @@ class LiteLLM(Model):
 
         """
         self.model_name = model_name
-        self.kwargs = kwargs
+        # Default ``drop_params=True`` so LiteLLM silently drops per-provider
+        # unsupported kwargs (e.g. the ``strict: True`` flag in OpenAI's JSON
+        # schema response_format, which Anthropic / Gemini / Bedrock reject).
+        # Users can opt out by passing ``drop_params=False`` explicitly.
+        self.kwargs = {"drop_params": True, **kwargs}
         self.type_adapter = LiteLLMTypeAdapter()
 
     def generate(
@@ -185,7 +189,8 @@ class AsyncLiteLLM(AsyncModel):
 
         """
         self.model_name = model_name
-        self.kwargs = kwargs
+        # See ``LiteLLM.__init__`` for why ``drop_params=True`` is the default.
+        self.kwargs = {"drop_params": True, **kwargs}
         self.type_adapter = LiteLLMTypeAdapter()
 
     async def generate(
