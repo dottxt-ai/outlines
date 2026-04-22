@@ -403,3 +403,28 @@ async def test_openai_async_batch():
     assert len(results) == 2
     assert results[0] == "hello"
     assert results[1] == "world"
+
+
+@pytest.mark.asyncio
+async def test_openai_async_batch_partial_failure():
+    from tests.test_utils.mock_openai_client import MockAsyncOpenAIClient
+
+    mock_client = MockAsyncOpenAIClient()
+    mock_client.add_mock_responses([
+        (
+            {
+                "messages": [{"role": "user", "content": "Say hello"}],
+                "model": MODEL_NAME,
+            },
+            "hello",
+        ),
+    ])
+
+    model = AsyncOpenAI(mock_client, MODEL_NAME)
+    results = await model.batch(["Say hello", "Say world"])
+
+    assert isinstance(results, list)
+    assert len(results) == 2
+    assert results[0] == "hello"
+    assert isinstance(results[1], ValueError)
+    assert "No response found" in str(results[1])

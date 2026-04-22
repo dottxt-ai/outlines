@@ -450,10 +450,15 @@ class AsyncOpenAI(AsyncModel):
         output_type = None,
         **inference_kwargs,
     ):
-        return list(await asyncio.gather(*(
-            self.generate(single_input, output_type, **inference_kwargs)
-            for single_input in model_input
-        )))
+        return list(
+            await asyncio.gather(
+                *(
+                    self.generate(single_input, output_type, **inference_kwargs)
+                    for single_input in model_input
+                ),
+                return_exceptions=True,
+            )
+        )
 
     async def generate_stream( # type: ignore
         self,
