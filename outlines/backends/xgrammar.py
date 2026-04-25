@@ -126,7 +126,7 @@ class XGrammarBackend(BaseBackend):
         if isinstance(model, Transformers):
             tokenizer = model.hf_tokenizer
         elif isinstance(model, MLXLM): # pragma: no cover
-            tokenizer = model.mlx_tokenizer._tokenizer
+            tokenizer = model.mlx_tokenizer
         else: # pragma: no cover
             raise ValueError(
                 "The xgrammar backend only supports Transformers and "

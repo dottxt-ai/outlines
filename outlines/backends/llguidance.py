@@ -224,7 +224,7 @@ class LLGuidanceBackend(BaseBackend):
             import llguidance.hf
 
             return llguidance.hf.from_tokenizer(
-                model.mlx_tokenizer._tokenizer
+                model.mlx_tokenizer
             )
 
         else: # pragma: no cover
