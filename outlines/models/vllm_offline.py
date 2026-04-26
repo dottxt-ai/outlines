@@ -249,26 +249,27 @@ class VLLMOffline(Model):
 
     def _check_chat_template(self) -> bool:
         """Check if the tokenizer has a chat template."""
-        from vllm.transformers_utils.tokenizer import (
-            PreTrainedTokenizer,
-            PreTrainedTokenizerFast,
-            TokenizerBase
-        )
-        from outlines.models.tokenizer import _check_hf_chat_template
+        # 1. Try HuggingFace-style chat template check (get_chat_template).
+        # Only return early on True; on False or any exception fall through to
+        # step 2 so that vLLM-style tokenizers are still handled correctly.
+        if hasattr(self.tokenizer, "chat_template") or hasattr(self.tokenizer, "apply_chat_template"):
+            try:
+                from outlines.models.tokenizer import _check_hf_chat_template
+                if _check_hf_chat_template(self.tokenizer):
+                    return True
+            except Exception:
+                pass
 
-        if isinstance(self.tokenizer, (PreTrainedTokenizer, PreTrainedTokenizerFast)):
-            return _check_hf_chat_template(self.tokenizer)
-        elif isinstance(self.tokenizer, TokenizerBase):
-            # vLLM defines its own TokenizerBase class, and only provides
-            # limited compatibility with HuggingFace tokenizers. So we
-            # need to check for chat template support differently.
+        # 2. Try vLLM-style apply_chat_template (works for old and new vLLM).
+        if hasattr(self.tokenizer, "apply_chat_template"):
             try:
                 self.tokenizer.apply_chat_template([{"role": "user", "content": "test"}])
                 return True
             except Exception:
-                return False
-        else:  # Never reached  # pragma: no cover
-            return False
+                pass
+
+        # 3. Default: no chat template
+        return False
 
 def from_vllm_offline(model: "LLM") -> VLLMOffline:
     """Create an Outlines `VLLMOffline` model instance from a `vllm.LLM`
