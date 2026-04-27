@@ -43,6 +43,11 @@ jobs:
       run: |
         curl -fsSL https://ollama.com/install.sh | sh
         ollama --version
+        ollama serve &
+        # Wait for the server to become available
+        for i in $(seq 1 30); do
+          ollama list && break || sleep 2
+        done
         ollama pull tinyllama
     - name: Set up test environment
       run: |
