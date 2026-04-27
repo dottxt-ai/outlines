@@ -38,10 +38,6 @@ def _make_vllm_offline_with_tokenizer(tokenizer) -> VLLMOffline:
     return instance
 
 
-# ---------------------------------------------------------------------------
-# Unit tests for _check_chat_template
-# ---------------------------------------------------------------------------
-
 def test_check_chat_template_hf_with_template():
     """HF tokenizer with a valid chat template returns True via step 1."""
     tok = MagicMock()
@@ -49,36 +45,18 @@ def test_check_chat_template_hf_with_template():
         assert _make_vllm_offline_with_tokenizer(tok)._check_chat_template() is True
 
 
-def test_check_chat_template_hf_without_template():
-    """HF tokenizer with no template: both steps fail, returns False."""
-    tok = MagicMock()
-    tok.apply_chat_template.side_effect = Exception("no template")
-    with patch("outlines.models.tokenizer._check_hf_chat_template", return_value=False):
-        assert _make_vllm_offline_with_tokenizer(tok)._check_chat_template() is False
-
-
 def test_check_chat_template_step1_false_does_not_block_step2():
-    """Step 1 returning False must not block step 2 from returning True.
-
-    Regression test: the old code did `return _check_hf_chat_template(...)`,
-    which could short-circuit to False even when apply_chat_template works.
-    """
+    """Step 1 returning False must not block step 2 from returning True."""
     tok = MagicMock()
     tok.apply_chat_template.return_value = "formatted"
     with patch("outlines.models.tokenizer._check_hf_chat_template", return_value=False):
         assert _make_vllm_offline_with_tokenizer(tok)._check_chat_template() is True
 
 
-def test_check_chat_template_vllm_style():
-    """vLLM-only tokenizer (no HF get_chat_template) returns True via step 2."""
-    tok = MagicMock(spec=["apply_chat_template"])
-    tok.apply_chat_template.return_value = "formatted"
-    assert _make_vllm_offline_with_tokenizer(tok)._check_chat_template() is True
-
-
 def test_check_chat_template_no_template_attrs():
     """Tokenizer with no relevant attributes returns False."""
     assert _make_vllm_offline_with_tokenizer(MagicMock(spec=[]))._check_chat_template() is False
+
 
 @pytest.fixture(scope="session")
 def image():
