@@ -74,7 +74,7 @@ jobs:
       run: |
         rm -f .coverage*
         uv run coverage erase
-        uv run python -m coverage run --branch --source=outlines --parallel-mode -m pytest -x -m 'not api_call'
+        uv run python -m coverage run --branch --source=outlines --parallel-mode -m pytest --continue-on-collection-errors -m 'not api_call'
     - name: Upload coverage data
       uses: actions/upload-artifact@v4
       with:
