@@ -86,7 +86,7 @@ test = [
     "tf-keras",
     "ollama",
     "lmstudio",
-    "dottxt",
+    "dottxt>=0.2.0",
     "sentencepiece",
     "mkdocs_gen_files",
     "llguidance",
