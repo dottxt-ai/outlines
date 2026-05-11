@@ -730,7 +730,7 @@ def from_transformers(
         return TransformersMultiModal(model, processor, device_dtype=device_dtype)
     else:
         raise ValueError(
-            "We could determine whether the model passed to `from_transformers`"
+            "We couldn't determine whether the model passed to `from_transformers`"
             + " is a text-2-text or a multi-modal model. Please provide a "
             + "a transformers tokenizer or processor."
         )
