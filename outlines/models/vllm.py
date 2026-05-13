@@ -3,7 +3,7 @@
 import json
 from typing import TYPE_CHECKING, Any, AsyncIterator, Iterator, Optional, Union
 
-from outlines.exceptions import GenerationError, is_provider_exception, normalize_provider_exception
+from outlines.exceptions import GenerationError, normalize_provider_errors
 from outlines.inputs import Chat
 from outlines.models.base import AsyncModel,Model, ModelTypeAdapter
 from outlines.models.openai import OpenAITypeAdapter
@@ -124,12 +124,8 @@ class VLLM(Model):
             **inference_kwargs,
         )
 
-        try:
+        with normalize_provider_errors(PROVIDER):
             response = self.client.chat.completions.create(**client_args)
-        except Exception as e:
-            if not is_provider_exception(e, PROVIDER):
-                raise
-            raise normalize_provider_exception(e, PROVIDER) from e
 
         messages = [choice.message for choice in response.choices]
         for message in messages:
@@ -182,23 +178,13 @@ class VLLM(Model):
             model_input, output_type, **inference_kwargs,
         )
 
-        try:
+        with normalize_provider_errors(PROVIDER):
             stream = self.client.chat.completions.create(
                 **client_args, stream=True,
             )
-        except Exception as e:
-            if not is_provider_exception(e, PROVIDER):
-                raise
-            raise normalize_provider_exception(e, PROVIDER) from e
-
-        try:
             for chunk in stream:  # pragma: no cover
                 if chunk.choices and chunk.choices[0].delta.content is not None:
                     yield chunk.choices[0].delta.content
-        except Exception as e:
-            if not is_provider_exception(e, PROVIDER):
-                raise
-            raise normalize_provider_exception(e, PROVIDER) from e
 
     def _build_client_args(
         self,
@@ -279,12 +265,8 @@ class AsyncVLLM(AsyncModel):
             model_input, output_type, **inference_kwargs,
         )
 
-        try:
+        with normalize_provider_errors(PROVIDER):
             response = await self.client.chat.completions.create(**client_args)
-        except Exception as e:
-            if not is_provider_exception(e, PROVIDER):
-                raise
-            raise normalize_provider_exception(e, PROVIDER) from e
 
         messages = [choice.message for choice in response.choices]
         for message in messages:
@@ -336,24 +318,14 @@ class AsyncVLLM(AsyncModel):
             model_input, output_type, **inference_kwargs,
         )
 
-        try:
+        with normalize_provider_errors(PROVIDER):
             stream = await self.client.chat.completions.create(
                 **client_args,
                 stream=True,
             )
-        except Exception as e:
-            if not is_provider_exception(e, PROVIDER):
-                raise
-            raise normalize_provider_exception(e, PROVIDER) from e
-
-        try:
             async for chunk in stream:  # pragma: no cover
                 if chunk.choices and chunk.choices[0].delta.content is not None:
                     yield chunk.choices[0].delta.content
-        except Exception as e:
-            if not is_provider_exception(e, PROVIDER):
-                raise
-            raise normalize_provider_exception(e, PROVIDER) from e
 
     def _build_client_args(
         self,

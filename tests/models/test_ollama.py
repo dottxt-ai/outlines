@@ -1,14 +1,18 @@
 import io
 import json
 from enum import Enum
+from types import SimpleNamespace
 from typing import Annotated
+from unittest.mock import AsyncMock, Mock
 
 import pytest
+import httpx
 from PIL import Image as PILImage
 from ollama import AsyncClient, Client
 from pydantic import BaseModel, Field
 
 import outlines
+from outlines.exceptions import APIConnectionError
 from outlines.inputs import Chat, Image, Video
 from outlines.models import AsyncOllama, Ollama
 
@@ -289,3 +293,118 @@ async def test_ollama_async_batch(async_model):
         await async_model.batch(
             ["Respond with one word.", "Respond with one word."],
         )
+
+
+# ---------------------------------------------------------------------------
+# Mocked stream output. Exception normalization for Ollama is parametrized in
+# tests/models/test_provider_exceptions.py.
+# ---------------------------------------------------------------------------
+
+def _ollama_chunk(text):
+    return SimpleNamespace(message=SimpleNamespace(content=text))
+
+
+class _AsyncStream:
+    def __init__(self, chunks):
+        self._iter = iter(chunks)
+
+    def __aiter__(self):
+        return self
+
+    async def __anext__(self):
+        try:
+            return next(self._iter)
+        except StopIteration:
+            raise StopAsyncIteration
+
+
+class _RaisingIterator:
+    def __init__(self, exc):
+        self.exc = exc
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        raise self.exc
+
+
+class _RaisingAsyncIterator:
+    def __init__(self, exc):
+        self.exc = exc
+
+    def __aiter__(self):
+        return self
+
+    async def __anext__(self):
+        raise self.exc
+
+
+def test_ollama_stream_yields_chunks():
+    client = Client()
+    model = Ollama(client, MODEL_NAME)
+    chunks = [_ollama_chunk("hel"), _ollama_chunk("lo")]
+    model.client.chat = Mock(return_value=iter(chunks))
+
+    assert list(model.stream("hi")) == ["hel", "lo"]
+
+
+def test_ollama_generate_connection_error_is_normalized():
+    client = Client()
+    model = Ollama(client, MODEL_NAME)
+    original = ConnectionError("Failed to connect to Ollama")
+    model.client.chat = Mock(side_effect=original)
+
+    with pytest.raises(APIConnectionError) as exc_info:
+        model.generate("hi")
+
+    assert exc_info.value.original_exception is original
+
+
+def test_ollama_stream_connect_error_is_normalized():
+    client = Client()
+    model = Ollama(client, MODEL_NAME)
+    original = httpx.ConnectError("Failed to connect to Ollama")
+    model.client.chat = Mock(return_value=_RaisingIterator(original))
+
+    with pytest.raises(APIConnectionError) as exc_info:
+        next(model.stream("hi"))
+
+    assert exc_info.value.original_exception is original
+
+
+@pytest.mark.asyncio
+async def test_ollama_async_stream_yields_chunks():
+    client = AsyncClient()
+    model = AsyncOllama(client, MODEL_NAME)
+    chunks = [_ollama_chunk("hel"), _ollama_chunk("lo")]
+    model.client.chat = AsyncMock(return_value=_AsyncStream(chunks))
+
+    result = [chunk async for chunk in model.stream("hi")]
+    assert result == ["hel", "lo"]
+
+
+@pytest.mark.asyncio
+async def test_ollama_async_generate_connection_error_is_normalized():
+    client = AsyncClient()
+    model = AsyncOllama(client, MODEL_NAME)
+    original = ConnectionError("Failed to connect to Ollama")
+    model.client.chat = AsyncMock(side_effect=original)
+
+    with pytest.raises(APIConnectionError) as exc_info:
+        await model.generate("hi")
+
+    assert exc_info.value.original_exception is original
+
+
+@pytest.mark.asyncio
+async def test_ollama_async_stream_connect_error_is_normalized():
+    client = AsyncClient()
+    model = AsyncOllama(client, MODEL_NAME)
+    original = httpx.ConnectError("Failed to connect to Ollama")
+    model.client.chat = AsyncMock(return_value=_RaisingAsyncIterator(original))
+
+    with pytest.raises(APIConnectionError) as exc_info:
+        await model.stream("hi").__anext__()
+
+    assert exc_info.value.original_exception is original

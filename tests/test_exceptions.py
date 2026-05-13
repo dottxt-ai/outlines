@@ -13,6 +13,8 @@ Each provider section can be run independently:
 """
 
 import pytest
+import sys
+from types import ModuleType
 from unittest.mock import Mock
 
 from outlines.exceptions import (
@@ -28,15 +30,31 @@ from outlines.exceptions import (
     ProviderResponseError,
     RateLimitError,
     ServerError,
+    _build_exception_map,
+    _extract_request_id,
     _extract_status_code,
     is_provider_exception,
+    normalize_provider_errors,
     normalize_provider_exception,
 )
 
 
-# ---------------------------------------------------------------------------
-# Exception hierarchy
-# ---------------------------------------------------------------------------
+def fake_provider_error(status_code=None):
+    class FakeSDKError(Exception):
+        pass
+
+    if status_code is not None:
+        FakeSDKError.status_code = status_code
+    return FakeSDKError()
+
+
+def _check_mapping(sdk_exc_cls, provider, expected_outlines_cls):
+    """Assert that a mocked SDK exception normalizes to the expected Outlines class."""
+    result = normalize_provider_exception(Mock(spec=sdk_exc_cls), provider)
+    assert isinstance(result, expected_outlines_cls), (
+        f"Expected {expected_outlines_cls.__name__}, got {type(result).__name__}"
+    )
+
 
 class TestExceptionHierarchy:
     def test_all_are_outlines_error(self):
@@ -99,6 +117,16 @@ class TestExceptionHierarchy:
         else:
             assert err._hint_note.startswith("  →")
 
+    def test_hint_note_fallback_without_add_note(self):
+        class LegacyAuthenticationError(AuthenticationError):
+            def __getattribute__(self, name):
+                if name == "add_note":
+                    raise AttributeError
+                return super().__getattribute__(name)
+
+        err = LegacyAuthenticationError()
+        assert err._hint_note == "  → Check API key."
+
     def test_hint_not_in_message(self):
         err = AuthenticationError(provider="openai")
         assert "Check API key" not in str(err)
@@ -115,18 +143,12 @@ class TestExceptionHierarchy:
         assert APIError.hint == ""
 
 
-# ---------------------------------------------------------------------------
-# _extract_status_code
-# ---------------------------------------------------------------------------
-
 class TestExtractStatusCode:
     def test_none_input(self):
         assert _extract_status_code(None) is None
 
     def test_status_code_attr(self):
-        class E(Exception):
-            status_code = 429
-        assert _extract_status_code(E()) == 429
+        assert _extract_status_code(fake_provider_error(429)) == 429
 
     def test_code_attr(self):
         class E(Exception):
@@ -155,43 +177,51 @@ class TestExtractStatusCode:
             status_code = "429"
         assert _extract_status_code(E()) is None
 
+    def test_response_with_non_int_status_code_returns_none(self):
+        class Resp:
+            status_code = "200"
+        class E(Exception):
+            response = Resp()
+        assert _extract_status_code(E()) is None
 
-# ---------------------------------------------------------------------------
-# normalize_provider_exception — status-code fallback
-# (uses provider "test" so no SDK-specific mapping is applied)
-# ---------------------------------------------------------------------------
+    def test_response_with_out_of_range_status_code_returns_none(self):
+        class Resp:
+            status_code = 99
+        class E(Exception):
+            response = Resp()
+        assert _extract_status_code(E()) is None
+
+    def test_value_600_out_of_range(self):
+        assert _extract_status_code(fake_provider_error(600)) is None
+
 
 class TestNormalizeProviderException:
-    def _exc(self, status_code=None):
-        class FakeSDKError(Exception):
-            pass
-        if status_code is not None:
-            FakeSDKError.status_code = status_code
-        return FakeSDKError()
+    @pytest.mark.parametrize(
+        ("status_code", "expected_cls"),
+        [
+            (401, AuthenticationError),
+            (403, PermissionDeniedError),
+            (404, NotFoundError),
+            (429, RateLimitError),
+            (400, BadRequestError),
+            (409, BadRequestError),
+            (413, BadRequestError),
+            (418, BadRequestError),
+            (422, BadRequestError),
+            (500, ServerError),
+            (503, ServerError),
+        ],
+    )
+    def test_status_code_fallbacks(self, status_code, expected_cls):
+        result = normalize_provider_exception(
+            fake_provider_error(status_code),
+            "test",
+        )
+        assert isinstance(result, expected_cls)
 
-    def test_status_code_401(self):
-        assert isinstance(normalize_provider_exception(self._exc(401), "test"), AuthenticationError)
-
-    def test_status_code_403(self):
-        assert isinstance(normalize_provider_exception(self._exc(403), "test"), PermissionDeniedError)
-
-    def test_status_code_404(self):
-        assert isinstance(normalize_provider_exception(self._exc(404), "test"), NotFoundError)
-
-    def test_status_code_429(self):
-        assert isinstance(normalize_provider_exception(self._exc(429), "test"), RateLimitError)
-
-    def test_status_code_500(self):
-        assert isinstance(normalize_provider_exception(self._exc(500), "test"), ServerError)
-
-    def test_status_code_503(self):
-        assert isinstance(normalize_provider_exception(self._exc(503), "test"), ServerError)
-
-    def test_status_code_400(self):
-        assert isinstance(normalize_provider_exception(self._exc(400), "test"), BadRequestError)
-
-    def test_status_code_422(self):
-        assert isinstance(normalize_provider_exception(self._exc(422), "test"), BadRequestError)
+    def test_2xx_status_code_falls_back_to_api_error(self):
+        result = normalize_provider_exception(fake_provider_error(200), "test")
+        assert type(result) is APIError
 
     def test_no_status_code_fallback_to_api_error(self):
         result = normalize_provider_exception(ValueError("unknown"), "test")
@@ -202,18 +232,39 @@ class TestNormalizeProviderException:
         assert normalize_provider_exception(orig, "test").original_exception is orig
 
     def test_provider_stored(self):
-        result = normalize_provider_exception(self._exc(429), "mycloud")
+        result = normalize_provider_exception(fake_provider_error(429), "mycloud")
         assert result.provider == "mycloud"
 
     def test_unknown_provider_uses_status_code_fallback(self):
         # An unrecognised provider name returns {} from _build_exception_map,
         # so only the status-code fallback applies.
-        assert isinstance(normalize_provider_exception(self._exc(429), "unknown-provider"), RateLimitError)
+        result = normalize_provider_exception(
+            fake_provider_error(429),
+            "unknown-provider",
+        )
+        assert isinstance(result, RateLimitError)
 
+    def test_request_id_propagated_through_normalize(self):
+        # request_id from the original SDK exception should end up on the
+        # normalized Outlines exception.
+        class FakeSDKError(Exception):
+            status_code = 500
+            request_id = "req-xyz"
 
-# ---------------------------------------------------------------------------
-# is_provider_exception
-# ---------------------------------------------------------------------------
+        err = normalize_provider_exception(FakeSDKError(), "test")
+        assert err.request_id == "req-xyz"
+
+    def test_request_id_from_response_headers_propagated(self):
+        class Resp:
+            status_code = 500
+            headers = {"x-request-id": "hdr-abc"}
+
+        class FakeSDKError(Exception):
+            response = Resp()
+
+        err = normalize_provider_exception(FakeSDKError(), "test")
+        assert err.request_id == "hdr-abc"
+
 
 class TestIsProviderException:
     """is_provider_exception must return False for programmer errors and True
@@ -242,14 +293,10 @@ class TestIsProviderException:
     # --- exceptions with HTTP status codes are treated as provider errors ---
 
     def test_status_code_429_is_provider(self):
-        class FakeSDKError(Exception):
-            status_code = 429
-        assert is_provider_exception(FakeSDKError(), "openai")
+        assert is_provider_exception(fake_provider_error(429), "openai")
 
     def test_status_code_500_is_provider(self):
-        class FakeSDKError(Exception):
-            status_code = 500
-        assert is_provider_exception(FakeSDKError(), "unknown-provider")
+        assert is_provider_exception(fake_provider_error(500), "unknown-provider")
 
     def test_status_code_on_response_is_provider(self):
         class Resp:
@@ -280,158 +327,191 @@ class TestIsProviderException:
         assert not is_provider_exception(ValueError("oops"), "unknown-provider")
 
 
-# ---------------------------------------------------------------------------
-# OpenAI provider mapping
-# ---------------------------------------------------------------------------
-
-class TestOpenAIExceptionMap:
+class TestExceptionMapOpenAI:
     @pytest.fixture(autouse=True)
     def _require_openai(self):
         pytest.importorskip("openai")
 
-    def _check(self, sdk_exc_cls, expected_outlines_cls):
-        result = normalize_provider_exception(Mock(spec=sdk_exc_cls), "openai")
-        assert isinstance(result, expected_outlines_cls), (
-            f"Expected {expected_outlines_cls.__name__}, got {type(result).__name__}"
-        )
-
     def test_authentication_error(self):
         import openai
-        self._check(openai.AuthenticationError, AuthenticationError)
+        _check_mapping(openai.AuthenticationError, "openai", AuthenticationError)
 
     def test_permission_denied(self):
         import openai
-        self._check(openai.PermissionDeniedError, PermissionDeniedError)
+        _check_mapping(openai.PermissionDeniedError, "openai", PermissionDeniedError)
 
     def test_not_found(self):
         import openai
-        self._check(openai.NotFoundError, NotFoundError)
+        _check_mapping(openai.NotFoundError, "openai", NotFoundError)
 
     def test_rate_limit(self):
         import openai
-        self._check(openai.RateLimitError, RateLimitError)
+        _check_mapping(openai.RateLimitError, "openai", RateLimitError)
 
     def test_bad_request(self):
         import openai
-        self._check(openai.BadRequestError, BadRequestError)
+        _check_mapping(openai.BadRequestError, "openai", BadRequestError)
 
     def test_internal_server_error(self):
         import openai
-        self._check(openai.InternalServerError, ServerError)
+        _check_mapping(openai.InternalServerError, "openai", ServerError)
 
     def test_timeout(self):
         import openai
-        self._check(openai.APITimeoutError, APITimeoutError)
+        _check_mapping(openai.APITimeoutError, "openai", APITimeoutError)
 
     def test_connection_error(self):
         import openai
-        self._check(openai.APIConnectionError, APIConnectionError)
+        _check_mapping(openai.APIConnectionError, "openai", APIConnectionError)
 
     def test_response_validation(self):
         import openai
-        self._check(openai.APIResponseValidationError, ProviderResponseError)
+        _check_mapping(openai.APIResponseValidationError, "openai", ProviderResponseError)
 
     def test_length_finish_reason(self):
         import openai
-        self._check(openai.LengthFinishReasonError, GenerationError)
+        _check_mapping(openai.LengthFinishReasonError, "openai", GenerationError)
 
     def test_content_filter_finish_reason(self):
         import openai
-        self._check(openai.ContentFilterFinishReasonError, GenerationError)
+        _check_mapping(openai.ContentFilterFinishReasonError, "openai", GenerationError)
+
+    def test_conflict_error(self):
+        import openai
+        _check_mapping(openai.ConflictError, "openai", BadRequestError)
+
+    def test_unprocessable_entity(self):
+        import openai
+        _check_mapping(openai.UnprocessableEntityError, "openai", BadRequestError)
 
 
-# ---------------------------------------------------------------------------
-# Anthropic provider mapping
-# ---------------------------------------------------------------------------
-
-class TestAnthropicExceptionMap:
+class TestExceptionMapAnthropic:
     @pytest.fixture(autouse=True)
     def _require_anthropic(self):
         pytest.importorskip("anthropic")
 
-    def _check(self, sdk_exc_cls, expected_outlines_cls):
-        result = normalize_provider_exception(Mock(spec=sdk_exc_cls), "anthropic")
-        assert isinstance(result, expected_outlines_cls)
-
     def test_authentication_error(self):
         import anthropic
-        self._check(anthropic.AuthenticationError, AuthenticationError)
+        _check_mapping(anthropic.AuthenticationError, "anthropic", AuthenticationError)
 
     def test_permission_denied(self):
         import anthropic
-        self._check(anthropic.PermissionDeniedError, PermissionDeniedError)
+        _check_mapping(anthropic.PermissionDeniedError, "anthropic", PermissionDeniedError)
 
     def test_not_found(self):
         import anthropic
-        self._check(anthropic.NotFoundError, NotFoundError)
+        _check_mapping(anthropic.NotFoundError, "anthropic", NotFoundError)
 
     def test_rate_limit(self):
         import anthropic
-        self._check(anthropic.RateLimitError, RateLimitError)
+        _check_mapping(anthropic.RateLimitError, "anthropic", RateLimitError)
 
     def test_bad_request(self):
         import anthropic
-        self._check(anthropic.BadRequestError, BadRequestError)
+        _check_mapping(anthropic.BadRequestError, "anthropic", BadRequestError)
+
+    def test_internal_server_error(self):
+        import anthropic
+        _check_mapping(anthropic.InternalServerError, "anthropic", ServerError)
 
     def test_overloaded(self):
         import anthropic._exceptions as anthropic_exc
-        self._check(anthropic_exc.OverloadedError, ServerError)
+        _check_mapping(anthropic_exc.OverloadedError, "anthropic", ServerError)
 
     def test_service_unavailable(self):
         import anthropic._exceptions as anthropic_exc
-        self._check(anthropic_exc.ServiceUnavailableError, ServerError)
+        _check_mapping(anthropic_exc.ServiceUnavailableError, "anthropic", ServerError)
+
+    def test_deadline_exceeded_is_timeout(self):
+        # DeadlineExceededError is a timeout, not a 5xx server error.
+        import anthropic._exceptions as anthropic_exc
+        _check_mapping(anthropic_exc.DeadlineExceededError, "anthropic", APITimeoutError)
 
     def test_timeout(self):
         import anthropic
-        self._check(anthropic.APITimeoutError, APITimeoutError)
+        _check_mapping(anthropic.APITimeoutError, "anthropic", APITimeoutError)
 
     def test_connection_error(self):
         import anthropic
-        self._check(anthropic.APIConnectionError, APIConnectionError)
+        _check_mapping(anthropic.APIConnectionError, "anthropic", APIConnectionError)
 
     def test_response_validation(self):
         import anthropic
-        self._check(anthropic.APIResponseValidationError, ProviderResponseError)
+        _check_mapping(anthropic.APIResponseValidationError, "anthropic", ProviderResponseError)
+
+    def test_conflict_error(self):
+        import anthropic
+        _check_mapping(anthropic.ConflictError, "anthropic", BadRequestError)
+
+    def test_request_too_large(self):
+        import anthropic._exceptions as anthropic_exc
+        _check_mapping(anthropic_exc.RequestTooLargeError, "anthropic", BadRequestError)
+
+    def test_unprocessable_entity(self):
+        import anthropic
+        _check_mapping(anthropic.UnprocessableEntityError, "anthropic", BadRequestError)
 
 
-# ---------------------------------------------------------------------------
-# Mistral provider mapping
-# ---------------------------------------------------------------------------
-
-class TestMistralExceptionMap:
+class TestExceptionMapMistral:
     @pytest.fixture(autouse=True)
     def _require_mistral(self):
         pytest.importorskip("mistralai")
 
-    def _check(self, sdk_exc_cls, expected_outlines_cls):
-        result = normalize_provider_exception(Mock(spec=sdk_exc_cls), "mistral")
-        assert isinstance(result, expected_outlines_cls)
+    def test_v2_errors_are_mapped(self, monkeypatch):
+        # Remove this monkeypatch test when mistralai v2.x+ is the minimum.
+        class HTTPValidationError(Exception):
+            pass
 
-    def test_http_validation_error(self):
-        import mistralai.models as mm
-        self._check(mm.HTTPValidationError, BadRequestError)
+        class ResponseValidationError(Exception):
+            pass
 
-    def test_validation_error(self):
-        import mistralai.models as mm
-        self._check(mm.ValidationError, BadRequestError)
+        class NoResponseError(Exception):
+            pass
 
-    def test_response_validation_error(self):
-        import mistralai.models as mm
-        self._check(mm.ResponseValidationError, ProviderResponseError)
+        fake_errors = ModuleType("mistralai.client.errors")
+        fake_errors.HTTPValidationError = HTTPValidationError
+        fake_errors.ResponseValidationError = ResponseValidationError
+        fake_errors.NoResponseError = NoResponseError
+        monkeypatch.setitem(sys.modules, "mistralai.client.errors", fake_errors)
+        _build_exception_map.cache_clear()
 
-    def test_no_response_error(self):
-        import mistralai.models as mm
-        self._check(mm.NoResponseError, APIConnectionError)
+        assert isinstance(
+            normalize_provider_exception(HTTPValidationError(), "mistral"),
+            BadRequestError,
+        )
+        assert isinstance(
+            normalize_provider_exception(ResponseValidationError(), "mistral"),
+            ProviderResponseError,
+        )
+        assert isinstance(
+            normalize_provider_exception(NoResponseError(), "mistral"),
+            APIConnectionError,
+        )
+
+        _build_exception_map.cache_clear()
+
+    def test_v2_non_exception_export_is_ignored(self, monkeypatch):
+        # Remove this monkeypatch test when mistralai v2.x+ is the minimum.
+        fake_errors = ModuleType("mistralai.client.errors")
+        fake_errors.HTTPValidationError = object()
+        monkeypatch.setitem(sys.modules, "mistralai.client.errors", fake_errors)
+        _build_exception_map.cache_clear()
+
+        assert not is_provider_exception(Exception("bad request"), "mistral")
+
+        _build_exception_map.cache_clear()
 
     def test_httpx_timeout(self):
         import httpx
-        self._check(httpx.TimeoutException, APITimeoutError)
+        _check_mapping(httpx.TimeoutException, "mistral", APITimeoutError)
 
     def test_httpx_connect_error(self):
         import httpx
-        self._check(httpx.ConnectError, APIConnectionError)
+        _check_mapping(httpx.ConnectError, "mistral", APIConnectionError)
 
     def test_status_code_fallback_401(self):
+        # v1.9 compatibility is intentionally best-effort: HTTP-like errors
+        # normalize through status-code fallback; v2 has explicit mappings above.
         class MistralSDKError(Exception):
             status_code = 401
         assert isinstance(normalize_provider_exception(MistralSDKError(), "mistral"), AuthenticationError)
@@ -447,30 +527,22 @@ class TestMistralExceptionMap:
         assert isinstance(normalize_provider_exception(MistralSDKError(), "mistral"), ServerError)
 
 
-# ---------------------------------------------------------------------------
-# Gemini provider mapping
-# ---------------------------------------------------------------------------
-
-class TestGeminiExceptionMap:
+class TestExceptionMapGemini:
     @pytest.fixture(autouse=True)
     def _require_gemini(self):
         pytest.importorskip("google.genai")
 
-    def _check(self, sdk_exc_cls, expected_outlines_cls):
-        result = normalize_provider_exception(Mock(spec=sdk_exc_cls), "gemini")
-        assert isinstance(result, expected_outlines_cls)
-
     def test_server_error(self):
         from google.genai import errors as genai_errors
-        self._check(genai_errors.ServerError, ServerError)
+        _check_mapping(genai_errors.ServerError, "gemini", ServerError)
 
     def test_httpx_timeout(self):
         import httpx
-        self._check(httpx.TimeoutException, APITimeoutError)
+        _check_mapping(httpx.TimeoutException, "gemini", APITimeoutError)
 
     def test_httpx_connect_error(self):
         import httpx
-        self._check(httpx.ConnectError, APIConnectionError)
+        _check_mapping(httpx.ConnectError, "gemini", APIConnectionError)
 
     def test_client_error_status_code_fallback(self):
         from google.genai import errors as genai_errors
@@ -480,14 +552,24 @@ class TestGeminiExceptionMap:
         assert isinstance(result, AuthenticationError)
 
 
-# ---------------------------------------------------------------------------
-# Ollama provider mapping
-# ---------------------------------------------------------------------------
-
-class TestOllamaExceptionMap:
+class TestExceptionMapOllama:
     @pytest.fixture(autouse=True)
     def _require_ollama(self):
         pytest.importorskip("ollama")
+
+    def test_builtin_connection_error(self):
+        result = normalize_provider_exception(ConnectionError("unreachable"), "ollama")
+        assert isinstance(result, APIConnectionError)
+
+    def test_httpx_connect_error(self):
+        import httpx
+        result = normalize_provider_exception(httpx.ConnectError("unreachable"), "ollama")
+        assert isinstance(result, APIConnectionError)
+
+    def test_httpx_timeout(self):
+        import httpx
+        result = normalize_provider_exception(httpx.TimeoutException("timed out"), "ollama")
+        assert isinstance(result, APITimeoutError)
 
     def test_request_error(self):
         import ollama
@@ -510,138 +592,108 @@ class TestOllamaExceptionMap:
         assert isinstance(result, RateLimitError)
 
 
-# ---------------------------------------------------------------------------
-# TGI provider mapping
-# ---------------------------------------------------------------------------
-
-class TestTGIExceptionMap:
+class TestExceptionMapTGI:
     @pytest.fixture(autouse=True)
     def _require_tgi(self):
         pytest.importorskip("huggingface_hub")
 
-    def _check(self, sdk_exc_cls, expected_outlines_cls):
-        result = normalize_provider_exception(Mock(spec=sdk_exc_cls), "tgi")
-        assert isinstance(result, expected_outlines_cls)
-
     def test_inference_timeout(self):
         from huggingface_hub.errors import InferenceTimeoutError
-        self._check(InferenceTimeoutError, APITimeoutError)
+        _check_mapping(InferenceTimeoutError, "tgi", APITimeoutError)
 
     def test_overloaded(self):
         from huggingface_hub.errors import OverloadedError
-        self._check(OverloadedError, ServerError)
+        _check_mapping(OverloadedError, "tgi", ServerError)
 
     def test_validation_error(self):
         from huggingface_hub.errors import ValidationError
-        self._check(ValidationError, BadRequestError)
+        _check_mapping(ValidationError, "tgi", BadRequestError)
 
     def test_generation_error(self):
         from huggingface_hub.errors import GenerationError as HFGenerationError
-        self._check(HFGenerationError, GenerationError)
+        _check_mapping(HFGenerationError, "tgi", GenerationError)
 
     def test_incomplete_generation_error(self):
         from huggingface_hub.errors import IncompleteGenerationError
-        self._check(IncompleteGenerationError, GenerationError)
+        _check_mapping(IncompleteGenerationError, "tgi", GenerationError)
 
     def test_bad_request_error(self):
         from huggingface_hub.errors import BadRequestError as HFBadRequestError
-        self._check(HFBadRequestError, BadRequestError)
+        _check_mapping(HFBadRequestError, "tgi", BadRequestError)
 
     def test_gated_repo_error(self):
         from huggingface_hub.errors import GatedRepoError
-        self._check(GatedRepoError, PermissionDeniedError)
+        _check_mapping(GatedRepoError, "tgi", PermissionDeniedError)
 
     def test_repository_not_found(self):
         from huggingface_hub.errors import RepositoryNotFoundError
-        self._check(RepositoryNotFoundError, NotFoundError)
+        _check_mapping(RepositoryNotFoundError, "tgi", NotFoundError)
+
+    def test_hf_hub_http_error_status_code_fallback(self):
+        # HfHubHTTPError is the base class and is intentionally not in the
+        # provider map; it falls through to the status-code fallback via
+        # response.status_code.
+        from huggingface_hub.errors import HfHubHTTPError
+        mock_exc = Mock(spec=HfHubHTTPError)
+        mock_exc.response = Mock(status_code=401)
+        result = normalize_provider_exception(mock_exc, "tgi")
+        assert isinstance(result, AuthenticationError)
 
 
-# ---------------------------------------------------------------------------
-# Dottxt provider mapping
-# ---------------------------------------------------------------------------
-
-class TestDottxtExceptionMap:
+class TestExceptionMapDottxt:
     @pytest.fixture(autouse=True)
     def _require_dottxt(self):
         pytest.importorskip("urllib3")
 
-    def _check(self, sdk_exc_cls, expected_outlines_cls):
-        result = normalize_provider_exception(Mock(spec=sdk_exc_cls), "dottxt")
-        assert isinstance(result, expected_outlines_cls)
-
     def test_connect_timeout(self):
         from urllib3.exceptions import ConnectTimeoutError
-        self._check(ConnectTimeoutError, APITimeoutError)
+        _check_mapping(ConnectTimeoutError, "dottxt", APITimeoutError)
 
     def test_read_timeout(self):
         from urllib3.exceptions import ReadTimeoutError
-        self._check(ReadTimeoutError, APITimeoutError)
+        _check_mapping(ReadTimeoutError, "dottxt", APITimeoutError)
 
     def test_max_retry_error(self):
         from urllib3.exceptions import MaxRetryError
-        self._check(MaxRetryError, APIConnectionError)
+        _check_mapping(MaxRetryError, "dottxt", APIConnectionError)
 
     def test_new_connection_error(self):
         from urllib3.exceptions import NewConnectionError
-        self._check(NewConnectionError, APIConnectionError)
+        _check_mapping(NewConnectionError, "dottxt", APIConnectionError)
 
 
-# ---------------------------------------------------------------------------
-# vLLM provider mapping (reuses OpenAI map via provider name)
-# ---------------------------------------------------------------------------
-
-class TestVLLMExceptionMap:
+# vLLM and SGLang both reuse the OpenAI SDK client, so they share the OpenAI
+# exception map. One parametrized class covers both providers.
+@pytest.mark.parametrize("provider", ["vllm", "sglang"])
+class TestExceptionMapOpenAICompatible:
     @pytest.fixture(autouse=True)
     def _require_openai(self):
         pytest.importorskip("openai")
 
-    def test_authentication_error(self):
+    def test_authentication_error(self, provider):
         import openai
-        result = normalize_provider_exception(Mock(spec=openai.AuthenticationError), "vllm")
-        assert isinstance(result, AuthenticationError)
+        _check_mapping(openai.AuthenticationError, provider, AuthenticationError)
 
-    def test_rate_limit(self):
+    def test_rate_limit(self, provider):
         import openai
-        result = normalize_provider_exception(Mock(spec=openai.RateLimitError), "vllm")
-        assert isinstance(result, RateLimitError)
+        _check_mapping(openai.RateLimitError, provider, RateLimitError)
 
-    def test_provider_name(self):
+    def test_provider_attribute_is_set(self, provider):
         import openai
-        result = normalize_provider_exception(Mock(spec=openai.RateLimitError), "vllm")
-        assert result.provider == "vllm"
+        result = normalize_provider_exception(Mock(spec=openai.RateLimitError), provider)
+        assert result.provider == provider
 
-
-# ---------------------------------------------------------------------------
-# SGLang provider mapping (reuses OpenAI map via provider name)
-# ---------------------------------------------------------------------------
-
-class TestSGLangExceptionMap:
-    @pytest.fixture(autouse=True)
-    def _require_openai(self):
-        pytest.importorskip("openai")
-
-    def test_authentication_error(self):
-        import openai
-        result = normalize_provider_exception(Mock(spec=openai.AuthenticationError), "sglang")
-        assert isinstance(result, AuthenticationError)
-
-    def test_rate_limit(self):
-        import openai
-        result = normalize_provider_exception(Mock(spec=openai.RateLimitError), "sglang")
-        assert isinstance(result, RateLimitError)
-
-    def test_provider_name(self):
-        import openai
-        result = normalize_provider_exception(Mock(spec=openai.RateLimitError), "sglang")
-        assert result.provider == "sglang"
-
-
-# ---------------------------------------------------------------------------
-# Local model error passthrough (Transformers, MLXLM, VLLMOffline)
-# ---------------------------------------------------------------------------
 
 class TestLocalModelErrorPassthrough:
-    def test_transformers_passthrough_native_generation_errors(self):
+    """Local-runtime models intentionally do not normalize exceptions.
+
+    Single guard test: ensures Transformers (the most-used local model)
+    propagates raw exceptions unchanged. The same property holds for MLXLM
+    and VLLMOffline by virtue of not importing ``normalize_provider_errors``;
+    grep is the source of truth there.
+    """
+
+    def test_transformers_raises_raw(self):
         from outlines.models.transformers import Transformers
 
         class DummyModel:
@@ -657,40 +709,156 @@ class TestLocalModelErrorPassthrough:
         with pytest.raises(RuntimeError, match="local generation failed"):
             model._generate_output_seq("", {"input_ids": object()})
 
-    def test_mlxlm_passthrough_native_generation_errors(self, monkeypatch):
-        import sys
-        import types
-        from outlines.models.mlxlm import MLXLM
 
-        def _raise_generate(*args, **kwargs):
-            raise ValueError("mlx local failure")
+class TestAPIErrorMessageConstruction:
+    def test_explicit_message_used_as_is(self):
+        err = APIError("custom message", provider="openai")
+        assert str(err) == "custom message"
 
-        fake_mlx_lm = types.SimpleNamespace(generate=_raise_generate)
-        monkeypatch.setitem(sys.modules, "mlx_lm", fake_mlx_lm)
+    def test_provider_and_original_exception(self):
+        orig = ValueError("boom")
+        err = APIError(provider="openai", original_exception=orig)
+        assert "[openai]" in str(err)
+        assert "boom" in str(err)
 
-        model = MLXLM.__new__(MLXLM)
-        model.model = object()
-        model.mlx_tokenizer = object()
-        model.type_adapter = types.SimpleNamespace(
-            format_input=lambda _: "prompt",
-            format_output_type=lambda _: None,
-        )
+    def test_original_exception_only(self):
+        orig = ValueError("boom")
+        err = APIError(original_exception=orig)
+        assert "boom" in str(err)
+        assert "[" not in str(err)
 
-        with pytest.raises(ValueError, match="mlx local failure"):
-            model.generate("hello")
+    def test_request_id_extracted_from_original_exception(self):
+        class E(Exception):
+            request_id = "req-abc"
+        err = APIError(original_exception=E())
+        assert err.request_id == "req-abc"
 
-    def test_vllm_offline_passthrough_native_generation_errors(self):
-        import types
-        from outlines.models.vllm_offline import VLLMOffline
 
-        class DummyModel:
-            def generate(self, **kwargs):
-                raise RuntimeError("vllm offline failed")
+class TestExtractRequestId:
+    def test_request_id_attr(self):
+        class E(Exception):
+            request_id = "req-123"
+        assert _extract_request_id(E()) == "req-123"
 
-        model = VLLMOffline.__new__(VLLMOffline)
-        model.model = DummyModel()
-        model.type_adapter = types.SimpleNamespace(format_input=lambda _: "prompt")
-        model._build_generation_args = lambda _inference_kwargs, _output_type: object()
+    def test_requestId_attr(self):
+        class E(Exception):
+            requestId = "req-456"
+        assert _extract_request_id(E()) == "req-456"
 
-        with pytest.raises(RuntimeError, match="vllm offline failed"):
-            model.generate("hello")
+    def test_no_request_id_returns_none(self):
+        assert _extract_request_id(ValueError("no id")) is None
+
+    def test_empty_string_request_id_ignored(self):
+        class E(Exception):
+            request_id = ""
+        assert _extract_request_id(E()) is None
+
+    def test_non_string_request_id_ignored(self):
+        class E(Exception):
+            request_id = 12345
+        assert _extract_request_id(E()) is None
+
+    def test_x_request_id_in_response_headers(self):
+        class Resp:
+            headers = {"x-request-id": "hdr-789"}
+        class E(Exception):
+            response = Resp()
+        assert _extract_request_id(E()) == "hdr-789"
+
+    def test_request_id_in_response_headers(self):
+        class Resp:
+            headers = {"request-id": "hdr-000"}
+        class E(Exception):
+            response = Resp()
+        assert _extract_request_id(E()) == "hdr-000"
+
+    def test_non_mapping_headers_ignored(self):
+        class Resp:
+            headers = "not-a-mapping"
+        class E(Exception):
+            response = Resp()
+        assert _extract_request_id(E()) is None
+
+    def test_mapping_headers_without_request_id_key(self):
+        class Resp:
+            headers = {"content-type": "application/json"}
+        class E(Exception):
+            response = Resp()
+        assert _extract_request_id(E()) is None
+
+
+class TestNormalizeProviderErrors:
+    def test_provider_error_is_normalized(self):
+        original = fake_provider_error(429)
+
+        with pytest.raises(RateLimitError) as exc_info:
+            with normalize_provider_errors("openai"):
+                raise original
+
+        assert exc_info.value.original_exception is original
+
+    def test_non_provider_error_passes_through(self):
+        original = TypeError("programmer error")
+
+        with pytest.raises(TypeError) as exc_info:
+            with normalize_provider_errors("openai"):
+                raise original
+
+        assert exc_info.value is original
+
+    def test_generator_error_is_normalized(self):
+        original = fake_provider_error(429)
+
+        def stream():
+            with normalize_provider_errors("openai"):
+                raise original
+                yield  # pragma: no cover
+
+        with pytest.raises(RateLimitError) as exc_info:
+            next(stream())
+
+        assert exc_info.value.original_exception is original
+
+    def test_generator_success_yields_through_context_manager(self):
+        events = []
+
+        def stream():
+            with normalize_provider_errors("openai"):
+                events.append("entered")
+                yield "one"
+                events.append("after-one")
+                yield "two"
+                events.append("after-two")
+            events.append("exited")
+
+        assert list(stream()) == ["one", "two"]
+        assert events == ["entered", "after-one", "after-two", "exited"]
+
+    @pytest.mark.asyncio
+    async def test_async_error_is_normalized(self):
+        original = fake_provider_error(429)
+
+        async def generate():
+            with normalize_provider_errors("openai"):
+                raise original
+
+        with pytest.raises(RateLimitError) as exc_info:
+            await generate()
+
+        assert exc_info.value.original_exception is original
+
+    @pytest.mark.asyncio
+    async def test_async_generator_success_yields_through_context_manager(self):
+        events = []
+
+        async def stream():
+            with normalize_provider_errors("openai"):
+                events.append("entered")
+                yield "one"
+                events.append("after-one")
+                yield "two"
+                events.append("after-two")
+            events.append("exited")
+
+        assert [chunk async for chunk in stream()] == ["one", "two"]
+        assert events == ["entered", "after-one", "after-two", "exited"]

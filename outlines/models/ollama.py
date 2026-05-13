@@ -11,7 +11,7 @@ from typing import (
     cast,
 )
 
-from outlines.exceptions import is_provider_exception, normalize_provider_exception
+from outlines.exceptions import normalize_provider_errors
 from outlines.inputs import Chat, Image
 from outlines.models.base import AsyncModel, Model, ModelTypeAdapter
 from outlines.types import CFG, JsonSchema, Regex
@@ -198,16 +198,12 @@ class Ollama(Model):
 
         print(self.type_adapter.format_input(model_input))
 
-        try:
+        with normalize_provider_errors(PROVIDER):
             response = self.client.chat(
                 messages=self.type_adapter.format_input(model_input),
                 format=self.type_adapter.format_output_type(output_type),
                 **kwargs,
             )
-        except Exception as e:
-            if not is_provider_exception(e, PROVIDER):
-                raise
-            raise normalize_provider_exception(e, PROVIDER) from e
 
         return response.message.content
 
@@ -249,24 +245,15 @@ class Ollama(Model):
         if "model" not in kwargs and self.model_name is not None:
             kwargs["model"] = self.model_name
 
-        try:
+        with normalize_provider_errors(PROVIDER):
             response = self.client.chat(
                 messages=self.type_adapter.format_input(model_input),
                 format=self.type_adapter.format_output_type(output_type),
                 stream=True,
                 **kwargs,
             )
-        except Exception as e:
-            if not is_provider_exception(e, PROVIDER):
-                raise
-            raise normalize_provider_exception(e, PROVIDER) from e
-        try:
             for chunk in response:
                 yield chunk.message.content
-        except Exception as e:
-            if not is_provider_exception(e, PROVIDER):
-                raise
-            raise normalize_provider_exception(e, PROVIDER) from e
 
 
 class AsyncOllama(AsyncModel):
@@ -320,16 +307,12 @@ class AsyncOllama(AsyncModel):
         if "model" not in kwargs and self.model_name is not None:
             kwargs["model"] = self.model_name
 
-        try:
+        with normalize_provider_errors(PROVIDER):
             response = await self.client.chat(
                 messages=self.type_adapter.format_input(model_input),
                 format=self.type_adapter.format_output_type(output_type),
                 **kwargs,
             )
-        except Exception as e:
-            if not is_provider_exception(e, PROVIDER):
-                raise
-            raise normalize_provider_exception(e, PROVIDER) from e
         return response.message.content
 
     async def generate_batch(
@@ -370,24 +353,15 @@ class AsyncOllama(AsyncModel):
         if "model" not in kwargs and self.model_name is not None:
             kwargs["model"] = self.model_name
 
-        try:
+        with normalize_provider_errors(PROVIDER):
             stream = await self.client.chat(
                 messages=self.type_adapter.format_input(model_input),
                 format=self.type_adapter.format_output_type(output_type),
                 stream=True,
                 **kwargs,
             )
-        except Exception as e:
-            if not is_provider_exception(e, PROVIDER):
-                raise
-            raise normalize_provider_exception(e, PROVIDER) from e
-        try:
             async for chunk in stream:
                 yield chunk.message.content
-        except Exception as e:
-            if not is_provider_exception(e, PROVIDER):
-                raise
-            raise normalize_provider_exception(e, PROVIDER) from e
 
 
 def from_ollama(

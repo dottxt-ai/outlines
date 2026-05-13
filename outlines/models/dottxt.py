@@ -3,7 +3,7 @@
 import json
 from typing import TYPE_CHECKING, Any, Optional, Union, cast
 
-from outlines.exceptions import APIError, is_provider_exception, normalize_provider_exception
+from outlines.exceptions import normalize_provider_errors
 from outlines.models.base import AsyncModel, Model, ModelTypeAdapter
 from outlines.types import CFG, JsonSchema, Regex
 
@@ -142,16 +142,12 @@ class Dottxt(Model):
                 "or as a `model=` keyword argument at generation time."
             )
 
-        try:
+        with normalize_provider_errors(PROVIDER):
             result = self.client.generate(
                 input=prompt,
                 response_format=json_schema,
                 **inference_kwargs,
             )
-        except Exception as e:
-            if not is_provider_exception(e, PROVIDER):
-                raise
-            raise normalize_provider_exception(e, PROVIDER) from e
 
         return json.dumps(result)
 
@@ -242,14 +238,12 @@ class AsyncDottxt(AsyncModel):
                 "or as a `model=` keyword argument at generation time."
             )
 
-        try:
+        with normalize_provider_errors(PROVIDER):
             result = await self.client.generate(
                 input=prompt,
                 response_format=json_schema,
                 **inference_kwargs,
             )
-        except Exception as e:
-            raise normalize_provider_exception(e, PROVIDER) from e
 
         return json.dumps(result)
 

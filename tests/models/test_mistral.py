@@ -1,22 +1,21 @@
 import io
 import json
 import os
-from typing import Annotated, Generator, AsyncGenerator
-from unittest.mock import AsyncMock, Mock
+from typing import Generator, AsyncGenerator
 
 import pytest
 from PIL import Image as PILImage
 from mistralai import Mistral as MistralClient
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 import outlines
-from outlines.exceptions import BadRequestError
-from outlines.inputs import Chat, Image, Video
+from outlines.inputs import Chat, Image
 from outlines.models.mistral import AsyncMistral, Mistral
 from outlines.types import JsonSchema, Regex
 
 
 MODEL_NAME = "mistral-large-latest"
+SMALL_MODEL_NAME = "mistral-small-latest"
 VISION_MODEL = "pixtral-large-latest"
 
 
@@ -54,16 +53,26 @@ def model(api_key):
 
 
 @pytest.fixture(scope="session")
+def small_model(api_key):
+    return Mistral(MistralClient(api_key=api_key), SMALL_MODEL_NAME)
+
+
+@pytest.fixture(scope="session")
 def vision_model(api_key):
     return Mistral(MistralClient(api_key=api_key), VISION_MODEL)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def async_model(api_key):
     return AsyncMistral(MistralClient(api_key=api_key), MODEL_NAME)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
+def async_small_model(api_key):
+    return AsyncMistral(MistralClient(api_key=api_key), SMALL_MODEL_NAME)
+
+
+@pytest.fixture
 def async_vision_model(api_key):
     return AsyncMistral(MistralClient(api_key=api_key), VISION_MODEL)
 
@@ -73,7 +82,7 @@ def model_no_model_name(api_key):
     return Mistral(MistralClient(api_key=api_key))
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 def async_model_no_model_name(api_key):
     return AsyncMistral(MistralClient(api_key=api_key))
 
@@ -128,8 +137,9 @@ def test_mistral_call_model_name(model_no_model_name):
 
 
 @pytest.mark.api_call
-def test_mistral_multiple_samples(model):
-    result = model("Respond with one word. Not more.", n=2)
+def test_mistral_multiple_samples(small_model):
+    # mistral-large does not support n > 1; small does
+    result = small_model("Respond with one word. Not more.", n=2)
     assert isinstance(result, list)
     assert len(result) == 2
     assert isinstance(result[0], str)
@@ -256,8 +266,9 @@ async def test_mistral_async_call_model_name(async_model_no_model_name):
 
 @pytest.mark.asyncio
 @pytest.mark.api_call
-async def test_mistral_async_multiple_samples(async_model):
-    result = await async_model("Respond with one word. Not more.", n=2)
+async def test_mistral_async_multiple_samples(async_small_model):
+    # mistral-large does not support n > 1; small does
+    result = await async_small_model("Respond with one word. Not more.", n=2)
     assert isinstance(result, list)
     assert len(result) == 2
     assert isinstance(result[0], str)
@@ -335,39 +346,3 @@ async def test_mistral_async_batch(async_model):
         _ = await async_model.batch(
             ["Respond with one word.", "Respond with one word."],
         )
-
-
-# ---------------------------------------------------------------------------
-# Schema error handling
-# ---------------------------------------------------------------------------
-
-def test_mistral_schema_error_raises_bad_request_error(api_key):
-    client = MistralClient(api_key=api_key)
-    model = Mistral(client, model_name=MODEL_NAME)
-    model.client.chat.complete = Mock(
-        side_effect=ValueError("json_schema validation failed: unsupported field")
-    )
-
-    with pytest.raises(BadRequestError, match="does not support your schema"):
-        model.generate("hello")
-
-
-@pytest.mark.asyncio
-async def test_mistral_async_schema_error_raises_bad_request_error(api_key):
-    client = MistralClient(api_key=api_key)
-    model = AsyncMistral(client, model_name=MODEL_NAME)
-    model.client.chat.complete_async = AsyncMock(
-        side_effect=ValueError("json_schema validation failed: unsupported field")
-    )
-
-    with pytest.raises(BadRequestError, match="does not support your schema"):
-        await model.generate("hello")
-
-
-def test_mistral_non_provider_error_passes_through(api_key):
-    client = MistralClient(api_key=api_key)
-    model = Mistral(client, model_name=MODEL_NAME)
-    model.client.chat.complete = Mock(side_effect=TypeError("programmer error"))
-
-    with pytest.raises(TypeError, match="programmer error"):
-        model.generate("hello")

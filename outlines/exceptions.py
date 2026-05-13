@@ -6,6 +6,10 @@ into the appropriate Outlines type.
 """
 
 from collections.abc import Mapping
+from contextlib import contextmanager
+from functools import lru_cache
+import importlib
+from typing import Iterator
 
 __all__ = [
     "OutlinesError",
@@ -21,6 +25,7 @@ __all__ = [
     "ProviderResponseError",
     "GenerationError",
     "is_provider_exception",
+    "normalize_provider_errors",
     "normalize_provider_exception",
 ]
 
@@ -122,7 +127,10 @@ class RateLimitError(APIError):
 
 class BadRequestError(APIError):
     """400, 409, 413, 422, other 4xx - malformed request."""
-    hint = "Check prompt length, schema, unsupported parameters, etc."
+    hint = (
+        "Check prompt length, schema, unsupported parameters, etc. "
+        "If this is a provider schema support error, try a local model or dottxt."
+    )
 
 
 # --- Server errors (5xx) ---
@@ -179,7 +187,10 @@ def _extract_status_code(exc: Exception | None) -> int | None:
 
 
 def _extract_request_id(exc: Exception) -> str | None:
-    for attr in ("request_id", "requestId", "x_request_id", "x-request-id"):
+    # "x-request-id" is intentionally not in this list: dashes aren't valid in
+    # Python identifiers, so getattr would never find it. The header fallback
+    # below covers that case.
+    for attr in ("request_id", "requestId", "x_request_id"):
         if isinstance(value := getattr(exc, attr, None), str) and value:
             return value
 
@@ -214,6 +225,7 @@ _STATUS_CODE_MAP: dict[int, type[APIError]] = {
 # Per-provider SDK exception maps
 # ---------------------------------------------------------------------------
 
+@lru_cache(maxsize=16)
 def _build_exception_map(provider: str) -> dict[type, type[APIError]]:
     """Return the SDK-exception → Outlines-exception mapping for *provider*.
 
@@ -252,8 +264,8 @@ def _build_exception_map(provider: str) -> dict[type, type[APIError]]:
             anthropic.UnprocessableEntityError: BadRequestError,
             anthropic.InternalServerError: ServerError,
             anthropic_exc.ServiceUnavailableError: ServerError,
-            anthropic_exc.DeadlineExceededError: ServerError,
             anthropic_exc.OverloadedError: ServerError,
+            anthropic_exc.DeadlineExceededError: APITimeoutError,
             anthropic.APITimeoutError: APITimeoutError,
             anthropic.APIConnectionError: APIConnectionError,
             anthropic.APIResponseValidationError: ProviderResponseError,
@@ -261,16 +273,29 @@ def _build_exception_map(provider: str) -> dict[type, type[APIError]]:
 
     if provider == "mistral":
         import httpx
-        import mistralai.models as mm
-        return {
-            mm.HTTPValidationError: BadRequestError,
-            mm.ValidationError: BadRequestError,
-            mm.ResponseValidationError: ProviderResponseError,
-            mm.NoResponseError: APIConnectionError,
+
+        mapping: dict[type, type[APIError]] = {
             httpx.TimeoutException: APITimeoutError,
             httpx.ConnectError: APIConnectionError,
-            # MistralError / SDKError with .status_code handled by status-code fallback
         }
+
+        # Mistral SDK v2 exposes public exceptions from mistralai.client.errors.
+        # Older SDKs are best-effort via transport and status-code fallback.
+        try:
+            mistral_errors = importlib.import_module("mistralai.client.errors")
+        except ImportError:
+            return mapping
+
+        for name, outlines_exc_cls in (
+            ("HTTPValidationError", BadRequestError),
+            ("ResponseValidationError", ProviderResponseError),
+            ("NoResponseError", APIConnectionError),
+        ):
+            exc_cls = getattr(mistral_errors, name, None)
+            if isinstance(exc_cls, type) and issubclass(exc_cls, Exception):
+                mapping[exc_cls] = outlines_exc_cls
+
+        return mapping
 
     if provider == "gemini":
         import httpx
@@ -285,8 +310,12 @@ def _build_exception_map(provider: str) -> dict[type, type[APIError]]:
         }
 
     if provider == "ollama":
+        import httpx
         import ollama
         return {
+            ConnectionError: APIConnectionError,
+            httpx.ConnectError: APIConnectionError,
+            httpx.TimeoutException: APITimeoutError,
             ollama.RequestError: APIConnectionError,
             # ollama.ResponseError.status_code handled by status-code fallback
             # (.status_code defaults to -1 when unknown; range guard filters it out)
@@ -359,3 +388,20 @@ def normalize_provider_exception(exc: Exception, provider: str) -> APIError:
             return BadRequestError(provider=provider, original_exception=exc)
 
     return APIError(provider=provider, original_exception=exc)
+
+
+@contextmanager
+def normalize_provider_errors(provider: str) -> Iterator[None]:
+    """Normalize provider exceptions raised inside this block.
+
+    This is a context manager instead of a decorator so wrappers can use the
+    same helper around sync calls, awaited async calls, sync generators, async
+    generators, and other provider SDK control-flow shapes without needing
+    separate wrapper machinery for each function kind.
+    """
+    try:
+        yield
+    except Exception as exc:
+        if not is_provider_exception(exc, provider):
+            raise
+        raise normalize_provider_exception(exc, provider) from exc

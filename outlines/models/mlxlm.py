@@ -1,4 +1,8 @@
-"""Integration with the `mlx_lm` library."""
+"""Integration with the `mlx_lm` library.
+
+Local runtime calls intentionally bypass
+outlines.exceptions.normalize_provider_errors().
+"""
 
 from functools import singledispatchmethod
 from typing import TYPE_CHECKING, Iterator, List, Optional
@@ -8,7 +12,6 @@ try:
 except ImportError:  # pragma: no cover
     PreTrainedTokenizerBase = None  # type: ignore
 
-from outlines.exceptions import APIError
 from outlines.inputs import Chat
 from outlines.models.base import Model, ModelTypeAdapter
 from outlines.models.tokenizer import _check_hf_chat_template
@@ -161,7 +164,6 @@ class MLXLM(Model):
         """
         from mlx_lm import generate
 
-        # Local runtime: intentionally bypasses outlines.exceptions.normalize_provider_exception().
         return generate(
             self.model,
             self.mlx_tokenizer,
@@ -220,7 +222,6 @@ class MLXLM(Model):
             for i in range(len(model_input))
         ]
 
-        # Local runtime: intentionally bypasses outlines.exceptions.normalize_provider_exception().
         response = batch_generate(
             self.model,
             self.mlx_tokenizer,
@@ -256,7 +257,6 @@ class MLXLM(Model):
         """
         from mlx_lm import stream_generate
 
-        # Local runtime: intentionally bypasses outlines.exceptions.normalize_provider_exception().
         for gen_response in stream_generate(
             self.model,
             self.mlx_tokenizer,
