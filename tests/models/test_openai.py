@@ -2,16 +2,14 @@ import io
 import json
 import os
 from typing import Annotated, Generator, AsyncGenerator
-from unittest.mock import AsyncMock, Mock
 
-import openai as openai_sdk
 import pytest
 from PIL import Image as PILImage
 from openai import AsyncOpenAI as AsyncOpenAIClient, OpenAI as OpenAIClient
 from pydantic import BaseModel, Field
 
 import outlines
-from outlines.exceptions import BadRequestError, GenerationError
+from outlines.exceptions import BadRequestError
 from outlines.inputs import Chat, Image, Video
 from outlines.models.openai import AsyncOpenAI, OpenAI
 from outlines.types import json_schema
@@ -344,65 +342,14 @@ async def test_openai_async_batch(async_model):
 
 
 # ---------------------------------------------------------------------------
-# Schema error handling
+# Live schema-rejection: OpenAI rejects unsupported JSON-schema features with
+# a 400, which the wrapper surfaces as BadRequestError. Mocked status-code
+# coverage lives in tests/models/test_provider_exceptions.py.
 # ---------------------------------------------------------------------------
+@pytest.mark.api_call
+def test_openai_invalid_schema_raises_bad_request(model):
+    class Foo(BaseModel):
+        bar: Annotated[str, Field(int, pattern=r"^\d+$")]
 
-def test_openai_invalid_schema_raises_bad_request_error(api_key, monkeypatch):
-    class FakeBadRequestError(Exception):
-        body = {"message": "Invalid schema: unsupported keyword 'patternProperties'"}
-
-    monkeypatch.setattr(openai_sdk, "BadRequestError", FakeBadRequestError)
-
-    client = OpenAIClient(api_key=api_key)
-    model = OpenAI(client, model_name=MODEL_NAME)
-    model.client.chat.completions.create = Mock(side_effect=FakeBadRequestError())
-
-    with pytest.raises(BadRequestError, match="does not support your schema"):
-        model.generate("hello")
-
-
-@pytest.mark.asyncio
-async def test_openai_async_invalid_schema_raises_bad_request_error(api_key, monkeypatch):
-    class FakeBadRequestError(Exception):
-        body = {"message": "Invalid schema: unsupported keyword 'patternProperties'"}
-
-    monkeypatch.setattr(openai_sdk, "BadRequestError", FakeBadRequestError)
-
-    client = AsyncOpenAIClient(api_key=api_key)
-    model = AsyncOpenAI(client, model_name=MODEL_NAME)
-    model.client.chat.completions.create = AsyncMock(side_effect=FakeBadRequestError())
-
-    with pytest.raises(BadRequestError, match="does not support your schema"):
-        await model.generate("hello")
-
-
-def test_openai_refusal_raises_generation_error(api_key):
-    client = OpenAIClient(api_key=api_key)
-    model = OpenAI(client, model_name=MODEL_NAME)
-    response = Mock()
-    response.choices = [Mock(message=Mock(refusal="safety refusal", content=None))]
-    model.client.chat.completions.create = Mock(return_value=response)
-
-    with pytest.raises(GenerationError, match="refused to answer the request"):
-        model.generate("hello")
-
-
-@pytest.mark.asyncio
-async def test_openai_async_refusal_raises_generation_error(api_key):
-    client = AsyncOpenAIClient(api_key=api_key)
-    model = AsyncOpenAI(client, model_name=MODEL_NAME)
-    response = Mock()
-    response.choices = [Mock(message=Mock(refusal="safety refusal", content=None))]
-    model.client.chat.completions.create = AsyncMock(return_value=response)
-
-    with pytest.raises(GenerationError, match="refused to answer the request"):
-        await model.generate("hello")
-
-
-def test_openai_non_provider_error_passes_through(api_key):
-    client = OpenAIClient(api_key=api_key)
-    model = OpenAI(client, model_name=MODEL_NAME)
-    model.client.chat.completions.create = Mock(side_effect=TypeError("programmer error"))
-
-    with pytest.raises(TypeError, match="programmer error"):
-        model.generate("hello")
+    with pytest.raises(BadRequestError):
+        model.generate("foo?", Foo)

@@ -3,7 +3,7 @@
 from functools import singledispatchmethod
 from typing import TYPE_CHECKING, Any, Iterator, Optional, Union
 
-from outlines.exceptions import is_provider_exception, normalize_provider_exception
+from outlines.exceptions import normalize_provider_errors
 from outlines.inputs import Chat, Image
 from outlines.models.base import Model, ModelTypeAdapter
 
@@ -189,15 +189,11 @@ class Anthropic(Model):
         ):
             inference_kwargs["model"] = self.model_name
 
-        try:
+        with normalize_provider_errors(PROVIDER):
             completion = self.client.messages.create(
                 **messages,
                 **inference_kwargs,
             )
-        except Exception as e:
-            if not is_provider_exception(e, PROVIDER):
-                raise
-            raise normalize_provider_exception(e, PROVIDER) from e
         return completion.content[0].text
 
     def generate_batch(
@@ -248,28 +244,18 @@ class Anthropic(Model):
         ):
             inference_kwargs["model"] = self.model_name
 
-        try:
+        with normalize_provider_errors(PROVIDER):
             stream = self.client.messages.create(
                 **messages,
                 stream=True,
                 **inference_kwargs,
             )
-        except Exception as e:
-            if not is_provider_exception(e, PROVIDER):
-                raise
-            raise normalize_provider_exception(e, PROVIDER) from e
-
-        try:
             for chunk in stream:
                 if (
                     chunk.type == "content_block_delta"
                     and chunk.delta.type == "text_delta"
                 ):
                     yield chunk.delta.text
-        except Exception as e:
-            if not is_provider_exception(e, PROVIDER):
-                raise
-            raise normalize_provider_exception(e, PROVIDER) from e
 
 
 def from_anthropic(

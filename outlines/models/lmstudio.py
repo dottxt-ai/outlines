@@ -1,4 +1,8 @@
-"""Integration with the `lmstudio` library."""
+"""Integration with the `lmstudio` library.
+
+Local runtime calls intentionally bypass
+outlines.exceptions.normalize_provider_errors().
+"""
 
 from functools import singledispatchmethod
 from typing import (
@@ -218,7 +222,6 @@ class LMStudio(Model):
         if response_format is not None:
             kwargs["response_format"] = response_format
 
-        # Local runtime: intentionally bypasses outlines.exceptions.normalize_provider_exception().
         result = model.respond(formatted_input, **kwargs)
         return result.content
 
@@ -269,7 +272,6 @@ class LMStudio(Model):
         if response_format is not None:
             kwargs["response_format"] = response_format
 
-        # Local runtime: intentionally bypasses outlines.exceptions.normalize_provider_exception().
         stream = model.respond_stream(formatted_input, **kwargs)
         for fragment in stream:
             yield fragment.content
@@ -348,7 +350,6 @@ class AsyncLMStudio(AsyncModel):
         if response_format is not None:
             kwargs["response_format"] = response_format
 
-        # Local runtime: intentionally bypasses outlines.exceptions.normalize_provider_exception().
         result = await model.respond(formatted_input, **kwargs)
         return result.content
 
@@ -403,7 +404,6 @@ class AsyncLMStudio(AsyncModel):
         if response_format is not None:
             kwargs["response_format"] = response_format
 
-        # Local runtime: intentionally bypasses outlines.exceptions.normalize_provider_exception().
         stream = await model.respond_stream(formatted_input, **kwargs)
         async for fragment in stream:
             yield fragment.content

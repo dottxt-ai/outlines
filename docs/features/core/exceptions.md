@@ -6,9 +6,9 @@ title: Error Handling
 
 For server-based models, Outlines provides a common exception hierarchy under `OutlinesError`.
 
-For local models, native runtime exceptions are preserved (see list of local and server-based models at [Model Types](../models/index.md#model-types)).
+For local models, native runtime exceptions are preserved (see the list of local and server-based models at [Model Types](../models/index.md#model-types)).
 
-Exceptions normalization covers both sync and async modes, and both `generate` and `generate_stream()` (or equivalent) methods.
+Exception normalization covers both sync and async modes, and both `generate` and `generate_stream()` (or equivalent) methods.
 
 ## Exception Hierarchy
 
@@ -46,7 +46,7 @@ OutlinesError
 
 ## Usage
 
-Normalized `APIError` subclasses are raised by Outlines model wrappers; if you call a provider SDK directly, you should expect provider-native exceptions instead.
+Normalized `APIError` subclasses are raised by Outlines model wrappers. If you call a provider SDK directly, expect provider-native exceptions instead.
 
 ```python
 from outlines.exceptions import (

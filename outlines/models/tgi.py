@@ -11,7 +11,7 @@ from typing import (
     Union,
 )
 
-from outlines.exceptions import is_provider_exception, normalize_provider_exception
+from outlines.exceptions import normalize_provider_errors
 from outlines.models.base import AsyncModel,Model, ModelTypeAdapter
 from outlines.types.dsl import python_types_to_terms, to_regex, JsonSchema, CFG
 
@@ -140,12 +140,8 @@ class TGI(Model):
             **inference_kwargs,
         )
 
-        try:
+        with normalize_provider_errors(PROVIDER):
             return self.client.text_generation(**client_args)
-        except Exception as e:
-            if not is_provider_exception(e, PROVIDER):
-                raise
-            raise normalize_provider_exception(e, PROVIDER) from e
 
     def generate_batch(
         self,
@@ -184,22 +180,12 @@ class TGI(Model):
             model_input, output_type, **inference_kwargs,
         )
 
-        try:
+        with normalize_provider_errors(PROVIDER):
             stream = self.client.text_generation(
                 **client_args, stream=True,
             )
-        except Exception as e:
-            if not is_provider_exception(e, PROVIDER):
-                raise
-            raise normalize_provider_exception(e, PROVIDER) from e
-
-        try:
             for chunk in stream:  # pragma: no cover
                 yield chunk
-        except Exception as e:
-            if not is_provider_exception(e, PROVIDER):
-                raise
-            raise normalize_provider_exception(e, PROVIDER) from e
 
     def _build_client_args(
         self,
@@ -270,12 +256,8 @@ class AsyncTGI(AsyncModel):
             model_input, output_type, **inference_kwargs,
         )
 
-        try:
+        with normalize_provider_errors(PROVIDER):
             response = await self.client.text_generation(**client_args)
-        except Exception as e:
-            if not is_provider_exception(e, PROVIDER):
-                raise
-            raise normalize_provider_exception(e, PROVIDER) from e
 
         return response
 
@@ -316,22 +298,12 @@ class AsyncTGI(AsyncModel):
             model_input, output_type, **inference_kwargs,
         )
 
-        try:
+        with normalize_provider_errors(PROVIDER):
             stream = await self.client.text_generation(
                 **client_args, stream=True
             )
-        except Exception as e:
-            if not is_provider_exception(e, PROVIDER):
-                raise
-            raise normalize_provider_exception(e, PROVIDER) from e
-
-        try:
             async for chunk in stream:  # pragma: no cover
                 yield chunk
-        except Exception as e:
-            if not is_provider_exception(e, PROVIDER):
-                raise
-            raise normalize_provider_exception(e, PROVIDER) from e
 
     def _build_client_args(
         self,

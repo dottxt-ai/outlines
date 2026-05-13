@@ -1,4 +1,8 @@
-"""Integration with the `transformers` library. """
+"""Integration with the `transformers` library.
+
+Local runtime calls intentionally bypass
+outlines.exceptions.normalize_provider_errors().
+"""
 
 import warnings
 
@@ -385,7 +389,6 @@ class Transformers(Model):
     def _generate_output_seq(self, prompts, inputs, **inference_kwargs):
         input_ids = inputs["input_ids"]
 
-        # Local runtime: intentionally bypasses outlines.exceptions.normalize_provider_exception().
         output_ids = self.model.generate(
             **inputs,
             **inference_kwargs,
