@@ -197,11 +197,34 @@ def test_openai_streaming(model):
     assert isinstance(next(result), str)
 
 
-def test_openai_batch(model):
-    with pytest.raises(NotImplementedError, match="does not support"):
-        model.batch(
-            ["Respond with one word.", "Respond with one word."],
-        )
+def test_openai_batch():
+    from tests.test_utils.mock_openai_client import MockOpenAIClient
+
+    mock_client = MockOpenAIClient()
+    mock_client.add_mock_responses([
+        (
+            {
+                "messages": [{"role": "user", "content": "Say hello"}],
+                "model": MODEL_NAME,
+            },
+            "hello",
+        ),
+        (
+            {
+                "messages": [{"role": "user", "content": "Say world"}],
+                "model": MODEL_NAME,
+            },
+            "world",
+        ),
+    ])
+
+    model = OpenAI(mock_client, MODEL_NAME)
+    results = model.batch(["Say hello", "Say world"])
+
+    assert isinstance(results, list)
+    assert len(results) == 2
+    assert results[0] == "hello"
+    assert results[1] == "world"
 
 
 def test_openai_async_init_from_client(api_key):
@@ -352,8 +375,56 @@ async def test_openai_async_streaming(async_model):
 
 
 @pytest.mark.asyncio
-async def test_openai_async_batch(async_model):
-    with pytest.raises(NotImplementedError, match="does not support"):
-        await async_model.batch(
-            ["Respond with one word.", "Respond with one word."],
-        )
+async def test_openai_async_batch():
+    from tests.test_utils.mock_openai_client import MockAsyncOpenAIClient
+
+    mock_client = MockAsyncOpenAIClient()
+    mock_client.add_mock_responses([
+        (
+            {
+                "messages": [{"role": "user", "content": "Say hello"}],
+                "model": MODEL_NAME,
+            },
+            "hello",
+        ),
+        (
+            {
+                "messages": [{"role": "user", "content": "Say world"}],
+                "model": MODEL_NAME,
+            },
+            "world",
+        ),
+    ])
+
+    model = AsyncOpenAI(mock_client, MODEL_NAME)
+    results = await model.batch(["Say hello", "Say world"])
+
+    assert isinstance(results, list)
+    assert len(results) == 2
+    assert results[0] == "hello"
+    assert results[1] == "world"
+
+
+@pytest.mark.asyncio
+async def test_openai_async_batch_partial_failure():
+    from tests.test_utils.mock_openai_client import MockAsyncOpenAIClient
+
+    mock_client = MockAsyncOpenAIClient()
+    mock_client.add_mock_responses([
+        (
+            {
+                "messages": [{"role": "user", "content": "Say hello"}],
+                "model": MODEL_NAME,
+            },
+            "hello",
+        ),
+    ])
+
+    model = AsyncOpenAI(mock_client, MODEL_NAME)
+    results = await model.batch(["Say hello", "Say world"])
+
+    assert isinstance(results, list)
+    assert len(results) == 2
+    assert results[0] == "hello"
+    assert isinstance(results[1], ValueError)
+    assert "No response found" in str(results[1])
