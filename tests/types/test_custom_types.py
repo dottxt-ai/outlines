@@ -93,6 +93,13 @@ from outlines.types.dsl import to_regex
         (types.ipv4, "1.2.3.4.", False),
         (types.ipv4, ".1.2.3.4", False),
         (types.ipv4, "1..2.3.4", False),
+        (types.semver, "1.2.3", True),
+        (types.semver, "1.2", False),
+        (types.semver, "01.2.3", False),
+        (types.semver, "1.2.3-alpha+001", True),
+        (types.mac_address, "00:1A:2B:3C:4D:5E", True),
+        (types.mac_address, "00-1A-2B-3C-4D-5E", False),
+        (types.mac_address, "00:1A:2B:3C:4D", False),
     ],
 )
 def test_type_regex(custom_type, test_string, should_match):
