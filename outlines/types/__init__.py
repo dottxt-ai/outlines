@@ -83,6 +83,8 @@ __all__ = [
     "hex_str",
     "uuid4",
     "ipv4",
+    "semver",
+    "mac_address",
     # Document-specific types
     "sentence",
     "paragraph",
@@ -117,6 +119,14 @@ ipv4 = Regex(
     r"((25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})\.){3}"
     r"(25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})"
 )
+semver = Regex(
+    r"(0|[1-9]\d*)\."
+    r"(0|[1-9]\d*)\."
+    r"(0|[1-9]\d*)"
+    r"(?:-[0-9A-Za-z.-]+)?"
+    r"(?:\+[0-9A-Za-z.-]+)?"
+)
+mac_address = Regex(r"[0-9A-Fa-f]{2}(:[0-9A-Fa-f]{2}){5}")
 
 # Document-specific types
 sentence = Regex(r"[A-Z].*\s*[.!?]")
