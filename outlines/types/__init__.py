@@ -119,6 +119,11 @@ ipv4 = Regex(
     r"((25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})\.){3}"
     r"(25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})"
 )
+
+# SemVer 2.0.0: https://semver.org/
+# This enforces the MAJOR.MINOR.PATCH numeric components and their leading-zero
+# rules. Prerelease and build metadata are intentionally matched more broadly
+# than the full spec's dot-separated identifier rules to keep the regex compact.
 semver = Regex(
     r"(0|[1-9]\d*)\."
     r"(0|[1-9]\d*)\."
@@ -126,6 +131,11 @@ semver = Regex(
     r"(?:-[0-9A-Za-z.-]+)?"
     r"(?:\+[0-9A-Za-z.-]+)?"
 )
+
+# IEEE RA EUI-48 identifiers: https://standards.ieee.org/faqs/regauth/
+# This validates only the common colon-separated six-octet text form for MAC
+# addresses. It does not validate assignment, OUI ownership, or local/multicast
+# bits, and excludes other textual forms such as hyphen-separated addresses.
 mac_address = Regex(r"[0-9A-Fa-f]{2}(:[0-9A-Fa-f]{2}){5}")
 
 # Document-specific types
