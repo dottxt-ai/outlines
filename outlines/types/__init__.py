@@ -83,6 +83,7 @@ __all__ = [
     "hex_str",
     "uuid4",
     "ipv4",
+    "ipv6",
     "semver",
     "mac_address",
     # Document-specific types
@@ -137,6 +138,27 @@ semver = Regex(
 # addresses. It does not validate assignment, OUI ownership, or local/multicast
 # bits, and excludes other textual forms such as hyphen-separated addresses.
 mac_address = Regex(r"[0-9A-Fa-f]{2}(:[0-9A-Fa-f]{2}){5}")
+
+# RFC 4291 IPv6 addresses: https://datatracker.ietf.org/doc/html/rfc4291
+# Covers the full eight-group colon-hex notation, :: zero-compression in any
+# position, and both IPv4-mapped (::ffff:a.b.c.d) and IPv4-embedded
+# (a:b:c:d::x.y.z.w) forms. Zone IDs and prefix lengths are out of scope.
+ipv6 = Regex(
+    r"(?:[0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4}"
+    r"|(?:[0-9A-Fa-f]{1,4}:){1,7}:"
+    r"|(?:[0-9A-Fa-f]{1,4}:){1,6}:[0-9A-Fa-f]{1,4}"
+    r"|(?:[0-9A-Fa-f]{1,4}:){1,5}(?::[0-9A-Fa-f]{1,4}){1,2}"
+    r"|(?:[0-9A-Fa-f]{1,4}:){1,4}(?::[0-9A-Fa-f]{1,4}){1,3}"
+    r"|(?:[0-9A-Fa-f]{1,4}:){1,3}(?::[0-9A-Fa-f]{1,4}){1,4}"
+    r"|(?:[0-9A-Fa-f]{1,4}:){1,2}(?::[0-9A-Fa-f]{1,4}){1,5}"
+    r"|[0-9A-Fa-f]{1,4}:(?::[0-9A-Fa-f]{1,4}){1,6}"
+    r"|:(?::[0-9A-Fa-f]{1,4}){1,7}"
+    r"|::"
+    r"|::(?:[Ff]{4}(?::0{1,4})?:)(?:25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})"
+    r"(?:\.(?:25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})){3}"
+    r"|(?:[0-9A-Fa-f]{1,4}:){1,4}:(?:25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})"
+    r"(?:\.(?:25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})){3}"
+)
 
 # Document-specific types
 sentence = Regex(r"[A-Z].*\s*[.!?]")
