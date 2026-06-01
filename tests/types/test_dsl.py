@@ -656,6 +656,17 @@ def test_dsl_handle_literal():
     assert result.terms[1] == Regex(r"1")
 
 
+def test_dsl_literal_bool():
+    # Literal[True] and Literal[False] previously raised TypeError; ensure they resolve.
+    result_true = python_types_to_terms(Literal[True])
+    assert isinstance(result_true, Alternatives)
+    assert result_true.terms == [Regex("True")]
+    result_false = python_types_to_terms(Literal[False])
+    assert result_false.terms == [Regex("False")]
+    result_both = python_types_to_terms(Literal[True, False])
+    assert result_both == Alternatives([Regex("True"), Regex("False")])
+
+
 def test_dsl_handle_union():
     # test simple Union
     simple_union = Union[int, str]
