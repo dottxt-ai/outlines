@@ -14,10 +14,9 @@ endpoint, and adds MiniMax-specific behaviour:
   ``MiniMaxTypeAdapter`` transparently falls back to ``json_object``
   when a JSON schema is requested.
 
-Available models include ``MiniMax-M2.7`` (default, latest flagship
-model with enhanced reasoning and coding), ``MiniMax-M2.7-highspeed``
-(high-speed version of M2.7 for low-latency scenarios),
-``MiniMax-M2.5``, and ``MiniMax-M2.5-highspeed``.
+Available models include ``MiniMax-M3`` (default, 512K context window,
+up to 128K output, with image input support), ``MiniMax-M2.7`` (previous
+flagship), and ``MiniMax-M2.7-highspeed`` (low-latency version of M2.7).
 """
 
 import re
@@ -409,7 +408,7 @@ def from_minimax(
             api_key="YOUR_MINIMAX_API_KEY",
             base_url="https://api.minimax.io/v1",
         )
-        model = outlines.from_minimax(client, "MiniMax-M2.7")
+        model = outlines.from_minimax(client, "MiniMax-M3")
 
     Parameters
     ----------
@@ -417,8 +416,8 @@ def from_minimax(
         An ``openai.OpenAI`` or ``openai.AsyncOpenAI`` instance whose
         ``base_url`` is set to the MiniMax endpoint.
     model_name
-        The MiniMax model to use, e.g. ``"MiniMax-M2.7"`` or
-        ``"MiniMax-M2.7-highspeed"``.
+        The MiniMax model to use, e.g. ``"MiniMax-M3"`` (default) or
+        ``"MiniMax-M2.7"``.
 
     Returns
     -------
