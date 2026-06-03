@@ -847,7 +847,7 @@ def _handle_list(args: tuple, recursion_depth: int) -> Sequence:
     if args is None or len(args) != 1:
         raise TypeError(
             "Only homogeneous lists are supported. You should provide exactly "
-            + "one argument to `List`, got {args}."
+            f"one argument to `List`, got {args}."
         )
     item_type = _ensure_json_quoted(python_types_to_terms(args[0], recursion_depth + 1))
     return Sequence(
