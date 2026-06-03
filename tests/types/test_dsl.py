@@ -710,7 +710,9 @@ def test_dsl_handle_list():
     with pytest.raises(TypeError):
         _handle_list((), recursion_depth=0)
 
-    with pytest.raises(TypeError):
+    # The error message should interpolate the offending args, not show a
+    # literal "{args}" placeholder.
+    with pytest.raises(TypeError, match=r"got \(<class 'int'>, <class 'str'>\)"):
         _handle_list((int, str), recursion_depth=0)
 
     # simple type
