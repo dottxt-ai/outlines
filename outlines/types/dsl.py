@@ -955,7 +955,7 @@ def to_regex(term: Term) -> str:
     elif isinstance(term, QuantifyMinimum):
         return f"({to_regex(term.term)}){{{term.min_count},}}"
     elif isinstance(term, QuantifyMaximum):
-        return f"({to_regex(term.term)}){{,{term.max_count}}}"
+        return f"({to_regex(term.term)}){{0,{term.max_count}}}"
     elif isinstance(term, QuantifyBetween):
         return f"({to_regex(term.term)}){{{term.min_count},{term.max_count}}}"
     else:

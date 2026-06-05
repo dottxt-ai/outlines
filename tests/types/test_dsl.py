@@ -1118,7 +1118,7 @@ def test_to_regex():
     assert to_regex(min_term) == r"(a){2,}"
 
     max_term = QuantifyMaximum(String("a"), 5)
-    assert to_regex(max_term) == r"(a){,5}"
+    assert to_regex(max_term) == r"(a){0,5}"
 
     between_term = QuantifyBetween(String("a"), 1, 3)
     assert to_regex(between_term) == r"(a){1,3}"
