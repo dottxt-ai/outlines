@@ -323,3 +323,21 @@ def test_json_schema_dict_to_dataclass_nested_object():
     assert field.__annotations__["age"] is int
     assert not hasattr(field, "name")
     assert field.age is None
+
+
+def test_json_schema_dict_to_dataclass_optional_before_required():
+    schema = {
+        "type": "object",
+        "properties": {
+            "nickname": {"type": "string"},
+            "user_id": {"type": "integer"},
+        },
+        "required": ["user_id"],
+    }
+
+    result = json_schema_dict_to_dataclass(schema, "User")
+    assert is_dataclass(result)
+
+    instance = result(user_id=5)
+    assert instance.user_id == 5
+    assert instance.nickname is None
