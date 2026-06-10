@@ -102,47 +102,6 @@ And run the code style checks:
 pre-commit run --all-files
 ```
 
-### Benchmarking
-
-Outlines uses [asv](https://asv.readthedocs.io) for automated benchmark testing. Benchmarks are run automatically before pull requests are merged to prevent performance degradation.
-
-You can run the benchmark test suite locally with the following command:
-
-```shell
-asv run --config benchmarks/asv.conf.json
-```
-
-Caveats:
-
-- If you're on a device with CUDA, you must add the argument `--launch-method spawn`
-- Uncommitted code will not be benchmarked, you must first commit your changes.
-
-#### Run a specific test:
-
-```shell
-asv run --config benchmarks/asv.conf.json -b bench_json_schema.JsonSchemaBenchmark.time_json_schema_to_fsm
-```
-
-#### Profile a specific test:
-
-```shell
-asv run --config benchmarks/asv.conf.json --profile -b bench_json_schema.JsonSchemaBenchmark.time_json_schema_to_fsm
-```
-
-#### Compare to `origin/main`
-
-```shell
-get fetch origin
-asv continuous origin/main HEAD --config benchmarks/asv.conf.json
-```
-
-#### ASV PR Behavior
-
-- **View ASV Benchmark Results:** Open the workflow, view `BENCHMARK RESULTS` section.
-- Merging is blocked unless benchmarks are run for the latest commit.
-- Benchmarks fail if performance degrades by more than 10% for any individual benchmark.
-- The "Benchmark PR" workflow runs when it is manually dispatched, or if the `run_benchmarks` label is added to the PR they run for every commit.
-
 ### Contribute to the documentation
 
 To work on the *documentation* you will need to install the related dependencies:

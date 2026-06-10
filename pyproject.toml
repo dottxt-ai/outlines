@@ -58,7 +58,6 @@ countries = ["iso3166"]
 test = [
     "pre-commit",
     "pytest",
-    "pytest-benchmark",
     "pytest-cov",
     "pytest-mock",
     "pytest-asyncio",
