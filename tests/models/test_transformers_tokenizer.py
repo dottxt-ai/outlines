@@ -5,7 +5,6 @@ import transformers
 
 from outlines.models.transformers import (
     SPIECE_UNDERLINE,
-    get_llama_tokenizer_types,
     TransformerTokenizer,
 )
 
@@ -45,14 +44,6 @@ def transformer_tokenizer_seq2seq(tokenizer_seq2seq):
     return TransformerTokenizer(tokenizer_seq2seq)
 
 
-def test_get_llama_tokenizer_types():
-    tokenizer_types = get_llama_tokenizer_types()
-    assert tokenizer_types[0] is transformers.models.llama.LlamaTokenizer
-    assert tokenizer_types[1] is transformers.models.llama.LlamaTokenizerFast
-    assert tokenizer_types[2] is transformers.models.code_llama.CodeLlamaTokenizer
-    assert tokenizer_types[3] is transformers.models.code_llama.CodeLlamaTokenizerFast
-
-
 def test_transformer_tokenizer_init(
     tokenizer,
     tokenizer_no_pad_token_id
@@ -90,14 +81,12 @@ def test_transformer_tokenizer_decode(transformer_tokenizer):
 
 def test_transformer_tokenizer_convert_token_to_string(transformer_tokenizer):
     # regular
-    transformer_tokenizer.is_llama = False
     token = transformer_tokenizer.tokenizer.tokenize("Hello")[0]
     string = transformer_tokenizer.convert_token_to_string(token)
     assert isinstance(string, str)
     assert "Hello" in string
 
-    # is_llama + <0x20>
-    transformer_tokenizer.is_llama = True
+    # <0x20> -> space
     string = transformer_tokenizer.convert_token_to_string("<0x20>")
     assert isinstance(string, str)
     assert " " in string

@@ -28,48 +28,6 @@ __all__ = ["Transformers", "TransformersMultiModal", "from_transformers"]
 SPIECE_UNDERLINE = "\u2581"
 
 
-def get_llama_tokenizer_types():
-    """Get all the Llama tokenizer types/classes that need work-arounds.
-
-    When they can't be imported, a dummy class is created.
-
-    """
-    try:
-        from transformers.models.llama import LlamaTokenizer
-    except ImportError:  # pragma: no cover
-
-        class LlamaTokenizer:  # type: ignore
-            pass
-
-    try:
-        from transformers.models.llama import LlamaTokenizerFast
-    except ImportError:  # pragma: no cover
-
-        class LlamaTokenizerFast:  # type: ignore
-            pass
-
-    try:
-        from transformers.models.code_llama import CodeLlamaTokenizer
-    except ImportError:  # pragma: no cover
-
-        class CodeLlamaTokenizer:  # type: ignore
-            pass
-
-    try:
-        from transformers.models.code_llama import CodeLlamaTokenizerFast
-    except ImportError:  # pragma: no cover
-
-        class CodeLlamaTokenizerFast:  # type: ignore
-            pass
-
-    return (
-        LlamaTokenizer,
-        LlamaTokenizerFast,
-        CodeLlamaTokenizer,
-        CodeLlamaTokenizerFast,
-    )
-
-
 class TransformerTokenizer(Tokenizer):
     """Represents a tokenizer for models in the `transformers` library."""
 
@@ -89,7 +47,6 @@ class TransformerTokenizer(Tokenizer):
         self.special_tokens = set(self.tokenizer.all_special_tokens)
 
         self.vocabulary = self.tokenizer.get_vocab()
-        self.is_llama = isinstance(self.tokenizer, get_llama_tokenizer_types())
 
     def encode(
         self, prompt: Union[str, List[str]], **kwargs
