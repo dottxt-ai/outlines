@@ -746,6 +746,8 @@ def python_types_to_terms(ptype: Any, recursion_depth: int = 0) -> Term:
         return types.datetime
 
     # Basic type instances
+    if isinstance(ptype, bool):
+        return String(str(ptype).lower())
     if is_str_instance(ptype):
         return String(ptype)
     elif is_int_instance(ptype) or is_float_instance(ptype):

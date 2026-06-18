@@ -67,6 +67,10 @@ def is_str(value: Any) -> bool:
     )
 
 
+
+def is_bool_instance(value: Any) -> bool:
+    return isinstance(value, bool)
+
 def is_str_instance(value: Any) -> bool:
     return isinstance(value, str)
 
