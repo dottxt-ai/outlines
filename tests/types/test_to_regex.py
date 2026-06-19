@@ -73,7 +73,7 @@ def test_to_regex_simple():
     assert a.matches("aaa") is True
 
     a = QuantifyMaximum(String("a"), 2)
-    assert to_regex(a) == "(a){,2}"
+    assert to_regex(a) == "(a){0,2}"
     assert a.matches("aa") is True
     assert a.matches("aaa") is False
 
