@@ -4451,67 +4451,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#benchmarking" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Benchmarking
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Benchmarking">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#run-a-specific-test" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Run a specific test:
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#profile-a-specific-test" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Profile a specific test:
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#compare-to-originmain" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Compare to origin/main
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#asv-pr-behavior" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        ASV PR Behavior
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#contribute-to-the-documentation" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -4746,67 +4685,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#benchmarking" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Benchmarking
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Benchmarking">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#run-a-specific-test" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Run a specific test:
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#profile-a-specific-test" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Profile a specific test:
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#compare-to-originmain" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Compare to origin/main
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#asv-pr-behavior" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        ASV PR Behavior
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#contribute-to-the-documentation" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -4919,48 +4797,21 @@ If you own a GPU and want to run the vLLM tests you will have to run:</p>
 <p>And run the code style checks:</p>
 <div class="language-shell highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>pre-commit<span style="color: #D8DEE9"> </span>run<span style="color: #D8DEE9"> </span>--all-files
 </span></code></pre></div>
-<h3 id="benchmarking">Benchmarking</h3>
-<p>Outlines uses <a href="https://asv.readthedocs.io">asv</a> for automated benchmark testing. Benchmarks are run automatically before pull requests are merged to prevent performance degradation.</p>
-<p>You can run the benchmark test suite locally with the following command:</p>
-<div class="language-shell highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>asv<span style="color: #D8DEE9"> </span>run<span style="color: #D8DEE9"> </span>--config<span style="color: #D8DEE9"> </span>benchmarks/asv.conf.json
-</span></code></pre></div>
-<p>Caveats:</p>
-<ul>
-<li>If you're on a device with CUDA, you must add the argument <code>--launch-method spawn</code></li>
-<li>Uncommitted code will not be benchmarked, you must first commit your changes.</li>
-</ul>
-<h4 id="run-a-specific-test">Run a specific test:</h4>
-<div class="language-shell highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>asv<span style="color: #D8DEE9"> </span>run<span style="color: #D8DEE9"> </span>--config<span style="color: #D8DEE9"> </span>benchmarks/asv.conf.json<span style="color: #D8DEE9"> </span>-b<span style="color: #D8DEE9"> </span>bench_json_schema.JsonSchemaBenchmark.time_json_schema_to_fsm
-</span></code></pre></div>
-<h4 id="profile-a-specific-test">Profile a specific test:</h4>
-<div class="language-shell highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>asv<span style="color: #D8DEE9"> </span>run<span style="color: #D8DEE9"> </span>--config<span style="color: #D8DEE9"> </span>benchmarks/asv.conf.json<span style="color: #D8DEE9"> </span>--profile<span style="color: #D8DEE9"> </span>-b<span style="color: #D8DEE9"> </span>bench_json_schema.JsonSchemaBenchmark.time_json_schema_to_fsm
-</span></code></pre></div>
-<h4 id="compare-to-originmain">Compare to <code>origin/main</code></h4>
-<div class="language-shell highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>get<span style="color: #D8DEE9"> </span>fetch<span style="color: #D8DEE9"> </span>origin
-</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>asv<span style="color: #D8DEE9"> </span>continuous<span style="color: #D8DEE9"> </span>origin/main<span style="color: #D8DEE9"> </span>HEAD<span style="color: #D8DEE9"> </span>--config<span style="color: #D8DEE9"> </span>benchmarks/asv.conf.json
-</span></code></pre></div>
-<h4 id="asv-pr-behavior">ASV PR Behavior</h4>
-<ul>
-<li><strong>View ASV Benchmark Results:</strong> Open the workflow, view <code>BENCHMARK RESULTS</code> section.</li>
-<li>Merging is blocked unless benchmarks are run for the latest commit.</li>
-<li>Benchmarks fail if performance degrades by more than 10% for any individual benchmark.</li>
-<li>The "Benchmark PR" workflow runs when it is manually dispatched, or if the <code>run_benchmarks</code> label is added to the PR they run for every commit.</li>
-</ul>
 <h3 id="contribute-to-the-documentation">Contribute to the documentation</h3>
 <p>To work on the <em>documentation</em> you will need to install the related dependencies:</p>
-<div class="language-shell highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>pip<span style="color: #D8DEE9"> </span>install<span style="color: #D8DEE9"> </span>-r<span style="color: #D8DEE9"> </span>requirements-doc.txt
+<div class="language-shell highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>pip<span style="color: #D8DEE9"> </span>install<span style="color: #D8DEE9"> </span>-r<span style="color: #D8DEE9"> </span>requirements-doc.txt
 </span></code></pre></div>
 <p>To build the documentation and serve it locally, run the following command in the repository's root folder:</p>
-<div class="language-shell highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>mkdocs<span style="color: #D8DEE9"> </span>serve
+<div class="language-shell highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>mkdocs<span style="color: #D8DEE9"> </span>serve
 </span></code></pre></div>
 <p>By following the instruction you will be able to view the documentation locally.
 It will be updated every time you make a change.</p>
 <h2 id="open-a-pull-request">Open a Pull Request</h2>
 <p>Create a new branch on your fork, commit and push the changes:</p>
-<div class="language-shell highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>git<span style="color: #D8DEE9"> </span>checkout<span style="color: #D8DEE9"> </span>-b<span style="color: #D8DEE9"> </span>new-branch
-</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>git<span style="color: #D8DEE9"> </span>add<span style="color: #D8DEE9"> </span>.
-</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>git<span style="color: #D8DEE9"> </span>commit<span style="color: #D8DEE9"> </span>-m<span style="color: #D8DEE9"> </span><span style="color: #A3BE8C">&quot;Changes I made&quot;</span>
-</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>git<span style="color: #D8DEE9"> </span>push<span style="color: #D8DEE9"> </span>origin<span style="color: #D8DEE9"> </span>new-branch
+<div class="language-shell highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>git<span style="color: #D8DEE9"> </span>checkout<span style="color: #D8DEE9"> </span>-b<span style="color: #D8DEE9"> </span>new-branch
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>git<span style="color: #D8DEE9"> </span>add<span style="color: #D8DEE9"> </span>.
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>git<span style="color: #D8DEE9"> </span>commit<span style="color: #D8DEE9"> </span>-m<span style="color: #D8DEE9"> </span><span style="color: #A3BE8C">&quot;Changes I made&quot;</span>
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>git<span style="color: #D8DEE9"> </span>push<span style="color: #D8DEE9"> </span>origin<span style="color: #D8DEE9"> </span>new-branch
 </span></code></pre></div>
 <p>Then you can <a href="https://github.com/dottxt-ai/outlines/pulls">open a pull request</a> on GitHub. It should prompt you to do so. Every subsequent change that you make on your branch will update the pull request.</p>
 <p>Do not hesitate to open a draft PR before your contribution is ready, especially if you have questions and/or need feedback. If you need help, come tell us on <a href="https://discord.gg/R9DSu34mGd">Discord</a>.</p>
@@ -4986,7 +4837,7 @@ It will be updated every time you make a change.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="February 20, 2025 19:09:38 UTC"><span class="timeago" datetime="2025-02-20T19:09:38+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="February 20, 2025 19:09:38 UTC">2025-02-20</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="June 10, 2026 14:28:46 UTC"><span class="timeago" datetime="2026-06-10T14:28:46+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="June 10, 2026 14:28:46 UTC">2026-06-10</span>
   </span>
 
     
