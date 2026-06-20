@@ -23,20 +23,22 @@ class XGrammarLogitsProcessor(OutlinesLogitsProcessor):
             The name of the tensor library used by the model
 
         """
-        import xgrammar as xgr
-
-        self.xgr = xgr
-        self.is_first_token = True
         self.compiled_grammar = compiled_grammar
         self.tensor_library_name = tensor_library_name
+        self.reset()
         super().__init__(tensor_library_name)
 
     def reset(self):
         """Ensure self._setup is called again for the next generation."""
         self.is_first_token = True
+        self._matchers = None
+        self._bitmask = None
+        self._bias_logits = None
 
     def _setup(self, batch_size: int, vocab_size: int) -> None:
         """Setup the logits processor for a new generation."""
+        import xgrammar as xgr
+
         if self.tensor_library_name == "torch":
             self._bias_logits = self._bias_logits_torch
         elif self.tensor_library_name == "mlx": # pragma: no cover
@@ -47,15 +49,17 @@ class XGrammarLogitsProcessor(OutlinesLogitsProcessor):
             )
 
         self._matchers = [
-            self.xgr.GrammarMatcher(self.compiled_grammar)
+            xgr.GrammarMatcher(self.compiled_grammar)
             for _ in range(batch_size)
         ]
-        self._bitmask = self.xgr.allocate_token_bitmask(batch_size, vocab_size)
+        self._bitmask = xgr.allocate_token_bitmask(batch_size, vocab_size)
 
     def _bias_logits_torch(
         self, input_ids: TensorType, logits: TensorType
     ) -> TensorType:
         """Bias the logits for Torch tensors."""
+        import xgrammar as xgr
+
         for i in range(self.tensor_adapter.shape(input_ids)[0]):
             if not self._matchers[i].is_terminated():
                 self._matchers[i].fill_next_token_bitmask(self._bitmask, i)
@@ -64,7 +68,7 @@ class XGrammarLogitsProcessor(OutlinesLogitsProcessor):
             self._bitmask,
             self.tensor_adapter.get_device(logits)
         )
-        self.xgr.apply_token_bitmask_inplace(logits, self._bitmask)
+        xgr.apply_token_bitmask_inplace(logits, self._bitmask)
         self._bitmask = self.tensor_adapter.to_device(
             self._bitmask,
             "cpu"
@@ -108,6 +112,27 @@ class XGrammarLogitsProcessor(OutlinesLogitsProcessor):
                     assert self._matchers[i].accept_token(last_token_id)
 
         return self._bias_logits(input_ids, logits)
+
+    def __getstate__(self):
+        """Create a picklable representation of the processor."""
+        self.reset()
+        state = self.__dict__.copy()
+        del state["tensor_adapter"]
+        compiled_grammar = state.pop("compiled_grammar")
+        state["serialized_compiled_grammar"] = compiled_grammar.serialize_json()
+        state["serialized_tokenizer_info"] = compiled_grammar.tokenizer_info.serialize_json()
+        return state
+
+    def __setstate__(self, state):
+        """Restore the processor from a pickled state."""
+        import xgrammar as xgr
+
+        serialized_tokenizer_info = state.pop("serialized_tokenizer_info", None)
+        tokenizer_info = xgr.TokenizerInfo.deserialize_json(serialized_tokenizer_info)
+        serialized_compiled_grammar = state.pop("serialized_compiled_grammar")
+        compiled_grammar = xgr.CompiledGrammar.deserialize_json(serialized_compiled_grammar, tokenizer_info)
+        self.__dict__.update({**state, "compiled_grammar": compiled_grammar})
+        super().__init__(self.tensor_library_name)
 
 
 class XGrammarBackend(BaseBackend):

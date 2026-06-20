@@ -176,6 +176,12 @@ class LLGuidanceLogitsProcessor(OutlinesLogitsProcessor):
 
         return self._bias_logits(input_ids, logits)
 
+    def __getstate__(self):
+        """Create a picklable representation of the processor."""
+        raise NotImplementedError(
+            "Serializing the logits processor is not supported for LLGuidance"
+        )
+
 
 class LLGuidanceBackend(BaseBackend):
     """Backend for LLGuidance."""
