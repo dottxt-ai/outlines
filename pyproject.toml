@@ -110,13 +110,14 @@ file="README.md"
 content-type = "text/markdown"
 
 [tool.setuptools.packages.find]
+where = ["src"]
 include = ["outlines*"]
 
 [tool.setuptools.package-data]
 "outlines" = ["py.typed", "grammars/*.lark"]
 
 [tool.setuptools_scm]
-write_to = "outlines/_version.py"
+write_to = "src/outlines/_version.py"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -189,7 +190,7 @@ ignore_missing_imports = true
 # we omit the files that require a GPU or Apple Silicon
 # as well as the models that make API calls
 omit = [
-    "outlines/_version.py",
+    "src/outlines/_version.py",
     "outlines/models/anthropic.py",
     "outlines/models/dottxt.py",
     "outlines/models/gemini.py",
