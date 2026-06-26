@@ -405,6 +405,18 @@ def test_get_schema_from_signature(sample_function, sample_function_missing_type
         get_schema_from_signature(sample_function_missing_type)
 
 
+def test_get_schema_from_signature_respects_defaults():
+    # Parameters with a default must be optional (not required) and carry the default,
+    # so that calling fn(**obj) with only the required keys is valid.
+    def fn(a: int, b: int = 5, c: str = "hi"):
+        ...
+
+    schema = get_schema_from_signature(fn)
+    assert schema["required"] == ["a"]
+    assert schema["properties"]["b"]["default"] == 5
+    assert schema["properties"]["c"]["default"] == "hi"
+
+
 def test_get_schema_from_enum(sample_complex_enum, sample_empty_enum):
     schema = get_schema_from_enum(sample_complex_enum)
     assert JsonSchema(schema)
