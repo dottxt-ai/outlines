@@ -13,9 +13,9 @@ from outlines.types.json_schema_utils import (
 )
 
 if sys.version_info >= (3, 12):
-    from typing import _TypedDictMeta  # type: ignore
+    from typing import _TypedDictMeta, NotRequired  # type: ignore
 else:
-    from typing_extensions import _TypedDictMeta  # type: ignore
+    from typing_extensions import _TypedDictMeta, NotRequired  # type: ignore
 
 
 def test_schema_type_to_python_simple_types():
@@ -73,7 +73,7 @@ def test_schema_type_to_python_object():
     assert isinstance(typeddict_result, _TypedDictMeta)
     assert typeddict_result.__name__ == "TestObject"
     assert typeddict_result.__annotations__["name"] is str
-    assert typeddict_result.__annotations__["age"] == Optional[int]
+    assert typeddict_result.__annotations__["age"] == NotRequired[int]
 
     # Dataclass caller
     dataclass_result = schema_type_to_python(schema, "dataclass")
@@ -113,7 +113,12 @@ def test_json_schema_dict_to_typeddict_basic():
 
     annotations = result.__annotations__
     assert annotations["name"] is str
-    assert annotations["age"] == Optional[int]
+    # A non-required property must be an optional KEY (NotRequired), not merely a
+    # nullable value (Optional) — otherwise it round-trips back as required.
+    assert annotations["age"] == NotRequired[int]
+    assert "name" in result.__required_keys__
+    assert "age" in result.__optional_keys__
+    assert "age" not in result.__required_keys__
 
 
 def test_json_schema_dict_to_typeddict_array_enum():
@@ -137,7 +142,7 @@ def test_json_schema_dict_to_typeddict_array_enum():
 
     annotations = result.__annotations__
     assert annotations["tags"] == List[str]
-    assert annotations["preferences"] == Optional[Literal[("light", "dark")]]
+    assert annotations["preferences"] == NotRequired[Literal[("light", "dark")]]
 
 
 def test_json_schema_dict_to_typeddict_nested_object():
@@ -164,7 +169,7 @@ def test_json_schema_dict_to_typeddict_nested_object():
     assert isinstance(annotations["field"], _TypedDictMeta)
     assert annotations["field"].__name__ == "AnonymousTypedDict"
     assert annotations["field"].__annotations__["name"] is str
-    assert annotations["field"].__annotations__["age"] == Optional[int]
+    assert annotations["field"].__annotations__["age"] == NotRequired[int]
 
 
 def test_json_schema_dict_to_pydantic_basic():
