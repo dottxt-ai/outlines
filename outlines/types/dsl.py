@@ -837,7 +837,10 @@ def _handle_union(args: tuple, recursion_depth: int) -> Alternatives:
         return Alternatives(
             [
                 python_types_to_terms(other_ptype, recursion_depth + 1),
-                String("None"),
+                # ``None`` is a keyword, not a string value: keep it a ``Regex``
+                # (like ``True``/``False``) so it is not JSON-quoted when the
+                # ``Optional`` ends up nested inside a container type.
+                Regex("None"),
             ]
         )
     return Alternatives(
