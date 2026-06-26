@@ -725,6 +725,22 @@ def test_dsl_handle_union():
     assert result.terms[1].terms[1] == String("b")
 
 
+def test_dsl_handle_union_multiple_members_with_none():
+    # Regression: only the 2-arg Optional[T] case handled None; a union with >=2
+    # non-None members plus None fell into the general branch and crashed with
+    # "Type NoneType is currently not supported".
+    result = _handle_union(get_args(Union[int, str, None]), recursion_depth=0)
+    assert isinstance(result, Alternatives)
+    assert types.integer in result.terms
+    assert types.string in result.terms
+    assert Regex("None") in result.terms
+
+    # Optional[Union[...]] (same args after flattening) must also not crash.
+    nested = _handle_union(get_args(PyOptional[Union[int, str]]), recursion_depth=0)
+    assert isinstance(nested, Alternatives)
+    assert Regex("None") in nested.terms
+
+
 def test_dsl_handle_list():
     with pytest.raises(TypeError):
         _handle_list(None, recursion_depth=0)
