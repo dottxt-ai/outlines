@@ -177,8 +177,11 @@ def get_schema_from_signature(fn: Callable) -> dict:
     for name, arg in signature.parameters.items():
         if arg.annotation == inspect._empty:
             raise ValueError("Each argument must have a type annotation")
-        else:
+        elif arg.default is inspect._empty:
             arguments[name] = (arg.annotation, ...)
+        else:
+            # Honor the parameter default so it is optional (not required) in the schema.
+            arguments[name] = (arg.annotation, arg.default)
 
     try:
         fn_name = fn.__name__
