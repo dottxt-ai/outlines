@@ -682,7 +682,7 @@ def test_dsl_handle_union():
     assert isinstance(result, Alternatives)
     assert len(result.terms) == 2
     assert result.terms[0] == types.integer
-    assert result.terms[1] == String("None")
+    assert result.terms[1] == Regex("None")
 
     # test with more complex types
     class TestModel(BaseModel):
@@ -1081,6 +1081,34 @@ def test_e2e_dict_literal_key_and_enum_value():
     assert _re.fullmatch(pattern, '{"switch":"on"}')
     assert _re.fullmatch(pattern, '{"switch":"off"}')
     assert not _re.fullmatch(pattern, "{switch:on}")
+
+
+def test_e2e_optional_none_not_quoted_in_containers():
+    """The ``None`` from ``Optional``/``Union`` must stay a bare keyword inside
+    containers, exactly as it is standalone, and must not be JSON-quoted like a
+    string literal."""
+    # Standalone Optional already matches the bare ``None`` keyword.
+    standalone = to_regex(python_types_to_terms(PyOptional[int]))
+    assert _re.fullmatch(standalone, "None")
+    assert not _re.fullmatch(standalone, '"None"')
+
+    list_pattern = to_regex(python_types_to_terms(list[PyOptional[int]]))
+    assert _re.fullmatch(list_pattern, "[None]")
+    assert _re.fullmatch(list_pattern, "[1, None]")
+    assert not _re.fullmatch(list_pattern, '["None"]')
+
+    dict_pattern = to_regex(python_types_to_terms(dict[str, PyOptional[int]]))
+    assert _re.fullmatch(dict_pattern, '{"a":None}')
+    assert not _re.fullmatch(dict_pattern, '{"a":"None"}')
+
+    tuple_pattern = to_regex(python_types_to_terms(Tuple[PyOptional[int], int]))
+    assert _re.fullmatch(tuple_pattern, "(None, 5)")
+    assert not _re.fullmatch(tuple_pattern, '("None", 5)')
+
+    # A genuine ``Literal["None"]`` string is still quoted inside containers.
+    literal_pattern = to_regex(python_types_to_terms(list[Literal["None"]]))
+    assert _re.fullmatch(literal_pattern, '["None"]')
+    assert not _re.fullmatch(literal_pattern, "[None]")
 
 
 def test_to_regex():
