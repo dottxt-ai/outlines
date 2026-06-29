@@ -131,15 +131,17 @@ def test_vllm_type_adapter_output_type(
 ):
     assert type_adapter.format_output_type(None) == {}
     assert type_adapter.format_output_type(cfg_instance) == {
-        "guided_grammar": CFG_STRING
+        "structured_outputs": {"grammar": CFG_STRING}
     }
     assert type_adapter.format_output_type(json_schema_instance) == {
-        "guided_json": json.loads(JSON_SCHEMA_STRING)
+        "structured_outputs": {"json": json.loads(JSON_SCHEMA_STRING)}
     }
     assert type_adapter.format_output_type(json_schema_whitespace_instance) == {
-        "guided_json": json.loads(JSON_SCHEMA_STRING),
-        "whitespace_pattern": "\n"
+        "structured_outputs": {
+            "json": json.loads(JSON_SCHEMA_STRING),
+            "whitespace_pattern": "\n"
+        }
     }
     assert type_adapter.format_output_type(int) == {
-        "guided_regex": "([+-]?(0|[1-9][0-9]*))"
+        "structured_outputs": {"regex": "([+-]?(0|[1-9][0-9]*))"}
     }
