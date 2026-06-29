@@ -7,9 +7,9 @@ from typing import Any, Dict, List, Literal, Optional
 from pydantic import BaseModel, create_model
 
 if sys.version_info >= (3, 12):  # pragma: no cover
-    from typing import _TypedDictMeta, TypedDict  # type: ignore
+    from typing import _TypedDictMeta, NotRequired, TypedDict  # type: ignore
 else:  # pragma: no cover
-    from typing_extensions import _TypedDictMeta, TypedDict  # type: ignore
+    from typing_extensions import _TypedDictMeta, NotRequired, TypedDict  # type: ignore
 
 
 def schema_type_to_python(
@@ -91,7 +91,9 @@ def json_schema_dict_to_typeddict(
     for property, details in properties.items():
         typ = schema_type_to_python(details, "typeddict")
         if property not in required:
-            typ = Optional[typ]
+            # NotRequired (PEP 655) marks the KEY optional; Optional only makes the
+            # value nullable, leaving the key required on a total=True TypedDict.
+            typ = NotRequired[typ]
         annotations[property] = typ
 
     return TypedDict(name or "AnonymousTypedDict", annotations)  # type: ignore
