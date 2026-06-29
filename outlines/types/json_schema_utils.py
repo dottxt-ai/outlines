@@ -174,4 +174,4 @@ def json_schema_dict_to_dataclass(
         class_dict[property] = field(default=default_val)
 
     cls = type(name or "AnonymousDataclass", (), class_dict)
-    return dataclass(cls, kw_only=True)
+    return dataclass(kw_only=True)(cls)
