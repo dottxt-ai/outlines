@@ -12,6 +12,7 @@ from .anthropic import Anthropic, from_anthropic
 from .base import Model, ModelTypeAdapter
 from .dottxt import AsyncDottxt, Dottxt, from_dottxt
 from .gemini import Gemini, from_gemini
+from .litellm import AsyncLiteLLM, LiteLLM, from_litellm
 from .llamacpp import LlamaCpp, from_llamacpp
 from .lmstudio import AsyncLMStudio, LMStudio, from_lmstudio
 from .mistral import AsyncMistral, Mistral, from_mistral
@@ -34,6 +35,7 @@ BlackBoxModel = Union[
     Anthropic,
     Dottxt,
     Gemini,
+    LiteLLM,
     LMStudio,
     Ollama,
     OpenAI,
@@ -45,6 +47,7 @@ BlackBoxModel = Union[
 ]
 AsyncBlackBoxModel = Union[
     AsyncDottxt,
+    AsyncLiteLLM,
     AsyncLMStudio,
     AsyncMistral,
     AsyncOllama,
@@ -65,6 +68,9 @@ __all__ = [
     "from_dottxt",
     "Gemini",
     "from_gemini",
+    "AsyncLiteLLM",
+    "LiteLLM",
+    "from_litellm",
     "LlamaCpp",
     "from_llamacpp",
     "AsyncLMStudio",
