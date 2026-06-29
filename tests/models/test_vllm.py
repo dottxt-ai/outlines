@@ -83,12 +83,14 @@ mock_responses = [
             'model': vllm_model_name,
             'max_tokens': 10,
             'extra_body': {
-            'guided_json': {
-                'type': 'object',
-                'properties': {
-                    'bar': {'type': 'string'}
-                }
-            },
+                'structured_outputs': {
+                    'json': {
+                        'type': 'object',
+                        'properties': {
+                            'bar': {'type': 'string'}
+                        }
+                    },
+                },
             }
         },
         '{"foo": "bar"}'
@@ -99,7 +101,7 @@ mock_responses = [
             'model': vllm_model_name,
             'max_tokens': 10,
             'extra_body': {
-                'guided_regex': '([0-9]{3})',
+                'structured_outputs': {'regex': '([0-9]{3})'},
             },
         },
         "123"
@@ -110,7 +112,7 @@ mock_responses = [
             'model': vllm_model_name,
             'max_tokens': 10,
             'extra_body': {
-                'guided_grammar': YES_NO_GRAMMAR,
+                'structured_outputs': {'grammar': YES_NO_GRAMMAR},
             },
         },
         "yes"
