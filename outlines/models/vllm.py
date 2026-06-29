@@ -58,14 +58,14 @@ class VLLMTypeAdapter(ModelTypeAdapter):
 
         term = python_types_to_terms(output_type)
         if isinstance(term, CFG):
-            return {"guided_grammar": term.definition}
+            return {"structured_outputs": {"grammar": term.definition}}
         elif isinstance(term, JsonSchema):
-            extra_body = {"guided_json": json.loads(term.schema)}
+            structured_outputs = {"json": json.loads(term.schema)}
             if term.whitespace_pattern:
-                extra_body["whitespace_pattern"] = term.whitespace_pattern
-            return extra_body
+                structured_outputs["whitespace_pattern"] = term.whitespace_pattern
+            return {"structured_outputs": structured_outputs}
         else:
-            return {"guided_regex": to_regex(term)}
+            return {"structured_outputs": {"regex": to_regex(term)}}
 
 
 class VLLM(Model):
