@@ -306,16 +306,27 @@ def parse_pydantic_schema(raw_schema, definitions):
     key in the schema of the top-level model.
 
     """
+    if "properties" not in raw_schema:
+        return parse_pydantic_schema_value(
+            raw_schema.get("title", "value"), raw_schema, definitions
+        )
+
     simple_schema = {}
     for name, value in raw_schema["properties"].items():
-        if "description" in value:
-            simple_schema[name] = value["description"]
-        elif "$ref" in value: # pragma: no cover
-            refs = value["$ref"].split("/")
-            simple_schema[name] = parse_pydantic_schema(
-                definitions[refs[2]], definitions
-            )
-        else:
-            simple_schema[name] = f"<{name}>"
+        simple_schema[name] = parse_pydantic_schema_value(name, value, definitions)
 
     return simple_schema
+
+
+def parse_pydantic_schema_value(name, schema, definitions):
+    """Render a single Pydantic schema property for prompt examples."""
+    if "description" in schema:
+        return schema["description"]
+    elif "$ref" in schema:
+        refs = schema["$ref"].split("/")
+        return parse_pydantic_schema(definitions[refs[2]], definitions)
+    elif "enum" in schema:
+        values = " | ".join(str(value) for value in schema["enum"])
+        return f"<{values}>"
+    else:
+        return f"<{name}>"
