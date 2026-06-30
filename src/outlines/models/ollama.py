@@ -196,8 +196,6 @@ class Ollama(Model):
         if "model" not in kwargs and self.model_name is not None:
             kwargs["model"] = self.model_name
 
-        print(self.type_adapter.format_input(model_input))
-
         with normalize_provider_errors(PROVIDER):
             response = self.client.chat(
                 messages=self.type_adapter.format_input(model_input),

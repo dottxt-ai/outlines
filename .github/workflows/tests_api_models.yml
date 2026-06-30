@@ -43,6 +43,7 @@ jobs:
         curl -fsSL https://ollama.com/install.sh | sh
         ollama --version
         ollama pull tinyllama
+        ollama pull moondream
 
     - name: Set up test environment
       run: |

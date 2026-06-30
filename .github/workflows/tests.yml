@@ -54,6 +54,7 @@ jobs:
           ollama list && break || sleep 2
         done
         ollama pull tinyllama
+        ollama pull moondream
     - name: Set up test environment
       run: |
         python -m pip install --upgrade pip
