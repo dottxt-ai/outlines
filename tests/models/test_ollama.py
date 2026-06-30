@@ -18,6 +18,7 @@ from outlines.models import AsyncOllama, Ollama
 
 
 MODEL_NAME = "tinyllama"
+VISION_MODEL_NAME = "moondream"
 
 
 @pytest.fixture
@@ -99,11 +100,9 @@ def test_ollama_direct(model_no_model_name):
 
 
 def test_ollama_simple_vision(image, model):
-    # This is not using a vision model, so it's not able to describe
-    # the image, but we're still checking the model input syntax
     result = model.generate(
         ["What does this logo represent?", Image(image)],
-        model=MODEL_NAME,
+        model=VISION_MODEL_NAME,
     )
     assert isinstance(result, str)
 
@@ -119,7 +118,7 @@ def test_ollama_chat(image, model):
                 ]},
             ]
         ),
-        model=MODEL_NAME,
+        model=VISION_MODEL_NAME,
     )
     assert isinstance(result, str)
 
@@ -217,11 +216,9 @@ async def test_ollama_async_direct(async_model_no_model_name):
 
 @pytest.mark.asyncio
 async def test_ollama_async_simple_vision(image, async_model):
-    # This is not using a vision model, so it's not able to describe
-    # the image, but we're still checking the model input syntax
     result = await async_model.generate(
         ["What does this logo represent?", Image(image)],
-        model=MODEL_NAME,
+        model=VISION_MODEL_NAME,
     )
     assert isinstance(result, str)
 
@@ -238,7 +235,7 @@ async def test_ollama_async_chat(image, async_model):
                 ]},
             ]
         ),
-        model=MODEL_NAME,
+        model=VISION_MODEL_NAME,
     )
     assert isinstance(result, str)
 
