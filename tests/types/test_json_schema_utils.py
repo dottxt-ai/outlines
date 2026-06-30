@@ -1,6 +1,6 @@
 import sys
 from dataclasses import is_dataclass
-from typing import Any, List, Literal, Optional
+from typing import Any, List, Literal, Optional, Union
 
 from pydantic import BaseModel, TypeAdapter
 from pydantic_core import PydanticUndefined
@@ -97,6 +97,29 @@ def test_schema_type_to_python_unknown_type():
     assert result == Any
 
 
+def test_schema_type_to_python_null():
+    assert schema_type_to_python({"type": "null"}, "pydantic") is type(None)
+
+
+def test_schema_type_to_python_type_array_nullable():
+    # JSON Schema allows ``type`` to be a list of type names; ["string", "null"]
+    # is the canonical way to express a nullable field.
+    assert schema_type_to_python({"type": ["string", "null"]}, "pydantic") == Optional[str]
+    assert schema_type_to_python({"type": ["integer", "null"]}, "pydantic") == Optional[int]
+
+
+def test_schema_type_to_python_type_array_union():
+    assert schema_type_to_python({"type": ["string", "integer"]}, "pydantic") == Union[str, int]
+    assert (
+        schema_type_to_python({"type": ["string", "integer", "null"]}, "pydantic")
+        == Optional[Union[str, int]]
+    )
+
+
+def test_schema_type_to_python_single_element_type_array():
+    assert schema_type_to_python({"type": ["string"]}, "pydantic") is str
+
+
 def test_json_schema_dict_to_typeddict_basic():
     schema = {
         "type": "object",
@@ -190,6 +213,21 @@ def test_json_schema_dict_to_pydantic_basic():
     assert result.model_fields["age"].annotation == Optional[int]
     assert result.model_fields["name"].default == PydanticUndefined
     result.model_fields["age"].default is None
+
+
+def test_json_schema_dict_to_pydantic_nullable_type_array():
+    # A required property typed as ["integer", "null"] should keep its type
+    # constraint rather than collapsing to ``Any``.
+    schema = {
+        "type": "object",
+        "properties": {
+            "age": {"type": ["integer", "null"]},
+        },
+        "required": ["age"],
+    }
+
+    result = json_schema_dict_to_pydantic(schema, "Record")
+    assert result.model_fields["age"].annotation == Optional[int]
 
 
 def test_json_schema_dict_to_pydantic_array_enum():
@@ -323,3 +361,21 @@ def test_json_schema_dict_to_dataclass_nested_object():
     assert field.__annotations__["age"] is int
     assert not hasattr(field, "name")
     assert field.age is None
+
+
+def test_json_schema_dict_to_dataclass_optional_before_required():
+    schema = {
+        "type": "object",
+        "properties": {
+            "nickname": {"type": "string"},
+            "user_id": {"type": "integer"},
+        },
+        "required": ["user_id"],
+    }
+
+    result = json_schema_dict_to_dataclass(schema, "User")
+    assert is_dataclass(result)
+
+    instance = result(user_id=5)
+    assert instance.user_id == 5
+    assert instance.nickname is None

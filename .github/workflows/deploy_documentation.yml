@@ -1,0 +1,95 @@
+name: Deploy the documentation preview
+
+on:
+  workflow_run:
+    workflows: ["Build the documentation"]
+    types: [completed]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  deploy:
+    name: Deploy Documentation Preview
+    runs-on: ubuntu-latest
+    if: >-
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.conclusion == 'success'
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Download PR metadata
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: pr-preview-meta
+          path: pr-meta
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Read PR metadata
+        id: meta
+        run: |
+          pr_number=$(grep -oE '^[0-9]+' pr-meta/pr_number | head -1)
+          event_action=$(grep -oE '^[a-z_]+' pr-meta/event_action | head -1)
+          echo "pr_number=${pr_number}" >> "$GITHUB_OUTPUT"
+          echo "event_action=${event_action}" >> "$GITHUB_OUTPUT"
+
+      - name: Download built site
+        if: steps.meta.outputs.event_action != 'closed'
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: pr-preview-site
+          path: site
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Deploy or remove PR preview
+        uses: rossjrw/pr-preview-action@ffa7509e91a3ec8dfc2e5536c4d5c1acdf7a6de9 # v1.8.1
+        with:
+          source-dir: site/
+          preview-branch: gh-pages
+          umbrella-dir: pr-preview
+          pr-number: ${{ steps.meta.outputs.pr_number }}
+          action: ${{ steps.meta.outputs.event_action == 'closed' && 'remove' || 'deploy' }}
+          comment: false
+          token: ${{ secrets.DEPLOY_TOKEN }}
+
+      - name: Comment PR with preview link
+        if: steps.meta.outputs.event_action != 'closed'
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        env:
+          PR_NUMBER: ${{ steps.meta.outputs.pr_number }}
+        with:
+          script: |
+            const prNumber = Number(process.env.PR_NUMBER);
+            const previewUrl = `https://dottxt-ai.github.io/outlines/pr-preview/pr-${prNumber}/`;
+
+            const comments = await github.rest.issues.listComments({
+              issue_number: prNumber,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            });
+
+            const botComment = comments.data.find(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes('Documentation preview')
+            );
+
+            const commentBody = `📚 **Documentation preview**: ${previewUrl}\n\n*Preview updates automatically with each commit.*`;
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                comment_id: botComment.id,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: commentBody
+              });
+            } else {
+              await github.rest.issues.createComment({
+                issue_number: prNumber,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: commentBody
+              });
+            }

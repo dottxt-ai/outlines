@@ -833,7 +833,7 @@ def _ensure_json_quoted(term: Term) -> Term:
 def _handle_union(args: tuple, recursion_depth: int) -> Alternatives:
     # Peel off the None member(s) for any arity (not just the 2-arg Optional[T] case):
     # a union such as Union[int, str, None] / Optional[Union[int, str]] must map None to
-    # String("None") rather than recursing into NoneType (which has no handler and raised).
+    # a keyword token rather than recursing into NoneType (which has no handler and raised).
     has_none = type(None) in args or None in args
     terms = [
         python_types_to_terms(arg, recursion_depth + 1)
@@ -841,7 +841,10 @@ def _handle_union(args: tuple, recursion_depth: int) -> Alternatives:
         if arg not in (type(None), None)
     ]
     if has_none:
-        terms.append(String("None"))
+        # ``None`` is a keyword, not a string value: keep it a ``Regex``
+        # (like ``True``/``False``) so it is not JSON-quoted when the union
+        # ends up nested inside a container type.
+        terms.append(Regex("None"))
     return Alternatives(terms)
 
 

@@ -2,7 +2,7 @@
 
 import sys
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, Dict, List, Literal, Optional, Union
 
 from pydantic import BaseModel, create_model
 
@@ -37,6 +37,17 @@ def schema_type_to_python(
 
     t = schema.get("type")
 
+    if isinstance(t, list):
+        # JSON Schema allows ``type`` to be a list of type names, e.g. the
+        # common nullable form ``["string", "null"]``. Map each member to a
+        # Python type and combine them into a Union (mirroring the ``anyOf``
+        # the regex backend uses for type arrays).
+        members = tuple(
+            schema_type_to_python({**schema, "type": member}, caller_target_type)
+            for member in t
+        )
+        return Union[members] if members else Any  # type: ignore
+
     if t == "string":
         return str
     elif t == "integer":
@@ -45,6 +56,8 @@ def schema_type_to_python(
         return float
     elif t == "boolean":
         return bool
+    elif t == "null":
+        return type(None)
     elif t == "array":
         items = schema.get("items", {})
         if items:
@@ -174,4 +187,4 @@ def json_schema_dict_to_dataclass(
         class_dict[property] = field(default=default_val)
 
     cls = type(name or "AnonymousDataclass", (), class_dict)
-    return dataclass(cls)
+    return dataclass(kw_only=True)(cls)
