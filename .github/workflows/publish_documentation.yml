@@ -29,6 +29,7 @@ jobs:
           path: .cache
           restore-keys: |
             mkdocs-material-
+      - run: pip install .
       - run: pip install -r requirements-doc.txt
       - run: mkdocs build
 
