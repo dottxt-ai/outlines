@@ -120,6 +120,24 @@ def test_schema_type_to_python_single_element_type_array():
     assert schema_type_to_python({"type": ["string"]}, "pydantic") is str
 
 
+def test_schema_type_to_python_const():
+    # ``const`` pins a field to a single value; it is the singular sibling of
+    # ``enum`` and must map to a ``Literal`` rather than collapsing to ``Any``.
+    assert schema_type_to_python({"const": "admin"}, "pydantic") == Literal["admin"]
+    assert schema_type_to_python({"const": 3}, "pydantic") == Literal[3]
+    assert schema_type_to_python({"const": True}, "pydantic") == Literal[True]
+
+
+def test_schema_type_to_python_const_with_type():
+    # Pydantic emits ``{"const": <value>, "type": <name>}`` for a single-value
+    # ``Literal``; the ``const`` must win so the fixed value is preserved
+    # instead of widening to the bare type.
+    assert (
+        schema_type_to_python({"const": "admin", "type": "string"}, "pydantic")
+        == Literal["admin"]
+    )
+
+
 def test_json_schema_dict_to_typeddict_basic():
     schema = {
         "type": "object",
@@ -228,6 +246,24 @@ def test_json_schema_dict_to_pydantic_nullable_type_array():
 
     result = json_schema_dict_to_pydantic(schema, "Record")
     assert result.model_fields["age"].annotation == Optional[int]
+
+
+def test_json_schema_dict_to_pydantic_const():
+    # A required ``const`` property must keep its fixed value as a ``Literal``.
+    # Pydantic serialises ``Literal["created"]`` to ``{"const": ..., "type": ...}``,
+    # so a schema round-trip through a non-pydantic target used to lose it.
+    schema = {
+        "type": "object",
+        "properties": {
+            "kind": {"const": "created", "type": "string"},
+            "id": {"type": "integer"},
+        },
+        "required": ["kind", "id"],
+    }
+
+    result = json_schema_dict_to_pydantic(schema, "Event")
+    assert result.model_fields["kind"].annotation == Literal["created"]
+    assert result.model_fields["id"].annotation is int
 
 
 def test_json_schema_dict_to_pydantic_array_enum():

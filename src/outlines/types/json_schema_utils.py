@@ -35,6 +35,13 @@ def schema_type_to_python(
         values = schema["enum"]
         return Literal[tuple(values)]
 
+    if "const" in schema:
+        # ``const`` pins the field to a single value (the singular sibling of
+        # ``enum``). Pydantic emits it for a one-element ``Literal``, often
+        # alongside ``type``, so it must be handled before ``type`` to avoid
+        # widening the value back to its bare type.
+        return Literal[schema["const"]]
+
     t = schema.get("type")
 
     if isinstance(t, list):
