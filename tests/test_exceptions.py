@@ -327,6 +327,71 @@ class TestIsProviderException:
         assert not is_provider_exception(ValueError("oops"), "unknown-provider")
 
 
+class TestProviderSDKNotInstalled:
+    """Exception normalization must not require the provider's optional SDK.
+
+    ``is_provider_exception`` / ``normalize_provider_exception`` are public API
+    and their contract is to let non-provider errors pass through and to fall
+    back to HTTP status-code inspection. Building the SDK-exception map must
+    therefore degrade gracefully to an empty map when the provider package is
+    absent, instead of raising ``ImportError`` (which would mask the original
+    exception when a *different* provider's SDK is the one installed).
+
+    Each provider's optional import is blocked via ``sys.modules[name] = None``,
+    which forces ``import name`` to raise ``ImportError`` even if the package is
+    installed, so these tests are deterministic regardless of the test env.
+    """
+
+    # provider -> the top-level module(s) its exception map imports
+    _PROVIDER_SDK_MODULES = {
+        "openai": ["openai"],
+        "vllm": ["openai"],
+        "sglang": ["openai"],
+        "anthropic": ["anthropic"],
+        "gemini": ["google", "httpx"],
+        "ollama": ["ollama", "httpx"],
+        "tgi": ["huggingface_hub"],
+        "dottxt": ["urllib3"],
+    }
+
+    @pytest.fixture
+    def block_sdk(self, monkeypatch):
+        def _block(*module_names):
+            _build_exception_map.cache_clear()
+            for name in module_names:
+                monkeypatch.setitem(sys.modules, name, None)
+        yield _block
+        _build_exception_map.cache_clear()
+
+    @pytest.mark.parametrize("provider", sorted(_PROVIDER_SDK_MODULES))
+    def test_build_exception_map_returns_empty_when_sdk_missing(self, provider, block_sdk):
+        block_sdk(*self._PROVIDER_SDK_MODULES[provider])
+        assert _build_exception_map(provider) == {}
+
+    @pytest.mark.parametrize("provider", sorted(_PROVIDER_SDK_MODULES))
+    def test_is_provider_exception_passes_through_when_sdk_missing(self, provider, block_sdk):
+        block_sdk(*self._PROVIDER_SDK_MODULES[provider])
+        # A programmer error must not be misreported as a provider error, and
+        # building the (unavailable) SDK map must not raise ImportError.
+        assert is_provider_exception(TypeError("programmer bug"), provider) is False
+
+    @pytest.mark.parametrize("provider", sorted(_PROVIDER_SDK_MODULES))
+    def test_status_code_fallback_survives_missing_sdk(self, provider, block_sdk):
+        block_sdk(*self._PROVIDER_SDK_MODULES[provider])
+        # Even without the SDK, a status-carrying error still normalizes via the
+        # SDK-free status-code fallback.
+        result = normalize_provider_exception(fake_provider_error(429), provider)
+        assert isinstance(result, RateLimitError)
+
+    def test_normalize_context_manager_reraises_programmer_error_without_sdk(self, block_sdk):
+        block_sdk("openai")
+        original = TypeError("programmer bug")
+        with pytest.raises(TypeError) as exc_info:
+            with normalize_provider_errors("openai"):
+                raise original
+        assert exc_info.value is original
+
+
 class TestExceptionMapOpenAI:
     @pytest.fixture(autouse=True)
     def _require_openai(self):
