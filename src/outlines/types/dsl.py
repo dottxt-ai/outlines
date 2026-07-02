@@ -831,21 +831,21 @@ def _ensure_json_quoted(term: Term) -> Term:
 
 
 def _handle_union(args: tuple, recursion_depth: int) -> Alternatives:
-    # Handle the Optional[T] type
-    if len(args) == 2 and (type(None) in args or None in args):
-        other_ptype = next(arg for arg in args if arg not in (type(None), None))
-        return Alternatives(
-            [
-                python_types_to_terms(other_ptype, recursion_depth + 1),
-                # ``None`` is a keyword, not a string value: keep it a ``Regex``
-                # (like ``True``/``False``) so it is not JSON-quoted when the
-                # ``Optional`` ends up nested inside a container type.
-                Regex("None"),
-            ]
-        )
-    return Alternatives(
-        [python_types_to_terms(arg, recursion_depth + 1) for arg in args]
-    )
+    # Peel off the None member(s) for any arity (not just the 2-arg Optional[T] case):
+    # a union such as Union[int, str, None] / Optional[Union[int, str]] must map None to
+    # a keyword token rather than recursing into NoneType (which has no handler and raised).
+    has_none = type(None) in args or None in args
+    terms = [
+        python_types_to_terms(arg, recursion_depth + 1)
+        for arg in args
+        if arg not in (type(None), None)
+    ]
+    if has_none:
+        # ``None`` is a keyword, not a string value: keep it a ``Regex``
+        # (like ``True``/``False``) so it is not JSON-quoted when the union
+        # ends up nested inside a container type.
+        terms.append(Regex("None"))
+    return Alternatives(terms)
 
 
 def _handle_list(args: tuple, recursion_depth: int) -> Sequence:
