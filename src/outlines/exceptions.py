@@ -231,7 +231,20 @@ def _build_exception_map(provider: str) -> dict[type, type[APIError]]:
 
     Imports are lazy so no SDK is loaded until an exception actually occurs.
     vLLM and SGLang reuse the OpenAI map because they use the OpenAI SDK client.
+
+    If the provider's optional SDK is not installed the mapping is empty: the
+    callers (:func:`is_provider_exception`, :func:`normalize_provider_exception`)
+    then fall back to SDK-free HTTP status-code inspection. This keeps error
+    handling from raising a spurious ``ImportError`` that would mask the original
+    exception when a *different* provider's SDK is the one installed.
     """
+    try:
+        return _provider_exception_map(provider)
+    except ImportError:
+        return {}
+
+
+def _provider_exception_map(provider: str) -> dict[type, type[APIError]]:
     if provider in ("openai", "vllm", "sglang"):  # vLLM and SGLang use the OpenAI SDK client
         import openai
         return {
