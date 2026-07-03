@@ -37,7 +37,7 @@ mock_responses = [
             ],
             'model': MODEL_NAME,
             'max_tokens': 10,
-            'extra_body': {'guided_regex': '("[^"]*")'},
+            'extra_body': {'structured_outputs': {'regex': '("[^"]*")'}},
         },
         "Mock response"
     ),
@@ -48,7 +48,7 @@ mock_responses = [
             ],
             'model': MODEL_NAME,
             'max_tokens': 10,
-            'extra_body': {'guided_regex': '("[^"]*")'},
+            'extra_body': {'structured_outputs': {'regex': '("[^"]*")'}},
             'stream': True,
         },
         ["Mock", "response"]
