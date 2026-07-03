@@ -751,7 +751,11 @@ def python_types_to_terms(ptype: Any, recursion_depth: int = 0) -> Term:
     elif is_str_instance(ptype):
         return String(ptype)
     elif is_int_instance(ptype) or is_float_instance(ptype):
-        return Regex(str(ptype))
+        # Escape regex metacharacters so the literal value matches literally.
+        # Without this a float's ``.`` becomes a wildcard (e.g. ``1.5`` would
+        # also match ``1x5``). Kept as a ``Regex`` (not ``String``) so numbers
+        # stay JSON-unquoted inside container types via ``_ensure_json_quoted``.
+        return Regex(re.escape(str(ptype)))
 
     # Structured types
     structured_type_checks = [
