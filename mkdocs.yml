@@ -135,6 +135,7 @@ nav:
                     - Dottxt: features/models/dottxt.md
                     - Gemini: features/models/gemini.md
                     - Llamacpp: features/models/llamacpp.md
+                    - LM Studio: features/models/lmstudio.md
                     - Mlx-lm: features/models/mlxlm.md
                     - Ollama: features/models/ollama.md
                     - OpenAI: features/models/openai.md
