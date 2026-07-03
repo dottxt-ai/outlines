@@ -3,7 +3,9 @@ import json
 import os
 import warnings
 from enum import Enum
+from types import SimpleNamespace
 from typing import Annotated, AsyncGenerator, Generator
+from unittest.mock import AsyncMock, Mock
 
 import lmstudio
 import pytest
@@ -11,6 +13,7 @@ from PIL import Image as PILImage
 from pydantic import BaseModel, Field
 
 import outlines
+from outlines.exceptions import APIConnectionError, APITimeoutError
 from outlines.inputs import Chat, Image, Video
 from outlines.models import AsyncLMStudio, LMStudio
 from outlines.models.lmstudio import LMStudioTypeAdapter
@@ -50,6 +53,28 @@ else:
 
 class Foo(BaseModel):
     foo: Annotated[str, Field(max_length=10)]
+
+
+class RaisingIterator:
+    def __init__(self, exc):
+        self.exc = exc
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        raise self.exc
+
+
+class RaisingAsyncIterator:
+    def __init__(self, exc):
+        self.exc = exc
+
+    def __aiter__(self):
+        return self
+
+    async def __anext__(self):
+        raise self.exc
 
 
 type_adapter = LMStudioTypeAdapter()
@@ -229,6 +254,44 @@ def test_lmstudio_wrong_input_type(model):
         model.generate(["foo?", image_input, Video("")], None)
 
 
+def test_lmstudio_connection_error_normalizes():
+    original = ConnectionError("LM Studio is unavailable")
+    lmstudio_model = SimpleNamespace(respond=Mock(side_effect=original))
+    client = SimpleNamespace(llm=SimpleNamespace(model=Mock(return_value=lmstudio_model)))
+    model = LMStudio(client)
+
+    with pytest.raises(APIConnectionError) as exc_info:
+        model.generate("hello")
+
+    assert exc_info.value.provider == "lmstudio"
+    assert exc_info.value.original_exception is original
+    assert exc_info.value.__cause__ is original
+
+
+def test_lmstudio_model_lookup_timeout_normalizes():
+    original = TimeoutError("LM Studio timed out")
+    client = SimpleNamespace(llm=SimpleNamespace(model=Mock(side_effect=original)))
+    model = LMStudio(client)
+
+    with pytest.raises(APITimeoutError) as exc_info:
+        model.generate("hello")
+
+    assert exc_info.value.provider == "lmstudio"
+    assert exc_info.value.original_exception is original
+
+
+def test_lmstudio_non_provider_error_passes_through():
+    original = ValueError("bad mock response")
+    lmstudio_model = SimpleNamespace(respond=Mock(side_effect=original))
+    client = SimpleNamespace(llm=SimpleNamespace(model=Mock(return_value=lmstudio_model)))
+    model = LMStudio(client)
+
+    with pytest.raises(ValueError) as exc_info:
+        model.generate("hello")
+
+    assert exc_info.value is original
+
+
 def test_lmstudio_stream(model):
     result = model.stream("Write a sentence about a cat.")
     assert isinstance(result, Generator)
@@ -241,6 +304,40 @@ def test_lmstudio_stream_json(model_no_model_name):
     for text in generator:
         generated_text.append(text)
     assert "foo" in json.loads("".join(generated_text))
+
+
+def test_lmstudio_stream_connection_error_normalizes():
+    original = ConnectionError("LM Studio stream disconnected")
+    lmstudio_model = SimpleNamespace(
+        respond_stream=Mock(return_value=RaisingIterator(original))
+    )
+    client = SimpleNamespace(llm=SimpleNamespace(model=Mock(return_value=lmstudio_model)))
+    model = LMStudio(client)
+
+    with pytest.raises(APIConnectionError) as exc_info:
+        next(model.stream("hello"))
+
+    assert exc_info.value.provider == "lmstudio"
+    assert exc_info.value.original_exception is original
+
+
+def test_lmstudio_stream_can_stop_early():
+    lmstudio_model = SimpleNamespace(
+        respond_stream=Mock(
+            return_value=iter(
+                [
+                    SimpleNamespace(content="first"),
+                    SimpleNamespace(content="second"),
+                ]
+            )
+        )
+    )
+    client = SimpleNamespace(llm=SimpleNamespace(model=Mock(return_value=lmstudio_model)))
+    model = LMStudio(client)
+
+    for chunk in model.stream("hello"):
+        assert chunk == "first"
+        break
 
 
 def test_lmstudio_batch(model):
@@ -348,6 +445,24 @@ async def test_lmstudio_async_wrong_input_type(async_model):
 
 
 @pytest.mark.asyncio
+async def test_lmstudio_async_connection_error_normalizes():
+    original = ConnectionError("LM Studio is unavailable")
+    lmstudio_model = SimpleNamespace(respond=AsyncMock(side_effect=original))
+    client = SimpleNamespace(
+        __aenter__=AsyncMock(),
+        llm=SimpleNamespace(model=AsyncMock(return_value=lmstudio_model)),
+    )
+    model = AsyncLMStudio(client)
+
+    with pytest.raises(APIConnectionError) as exc_info:
+        await model.generate("hello")
+
+    assert exc_info.value.provider == "lmstudio"
+    assert exc_info.value.original_exception is original
+    assert exc_info.value.__cause__ is original
+
+
+@pytest.mark.asyncio
 async def test_lmstudio_async_stream(async_model):
     result = async_model.stream("Write a sentence about a cat.")
     assert isinstance(result, AsyncGenerator)
@@ -361,6 +476,43 @@ async def test_lmstudio_async_stream_json(async_model_no_model_name):
     async for chunk in async_generator:
         generated_text.append(chunk)
     assert "foo" in json.loads("".join(generated_text))
+
+
+@pytest.mark.asyncio
+async def test_lmstudio_async_stream_timeout_normalizes():
+    original = TimeoutError("LM Studio stream timed out")
+    lmstudio_model = SimpleNamespace(
+        respond_stream=AsyncMock(return_value=RaisingAsyncIterator(original))
+    )
+    client = SimpleNamespace(
+        __aenter__=AsyncMock(),
+        llm=SimpleNamespace(model=AsyncMock(return_value=lmstudio_model)),
+    )
+    model = AsyncLMStudio(client)
+
+    with pytest.raises(APITimeoutError) as exc_info:
+        await model.stream("hello").__anext__()
+
+    assert exc_info.value.provider == "lmstudio"
+    assert exc_info.value.original_exception is original
+
+
+@pytest.mark.asyncio
+async def test_lmstudio_async_stream_can_stop_early():
+    async def stream():
+        yield SimpleNamespace(content="first")
+        yield SimpleNamespace(content="second")
+
+    lmstudio_model = SimpleNamespace(respond_stream=AsyncMock(return_value=stream()))
+    client = SimpleNamespace(
+        __aenter__=AsyncMock(),
+        llm=SimpleNamespace(model=AsyncMock(return_value=lmstudio_model)),
+    )
+    model = AsyncLMStudio(client)
+
+    async for chunk in model.stream("hello"):
+        assert chunk == "first"
+        break
 
 
 @pytest.mark.asyncio
