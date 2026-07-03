@@ -56,6 +56,10 @@ class VLLMTypeAdapter(ModelTypeAdapter):
         if output_type is None:
             return {}
 
+        # The ``structured_outputs`` request field requires a vLLM server
+        # >= 0.12, which replaced the older ``guided_json``/``guided_regex``/
+        # ``guided_grammar`` keys. Older servers silently ignore it and return
+        # unconstrained output.
         term = python_types_to_terms(output_type)
         if isinstance(term, CFG):
             return {"structured_outputs": {"grammar": term.definition}}
@@ -358,6 +362,9 @@ def from_vllm(
 ) -> Union[VLLM, AsyncVLLM]:
     """Create an Outlines `VLLM` or `AsyncVLLM` model instance from an
     `openai.OpenAI` or `openai.AsyncOpenAI` instance.
+
+    Structured output requires a vLLM server >= 0.12; earlier servers use a
+    different interface and will silently return unconstrained responses
 
     Parameters
     ----------
