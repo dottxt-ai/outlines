@@ -53,6 +53,11 @@ class PydanticClassWithEnum(BaseModel):
     armor: Armor
 
 
+class PydanticNestedClass(BaseModel):
+    name: str
+    inner: PydanticClass
+
+
 def test_vision_initialization():
     # Create a simple image for testing
     image = PILImage.new("RGB", (10, 10), color="red")
@@ -386,4 +391,9 @@ def test_get_schema():
     pydantic_enum_schema_output = get_schema(PydanticClassWithEnum)
     assert pydantic_enum_schema_output == (
         '{\n  "name": "<name>",\n  "armor": "<leather | chainmail | plate>"\n}'
+    )
+
+    pydantic_nested_schema_output = get_schema(PydanticNestedClass)
+    assert pydantic_nested_schema_output == (
+        '{\n  "name": "<name>",\n  "inner": {\n    "foo": "<foo>"\n  }\n}'
     )
