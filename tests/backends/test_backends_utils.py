@@ -55,11 +55,11 @@ class NumpyTensorAdapter():
 
 class MLXTensorAdapter():
     def __init__(self):
-        import mlx
-        self.mlx = mlx
+        import mlx.core
+        self.mlx = mlx.core
 
     def randn(self, shape):
-        return self.mlx.random.randn(*shape)
+        return self.mlx.random.normal(shape)
 
     def randint(self, low, high, size):
         return self.mlx.random.randint(low, high, size)

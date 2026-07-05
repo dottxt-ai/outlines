@@ -15,7 +15,7 @@ from .gemini import Gemini, from_gemini
 from .llamacpp import LlamaCpp, from_llamacpp
 from .lmstudio import AsyncLMStudio, LMStudio, from_lmstudio
 from .mistral import AsyncMistral, Mistral, from_mistral
-from .mlxlm import MLXLM, from_mlxlm
+from .mlxlm import MLXLM, MLXLMMultiModal, from_mlxlm
 from .ollama import AsyncOllama, Ollama, from_ollama
 from .openai import AsyncOpenAI, OpenAI, from_openai
 from .sglang import AsyncSGLang, SGLang, from_sglang
@@ -74,6 +74,7 @@ __all__ = [
     "Mistral",
     "from_mistral",
     "MLXLM",
+    "MLXLMMultiModal",
     "from_mlxlm",
     "AsyncOllama",
     "Ollama",

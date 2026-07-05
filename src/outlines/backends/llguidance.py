@@ -223,9 +223,7 @@ class LLGuidanceBackend(BaseBackend):
         elif isinstance(model, MLXLM): # pragma: no cover
             import llguidance.hf
 
-            return llguidance.hf.from_tokenizer(
-                model.mlx_tokenizer._tokenizer
-            )
+            return llguidance.hf.from_tokenizer(model.hf_tokenizer)
 
         else: # pragma: no cover
             raise ValueError(
