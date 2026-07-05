@@ -3,12 +3,16 @@ import re
 from enum import Enum
 from typing import Generator
 
+from PIL import Image as PILImage
 from pydantic import BaseModel
 import transformers
 
 import outlines
+from outlines.inputs import Chat, Image
 from outlines.models.mlxlm import (
     MLXLM,
+    MLXLMMultiModal,
+    MLXLMMultiModalTypeAdapter,
     MLXLMTypeAdapter,
     from_mlxlm
 )
@@ -23,8 +27,16 @@ try:
 except ImportError:
     HAS_MLX = False
 
+try:
+    import mlx_vlm
+
+    HAS_MLX_VLM = HAS_MLX
+except ImportError:
+    HAS_MLX_VLM = False
+
 
 TEST_MODEL = "mlx-community/SmolLM-135M-Instruct-4bit"
+TEST_VISION_MODEL = "mlx-community/SmolVLM-256M-Instruct-4bit"
 
 
 @pytest.mark.skipif(not HAS_MLX, reason="MLX tests require Apple Silicon")
@@ -155,3 +167,109 @@ def test_mlxlm_batch_output_type(model):
             ["Respond with one word.", "Respond with one word."],
             Regex(r"[0-9]")
         )
+
+
+@pytest.fixture
+def image():
+    width, height = 128, 128
+    red_background = (255, 0, 0)
+    image = PILImage.new("RGB", (width, height), red_background)
+    image.format = "PNG"
+    return image
+
+
+@pytest.fixture(scope="session")
+def vision_model(tmp_path_factory):
+    model, processor = mlx_vlm.load(TEST_VISION_MODEL)
+    return outlines.from_mlxlm(model, processor)
+
+
+@pytest.mark.skipif(not HAS_MLX_VLM, reason="MLX-VLM tests require Apple Silicon")
+def test_mlxlm_vision_model_initialization(vision_model):
+    assert isinstance(vision_model, MLXLMMultiModal)
+    assert isinstance(vision_model, MLXLM)
+    assert isinstance(vision_model.tokenizer, TransformerTokenizer)
+    assert isinstance(vision_model.type_adapter, MLXLMMultiModalTypeAdapter)
+    assert vision_model.tensor_library_name == "mlx"
+
+
+@pytest.mark.skipif(not HAS_MLX_VLM, reason="MLX-VLM tests require Apple Silicon")
+def test_mlxlm_vision_simple(vision_model, image):
+    result = vision_model(
+        Chat([{
+            "role": "user",
+            "content": ["What color is the background? One word.", Image(image)],
+        }]),
+        max_tokens=20,
+    )
+    assert isinstance(result, str)
+
+
+@pytest.mark.skipif(not HAS_MLX_VLM, reason="MLX-VLM tests require Apple Silicon")
+def test_mlxlm_vision_plain_str_input(vision_model):
+    result = vision_model("Respond with one word. Not more.", max_tokens=20)
+    assert isinstance(result, str)
+
+
+@pytest.mark.skipif(not HAS_MLX_VLM, reason="MLX-VLM tests require Apple Silicon")
+def test_mlxlm_vision_invalid_asset_type(vision_model, image):
+    with pytest.raises(ValueError, match="only supports `Image` assets"):
+        vision_model(
+            Chat([{"role": "user", "content": ["Describe this.", object()]}]),
+        )
+
+
+@pytest.mark.skipif(not HAS_MLX_VLM, reason="MLX-VLM tests require Apple Silicon")
+def test_mlxlm_vision_regex(vision_model, image):
+    result = vision_model(
+        Chat([{
+            "role": "user",
+            "content": ["What color is the background?", Image(image)],
+        }]),
+        Regex(r"(red|blue|green)"),
+        max_tokens=20,
+    )
+    assert re.fullmatch(r"(red|blue|green)", result)
+
+
+@pytest.mark.skipif(not HAS_MLX_VLM, reason="MLX-VLM tests require Apple Silicon")
+def test_mlxlm_vision_json_schema(vision_model, image):
+    class Color(BaseModel):
+        color: str
+
+    result = vision_model(
+        Chat([{
+            "role": "user",
+            "content": ["What color is the background?", Image(image)],
+        }]),
+        Color,
+        max_tokens=30,
+    )
+    assert "color" in result
+
+
+@pytest.mark.skipif(not HAS_MLX_VLM, reason="MLX-VLM tests require Apple Silicon")
+def test_mlxlm_vision_stream(vision_model, image):
+    generator = vision_model.stream(
+        Chat([{
+            "role": "user",
+            "content": ["What color is the background? One word.", Image(image)],
+        }]),
+        max_tokens=20,
+    )
+    assert isinstance(generator, Generator)
+    assert isinstance(next(generator), str)
+
+
+@pytest.mark.skipif(not HAS_MLX_VLM, reason="MLX-VLM tests require Apple Silicon")
+def test_mlxlm_vision_batch_not_implemented(vision_model, image):
+    with pytest.raises(
+        NotImplementedError,
+        match="mlx-vlm does not support batch generation"
+    ):
+        vision_model.batch([
+            Chat([{
+                "role": "user",
+                "content": ["Describe this.", Image(image)],
+            }]),
+        ])

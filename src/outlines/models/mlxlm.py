@@ -1,31 +1,30 @@
-"""Integration with the `mlx_lm` library.
+"""Integration with the `mlx_lm` and `mlx_vlm` libraries.
 
 Local runtime calls intentionally bypass
 outlines.exceptions.normalize_provider_errors().
 """
 
 from functools import singledispatchmethod
-from typing import TYPE_CHECKING, Iterator, List, Optional
+from typing import TYPE_CHECKING, Any, Iterator, List, Optional, Union
 
 try:
     from transformers import PreTrainedTokenizerBase
 except ImportError:  # pragma: no cover
     PreTrainedTokenizerBase = None  # type: ignore
 
-from outlines.inputs import Chat
+from outlines.inputs import Chat, Image
 from outlines.models.base import Model, ModelTypeAdapter
 from outlines.models.tokenizer import _check_hf_chat_template
 from outlines.models.transformers import TransformerTokenizer
 from outlines.processors import OutlinesLogitsProcessor
 
 if TYPE_CHECKING:
-    from typing import Union
     import mlx.nn as nn
     from mlx_lm.tokenizer_utils import TokenizerWrapper
-    from transformers import PreTrainedTokenizer
+    from transformers import PreTrainedTokenizer, ProcessorMixin
     MLXTokenizer = Union["TokenizerWrapper", "PreTrainedTokenizer"]
 
-__all__ = ["MLXLM", "from_mlxlm"]
+__all__ = ["MLXLM", "MLXLMMultiModal", "from_mlxlm"]
 
 
 class MLXLMTypeAdapter(ModelTypeAdapter):
@@ -133,6 +132,8 @@ class MLXLM(Model):
         inner = getattr(tokenizer, "_tokenizer", tokenizer)
         hf_tokenizer = inner if isinstance(inner, PreTrainedTokenizerBase) else tokenizer
         self.tokenizer = TransformerTokenizer(hf_tokenizer)
+        # self.hf_tokenizer is used by the structured generation backends
+        self.hf_tokenizer = hf_tokenizer
         self.type_adapter = MLXLMTypeAdapter(
             tokenizer=tokenizer,
             has_chat_template=_check_hf_chat_template(tokenizer)
@@ -267,22 +268,247 @@ class MLXLM(Model):
             yield gen_response.text
 
 
-def from_mlxlm(model: "nn.Module", tokenizer: "MLXTokenizer") -> MLXLM:
-    """Create an Outlines `MLXLM` model instance from an `mlx_lm` model and a
-    tokenizer.
+class MLXLMMultiModalTypeAdapter(ModelTypeAdapter):
+    """Type adapter for the `MLXLMMultiModal` model."""
+
+    def __init__(self, tokenizer: "PreTrainedTokenizer"):
+        self.tokenizer = tokenizer
+
+    @singledispatchmethod
+    def format_input(self, model_input):
+        """Generate the prompt and images arguments to pass to the model.
+
+        Parameters
+        ----------
+        model_input
+            The input provided by the user.
+
+        Returns
+        -------
+        dict
+            The formatted input to be passed to the model, containing a
+            `prompt` key and an `images` key.
+
+        """
+        raise NotImplementedError(
+            f"The input type {type(model_input)} is not available with "
+            "mlx-vlm. The available types are `str` and `Chat`."
+        )
+
+    @format_input.register(str)
+    def format_str_input(self, model_input: str) -> dict:
+        # the chat template is needed to position the prompt correctly
+        # relative to the image tokens
+        return self.format_chat_input(
+            Chat([{"role": "user", "content": model_input}])
+        )
+
+    @format_input.register(Chat)
+    def format_chat_input(self, model_input: Chat) -> dict:
+        conversation = []
+        images: List[Any] = []
+
+        for message in model_input.messages:
+            content = message["content"]
+
+            if isinstance(content, str):
+                conversation.append({"role": message["role"], "content": content})
+                continue
+
+            if not isinstance(content, list):
+                raise ValueError(
+                    "The content of a message must be a string or a list "
+                    "containing a text prompt and `Image` instances."
+                )
+
+            text_parts = [item for item in content if isinstance(item, str)]
+            assets = [item for item in content if not isinstance(item, str)]
+            if any(not isinstance(asset, Image) for asset in assets):
+                raise ValueError(
+                    "mlx-vlm only supports `Image` assets in the message "
+                    "content. Audio and video inputs are not available "
+                    "with this integration."
+                )
+
+            images.extend(asset.image for asset in assets)
+            conversation.append({
+                "role": message["role"],
+                "content": (
+                    [{"type": "image"} for _ in assets]
+                    + [{"type": "text", "text": " ".join(text_parts)}]
+                ),
+            })
+
+        prompt = self.tokenizer.apply_chat_template(
+            conversation,
+            tokenize=False,
+            add_generation_prompt=True,
+        )
+        return {"prompt": prompt, "images": images}
+
+    def format_output_type(
+        self, output_type: Optional[OutlinesLogitsProcessor] = None,
+    ) -> Optional[List[OutlinesLogitsProcessor]]:
+        """Generate the logits processor argument to pass to the model.
+
+        Parameters
+        ----------
+        output_type
+            The logits processor provided.
+
+        Returns
+        -------
+        Optional[list[OutlinesLogitsProcessor]]
+            The logits processor argument to be passed to the model.
+
+        """
+        if not output_type:
+            return None
+        return [output_type]
+
+
+class MLXLMMultiModal(MLXLM):
+    """Thin wrapper around an `mlx_vlm` model.
+
+    We rely on the `__init__` method of the `MLXLM` class to handle most of
+    the initialization and then add elements specific to vision models.
+
+    """
+
+    def __init__(
+        self,
+        model: "nn.Module",
+        processor: "ProcessorMixin",
+    ):
+        """
+        Parameters
+        ----------
+        model
+            An instance of an `mlx_vlm` model.
+        processor
+            An instance of a `transformers` processor (returned along with
+            the model by `mlx_vlm.load`).
+
+        """
+        # self.processor is used by the mlx-vlm generate functions
+        self.processor = processor
+        super().__init__(model, processor.tokenizer)
+        self.type_adapter = MLXLMMultiModalTypeAdapter(
+            tokenizer=processor.tokenizer
+        )
+
+    def generate(
+        self,
+        model_input: Union[str, Chat],
+        output_type: Optional[OutlinesLogitsProcessor] = None,
+        **kwargs,
+    ) -> str:
+        """Generate text using `mlx-vlm`.
+
+        Parameters
+        ----------
+        model_input
+            The prompt based on which the model will generate a response.
+        output_type
+            The logits processor the model will use to constrain the format of
+            the generated text.
+        kwargs
+            Additional keyword arguments to pass to the `mlx-vlm` library.
+
+        Returns
+        -------
+        str
+            The text generated by the model.
+
+        """
+        from mlx_vlm import generate
+
+        formatted_input = self.type_adapter.format_input(model_input)
+
+        return generate(
+            self.model,
+            self.processor,
+            formatted_input["prompt"],
+            image=formatted_input["images"],
+            logits_processors=self.type_adapter.format_output_type(output_type),
+            **kwargs,
+        ).text
+
+    def generate_batch(
+        self,
+        model_input,
+        output_type: Optional[OutlinesLogitsProcessor] = None,
+        **kwargs,
+    ):
+        """Not available for `mlx-vlm` models."""
+        raise NotImplementedError(
+            "mlx-vlm does not support batch generation through this "
+            "integration. Call the model once per input instead."
+        )
+
+    def generate_stream(
+        self,
+        model_input: Union[str, Chat],
+        output_type: Optional[OutlinesLogitsProcessor] = None,
+        **kwargs,
+    ) -> Iterator[str]:
+        """Stream text using `mlx-vlm`.
+
+        Parameters
+        ----------
+        model_input
+            The prompt based on which the model will generate a response.
+        output_type
+            The logits processor the model will use to constrain the format of
+            the generated text.
+        kwargs
+            Additional keyword arguments to pass to the `mlx-vlm` library.
+
+        Returns
+        -------
+        Iterator[str]
+            An iterator that yields the text generated by the model.
+
+        """
+        from mlx_vlm import stream_generate
+
+        formatted_input = self.type_adapter.format_input(model_input)
+
+        for gen_response in stream_generate(
+            self.model,
+            self.processor,
+            formatted_input["prompt"],
+            image=formatted_input["images"],
+            logits_processors=self.type_adapter.format_output_type(output_type),
+            **kwargs,
+        ):
+            yield gen_response.text
+
+
+def from_mlxlm(
+    model: "nn.Module",
+    tokenizer: "Union[MLXTokenizer, ProcessorMixin]",
+) -> Union[MLXLM, MLXLMMultiModal]:
+    """Create an Outlines `MLXLM` or `MLXLMMultiModal` model instance from an
+    `mlx_lm` or `mlx_vlm` model and a tokenizer or processor.
 
     Parameters
     ----------
     model
-        An instance of an `mlx_lm` model.
+        An instance of an `mlx_lm` or `mlx_vlm` model.
     tokenizer
-        An instance of an `mlx_lm` tokenizer or of a compatible
-        transformers tokenizer.
+        An instance of an `mlx_lm` tokenizer, of a compatible transformers
+        tokenizer, or of a `transformers` processor (returned along with the
+        model by `mlx_vlm.load` for vision models).
 
     Returns
     -------
-    MLXLM
-        An Outlines `MLXLM` model instance.
+    Union[MLXLM, MLXLMMultiModal]
+        An Outlines `MLXLM` or `MLXLMMultiModal` model instance.
 
     """
+    from transformers import ProcessorMixin
+
+    if isinstance(tokenizer, ProcessorMixin):
+        return MLXLMMultiModal(model, tokenizer)
     return MLXLM(model, tokenizer)

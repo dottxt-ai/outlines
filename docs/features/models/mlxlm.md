@@ -10,14 +10,14 @@ Outlines provides an integration with [mlx-lm](https://github.com/ml-explore/mlx
 
     You need a device that [supports Metal](https://support.apple.com/en-us/102894) to use the mlx-lm integration.
 
-    You need to install the `mlx` and `mlx-lm` libraries to be able to use mlx in Outlines. Install all optional dependencies of the `MLXLM` model with: `pip install "outlines[mlxlm]"`.
+    You need to install the `mlx` and `mlx-lm` libraries to be able to use mlx in Outlines. Vision models additionally require `mlx-vlm`. Install all optional dependencies of the `MLXLM` model with: `pip install "outlines[mlxlm]"`.
 
 ## Model Initialization
 
 To create a MLXLM model instance, you can use the `from_mlxlm` function. It takes 2 arguments:
 
 - `model`: an `mlx.nn.Module` instance
-- `tokenizer`: a `transformers.PreTrainedTokenizer` instance
+- `tokenizer`: a `transformers.PreTrainedTokenizer` instance, or a `transformers` processor for vision models (see [Vision Models](#vision-models))
 
 However, we recommend you simply pass on the output of the `mlx_lm.load` function (it takes a model name as an argument).
 
@@ -115,6 +115,48 @@ model = outlines.from_mlxlm(
 result = model.batch(["What's the capital of Lithuania?", "What's the capital of Latvia?"], max_tokens=20)
 print(result) # ['Vilnius', 'Riga']
 ```
+
+## Vision Models
+
+Outlines also supports vision models running through [mlx-vlm](https://github.com/Blaizzy/mlx-vlm). You need to install the `mlx-vlm` library to use it: `pip install mlx-vlm` (already included in `outlines[mlxlm]`).
+
+`from_mlxlm` detects whether the second argument is a tokenizer or a `transformers` processor and returns an `MLXLM` or an `MLXLMMultiModal` model instance accordingly, similarly to `from_transformers`. `MLXLMMultiModal` inherits from `MLXLM` and generates through `mlx-vlm` instead of `mlx-lm`.
+
+To load a vision model, pass on the output of `mlx_vlm.load` instead of `mlx_lm.load`:
+
+```python
+import outlines
+import mlx_vlm
+
+# Create the model
+model = outlines.from_mlxlm(
+    *mlx_vlm.load("mlx-community/SmolVLM-256M-Instruct-4bit")
+)
+```
+
+Images must be provided through a `Chat` input containing `outlines.inputs.Image` instances. There is no need to add image placeholder tags to the prompt, the model's chat template takes care of that.
+
+```python
+import outlines
+import mlx_vlm
+from outlines.inputs import Chat, Image
+from PIL import Image as PILImage
+
+model = outlines.from_mlxlm(
+    *mlx_vlm.load("mlx-community/SmolVLM-256M-Instruct-4bit")
+)
+
+image = PILImage.open("cat.png")
+
+prompt = Chat([
+    {"role": "user", "content": ["Describe this image in one sentence.", Image(image)]},
+])
+
+result = model(prompt, max_tokens=50)
+print(result) # 'A black cat is sitting on a couch.'
+```
+
+Constrained generation, streaming and plain string inputs (with no image) all work the same way as with text-only mlx-lm models. Batch generation isn't supported for vision models.
 
 ## Structured Generation
 
