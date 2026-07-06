@@ -18,11 +18,11 @@ or the classic `pip`:
 pip install 'outlines[transformers]'
 ```
 
-For more information, see the [installation guide](./installation).
+For more information, see the [installation guide](installation.md).
 
 ## Creating a Model
 
-Outlines contains a variety of models that wrap LLM inference engines/clients. For each of them, you need to install the model's associated library as described in the [installation guide](../installation).
+Outlines contains a variety of models that wrap LLM inference engines/clients. For each of them, you need to install the model's associated library as described in the [installation guide](installation.md).
 
 The full list of available models along with detailed explanation on how to use them can be found in the [models page](../features/models/index.md) of the Features section of the documentation.
 
@@ -201,13 +201,13 @@ Outlines follows a simple pattern that mirrors Python's own type system for stru
 
 Supported output types can be organized in 5 categories:
 
-- [Basic Types](../../features/core/output_types#basic-python-types): `int`, `float`, `bool`...
-- [Multiple Choices](../../features/core/output_types#multiple-choices): using `Literal` or `Enum`
-- [JSON Schemas](../../features/core/output_types#json-schemas): using a wide range of possible objects including Pydantic models and dataclasses
-- [Regex](../../features/core/output_types#regex-patterns): through the Outlines's `Regex` object
-- [Context-free Grammars](../../features/core/output_types#context-free-grammars): through the Outlines's `CFG` object
+- [Basic Types](../features/core/output_types.md#basic-python-types): `int`, `float`, `bool`...
+- [Multiple Choices](../features/core/output_types.md#multiple-choices): using `Literal` or `Enum`
+- [JSON Schemas](../features/core/output_types.md#json-schemas): using a wide range of possible objects including Pydantic models and dataclasses
+- [Regex](../features/core/output_types.md#regex-patterns): through the Outlines's `Regex` object
+- [Context-free Grammars](../features/core/output_types.md#context-free-grammars): through the Outlines's `CFG` object
 
-Consult the section on [Output Types](../../features/core/output_types.md) in the features documentation for more detailed information on all supported types for each output type category.
+Consult the section on [Output Types](../features/core/output_types.md) in the features documentation for more detailed information on all supported types for each output type category.
 
 In the meantime, you can find below examples of using each of the five output type categories:
 

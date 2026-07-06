@@ -201,7 +201,7 @@ print(type(sentence)) # outlines.types.dsl.Regex
 print(sentence.pattern) # [A-Z].*\s*[.!?]
 ```
 
-To help you create complex regex patterns yourself, you can use the Outlines [regex DSL](../../utility/regex_dsl).
+To help you create complex regex patterns yourself, you can use the Outlines [regex DSL](../utility/regex_dsl.md).
 
 ### Context-Free Grammars
 

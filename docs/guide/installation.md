@@ -36,19 +36,19 @@ To use Outlines models, you need to install the Python libraries for the associa
 
 Outlines models with the installation of their associated additional depencies:
 
-- [Anthropic](features/models/anthropic.md): `pip install anthropic`
-- [Dottxt](features/models/dottxt.md): `pip install dottxt`
-- [Gemini](features/models/gemini.md): `pip install google-generativeai`
-- [Llamacpp](features/models/llamacpp.md): `pip install llama-cpp-python`
-- [Mlx-lm](features/models/mlxlm.md): `pip install mlx mlx-lm`
-- [Ollama](features/models/ollama.md): `pip install ollama` (after having downloaded Ollama in your system)
-- [OpenAI](features/models/openai.md): `pip install openai`
-- [SGLang](features/models/sglang.md): `pip install openai`
-- [TGI](features/models/tgi.md): `pip install huggingface_hub`
-- [Transformers](features/models/transformers.md): `pip install transformers`
-- [TransformersMultiModal](features/models/transformers_multimodal.md): `pip install transformers`
-- [vLLM (online server)](features/models/vllm.md): `pip install openai`
-- [vLLM (offline)](features/models/vllm_offline.md): `pip install vllm`
+- [Anthropic](../features/models/anthropic.md): `pip install anthropic`
+- [Dottxt](../features/models/dottxt.md): `pip install dottxt`
+- [Gemini](../features/models/gemini.md): `pip install google-generativeai`
+- [Llamacpp](../features/models/llamacpp.md): `pip install llama-cpp-python`
+- [Mlx-lm](../features/models/mlxlm.md): `pip install mlx mlx-lm`
+- [Ollama](../features/models/ollama.md): `pip install ollama` (after having downloaded Ollama in your system)
+- [OpenAI](../features/models/openai.md): `pip install openai`
+- [SGLang](../features/models/sglang.md): `pip install openai`
+- [TGI](../features/models/tgi.md): `pip install huggingface_hub`
+- [Transformers](../features/models/transformers.md): `pip install transformers`
+- [TransformersMultiModal](../features/models/transformers_multimodal.md): `pip install transformers`
+- [vLLM (online server)](../features/models/vllm.md): `pip install openai`
+- [vLLM (offline)](../features/models/vllm_offline.md): `pip install vllm`
 
 If you encounter any problems using Outlines with these libraries, take a look at their installation instructions. The installation of `openai` and `transformers` should be straightforward, but other libraries have specific hardware requirements.
 
@@ -70,4 +70,4 @@ This can be useful, for instance, when a fix has been merged but not yet release
 
 ## Installing for Development
 
-See the [contributing documentation](community/contribute.md) for instructions on how to install Outlines for development, including an example using the `dot-install` method for one of the backends.
+See the [contributing documentation](../community/contribute.md) for instructions on how to install Outlines for development, including an example using the `dot-install` method for one of the backends.

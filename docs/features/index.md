@@ -13,7 +13,7 @@ This section presents in details the different features of Outlines.
 ## Utilities
 
 - [Applications](./utility/application.md)
-- [Templates](./utility/templates.md)
+- [Templates](./utility/template.md)
 - [Regex DSL](./utility/regex_dsl.md)
 
 ## Advanced

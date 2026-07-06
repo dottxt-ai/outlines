@@ -84,7 +84,7 @@ print(response) # ['Riga', 'Tallinn']
 
 In alphabetical order:
 
-| | [Anthropic](../../models/anthropic) | [Dottxt](../../models/dottxt) | [Gemini](../../models/gemini) | [LlamaCpp](../../models/llamacpp) | [LM Studio](../../models/lmstudio) | [MLXLM](../../models/mlxlm) | [Mistral](../../models/mistral) | [Ollama](../../models/ollama) | [OpenAI](../../models/openai) | [SGLang](../../models/sglang) | [TGI](../../models/tgi) | [Transformers](../../models/transformers) | [Transformers MultiModal](../../models/transformers_multimodal) | [VLLM](../../models/vllm) | [VLLMOffline](../../models/vllm_offline) |
+| | [Anthropic](anthropic.md) | [Dottxt](dottxt.md) | [Gemini](gemini.md) | [LlamaCpp](llamacpp.md) | [LM Studio](lmstudio.md) | [MLXLM](mlxlm.md) | [Mistral](mistral.md) | [Ollama](ollama.md) | [OpenAI](openai.md) | [SGLang](sglang.md) | [TGI](tgi.md) | [Transformers](transformers.md) | [Transformers MultiModal](transformers_multimodal.md) | [VLLM](vllm.md) | [VLLMOffline](vllm_offline.md) |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | **Output Types** | | | | | | | | | | | | | | | |
 | Simple Types | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
