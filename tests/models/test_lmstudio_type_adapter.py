@@ -1,6 +1,5 @@
 import io
 import json
-import os
 import sys
 from dataclasses import dataclass
 
@@ -19,16 +18,6 @@ else:
     from typing_extensions import TypedDict
 
 
-# Skip condition for tests that require a running LM Studio server (image tests)
-requires_lmstudio_server = pytest.mark.skipif(
-    not os.environ.get("LMSTUDIO_SERVER_URL"),
-    reason=(
-        "Image tests require a running LM Studio server (lms.prepare_image "
-        + "needs connection)"
-    )
-)
-
-
 @pytest.fixture
 def schema():
     return {
@@ -45,6 +34,19 @@ def schema():
 @pytest.fixture
 def adapter():
     return LMStudioTypeAdapter()
+
+
+# `lms.prepare_image` normally uploads the image bytes to a running LM Studio
+# server and returns a `FileHandle`. The tests that stub it out only care that
+# the type adapter passes whatever it gets back through to `add_user_message`
+# unchanged, so a dict in `FileHandle`'s wire format is enough to stand in for
+# it without needing a real server.
+_FAKE_FILE_HANDLE = {
+    "name": "test.png",
+    "identifier": "test-image",
+    "sizeBytes": 0,
+    "fileType": "image",
+}
 
 
 @pytest.fixture
@@ -69,9 +71,12 @@ def test_lmstudio_type_adapter_input_text(adapter):
     assert result == text_input
 
 
-@requires_lmstudio_server
-def test_lmstudio_type_adapter_input_vision(adapter, image):
+def test_lmstudio_type_adapter_input_vision(adapter, image, monkeypatch):
     import lmstudio as lms
+
+    # `lms.prepare_image` is the only part of this path that needs a live
+    # LM Studio server, so it's the only thing that needs stubbing here.
+    monkeypatch.setattr(lms, "prepare_image", lambda image_bytes: _FAKE_FILE_HANDLE)
 
     image_input = Image(image)
     text_input = "prompt"
@@ -104,9 +109,10 @@ def test_lmstudio_type_adapter_input_chat_no_system(adapter):
     assert isinstance(result, lms.Chat)
 
 
-@requires_lmstudio_server
-def test_lmstudio_type_adapter_input_chat_with_image(adapter, image):
+def test_lmstudio_type_adapter_input_chat_with_image(adapter, image, monkeypatch):
     import lmstudio as lms
+
+    monkeypatch.setattr(lms, "prepare_image", lambda image_bytes: _FAKE_FILE_HANDLE)
 
     image_input = Image(image)
     chat_input = Chat(messages=[
@@ -119,6 +125,17 @@ def test_lmstudio_type_adapter_input_chat_with_image(adapter, image):
     ])
     result = adapter.format_input(chat_input)
     assert isinstance(result, lms.Chat)
+
+
+def test_lmstudio_type_adapter_input_chat_with_image_rejects_non_image_assets(adapter):
+    chat_input = Chat(messages=[
+        {"role": "user", "content": [
+            "What is in this image?",
+            "not an image",
+        ]},
+    ])
+    with pytest.raises(ValueError, match="All assets provided must be of type Image"):
+        adapter.format_input(chat_input)
 
 
 def test_lmstudio_type_adapter_input_invalid(adapter):
