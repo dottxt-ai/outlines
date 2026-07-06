@@ -161,6 +161,15 @@ def test_lmstudio_init_from_client():
         assert model.client == client
         assert model.model_name is None
 
+    # `from_lmstudio` must dispatch to `LMStudio` for a sync client regardless
+    # of whether that client can actually reach a server, so this is checked
+    # unconditionally with a client that is never connected to.
+    dispatch_client = lmstudio.Client("http://127.0.0.1:1")
+    dispatched_model = outlines.from_lmstudio(dispatch_client, lmstudio_model_name)
+    assert isinstance(dispatched_model, LMStudio)
+    assert dispatched_model.client == dispatch_client
+    assert dispatched_model.model_name == lmstudio_model_name
+
     # With invalid client
     with pytest.raises(ValueError, match="Invalid client type"):
         outlines.from_lmstudio(object())
@@ -276,6 +285,15 @@ def test_lmstudio_async_init_from_client():
         assert model.client == client
         assert model.model_name is None
 
+    # `from_lmstudio` must dispatch to `AsyncLMStudio` for an async client
+    # regardless of whether that client can actually reach a server, so this
+    # is checked unconditionally with a client that is never connected to.
+    dispatch_client = lmstudio.AsyncClient("http://127.0.0.1:1")
+    dispatched_model = outlines.from_lmstudio(dispatch_client, lmstudio_model_name)
+    assert isinstance(dispatched_model, AsyncLMStudio)
+    assert dispatched_model.client == dispatch_client
+    assert dispatched_model.model_name == lmstudio_model_name
+
 
 @pytest.mark.asyncio
 async def test_lmstudio_async_simple(async_model):
@@ -367,3 +385,37 @@ async def test_lmstudio_async_stream_json(async_model_no_model_name):
 async def test_lmstudio_async_batch(async_model):
     with pytest.raises(NotImplementedError, match="does not support"):
         await async_model.batch(["Respond with one word.", "Respond with one word."])
+
+
+@pytest.mark.asyncio
+async def test_lmstudio_async_close_after_generate_exits_context(async_model):
+    await async_model.generate("Respond with one word. Not more.", None)
+    assert async_model._context_entered is True
+
+    await async_model.close()
+
+    assert async_model._context_entered is False
+
+
+@pytest.mark.asyncio
+async def test_lmstudio_async_close_without_generate_is_a_no_op(async_model):
+    # The client's context is never entered until the model actually makes a
+    # call, so closing beforehand must not try to exit it.
+    await async_model.close()
+
+    assert async_model._context_entered is False
+
+
+@pytest.mark.asyncio
+async def test_lmstudio_async_stream_reuses_context_on_second_call(async_model):
+    first_stream = async_model.stream("Write a sentence about a cat.")
+    async for _ in first_stream:
+        pass
+    assert async_model._context_entered is True
+
+    # A second streaming call while already entered must skip re-entering
+    # the client context instead of calling `__aenter__` again.
+    second_stream = async_model.stream("Write a sentence about a cat.")
+    async for _ in second_stream:
+        pass
+    assert async_model._context_entered is True
