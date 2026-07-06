@@ -194,7 +194,6 @@ omit = [
     "src/outlines/models/anthropic.py",
     "src/outlines/models/dottxt.py",
     "src/outlines/models/gemini.py",
-    "src/outlines/models/lmstudio.py",
     "src/outlines/models/mlxlm.py",
     "src/outlines/models/openai.py",
     "src/outlines/models/mistral.py",
