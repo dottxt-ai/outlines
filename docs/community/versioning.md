@@ -15,7 +15,7 @@ Each part of the version number (`major.minor.patch`) conveys information about 
 
 !!! note "Breaking Changes"
 
-    Outlines v1.0 introduced several breaking changes to the core interface. See [the migration guide](/user_guide/migration) for more details.
+    Outlines v1.0 introduced several breaking changes to the core interface. See [the migration guide](../guide/migration.md) for more details.
 
 ## Releases
 
