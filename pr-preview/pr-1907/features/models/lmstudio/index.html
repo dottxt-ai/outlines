@@ -12,13 +12,13 @@
         <meta name="author" content="The Outlines developers">
       
       
-        <link rel="canonical" href="https://dottxt-ai.github.io/outlines/pr-preview/pr-1907/features/models/mlxlm/">
+        <link rel="canonical" href="https://dottxt-ai.github.io/outlines/pr-preview/pr-1907/features/models/lmstudio/">
       
       
-        <link rel="prev" href="../lmstudio/">
+        <link rel="prev" href="../llamacpp/">
       
       
-        <link rel="next" href="../ollama/">
+        <link rel="next" href="../mlxlm/">
       
       
         
@@ -29,7 +29,7 @@
     
     
       
-        <title>mlx-lm - Outlines</title>
+        <title>LM Studio - Outlines</title>
       
     
     
@@ -79,17 +79,17 @@
     
   
 <meta property="og:type" content="website" />
-<meta property="og:title" content="mlx-lm - Outlines" />
+<meta property="og:title" content="LM Studio - Outlines" />
 <meta property="og:description" content="Structured text generation with LLMs" />
-<meta property="og:image" content="https://dottxt-ai.github.io/outlines/pr-preview/pr-1907/assets/images/social/features/models/mlxlm.png" />
+<meta property="og:image" content="https://dottxt-ai.github.io/outlines/pr-preview/pr-1907/assets/images/social/features/models/lmstudio.png" />
 <meta property="og:image:type" content="image/png" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
-<meta property="og:url" content="https://dottxt-ai.github.io/outlines/pr-preview/pr-1907/features/models/mlxlm/" />
+<meta property="og:url" content="https://dottxt-ai.github.io/outlines/pr-preview/pr-1907/features/models/lmstudio/" />
 <meta property="twitter:card" content="summary_large_image" />
-<meta property="twitter:title" content="mlx-lm - Outlines" />
+<meta property="twitter:title" content="LM Studio - Outlines" />
 <meta property="twitter:description" content="Structured text generation with LLMs" />
-<meta property="twitter:image" content="https://dottxt-ai.github.io/outlines/pr-preview/pr-1907/assets/images/social/features/models/mlxlm.png" />
+<meta property="twitter:image" content="https://dottxt-ai.github.io/outlines/pr-preview/pr-1907/assets/images/social/features/models/lmstudio.png" />
 </head>
   
   
@@ -109,7 +109,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#mlx-lm" class="md-skip">
+        <a href="#lm-studio" class="md-skip">
           Skip to content
         </a>
       
@@ -146,7 +146,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              mlx-lm
+              LM Studio
             
           </span>
         </div>
@@ -1042,34 +1042,6 @@
                 
   
   
-  
-  
-    <li class="md-nav__item">
-      <a href="../lmstudio/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    LM Studio
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
     
   
   
@@ -1089,7 +1061,7 @@
   <span class="md-ellipsis">
     
   
-    Mlx-lm
+    LM Studio
   
 
     
@@ -1107,7 +1079,7 @@
   <span class="md-ellipsis">
     
   
-    Mlx-lm
+    LM Studio
   
 
     
@@ -1156,6 +1128,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#vision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Vision
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#chat" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1177,11 +1160,50 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#batch-generation" class="md-nav__link">
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#asynchronous-calls" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Batch Generation
+        Asynchronous Calls
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Asynchronous Calls">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basic-async-generation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Basic Async Generation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#async-streaming" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Async Streaming
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#concurrent-async-requests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Concurrent Async Requests
       
     </span>
   </a>
@@ -1202,74 +1224,13 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Structured Generation">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#basic-type" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Basic Type
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#json-schema" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        JSON Schema
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#multiple-choice" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Multiple Choice
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#regex" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Regex
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#context-free-grammar" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Context-Free Grammar
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
         <li class="md-nav__item">
   <a href="#inference-arguments" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Inference Arguments
+        Inference arguments
       
     </span>
   </a>
@@ -1280,6 +1241,34 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mlxlm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mlx-lm
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -3215,6 +3204,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#vision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Vision
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#chat" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3236,11 +3236,50 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#batch-generation" class="md-nav__link">
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#asynchronous-calls" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Batch Generation
+        Asynchronous Calls
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Asynchronous Calls">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basic-async-generation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Basic Async Generation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#async-streaming" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Async Streaming
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#concurrent-async-requests" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Concurrent Async Requests
       
     </span>
   </a>
@@ -3261,74 +3300,13 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Structured Generation">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#basic-type" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Basic Type
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#json-schema" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        JSON Schema
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#multiple-choice" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Multiple Choice
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#regex" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Regex
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#context-free-grammar" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Context-Free Grammar
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
         <li class="md-nav__item">
   <a href="#inference-arguments" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Inference Arguments
+        Inference arguments
       
     </span>
   </a>
@@ -3355,193 +3333,232 @@
   
 
 
-<h1 id="mlx-lm">mlx-lm</h1>
-<p>Outlines provides an integration with <a href="https://github.com/ml-explore/mlx-examples/tree/main/llms">mlx-lm</a>, allowing models to be run quickly on Apple Silicon via the <a href="https://ml-explore.github.io/mlx/build/html/index.html">mlx</a> library.</p>
-<div class="admonition note">
+<h1 id="lm-studio">LM Studio</h1>
+<div class="admonition installation">
 <p class="admonition-title">Installation</p>
-<p>You need a device that <a href="https://support.apple.com/en-us/102894">supports Metal</a> to use the mlx-lm integration.</p>
-<p>You need to install the <code>mlx</code> and <code>mlx-lm</code> libraries to be able to use mlx in Outlines. Install all optional dependencies of the <code>MLXLM</code> model with: <code>pip install "outlines[mlxlm]"</code>.</p>
+<p>To be able to use LM Studio in Outlines, you must install both LM Studio and the optional dependency libraries of the model.</p>
+<ul>
+<li>To download LM Studio: https://lmstudio.ai/download</li>
+<li>To install the lmstudio python sdk: <code>pip install "outlines[lmstudio]"</code></li>
+</ul>
+<p>Consult the <a href="https://lmstudio.ai/docs/python"><code>lmstudio-python</code> documentation</a> for detailed information on installation and client initialization.</p>
 </div>
 <h2 id="model-initialization">Model Initialization</h2>
-<p>To create a MLXLM model instance, you can use the <code>from_mlxlm</code> function. It takes 2 arguments:</p>
+<p>To create an LM Studio model instance, you can use the <code>from_lmstudio</code> function. It takes 2 arguments:</p>
 <ul>
-<li><code>model</code>: an <code>mlx.nn.Module</code> instance</li>
-<li><code>tokenizer</code>: a <code>transformers.PreTrainedTokenizer</code> instance</li>
+<li><code>client</code>: an <code>lmstudio.Client</code> or <code>lmstudio.AsyncClient</code> instance</li>
+<li><code>model_name</code>: the name of the model you want to use (optional; if not provided, the default model loaded in LM Studio is used)</li>
 </ul>
-<p>However, we recommend you simply pass on the output of the <code>mlx_lm.load</code> function (it takes a model name as an argument).</p>
+<p>Based on whether the inference client instance is synchronous or asynchronous, you will receive an <code>LMStudio</code> or an <code>AsyncLMStudio</code> model instance.</p>
 <p>For instance:</p>
-<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">mlx_lm</span>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">lmstudio</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines</span>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span style="color: #616E87; font-style: italic"># Create the model</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span style="color: #D8DEE9">model</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">outlines</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_mlxlm</span><span style="color: #ECEFF4">(</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    <span style="color: #81A1C1; font-weight: bold">*</span><span style="color: #D8DEE9">mlx_lm</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">load</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;mlx-community/TinyLlama-1.1B-Chat-v1.0-4bit&quot;</span><span style="color: #ECEFF4">)</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span style="color: #ECEFF4">)</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span style="color: #616E87; font-style: italic"># Create the client or async client</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span style="color: #D8DEE9">client</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">lmstudio</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">Client</span><span style="color: #ECEFF4">()</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span style="color: #D8DEE9">async_client</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">lmstudio</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">AsyncClient</span><span style="color: #ECEFF4">()</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span style="color: #616E87; font-style: italic"># Create a sync model</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span style="color: #D8DEE9">model</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">outlines</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_lmstudio</span><span style="color: #ECEFF4">(</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>    <span style="color: #D8DEE9">client</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>    <span style="color: #A3BE8C">&quot;openai/gpt-oss-20b&quot;</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span style="color: #ECEFF4">)</span>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span style="color: #616E87; font-style: italic"># Create an async model</span>
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span style="color: #D8DEE9">model</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">outlines</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_lmstudio</span><span style="color: #ECEFF4">(</span>
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>    <span style="color: #D8DEE9">async_client</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>    <span style="color: #A3BE8C">&quot;openai/gpt-oss-20b&quot;</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span style="color: #ECEFF4">)</span>
 </span></code></pre></div>
+<p>You can find the list of available models in the <a href="https://lmstudio.ai/models">LM Studio model catalog</a>. The model must be downloaded in LM Studio (through the app or with <code>lms get &lt;model_name&gt;</code>) before you can use it.</p>
 <h2 id="text-generation">Text Generation</h2>
-<p>To generate text, you can simply call the model with a prompt.</p>
+<p>Once you've created your Outlines <code>LMStudio</code> model instance, you're all set to generate text with this provider. You can simply call the model with a prompt.</p>
 <p>For instance:</p>
-<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">mlx_lm</span>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">lmstudio</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines</span>
 </span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span style="color: #616E87; font-style: italic"># Load the model</span>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span style="color: #D8DEE9">model</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">outlines</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_mlxlm</span><span style="color: #ECEFF4">(</span>
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>    <span style="color: #81A1C1; font-weight: bold">*</span><span style="color: #D8DEE9">mlx_lm</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">load</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;mlx-community/TinyLlama-1.1B-Chat-v1.0-4bit&quot;</span><span style="color: #ECEFF4">)</span>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span style="color: #ECEFF4">)</span>
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span style="color: #616E87; font-style: italic"># Call it to generate text</span>
-</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span style="color: #D8DEE9">result</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;What&#39;s the capital of Latvia?&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">max_tokens</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #B48EAD">20</span><span style="color: #ECEFF4">)</span>
-</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">result</span><span style="color: #ECEFF4">)</span> <span style="color: #616E87; font-style: italic"># &#39;Riga&#39;</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span style="color: #616E87; font-style: italic"># Create the model</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span style="color: #D8DEE9">model</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">outlines</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_lmstudio</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">lmstudio</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">Client</span><span style="color: #ECEFF4">(),</span> <span style="color: #A3BE8C">&quot;openai/gpt-oss-20b&quot;</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span style="color: #616E87; font-style: italic"># Call it to generate text</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span style="color: #D8DEE9">response</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;What&#39;s the capital of Latvia?&quot;</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">response</span><span style="color: #ECEFF4">)</span> <span style="color: #616E87; font-style: italic"># &#39;Riga&#39;</span>
+</span></code></pre></div>
+<h4 id="vision">Vision</h4>
+<p>Some LM Studio models support vision input. To use this feature, provide a list containing a text prompt and <code>Image</code> instances.</p>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">io</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">requests</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">PIL</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">lmstudio</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines.inputs</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">Image</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span style="color: #616E87; font-style: italic"># Create the model</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span style="color: #D8DEE9">model</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">outlines</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_lmstudio</span><span style="color: #ECEFF4">(</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>    <span style="color: #D8DEE9">lmstudio</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">Client</span><span style="color: #ECEFF4">(),</span>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>    <span style="color: #A3BE8C">&quot;qwen/qwen2.5-vl-7b&quot;</span>
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span style="color: #ECEFF4">)</span>
+</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>
+</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span style="color: #616E87; font-style: italic"># Function to get an image</span>
+</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">get_image</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">url</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>    <span style="color: #D8DEE9">r</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">requests</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">get</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">url</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-2-17"><a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>    <span style="color: #81A1C1; font-weight: bold">return</span> <span style="color: #D8DEE9">PIL</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">Image</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">open</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">io</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">BytesIO</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">r</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">content</span><span style="color: #ECEFF4">))</span>
+</span><span id="__span-2-18"><a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a>
+</span><span id="__span-2-19"><a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a><span style="color: #616E87; font-style: italic"># Create the prompt</span>
+</span><span id="__span-2-20"><a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a><span style="color: #D8DEE9">prompt</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #ECEFF4">[</span>
+</span><span id="__span-2-21"><a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a>    <span style="color: #A3BE8C">&quot;Describe the image&quot;</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-2-22"><a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a>    <span style="color: #D8DEE9">Image</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">get_image</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;https://picsum.photos/id/237/400/300&quot;</span><span style="color: #ECEFF4">))</span>
+</span><span id="__span-2-23"><a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a><span style="color: #ECEFF4">]</span>
+</span><span id="__span-2-24"><a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a>
+</span><span id="__span-2-25"><a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a><span style="color: #616E87; font-style: italic"># Generate text</span>
+</span><span id="__span-2-26"><a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a><span style="color: #D8DEE9">response</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">prompt</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-2-27"><a id="__codelineno-2-27" name="__codelineno-2-27" href="#__codelineno-2-27"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">response</span><span style="color: #ECEFF4">)</span> <span style="color: #616E87; font-style: italic"># The image shows a black puppy with a curious and attentive expression.</span>
 </span></code></pre></div>
 <h4 id="chat">Chat</h4>
-<p>You can use chat inputs with the <code>MLXLM</code> model. To do so, call the model with a <code>Chat</code> instance.</p>
+<p>You can also use chat inputs with the <code>LMStudio</code> model. To do so, call the model with a <code>Chat</code> instance. The content of messages within the chat can be vision inputs as described above.</p>
 <p>For instance:</p>
-<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">mlx_lm</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines.inputs</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">Chat</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span style="color: #616E87; font-style: italic"># Load the model</span>
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span style="color: #D8DEE9">model</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">outlines</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_mlxlm</span><span style="color: #ECEFF4">(</span>
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span style="color: #81A1C1; font-weight: bold">*</span><span style="color: #D8DEE9">mlx_lm</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">load</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;mlx-community/TinyLlama-1.1B-Chat-v1.0-4bit&quot;</span><span style="color: #ECEFF4">)</span>
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span style="color: #ECEFF4">)</span>
-</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>
-</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span style="color: #616E87; font-style: italic"># Create the prompt containing the text and the image</span>
-</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span style="color: #D8DEE9">prompt</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">Chat</span><span style="color: #ECEFF4">([</span>
-</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>    <span style="color: #ECEFF4">{</span><span style="color: #A3BE8C">&quot;role&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;system&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;content&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;You are a helpful assistant.&quot;</span><span style="color: #ECEFF4">},</span>
-</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>    <span style="color: #ECEFF4">{</span><span style="color: #A3BE8C">&quot;role&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;assistant&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;content&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;What&#39;s the capital of Latvia?&quot;</span><span style="color: #ECEFF4">},</span>
-</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span style="color: #ECEFF4">])</span>
-</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>
-</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span style="color: #616E87; font-style: italic"># Call the model to generate a response</span>
-</span><span id="__span-2-17"><a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a><span style="color: #D8DEE9">response</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">prompt</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">max_tokens</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #B48EAD">50</span><span style="color: #ECEFF4">)</span>
-</span><span id="__span-2-18"><a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">response</span><span style="color: #ECEFF4">)</span> <span style="color: #616E87; font-style: italic"># &#39;Riga.&#39;</span>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">io</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">requests</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">PIL</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">lmstudio</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines.inputs</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">Chat</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">Image</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span style="color: #616E87; font-style: italic"># Create the model</span>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span style="color: #D8DEE9">model</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">outlines</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_lmstudio</span><span style="color: #ECEFF4">(</span>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>    <span style="color: #D8DEE9">lmstudio</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">Client</span><span style="color: #ECEFF4">(),</span>
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>    <span style="color: #A3BE8C">&quot;qwen/qwen2.5-vl-7b&quot;</span>
+</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span style="color: #ECEFF4">)</span>
+</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>
+</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span style="color: #616E87; font-style: italic"># Function to get an image</span>
+</span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">get_image</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">url</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-3-16"><a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>    <span style="color: #D8DEE9">r</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">requests</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">get</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">url</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-3-17"><a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a>    <span style="color: #81A1C1; font-weight: bold">return</span> <span style="color: #D8DEE9">PIL</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">Image</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">open</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">io</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">BytesIO</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">r</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">content</span><span style="color: #ECEFF4">))</span>
+</span><span id="__span-3-18"><a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a>
+</span><span id="__span-3-19"><a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a><span style="color: #616E87; font-style: italic"># Create the chat input</span>
+</span><span id="__span-3-20"><a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a><span style="color: #D8DEE9">prompt</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">Chat</span><span style="color: #ECEFF4">([</span>
+</span><span id="__span-3-21"><a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a>    <span style="color: #ECEFF4">{</span><span style="color: #A3BE8C">&quot;role&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;system&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;content&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;You are a helpful assistant.&quot;</span><span style="color: #ECEFF4">},</span>
+</span><span id="__span-3-22"><a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a>    <span style="color: #ECEFF4">{</span>
+</span><span id="__span-3-23"><a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a>        <span style="color: #A3BE8C">&quot;role&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;user&quot;</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-3-24"><a id="__codelineno-3-24" name="__codelineno-3-24" href="#__codelineno-3-24"></a>        <span style="color: #A3BE8C">&quot;content&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #ECEFF4">[</span><span style="color: #A3BE8C">&quot;Describe the image&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">Image</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">get_image</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;https://picsum.photos/id/237/400/300&quot;</span><span style="color: #ECEFF4">))]</span>
+</span><span id="__span-3-25"><a id="__codelineno-3-25" name="__codelineno-3-25" href="#__codelineno-3-25"></a>    <span style="color: #ECEFF4">},</span>
+</span><span id="__span-3-26"><a id="__codelineno-3-26" name="__codelineno-3-26" href="#__codelineno-3-26"></a><span style="color: #ECEFF4">])</span>
+</span><span id="__span-3-27"><a id="__codelineno-3-27" name="__codelineno-3-27" href="#__codelineno-3-27"></a>
+</span><span id="__span-3-28"><a id="__codelineno-3-28" name="__codelineno-3-28" href="#__codelineno-3-28"></a><span style="color: #616E87; font-style: italic"># Call the model to generate a response</span>
+</span><span id="__span-3-29"><a id="__codelineno-3-29" name="__codelineno-3-29" href="#__codelineno-3-29"></a><span style="color: #D8DEE9">response</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">prompt</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-3-30"><a id="__codelineno-3-30" name="__codelineno-3-30" href="#__codelineno-3-30"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">response</span><span style="color: #ECEFF4">)</span> <span style="color: #616E87; font-style: italic"># &#39;This is a picture of a black dog.&#39;</span>
 </span></code></pre></div>
 <h4 id="streaming">Streaming</h4>
-<p>The <code>MLXLM</code> model also supports streaming. For instance:</p>
-<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">mlx_lm</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span style="color: #616E87; font-style: italic"># Load the model</span>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span style="color: #D8DEE9">model</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">outlines</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_mlxlm</span><span style="color: #ECEFF4">(</span>
-</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span style="color: #81A1C1; font-weight: bold">*</span><span style="color: #D8DEE9">mlx_lm</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">load</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;mlx-community/TinyLlama-1.1B-Chat-v1.0-4bit&quot;</span><span style="color: #ECEFF4">)</span>
-</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span style="color: #ECEFF4">)</span>
-</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>
-</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span style="color: #616E87; font-style: italic"># Stream text</span>
-</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span style="color: #81A1C1; font-weight: bold">for</span> <span style="color: #D8DEE9">chunk</span> <span style="color: #81A1C1; font-weight: bold">in</span> <span style="color: #D8DEE9">model</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">stream</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;Write a short story about a cat.&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">max_tokens</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #B48EAD">100</span><span style="color: #ECEFF4">):</span>
-</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>    <span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">chunk</span><span style="color: #ECEFF4">)</span> <span style="color: #616E87; font-style: italic"># &#39;In...&#39;</span>
-</span></code></pre></div>
-<h4 id="batch-generation">Batch Generation</h4>
-<p>The <code>MLXLM</code> model supports generating text in batches. To do so, use the <code>batch</code> method and provide a list of strings as a model input. However, constrained generation is not supported with batching, so you cannot provide an <code>output_type</code>. For instance:</p>
-<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">mlx_lm</span>
+<p>Finally, the <code>LMStudio</code> model supports streaming through the <code>stream</code> method.</p>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">lmstudio</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines</span>
 </span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span style="color: #616E87; font-style: italic"># Load the model</span>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span style="color: #D8DEE9">model</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">outlines</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_mlxlm</span><span style="color: #ECEFF4">(</span>
-</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    <span style="color: #81A1C1; font-weight: bold">*</span><span style="color: #D8DEE9">mlx_lm</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">load</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;mlx-community/TinyLlama-1.1B-Chat-v1.0-4bit&quot;</span><span style="color: #ECEFF4">)</span>
-</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span style="color: #ECEFF4">)</span>
-</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>
-</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span style="color: #616E87; font-style: italic"># Generate text in batches</span>
-</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span style="color: #D8DEE9">result</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">model</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">batch</span><span style="color: #ECEFF4">([</span><span style="color: #A3BE8C">&quot;What&#39;s the capital of Lithuania?&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;What&#39;s the capital of Latvia?&quot;</span><span style="color: #ECEFF4">],</span> <span style="color: #D8DEE9">max_tokens</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #B48EAD">20</span><span style="color: #ECEFF4">)</span>
-</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">result</span><span style="color: #ECEFF4">)</span> <span style="color: #616E87; font-style: italic"># [&#39;Vilnius&#39;, &#39;Riga&#39;]</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span style="color: #616E87; font-style: italic"># Create the model</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span style="color: #D8DEE9">model</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">outlines</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_lmstudio</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">lmstudio</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">Client</span><span style="color: #ECEFF4">(),</span> <span style="color: #A3BE8C">&quot;openai/gpt-oss-20b&quot;</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span style="color: #616E87; font-style: italic"># Stream text</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span style="color: #81A1C1; font-weight: bold">for</span> <span style="color: #D8DEE9">chunk</span> <span style="color: #81A1C1; font-weight: bold">in</span> <span style="color: #D8DEE9">model</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">stream</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;Write a short story about a cat&quot;</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>    <span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">chunk</span><span style="color: #ECEFF4">)</span> <span style="color: #616E87; font-style: italic"># &#39;In...&#39;</span>
+</span></code></pre></div>
+<h2 id="asynchronous-calls">Asynchronous Calls</h2>
+<p>LM Studio supports asynchronous operations by passing an <code>AsyncClient</code> instead of a regular <code>Client</code>. This returns an <code>AsyncLMStudio</code> model instance that supports async/await patterns.</p>
+<h3 id="basic-async-generation">Basic Async Generation</h3>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">asyncio</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">lmstudio</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span style="color: #81A1C1; font-weight: bold">async</span> <span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">generate_text</span><span style="color: #ECEFF4">():</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>    <span style="color: #616E87; font-style: italic"># Create an async model</span>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>    <span style="color: #D8DEE9">async_client</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">lmstudio</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">AsyncClient</span><span style="color: #ECEFF4">()</span>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>    <span style="color: #D8DEE9">async_model</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">outlines</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_lmstudio</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">async_client</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;openai/gpt-oss-20b&quot;</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>    <span style="color: #D8DEE9">result</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #81A1C1; font-weight: bold">await</span> <span style="color: #D8DEE9">async_model</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;Write a haiku about Python.&quot;</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>    <span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">result</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a>
+</span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a>    <span style="color: #616E87; font-style: italic"># Release the client&#39;s resources once you&#39;re done</span>
+</span><span id="__span-5-14"><a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a>    <span style="color: #81A1C1; font-weight: bold">await</span> <span style="color: #D8DEE9">async_model</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">close</span><span style="color: #ECEFF4">()</span>
+</span><span id="__span-5-15"><a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>
+</span><span id="__span-5-16"><a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a><span style="color: #D8DEE9">asyncio</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">run</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">generate_text</span><span style="color: #ECEFF4">())</span>
+</span></code></pre></div>
+<p>The <code>AsyncLMStudio</code> model manages the lifecycle of its underlying async client: the client session is entered on the first call to the model. Once you're done using the model, call its <code>close</code> method to release the resources.</p>
+<h3 id="async-streaming">Async Streaming</h3>
+<p>The async model also supports streaming with async iteration:</p>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">asyncio</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">lmstudio</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span style="color: #81A1C1; font-weight: bold">async</span> <span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">stream_text</span><span style="color: #ECEFF4">():</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>    <span style="color: #D8DEE9">async_client</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">lmstudio</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">AsyncClient</span><span style="color: #ECEFF4">()</span>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>    <span style="color: #D8DEE9">async_model</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">outlines</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_lmstudio</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">async_client</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;openai/gpt-oss-20b&quot;</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>
+</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>    <span style="color: #81A1C1; font-weight: bold">async</span> <span style="color: #81A1C1; font-weight: bold">for</span> <span style="color: #D8DEE9">chunk</span> <span style="color: #81A1C1; font-weight: bold">in</span> <span style="color: #D8DEE9">async_model</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">stream</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;Tell me a story about a robot.&quot;</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>        <span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">chunk</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">end</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #A3BE8C">&quot;&quot;</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>
+</span><span id="__span-6-12"><a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>    <span style="color: #81A1C1; font-weight: bold">await</span> <span style="color: #D8DEE9">async_model</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">close</span><span style="color: #ECEFF4">()</span>
+</span><span id="__span-6-13"><a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a>
+</span><span id="__span-6-14"><a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a><span style="color: #D8DEE9">asyncio</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">run</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">stream_text</span><span style="color: #ECEFF4">())</span>
+</span></code></pre></div>
+<h3 id="concurrent-async-requests">Concurrent Async Requests</h3>
+<p>One of the main benefits of async calls is the ability to make multiple concurrent requests:</p>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">asyncio</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">lmstudio</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span style="color: #81A1C1; font-weight: bold">async</span> <span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">generate_multiple</span><span style="color: #ECEFF4">():</span>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>    <span style="color: #D8DEE9">async_client</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">lmstudio</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">AsyncClient</span><span style="color: #ECEFF4">()</span>
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>    <span style="color: #D8DEE9">async_model</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">outlines</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_lmstudio</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">async_client</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;openai/gpt-oss-20b&quot;</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>
+</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>    <span style="color: #616E87; font-style: italic"># Define multiple prompts</span>
+</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>    <span style="color: #D8DEE9">prompts</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #ECEFF4">[</span>
+</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>        <span style="color: #A3BE8C">&quot;Write a tagline for a coffee shop.&quot;</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a>        <span style="color: #A3BE8C">&quot;Write a tagline for a bookstore.&quot;</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-7-13"><a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a>        <span style="color: #A3BE8C">&quot;Write a tagline for a gym.&quot;</span>
+</span><span id="__span-7-14"><a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a>    <span style="color: #ECEFF4">]</span>
+</span><span id="__span-7-15"><a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a>
+</span><span id="__span-7-16"><a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a>    <span style="color: #D8DEE9">tasks</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #ECEFF4">[</span><span style="color: #D8DEE9">async_model</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">prompt</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">for</span> <span style="color: #D8DEE9">prompt</span> <span style="color: #81A1C1; font-weight: bold">in</span> <span style="color: #D8DEE9">prompts</span><span style="color: #ECEFF4">]</span>
+</span><span id="__span-7-17"><a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a>    <span style="color: #D8DEE9">results</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #81A1C1; font-weight: bold">await</span> <span style="color: #D8DEE9">asyncio</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">gather</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1; font-weight: bold">*</span><span style="color: #D8DEE9">tasks</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-7-18"><a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a>
+</span><span id="__span-7-19"><a id="__codelineno-7-19" name="__codelineno-7-19" href="#__codelineno-7-19"></a>    <span style="color: #81A1C1; font-weight: bold">for</span> <span style="color: #D8DEE9">prompt</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">result</span> <span style="color: #81A1C1; font-weight: bold">in</span> <span style="color: #81A1C1">zip</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">prompts</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">results</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-7-20"><a id="__codelineno-7-20" name="__codelineno-7-20" href="#__codelineno-7-20"></a>        <span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">f&quot;{</span><span style="color: #D8DEE9">prompt</span><span style="color: #A3BE8C">}</span><span style="color: #EBCB8B">\n</span><span style="color: #A3BE8C">{</span><span style="color: #D8DEE9">result</span><span style="color: #A3BE8C">}</span><span style="color: #EBCB8B">\n</span><span style="color: #A3BE8C">&quot;</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-7-21"><a id="__codelineno-7-21" name="__codelineno-7-21" href="#__codelineno-7-21"></a>
+</span><span id="__span-7-22"><a id="__codelineno-7-22" name="__codelineno-7-22" href="#__codelineno-7-22"></a>    <span style="color: #81A1C1; font-weight: bold">await</span> <span style="color: #D8DEE9">async_model</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">close</span><span style="color: #ECEFF4">()</span>
+</span><span id="__span-7-23"><a id="__codelineno-7-23" name="__codelineno-7-23" href="#__codelineno-7-23"></a>
+</span><span id="__span-7-24"><a id="__codelineno-7-24" name="__codelineno-7-24" href="#__codelineno-7-24"></a><span style="color: #D8DEE9">asyncio</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">run</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">generate_multiple</span><span style="color: #ECEFF4">())</span>
 </span></code></pre></div>
 <h2 id="structured-generation">Structured Generation</h2>
-<p>As a local model, <code>MLXLM</code> supports all forms of structured generation available in Outlines.</p>
-<h4 id="basic-type">Basic Type</h4>
-<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines</span>
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">mlx_lm</span>
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span style="color: #D8DEE9">output_type</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #81A1C1">int</span>
-</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>
-</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span style="color: #D8DEE9">model</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">outlines</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_mlxlm</span><span style="color: #ECEFF4">(</span>
-</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>    <span style="color: #81A1C1; font-weight: bold">*</span><span style="color: #D8DEE9">mlx_lm</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">load</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;mlx-community/TinyLlama-1.1B-Chat-v1.0-4bit&quot;</span><span style="color: #ECEFF4">)</span>
-</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span style="color: #ECEFF4">)</span>
-</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>
-</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span style="color: #D8DEE9">result</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;How many countries are there in the world?&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">output_type</span><span style="color: #ECEFF4">)</span>
-</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">result</span><span style="color: #ECEFF4">)</span> <span style="color: #616E87; font-style: italic"># &#39;200&#39;</span>
-</span></code></pre></div>
-<h4 id="json-schema">JSON Schema</h4>
-<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">pydantic</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">BaseModel</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">typing</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">List</span>
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines</span>
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">mlx_lm</span>
-</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>
-</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span style="color: #81A1C1; font-weight: bold">class</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">Character</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">BaseModel</span><span style="color: #ECEFF4">):</span>
-</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>    <span style="color: #D8DEE9">name</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">str</span>
-</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>    <span style="color: #D8DEE9">age</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">int</span>
-</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>    <span style="color: #D8DEE9">skills</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">List</span><span style="color: #ECEFF4">[</span><span style="color: #81A1C1">str</span><span style="color: #ECEFF4">]</span>
-</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>
-</span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span style="color: #D8DEE9">model</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">outlines</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_mlxlm</span><span style="color: #ECEFF4">(</span>
-</span><span id="__span-6-12"><a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>    <span style="color: #81A1C1; font-weight: bold">*</span><span style="color: #D8DEE9">mlx_lm</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">load</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;mlx-community/TinyLlama-1.1B-Chat-v1.0-4bit&quot;</span><span style="color: #ECEFF4">)</span>
-</span><span id="__span-6-13"><a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a><span style="color: #ECEFF4">)</span>
-</span><span id="__span-6-14"><a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a>
-</span><span id="__span-6-15"><a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a><span style="color: #D8DEE9">result</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;Create a character.&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">output_type</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #D8DEE9">Character</span><span style="color: #ECEFF4">)</span>
-</span><span id="__span-6-16"><a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">result</span><span style="color: #ECEFF4">)</span> <span style="color: #616E87; font-style: italic"># &#39;{&quot;name&quot;: &quot;Evelyn&quot;, &quot;age&quot;: 34, &quot;skills&quot;: [&quot;archery&quot;, &quot;stealth&quot;, &quot;alchemy&quot;]}&#39;</span>
-</span><span id="__span-6-17"><a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">Character</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">model_validate_json</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">result</span><span style="color: #ECEFF4">))</span> <span style="color: #616E87; font-style: italic"># name=Evelyn, age=34, skills=[&#39;archery&#39;, &#39;stealth&#39;, &#39;alchemy&#39;]</span>
-</span></code></pre></div>
-<h4 id="multiple-choice">Multiple Choice</h4>
-<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">typing</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">Literal</span>
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines</span>
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">mlx_lm</span>
-</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>
-</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span style="color: #D8DEE9">output_type</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">Literal</span><span style="color: #ECEFF4">[</span><span style="color: #A3BE8C">&quot;Paris&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;London&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;Rome&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;Berlin&quot;</span><span style="color: #ECEFF4">]</span>
-</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>
-</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span style="color: #D8DEE9">model</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">outlines</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_mlxlm</span><span style="color: #ECEFF4">(</span>
-</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>    <span style="color: #81A1C1; font-weight: bold">*</span><span style="color: #D8DEE9">mlx_lm</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">load</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;mlx-community/TinyLlama-1.1B-Chat-v1.0-4bit&quot;</span><span style="color: #ECEFF4">)</span>
-</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span style="color: #ECEFF4">)</span>
-</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>
-</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span style="color: #D8DEE9">result</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;What is the capital of France?&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">output_type</span><span style="color: #ECEFF4">)</span>
-</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">result</span><span style="color: #ECEFF4">)</span> <span style="color: #616E87; font-style: italic"># &#39;Paris&#39;</span>
-</span></code></pre></div>
-<h4 id="regex">Regex</h4>
-<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines.types</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">Regex</span>
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines</span>
-</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">mlx_lm</span>
-</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>
-</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span style="color: #D8DEE9">output_type</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">Regex</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">r&quot;\d{3}-\d{2}-\d{4}&quot;</span><span style="color: #ECEFF4">)</span>
-</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>
-</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span style="color: #D8DEE9">model</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">outlines</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_mlxlm</span><span style="color: #ECEFF4">(</span>
-</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>    <span style="color: #81A1C1; font-weight: bold">*</span><span style="color: #D8DEE9">mlx_lm</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">load</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;mlx-community/TinyLlama-1.1B-Chat-v1.0-4bit&quot;</span><span style="color: #ECEFF4">)</span>
-</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span style="color: #ECEFF4">)</span>
+<p>LM Studio only provides support for structured generation based on a JSON schema. To use it, call the model with a JSON schema object as an <code>output_type</code> on top of your prompt.</p>
+<p>For instance:</p>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">typing</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">List</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">pydantic</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">BaseModel</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">lmstudio</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span style="color: #81A1C1; font-weight: bold">class</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">Character</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">BaseModel</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>    <span style="color: #D8DEE9">name</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">str</span>
+</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>    <span style="color: #D8DEE9">age</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">int</span>
+</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>    <span style="color: #D8DEE9">skills</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">List</span><span style="color: #ECEFF4">[</span><span style="color: #81A1C1">str</span><span style="color: #ECEFF4">]</span>
 </span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>
-</span><span id="__span-8-11"><a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a><span style="color: #D8DEE9">result</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;Generate a fake social security number.&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">output_type</span><span style="color: #ECEFF4">)</span>
-</span><span id="__span-8-12"><a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">result</span><span style="color: #ECEFF4">)</span> <span style="color: #616E87; font-style: italic"># &#39;782-32-3789&#39;</span>
+</span><span id="__span-8-11"><a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a><span style="color: #616E87; font-style: italic"># Create the model</span>
+</span><span id="__span-8-12"><a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a><span style="color: #D8DEE9">model</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">outlines</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_lmstudio</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">lmstudio</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">Client</span><span style="color: #ECEFF4">(),</span> <span style="color: #A3BE8C">&quot;openai/gpt-oss-20b&quot;</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-8-13"><a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a>
+</span><span id="__span-8-14"><a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a><span style="color: #616E87; font-style: italic"># Call it with the output type to generate structured text</span>
+</span><span id="__span-8-15"><a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a><span style="color: #D8DEE9">result</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;Create a character&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">Character</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-8-16"><a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">result</span><span style="color: #ECEFF4">)</span> <span style="color: #616E87; font-style: italic"># &#39;{&quot;name&quot;: &quot;Evelyn&quot;, &quot;age&quot;: 34, &quot;skills&quot;: [&quot;archery&quot;, &quot;stealth&quot;, &quot;alchemy&quot;]}&#39;</span>
+</span><span id="__span-8-17"><a id="__codelineno-8-17" name="__codelineno-8-17" href="#__codelineno-8-17"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">Character</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">model_validate_json</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">result</span><span style="color: #ECEFF4">))</span> <span style="color: #616E87; font-style: italic"># name=Evelyn, age=34, skills=[&#39;archery&#39;, &#39;stealth&#39;, &#39;alchemy&#39;]</span>
 </span></code></pre></div>
-<h4 id="context-free-grammar">Context-Free Grammar</h4>
-<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span style="color: #81A1C1; font-weight: bold">from</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines.types</span><span style="color: #D8DEE9"> </span><span style="color: #81A1C1; font-weight: bold">import</span> <span style="color: #D8DEE9">CFG</span>
+<h2 id="inference-arguments">Inference arguments</h2>
+<p>When calling the model, you can provide keyword arguments that will be passed down to the <code>respond</code> method of the LM Studio model handle. For instance, you can control sampling with the <code>config</code> argument:</p>
+<div class="language-python highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">lmstudio</span>
 </span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">outlines</span>
-</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">mlx_lm</span>
-</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>
-</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span style="color: #D8DEE9">arithmetic_grammar</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #A3BE8C">&quot;&quot;&quot;</span>
-</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span style="color: #A3BE8C">?start: sum</span>
-</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>
-</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span style="color: #A3BE8C">?sum: product</span>
-</span><span id="__span-9-9"><a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span style="color: #A3BE8C">| sum &quot;+&quot; product   -&gt; add</span>
-</span><span id="__span-9-10"><a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span style="color: #A3BE8C">| sum &quot;-&quot; product   -&gt; sub</span>
-</span><span id="__span-9-11"><a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a>
-</span><span id="__span-9-12"><a id="__codelineno-9-12" name="__codelineno-9-12" href="#__codelineno-9-12"></a><span style="color: #A3BE8C">?product: atom</span>
-</span><span id="__span-9-13"><a id="__codelineno-9-13" name="__codelineno-9-13" href="#__codelineno-9-13"></a><span style="color: #A3BE8C">| product &quot;*&quot; atom  -&gt; mul</span>
-</span><span id="__span-9-14"><a id="__codelineno-9-14" name="__codelineno-9-14" href="#__codelineno-9-14"></a><span style="color: #A3BE8C">| product &quot;/&quot; atom  -&gt; div</span>
-</span><span id="__span-9-15"><a id="__codelineno-9-15" name="__codelineno-9-15" href="#__codelineno-9-15"></a>
-</span><span id="__span-9-16"><a id="__codelineno-9-16" name="__codelineno-9-16" href="#__codelineno-9-16"></a><span style="color: #A3BE8C">?atom: NUMBER           -&gt; number</span>
-</span><span id="__span-9-17"><a id="__codelineno-9-17" name="__codelineno-9-17" href="#__codelineno-9-17"></a><span style="color: #A3BE8C">| &quot;-&quot; atom         -&gt; neg</span>
-</span><span id="__span-9-18"><a id="__codelineno-9-18" name="__codelineno-9-18" href="#__codelineno-9-18"></a><span style="color: #A3BE8C">| &quot;(&quot; sum &quot;)&quot;</span>
-</span><span id="__span-9-19"><a id="__codelineno-9-19" name="__codelineno-9-19" href="#__codelineno-9-19"></a>
-</span><span id="__span-9-20"><a id="__codelineno-9-20" name="__codelineno-9-20" href="#__codelineno-9-20"></a><span style="color: #A3BE8C">%import common.NUMBER</span>
-</span><span id="__span-9-21"><a id="__codelineno-9-21" name="__codelineno-9-21" href="#__codelineno-9-21"></a><span style="color: #A3BE8C">%import common.WS_INLINE</span>
-</span><span id="__span-9-22"><a id="__codelineno-9-22" name="__codelineno-9-22" href="#__codelineno-9-22"></a>
-</span><span id="__span-9-23"><a id="__codelineno-9-23" name="__codelineno-9-23" href="#__codelineno-9-23"></a><span style="color: #A3BE8C">%ignore WS_INLINE</span>
-</span><span id="__span-9-24"><a id="__codelineno-9-24" name="__codelineno-9-24" href="#__codelineno-9-24"></a><span style="color: #A3BE8C">&quot;&quot;&quot;</span>
-</span><span id="__span-9-25"><a id="__codelineno-9-25" name="__codelineno-9-25" href="#__codelineno-9-25"></a><span style="color: #D8DEE9">output_type</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">CFG</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">arithmetic_grammar</span><span style="color: #ECEFF4">)</span>
-</span><span id="__span-9-26"><a id="__codelineno-9-26" name="__codelineno-9-26" href="#__codelineno-9-26"></a>
-</span><span id="__span-9-27"><a id="__codelineno-9-27" name="__codelineno-9-27" href="#__codelineno-9-27"></a><span style="color: #D8DEE9">model</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">outlines</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_mlxlm</span><span style="color: #ECEFF4">(</span>
-</span><span id="__span-9-28"><a id="__codelineno-9-28" name="__codelineno-9-28" href="#__codelineno-9-28"></a>    <span style="color: #81A1C1; font-weight: bold">*</span><span style="color: #D8DEE9">mlx_lm</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">load</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;mlx-community/TinyLlama-1.1B-Chat-v1.0-4bit&quot;</span><span style="color: #ECEFF4">)</span>
-</span><span id="__span-9-29"><a id="__codelineno-9-29" name="__codelineno-9-29" href="#__codelineno-9-29"></a><span style="color: #ECEFF4">)</span>
-</span><span id="__span-9-30"><a id="__codelineno-9-30" name="__codelineno-9-30" href="#__codelineno-9-30"></a>
-</span><span id="__span-9-31"><a id="__codelineno-9-31" name="__codelineno-9-31" href="#__codelineno-9-31"></a><span style="color: #D8DEE9">result</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;Write an addition.&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">output_type</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">max_tokens</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #B48EAD">20</span><span style="color: #ECEFF4">)</span>
-</span><span id="__span-9-32"><a id="__codelineno-9-32" name="__codelineno-9-32" href="#__codelineno-9-32"></a><span style="color: #81A1C1">print</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">result</span><span style="color: #ECEFF4">)</span> <span style="color: #616E87; font-style: italic"># &#39;23 + 48&#39;</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span style="color: #D8DEE9">model</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">outlines</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">from_lmstudio</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">lmstudio</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">Client</span><span style="color: #ECEFF4">(),</span> <span style="color: #A3BE8C">&quot;openai/gpt-oss-20b&quot;</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span style="color: #D8DEE9">response</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">model</span><span style="color: #ECEFF4">(</span>
+</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>    <span style="color: #A3BE8C">&quot;What&#39;s the capital of Latvia?&quot;</span><span style="color: #ECEFF4">,</span>
+</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>    <span style="color: #D8DEE9">config</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #ECEFF4">{</span><span style="color: #A3BE8C">&quot;temperature&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #B48EAD">0.5</span><span style="color: #ECEFF4">,</span> <span style="color: #A3BE8C">&quot;maxTokens&quot;</span><span style="color: #ECEFF4">:</span> <span style="color: #B48EAD">100</span><span style="color: #ECEFF4">},</span>
+</span><span id="__span-9-9"><a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span style="color: #ECEFF4">)</span>
 </span></code></pre></div>
-<h2 id="inference-arguments">Inference Arguments</h2>
-<p>When calling the model, you can provide optional inference parameters on top of the prompt and the output type. These parameters will be passed on to the <code>mlx_lm.generate</code> function used to generate text.</p>
-<p>See the <a href="https://github.com/ml-explore/mlx-lm">MLXLM documentation</a> for more information on inference parameters.</p>
+<p>Consult the <a href="https://lmstudio.ai/docs/python/llm-prediction/parameters">LM Studio prediction parameters documentation</a> for the full list of inference parameters.</p>
 
 
 
@@ -3592,19 +3609,14 @@
     
     <nav>
       
+        <a href="https://github.com/okaditya84" class="md-author" title="@okaditya84">
+          
+          <img src="https://avatars.githubusercontent.com/u/97025644?v=4&size=72" alt="okaditya84">
+        </a>
+      
         <a href="https://github.com/RobinPicard" class="md-author" title="@RobinPicard">
           
           <img src="https://avatars.githubusercontent.com/u/83579270?v=4&size=72" alt="RobinPicard">
-        </a>
-      
-        <a href="https://github.com/rlouf" class="md-author" title="@rlouf">
-          
-          <img src="https://avatars.githubusercontent.com/u/3885044?v=4&size=72" alt="rlouf">
-        </a>
-      
-        <a href="https://github.com/web-flow" class="md-author" title="@web-flow">
-          
-          <img src="https://avatars.githubusercontent.com/u/19864447?v=4&size=72" alt="web-flow">
         </a>
       
       
