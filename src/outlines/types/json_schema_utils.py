@@ -14,7 +14,9 @@ else:  # pragma: no cover
 
 def schema_type_to_python(
     schema: dict,
-    caller_target_type: Literal["pydantic", "typeddict", "dataclass"]
+    caller_target_type: Literal["pydantic", "typeddict", "dataclass"],
+    defs: Optional[dict] = None,
+    seen: frozenset = frozenset(),
 ) -> Any:
     """Get a Python type from a JSON Schema dict.
 
@@ -24,6 +26,12 @@ def schema_type_to_python(
         The JSON Schema dict to convert to a Python type
     caller_target_type: Literal["pydantic", "typeddict", "dataclass"]
         The type of the caller
+    defs: Optional[dict]
+        The ``$defs``/``definitions`` block of the root schema, used to resolve
+        ``$ref`` references to nested definitions.
+    seen: frozenset
+        The ``$ref`` names already being resolved on the current path, used to
+        break reference cycles (e.g. self-referential models).
 
     Returns
     -------
@@ -31,6 +39,20 @@ def schema_type_to_python(
         The Python type
 
     """
+    if "$ref" in schema:
+        # Pydantic emits nested models as ``{"$ref": "#/$defs/Name"}`` with the
+        # referenced schema stored under the root ``$defs``. Resolve it so the
+        # nested structure is preserved instead of silently widening to ``Any``.
+        ref_name = schema["$ref"].split("/")[-1]
+        resolved = (defs or {}).get(ref_name)
+        if resolved is None or ref_name in seen:
+            # Unknown ref, or a cycle back to a def already being resolved
+            # (recursive model): degrade to ``Any`` rather than recurse forever.
+            return Any
+        return schema_type_to_python(
+            resolved, caller_target_type, defs, seen | {ref_name}
+        )
+
     if "enum" in schema:
         values = schema["enum"]
         return Literal[tuple(values)]
@@ -50,7 +72,7 @@ def schema_type_to_python(
         # Python type and combine them into a Union (mirroring the ``anyOf``
         # the regex backend uses for type arrays).
         members = tuple(
-            schema_type_to_python({**schema, "type": member}, caller_target_type)
+            schema_type_to_python({**schema, "type": member}, caller_target_type, defs, seen)
             for member in t
         )
         return Union[members] if members else Any  # type: ignore
@@ -68,25 +90,27 @@ def schema_type_to_python(
     elif t == "array":
         items = schema.get("items", {})
         if items:
-            item_type = schema_type_to_python(items, caller_target_type)
+            item_type = schema_type_to_python(items, caller_target_type, defs, seen)
         else:
             item_type = Any
         return List[item_type]  # type: ignore
     elif t == "object":
         name = schema.get("title")
         if caller_target_type == "pydantic":
-            return json_schema_dict_to_pydantic(schema, name)
+            return json_schema_dict_to_pydantic(schema, name, defs, seen)
         elif caller_target_type == "typeddict":
-            return json_schema_dict_to_typeddict(schema, name)
+            return json_schema_dict_to_typeddict(schema, name, defs, seen)
         elif caller_target_type == "dataclass":
-            return json_schema_dict_to_dataclass(schema, name)
+            return json_schema_dict_to_dataclass(schema, name, defs, seen)
 
     return Any
 
 
 def json_schema_dict_to_typeddict(
     schema: dict,
-    name: Optional[str] = None
+    name: Optional[str] = None,
+    defs: Optional[dict] = None,
+    seen: frozenset = frozenset(),
 ) -> _TypedDictMeta:
     """Convert a JSON Schema dict into a TypedDict class.
 
@@ -96,6 +120,12 @@ def json_schema_dict_to_typeddict(
         The JSON Schema dict to convert to a TypedDict
     name: Optional[str]
         The name of the TypedDict
+    defs: Optional[dict]
+        The root schema's ``$defs`` used to resolve ``$ref`` references. When
+        ``None``, it is read from this schema (the top-level call).
+    seen: frozenset
+        The ``$ref`` names already being resolved on the current path, used to
+        break reference cycles.
 
     Returns
     -------
@@ -103,13 +133,15 @@ def json_schema_dict_to_typeddict(
         The TypedDict class
 
     """
+    if defs is None:
+        defs = schema.get("$defs") or schema.get("definitions") or {}
     required = set(schema.get("required", []))
     properties = schema.get("properties", {})
 
     annotations: Dict[str, Any] = {}
 
     for property, details in properties.items():
-        typ = schema_type_to_python(details, "typeddict")
+        typ = schema_type_to_python(details, "typeddict", defs, seen)
         if property not in required:
             # NotRequired (PEP 655) marks the KEY optional; Optional only makes the
             # value nullable, leaving the key required on a total=True TypedDict.
@@ -121,7 +153,9 @@ def json_schema_dict_to_typeddict(
 
 def json_schema_dict_to_pydantic(
     schema: dict,
-    name: Optional[str] = None
+    name: Optional[str] = None,
+    defs: Optional[dict] = None,
+    seen: frozenset = frozenset(),
 ) -> type[BaseModel]:
     """Convert a JSON Schema dict into a Pydantic BaseModel class.
 
@@ -131,6 +165,12 @@ def json_schema_dict_to_pydantic(
         The JSON Schema dict to convert to a Pydantic BaseModel
     name: Optional[str]
         The name of the Pydantic BaseModel
+    defs: Optional[dict]
+        The root schema's ``$defs`` used to resolve ``$ref`` references. When
+        ``None``, it is read from this schema (the top-level call).
+    seen: frozenset
+        The ``$ref`` names already being resolved on the current path, used to
+        break reference cycles.
 
     Returns
     -------
@@ -138,13 +178,15 @@ def json_schema_dict_to_pydantic(
         The Pydantic BaseModel class
 
     """
+    if defs is None:
+        defs = schema.get("$defs") or schema.get("definitions") or {}
     required = set(schema.get("required", []))
     properties = schema.get("properties", {})
 
     field_definitions: Dict[str, Any] = {}
 
     for property, details in properties.items():
-        typ = schema_type_to_python(details, "pydantic")
+        typ = schema_type_to_python(details, "pydantic", defs, seen)
         if property not in required:
             field_definitions[property] = (Optional[typ], None)
         else:
@@ -155,7 +197,9 @@ def json_schema_dict_to_pydantic(
 
 def json_schema_dict_to_dataclass(
     schema: dict,
-    name: Optional[str] = None
+    name: Optional[str] = None,
+    defs: Optional[dict] = None,
+    seen: frozenset = frozenset(),
 ) -> type:
     """Convert a JSON Schema dict into a dataclass.
 
@@ -165,6 +209,12 @@ def json_schema_dict_to_dataclass(
         The JSON Schema dict to convert to a dataclass
     name: Optional[str]
         The name of the dataclass
+    defs: Optional[dict]
+        The root schema's ``$defs`` used to resolve ``$ref`` references. When
+        ``None``, it is read from this schema (the top-level call).
+    seen: frozenset
+        The ``$ref`` names already being resolved on the current path, used to
+        break reference cycles.
 
     Returns
     -------
@@ -172,6 +222,8 @@ def json_schema_dict_to_dataclass(
         The dataclass
 
     """
+    if defs is None:
+        defs = schema.get("$defs") or schema.get("definitions") or {}
     required = set(schema.get("required", []))
     properties = schema.get("properties", {})
 
@@ -179,7 +231,7 @@ def json_schema_dict_to_dataclass(
     defaults: Dict[str, Any] = {}
 
     for property, details in properties.items():
-        typ = schema_type_to_python(details, "dataclass")
+        typ = schema_type_to_python(details, "dataclass", defs, seen)
         annotations[property] = typ
 
         if property not in required:
