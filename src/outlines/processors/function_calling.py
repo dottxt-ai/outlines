@@ -28,36 +28,6 @@ def _resolve_token_id(token: str, vocabulary: dict[str, int]) -> int:
     return token_id
 
 
-def _force_single_token_row(
-    logits_row: TensorType, token_id: int, vocab_size: int
-) -> TensorType:
-    """Mask a single row of logits to -inf except for the specified token."""
-    mask_np = np.ones((1, vocab_size), dtype=np.float32)
-    mask_np[0, token_id] = 0.0
-
-    try:
-        import torch
-
-        if isinstance(logits_row, torch.Tensor):
-            logits_2d = logits_row.unsqueeze(0)
-            mask = torch.from_numpy(mask_np).bool().to(logits_row.device)
-            return torch.masked_fill(logits_2d, mask, float("-inf"))[0]
-    except ImportError:
-        pass
-
-    try:
-        import mlx.core as mx
-
-        if isinstance(logits_row, mx.array):
-            mask = mx.array(mask_np[0].astype(bool))
-            return mx.where(mask, float("-inf"), logits_row)
-    except ImportError:
-        pass
-
-    mask = mask_np[0].astype(bool)
-    return np.where(mask, float("-inf"), logits_row)
-
-
 class FunctionCallingLogitsProcessor(OutlinesLogitsProcessor):
     """Logits processor that switches between free generation and
     constrained JSON generation around tool call delimiters.
@@ -106,9 +76,53 @@ class FunctionCallingLogitsProcessor(OutlinesLogitsProcessor):
         self._phases: List[ToolCallPhase] = []
         self._arguments_starts: List[int] = []
         self._inner_processors: List[OutlinesLogitsProcessor] = []
+        self._close_drop_mask = None
         self.is_first_token = True
 
         super().__init__(model.tensor_library_name)
+
+        # Resolve the library-specific masking function once, mirroring the
+        # dispatch in `OutlinesCoreLogitsProcessor`.
+        if self._tensor_library_name == "torch":
+            self._mask_to_close_token = self._mask_to_close_token_torch
+        elif self._tensor_library_name == "mlx":
+            self._mask_to_close_token = self._mask_to_close_token_mlx
+        else:
+            self._mask_to_close_token = self._mask_to_close_token_numpy
+
+    def _drop_mask(self, vocab_size: int) -> np.ndarray:
+        """Boolean mask that is True for every token except the close token.
+
+        Depends only on the close token and vocabulary size, so it is built
+        once and cached.
+        """
+        if self._close_drop_mask is None:
+            mask = np.ones(vocab_size, dtype=bool)
+            mask[self.close_token_id] = False
+            self._close_drop_mask = mask
+        return self._close_drop_mask
+
+    def _mask_to_close_token_numpy(
+        self, logits_row: TensorType, vocab_size: int
+    ) -> TensorType:
+        return np.where(self._drop_mask(vocab_size), float("-inf"), logits_row)
+
+    def _mask_to_close_token_torch(
+        self, logits_row: TensorType, vocab_size: int
+    ) -> TensorType:
+        import torch
+
+        mask = torch.from_numpy(self._drop_mask(vocab_size)).to(logits_row.device)
+        return torch.where(mask, float("-inf"), logits_row)
+
+    def _mask_to_close_token_mlx(
+        self, logits_row: TensorType, vocab_size: int
+    ) -> TensorType:
+        import mlx.core as mx
+
+        return mx.where(
+            mx.array(self._drop_mask(vocab_size)), float("-inf"), logits_row
+        )
 
     def _create_inner_processor(self) -> OutlinesLogitsProcessor:
         from outlines.backends.outlines_core import OutlinesCoreLogitsProcessor
@@ -163,9 +177,7 @@ class FunctionCallingLogitsProcessor(OutlinesLogitsProcessor):
                         self._phases[i] = ToolCallPhase.CLOSING
 
             elif phase == ToolCallPhase.CLOSING:
-                logits[i] = _force_single_token_row(
-                    logits[i], self.close_token_id, vocab_size
-                )
+                logits[i] = self._mask_to_close_token(logits[i], vocab_size)
 
         return logits
 
