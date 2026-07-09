@@ -51,7 +51,7 @@ def test_set_additional_properties_false_json_schema():
 
 
 def test_set_additional_properties_false_json_schema_nested_object():
-    # nested object with a plain "type": "object" gets additionalProperties too
+    # nested object schemas get additionalProperties too
     schema = {
         "type": "object",
         "properties": {
@@ -88,3 +88,27 @@ def test_set_additional_properties_false_json_schema_nullable_type_array():
     modified_schema = set_additional_properties_false_json_schema(schema)
     assert modified_schema["additionalProperties"] is False
     assert modified_schema["properties"]["address"]["additionalProperties"] is False
+
+
+def test_set_additional_properties_false_json_schema_string_value_object():
+    # A non-object schema whose value happens to equal the string "object"
+    # (e.g. a Literal["object"] field emitted by pydantic as `const`) must NOT
+    # get `additionalProperties`, which the OpenAI API rejects on non-objects.
+    schema = {
+        "type": "object",
+        "properties": {
+            "kind": {"type": "string", "const": "object", "title": "object"},
+        },
+        "required": ["kind"],
+    }
+    modified_schema = set_additional_properties_false_json_schema(schema)
+    target_schema = {
+        "type": "object",
+        "properties": {
+            "kind": {"type": "string", "const": "object", "title": "object"},
+        },
+        "required": ["kind"],
+        "additionalProperties": False,
+    }
+    assert modified_schema == target_schema
+    assert "additionalProperties" not in modified_schema["properties"]["kind"]
