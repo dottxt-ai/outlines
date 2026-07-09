@@ -1,13 +1,11 @@
 """Logits processor for function calling with tool call delimiters."""
 
-import json
 from enum import Enum
-from typing import Any, List, Union
+from typing import Any, List
 
 import numpy as np
-from pydantic import BaseModel
 
-from outlines.backends import get_json_schema_logits_processor
+from outlines.backends import get_logits_processor
 from outlines.processors.base_logits_processor import (
     OutlinesLogitsProcessor,
     TensorType,
@@ -28,25 +26,6 @@ def _resolve_token_id(token: str, vocabulary: dict[str, int]) -> int:
             f"The model must have '{token}' as a single special token."
         )
     return token_id
-
-
-def _build_json_schema(output_type: type) -> str:
-    if isinstance(output_type, type) and issubclass(output_type, BaseModel):
-        return json.dumps(output_type.model_json_schema())
-
-    origin = getattr(output_type, "__origin__", None)
-    if origin is Union:
-        schemas = []
-        for arg in output_type.__args__:
-            if not (isinstance(arg, type) and issubclass(arg, BaseModel)):
-                raise TypeError(f"Union members must be Pydantic models, got {arg}")
-            schemas.append(arg.model_json_schema())
-        return json.dumps({"anyOf": schemas})
-
-    raise TypeError(
-        f"output_type must be a Pydantic model or Union of Pydantic models, "
-        f"got {output_type}"
-    )
 
 
 def _force_single_token_row(
@@ -97,12 +76,27 @@ class FunctionCallingLogitsProcessor(OutlinesLogitsProcessor):
         self,
         open_token: str,
         close_token: str,
-        output_type: type,
+        tools_type: Any,
         model: Any,
     ):
-        self._prototype_processor = get_json_schema_logits_processor(
-            None, model, _build_json_schema(output_type)
-        )
+        """
+        Parameters
+        ----------
+        open_token
+            The token marking the start of a tool call (e.g. "<tool_call>").
+            Must be a single special token in the model's vocabulary.
+        close_token
+            The token marking the end of a tool call (e.g. "</tool_call>").
+            Must be a single special token in the model's vocabulary.
+        tools_type
+            The type describing the callable tools, e.g. a Pydantic model or
+            a ``Union`` of Pydantic models. Tool call arguments are constrained
+            to this type.
+        model
+            An instance of an Outlines model.
+
+        """
+        self._prototype_processor = get_logits_processor(tools_type, model)
 
         vocabulary = model.tokenizer.get_vocab()
         self.open_token_id = _resolve_token_id(open_token, vocabulary)

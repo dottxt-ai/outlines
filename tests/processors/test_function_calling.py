@@ -99,7 +99,7 @@ def make_processor(library, finish_after=3):
     factory = _stub_factory(library, finish_after)
 
     with patch(
-        "outlines.processors.function_calling.get_json_schema_logits_processor",
+        "outlines.processors.function_calling.get_logits_processor",
         side_effect=lambda *args, **kwargs: factory(),
     ):
         proc = FunctionCallingLogitsProcessor(
@@ -295,7 +295,7 @@ def test_integration_with_real_fsm():
     mock_model.tensor_library_name = "torch"
 
     with patch(
-        "outlines.processors.function_calling.get_json_schema_logits_processor",
+        "outlines.processors.function_calling.get_logits_processor",
         return_value=inner,
     ):
         proc = FunctionCallingLogitsProcessor(
