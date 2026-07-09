@@ -1,8 +1,10 @@
-import jsonpath_ng
-
-
 def set_additional_properties_false_json_schema(schema: dict) -> dict:
-    """Set additionalProperties to False to all objects in the schema using jsonpath.
+    """Set additionalProperties to False on all object schemas.
+
+    Recursively walks the JSON schema and, for every object schema, sets
+    ``additionalProperties`` to False unless it is already present. An object
+    schema is one whose ``type`` is ``"object"`` or, for a nullable object, a
+    list containing ``"object"`` (e.g. ``["object", "null"]``).
 
     Parameters
     ----------
@@ -14,20 +16,26 @@ def set_additional_properties_false_json_schema(schema: dict) -> dict:
     dict
         The modified schema with additionalProperties set to False
     """
-    # Get all nodes
-    jsonpath_expr = jsonpath_ng.parse('$..*')
-    matches = jsonpath_expr.find(schema)
 
-    # Go over all nodes and set additionalProperties to False if it's an
-    # object. `type` can either be the bare string "object" or, per the JSON
-    # Schema spec, a list of type names (e.g. ["object", "null"]) used to
-    # express nullable objects, so both forms must be checked.
-    for match in matches:
-        is_object_type = match.value == 'object' or (
-            isinstance(match.value, list) and 'object' in match.value
-        )
-        if is_object_type:
-            if 'additionalProperties' not in match.context.value:
-                match.context.value['additionalProperties'] = False
+    def _walk(node):
+        if isinstance(node, dict):
+            # Only an object *schema* should get ``additionalProperties``. Keying
+            # off the string ``"object"`` appearing anywhere would wrongly add the
+            # keyword to non-object schemas, e.g. a string field with
+            # ``const``/``default``/``title`` equal to ``"object"``, which the
+            # OpenAI API then rejects. ``type`` may be the bare string or a list
+            # such as ``["object", "null"]`` for a nullable object.
+            node_type = node.get("type")
+            is_object = node_type == "object" or (
+                isinstance(node_type, list) and "object" in node_type
+            )
+            if is_object and "additionalProperties" not in node:
+                node["additionalProperties"] = False
+            for value in node.values():
+                _walk(value)
+        elif isinstance(node, list):
+            for item in node:
+                _walk(item)
 
+    _walk(schema)
     return schema
