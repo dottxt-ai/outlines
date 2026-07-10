@@ -117,6 +117,7 @@ def make_processor(library, finish_after=3):
 
 @pytest.mark.parametrize("library", libraries)
 def test_passthrough_returns_logits_unmodified(library):
+    """Before any tool call, logits are returned untouched."""
     proc = make_processor(library)
     input_ids, logits = make_arrays(library, [1, 2, 3])
     result = proc(input_ids, logits)
@@ -131,6 +132,8 @@ def test_passthrough_returns_logits_unmodified(library):
 
 @pytest.mark.parametrize("library", libraries)
 def test_phase_transitions_full_cycle(library):
+    """A single sequence walks PASSTHROUGH → ARGUMENTS → CLOSING → PASSTHROUGH
+    as it emits the open token, completes the JSON, then emits the close token."""
     proc = make_processor(library, finish_after=2)
 
     proc(*make_arrays(library, [1]))
@@ -148,6 +151,7 @@ def test_phase_transitions_full_cycle(library):
 
 @pytest.mark.parametrize("library", libraries)
 def test_arguments_phase_delegates_to_inner(library):
+    """In the ARGUMENTS phase, constraint is delegated to the inner processor."""
     proc = make_processor(library, finish_after=5)
     proc(*make_arrays(library, [1]))
     proc(*make_arrays(library, [1, OPEN_TOKEN_ID]))
@@ -157,6 +161,7 @@ def test_arguments_phase_delegates_to_inner(library):
 
 @pytest.mark.parametrize("library", libraries)
 def test_closing_phase_only_allows_close_token(library):
+    """In the CLOSING phase, every token except the close token is masked to -inf."""
     proc = make_processor(library, finish_after=1)
     proc(*make_arrays(library, [1]))
     proc(*make_arrays(library, [1, OPEN_TOKEN_ID]))
@@ -181,6 +186,7 @@ def test_closing_phase_only_allows_close_token(library):
 
 @pytest.mark.parametrize("library", libraries)
 def test_multiple_tool_calls(library):
+    """After completing one tool call, the sequence can start another."""
     proc = make_processor(library, finish_after=2)
 
     proc(*make_arrays(library, [1]))
@@ -198,6 +204,7 @@ def test_multiple_tool_calls(library):
 
 @pytest.mark.parametrize("library", libraries)
 def test_reset(library):
+    """reset() clears all per-sequence state for a fresh generation."""
     proc = make_processor(library, finish_after=5)
     proc(*make_arrays(library, [1]))
     proc(*make_arrays(library, [1, OPEN_TOKEN_ID]))
@@ -210,6 +217,8 @@ def test_reset(library):
 
 @pytest.mark.parametrize("library", ["numpy", "torch"])
 def test_batch_sequences_in_different_phases(library):
+    """Each batch sequence tracks its own phase: one can be constrained in
+    ARGUMENTS while another passes through untouched."""
     proc = make_processor(library, finish_after=5)
 
     # Batch of 2 sequences: both start in PASSTHROUGH
