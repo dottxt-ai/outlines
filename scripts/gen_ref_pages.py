@@ -18,7 +18,7 @@ EXCLUDED_FILES = ["_version"]
 
 nav = mkdocs_gen_files.Nav()
 root = Path(__file__).parent.parent
-src = root / CODEBASE_DIR_NAME
+src = root / "src" / CODEBASE_DIR_NAME
 
 for path in sorted(src.rglob("*.py")):
     module_path = path.relative_to(src).with_suffix("")
