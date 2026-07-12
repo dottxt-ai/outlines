@@ -940,6 +940,17 @@ def _handle_dict(args: tuple, recursion_depth: int) -> Sequence:
         raise TypeError(f"Dict must have exactly two type arguments. Got {args}.")
     # Add dict support with key:value pairs
     key_type = _ensure_json_quoted(python_types_to_terms(args[0], recursion_depth + 1))
+    if isinstance(key_type, Regex) and key_type.pattern != types.string.pattern:
+        # JSON object keys must always be double-quoted strings, even when
+        # the Python key type is not `str` (e.g. `Dict[int, str]`,
+        # `Dict[date, str]`). `_ensure_json_quoted` only quotes `String`/
+        # `Alternatives` terms (from `Literal`/`Enum`); bare `Regex` terms
+        # like `types.integer`, `types.number`, `types.boolean`, `types.date`
+        # etc. are otherwise left unquoted, which produces a regex that
+        # matches invalid JSON (e.g. `{1:"a"}` instead of `{"1":"a"}`).
+        # `types.string` is excluded since its pattern is already
+        # self-quoted (`"[^"]*"`).
+        key_type = Sequence([String('"'), key_type, String('"')])
     value_type = _ensure_json_quoted(python_types_to_terms(args[1], recursion_depth + 1))
     return Sequence(
         [
