@@ -839,8 +839,9 @@ def test_dsl_handle_dict():
         incorrect_dict_type = dict[int, str, int]
         _handle_dict(get_args(incorrect_dict_type), recursion_depth=0)
 
-    # correct type
-    dict_type = dict[int, str]
+    # correct type with a str key: no extra quoting needed, types.string
+    # is already self-quoted
+    dict_type = dict[str, int]
     result = _handle_dict(get_args(dict_type), recursion_depth=0)
     assert isinstance(result, Sequence)
     assert len(result.terms) == 3
@@ -848,11 +849,39 @@ def test_dsl_handle_dict():
     assert isinstance(result.terms[1], Optional)
     assert isinstance(result.terms[1].term, Sequence)
     assert len(result.terms[1].term.terms) == 4
-    assert result.terms[1].term.terms[0] == types.integer
+    assert result.terms[1].term.terms[0] == types.string
     assert result.terms[1].term.terms[1] == String(":")
-    assert result.terms[1].term.terms[2] == types.string
-    assert result.terms[1].term.terms[3] == KleeneStar(Sequence([String(", "), types.integer, String(":"), types.string]))
+    assert result.terms[1].term.terms[2] == types.integer
+    assert result.terms[1].term.terms[3] == KleeneStar(Sequence([String(", "), types.string, String(":"), types.integer]))
     assert result.terms[2] == String("}")
+
+    # non-str key (e.g. int): JSON object keys must always be double-quoted
+    # strings, so the bare `types.integer` regex must be wrapped in quotes
+    # even though the Python key type is `int`.
+    dict_type = dict[int, str]
+    result = _handle_dict(get_args(dict_type), recursion_depth=0)
+    quoted_int_key = Sequence([String('"'), types.integer, String('"')])
+    assert result.terms[1].term.terms[0] == quoted_int_key
+    assert result.terms[1].term.terms[2] == types.string
+
+
+def test_dsl_handle_dict_non_string_key_produces_valid_json():
+    """Regression test: Dict[int, str] (and other non-str key types) must
+    only match strings that are valid JSON, i.e. the key must be quoted."""
+    import json
+
+    dict_type = dict[int, str]
+    result = _handle_dict(get_args(dict_type), recursion_depth=0)
+    pattern = to_regex(result)
+
+    # unquoted key: not valid JSON, must not match
+    assert _re.fullmatch(pattern, '{1:"a"}') is None
+    with pytest.raises(json.JSONDecodeError):
+        json.loads('{1:"a"}')
+
+    # quoted key: valid JSON, must match
+    assert _re.fullmatch(pattern, '{"1":"a"}') is not None
+    json.loads('{"1":"a"}')  # does not raise
 
 
 def test_ensure_json_quoted_string():
