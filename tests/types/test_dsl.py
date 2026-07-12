@@ -663,6 +663,27 @@ def test_dsl_python_types_to_terms():
         python_types_to_terms(bytes)
 
 
+def test_dsl_enum_with_instance_method_is_not_a_choice():
+    """A plain instance method defined in the enum's class body must not be
+    picked up as a generation choice. Both this method and a bare function
+    assigned as a member's value (`SomeEnum.c` above) show up as the same
+    `FunctionType` in `__dict__`, so the two have to be told apart by more
+    than just their type."""
+
+    class Color(Enum):
+        RED = "red"
+        GREEN = "green"
+        BLUE = "blue"
+
+        def describe(self) -> str:
+            return f"This color is {self.value}"
+
+    result = python_types_to_terms(Color)
+    assert isinstance(result, Alternatives)
+    assert len(result.terms) == 3
+    assert result.terms == [String("red"), String("green"), String("blue")]
+
+
 def test_dsl_handle_literal():
     literal = Literal["a", 1]
     result = _handle_literal(get_args(literal))

@@ -822,15 +822,36 @@ def python_types_to_terms(ptype: Any, recursion_depth: int = 0) -> Term:
 
 
 def _get_enum_members(ptype: EnumMeta) -> List[Any]:
+    """Get the members of an enum, including "enum of callables" members.
+
+    Regular Enum members (including ones whose value is a `functools.partial`)
+    are returned via normal iteration. An enum can also have a plain function
+    assigned directly as a member's value (e.g. ``c = some_function``);
+    Python's Enum machinery treats a bare function assigned in the class body
+    as a method rather than a member, so those don't show up through
+    iteration and we have to pick them out of `__dict__` instead.
+
+    The tricky part is telling that case apart from an actual instance method
+    defined with ``def`` directly in the class body (e.g. a `describe(self)`
+    helper) - both end up as plain `FunctionType` objects in `__dict__`. We
+    use `__qualname__` to distinguish them: a method defined inside the
+    class body is qualified with the class's own qualname (e.g.
+    ``"SomeEnum.describe"``), while a function that was defined elsewhere and
+    merely assigned as a member's value keeps its original qualname (e.g.
+    ``"some_function"``). Only the latter should be treated as a member.
+    """
     regular_members = [member.value for member in ptype]  # type: ignore
-    function_members = []
-    for key, value in ptype.__dict__.items():
+    class_member_prefix = f"{ptype.__qualname__}."
+    function_members = [
+        value
+        for key, value in ptype.__dict__.items()
         if (
             isinstance(value, FunctionType)
             and not (key.startswith('__') and key.endswith('__'))
             and key != '_generate_next_value_'  # Skip this specific method that causes issues
-        ):
-            function_members.append(value)
+            and not value.__qualname__.startswith(class_member_prefix)
+        )
+    ]
     return regular_members + function_members
 
 
