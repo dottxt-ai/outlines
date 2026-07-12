@@ -48,3 +48,43 @@ def test_set_additional_properties_false_json_schema():
     }
     modified_schema = set_additional_properties_false_json_schema(schema)
     assert modified_schema == schema
+
+
+def test_set_additional_properties_false_json_schema_nested_object():
+    # nested object with a plain "type": "object" gets additionalProperties too
+    schema = {
+        "type": "object",
+        "properties": {
+            "name": {"type": "string"},
+            "address": {
+                "type": "object",
+                "properties": {"city": {"type": "string"}},
+            },
+        },
+        "required": ["name"],
+    }
+    modified_schema = set_additional_properties_false_json_schema(schema)
+    assert modified_schema["additionalProperties"] is False
+    assert modified_schema["properties"]["address"]["additionalProperties"] is False
+
+
+def test_set_additional_properties_false_json_schema_nullable_type_array():
+    """Regression test: "type" can be a list (e.g. ["object", "null"]) per the
+    JSON Schema spec, used to express a nullable object. Previously only the
+    bare string "object" was checked, so nested nullable objects silently
+    never got additionalProperties set, which OpenAI/Mistral strict mode
+    rejects."""
+    schema = {
+        "type": "object",
+        "properties": {
+            "name": {"type": "string"},
+            "address": {
+                "type": ["object", "null"],
+                "properties": {"city": {"type": "string"}},
+            },
+        },
+        "required": ["name"],
+    }
+    modified_schema = set_additional_properties_false_json_schema(schema)
+    assert modified_schema["additionalProperties"] is False
+    assert modified_schema["properties"]["address"]["additionalProperties"] is False
