@@ -18,9 +18,15 @@ def set_additional_properties_false_json_schema(schema: dict) -> dict:
     jsonpath_expr = jsonpath_ng.parse('$..*')
     matches = jsonpath_expr.find(schema)
 
-    # Go over all nodes and set additionalProperties to False if it's an object
+    # Go over all nodes and set additionalProperties to False if it's an
+    # object. `type` can either be the bare string "object" or, per the JSON
+    # Schema spec, a list of type names (e.g. ["object", "null"]) used to
+    # express nullable objects, so both forms must be checked.
     for match in matches:
-        if match.value == 'object':
+        is_object_type = match.value == 'object' or (
+            isinstance(match.value, list) and 'object' in match.value
+        )
+        if is_object_type:
             if 'additionalProperties' not in match.context.value:
                 match.context.value['additionalProperties'] = False
 
