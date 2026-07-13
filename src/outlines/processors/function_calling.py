@@ -1,7 +1,7 @@
 """Logits processor for function calling with tool call delimiters."""
 
 from enum import Enum
-from typing import Any, List
+from typing import Any, List, Optional
 
 import numpy as np
 
@@ -75,8 +75,8 @@ class FunctionCallingLogitsProcessor(OutlinesLogitsProcessor):
         self._tensor_library_name = model.tensor_library_name
         self._phases: List[ToolCallPhase] = []
         self._arguments_starts: List[int] = []
-        self._inner_processors: List[OutlinesLogitsProcessor] = []
-        self._close_drop_mask = None
+        self._inner_processors: List[Optional[OutlinesLogitsProcessor]] = []
+        self._close_drop_mask: Optional[np.ndarray] = None
         self.is_first_token = True
 
         super().__init__(model.tensor_library_name)
@@ -105,24 +105,23 @@ class FunctionCallingLogitsProcessor(OutlinesLogitsProcessor):
     def _mask_to_close_token_numpy(
         self, logits_row: TensorType, vocab_size: int
     ) -> TensorType:
-        return np.where(self._drop_mask(vocab_size), float("-inf"), logits_row)
+        return np.where(self._drop_mask(vocab_size), float("-inf"), logits_row)  # type: ignore
 
     def _mask_to_close_token_torch(
         self, logits_row: TensorType, vocab_size: int
     ) -> TensorType:
         import torch
 
-        mask = torch.from_numpy(self._drop_mask(vocab_size)).to(logits_row.device)
-        return torch.where(mask, float("-inf"), logits_row)
+        mask = torch.from_numpy(self._drop_mask(vocab_size)).to(logits_row.device)  # type: ignore
+        return torch.where(mask, float("-inf"), logits_row)  # type: ignore
 
     def _mask_to_close_token_mlx(
         self, logits_row: TensorType, vocab_size: int
     ) -> TensorType:
         import mlx.core as mx
 
-        return mx.where(
-            mx.array(self._drop_mask(vocab_size)), float("-inf"), logits_row
-        )
+        mask = mx.array(self._drop_mask(vocab_size))
+        return mx.where(mask, float("-inf"), logits_row)  # type: ignore
 
     def _create_inner_processor(self) -> OutlinesLogitsProcessor:
         from outlines.backends.outlines_core import OutlinesCoreLogitsProcessor
@@ -150,7 +149,7 @@ class FunctionCallingLogitsProcessor(OutlinesLogitsProcessor):
             self.is_first_token = False
         else:
             for i in range(batch_size):
-                last_token_id = self.tensor_adapter.to_scalar(input_ids[i][-1])
+                last_token_id = self.tensor_adapter.to_scalar(input_ids[i][-1])  # type: ignore
                 self._advance(i, last_token_id, input_ids)
 
         for i in range(batch_size):
@@ -162,14 +161,15 @@ class FunctionCallingLogitsProcessor(OutlinesLogitsProcessor):
             elif phase == ToolCallPhase.ARGUMENTS:
                 if self._inner_processors[i] is None:
                     self._inner_processors[i] = self._create_inner_processor()
-
                 inner = self._inner_processors[i]
+                assert inner is not None  # for type narrowing
+
                 args_ids = self.tensor_adapter.unsqueeze(
-                    input_ids[i][self._arguments_starts[i] :]
+                    input_ids[i][self._arguments_starts[i] :]  # type: ignore
                 )
-                row_logits = self.tensor_adapter.unsqueeze(logits[i])
+                row_logits = self.tensor_adapter.unsqueeze(logits[i])  # type: ignore
                 result = inner.process_logits(args_ids, row_logits)
-                logits[i] = result[0]
+                logits[i] = result[0]  # type: ignore
 
                 if hasattr(inner, "_guides"):
                     guides = inner._guides
@@ -177,7 +177,7 @@ class FunctionCallingLogitsProcessor(OutlinesLogitsProcessor):
                         self._phases[i] = ToolCallPhase.CLOSING
 
             elif phase == ToolCallPhase.CLOSING:
-                logits[i] = self._mask_to_close_token(logits[i], vocab_size)
+                logits[i] = self._mask_to_close_token(logits[i], vocab_size)  # type: ignore
 
         return logits
 
