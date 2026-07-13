@@ -76,7 +76,6 @@ class FunctionCallingLogitsProcessor(OutlinesLogitsProcessor):
         self._phases: List[ToolCallPhase] = []
         self._arguments_starts: List[int] = []
         self._inner_processors: List[Optional[OutlinesLogitsProcessor]] = []
-        self._close_drop_mask: Optional[np.ndarray] = None
         self.is_first_token = True
 
         super().__init__(model.tensor_library_name)
@@ -85,22 +84,16 @@ class FunctionCallingLogitsProcessor(OutlinesLogitsProcessor):
         # dispatch in `OutlinesCoreLogitsProcessor`.
         if self._tensor_library_name == "torch":
             self._mask_to_close_token = self._mask_to_close_token_torch
-        elif self._tensor_library_name == "mlx":
+        elif self._tensor_library_name == "mlx":  # pragma: no cover
             self._mask_to_close_token = self._mask_to_close_token_mlx
         else:
             self._mask_to_close_token = self._mask_to_close_token_numpy
 
     def _drop_mask(self, vocab_size: int) -> np.ndarray:
-        """Boolean mask that is True for every token except the close token.
-
-        Depends only on the close token and vocabulary size, so it is built
-        once and cached.
-        """
-        if self._close_drop_mask is None:
-            mask = np.ones(vocab_size, dtype=bool)
-            mask[self.close_token_id] = False
-            self._close_drop_mask = mask
-        return self._close_drop_mask
+        """Boolean mask that is True for every token except the close token."""
+        mask = np.ones(vocab_size, dtype=bool)
+        mask[self.close_token_id] = False
+        return mask
 
     def _mask_to_close_token_numpy(
         self, logits_row: TensorType, vocab_size: int
@@ -115,7 +108,7 @@ class FunctionCallingLogitsProcessor(OutlinesLogitsProcessor):
         mask = torch.from_numpy(self._drop_mask(vocab_size)).to(logits_row.device)  # type: ignore
         return torch.where(mask, float("-inf"), logits_row)  # type: ignore
 
-    def _mask_to_close_token_mlx(
+    def _mask_to_close_token_mlx(  # pragma: no cover
         self, logits_row: TensorType, vocab_size: int
     ) -> TensorType:
         import mlx.core as mx
@@ -176,7 +169,7 @@ class FunctionCallingLogitsProcessor(OutlinesLogitsProcessor):
                     if guides and guides[0].is_finished():
                         self._phases[i] = ToolCallPhase.CLOSING
 
-            elif phase == ToolCallPhase.CLOSING:
+            else:  # ToolCallPhase.CLOSING
                 logits[i] = self._mask_to_close_token(logits[i], vocab_size)  # type: ignore
 
         return logits

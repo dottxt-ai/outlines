@@ -54,6 +54,14 @@ class StubInnerProcessor(OutlinesLogitsProcessor):
         return logits
 
 
+class StubInnerNoGuides(OutlinesLogitsProcessor):
+    """Inner stub without a `_guides` attribute, e.g. a non-outlines_core
+    backend, so tool call completion cannot be detected."""
+
+    def process_logits(self, input_ids, logits):
+        return logits
+
+
 class DummyToolCall(BaseModel):
     name: str
 
@@ -112,7 +120,59 @@ def make_processor(library, finish_after=3):
     return proc
 
 
+def build_raw_processor(inner, library="numpy"):
+    """Build a processor whose real `_create_inner_processor` is kept, with
+    `inner` as the prototype returned by the patched `get_logits_processor`."""
+    model = MagicMock()
+    model.tokenizer.get_vocab.return_value = {
+        "<tool_call>": OPEN_TOKEN_ID,
+        "</tool_call>": CLOSE_TOKEN_ID,
+    }
+    model.tensor_library_name = library
+
+    with patch(
+        "outlines.processors.function_calling.get_logits_processor",
+        return_value=inner,
+    ):
+        return FunctionCallingLogitsProcessor(
+            "<tool_call>", "</tool_call>", DummyToolCall, model
+        )
+
+
 # --- Unit tests ---
+
+
+def test_missing_delimiter_token_raises():
+    """Constructor raises if a delimiter is not a single vocabulary token."""
+    model = MagicMock()
+    model.tokenizer.get_vocab.return_value = {"</tool_call>": CLOSE_TOKEN_ID}
+    model.tensor_library_name = "numpy"
+
+    with patch(
+        "outlines.processors.function_calling.get_logits_processor",
+        return_value=StubInnerProcessor("numpy"),
+    ):
+        with pytest.raises(ValueError, match="not found in vocabulary"):
+            FunctionCallingLogitsProcessor(
+                "<tool_call>", "</tool_call>", DummyToolCall, model
+            )
+
+
+def test_create_inner_processor_returns_prototype_for_non_core_backend():
+    """For a non-outlines_core prototype, the prototype is reused directly."""
+    inner = StubInnerProcessor("numpy")
+    proc = build_raw_processor(inner)
+    assert proc._create_inner_processor() is inner
+
+
+def test_arguments_stays_open_when_inner_has_no_guides():
+    """Without a `_guides` attribute, completion cannot be detected, so the
+    sequence stays in the ARGUMENTS phase."""
+    proc = build_raw_processor(StubInnerNoGuides("numpy"))
+    proc(*make_arrays("numpy", [1]))
+    proc(*make_arrays("numpy", [1, OPEN_TOKEN_ID]))
+    proc(*make_arrays("numpy", [1, OPEN_TOKEN_ID, 2]))
+    assert proc._phases[0] == ToolCallPhase.ARGUMENTS
 
 
 @pytest.mark.parametrize("library", libraries)
