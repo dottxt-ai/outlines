@@ -1,4 +1,5 @@
 import base64
+from enum import Enum
 import os
 import tempfile
 from typing import Optional
@@ -39,6 +40,22 @@ class CallableClass:
 
 class PydanticClass(BaseModel):
     foo: str
+
+
+class Armor(str, Enum):
+    leather = "leather"
+    chainmail = "chainmail"
+    plate = "plate"
+
+
+class PydanticClassWithEnum(BaseModel):
+    name: str
+    armor: Armor
+
+
+class PydanticNestedClass(BaseModel):
+    name: str
+    inner: PydanticClass
 
 
 def test_vision_initialization():
@@ -370,3 +387,13 @@ def test_get_schema():
 
     pydantic_schema_output = get_schema(PydanticClass)
     assert pydantic_schema_output == '{\n  "foo": "<foo>"\n}'
+
+    pydantic_enum_schema_output = get_schema(PydanticClassWithEnum)
+    assert pydantic_enum_schema_output == (
+        '{\n  "name": "<name>",\n  "armor": "<leather | chainmail | plate>"\n}'
+    )
+
+    pydantic_nested_schema_output = get_schema(PydanticNestedClass)
+    assert pydantic_nested_schema_output == (
+        '{\n  "name": "<name>",\n  "inner": {\n    "foo": "<foo>"\n  }\n}'
+    )

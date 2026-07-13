@@ -66,7 +66,7 @@ Outlines provides optional dependencies for different supported backends, which 
 pip install ".[vllm]"
 ```
 
-A list of supported optional dependencies can be found in the [installation guide](/installation).
+A list of supported optional dependencies can be found in the [installation guide](../guide/installation.md).
 
 ### Using VSCode DevContainer / GitHub Codespaces
 
