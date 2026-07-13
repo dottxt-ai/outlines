@@ -809,6 +809,7 @@ def _get_enum_members(ptype: EnumMeta) -> List[Any]:
             isinstance(value, FunctionType)
             and not (key.startswith('__') and key.endswith('__'))
             and key != '_generate_next_value_'  # Skip this specific method that causes issues
+            and "." not in value.__qualname__.split("<locals>.")[-1]
         ):
             function_members.append(value)
     return regular_members + function_members

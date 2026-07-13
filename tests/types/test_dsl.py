@@ -617,6 +617,9 @@ def test_dsl_python_types_to_terms():
         b = int
         c = func
 
+        def describe(self) -> str:
+            return "describe"
+
     result = python_types_to_terms(SomeEnum)
     assert isinstance(result, Alternatives)
     assert len(result.terms) == 3
@@ -1191,3 +1194,24 @@ def test_to_regex():
 
     with pytest.raises(TypeError):
         to_regex(Term())
+
+
+def test_enum_with_instance_method_not_treated_as_member():
+    # Regression for https://github.com/outlines-dev/outlines/issues/1915.
+    # Instance methods defined in the Enum body must not be picked up as
+    # generation choices by _get_enum_members.
+    class Color(Enum):
+        RED = "red"
+        GREEN = "green"
+        BLUE = "blue"
+
+        def describe(self) -> str:
+            return self.value
+
+    result = python_types_to_terms(Color)
+    assert isinstance(result, Alternatives)
+    # Only the three enum values, not the describe method.
+    assert len(result.terms) == 3
+    assert result.terms[0] == String("red")
+    assert result.terms[1] == String("green")
+    assert result.terms[2] == String("blue")
