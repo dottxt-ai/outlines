@@ -210,6 +210,10 @@ class SGLang(Model):
         """Build the arguments to pass to the SGLang client."""
         messages = self.type_adapter.format_input(model_input)
         output_type_args = self.type_adapter.format_output_type(output_type)
+        if "extra_body" in output_type_args:
+            extra_body = inference_kwargs.pop("extra_body", {})
+            extra_body.update(output_type_args.pop("extra_body"))
+            inference_kwargs["extra_body"] = extra_body
         inference_kwargs.update(output_type_args)
 
         if "model" not in inference_kwargs and self.model_name is not None:
@@ -355,6 +359,10 @@ class AsyncSGLang(AsyncModel):
         """Build the arguments to pass to the SGLang client."""
         messages = self.type_adapter.format_input(model_input)
         output_type_args = self.type_adapter.format_output_type(output_type)
+        if "extra_body" in output_type_args:
+            extra_body = inference_kwargs.pop("extra_body", {})
+            extra_body.update(output_type_args.pop("extra_body"))
+            inference_kwargs["extra_body"] = extra_body
         inference_kwargs.update(output_type_args)
 
         if "model" not in inference_kwargs and self.model_name is not None:
