@@ -17,7 +17,7 @@ class BaseBackend(ABC):
 
     @abstractmethod
     def get_json_schema_logits_processor(
-        self, json_schema: str
+        self, json_schema: str, whitespace_pattern: str | None = None
     ) -> LogitsProcessorType:
         """Create a logits processor from a JSON schema.
 
@@ -25,6 +25,9 @@ class BaseBackend(ABC):
         ----------
         json_schema: str
             The JSON schema to create a logits processor from.
+        whitespace_pattern: str | None
+            The pattern to use to control the whitespace allowed between JSON
+            tokens. `None` uses the backend default.
 
         Returns
         -------

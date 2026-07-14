@@ -141,7 +141,7 @@ class XGrammarBackend(BaseBackend):
         self.tensor_library_name = model.tensor_library_name
 
     def get_json_schema_logits_processor(
-        self, json_schema: str
+        self, json_schema: str, whitespace_pattern: str | None = None
     ) -> XGrammarLogitsProcessor:
         """Create a logits processor from a JSON schema.
 
@@ -149,6 +149,8 @@ class XGrammarBackend(BaseBackend):
         ----------
         json_schema: str
             The JSON schema to create a logits processor from.
+        whitespace_pattern: str | None
+            Not supported by the xgrammar backend; must be `None`.
 
         Returns
         -------
@@ -156,6 +158,12 @@ class XGrammarBackend(BaseBackend):
             The logits processor to use to constrain the generation.
 
         """
+        if whitespace_pattern is not None:
+            raise NotImplementedError(
+                "The xgrammar backend does not support the "
+                "`whitespace_pattern` argument. Use the `outlines_core` "
+                "backend to control JSON whitespace."
+            )
         compiled_grammar = self.grammar_compiler.compile_json_schema(
             json_schema
         )

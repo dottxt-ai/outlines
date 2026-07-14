@@ -279,3 +279,45 @@ def test_create_vocabulary_duplicate_decoded_strings():
     assert captured["hi"] == [3]
     assert len(captured) == 2
     assert sum(len(ids) for ids in captured.values()) == 3
+
+
+def test_json_schema_logits_processor_applies_whitespace_pattern():
+    """A user-provided whitespace_pattern is forwarded to the regex builder.
+
+    Regression: the pattern was dropped before reaching the backend, so setting
+    it had no effect on the whitespace of the generated JSON.
+    """
+    backend = object.__new__(OutlinesCoreBackend)
+    schema = '{"type": "object", "properties": {"a": {"type": "integer"}}}'
+
+    with (
+        patch(
+            "outlines.backends.outlines_core.build_regex_from_schema",
+            return_value=r"\{\}",
+        ) as build_regex,
+        patch.object(
+            backend, "get_regex_logits_processor", return_value="processor"
+        ),
+    ):
+        backend.get_json_schema_logits_processor(schema, whitespace_pattern="")
+
+    build_regex.assert_called_once_with(schema, "")
+
+
+def test_json_schema_logits_processor_defaults_whitespace_pattern_to_none():
+    """When no whitespace_pattern is given, None is forwarded to the builder."""
+    backend = object.__new__(OutlinesCoreBackend)
+    schema = '{"type": "object"}'
+
+    with (
+        patch(
+            "outlines.backends.outlines_core.build_regex_from_schema",
+            return_value=r"\{\}",
+        ) as build_regex,
+        patch.object(
+            backend, "get_regex_logits_processor", return_value="processor"
+        ),
+    ):
+        backend.get_json_schema_logits_processor(schema)
+
+    build_regex.assert_called_once_with(schema, None)

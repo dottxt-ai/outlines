@@ -235,7 +235,7 @@ class LLGuidanceBackend(BaseBackend):
             )
 
     def get_json_schema_logits_processor(
-        self, json_schema: str
+        self, json_schema: str, whitespace_pattern: str | None = None
     ) -> LLGuidanceLogitsProcessor:
         """Create a logits processor from a JSON schema.
 
@@ -243,6 +243,8 @@ class LLGuidanceBackend(BaseBackend):
         ----------
         json_schema: str
             The JSON schema to create a logits processor from.
+        whitespace_pattern: str | None
+            Not supported by the llguidance backend; must be `None`.
 
         Returns
         -------
@@ -250,6 +252,12 @@ class LLGuidanceBackend(BaseBackend):
             The logits processor to use to constrain the generation.
 
         """
+        if whitespace_pattern is not None:
+            raise NotImplementedError(
+                "The llguidance backend does not support the "
+                "`whitespace_pattern` argument. Use the `outlines_core` "
+                "backend to control JSON whitespace."
+            )
         grammar_spec = self.llg.grammar_from("json_schema", json_schema)
         return LLGuidanceLogitsProcessor(
             grammar_spec, self.llg_tokenizer, self.tensor_library_name
