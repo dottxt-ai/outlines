@@ -211,13 +211,18 @@ class OutlinesCoreBackend(BaseBackend):
         )
         self.tensor_library_name = model.tensor_library_name
 
-    def get_json_schema_logits_processor(self, json_schema: str):
+    def get_json_schema_logits_processor(
+        self, json_schema: str, whitespace_pattern: str | None = None
+    ):
         """Create a logits processor from a JSON schema.
 
         Parameters
         ----------
         json_schema: str
             The JSON schema to create a logits processor from.
+        whitespace_pattern: str | None
+            The pattern to use to control the whitespace allowed between JSON
+            tokens. `None` uses the outlines_core default.
 
         Returns
         -------
@@ -225,7 +230,7 @@ class OutlinesCoreBackend(BaseBackend):
             The logits processor to use to constrain the generation.
 
         """
-        regex = build_regex_from_schema(json_schema)
+        regex = build_regex_from_schema(json_schema, whitespace_pattern)
         return self.get_regex_logits_processor(regex)
 
     def get_regex_logits_processor(self, regex: str):
