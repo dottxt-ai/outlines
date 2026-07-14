@@ -229,6 +229,20 @@ def test_sglang_init():
         from_sglang("foo")
 
 
+@pytest.mark.parametrize("model_cls", [SGLang, AsyncSGLang])
+def test_sglang_build_client_args_merges_user_extra_body(model_cls):
+    # `_build_client_args` must merge the structured-output payload into the
+    # user's own `extra_body`, not clobber it wholesale.
+    model = model_cls(openai_client, sglang_model_name)
+
+    client_args = model._build_client_args(
+        "foo?", output_type=Regex(r"[0-9]{3}"), extra_body={"user_key": "user_value"}
+    )
+
+    assert client_args["extra_body"]["user_key"] == "user_value"
+    assert client_args["extra_body"]["regex"] == "([0-9]{3})"
+
+
 def test_sglang_sync_simple_call(sync_model):
     result = sync_model("Respond with a single word.",)
     assert isinstance(result, str)
