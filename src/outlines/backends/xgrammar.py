@@ -105,7 +105,10 @@ class XGrammarLogitsProcessor(OutlinesLogitsProcessor):
                     last_token_id = self.tensor_adapter.to_scalar(
                         input_ids[i][-1] # type: ignore
                     )
-                    assert self._matchers[i].accept_token(last_token_id)
+                    if not self._matchers[i].accept_token(last_token_id):
+                        raise RuntimeError(
+                            f"XGrammar matcher rejected token {last_token_id}"
+                        )
 
         return self._bias_logits(input_ids, logits)
 
