@@ -574,6 +574,10 @@ class QuantifyExact(Term):
     term: Term
     count: int
 
+    def __post_init__(self):
+        if self.count < 0:
+            raise ValueError("QuantifyExact: `count` must be a non-negative integer.")
+
     def _display_node(self) -> str:
         return f"Quantify({{{self.count}}})"
 
@@ -588,6 +592,12 @@ class QuantifyExact(Term):
 class QuantifyMinimum(Term):
     term: Term
     min_count: int
+
+    def __post_init__(self):
+        if self.min_count < 0:
+            raise ValueError(
+                "QuantifyMinimum: `min_count` must be a non-negative integer."
+            )
 
     def _display_node(self) -> str:
         return f"Quantify({{{self.min_count},}})"
@@ -605,6 +615,12 @@ class QuantifyMinimum(Term):
 class QuantifyMaximum(Term):
     term: Term
     max_count: int
+
+    def __post_init__(self):
+        if self.max_count < 0:
+            raise ValueError(
+                "QuantifyMaximum: `max_count` must be a non-negative integer."
+            )
 
     def _display_node(self) -> str:
         return f"Quantify({{,{self.max_count}}})"
@@ -625,6 +641,10 @@ class QuantifyBetween(Term):
     max_count: int
 
     def __post_init__(self):
+        if self.min_count < 0:
+            raise ValueError(
+                "QuantifyBetween: `min_count` must be a non-negative integer."
+            )
         if self.min_count > self.max_count:
             raise ValueError(
                 "QuantifyBetween: `max_count` must be greater than `min_count`."

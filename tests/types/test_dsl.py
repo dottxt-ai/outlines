@@ -138,6 +138,15 @@ def test_dsl_init():
     assert repr(maximum) == "QuantifyMaximum(term=String(value='test'), max_count=3)"
     assert maximum.display_ascii_tree() == "└── Quantify({,3})\n    └── String('test')\n"
 
+    with pytest.raises(ValueError, match="`count` must be a non-negative integer"):
+        QuantifyExact(string, -1)
+
+    with pytest.raises(ValueError, match="`min_count` must be a non-negative integer"):
+        QuantifyMinimum(string, -1)
+
+    with pytest.raises(ValueError, match="`max_count` must be a non-negative integer"):
+        QuantifyMaximum(string, -1)
+
     between = QuantifyBetween(string, 1, 3)
     assert between.term == string
     assert between.min_count == 1
@@ -152,6 +161,9 @@ def test_dsl_init():
         ValueError, match="`max_count` must be greater than `min_count`"
     ):
         QuantifyBetween(string, 3, 1)
+
+    with pytest.raises(ValueError, match="`min_count` must be a non-negative integer"):
+        QuantifyBetween(string, -2, -1)
 
 
 def test_dsl_term_methods():
