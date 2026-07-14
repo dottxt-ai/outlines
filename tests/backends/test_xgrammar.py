@@ -1,4 +1,5 @@
 import re
+from unittest.mock import MagicMock
 
 import llama_cpp
 import outlines
@@ -174,3 +175,21 @@ def test_json_schema_logits_processor_rejects_whitespace_pattern():
     schema = '{"type": "object"}'
     with pytest.raises(NotImplementedError, match="whitespace_pattern"):
         backend.get_json_schema_logits_processor(schema, whitespace_pattern=" ")
+
+
+def test_xgr_processor_raises_on_rejected_token():
+    """A token the grammar matcher rejects must raise clearly, not rely on
+    `assert` (which `python -O` strips entirely, silently leaving the
+    matcher's state un-advanced for the rest of generation)."""
+    processor = object.__new__(XGrammarLogitsProcessor)
+    processor.is_first_token = False
+    processor.tensor_adapter = MagicMock()
+    processor.tensor_adapter.shape.return_value = (1, 100)
+    processor.tensor_adapter.to_scalar.return_value = 42
+    mock_matcher = MagicMock()
+    mock_matcher.is_terminated.return_value = False
+    mock_matcher.accept_token.return_value = False
+    processor._matchers = [mock_matcher]
+
+    with pytest.raises(RuntimeError, match="rejected token"):
+        processor.process_logits(input_ids=[[1, 2, 3]], logits=MagicMock())
