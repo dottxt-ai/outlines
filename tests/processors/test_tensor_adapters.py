@@ -244,6 +244,33 @@ def test_tensor_adapter_apply_mask(framework):
 
 
 @pytest.mark.parametrize("framework", frameworks)
+def test_tensor_adapter_apply_mask_broadcasts_lower_rank_mask(framework):
+    """A mask with fewer dimensions than the tensor (e.g. the same banned-token
+    mask reused for every row of a batch) must broadcast, matching torch's
+    masked_fill semantics, instead of requiring an exact shape match."""
+    tensor = create_tensor(framework, (2, 3))
+
+    if framework == "torch":
+        mask = torch.tensor([True, False, True])
+    elif framework == "numpy":
+        mask = np.array([True, False, True])
+    elif framework == "mlx":
+        if not HAS_MLX:
+            pytest.skip("MLX not available")
+        mask = mx.array([True, False, True])
+
+    masked = adapters[framework].apply_mask(tensor, mask, float("-inf"))
+
+    assert masked.shape == (2, 3)
+    for i in range(2):
+        for j in range(3):
+            if mask[j]:
+                assert masked[i, j] == float("-inf")
+            else:
+                assert masked[i, j] == tensor[i, j]
+
+
+@pytest.mark.parametrize("framework", frameworks)
 def test_tensor_adapter_argsort_descending(framework):
     tensor = create_tensor(framework, (2, 3))
     indices = adapters[framework].argsort_descending(tensor)
