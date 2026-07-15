@@ -152,17 +152,38 @@ def is_callable(value: Any) -> bool:
 # Type conversion
 
 
+def _unique_str_keys(values) -> dict:
+    """Build a name -> value mapping for an Enum's functional API, keyed by str(value)
+    as before, but disambiguating with the value's type name whenever two values would
+    otherwise collide on the same str() (e.g. the string "1" and the int 1 both stringify
+    to "1"), which previously caused the dict comprehension to silently drop all but the
+    last colliding value.
+    """
+    by_str: dict = {}
+    for value in values:
+        by_str.setdefault(str(value), []).append(value)
+
+    result = {}
+    for key, group in by_str.items():
+        if len(group) == 1:
+            result[key] = group[0]
+        else:
+            for value in group:
+                result[f"{type(value).__name__}_{value}"] = value
+    return result
+
+
 def get_enum_from_literal(value) -> Enum:
     return Enum(
         value.__name__,
-        {str(arg): arg for arg in get_args(value)}
+        _unique_str_keys(get_args(value))
     )
 
 
 def get_enum_from_choice(value) -> Enum:
     return Enum(
         'Choice',
-        {str(item): item for item in value.items}
+        _unique_str_keys(value.items)
     )
 
 

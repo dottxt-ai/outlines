@@ -394,6 +394,26 @@ def test_get_enum_from_literal(sample_enum):
     assert getattr(complex_enum, "SampleEnum.A").value == sample_enum.A
 
 
+def test_get_enum_from_literal_str_int_collision_preserves_both_members():
+    """str(1) == str("1") == "1" previously made the naive `{str(x): x for x in ...}`
+    dict comprehension silently drop one of the two values -- whichever came first was
+    overwritten by the other. Both must survive as distinct enum members."""
+    enum = get_enum_from_literal(Literal["1", 1])
+    assert is_enum(enum)
+    values = {member.value for member in enum}
+    assert values == {"1", 1}
+    assert len(list(enum)) == 2
+
+
+def test_get_enum_from_choice_str_int_collision_preserves_both_members():
+    choice = Choice(["1", 1])
+    enum = get_enum_from_choice(choice)
+    assert is_enum(enum)
+    values = {member.value for member in enum}
+    assert values == {"1", 1}
+    assert len(list(enum)) == 2
+
+
 def test_get_schema_from_signature(sample_function, sample_function_missing_type):
     result = get_schema_from_signature(sample_function)
     assert result["type"] == "object"
