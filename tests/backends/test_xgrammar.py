@@ -166,3 +166,11 @@ def test_xgrammar_backend_invalid_model():
         match="The xgrammar backend only supports Transformers and MLXLM models",
     ):
         XGrammarBackend(model_llamacpp())
+
+
+def test_json_schema_logits_processor_rejects_whitespace_pattern():
+    """The xgrammar backend does not support whitespace_pattern and raises."""
+    backend = object.__new__(XGrammarBackend)
+    schema = '{"type": "object"}'
+    with pytest.raises(NotImplementedError, match="whitespace_pattern"):
+        backend.get_json_schema_logits_processor(schema, whitespace_pattern=" ")
