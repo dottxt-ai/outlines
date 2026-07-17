@@ -274,6 +274,8 @@ def test_is_typing_tuple():
 def test_is_union():
     assert is_union(Union[int, str])
     assert is_union(Optional[int])
+    assert is_union(int | str)
+    assert is_union(str | None)
     assert not is_union(list)
     assert not is_union(["a", "b"])
     assert not is_union(Literal[int, str])

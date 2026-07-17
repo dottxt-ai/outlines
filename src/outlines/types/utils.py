@@ -4,6 +4,7 @@ import dataclasses
 import datetime
 import inspect
 import sys
+import types
 import warnings
 from enum import Enum, EnumMeta
 from typing import (
@@ -113,7 +114,7 @@ def is_typing_tuple(value: Any) -> bool:
 
 
 def is_union(value: Any) -> bool:
-    return get_origin(value) is Union
+    return get_origin(value) is Union or isinstance(value, types.UnionType)
 
 
 def is_literal(value: Any) -> bool:

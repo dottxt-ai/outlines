@@ -638,6 +638,10 @@ def test_dsl_python_types_to_terms():
     # convert to terms are tested in distinct tests below
     assert python_types_to_terms(Literal["a", "b"]) == _handle_literal(("a", "b"))
     assert python_types_to_terms(Union[int, str]) == _handle_union((int, str), recursion_depth=0)
+    # PEP 604 unions must dispatch the same way as typing.Union/Optional
+    assert python_types_to_terms(int | str) == python_types_to_terms(Union[int, str])
+    assert python_types_to_terms(str | None) == python_types_to_terms(PyOptional[str])
+    assert python_types_to_terms(list[int | str]) == python_types_to_terms(list[Union[int, str]])
     assert python_types_to_terms(list[int]) == _handle_list((int,), recursion_depth=0)
     assert python_types_to_terms(tuple[int, str]) == _handle_tuple((int, str), recursion_depth=0)
     assert python_types_to_terms(dict[int, str]) == _handle_dict((int, str), recursion_depth=0)
