@@ -370,3 +370,43 @@ async def test_vllm_async_cfg(async_model):
     result = await async_model("foo?", CFG(YES_NO_GRAMMAR), max_tokens=10)
     assert isinstance(result, str)
     assert result in ["yes", "no"]
+
+
+@pytest.mark.parametrize("model_fixture", ["sync_model", "async_model"])
+def test_vllm_build_client_args_does_not_mutate_caller_extra_body(request, model_fixture):
+    """Regression test for https://github.com/outlines-dev/outlines/issues/1931.
+
+    ``_build_client_args`` must not mutate the caller-provided ``extra_body``
+    dict in place when merging ``structured_outputs``. Reusing the same dict
+    across calls previously leaked the previous call's constraints into later
+    unconstrained calls.
+    """
+    model = request.getfixturevalue(model_fixture)
+
+    shared_extra_body = {"top_k": 5}
+    snapshot = dict(shared_extra_body)
+
+    # Call 1: a Regex output type adds `structured_outputs` to the merged
+    # extra_body that gets forwarded to the OpenAI client.
+    args_with_constraint = model._build_client_args(
+        "prompt one",
+        Regex(r"[0-9]{3}"),
+        extra_body=shared_extra_body,
+    )
+
+    # The caller's dict must be untouched, and the merged dict must be a
+    # separate object carrying the constraint.
+    assert shared_extra_body == snapshot
+    assert args_with_constraint["extra_body"] is not shared_extra_body
+    assert "structured_outputs" in args_with_constraint["extra_body"]
+
+    # Call 2: no output type — the stale constraint from call 1 must not
+    # leak through the shared dict into this unconstrained call.
+    args_without_constraint = model._build_client_args(
+        "prompt two",
+        None,
+        extra_body=shared_extra_body,
+    )
+
+    assert shared_extra_body == snapshot
+    assert "structured_outputs" not in args_without_constraint["extra_body"]
