@@ -201,3 +201,11 @@ def test_llguidance_backend(model, tensor_library_name, json_schema, regex, cfg_
         else:
             response = generator("Create a character", max_tokens=20)
             assert response[0] == "{"
+
+
+def test_json_schema_logits_processor_rejects_whitespace_pattern():
+    """The llguidance backend does not support whitespace_pattern and raises."""
+    backend = object.__new__(LLGuidanceBackend)
+    schema = '{"type": "object"}'
+    with pytest.raises(NotImplementedError, match="whitespace_pattern"):
+        backend.get_json_schema_logits_processor(schema, whitespace_pattern=" ")
