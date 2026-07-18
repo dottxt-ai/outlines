@@ -86,6 +86,8 @@ __all__ = [
     "ipv6",
     "semver",
     "mac_address",
+    "hex_color",
+    "slug",
     # Document-specific types
     "sentence",
     "paragraph",
@@ -159,6 +161,18 @@ ipv6 = Regex(
     r"|(?:[0-9A-Fa-f]{1,4}:){1,4}:(?:25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})"
     r"(?:\.(?:25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})){3}"
 )
+
+# CSS hexadecimal color notation: https://www.w3.org/TR/css-color-4/#hex-notation
+# This matches only the ubiquitous three-digit (#rgb) and six-digit (#rrggbb)
+# forms. The four- and eight-digit forms that encode an alpha channel are
+# intentionally excluded to keep the type to the canonical opaque-color syntax.
+hex_color = Regex(r"#(?:[0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})")
+
+# URL slugs in the lowercase-hyphenated form produced by common web framework
+# slugify helpers: ASCII lowercase alphanumeric groups separated by single
+# hyphens. Uppercase letters, underscores, and leading, trailing, or
+# consecutive hyphens are excluded, as is the empty string.
+slug = Regex(r"[a-z0-9]+(?:-[a-z0-9]+)*")
 
 # Document-specific types
 sentence = Regex(r"[A-Z].*\s*[.!?]")
