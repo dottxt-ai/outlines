@@ -137,7 +137,7 @@ def build_template_from_string(
     # Remove extra whitespaces, except those that immediately follow a newline symbol.
     # This is necessary to avoid introducing whitespaces after backslash `\` characters
     # used to continue to the next line without linebreak.
-    cleaned_template = re.sub(r"(?![\r\n])(\b\s+)", " ", cleaned_template)
+    cleaned_template = re.sub(r"(?![\r\n])(\b[^\S\r\n]+)", " ", cleaned_template)
 
     env = create_jinja_env(None, filters)
 
