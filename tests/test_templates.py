@@ -397,3 +397,13 @@ def test_get_schema():
     assert pydantic_nested_schema_output == (
         '{\n  "name": "<name>",\n  "inner": {\n    "foo": "<foo>"\n  }\n}'
     )
+
+
+def test_render_trailing_whitespace_preserves_linebreak():
+    # A trailing space before a newline must not swallow the line break.
+    assert build_template_from_string("foo   \nbar").render() == "foo \nbar"
+
+
+def test_render_trailing_whitespace_keeps_next_line_indentation():
+    src = "\n    A test line \n        An indented line\n    "
+    assert build_template_from_string(src).render() == "A test line \n    An indented line"
