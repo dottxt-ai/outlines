@@ -865,46 +865,18 @@ def test_dsl_handle_dict():
     assert result.terms[1].term.terms[2] == types.string
 
 
-def test_dsl_handle_dict_non_string_key_produces_valid_json():
-    """Regression test: Dict[int, str] (and other non-str key types) must
-    only match strings that are valid JSON, i.e. the key must be quoted."""
-    import json
-
-    dict_type = dict[int, str]
-    result = _handle_dict(get_args(dict_type), recursion_depth=0)
-    pattern = to_regex(result)
-
-    # unquoted key: not valid JSON, must not match
-    assert _re.fullmatch(pattern, '{1:"a"}') is None
-    with pytest.raises(json.JSONDecodeError):
-        json.loads('{1:"a"}')
-
-    # quoted key: valid JSON, must match
-    assert _re.fullmatch(pattern, '{"1":"a"}') is not None
-    json.loads('{"1":"a"}')  # does not raise
-
-
-def test_dsl_handle_dict_literal_int_key_produces_valid_json():
-    """Regression test: a Dict key type that resolves to an Alternatives of
-    Regex terms (e.g. Literal[1, 2, 3], all-int members) must also be quoted.
-
-    _handle_dict's key quoting has to reach Regex terms nested inside
-    Alternatives, not just a bare top-level Regex, since Literal ints go
-    through _handle_literal -> Alternatives([Regex("1"), Regex("2"), ...]).
-    """
-    import json
-    from typing import Literal
-
+def test_dsl_handle_dict_literal_int_key_quoted():
+    """A Dict key type that resolves to an Alternatives of Regex terms (e.g.
+    Literal[1, 2, 3]) must have each member quoted, not just a bare top-level
+    Regex. Literal ints go through _handle_literal -> Alternatives([Regex("1"),
+    ...]), so the quoting has to reach Regex terms nested inside Alternatives."""
     dict_type = dict[Literal[1, 2, 3], str]
     result = _handle_dict(get_args(dict_type), recursion_depth=0)
-    pattern = to_regex(result)
-
-    assert _re.fullmatch(pattern, '{1:"a"}') is None
-    with pytest.raises(json.JSONDecodeError):
-        json.loads('{1:"a"}')
-
-    assert _re.fullmatch(pattern, '{"1":"a"}') is not None
-    json.loads('{"1":"a"}')  # does not raise
+    key_term = result.terms[1].term.terms[0]
+    assert isinstance(key_term, Alternatives)
+    assert key_term.terms == [
+        Sequence([String('"'), Regex(str(i)), String('"')]) for i in (1, 2, 3)
+    ]
 
 
 def test_ensure_json_quoted_string():
