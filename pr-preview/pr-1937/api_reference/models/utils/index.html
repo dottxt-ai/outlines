@@ -4648,7 +4648,11 @@
 
     <div class="doc doc-contents ">
 
-        <p>Set additionalProperties to False to all objects in the schema using jsonpath.</p>
+        <p>Set additionalProperties to False on all object schemas.</p>
+<p>Recursively walks the JSON schema and, for every object schema, sets
+<code>additionalProperties</code> to False unless it is already present. An object
+schema is one whose <code>type</code> is <code>"object"</code> or, for a nullable object, a
+list containing <code>"object"</code> (e.g. <code>["object", "null"]</code>).</p>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -4707,7 +4711,10 @@
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>outlines/models/utils.py</code></summary>
-              <div class="language-python highlight" style="background: #2E3440"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-4"> 4</a></span>
+              <div class="language-python highlight" style="background: #2E3440"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-1"> 1</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-2"> 2</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-3"> 3</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-4"> 4</a></span>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-5"> 5</a></span>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-6"> 6</a></span>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-7"> 7</a></span>
@@ -4736,36 +4743,55 @@
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-30">30</a></span>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-31">31</a></span>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-32">32</a></span>
-<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-33">33</a></span></pre></div></td><td class="code"><div><pre style="line-height: 125%;"><span></span><code><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4"></a><span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">set_additional_properties_false_json_schema</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">schema</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">dict</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #81A1C1">dict</span><span style="color: #ECEFF4">:</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">&quot;&quot;&quot;Set additionalProperties to False to all objects in the schema using jsonpath.</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6"></a>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7"></a><span style="color: #616E87">    Parameters</span>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8"></a><span style="color: #616E87">    ----------</span>
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9"></a><span style="color: #616E87">    schema</span>
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10"></a><span style="color: #616E87">        The JSON schema to modify</span>
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11"></a>
-</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12"></a><span style="color: #616E87">    Returns</span>
-</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13"></a><span style="color: #616E87">    -------</span>
-</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14"></a><span style="color: #616E87">    dict</span>
-</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15"></a><span style="color: #616E87">        The modified schema with additionalProperties set to False</span>
-</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16"></a><span style="color: #616E87">    &quot;&quot;&quot;</span>
-</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17"></a>    <span style="color: #616E87; font-style: italic"># Get all nodes</span>
-</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18"></a>    <span style="color: #D8DEE9">jsonpath_expr</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">jsonpath_ng</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">parse</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&#39;$..*&#39;</span><span style="color: #ECEFF4">)</span>
-</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19"></a>    <span style="color: #D8DEE9">matches</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">jsonpath_expr</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">find</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">schema</span><span style="color: #ECEFF4">)</span>
-</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20"></a>
-</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21"></a>    <span style="color: #616E87; font-style: italic"># Go over all nodes and set additionalProperties to False if it&#39;s an</span>
-</span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22"></a>    <span style="color: #616E87; font-style: italic"># object. `type` can either be the bare string &quot;object&quot; or, per the JSON</span>
-</span><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23"></a>    <span style="color: #616E87; font-style: italic"># Schema spec, a list of type names (e.g. [&quot;object&quot;, &quot;null&quot;]) used to</span>
-</span><span id="__span-0-24"><a id="__codelineno-0-24" name="__codelineno-0-24"></a>    <span style="color: #616E87; font-style: italic"># express nullable objects, so both forms must be checked.</span>
-</span><span id="__span-0-25"><a id="__codelineno-0-25" name="__codelineno-0-25"></a>    <span style="color: #81A1C1; font-weight: bold">for</span> <span style="color: #D8DEE9">match</span> <span style="color: #81A1C1; font-weight: bold">in</span> <span style="color: #D8DEE9">matches</span><span style="color: #ECEFF4">:</span>
-</span><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26"></a>        <span style="color: #D8DEE9">is_object_type</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">match</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">value</span> <span style="color: #81A1C1; font-weight: bold">==</span> <span style="color: #A3BE8C">&#39;object&#39;</span> <span style="color: #81A1C1; font-weight: bold">or</span> <span style="color: #ECEFF4">(</span>
-</span><span id="__span-0-27"><a id="__codelineno-0-27" name="__codelineno-0-27"></a>            <span style="color: #81A1C1">isinstance</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">match</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">value</span><span style="color: #ECEFF4">,</span> <span style="color: #81A1C1">list</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">and</span> <span style="color: #A3BE8C">&#39;object&#39;</span> <span style="color: #81A1C1; font-weight: bold">in</span> <span style="color: #D8DEE9">match</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">value</span>
-</span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28"></a>        <span style="color: #ECEFF4">)</span>
-</span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29"></a>        <span style="color: #81A1C1; font-weight: bold">if</span> <span style="color: #D8DEE9">is_object_type</span><span style="color: #ECEFF4">:</span>
-</span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30"></a>            <span style="color: #81A1C1; font-weight: bold">if</span> <span style="color: #A3BE8C">&#39;additionalProperties&#39;</span> <span style="color: #81A1C1; font-weight: bold">not</span> <span style="color: #81A1C1; font-weight: bold">in</span> <span style="color: #D8DEE9">match</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">context</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">value</span><span style="color: #ECEFF4">:</span>
-</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31"></a>                <span style="color: #81A1C1; font-weight: bold">match.</span><span style="color: #D8DEE9">context</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">value</span><span style="color: #ECEFF4">[</span><span style="color: #A3BE8C">&#39;additionalProperties&#39;</span><span style="color: #ECEFF4">]</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #81A1C1; font-weight: bold">False</span>
-</span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32"></a>
-</span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33"></a>    <span style="color: #81A1C1; font-weight: bold">return</span> <span style="color: #D8DEE9">schema</span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-33">33</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-34">34</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-35">35</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-36">36</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-37">37</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-38">38</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-39">39</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-40">40</a></span>
+<span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-41">41</a></span></pre></div></td><td class="code"><div><pre style="line-height: 125%;"><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1"></a><span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">set_additional_properties_false_json_schema</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">schema</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">dict</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #81A1C1">dict</span><span style="color: #ECEFF4">:</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">&quot;&quot;&quot;Set additionalProperties to False on all object schemas.</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3"></a>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4"></a><span style="color: #616E87">    Recursively walks the JSON schema and, for every object schema, sets</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5"></a><span style="color: #616E87">    ``additionalProperties`` to False unless it is already present. An object</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6"></a><span style="color: #616E87">    schema is one whose ``type`` is ``&quot;object&quot;`` or, for a nullable object, a</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7"></a><span style="color: #616E87">    list containing ``&quot;object&quot;`` (e.g. ``[&quot;object&quot;, &quot;null&quot;]``).</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8"></a>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9"></a><span style="color: #616E87">    Parameters</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10"></a><span style="color: #616E87">    ----------</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11"></a><span style="color: #616E87">    schema</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12"></a><span style="color: #616E87">        The JSON schema to modify</span>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13"></a>
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14"></a><span style="color: #616E87">    Returns</span>
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15"></a><span style="color: #616E87">    -------</span>
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16"></a><span style="color: #616E87">    dict</span>
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17"></a><span style="color: #616E87">        The modified schema with additionalProperties set to False</span>
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18"></a><span style="color: #616E87">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19"></a>
+</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20"></a>    <span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">_walk</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">node</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21"></a>        <span style="color: #81A1C1; font-weight: bold">if</span> <span style="color: #81A1C1">isinstance</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">node</span><span style="color: #ECEFF4">,</span> <span style="color: #81A1C1">dict</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22"></a>            <span style="color: #616E87; font-style: italic"># Only an object *schema* should get ``additionalProperties``. Keying</span>
+</span><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23"></a>            <span style="color: #616E87; font-style: italic"># off the string ``&quot;object&quot;`` appearing anywhere would wrongly add the</span>
+</span><span id="__span-0-24"><a id="__codelineno-0-24" name="__codelineno-0-24"></a>            <span style="color: #616E87; font-style: italic"># keyword to non-object schemas, e.g. a string field with</span>
+</span><span id="__span-0-25"><a id="__codelineno-0-25" name="__codelineno-0-25"></a>            <span style="color: #616E87; font-style: italic"># ``const``/``default``/``title`` equal to ``&quot;object&quot;``, which the</span>
+</span><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26"></a>            <span style="color: #616E87; font-style: italic"># OpenAI API then rejects. ``type`` may be the bare string or a list</span>
+</span><span id="__span-0-27"><a id="__codelineno-0-27" name="__codelineno-0-27"></a>            <span style="color: #616E87; font-style: italic"># such as ``[&quot;object&quot;, &quot;null&quot;]`` for a nullable object.</span>
+</span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28"></a>            <span style="color: #D8DEE9">node_type</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">node</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">get</span><span style="color: #ECEFF4">(</span><span style="color: #A3BE8C">&quot;type&quot;</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29"></a>            <span style="color: #D8DEE9">is_object</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">node_type</span> <span style="color: #81A1C1; font-weight: bold">==</span> <span style="color: #A3BE8C">&quot;object&quot;</span> <span style="color: #81A1C1; font-weight: bold">or</span> <span style="color: #ECEFF4">(</span>
+</span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30"></a>                <span style="color: #81A1C1">isinstance</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">node_type</span><span style="color: #ECEFF4">,</span> <span style="color: #81A1C1">list</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">and</span> <span style="color: #A3BE8C">&quot;object&quot;</span> <span style="color: #81A1C1; font-weight: bold">in</span> <span style="color: #D8DEE9">node_type</span>
+</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31"></a>            <span style="color: #ECEFF4">)</span>
+</span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32"></a>            <span style="color: #81A1C1; font-weight: bold">if</span> <span style="color: #D8DEE9">is_object</span> <span style="color: #81A1C1; font-weight: bold">and</span> <span style="color: #A3BE8C">&quot;additionalProperties&quot;</span> <span style="color: #81A1C1; font-weight: bold">not</span> <span style="color: #81A1C1; font-weight: bold">in</span> <span style="color: #D8DEE9">node</span><span style="color: #ECEFF4">:</span>
+</span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33"></a>                <span style="color: #D8DEE9">node</span><span style="color: #ECEFF4">[</span><span style="color: #A3BE8C">&quot;additionalProperties&quot;</span><span style="color: #ECEFF4">]</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #81A1C1; font-weight: bold">False</span>
+</span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34"></a>            <span style="color: #81A1C1; font-weight: bold">for</span> <span style="color: #D8DEE9">value</span> <span style="color: #81A1C1; font-weight: bold">in</span> <span style="color: #D8DEE9">node</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">values</span><span style="color: #ECEFF4">():</span>
+</span><span id="__span-0-35"><a id="__codelineno-0-35" name="__codelineno-0-35"></a>                <span style="color: #D8DEE9">_walk</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">value</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-0-36"><a id="__codelineno-0-36" name="__codelineno-0-36"></a>        <span style="color: #81A1C1; font-weight: bold">elif</span> <span style="color: #81A1C1">isinstance</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">node</span><span style="color: #ECEFF4">,</span> <span style="color: #81A1C1">list</span><span style="color: #ECEFF4">):</span>
+</span><span id="__span-0-37"><a id="__codelineno-0-37" name="__codelineno-0-37"></a>            <span style="color: #81A1C1; font-weight: bold">for</span> <span style="color: #D8DEE9">item</span> <span style="color: #81A1C1; font-weight: bold">in</span> <span style="color: #D8DEE9">node</span><span style="color: #ECEFF4">:</span>
+</span><span id="__span-0-38"><a id="__codelineno-0-38" name="__codelineno-0-38"></a>                <span style="color: #D8DEE9">_walk</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">item</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-0-39"><a id="__codelineno-0-39" name="__codelineno-0-39"></a>
+</span><span id="__span-0-40"><a id="__codelineno-0-40" name="__codelineno-0-40"></a>    <span style="color: #D8DEE9">_walk</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">schema</span><span style="color: #ECEFF4">)</span>
+</span><span id="__span-0-41"><a id="__codelineno-0-41" name="__codelineno-0-41"></a>    <span style="color: #81A1C1; font-weight: bold">return</span> <span style="color: #D8DEE9">schema</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
     </div>
@@ -4801,7 +4827,7 @@
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="July 20, 2026 13:40:45 UTC"><span class="timeago" datetime="2026-07-20T13:40:45+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="July 20, 2026 13:40:45 UTC">2026-07-20</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="July 20, 2026 14:53:49 UTC"><span class="timeago" datetime="2026-07-20T14:53:49+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="July 20, 2026 14:53:49 UTC">2026-07-20</span>
   </span>
 
     
@@ -4811,7 +4837,7 @@
     <span class="md-icon" title="Created">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="July 20, 2026 13:40:45 UTC"><span class="timeago" datetime="2026-07-20T13:40:45+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="July 20, 2026 13:40:45 UTC">2026-07-20</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="July 20, 2026 14:53:49 UTC"><span class="timeago" datetime="2026-07-20T14:53:49+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="July 20, 2026 14:53:49 UTC">2026-07-20</span>
   </span>
 
     
