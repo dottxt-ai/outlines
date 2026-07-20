@@ -398,3 +398,27 @@ async def test_sglang_async_cfg(async_model):
     result = await async_model("foo?", CFG(EBNF_YES_NO_GRAMMAR), max_tokens=10)
     assert isinstance(result, str)
     assert result in ["yes", "no"]
+
+
+@pytest.mark.parametrize("model_cls", [SGLang, AsyncSGLang])
+def test_sglang_build_client_args_does_not_mutate_caller_extra_body(model_cls):
+    """Caller-provided extra_body must not be mutated across calls (#1931)."""
+    # openai_client / sglang_model_name are module-level mock client globals,
+    # not pytest fixtures (same pattern as test_sglang_build_client_args_merges_*).
+    model = model_cls(openai_client, sglang_model_name)
+
+    shared = {"user_key": "user_value"}
+    snapshot = dict(shared)
+
+    args1 = model._build_client_args(
+        "foo?", output_type=Regex(r"[0-9]{3}"), extra_body=shared
+    )
+    assert shared == snapshot
+    assert args1["extra_body"] is not shared
+    assert args1["extra_body"]["user_key"] == "user_value"
+    assert args1["extra_body"]["regex"] == "([0-9]{3})"
+
+    args2 = model._build_client_args("foo?", output_type=None, extra_body=shared)
+    assert shared == snapshot
+    # unconstrained call must not inherit previous structured-output keys
+    assert "regex" not in args2.get("extra_body", {})
