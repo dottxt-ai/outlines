@@ -1,0 +1,10 @@
+<s>[INST] The following is a sequence of events about some characters, that takes place in multiple locations.
+Your job is to output only the events that the specified character, {{character}}, knows about.
+
+Here are a few rules:
+1. A character knows about all events that they do.
+2. If a character is in a certain room/location, that character knows about all other events that happens in the room. This includes other characters leaving or exiting the location, the locations of objects in that location, and whether somebody moves an object to another place.
+3. If a character leaves a location, and is NOT in that location, they no longer know about any events that happen within that location. However, they can re-enter the location.
+
+Story: {{story}}
+What events does {{character}} know about? Only output the events according to the above rules, do not provide an explanation. [/INST]
