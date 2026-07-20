@@ -905,6 +905,29 @@ def test_dsl_handle_dict_non_string_key_produces_valid_json():
     json.loads('{"1":"a"}')  # does not raise
 
 
+def test_dsl_handle_dict_literal_int_key_produces_valid_json():
+    """Regression test: a Dict key type that resolves to an Alternatives of
+    Regex terms (e.g. Literal[1, 2, 3], all-int members) must also be quoted.
+
+    _handle_dict's key quoting has to reach Regex terms nested inside
+    Alternatives, not just a bare top-level Regex, since Literal ints go
+    through _handle_literal -> Alternatives([Regex("1"), Regex("2"), ...]).
+    """
+    import json
+    from typing import Literal
+
+    dict_type = dict[Literal[1, 2, 3], str]
+    result = _handle_dict(get_args(dict_type), recursion_depth=0)
+    pattern = to_regex(result)
+
+    assert _re.fullmatch(pattern, '{1:"a"}') is None
+    with pytest.raises(json.JSONDecodeError):
+        json.loads('{1:"a"}')
+
+    assert _re.fullmatch(pattern, '{"1":"a"}') is not None
+    json.loads('{"1":"a"}')  # does not raise
+
+
 def test_ensure_json_quoted_string():
     """String terms are wrapped in double-quote delimiters."""
     term = String("hello")
