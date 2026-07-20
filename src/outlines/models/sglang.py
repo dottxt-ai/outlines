@@ -211,7 +211,9 @@ class SGLang(Model):
         messages = self.type_adapter.format_input(model_input)
         output_type_args = self.type_adapter.format_output_type(output_type)
         if "extra_body" in output_type_args:
-            extra_body = inference_kwargs.pop("extra_body", {})
+            # Copy caller extra_body so structured-output keys cannot leak
+            # into subsequent unconstrained calls (#1931).
+            extra_body = dict(inference_kwargs.pop("extra_body", {}) or {})
             extra_body.update(output_type_args.pop("extra_body"))
             inference_kwargs["extra_body"] = extra_body
         inference_kwargs.update(output_type_args)
@@ -360,7 +362,9 @@ class AsyncSGLang(AsyncModel):
         messages = self.type_adapter.format_input(model_input)
         output_type_args = self.type_adapter.format_output_type(output_type)
         if "extra_body" in output_type_args:
-            extra_body = inference_kwargs.pop("extra_body", {})
+            # Copy caller extra_body so structured-output keys cannot leak
+            # into subsequent unconstrained calls (#1931).
+            extra_body = dict(inference_kwargs.pop("extra_body", {}) or {})
             extra_body.update(output_type_args.pop("extra_body"))
             inference_kwargs["extra_body"] = extra_body
         inference_kwargs.update(output_type_args)
