@@ -860,23 +860,15 @@ def _handle_literal(args: tuple) -> Alternatives:
 
 
 def _ensure_json_quoted(term: Term, quote_regex: bool = False) -> Term:
-    """Wrap bare ``String`` terms (and, if ``quote_regex``, ``Regex`` terms) in
-    double quotes for JSON container contexts.
+    """Wrap ``String`` terms in double quotes for JSON container contexts.
 
-    When string literal values (from ``Literal`` or ``Enum``) appear inside
-    container types (``List``, ``Tuple``, ``Dict``), they must be JSON-quoted
-    so the generated regex matches valid JSON.  ``Regex``-based terms (e.g.
-    ``types.string``) already include their own quotes and are left untouched
-    by default.
-
-    ``quote_regex`` additionally quotes bare ``Regex`` terms (``types.integer``,
-    ``types.date``, numeric ``Literal``/``Enum`` members that resolve to
-    ``Regex``, etc.). Needed for ``Dict`` keys, where JSON requires every key
-    to be a quoted string regardless of the Python key type. ``types.string``
-    itself is never re-quoted, since its own pattern already includes the
-    quotes. This also correctly reaches ``Regex`` terms nested inside
-    ``Alternatives`` (e.g. ``Dict[Literal[1, 2], str]``), via the same
-    recursion ``String`` quoting already uses.
+    String literals (from ``Literal``/``Enum``) inside containers must be
+    JSON-quoted so the generated regex matches valid JSON. With
+    ``quote_regex``, bare ``Regex`` terms are quoted too (needed for ``Dict``
+    keys, which JSON always requires to be strings); ``types.string`` is never
+    re-quoted since its pattern already includes the quotes. Both cases recurse
+    into ``Alternatives``, so ``Regex`` members nested there (e.g.
+    ``Dict[Literal[1, 2], str]``) are quoted as well.
     """
     if isinstance(term, String):
         return String(f'"{term.value}"')
@@ -951,13 +943,8 @@ def _handle_tuple(args: tuple, recursion_depth: int) -> Union[Sequence, String]:
 def _handle_dict(args: tuple, recursion_depth: int) -> Sequence:
     if args is None or len(args) != 2:
         raise TypeError(f"Dict must have exactly two type arguments. Got {args}.")
-    # Add dict support with key:value pairs
-    # JSON object keys must always be double-quoted strings, even when the
-    # Python key type is not `str` (e.g. `Dict[int, str]`, `Dict[date, str]`,
-    # or `Dict[Literal[1, 2], str]`, which resolves to an `Alternatives` of
-    # `Regex` terms). `quote_regex=True` covers all of those uniformly,
-    # including through `Alternatives`, via the same recursion `String`
-    # quoting already uses.
+    # JSON object keys must always be quoted strings, so quote the key term
+    # even when the Python key type isn't `str` (e.g. `Dict[int, str]`).
     key_type = _ensure_json_quoted(
         python_types_to_terms(args[0], recursion_depth + 1), quote_regex=True
     )
