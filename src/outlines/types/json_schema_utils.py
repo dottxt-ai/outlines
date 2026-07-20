@@ -180,10 +180,16 @@ def json_schema_dict_to_dataclass(
 
     for property, details in properties.items():
         typ = schema_type_to_python(details, "dataclass")
-        annotations[property] = typ
 
         if property not in required:
+            # Mirror the pydantic converter: a non-required field is nullable,
+            # so wrap the annotation in Optional rather than leaving a bare type
+            # with a None default (which contradicts its own annotation and
+            # loses the optionality the schema declared).
+            typ = Optional[typ]
             defaults[property] = None
+
+        annotations[property] = typ
 
     class_dict = {
         '__annotations__': annotations,

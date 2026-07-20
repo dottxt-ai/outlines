@@ -1,6 +1,6 @@
 import sys
 from dataclasses import is_dataclass
-from typing import Any, List, Literal, Optional, Union
+from typing import Any, List, Literal, Optional, Union, get_type_hints
 
 from pydantic import BaseModel, TypeAdapter
 from pydantic_core import PydanticUndefined
@@ -81,7 +81,8 @@ def test_schema_type_to_python_object():
     assert hasattr(dataclass_result, "__dataclass_fields__")
     assert dataclass_result.__annotations__["name"] is str
     assert not hasattr(dataclass_result, "name")
-    assert dataclass_result.__annotations__["age"] is int
+    # Non-required field is nullable, matching the pydantic/typeddict callers above.
+    assert dataclass_result.__annotations__["age"] == Optional[int]
     assert dataclass_result.age is None
 
 
@@ -337,7 +338,7 @@ def test_json_schema_dict_to_dataclass_basic():
 
     annotations = result.__annotations__
     assert annotations["name"] is str
-    assert annotations["age"] is int
+    assert annotations["age"] == Optional[int]
     assert not hasattr(result, "name")
     assert result.age is None
 
@@ -362,7 +363,8 @@ def test_json_schema_dict_to_dataclass_array_enum():
     assert result.__name__ == "AnonymousDataclass"
 
     annotations = result.__annotations__
-    assert annotations["tags"] == List[str]
+    # `tags` is not required, so its annotation is nullable.
+    assert annotations["tags"] == Optional[List[str]]
     assert annotations["status"] == Literal[("active", "inactive", "pending")]
     assert not hasattr(result, "status")
     assert result.tags is None
@@ -394,7 +396,7 @@ def test_json_schema_dict_to_dataclass_nested_object():
 
     field = annotations["field"]
     assert field.__annotations__["name"] is str
-    assert field.__annotations__["age"] is int
+    assert field.__annotations__["age"] == Optional[int]
     assert not hasattr(field, "name")
     assert field.age is None
 
@@ -415,3 +417,39 @@ def test_json_schema_dict_to_dataclass_optional_before_required():
     instance = result(user_id=5)
     assert instance.user_id == 5
     assert instance.nickname is None
+
+
+def test_json_schema_dict_to_dataclass_optional_field_is_nullable():
+    # A non-required field must be annotated Optional[...], not a bare type with
+    # a None default. Otherwise the annotation and default contradict each other
+    # and the dataclass converter loses the optionality the pydantic converter
+    # keeps, so the two disagree for the same input schema.
+    schema = {
+        "type": "object",
+        "properties": {
+            "name": {"type": "string"},
+            "age": {"type": "integer"},
+        },
+        "required": ["name"],
+    }
+
+    dataclass_result = json_schema_dict_to_dataclass(schema)
+    hints = get_type_hints(dataclass_result)
+    assert hints["age"] == Optional[int]
+
+    # The three converters are offered for the same schema, so they must agree
+    # on whether the optional field accepts null. Compare against the pydantic
+    # converter, which already produces a nullable field.
+    def allows_null(field_schema: dict) -> bool:
+        if field_schema.get("type") == "null":
+            return True
+        if "anyOf" in field_schema:
+            return any(m.get("type") == "null" for m in field_schema["anyOf"])
+        return False
+
+    dataclass_age = TypeAdapter(dataclass_result).json_schema()["properties"]["age"]
+    pydantic_age = json_schema_dict_to_pydantic(schema).model_json_schema()[
+        "properties"
+    ]["age"]
+    assert allows_null(dataclass_age)
+    assert allows_null(pydantic_age)
