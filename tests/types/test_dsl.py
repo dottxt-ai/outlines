@@ -885,12 +885,8 @@ def test_dsl_handle_dict():
     assert result.terms[1].term.terms[0] == quoted_int_key
     assert result.terms[1].term.terms[2] == types.string
 
-
-def test_dsl_handle_dict_literal_int_key_quoted():
-    """A Dict key type that resolves to an Alternatives of Regex terms (e.g.
-    Literal[1, 2, 3]) must have each member quoted, not just a bare top-level
-    Regex. Literal ints go through _handle_literal -> Alternatives([Regex("1"),
-    ...]), so the quoting has to reach Regex terms nested inside Alternatives."""
+    # non-str key nested in an Alternatives (Literal ints go through
+    # _handle_literal): each member must be quoted, not just a top-level Regex
     dict_type = dict[Literal[1, 2, 3], str]
     result = _handle_dict(get_args(dict_type), recursion_depth=0)
     key_term = result.terms[1].term.terms[0]
