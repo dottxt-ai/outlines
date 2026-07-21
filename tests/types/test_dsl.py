@@ -957,10 +957,14 @@ def test_ensure_json_quoted_sequence_passthrough():
 
 
 def test_ensure_json_quoted_regex_passthrough():
-    """Regex terms (e.g. types.string) already include quotes internally."""
+    """Regex terms (except container booleans) pass through unchanged."""
     assert _ensure_json_quoted(types.string) is types.string
     assert _ensure_json_quoted(types.integer) is types.integer
-    assert _ensure_json_quoted(types.boolean) is types.boolean
+
+
+def test_ensure_json_quoted_boolean_uses_json_literals():
+    """Boolean Regex terms are lowercased in JSON container contexts."""
+    assert _ensure_json_quoted(types.boolean) == Regex("(true|false)")
 
 
 def test_list_single_literal():
@@ -999,11 +1003,19 @@ def test_tuple_ellipsis_literal_quoted():
         assert branch.value.startswith('"') and branch.value.endswith('"')
 
 
-def test_list_of_bool_unchanged():
-    """Boolean types in List are not wrapped in quotes."""
+def test_list_of_bool_uses_json_literals():
+    """Boolean types in List use lowercase JSON literals."""
     list_type = list[bool]
     result = _handle_list(get_args(list_type), recursion_depth=0)
-    assert result.terms[1] == types.boolean
+    assert result.terms[1] == Regex("(true|false)")
+
+
+def test_literal_bool_in_container_uses_json_literals():
+    """Boolean Literal values in containers use lowercase JSON literals."""
+    pattern = to_regex(python_types_to_terms(list[Literal[True, False]]))
+    assert _re.fullmatch(pattern, "[true]")
+    assert _re.fullmatch(pattern, "[false, true]")
+    assert not _re.fullmatch(pattern, "[True]")
 
 
 def test_dict_int_value_unchanged():
