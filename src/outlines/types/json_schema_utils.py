@@ -43,6 +43,9 @@ def schema_type_to_python(
         # Pydantic emits nested models as ``{"$ref": "#/$defs/Name"}`` with the
         # referenced schema stored under the root ``$defs``. Resolve it so the
         # nested structure is preserved instead of silently widening to ``Any``.
+        # Only local ``$defs``/``definitions`` refs are handled (we take the last
+        # path segment); external documents and deeper ``$defs`` paths aren't
+        # what Pydantic emits, so they fall through to ``Any`` below.
         ref_name = schema["$ref"].split("/")[-1]
         resolved = (defs or {}).get(ref_name)
         if resolved is None or ref_name in seen:
