@@ -860,15 +860,23 @@ def _handle_literal(args: tuple) -> Alternatives:
 
 
 def _ensure_json_quoted(term: Term) -> Term:
-    """Wrap bare ``String`` terms in double quotes for JSON container contexts.
+    """Adapt terms for JSON container contexts.
 
     When string literal values (from ``Literal`` or ``Enum``) appear inside
     container types (``List``, ``Tuple``, ``Dict``), they must be JSON-quoted
-    so the generated regex matches valid JSON.  ``Regex``-based terms (e.g.
-    ``types.string``) already include their own quotes and are left untouched.
+    so the generated regex matches valid JSON. Boolean values also need their
+    JSON spelling inside containers, while the standalone ``types.boolean``
+    remains Python-style for backward compatibility.
     """
     if isinstance(term, String):
         return String(f'"{term.value}"')
+    if isinstance(term, Regex):
+        if term.pattern == "(True|False)":
+            return Regex("(true|false)")
+        if term.pattern == "True":
+            return Regex("true")
+        if term.pattern == "False":
+            return Regex("false")
     if isinstance(term, Alternatives):
         quoted = [_ensure_json_quoted(t) for t in term.terms]
         return Alternatives(quoted)
