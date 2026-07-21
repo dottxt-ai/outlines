@@ -704,6 +704,23 @@ def test_dsl_literal_bool():
     assert result_both == Alternatives([Regex("True"), Regex("False")])
 
 
+def test_dsl_literal_none():
+    # Literal[None] previously raised "Type None is currently not supported"
+    # because the None value was recursed into as if it were a type. It should
+    # resolve to the bare ``None`` keyword, the same way Optional/Union render
+    # their None member.
+    result_none = python_types_to_terms(Literal[None])
+    assert isinstance(result_none, Alternatives)
+    assert result_none.terms == [Regex("None")]
+
+    # None mixed with other literal values must resolve too.
+    result_mixed = python_types_to_terms(Literal["active", None])
+    assert result_mixed == Alternatives([String("active"), Regex("None")])
+
+    # A bare None value maps to the same bare keyword as it does in a union.
+    assert python_types_to_terms(None) == Regex("None")
+
+
 def test_dsl_numeric_literal_escapes_regex_metacharacters():
     # A float's ``.`` must match literally, not act as a regex wildcard.
     term = python_types_to_terms(1.5)
@@ -1184,6 +1201,20 @@ def test_e2e_optional_none_not_quoted_in_containers():
     literal_pattern = to_regex(python_types_to_terms(list[Literal["None"]]))
     assert _re.fullmatch(literal_pattern, '["None"]')
     assert not _re.fullmatch(literal_pattern, "[None]")
+
+
+def test_e2e_list_literal_none():
+    """``Literal[None]`` renders the bare ``None`` keyword, both standalone and
+    nested in a container, consistently with ``Optional``/``Union``."""
+    standalone = to_regex(python_types_to_terms(Literal[None]))
+    assert _re.fullmatch(standalone, "None")
+    assert not _re.fullmatch(standalone, '"None"')
+
+    list_pattern = to_regex(python_types_to_terms(list[Literal["yes", None]]))
+    assert _re.fullmatch(list_pattern, "[None]")
+    assert _re.fullmatch(list_pattern, '["yes", None]')
+    # The None branch stays a bare keyword and is not JSON-quoted like a string.
+    assert not _re.fullmatch(list_pattern, '["None"]')
 
 
 def test_to_regex():
