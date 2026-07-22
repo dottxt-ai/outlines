@@ -2,7 +2,8 @@ import sys
 from dataclasses import is_dataclass
 from typing import Any, List, Literal, Optional, Union
 
-from pydantic import BaseModel, TypeAdapter
+import pytest
+from pydantic import BaseModel, TypeAdapter, ValidationError
 from pydantic_core import PydanticUndefined
 
 from outlines.types.json_schema_utils import (
@@ -447,10 +448,7 @@ def test_json_schema_dict_to_pydantic_optional_not_nullable():
     # omit ok, null rejected
     assert M(name="x").age is None
     assert M(name="x", age=3).age == 3
-    try:
+    with pytest.raises(ValidationError):
         M(name="x", age=None)
-        raise AssertionError("expected validation error for age=null")
-    except Exception:
-        pass
     # note may be null because schema allows it
     assert M(name="x", note=None).note is None
