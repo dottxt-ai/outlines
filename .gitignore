@@ -16,3 +16,13 @@ build
 docs/build
 logs
 .worktrees/
+
+# AI agent config
+.claude/
+.cursor/
+.cursorrules
+.aider*
+.windsurfrules
+.continue/
+.gemini/
+.roo/
