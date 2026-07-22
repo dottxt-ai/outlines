@@ -146,7 +146,10 @@ def json_schema_dict_to_pydantic(
     for property, details in properties.items():
         typ = schema_type_to_python(details, "pydantic")
         if property not in required:
-            field_definitions[property] = (Optional[typ], None)
+            # Omittable key, but keep the value type non-nullable unless the
+            # schema itself allows null (e.g. type: ["integer","null"]).
+            # Optional[typ] would widen generation to accept null.
+            field_definitions[property] = (typ, None)
         else:
             field_definitions[property] = (typ, ...)
 
