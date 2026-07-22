@@ -790,27 +790,36 @@ def test_dsl_handle_list():
     with pytest.raises(TypeError, match=r"got \(<class 'int'>, <class 'str'>\)"):
         _handle_list((int, str), recursion_depth=0)
 
-    # simple type
+    # simple type: contents wrapped in Optional so the empty list is allowed
     list_type = list[int]
     result = _handle_list(get_args(list_type), recursion_depth=0)
     assert isinstance(result, Sequence)
-    assert len(result.terms) == 4
+    assert len(result.terms) == 3
     assert result.terms[0] == String("[")
-    assert result.terms[1] == types.integer
-    assert isinstance(result.terms[2], KleeneStar)
-    assert result.terms[2].term == Sequence([String(", "), types.integer])
-    assert result.terms[3] == String("]")
+    assert result.terms[1] == Optional(
+        Sequence(
+            [types.integer, KleeneStar(Sequence([String(", "), types.integer]))]
+        )
+    )
+    assert result.terms[2] == String("]")
 
     # more complex type
     list_type = list[Union[int, str]]
     result = _handle_list(get_args(list_type), recursion_depth=0)
+    union = _handle_union(get_args(Union[int, str]), recursion_depth=0)
     assert isinstance(result, Sequence)
-    assert len(result.terms) == 4
+    assert len(result.terms) == 3
     assert result.terms[0] == String("[")
-    assert result.terms[1] == _handle_union(get_args(Union[int, str]), recursion_depth=0)
-    assert isinstance(result.terms[2], KleeneStar)
-    assert result.terms[2].term == Sequence([String(", "), _handle_union(get_args(Union[int, str]), recursion_depth=0)])
-    assert result.terms[3] == String("]")
+    assert result.terms[1] == Optional(
+        Sequence([union, KleeneStar(Sequence([String(", "), union]))])
+    )
+    assert result.terms[2] == String("]")
+
+    # the generated regex accepts the empty list as well as non-empty ones
+    pattern = to_regex(_handle_list((int,), recursion_depth=0))
+    assert _re.fullmatch(pattern, "[]") is not None
+    assert _re.fullmatch(pattern, "[1]") is not None
+    assert _re.fullmatch(pattern, "[1, 2]") is not None
 
 
 def test_dsl_handle_tuple():
@@ -820,16 +829,24 @@ def test_dsl_handle_tuple():
     assert isinstance(result, String)
     assert result.value == "()"
 
-    # tuple with ellipsis
+    # tuple with ellipsis: contents wrapped in Optional so the empty tuple is allowed
     tuple_type = tuple[int, ...]
     result = _handle_tuple(get_args(tuple_type), recursion_depth=0)
     assert isinstance(result, Sequence)
-    assert len(result.terms) == 4
+    assert len(result.terms) == 3
     assert result.terms[0] == String("(")
-    assert result.terms[1] == types.integer
-    assert isinstance(result.terms[2], KleeneStar)
-    assert result.terms[2].term == Sequence([String(", "), types.integer])
-    assert result.terms[3] == String(")")
+    assert result.terms[1] == Optional(
+        Sequence(
+            [types.integer, KleeneStar(Sequence([String(", "), types.integer]))]
+        )
+    )
+    assert result.terms[2] == String(")")
+
+    # the generated regex accepts the empty variadic tuple as well as non-empty ones
+    pattern = to_regex(result)
+    assert _re.fullmatch(pattern, "()") is not None
+    assert _re.fullmatch(pattern, "(1)") is not None
+    assert _re.fullmatch(pattern, "(1, 2)") is not None
 
     # tuple with fixed length
     tuple_type = tuple[int, str]
@@ -930,7 +947,9 @@ def test_list_of_literals_quoted():
     result = _handle_list(get_args(list_type), recursion_depth=0)
     assert isinstance(result, Sequence)
     assert result.terms[0] == String("[")
-    item = result.terms[1]
+    # Contents are wrapped in Optional(Sequence([item, KleeneStar(...)])).
+    assert isinstance(result.terms[1], Optional)
+    item = result.terms[1].term.terms[0]
     assert isinstance(item, Alternatives)
     for branch in item.terms:
         assert isinstance(branch, String)
@@ -967,7 +986,8 @@ def test_list_of_int_unchanged():
     """Non-string types in List are not wrapped in quotes."""
     list_type = list[int]
     result = _handle_list(get_args(list_type), recursion_depth=0)
-    assert result.terms[1] == types.integer
+    # Contents are wrapped in Optional(Sequence([item, KleeneStar(...)])).
+    assert result.terms[1].term.terms[0] == types.integer
 
 
 def test_ensure_json_quoted_sequence_passthrough():
@@ -987,7 +1007,7 @@ def test_list_single_literal():
     """A single-variant Literal inside list is still quoted."""
     list_type = list[Literal["only"]]
     result = _handle_list(get_args(list_type), recursion_depth=0)
-    item = result.terms[1]
+    item = result.terms[1].term.terms[0]
     assert isinstance(item, Alternatives)
     branch = item.terms[0]
     assert isinstance(branch, String)
@@ -1012,7 +1032,7 @@ def test_tuple_ellipsis_literal_quoted():
     tuple_type = Tuple[Literal["a", "b"], ...]
     result = _handle_tuple(get_args(tuple_type), recursion_depth=0)
     assert isinstance(result, Sequence)
-    item = result.terms[1]
+    item = result.terms[1].term.terms[0]
     assert isinstance(item, Alternatives)
     for branch in item.terms:
         assert isinstance(branch, String)
@@ -1023,7 +1043,7 @@ def test_list_of_bool_unchanged():
     """Boolean types in List are not wrapped in quotes."""
     list_type = list[bool]
     result = _handle_list(get_args(list_type), recursion_depth=0)
-    assert result.terms[1] == types.boolean
+    assert result.terms[1].term.terms[0] == types.boolean
 
 
 def test_dict_int_value_unchanged():
@@ -1056,7 +1076,7 @@ def test_literal_with_special_characters():
     """Literal strings with spaces and punctuation are quoted correctly."""
     list_type = list[Literal["hello world", "foo-bar"]]
     result = _handle_list(get_args(list_type), recursion_depth=0)
-    item = result.terms[1]
+    item = result.terms[1].term.terms[0]
     assert isinstance(item, Alternatives)
     assert len(item.terms) == 2
     for branch in item.terms:
@@ -1089,11 +1109,19 @@ def test_e2e_standalone_literal_no_quotes():
 
 
 def test_e2e_list_literal_empty_string():
-    """Empty string literal inside List produces quoted empty string."""
+    """Empty string literal inside List produces quoted empty string.
+
+    The list-with-one-empty-string ``[""]`` is distinct from the empty list
+    ``[]``; both are valid. ``[""]`` must have quotes around the empty string,
+    and ``[]`` is a valid empty list of the type.
+    """
     pattern = to_regex(python_types_to_terms(list[Literal[""]]))
     assert _re.fullmatch(pattern, '[""]')
     assert _re.fullmatch(pattern, '["", ""]')
-    assert not _re.fullmatch(pattern, "[]")
+    # The empty list is a valid value of list[Literal[""]] and must match.
+    assert _re.fullmatch(pattern, "[]")
+    # An unquoted, non-empty item is still rejected.
+    assert not _re.fullmatch(pattern, "[x]")
 
 
 def test_e2e_list_mixed_literal_string_and_int():

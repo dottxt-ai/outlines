@@ -909,8 +909,15 @@ def _handle_list(args: tuple, recursion_depth: int) -> Sequence:
     return Sequence(
         [
             String("["),
-            item_type,
-            KleeneStar(Sequence([String(", "), item_type])),
+            # Wrap the contents in Optional so the empty list ``[]`` is allowed,
+            # matching ``_handle_dict`` (which accepts ``{}``) and the JSON-schema
+            # path. Without this, a bare ``list[T]`` output type forces at least
+            # one element.
+            Optional(
+                Sequence(
+                    [item_type, KleeneStar(Sequence([String(", "), item_type]))]
+                )
+            ),
             String("]"),
         ]
     )
@@ -924,8 +931,14 @@ def _handle_tuple(args: tuple, recursion_depth: int) -> Union[Sequence, String]:
         return Sequence(
             [
                 String("("),
-                item_term,
-                KleeneStar(Sequence([String(", "), item_term])),
+                # Variadic tuple ``Tuple[T, ...]`` allows the empty tuple ``()``,
+                # so wrap the contents in Optional (same as ``_handle_dict`` and
+                # the list branch above).
+                Optional(
+                    Sequence(
+                        [item_term, KleeneStar(Sequence([String(", "), item_term]))]
+                    )
+                ),
                 String(")"),
             ]
         )
