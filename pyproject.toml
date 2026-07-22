@@ -41,7 +41,7 @@ anthropic = ["anthropic"]
 dottxt = ["dottxt"]
 gemini = ["google-genai"]
 llamacpp = ["huggingface-hub", "llama-cpp-python", "numba"]
-mlxlm = ["datasets", "mlx", "mlx-lm"]
+mlxlm = ["datasets", "mlx", "mlx-lm", "mlx-vlm"]
 lmstudio = ["lmstudio"]
 ollama = ["ollama"]
 openai = ["openai"]
@@ -67,6 +67,7 @@ test = [
     "responses",
     "llama-cpp-python",
     "mlx-lm>=0.19.2; platform_machine == 'arm64' and sys_platform == 'darwin'",
+    "mlx-vlm; platform_machine == 'arm64' and sys_platform == 'darwin'",
     "huggingface_hub",
     "openai>=1.0.0",
     "datasets",
@@ -148,6 +149,7 @@ module = [
     "mistralai.*",
     "mamba_ssm.*",
     "mlx_lm.*",
+    "mlx_vlm.*",
     "mlx.*",
     "numpy.*",
     "cloudpickle.*",
