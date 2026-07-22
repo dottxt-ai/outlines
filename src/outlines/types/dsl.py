@@ -766,6 +766,13 @@ def python_types_to_terms(ptype: Any, recursion_depth: int = 0) -> Term:
         return types.datetime
 
     # Basic type instances
+    if ptype is None:
+        # ``None`` used as a literal value (e.g. ``Literal[None]`` or a bare
+        # ``None`` member) maps to the bare ``None`` keyword, mirroring how
+        # ``Optional``/``Union`` render their None member in ``_handle_union``.
+        # Kept as a ``Regex`` (like ``True``/``False``) so it stays unquoted
+        # when the value ends up nested inside a container type.
+        return Regex("None")
     if isinstance(ptype, bool):
         return Regex(str(ptype))
     elif is_str_instance(ptype):
