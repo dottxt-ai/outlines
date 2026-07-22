@@ -16,7 +16,7 @@ from typing import (
 import jsonschema
 import pytest
 from genson import SchemaBuilder
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 
 from outlines import grammars, types
 from outlines.types.dsl import (
@@ -203,6 +203,20 @@ def test_dsl_term_methods():
     assert a._display_children("") == ""
 
     assert a.__str__() == "└── String('a')\n"
+
+
+def test_dsl_term_pydantic_rejects_non_string_values():
+    digits = Regex("[0-9]+")
+
+    class Model(BaseModel):
+        field: digits
+
+    payload = Model(field="123")
+    assert payload.field == "123"
+    assert isinstance(payload.field, str)
+    with pytest.raises(ValidationError):
+        Model(field=123)
+
 
 def test_dsl_sequence():
     a = String("a")
