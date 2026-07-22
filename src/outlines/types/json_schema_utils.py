@@ -42,6 +42,14 @@ def schema_type_to_python(
         # widening the value back to its bare type.
         return Literal[schema["const"]]
 
+    for keyword in ("anyOf", "oneOf"):
+        if keyword in schema:
+            members = tuple(
+                schema_type_to_python(member, caller_target_type)
+                for member in schema[keyword]
+            )
+            return Union[members] if members else Any  # type: ignore
+
     t = schema.get("type")
 
     if isinstance(t, list):
