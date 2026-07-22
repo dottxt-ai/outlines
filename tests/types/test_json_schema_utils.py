@@ -1,6 +1,6 @@
 import sys
 from dataclasses import is_dataclass
-from typing import Any, List, Literal, Optional, Union
+from typing import Any, List, Literal, Optional, Union, get_args, get_origin
 
 from pydantic import BaseModel, TypeAdapter
 from pydantic_core import PydanticUndefined
@@ -319,6 +319,96 @@ def test_json_schema_dict_to_pydantic_nested_object():
     assert field.model_fields["age"].annotation == Optional[int]
     assert field.model_fields["name"].default == PydanticUndefined
     assert field.model_fields["age"].default is None
+
+
+def test_schema_type_to_python_ref():
+    # A $ref is resolved against the provided defs instead of widening to Any.
+    defs = {
+        "Address": {
+            "type": "object",
+            "properties": {"city": {"type": "string"}},
+            "required": ["city"],
+        }
+    }
+    result = schema_type_to_python({"$ref": "#/$defs/Address"}, "pydantic", defs)
+    assert issubclass(result, BaseModel)
+    assert result.model_fields["city"].annotation is str
+
+    # A $ref that cannot be resolved falls back to Any rather than crashing.
+    assert schema_type_to_python({"$ref": "#/$defs/Missing"}, "pydantic", {}) is Any
+    assert schema_type_to_python({"$ref": "#/$defs/Missing"}, "pydantic") is Any
+
+
+def test_json_schema_dict_to_pydantic_ref():
+    # This is the shape Pydantic emits for nested models: the nested schema is
+    # stored under $defs and referenced with $ref. Before $ref resolution these
+    # fields silently degraded to Any, dropping the nested constraint.
+    class Address(BaseModel):
+        city: str
+        zip: str
+
+    class Person(BaseModel):
+        name: str
+        address: Address
+        tags: List[Address]
+
+    result = json_schema_dict_to_pydantic(Person.model_json_schema())
+
+    address = result.model_fields["address"].annotation
+    assert issubclass(address, BaseModel)
+    assert address.model_fields["city"].annotation is str
+    assert address.model_fields["zip"].annotation is str
+
+    tags = result.model_fields["tags"].annotation
+    assert get_origin(tags) is list
+    item = get_args(tags)[0]
+    assert issubclass(item, BaseModel)
+    assert set(item.model_fields) == {"city", "zip"}
+
+    # The reconstructed model enforces the nested structure end to end.
+    result(name="x", address={"city": "NY", "zip": "1"}, tags=[{"city": "A", "zip": "2"}])
+
+
+def test_json_schema_dict_to_pydantic_recursive_ref():
+    # A self-referential model must not send $ref resolution into infinite
+    # recursion; the cyclic edge degrades to Any while the rest resolves.
+    class Node(BaseModel):
+        value: int
+        children: List["Node"] = []
+
+    class Tree(BaseModel):
+        root: Node
+
+    result = json_schema_dict_to_pydantic(Tree.model_json_schema())
+    node = result.model_fields["root"].annotation
+    assert issubclass(node, BaseModel)
+    assert node.model_fields["value"].annotation is int
+
+
+def test_json_schema_dict_to_typeddict_ref():
+    class Address(BaseModel):
+        city: str
+
+    class Person(BaseModel):
+        address: Address
+
+    result = json_schema_dict_to_typeddict(Person.model_json_schema())
+    address = result.__annotations__["address"]
+    assert isinstance(address, _TypedDictMeta)
+    assert address.__annotations__["city"] is str
+
+
+def test_json_schema_dict_to_dataclass_ref():
+    class Address(BaseModel):
+        city: str
+
+    class Person(BaseModel):
+        address: Address
+
+    result = json_schema_dict_to_dataclass(Person.model_json_schema())
+    address = result.__annotations__["address"]
+    assert is_dataclass(address)
+    assert address.__annotations__["city"] is str
 
 
 def test_json_schema_dict_to_dataclass_basic():
