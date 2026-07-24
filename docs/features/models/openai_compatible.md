@@ -46,6 +46,7 @@ Many providers offer OpenAI-compatible endpoints:
 - **Fireworks AI**
 - **Perplexity**
 - **Local servers** (LocalAI, etc.)
+- **[DaoXE](https://daoxe.com)** (multi-model multi-protocol gateway)
 
 ## Configuration Examples
 
@@ -62,6 +63,24 @@ client = openai.OpenAI(
 
 model = outlines.from_openai(client, "provider-model-name")
 ```
+
+### DaoXE
+```python
+import os
+import openai
+import outlines
+
+# Multi-model multi-protocol gateway — Chat Completions path
+# Exact model ID from your account: GET /v1/models
+client = openai.OpenAI(
+    base_url="https://daoxe.com/v1",
+    api_key=os.environ["DAOXE_API_KEY"],
+)
+
+model = outlines.from_openai(client, os.environ["DAOXE_MODEL"])
+```
+
+DaoXE also exposes OpenAI Responses and Anthropic Messages for other clients; this page uses the OpenAI-compatible Chat Completions path. Examples: https://github.com/seven7763/DaoXE-AI
 
 ### With Authentication Headers
 ```python
