@@ -43,7 +43,7 @@ def schema_type_to_python(
         return Literal[schema["const"]]
 
     for keyword in ("anyOf", "oneOf"):
-        if keyword in schema:
+        if keyword in schema and "type" not in schema:
             members = tuple(
                 schema_type_to_python(member, caller_target_type)
                 for member in schema[keyword]
