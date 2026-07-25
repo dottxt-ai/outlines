@@ -50,6 +50,25 @@ def test_json_schema_dict_to_pydantic_union_keywords():
     assert result(value="one").model_dump()["value"] == "one"
 
 
+def test_schema_type_to_python_union_keyword_with_outer_type():
+    """Sibling ``type`` constraints must not be widened by union branches."""
+
+    assert (
+        schema_type_to_python(
+            {"type": "string", "anyOf": [{"minLength": 1}, {"const": "x"}]},
+            "pydantic",
+        )
+        is str
+    )
+    assert (
+        schema_type_to_python(
+            {"type": "string", "oneOf": [{"const": "x"}, {"const": 1}]},
+            "pydantic",
+        )
+        is str
+    )
+
+
 def test_schema_type_to_python_enum():
     schema = {"enum": ["red", "green", "blue"]}
     result = schema_type_to_python(schema, "pydantic")
