@@ -1036,6 +1036,21 @@ def test_dict_int_value_unchanged():
     assert value_term == types.integer
 
 
+def test_list_of_date_quoted():
+    """Date types in List are wrapped in quotes: JSON has no date literal."""
+    result = _handle_list(get_args(list[datetime.date]), recursion_depth=0)
+    assert result.terms[1] == Sequence([String('"'), types.date, String('"')])
+
+
+def test_dict_datetime_value_quoted():
+    """Datetime value type in Dict is wrapped in quotes."""
+    result = _handle_dict(get_args(dict[str, datetime.datetime]), recursion_depth=0)
+    inner = result.terms[1]
+    assert isinstance(inner, Optional)
+    value_term = inner.term.terms[2]
+    assert value_term == Sequence([String('"'), types.datetime, String('"')])
+
+
 def test_ensure_json_quoted_nested_alternatives():
     """Nested Alternatives are recursively quoted."""
     inner_alt = Alternatives([String("x"), String("y")])
@@ -1204,6 +1219,53 @@ def test_e2e_optional_none_not_quoted_in_containers():
     literal_pattern = to_regex(python_types_to_terms(list[Literal["None"]]))
     assert _re.fullmatch(literal_pattern, '["None"]')
     assert not _re.fullmatch(literal_pattern, "[None]")
+
+
+@pytest.mark.parametrize(
+    "ptype,value",
+    [
+        (datetime.date, "2024-01-01"),
+        (datetime.time, "12:30:00"),
+        (datetime.datetime, "2024-01-01 12:30:00"),
+    ],
+)
+def test_e2e_temporal_types_quoted_in_containers(ptype, value):
+    """Dates, times and datetimes are JSON strings, so containers must quote
+    them. Standalone they stay bare, like the other non-string types."""
+    standalone = to_regex(python_types_to_terms(ptype))
+    assert _re.fullmatch(standalone, value)
+    assert not _re.fullmatch(standalone, f'"{value}"')
+
+    list_pattern = to_regex(python_types_to_terms(list[ptype]))
+    assert _re.fullmatch(list_pattern, f'["{value}"]')
+    assert _re.fullmatch(list_pattern, f'["{value}", "{value}"]')
+    assert not _re.fullmatch(list_pattern, f"[{value}]")
+
+    dict_pattern = to_regex(python_types_to_terms(dict[str, ptype]))
+    assert _re.fullmatch(dict_pattern, f'{{"a":"{value}"}}')
+    assert not _re.fullmatch(dict_pattern, f'{{"a":{value}}}')
+
+    tuple_pattern = to_regex(python_types_to_terms(Tuple[ptype, ...]))
+    assert _re.fullmatch(tuple_pattern, f'("{value}")')
+    assert not _re.fullmatch(tuple_pattern, f"({value})")
+
+
+def test_e2e_user_regex_sharing_date_pattern_not_quoted():
+    """Only the built-in temporal terms are quoted. A user's own ``Regex`` that
+    happens to reuse the date pattern keeps generating a bare value."""
+    pattern = to_regex(python_types_to_terms(list[Regex(types.date.pattern)]))
+    assert _re.fullmatch(pattern, "[2024-01-01]")
+    assert not _re.fullmatch(pattern, '["2024-01-01"]')
+
+
+def test_e2e_optional_date_quoted_in_containers():
+    """``Optional[date]`` inside a container quotes the date but leaves the
+    bare ``None`` keyword alone."""
+    pattern = to_regex(python_types_to_terms(list[PyOptional[datetime.date]]))
+    assert _re.fullmatch(pattern, '["2024-01-01"]')
+    assert _re.fullmatch(pattern, '["2024-01-01", None]')
+    assert not _re.fullmatch(pattern, "[2024-01-01]")
+    assert not _re.fullmatch(pattern, '["None"]')
 
 
 def test_to_regex():

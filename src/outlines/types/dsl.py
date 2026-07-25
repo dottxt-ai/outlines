@@ -863,20 +863,29 @@ def _ensure_json_quoted(term: Term, quote_regex: bool = False) -> Term:
     """Wrap ``String`` terms in double quotes for JSON container contexts.
 
     String literals (from ``Literal``/``Enum``) inside containers must be
-    JSON-quoted so the generated regex matches valid JSON. With
-    ``quote_regex``, bare ``Regex`` terms are quoted too (needed for ``Dict``
-    keys, which JSON always requires to be strings); ``types.string`` is never
-    re-quoted since its pattern already includes the quotes. Both cases recurse
-    into ``Alternatives``, so ``Regex`` members nested there (e.g.
-    ``Dict[Literal[1, 2], str]``) are quoted as well.
+    JSON-quoted so the generated regex matches valid JSON. Date, time and
+    datetime terms are quoted for the same reason: JSON has no literal syntax
+    for them. With ``quote_regex``, every other bare ``Regex`` term is quoted
+    too (needed for ``Dict`` keys, which JSON always requires to be strings);
+    ``types.string`` is never re-quoted since its pattern already includes the
+    quotes. All cases recurse into ``Alternatives``, so ``Regex`` members
+    nested there (e.g. ``Dict[Literal[1, 2], str]``) are quoted as well.
     """
     if isinstance(term, String):
         return String(f'"{term.value}"')
     if isinstance(term, Alternatives):
         quoted = [_ensure_json_quoted(t, quote_regex) for t in term.terms]
         return Alternatives(quoted)
-    if quote_regex and isinstance(term, Regex) and term.pattern != types.string.pattern:
-        return Sequence([String('"'), term, String('"')])
+    if isinstance(term, Regex) and term.pattern != types.string.pattern:
+        # `types` is read here rather than at module level because
+        # `outlines.types` imports this module. Matched by identity, since
+        # `Regex` equality is pattern-based and would also catch a user's own
+        # term that happens to share the pattern.
+        if quote_regex or any(
+            term is temporal
+            for temporal in (types.date, types.time, types.datetime)
+        ):
+            return Sequence([String('"'), term, String('"')])
     return term
 
 
