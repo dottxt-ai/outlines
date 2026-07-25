@@ -863,13 +863,18 @@ def _ensure_json_quoted(term: Term, quote_regex: bool = False) -> Term:
     """Wrap ``String`` terms in double quotes for JSON container contexts.
 
     String literals (from ``Literal``/``Enum``) inside containers must be
-    JSON-quoted so the generated regex matches valid JSON. Date, time and
-    datetime terms are quoted for the same reason: JSON has no literal syntax
+    JSON-quoted so the generated regex matches valid JSON. The temporal terms
+    ``python_types_to_terms`` returns for a Python type (``date``, ``time``,
+    ``datetime``) are quoted for the same reason: JSON has no literal syntax
     for them. With ``quote_regex``, every other bare ``Regex`` term is quoted
     too (needed for ``Dict`` keys, which JSON always requires to be strings);
     ``types.string`` is never re-quoted since its pattern already includes the
     quotes. All cases recurse into ``Alternatives``, so ``Regex`` members
     nested there (e.g. ``Dict[Literal[1, 2], str]``) are quoted as well.
+
+    Built-in terms passed straight through (e.g. ``list[types.email]``) are
+    not covered: they reach this function via the ``isinstance(ptype, Term)``
+    shortcut in ``python_types_to_terms`` and stay bare. See issue #1962.
     """
     if isinstance(term, String):
         return String(f'"{term.value}"')
