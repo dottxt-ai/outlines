@@ -209,3 +209,26 @@ def test_json_schema_logits_processor_rejects_whitespace_pattern():
     schema = '{"type": "object"}'
     with pytest.raises(NotImplementedError, match="whitespace_pattern"):
         backend.get_json_schema_logits_processor(schema, whitespace_pattern=" ")
+
+
+def test_cfg_logits_processor_rejects_literal_matching_special_token():
+    """A grammar literal exactly matching a special token (e.g. the `<think>`
+    tag on reasoning-model tokenizers) can make llguidance's parser fail with
+    an opaque `ParserTooComplex` error at generation time, since the model
+    may emit the literal as a single atomic special token that the parser
+    can't match against a literal-string terminal. The backend should catch
+    this at grammar-compile time instead. See #1771.
+    """
+    model = model_transformers()
+    backend = LLGuidanceBackend(model)
+    grammar = '?start: "<|endoftext|>" "yes"'
+    with pytest.raises(ValueError, match="<\\|endoftext\\|>"):
+        backend.get_cfg_logits_processor(grammar)
+
+
+def test_cfg_logits_processor_allows_literal_not_matching_special_token(cfg_ebnf):
+    """A grammar with no literal matching a special token compiles as usual."""
+    model = model_transformers()
+    backend = LLGuidanceBackend(model)
+    processor = backend.get_cfg_logits_processor(cfg_ebnf)
+    assert isinstance(processor, LLGuidanceLogitsProcessor)

@@ -1,5 +1,6 @@
 """Backend class for LLGuidance."""
 
+import re
 import warnings
 from typing import TYPE_CHECKING
 
@@ -193,6 +194,11 @@ class LLGuidanceBackend(BaseBackend):
         self.llg = llg
         self.tensor_library_name = model.tensor_library_name
         self.llg_tokenizer = self._create_llg_tokenizer(model)
+        self._special_tokens: frozenset[str] = (
+            frozenset(model.hf_tokenizer.all_special_tokens)
+            if isinstance(model, Transformers)
+            else frozenset()
+        )
 
     def _create_llg_tokenizer(self, model: SteerableModel) -> "LLGTokenizer":
         """Create an llg tokenizer from the Outlines model's tokenizer.
@@ -300,6 +306,7 @@ class LLGuidanceBackend(BaseBackend):
             The logits processor to use to constrain the generation.
 
         """
+        self._check_grammar_literals_against_special_tokens(grammar)
         # We try both lark and ebnf
         try:
             grammar_spec = self.llg.grammar_from("grammar", grammar)
@@ -308,3 +315,37 @@ class LLGuidanceBackend(BaseBackend):
         return LLGuidanceLogitsProcessor(
             grammar_spec, self.llg_tokenizer, self.tensor_library_name
         )
+
+    def _check_grammar_literals_against_special_tokens(self, grammar: str) -> None:
+        """Raise a clear error if a grammar literal matches a special token.
+
+        When a quoted literal in the grammar exactly matches one of the
+        tokenizer's special tokens (e.g. `<think>`), llguidance's parser can
+        fail with an opaque `ParserTooComplex` error at generation time: the
+        model may emit the literal as a single atomic special token, which
+        the parser cannot match against a literal-string terminal the way it
+        matches ordinary, byte-decomposable tokens. Surfacing this at grammar
+        compilation time, with the actual conflicting token named, is far
+        more actionable than the downstream parser failure.
+
+        Parameters
+        ----------
+        grammar: str
+            The context-free grammar to check.
+
+        """
+        if not self._special_tokens:
+            return
+        literals = set(re.findall(r'"((?:[^"\\]|\\.)*)"', grammar))
+        conflicts = sorted(literals & self._special_tokens)
+        if conflicts:
+            raise ValueError(
+                "The grammar contains the literal(s) "
+                f"{conflicts} which exactly match special token(s) in the "
+                "tokenizer's vocabulary. The llguidance backend cannot "
+                "reliably constrain generation around a special token used "
+                "as ordinary grammar text, as the model may emit it as a "
+                "single atomic token that the parser cannot match against a "
+                "literal-string terminal. Avoid embedding the text of a "
+                "special token as a literal in your grammar."
+            )
