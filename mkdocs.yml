@@ -136,6 +136,7 @@ nav:
                     - Gemini: features/models/gemini.md
                     - Llamacpp: features/models/llamacpp.md
                     - LM Studio: features/models/lmstudio.md
+                    - MiniMax: features/models/minimax.md
                     - Mlx-lm: features/models/mlxlm.md
                     - Ollama: features/models/ollama.md
                     - OpenAI: features/models/openai.md
