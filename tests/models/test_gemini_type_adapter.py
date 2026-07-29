@@ -110,6 +110,20 @@ def test_gemini_type_adapter_input_chat(adapter, image):
     }
 
 
+def test_gemini_type_adapter_input_chat_system(adapter):
+    input_message = Chat(messages=[
+        {"role": "system", "content": "You are a helpful assistant."},
+        {"role": "user", "content": "Hello"},
+    ])
+    result = adapter.format_input(input_message)
+    assert result == {
+        "system_instruction": "You are a helpful assistant.",
+        "contents": [
+            {"role": "user", "parts": [{"text": "Hello"}]},
+        ],
+    }
+
+
 def test_gemini_type_adapter_input_invalid(adapter):
     @dataclass
     class Audio:
