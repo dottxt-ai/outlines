@@ -86,6 +86,9 @@ __all__ = [
     "ipv6",
     "semver",
     "mac_address",
+    "hex_color",
+    "slug",
+    "credit_card",
     # Document-specific types
     "sentence",
     "paragraph",
@@ -117,8 +120,8 @@ uuid4 = Regex(
     r"[a-fA-F0-9]{12}"
 )
 ipv4 = Regex(
-    r"((25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})\.){3}"
-    r"(25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})"
+    r"((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}"
+    r"(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])"
 )
 
 # SemVer 2.0.0: https://semver.org/
@@ -154,10 +157,38 @@ ipv6 = Regex(
     r"|[0-9A-Fa-f]{1,4}:(?::[0-9A-Fa-f]{1,4}){1,6}"
     r"|:(?::[0-9A-Fa-f]{1,4}){1,7}"
     r"|::"
-    r"|::(?:[Ff]{4}(?::0{1,4})?:)(?:25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})"
-    r"(?:\.(?:25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})){3}"
-    r"|(?:[0-9A-Fa-f]{1,4}:){1,4}:(?:25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})"
-    r"(?:\.(?:25[0-5]|2[0-4][0-9]|1?[0-9]{1,2})){3}"
+    r"|::(?:[Ff]{4}(?::0{1,4})?:)(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])"
+    r"(?:\.(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])){3}"
+    r"|(?:[0-9A-Fa-f]{1,4}:){1,4}:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])"
+    r"(?:\.(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])){3}"
+)
+
+# CSS hexadecimal color notation: https://www.w3.org/TR/css-color-4/#hex-notation
+# This matches only the ubiquitous three-digit (#rgb) and six-digit (#rrggbb)
+# forms. The four- and eight-digit forms that encode an alpha channel are
+# intentionally excluded to keep the type to the canonical opaque-color syntax.
+hex_color = Regex(r"#(?:[0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})")
+
+# URL slugs in the lowercase-hyphenated form produced by common web framework
+# slugify helpers: ASCII lowercase alphanumeric groups separated by single
+# hyphens. Uppercase letters, underscores, and leading, trailing, or
+# consecutive hyphens are excluded, as is the empty string.
+slug = Regex(r"[a-z0-9]+(?:-[a-z0-9]+)*")
+
+# Payment card numbers (PANs) for common card networks, matched by issuer prefix
+# and length. The same prefixes may cover credit, debit and prepaid cards, so
+# this validates the number format only, not the Luhn checksum. Each branch is
+# annotated below.
+credit_card = Regex(
+    r"4[0-9]{12}(?:[0-9]{3}(?:[0-9]{3})?)?"  # Visa (13, 16 or 19 digits)
+    r"|5[1-5][0-9]{14}"  # Mastercard (51-55)
+    r"|2(?:22[1-9]|2[3-9][0-9]|[3-6][0-9]{2}|7[01][0-9]|720)[0-9]{12}"  # Mastercard (2221-2720)
+    r"|3[47][0-9]{13}"  # American Express
+    r"|3(?:0[0-5]|[68][0-9])[0-9]{11}"  # Diners Club
+    r"|6(?:011[0-9]{12}|4[4-9][0-9]{13}|5[0-9]{14})"  # Discover (6011, 644-649, 65)
+    r"|(?:2131|1800|35[0-9]{3})[0-9]{11}"  # JCB
+    r"|(?:5018|5020|5038|5893|6304|6759|676[1-3])[0-9]{8,15}"  # Maestro
+    r"|62[0-9]{14,17}"  # UnionPay 62-prefix; includes Discover 622126-622925 co-brand
 )
 
 # Document-specific types

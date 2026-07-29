@@ -199,7 +199,11 @@ class VLLM(Model):
         """Build the arguments to pass to the OpenAI client."""
         messages = self.type_adapter.format_input(model_input)
         output_type_args = self.type_adapter.format_output_type(output_type)
-        extra_body = inference_kwargs.pop("extra_body", {})
+        # Copy the caller-provided dict so we never mutate it in place when
+        # merging structured_outputs below. Reusing the same `extra_body` dict
+        # across calls previously leaked the previous call's constraints into
+        # later unconstrained calls (see GH#1931).
+        extra_body = dict(inference_kwargs.pop("extra_body", {}))
         extra_body.update(output_type_args)
 
         if "model" not in inference_kwargs and self.model_name is not None:
@@ -340,7 +344,11 @@ class AsyncVLLM(AsyncModel):
         """Build the arguments to pass to the OpenAI client."""
         messages = self.type_adapter.format_input(model_input)
         output_type_args = self.type_adapter.format_output_type(output_type)
-        extra_body = inference_kwargs.pop("extra_body", {})
+        # Copy the caller-provided dict so we never mutate it in place when
+        # merging structured_outputs below. Reusing the same `extra_body` dict
+        # across calls previously leaked the previous call's constraints into
+        # later unconstrained calls (see GH#1931).
+        extra_body = dict(inference_kwargs.pop("extra_body", {}))
         extra_body.update(output_type_args)
 
         if "model" not in inference_kwargs and self.model_name is not None:

@@ -33,7 +33,6 @@ dependencies = [
    "typing_extensions",
    "outlines_core==0.2.14",
    "genson",
-   "jsonpath_ng",
 ]
 dynamic = ["version"]
 
@@ -180,7 +179,6 @@ module = [
     "tf-keras",
     "tf-keras.*",
     "mkdocs_gen_files.*",
-    "jsonpath_ng.*",
     "llguidance.*",
     "xgrammar.*",
 ]

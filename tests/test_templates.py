@@ -2,7 +2,7 @@ import base64
 from enum import Enum
 import os
 import tempfile
-from typing import Optional
+from typing import Optional, Union
 
 import pytest
 from PIL import Image as PILImage
@@ -56,6 +56,22 @@ class PydanticClassWithEnum(BaseModel):
 class PydanticNestedClass(BaseModel):
     name: str
     inner: PydanticClass
+
+
+class PydanticOptionalClass(BaseModel):
+    name: str
+    armor: Optional[Armor] = None
+    inner: Optional[PydanticClass] = None
+
+
+class Weapon(str, Enum):
+    sword = "sword"
+    axe = "axe"
+
+
+class PydanticUnionClass(BaseModel):
+    name: str
+    equipment: Union[Armor, Weapon]
 
 
 def test_vision_initialization():
@@ -397,3 +413,31 @@ def test_get_schema():
     assert pydantic_nested_schema_output == (
         '{\n  "name": "<name>",\n  "inner": {\n    "foo": "<foo>"\n  }\n}'
     )
+
+    # Optional[...] fields must render like their underlying type (enum values,
+    # nested properties) rather than falling back to a `<name>` placeholder.
+    pydantic_optional_schema_output = get_schema(PydanticOptionalClass)
+    assert pydantic_optional_schema_output == (
+        '{\n  "name": "<name>",'
+        '\n  "armor": "<leather | chainmail | plate>",'
+        '\n  "inner": {\n    "foo": "<foo>"\n  }\n}'
+    )
+
+    # Genuine multi-member unions cannot be represented by a single branch, so
+    # they fall back to a `<name>` placeholder rather than advertising only the
+    # first member.
+    pydantic_union_schema_output = get_schema(PydanticUnionClass)
+    assert (
+        pydantic_union_schema_output
+        == '{\n  "name": "<name>",\n  "equipment": "<equipment>"\n}'
+    )
+
+
+def test_render_trailing_whitespace_preserves_linebreak():
+    # A trailing space before a newline must not swallow the line break.
+    assert build_template_from_string("foo   \nbar").render() == "foo \nbar"
+
+
+def test_render_trailing_whitespace_keeps_next_line_indentation():
+    src = "\n    A test line \n        An indented line\n    "
+    assert build_template_from_string(src).render() == "A test line \n    An indented line"

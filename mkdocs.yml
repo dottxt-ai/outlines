@@ -142,6 +142,7 @@ nav:
                     - OpenAI compatible API: features/models/openai_compatible.md
                     - OpenRouter: features/models/openrouter.md
                     - OrcaRouter: features/models/orcarouter.md
+                    - Requesty: features/models/requesty.md
                     - SGLang: features/models/sglang.md
                     - TGI: features/models/tgi.md
                     - Transformers: features/models/transformers.md

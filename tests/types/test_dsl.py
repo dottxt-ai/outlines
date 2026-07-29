@@ -138,6 +138,15 @@ def test_dsl_init():
     assert repr(maximum) == "QuantifyMaximum(term=String(value='test'), max_count=3)"
     assert maximum.display_ascii_tree() == "└── Quantify({,3})\n    └── String('test')\n"
 
+    with pytest.raises(ValueError, match="`count` must be a non-negative integer"):
+        QuantifyExact(string, -1)
+
+    with pytest.raises(ValueError, match="`min_count` must be a non-negative integer"):
+        QuantifyMinimum(string, -1)
+
+    with pytest.raises(ValueError, match="`max_count` must be a non-negative integer"):
+        QuantifyMaximum(string, -1)
+
     between = QuantifyBetween(string, 1, 3)
     assert between.term == string
     assert between.min_count == 1
@@ -152,6 +161,9 @@ def test_dsl_init():
         ValueError, match="`max_count` must be greater than `min_count`"
     ):
         QuantifyBetween(string, 3, 1)
+
+    with pytest.raises(ValueError, match="`min_count` must be a non-negative integer"):
+        QuantifyBetween(string, -2, -1)
 
 
 def test_dsl_term_methods():
@@ -638,6 +650,10 @@ def test_dsl_python_types_to_terms():
     # convert to terms are tested in distinct tests below
     assert python_types_to_terms(Literal["a", "b"]) == _handle_literal(("a", "b"))
     assert python_types_to_terms(Union[int, str]) == _handle_union((int, str), recursion_depth=0)
+    # PEP 604 unions must dispatch the same way as typing.Union/Optional
+    assert python_types_to_terms(int | str) == python_types_to_terms(Union[int, str])
+    assert python_types_to_terms(str | None) == python_types_to_terms(PyOptional[str])
+    assert python_types_to_terms(list[int | str]) == python_types_to_terms(list[Union[int, str]])
     assert python_types_to_terms(list[int]) == _handle_list((int,), recursion_depth=0)
     assert python_types_to_terms(tuple[int, str]) == _handle_tuple((int, str), recursion_depth=0)
     assert python_types_to_terms(dict[int, str]) == _handle_dict((int, str), recursion_depth=0)
@@ -645,6 +661,27 @@ def test_dsl_python_types_to_terms():
     # type not supported
     with pytest.raises(TypeError, match="is currently not supported"):
         python_types_to_terms(bytes)
+
+
+def test_dsl_enum_with_instance_method_is_not_a_choice():
+    """A plain instance method defined in the enum's class body must not be
+    picked up as a generation choice. Both this method and a bare function
+    assigned as a member's value (`SomeEnum.c` above) show up as the same
+    `FunctionType` in `__dict__`, so the two have to be told apart by more
+    than just their type."""
+
+    class Color(Enum):
+        RED = "red"
+        GREEN = "green"
+        BLUE = "blue"
+
+        def describe(self) -> str:
+            return f"This color is {self.value}"
+
+    result = python_types_to_terms(Color)
+    assert isinstance(result, Alternatives)
+    assert len(result.terms) == 3
+    assert result.terms == [String("red"), String("green"), String("blue")]
 
 
 def test_dsl_handle_literal():
@@ -823,8 +860,9 @@ def test_dsl_handle_dict():
         incorrect_dict_type = dict[int, str, int]
         _handle_dict(get_args(incorrect_dict_type), recursion_depth=0)
 
-    # correct type
-    dict_type = dict[int, str]
+    # correct type with a str key: no extra quoting needed, types.string
+    # is already self-quoted
+    dict_type = dict[str, int]
     result = _handle_dict(get_args(dict_type), recursion_depth=0)
     assert isinstance(result, Sequence)
     assert len(result.terms) == 3
@@ -832,11 +870,30 @@ def test_dsl_handle_dict():
     assert isinstance(result.terms[1], Optional)
     assert isinstance(result.terms[1].term, Sequence)
     assert len(result.terms[1].term.terms) == 4
-    assert result.terms[1].term.terms[0] == types.integer
+    assert result.terms[1].term.terms[0] == types.string
     assert result.terms[1].term.terms[1] == String(":")
-    assert result.terms[1].term.terms[2] == types.string
-    assert result.terms[1].term.terms[3] == KleeneStar(Sequence([String(", "), types.integer, String(":"), types.string]))
+    assert result.terms[1].term.terms[2] == types.integer
+    assert result.terms[1].term.terms[3] == KleeneStar(Sequence([String(", "), types.string, String(":"), types.integer]))
     assert result.terms[2] == String("}")
+
+    # non-str key (e.g. int): JSON object keys must always be double-quoted
+    # strings, so the bare `types.integer` regex must be wrapped in quotes
+    # even though the Python key type is `int`.
+    dict_type = dict[int, str]
+    result = _handle_dict(get_args(dict_type), recursion_depth=0)
+    quoted_int_key = Sequence([String('"'), types.integer, String('"')])
+    assert result.terms[1].term.terms[0] == quoted_int_key
+    assert result.terms[1].term.terms[2] == types.string
+
+    # non-str key nested in an Alternatives (Literal ints go through
+    # _handle_literal): each member must be quoted, not just a top-level Regex
+    dict_type = dict[Literal[1, 2, 3], str]
+    result = _handle_dict(get_args(dict_type), recursion_depth=0)
+    key_term = result.terms[1].term.terms[0]
+    assert isinstance(key_term, Alternatives)
+    assert key_term.terms == [
+        Sequence([String('"'), Regex(str(i)), String('"')]) for i in (1, 2, 3)
+    ]
 
 
 def test_ensure_json_quoted_string():

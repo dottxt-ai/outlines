@@ -137,7 +137,7 @@ def build_template_from_string(
     # Remove extra whitespaces, except those that immediately follow a newline symbol.
     # This is necessary to avoid introducing whitespaces after backslash `\` characters
     # used to continue to the next line without linebreak.
-    cleaned_template = re.sub(r"(?![\r\n])(\b\s+)", " ", cleaned_template)
+    cleaned_template = re.sub(r"(?![\r\n])(\b[^\S\r\n]+)", " ", cleaned_template)
 
     env = create_jinja_env(None, filters)
 
@@ -328,5 +328,17 @@ def parse_pydantic_schema_value(name, schema, definitions):
     elif "enum" in schema:
         values = " | ".join(str(value) for value in schema["enum"])
         return f"<{values}>"
+    elif "anyOf" in schema:
+        # `Optional[T]` is rendered as an `anyOf` of `T` and `null`. Recurse into
+        # the single non-null member so the field renders like its underlying type
+        # (e.g. `Optional[Enum]` shows the enum values, not a `<name>` placeholder).
+        # Genuine multi-member unions (e.g. `A | B`) fall through to the `<name>`
+        # placeholder rather than misleadingly advertising only their first branch.
+        non_null = [
+            member for member in schema["anyOf"] if member.get("type") != "null"
+        ]
+        if len(non_null) == 1:
+            return parse_pydantic_schema_value(name, non_null[0], definitions)
+        return f"<{name}>"
     else:
         return f"<{name}>"

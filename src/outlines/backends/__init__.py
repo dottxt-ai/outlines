@@ -59,6 +59,7 @@ def get_json_schema_logits_processor(
     backend_name: str | None,
     model: SteerableModel,
     json_schema: str,
+    whitespace_pattern: str | None = None,
 ) -> LogitsProcessorType:
     """Create a logits processor from a JSON schema.
 
@@ -70,6 +71,9 @@ def get_json_schema_logits_processor(
         The Outlines model of the user.
     json_schema: str
         The JSON schema to create a logits processor from.
+    whitespace_pattern: str | None
+        The pattern to use to control the whitespace allowed between JSON
+        tokens. `None` uses the backend default.
 
     Returns
     -------
@@ -81,7 +85,9 @@ def get_json_schema_logits_processor(
         backend_name or JSON_SCHEMA_DEFAULT_BACKEND,
         model,
     )
-    return backend.get_json_schema_logits_processor(json_schema)
+    return backend.get_json_schema_logits_processor(
+        json_schema, whitespace_pattern
+    )
 
 
 def get_regex_logits_processor(

@@ -574,6 +574,10 @@ class QuantifyExact(Term):
     term: Term
     count: int
 
+    def __post_init__(self):
+        if self.count < 0:
+            raise ValueError("QuantifyExact: `count` must be a non-negative integer.")
+
     def _display_node(self) -> str:
         return f"Quantify({{{self.count}}})"
 
@@ -588,6 +592,12 @@ class QuantifyExact(Term):
 class QuantifyMinimum(Term):
     term: Term
     min_count: int
+
+    def __post_init__(self):
+        if self.min_count < 0:
+            raise ValueError(
+                "QuantifyMinimum: `min_count` must be a non-negative integer."
+            )
 
     def _display_node(self) -> str:
         return f"Quantify({{{self.min_count},}})"
@@ -605,6 +615,12 @@ class QuantifyMinimum(Term):
 class QuantifyMaximum(Term):
     term: Term
     max_count: int
+
+    def __post_init__(self):
+        if self.max_count < 0:
+            raise ValueError(
+                "QuantifyMaximum: `max_count` must be a non-negative integer."
+            )
 
     def _display_node(self) -> str:
         return f"Quantify({{,{self.max_count}}})"
@@ -625,6 +641,10 @@ class QuantifyBetween(Term):
     max_count: int
 
     def __post_init__(self):
+        if self.min_count < 0:
+            raise ValueError(
+                "QuantifyBetween: `min_count` must be a non-negative integer."
+            )
         if self.min_count > self.max_count:
             raise ValueError(
                 "QuantifyBetween: `max_count` must be greater than `min_count`."
@@ -802,15 +822,36 @@ def python_types_to_terms(ptype: Any, recursion_depth: int = 0) -> Term:
 
 
 def _get_enum_members(ptype: EnumMeta) -> List[Any]:
+    """Get the members of an enum, including "enum of callables" members.
+
+    Regular Enum members (including ones whose value is a `functools.partial`)
+    are returned via normal iteration. An enum can also have a plain function
+    assigned directly as a member's value (e.g. ``c = some_function``);
+    Python's Enum machinery treats a bare function assigned in the class body
+    as a method rather than a member, so those don't show up through
+    iteration and we have to pick them out of `__dict__` instead.
+
+    The tricky part is telling that case apart from an actual instance method
+    defined with ``def`` directly in the class body (e.g. a `describe(self)`
+    helper) - both end up as plain `FunctionType` objects in `__dict__`. We
+    use `__qualname__` to distinguish them: a method defined inside the
+    class body is qualified with the class's own qualname (e.g.
+    ``"SomeEnum.describe"``), while a function that was defined elsewhere and
+    merely assigned as a member's value keeps its original qualname (e.g.
+    ``"some_function"``). Only the latter should be treated as a member.
+    """
     regular_members = [member.value for member in ptype]  # type: ignore
-    function_members = []
-    for key, value in ptype.__dict__.items():
+    class_member_prefix = f"{ptype.__qualname__}."
+    function_members = [
+        value
+        for key, value in ptype.__dict__.items()
         if (
             isinstance(value, FunctionType)
             and not (key.startswith('__') and key.endswith('__'))
             and key != '_generate_next_value_'  # Skip this specific method that causes issues
-        ):
-            function_members.append(value)
+            and not value.__qualname__.startswith(class_member_prefix)
+        )
+    ]
     return regular_members + function_members
 
 
@@ -818,19 +859,24 @@ def _handle_literal(args: tuple) -> Alternatives:
     return Alternatives([python_types_to_terms(arg) for arg in args])
 
 
-def _ensure_json_quoted(term: Term) -> Term:
-    """Wrap bare ``String`` terms in double quotes for JSON container contexts.
+def _ensure_json_quoted(term: Term, quote_regex: bool = False) -> Term:
+    """Wrap ``String`` terms in double quotes for JSON container contexts.
 
-    When string literal values (from ``Literal`` or ``Enum``) appear inside
-    container types (``List``, ``Tuple``, ``Dict``), they must be JSON-quoted
-    so the generated regex matches valid JSON.  ``Regex``-based terms (e.g.
-    ``types.string``) already include their own quotes and are left untouched.
+    String literals (from ``Literal``/``Enum``) inside containers must be
+    JSON-quoted so the generated regex matches valid JSON. With
+    ``quote_regex``, bare ``Regex`` terms are quoted too (needed for ``Dict``
+    keys, which JSON always requires to be strings); ``types.string`` is never
+    re-quoted since its pattern already includes the quotes. Both cases recurse
+    into ``Alternatives``, so ``Regex`` members nested there (e.g.
+    ``Dict[Literal[1, 2], str]``) are quoted as well.
     """
     if isinstance(term, String):
         return String(f'"{term.value}"')
     if isinstance(term, Alternatives):
-        quoted = [_ensure_json_quoted(t) for t in term.terms]
+        quoted = [_ensure_json_quoted(t, quote_regex) for t in term.terms]
         return Alternatives(quoted)
+    if quote_regex and isinstance(term, Regex) and term.pattern != types.string.pattern:
+        return Sequence([String('"'), term, String('"')])
     return term
 
 
@@ -897,8 +943,11 @@ def _handle_tuple(args: tuple, recursion_depth: int) -> Union[Sequence, String]:
 def _handle_dict(args: tuple, recursion_depth: int) -> Sequence:
     if args is None or len(args) != 2:
         raise TypeError(f"Dict must have exactly two type arguments. Got {args}.")
-    # Add dict support with key:value pairs
-    key_type = _ensure_json_quoted(python_types_to_terms(args[0], recursion_depth + 1))
+    # JSON object keys must always be quoted strings, so quote the key term
+    # even when the Python key type isn't `str` (e.g. `Dict[int, str]`).
+    key_type = _ensure_json_quoted(
+        python_types_to_terms(args[0], recursion_depth + 1), quote_regex=True
+    )
     value_type = _ensure_json_quoted(python_types_to_terms(args[1], recursion_depth + 1))
     return Sequence(
         [

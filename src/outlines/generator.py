@@ -247,6 +247,7 @@ class SteerableGenerator:
                     backend_name,
                     model,
                     term.schema,
+                    term.whitespace_pattern,
                 )
             else:
                 regex_string = to_regex(term)

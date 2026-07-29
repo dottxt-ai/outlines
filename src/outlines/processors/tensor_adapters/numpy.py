@@ -42,9 +42,7 @@ class NumpyTensorAdapter(TensorAdapter):
         return self.numpy.ones_like(tensor, dtype=bool)
 
     def apply_mask(self, tensor, mask, value):
-        result = tensor.copy()
-        result[mask] = value
-        return result
+        return self.numpy.where(mask, value, tensor)
 
     def argsort_descending(self, tensor):
         return self.numpy.argsort(-tensor)
