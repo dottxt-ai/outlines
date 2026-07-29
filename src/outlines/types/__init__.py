@@ -91,6 +91,9 @@ __all__ = [
     "credit_card",
     "iban",
     "bic",
+    "e164",
+    "latitude",
+    "longitude",
     # Document-specific types
     "sentence",
     "paragraph",
@@ -215,6 +218,20 @@ bic = Regex(
     r"[A-Z2-9][A-NP-Z0-9]"  # location code
     r"(?:[A-Z0-9]{3})?"  # optional branch code, "XXX" for the head office
 )
+
+# ITU-T E.164 international phone numbers: https://www.itu.int/rec/T-REC-E.164
+# Canonical text form only: a leading plus, a country code starting with a
+# non-zero digit, and at most fifteen digits in total. Spacing, hyphens, and
+# national dialing prefixes are intentionally excluded, and number assignment
+# is not validated. For national conventions see the `locale` submodule.
+e164 = Regex(r"\+[1-9]\d{1,14}")
+
+# Geographic coordinates in signed decimal degrees. Latitude is bounded to
+# [-90, 90] and longitude to [-180, 180]; the bounds themselves admit only a
+# zero fractional part. Leading zeros in the integer part and the
+# degree-minute-second and cardinal-direction notations are excluded.
+latitude = Regex(r"[+-]?(?:90(?:\.0+)?|[1-8]?\d(?:\.\d+)?)")
+longitude = Regex(r"[+-]?(?:180(?:\.0+)?|(?:1[0-7]\d|[1-9]?\d)(?:\.\d+)?)")
 
 # Document-specific types
 sentence = Regex(r"[A-Z].*\s*[.!?]")
