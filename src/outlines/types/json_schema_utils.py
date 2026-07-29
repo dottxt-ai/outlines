@@ -73,6 +73,18 @@ def schema_type_to_python(
             item_type = Any
         return List[item_type]  # type: ignore
     elif t == "object":
+        # A mapping is an object with `additionalProperties` and no `properties`; that's
+        # what Pydantic emits for `Dict[str, V]`. Building a model out of it would give a
+        # class with no fields and drop the value type, so map it to `Dict[str, V]`.
+        if "properties" not in schema and "additionalProperties" in schema:
+            additional = schema["additionalProperties"]
+            if additional is True:
+                return Dict[str, Any]  # type: ignore
+            if additional is False:
+                return Dict[str, Any]  # type: ignore
+            value_type = schema_type_to_python(additional, caller_target_type)
+            return Dict[str, value_type]  # type: ignore
+
         name = schema.get("title")
         if caller_target_type == "pydantic":
             return json_schema_dict_to_pydantic(schema, name)

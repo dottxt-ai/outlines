@@ -1,7 +1,9 @@
+import dataclasses
 import sys
 from dataclasses import is_dataclass
-from typing import Any, List, Literal, Optional, Union
+from typing import Any, Dict, List, Literal, Optional, Union, get_type_hints
 
+import pytest
 from pydantic import BaseModel, TypeAdapter
 from pydantic_core import PydanticUndefined
 
@@ -415,3 +417,82 @@ def test_json_schema_dict_to_dataclass_optional_before_required():
     instance = result(user_id=5)
     assert instance.user_id == 5
     assert instance.nickname is None
+
+
+def test_json_schema_dict_to_pydantic_mapping():
+    """`{"type": "object", "additionalProperties": S}` is a mapping, not a model."""
+    schema = {
+        "type": "object",
+        "properties": {
+            "by_user": {"type": "object", "additionalProperties": {"type": "integer"}},
+        },
+        "required": ["by_user"],
+    }
+    model = json_schema_dict_to_pydantic(schema)
+    assert model.model_fields["by_user"].annotation == Dict[str, int]
+
+
+def test_json_schema_dict_to_typeddict_mapping():
+    schema = {
+        "type": "object",
+        "properties": {
+            "by_user": {"type": "object", "additionalProperties": {"type": "string"}},
+        },
+        "required": ["by_user"],
+    }
+    assert get_type_hints(json_schema_dict_to_typeddict(schema))["by_user"] == Dict[str, str]
+
+
+def test_json_schema_dict_to_dataclass_mapping():
+    schema = {
+        "type": "object",
+        "properties": {
+            "by_user": {"type": "object", "additionalProperties": {"type": "number"}},
+        },
+        "required": ["by_user"],
+    }
+    fields = {f.name: f.type for f in dataclasses.fields(json_schema_dict_to_dataclass(schema))}
+    assert fields["by_user"] == Dict[str, float]
+
+
+@pytest.mark.parametrize("additional", [True, False])
+def test_mapping_with_boolean_additional_properties(additional):
+    """A boolean `additionalProperties` carries no value type, so the values are `Any`."""
+    schema = {
+        "type": "object",
+        "properties": {"m": {"type": "object", "additionalProperties": additional}},
+        "required": ["m"],
+    }
+    model = json_schema_dict_to_pydantic(schema)
+    assert model.model_fields["m"].annotation == Dict[str, Any]
+
+
+def test_object_with_properties_is_still_a_model():
+    """`properties` wins: an object that declares fields keeps being converted to a model."""
+    schema = {
+        "type": "object",
+        "properties": {
+            "nested": {
+                "type": "object",
+                "title": "Nested",
+                "properties": {"v": {"type": "integer"}},
+                "required": ["v"],
+                "additionalProperties": False,
+            },
+        },
+        "required": ["nested"],
+    }
+    model = json_schema_dict_to_pydantic(schema)
+    nested = model.model_fields["nested"].annotation
+    assert issubclass(nested, BaseModel)
+    assert nested.model_fields["v"].annotation is int
+
+
+def test_pydantic_dict_field_round_trips():
+    """End to end: a `Dict[str, int]` field survives the JSON-Schema round trip."""
+
+    class Scores(BaseModel):
+        by_user: Dict[str, int] = {}
+
+    model = json_schema_dict_to_pydantic(Scores.model_json_schema())
+    assert model.model_fields["by_user"].annotation == Optional[Dict[str, int]]
