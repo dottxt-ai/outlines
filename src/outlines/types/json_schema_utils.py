@@ -42,6 +42,20 @@ def schema_type_to_python(
         # widening the value back to its bare type.
         return Literal[schema["const"]]
 
+    for union_keyword in ("anyOf", "oneOf"):
+        branches = schema.get(union_keyword)
+        if branches:
+            # Pydantic emits ``anyOf`` for ``Optional[T]`` and ``Union[...]``, so a schema
+            # coming back from ``model_json_schema()`` carries the field's types here rather
+            # than under ``type``. Without this the branch types are lost and the field
+            # widens to ``Any``, which constrains nothing. ``oneOf`` maps to the same
+            # ``Union``: Python typing cannot express the exclusivity, but keeping the set of
+            # allowed types is strictly narrower than ``Any``.
+            members = tuple(
+                schema_type_to_python(branch, caller_target_type) for branch in branches
+            )
+            return Union[members] if members else Any  # type: ignore
+
     t = schema.get("type")
 
     if isinstance(t, list):

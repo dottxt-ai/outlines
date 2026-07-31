@@ -2,6 +2,7 @@ import sys
 from dataclasses import is_dataclass
 from typing import Any, List, Literal, Optional, Union
 
+import pytest
 from pydantic import BaseModel, TypeAdapter
 from pydantic_core import PydanticUndefined
 
@@ -415,3 +416,60 @@ def test_json_schema_dict_to_dataclass_optional_before_required():
     instance = result(user_id=5)
     assert instance.user_id == 5
     assert instance.nickname is None
+
+
+@pytest.mark.parametrize("union_keyword", ["anyOf", "oneOf"])
+def test_union_keyword_maps_to_union(union_keyword):
+    """`anyOf`/`oneOf` carry the branch types; dropping them widens the field to `Any`."""
+    schema = {union_keyword: [{"type": "integer"}, {"type": "string"}]}
+
+    assert schema_type_to_python(schema, "pydantic") == Union[int, str]
+
+
+@pytest.mark.parametrize("union_keyword", ["anyOf", "oneOf"])
+def test_union_keyword_with_null_branch_is_optional(union_keyword):
+    """A `null` branch is what Pydantic emits for `Optional[T]`."""
+    schema = {union_keyword: [{"type": "boolean"}, {"type": "null"}]}
+
+    assert schema_type_to_python(schema, "pydantic") == Optional[bool]
+
+
+def test_union_keyword_matches_the_type_array_spelling():
+    """The two spellings of the same constraint must not diverge."""
+    as_any_of = schema_type_to_python(
+        {"anyOf": [{"type": "integer"}, {"type": "string"}]}, "pydantic"
+    )
+    as_type_array = schema_type_to_python({"type": ["integer", "string"]}, "pydantic")
+
+    assert as_any_of == as_type_array
+
+
+def test_union_branches_are_mapped_recursively():
+    """Branches are full schemas, not just type names."""
+    schema = {
+        "anyOf": [
+            {"type": "array", "items": {"type": "integer"}},
+            {"type": "string"},
+        ]
+    }
+
+    assert schema_type_to_python(schema, "pydantic") == Union[List[int], str]
+
+
+def test_optional_and_union_fields_survive_the_round_trip():
+    """Pydantic emits `anyOf`, so these fields lost their types on the way through."""
+
+    class Source(BaseModel):
+        maybe_int: Optional[int]
+        either: Union[int, str]
+        plain: int
+
+    rebuilt = json_schema_dict_to_pydantic(Source.model_json_schema())
+
+    assert rebuilt.model_fields["maybe_int"].annotation == Optional[int]
+    assert rebuilt.model_fields["either"].annotation == Union[int, str]
+    assert rebuilt.model_fields["plain"].annotation is int
+    assert (
+        rebuilt.model_json_schema()["properties"]
+        == Source.model_json_schema()["properties"]
+    )
