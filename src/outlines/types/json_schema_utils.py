@@ -78,12 +78,14 @@ def schema_type_to_python(
         # class with no fields and drop the value type, so map it to `Dict[str, V]`.
         if "properties" not in schema and "additionalProperties" in schema:
             additional = schema["additionalProperties"]
-            if additional is True:
-                return Dict[str, Any]  # type: ignore
-            if additional is False:
-                return Dict[str, Any]  # type: ignore
-            value_type = schema_type_to_python(additional, caller_target_type)
-            return Dict[str, value_type]  # type: ignore
+            # `additionalProperties: false` is the opposite of a free-form mapping: it
+            # forbids every key, so the only valid instance is `{}`. Fall through to the
+            # model path, which builds a field-less model, rather than widening it.
+            if additional is not False:
+                if additional is True:
+                    return Dict[str, Any]  # type: ignore
+                value_type = schema_type_to_python(additional, caller_target_type)
+                return Dict[str, value_type]  # type: ignore
 
         name = schema.get("title")
         if caller_target_type == "pydantic":

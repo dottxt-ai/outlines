@@ -455,16 +455,33 @@ def test_json_schema_dict_to_dataclass_mapping():
     assert fields["by_user"] == Dict[str, float]
 
 
-@pytest.mark.parametrize("additional", [True, False])
-def test_mapping_with_boolean_additional_properties(additional):
-    """A boolean `additionalProperties` carries no value type, so the values are `Any`."""
+def test_mapping_with_additional_properties_true():
+    """`additionalProperties: true` is a free-form mapping with no value type."""
     schema = {
         "type": "object",
-        "properties": {"m": {"type": "object", "additionalProperties": additional}},
+        "properties": {"m": {"type": "object", "additionalProperties": True}},
         "required": ["m"],
     }
     model = json_schema_dict_to_pydantic(schema)
     assert model.model_fields["m"].annotation == Dict[str, Any]
+
+
+def test_additional_properties_false_is_not_a_mapping():
+    """`additionalProperties: false` forbids every key, so `{}` is the only instance.
+
+    Mapping it to `Dict[str, Any]` would accept arbitrary keys, which is the
+    opposite of what the schema says.
+    """
+    schema = {
+        "type": "object",
+        "properties": {"m": {"type": "object", "additionalProperties": False}},
+        "required": ["m"],
+    }
+    model = json_schema_dict_to_pydantic(schema)
+    inner = model.model_fields["m"].annotation
+    assert inner != Dict[str, Any]
+    assert issubclass(inner, BaseModel)
+    assert list(inner.model_fields) == []
 
 
 def test_object_with_properties_is_still_a_model():
