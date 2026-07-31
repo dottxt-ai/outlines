@@ -194,11 +194,43 @@ class LLGuidanceBackend(BaseBackend):
         self.llg = llg
         self.tensor_library_name = model.tensor_library_name
         self.llg_tokenizer = self._create_llg_tokenizer(model)
-        self._special_tokens: frozenset[str] = (
-            frozenset(model.hf_tokenizer.all_special_tokens)
+        self._atomic_literal_tokens: frozenset[str] = (
+            self._get_atomic_literal_tokens(model.hf_tokenizer)
             if isinstance(model, Transformers)
             else frozenset()
         )
+
+    @staticmethod
+    def _get_atomic_literal_tokens(hf_tokenizer) -> frozenset[str]:
+        """Return every token string the tokenizer always emits atomically.
+
+        This is `all_special_tokens` (e.g. `<|endoftext|>`) plus every entry
+        in `added_tokens_decoder`, regardless of its individual `special`
+        flag. Reasoning-model chat templates commonly register tokens like
+        `<think>`/`</think>` as added-but-not-special (`special=False`) so
+        they survive `skip_special_tokens=True` decoding, but the tokenizer
+        still pulls them out of the input via its added-tokens split before
+        ordinary BPE merging runs — the same atomic, non-byte-decomposable
+        behavior that makes `all_special_tokens` entries conflict with a
+        grammar literal. The `special` flag only governs decode-time
+        stripping; it isn't a marker of which tokens bypass BPE.
+
+        Parameters
+        ----------
+        hf_tokenizer
+            The Hugging Face tokenizer to inspect.
+
+        Returns
+        -------
+        frozenset[str]
+            Every token string the tokenizer treats as atomic.
+
+        """
+        added = {
+            added_token.content
+            for added_token in hf_tokenizer.added_tokens_decoder.values()
+        }
+        return frozenset(hf_tokenizer.all_special_tokens) | frozenset(added)
 
     def _create_llg_tokenizer(self, model: SteerableModel) -> "LLGTokenizer":
         """Create an llg tokenizer from the Outlines model's tokenizer.
@@ -317,16 +349,20 @@ class LLGuidanceBackend(BaseBackend):
         )
 
     def _check_grammar_literals_against_special_tokens(self, grammar: str) -> None:
-        """Raise a clear error if a grammar literal matches a special token.
+        """Raise a clear error if a grammar literal matches an atomic token.
 
-        When a quoted literal in the grammar exactly matches one of the
-        tokenizer's special tokens (e.g. `<think>`), llguidance's parser can
-        fail with an opaque `ParserTooComplex` error at generation time: the
-        model may emit the literal as a single atomic special token, which
-        the parser cannot match against a literal-string terminal the way it
-        matches ordinary, byte-decomposable tokens. Surfacing this at grammar
-        compilation time, with the actual conflicting token named, is far
-        more actionable than the downstream parser failure.
+        When a quoted literal in the grammar exactly matches a token the
+        tokenizer always emits atomically — a "true" special token (e.g.
+        `<|endoftext|>`) or an added-but-not-special token (e.g. `<think>` on
+        reasoning-model tokenizers, which is commonly registered with
+        `special=False` so `skip_special_tokens=True` doesn't strip it) —
+        llguidance's parser can fail with an opaque `ParserTooComplex` error
+        at generation time: the model may emit the literal as a single atomic
+        token, which the parser cannot match against a literal-string
+        terminal the way it matches ordinary, byte-decomposable tokens.
+        Surfacing this at grammar compilation time, with the actual
+        conflicting token named, is far more actionable than the downstream
+        parser failure.
 
         Parameters
         ----------
@@ -334,18 +370,18 @@ class LLGuidanceBackend(BaseBackend):
             The context-free grammar to check.
 
         """
-        if not self._special_tokens:
+        if not self._atomic_literal_tokens:
             return
         literals = set(re.findall(r'"((?:[^"\\]|\\.)*)"', grammar))
-        conflicts = sorted(literals & self._special_tokens)
+        conflicts = sorted(literals & self._atomic_literal_tokens)
         if conflicts:
             raise ValueError(
                 "The grammar contains the literal(s) "
-                f"{conflicts} which exactly match special token(s) in the "
-                "tokenizer's vocabulary. The llguidance backend cannot "
-                "reliably constrain generation around a special token used "
-                "as ordinary grammar text, as the model may emit it as a "
+                f"{conflicts} which exactly match a token the tokenizer "
+                "always emits atomically. The llguidance backend cannot "
+                "reliably constrain generation around such a token used as "
+                "ordinary grammar text, as the model may emit it as a "
                 "single atomic token that the parser cannot match against a "
                 "literal-string terminal. Avoid embedding the text of a "
-                "special token as a literal in your grammar."
+                "special or added token as a literal in your grammar."
             )

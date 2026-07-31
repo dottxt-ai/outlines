@@ -232,3 +232,20 @@ def test_cfg_logits_processor_allows_literal_not_matching_special_token(cfg_ebnf
     backend = LLGuidanceBackend(model)
     processor = backend.get_cfg_logits_processor(cfg_ebnf)
     assert isinstance(processor, LLGuidanceLogitsProcessor)
+
+
+def test_cfg_logits_processor_rejects_literal_matching_added_non_special_token():
+    """Reasoning-model tokenizers commonly register tokens like `<think>` as
+    added-but-not-special (`special=False`), e.g. Qwen3-4B-Thinking, so that
+    `skip_special_tokens=True` decoding doesn't strip them. Such a token is
+    absent from `all_special_tokens` but is still emitted atomically by the
+    tokenizer, so it conflicts with a grammar literal exactly like a true
+    special token does. This is the exact scenario reported in #1771.
+    """
+    model = model_transformers()
+    model.hf_tokenizer.add_tokens(["<think>"], special_tokens=False)
+    assert "<think>" not in model.hf_tokenizer.all_special_tokens
+    backend = LLGuidanceBackend(model)
+    grammar = '?start: "<think>" "yes"'
+    with pytest.raises(ValueError, match="<think>"):
+        backend.get_cfg_logits_processor(grammar)
