@@ -21,6 +21,7 @@ from pydantic import BaseModel
 from outlines import grammars, types
 from outlines.types.dsl import (
     Alternatives,
+    BooleanLiteral,
     JsonSchema,
     KleenePlus,
     KleeneStar,
@@ -697,11 +698,15 @@ def test_dsl_literal_bool():
     # Literal[True] and Literal[False] previously raised TypeError; ensure they resolve.
     result_true = python_types_to_terms(Literal[True])
     assert isinstance(result_true, Alternatives)
-    assert result_true.terms == [Regex("True")]
+    assert result_true.terms == [BooleanLiteral(True)]
+    assert to_regex(result_true) == "(True)"
     result_false = python_types_to_terms(Literal[False])
-    assert result_false.terms == [Regex("False")]
+    assert isinstance(result_false, Alternatives)
+    assert result_false.terms == [BooleanLiteral(False)]
     result_both = python_types_to_terms(Literal[True, False])
-    assert result_both == Alternatives([Regex("True"), Regex("False")])
+    assert isinstance(result_both, Alternatives)
+    assert result_both == Alternatives([BooleanLiteral(True), BooleanLiteral(False)])
+    assert to_regex(result_both) == "(True|False)"
 
 
 def test_dsl_numeric_literal_escapes_regex_metacharacters():
@@ -860,8 +865,9 @@ def test_dsl_handle_dict():
         incorrect_dict_type = dict[int, str, int]
         _handle_dict(get_args(incorrect_dict_type), recursion_depth=0)
 
-    # correct type
-    dict_type = dict[int, str]
+    # correct type with a str key: no extra quoting needed, types.string
+    # is already self-quoted
+    dict_type = dict[str, int]
     result = _handle_dict(get_args(dict_type), recursion_depth=0)
     assert isinstance(result, Sequence)
     assert len(result.terms) == 3
@@ -869,11 +875,30 @@ def test_dsl_handle_dict():
     assert isinstance(result.terms[1], Optional)
     assert isinstance(result.terms[1].term, Sequence)
     assert len(result.terms[1].term.terms) == 4
-    assert result.terms[1].term.terms[0] == types.integer
+    assert result.terms[1].term.terms[0] == types.string
     assert result.terms[1].term.terms[1] == String(":")
-    assert result.terms[1].term.terms[2] == types.string
-    assert result.terms[1].term.terms[3] == KleeneStar(Sequence([String(", "), types.integer, String(":"), types.string]))
+    assert result.terms[1].term.terms[2] == types.integer
+    assert result.terms[1].term.terms[3] == KleeneStar(Sequence([String(", "), types.string, String(":"), types.integer]))
     assert result.terms[2] == String("}")
+
+    # non-str key (e.g. int): JSON object keys must always be double-quoted
+    # strings, so the bare `types.integer` regex must be wrapped in quotes
+    # even though the Python key type is `int`.
+    dict_type = dict[int, str]
+    result = _handle_dict(get_args(dict_type), recursion_depth=0)
+    quoted_int_key = Sequence([String('"'), types.integer, String('"')])
+    assert result.terms[1].term.terms[0] == quoted_int_key
+    assert result.terms[1].term.terms[2] == types.string
+
+    # non-str key nested in an Alternatives (Literal ints go through
+    # _handle_literal): each member must be quoted, not just a top-level Regex
+    dict_type = dict[Literal[1, 2, 3], str]
+    result = _handle_dict(get_args(dict_type), recursion_depth=0)
+    key_term = result.terms[1].term.terms[0]
+    assert isinstance(key_term, Alternatives)
+    assert key_term.terms == [
+        Sequence([String('"'), Regex(str(i)), String('"')]) for i in (1, 2, 3)
+    ]
 
 
 def test_ensure_json_quoted_string():
@@ -957,14 +982,18 @@ def test_ensure_json_quoted_sequence_passthrough():
 
 
 def test_ensure_json_quoted_regex_passthrough():
-    """Regex terms (except container booleans) pass through unchanged."""
+    """Regex terms (except the built-in boolean term) pass through unchanged."""
     assert _ensure_json_quoted(types.string) is types.string
     assert _ensure_json_quoted(types.integer) is types.integer
+    user_true = Regex("True")
+    assert _ensure_json_quoted(user_true) is user_true
 
 
 def test_ensure_json_quoted_boolean_uses_json_literals():
-    """Boolean Regex terms are lowercased in JSON container contexts."""
+    """Boolean terms are lowercased in JSON container contexts."""
     assert _ensure_json_quoted(types.boolean) == Regex("(true|false)")
+    assert _ensure_json_quoted(BooleanLiteral(True)) == Regex("true")
+    assert _ensure_json_quoted(BooleanLiteral(False)) == Regex("false")
 
 
 def test_list_single_literal():

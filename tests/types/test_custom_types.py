@@ -145,6 +145,32 @@ from outlines.types.dsl import to_regex
         (types.slug, "double--hyphen", False),
         (types.slug, "under_score", False),
         (types.slug, "", False),
+        (types.credit_card, "4111111111111111", True),  # Visa 16
+        (types.credit_card, "4222222222222", True),  # Visa 13
+        (types.credit_card, "4111111111111111111", True),  # Visa 19
+        (types.credit_card, "5555555555554444", True),  # Mastercard 51-55
+        (types.credit_card, "2223003122003222", True),  # Mastercard 2221-2720
+        (types.credit_card, "378282246310005", True),  # American Express
+        (types.credit_card, "30569309025904", True),  # Diners Club
+        (types.credit_card, "6011111111111117", True),  # Discover 6011
+        (types.credit_card, "6440000000000007", True),  # Discover 644-649
+        (types.credit_card, "6490000000000009", True),  # Discover 644-649
+        (types.credit_card, "6512345678901234", True),  # Discover 65
+        (types.credit_card, "3530111333300000", True),  # JCB
+        (types.credit_card, "6759649826438453", True),  # Maestro
+        (types.credit_card, "6200000000000005", True),  # UnionPay
+        (types.credit_card, "6221260000000000", True),  # Discover 622126-622925 co-brand
+        (types.credit_card, "4111 1111 1111 1111", False),  # spaces
+        (types.credit_card, "4111-1111-1111-1111", False),  # hyphens
+        (types.credit_card, "1234567890123456", False),  # unknown prefix
+        (types.credit_card, "6430000000000000", False),  # 643 not a Discover prefix
+        (types.credit_card, "2220003122003222", False),  # below Mastercard 2-range
+        (types.credit_card, "2721003122003222", False),  # above Mastercard 2-range
+        (types.credit_card, "411111111111", False),  # too short
+        (types.credit_card, "4111a11111111111", False),  # non-digit character
+        (types.credit_card, "41111111111111111111", False),  # too long (20 digits)
+        (types.credit_card, "3782822463100050", False),  # Amex prefix, wrong length
+        (types.credit_card, "", False),
     ],
 )
 def test_type_regex(custom_type, test_string, should_match):
