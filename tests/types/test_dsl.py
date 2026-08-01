@@ -1250,6 +1250,37 @@ def test_e2e_temporal_types_quoted_in_containers(ptype, value):
     assert not _re.fullmatch(tuple_pattern, f"({value})")
 
 
+@pytest.mark.parametrize(
+    "term,value",
+    [
+        (types.date, "2024-01-01"),
+        (types.time, "12:30:00"),
+        (types.datetime, "2024-01-01 12:30:00"),
+    ],
+)
+def test_e2e_temporal_term_passed_directly_quoted_in_containers(term, value):
+    """A temporal term handed in directly (``list[types.date]``) takes the
+    ``isinstance(ptype, Term)`` shortcut in ``python_types_to_terms``, which
+    returns the singleton itself. Identity matching doesn't depend on the
+    route, so these quote exactly like ``list[datetime.date]`` does. Pinned
+    separately because a move away from identity matching would drop it while
+    the annotation-based tests above kept passing. Dict values and tuples are
+    covered alongside lists for the same reason; dict *keys* are left out
+    because ``quote_regex`` quotes those whichever term they hold, so they
+    would pass with identity matching removed."""
+    list_pattern = to_regex(python_types_to_terms(list[term]))
+    assert _re.fullmatch(list_pattern, f'["{value}"]')
+    assert not _re.fullmatch(list_pattern, f"[{value}]")
+
+    dict_pattern = to_regex(python_types_to_terms(dict[str, term]))
+    assert _re.fullmatch(dict_pattern, f'{{"a":"{value}"}}')
+    assert not _re.fullmatch(dict_pattern, f'{{"a":{value}}}')
+
+    tuple_pattern = to_regex(python_types_to_terms(Tuple[term, ...]))
+    assert _re.fullmatch(tuple_pattern, f'("{value}")')
+    assert not _re.fullmatch(tuple_pattern, f"({value})")
+
+
 def test_e2e_user_regex_sharing_date_pattern_not_quoted():
     """Only the built-in temporal terms are quoted. A user's own ``Regex`` that
     happens to reuse the date pattern keeps generating a bare value."""
