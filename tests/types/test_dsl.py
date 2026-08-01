@@ -1216,6 +1216,20 @@ def test_e2e_optional_none_renders_json_null_in_containers():
     assert not _re.fullmatch(literal_pattern, "[None]")
 
 
+def test_none_literal_display_and_repr():
+    none_literal = NoneLiteral()
+    assert none_literal._display_node() == "NoneLiteral"
+    assert repr(none_literal) == "NoneLiteral()"
+
+
+def test_none_literal_quote_regex_as_dict_key():
+    # A union containing None used as a dict key goes through the
+    # quote_regex=True path: the None member must render as a quoted "null".
+    pattern = to_regex(python_types_to_terms(dict[PyOptional[int], str]))
+    assert _re.fullmatch(pattern, '{"null":"v"}')
+    assert not _re.fullmatch(pattern, "{null:\"v\"}")
+
+
 def test_to_regex():
     string_term = String("hello")
     assert to_regex(string_term) == r"hello"
