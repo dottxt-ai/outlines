@@ -140,3 +140,32 @@ def test_spiece_underline_constant():
     tokenizer.tokenizer.convert_tokens_to_string.return_value = "hello"
 
     assert tokenizer.convert_token_to_string(token) == " hello"
+
+
+@pytest.fixture
+def separately_loaded_transformer_tokenizer():
+    """A second wrapper around an independently loaded copy of TEST_MODEL.
+
+    Distinct from `another_transformer_tokenizer`, which shares the `tokenizer`
+    fixture instance and so compares equal by identity alone.
+    """
+    return TransformerTokenizer(
+        transformers.AutoTokenizer.from_pretrained(TEST_MODEL)
+    )
+
+
+def test_transformer_tokenizer_eq_across_separate_loads(
+    transformer_tokenizer,
+    separately_loaded_transformer_tokenizer,
+):
+    first = transformer_tokenizer
+    second = separately_loaded_transformer_tokenizer
+
+    # Same model, same content, but not the same object.
+    assert first.tokenizer is not second.tokenizer
+    assert first.vocabulary == second.vocabulary
+
+    # `__hash__` is content-based, so `__eq__` has to agree with it.
+    assert hash(first) == hash(second)
+    assert first == second
+    assert not (first != second)
