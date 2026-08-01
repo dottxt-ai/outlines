@@ -217,6 +217,14 @@ def test_dsl_term_pydantic_rejects_non_string_values():
     with pytest.raises(ValidationError):
         Model(field=123)
 
+    # The guard is an isinstance check rather than an exact type check, so
+    # `str` subclasses remain valid inputs.
+    class Digits(str):
+        pass
+
+    payload = Model(field=Digits("123"))
+    assert isinstance(payload.field, Digits)
+
 
 def test_dsl_sequence():
     a = String("a")
