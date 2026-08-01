@@ -872,12 +872,13 @@ def _ensure_json_quoted(term: Term, quote_regex: bool = False) -> Term:
     ``Alternatives``, so ``Regex`` members nested there (e.g.
     ``Dict[Literal[1, 2], str]``) are quoted as well.
 
-    The other built-in terms (e.g. ``list[types.email]``) are not covered:
-    they reach this function via the ``isinstance(ptype, Term)`` shortcut in
-    ``python_types_to_terms`` and stay bare. See issue #1962. That carve-out
-    does not extend to the temporal terms, which are matched by identity and
-    so are quoted whichever route they take to get here: ``list[types.date]``
-    and ``list[datetime.date]`` both produce quoted values.
+    Only the three temporal singletons are matched here, so every other
+    built-in term (e.g. ``list[types.email]``) stays bare in list and value
+    position. See issue #1962. The match is on identity alone and carries no
+    notion of how the term arrived, so a temporal term handed in directly via
+    the ``isinstance(ptype, Term)`` shortcut in ``python_types_to_terms`` is
+    quoted like any other: ``list[types.date]`` and ``list[datetime.date]``
+    produce the same output.
     """
     if isinstance(term, String):
         return String(f'"{term.value}"')
