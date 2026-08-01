@@ -78,20 +78,26 @@ class GeminiTypeAdapter(ModelTypeAdapter):
         """Generate the `contents` argument to pass to the client when the user
         passes a Chat instance.
 
-        A leading system message is returned as a `system_instruction`
-        argument, as Gemini expects it in the config instead of the contents.
+        System messages are returned as a `system_instruction` argument, as
+        Gemini expects them in the config instead of the contents. They are
+        collected regardless of their position and joined, as Gemini only
+        provides a single system instruction slot.
 
         """
-        messages = model_input.messages
+        system_contents = [
+            message["content"]
+            for message in model_input.messages
+            if message["role"] == "system"
+        ]
         formatted: dict = {}
 
-        if messages and messages[0]["role"] == "system":
-            formatted["system_instruction"] = messages[0]["content"]
-            messages = messages[1:]
+        if system_contents:
+            formatted["system_instruction"] = "\n".join(system_contents)
 
         formatted["contents"] = [
             self._create_message(message["role"], message["content"])
-            for message in messages
+            for message in model_input.messages
+            if message["role"] != "system"
         ]
 
         return formatted
@@ -312,7 +318,7 @@ class Gemini(Model):
             completion = self.client.models.generate_content(
                 contents=contents,
                 model=inference_kwargs.pop("model", self.model_name),
-                config={**input_args, **generation_config, **inference_kwargs}
+                config={**generation_config, **input_args, **inference_kwargs}
             )
 
         return completion.text
@@ -360,7 +366,7 @@ class Gemini(Model):
             stream = self.client.models.generate_content_stream(
                 contents=contents,
                 model=inference_kwargs.pop("model", self.model_name),
-                config={**input_args, **generation_config, **inference_kwargs},
+                config={**generation_config, **input_args, **inference_kwargs},
             )
             for chunk in stream:
                 if hasattr(chunk, "text") and chunk.text:
