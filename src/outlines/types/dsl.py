@@ -859,6 +859,14 @@ def _handle_literal(args: tuple) -> Alternatives:
     return Alternatives([python_types_to_terms(arg) for arg in args])
 
 
+def _is_builtin_term(term: Term, names: tuple[str, ...]) -> bool:
+    """Whether ``term`` is one of the built-in ``outlines.types`` terms by
+    identity. Built-ins are module-level ``Regex`` singletons; identity (not
+    equality) keeps a user's own ``Regex`` that happens to share a pattern
+    from being treated as a built-in."""
+    return any(term is getattr(types, name, None) for name in names)
+
+
 def _ensure_json_quoted(term: Term, quote_regex: bool = False) -> Term:
     """Wrap ``String`` terms in double quotes for JSON container contexts.
 
@@ -877,6 +885,47 @@ def _ensure_json_quoted(term: Term, quote_regex: bool = False) -> Term:
         return Alternatives(quoted)
     if quote_regex and isinstance(term, Regex) and term.pattern != types.string.pattern:
         return Sequence([String('"'), term, String('"')])
+    if isinstance(term, Regex) and term.pattern != types.string.pattern:
+        # Built-in terms are JSON scalars (bare), JSON strings (quoted), or
+        # terms that need escaping before they can be quoted. Keep scalars and
+        # control-character terms bare (escaping them is a follow-up, #1962),
+        # leave temporals to #1961, and quote the string-shaped built-ins so
+        # containers like ``list[types.email]`` generate valid JSON.
+        if _is_builtin_term(
+            term,
+            (
+                "integer",
+                "number",
+                "boolean",
+                "digit",
+                "newline",
+                "whitespace",
+                "paragraph",
+                "sentence",
+                "date",
+                "time",
+                "datetime",
+            ),
+        ):
+            return term
+        if _is_builtin_term(
+            term,
+            (
+                "email",
+                "uuid4",
+                "ipv4",
+                "ipv6",
+                "isbn",
+                "mac_address",
+                "semver",
+                "slug",
+                "hex_color",
+                "hex_str",
+                "credit_card",
+                "char",
+            ),
+        ):
+            return Sequence([String('"'), term, String('"')])
     return term
 
 

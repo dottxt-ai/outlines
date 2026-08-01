@@ -1206,6 +1206,72 @@ def test_e2e_optional_none_not_quoted_in_containers():
     assert not _re.fullmatch(literal_pattern, "[None]")
 
 
+@pytest.mark.parametrize(
+    "term,value",
+    [
+        (types.uuid4, "123e4567-e89b-42d3-a456-426614174000"),
+        (types.ipv4, "192.168.1.1"),
+        (types.ipv6, "2001:db8::1"),
+        (types.mac_address, "00:1A:2B:3C:4D:5E"),
+        (types.semver, "1.2.3"),
+        (types.slug, "hello-world"),
+        (types.hex_color, "#ff0000"),
+        (types.hex_str, "0x1f"),
+        (types.credit_card, "4111111111111111"),
+        (types.char, "x"),
+    ],
+)
+def test_e2e_string_shaped_builtin_terms_quoted_in_containers(term, value):
+    """String-shaped built-in terms (``list[types.email]`` etc.) must be
+    JSON-quoted inside containers; the bare spelling is not valid JSON.
+    ``types.email``/``types.isbn`` are excluded from the parameter set because
+    their patterns contain ``^``/``$`` anchors that cannot be embedded in a
+    container regex at all (pre-existing limitation, independent of quoting)."""
+    list_pattern = to_regex(python_types_to_terms(list[term]))
+    assert _re.fullmatch(list_pattern, f'["{value}"]')
+    assert not _re.fullmatch(list_pattern, f"[{value}]")
+
+    dict_pattern = to_regex(python_types_to_terms(dict[str, term]))
+    assert _re.fullmatch(dict_pattern, f'{{"k":"{value}"}}')
+    assert not _re.fullmatch(dict_pattern, f'{{"k":{value}}}')
+
+    # Dict keys were already quoted via quote_regex=True; keep that behavior.
+    key_pattern = to_regex(python_types_to_terms(dict[term, str]))
+    assert _re.fullmatch(key_pattern, f'{{"{value}":"v"}}')
+
+
+@pytest.mark.parametrize(
+    "term,value",
+    [
+        (types.integer, "5"),
+        (types.number, "5.5"),
+        (types.digit, "7"),
+    ],
+)
+def test_e2e_json_scalar_builtin_terms_stay_bare_in_containers(term, value):
+    """JSON-scalar built-ins keep their bare spelling inside containers."""
+    list_pattern = to_regex(python_types_to_terms(list[term]))
+    assert _re.fullmatch(list_pattern, f"[{value}]")
+    assert not _re.fullmatch(list_pattern, f'["{value}"]')
+
+
+def test_e2e_control_char_builtin_terms_left_bare_in_containers():
+    """Control-character terms are excluded from quoting: wrapping them in
+    quotes would look fixed while still failing json.loads (see #1962)."""
+    for term in (types.newline, types.whitespace, types.paragraph, types.sentence):
+        list_pattern = to_regex(python_types_to_terms(list[term]))
+        assert list_pattern.startswith("\\[")
+        assert "\\\"" not in list_pattern
+
+
+def test_e2e_user_regex_term_still_bare_in_containers():
+    """A user-supplied Regex that shares a built-in pattern is not treated as a
+    built-in term and stays bare."""
+    user_regex = Regex(r"[a-z]+@[a-z]+\.[a-z]+")
+    list_pattern = to_regex(python_types_to_terms(list[user_regex]))
+    assert _re.fullmatch(list_pattern, "[a@b.com]")
+
+
 def test_to_regex():
     string_term = String("hello")
     assert to_regex(string_term) == r"hello"
