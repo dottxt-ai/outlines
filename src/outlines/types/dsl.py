@@ -238,6 +238,24 @@ class Regex(Term):
 
 
 @dataclass
+class NoneLiteral(Term):
+    """The Python ``None`` literal with context-sensitive JSON rendering.
+
+    Standalone (e.g. a top-level ``Union[int, None]``) it renders as the Python
+    keyword ``None`` for backward compatibility. Inside JSON container contexts
+    (``list[Optional[int]]``, ``dict[str, Optional[int]]``, ...) it renders as
+    ``null`` so the generated regex matches documents that ``json.loads``
+    accepts (see #1971).
+    """
+
+    def _display_node(self) -> str:
+        return "NoneLiteral"
+
+    def __repr__(self):
+        return "NoneLiteral()"
+
+
+@dataclass
 class CFG(Term):
     """Class representing a context-free grammar.
 
@@ -872,6 +890,11 @@ def _ensure_json_quoted(term: Term, quote_regex: bool = False) -> Term:
     """
     if isinstance(term, String):
         return String(f'"{term.value}"')
+    if isinstance(term, NoneLiteral):
+        json_null = Regex("null")
+        if quote_regex:
+            return Sequence([String('"'), json_null, String('"')])
+        return json_null
     if isinstance(term, Alternatives):
         quoted = [_ensure_json_quoted(t, quote_regex) for t in term.terms]
         return Alternatives(quoted)
@@ -892,10 +915,10 @@ def _handle_union(args: tuple, recursion_depth: int) -> Alternatives:
         if arg not in (type(None), None)
     ]
     if has_none:
-        # `None` is a keyword, not a string value: keep it a `Regex` (like
-        # `True`/`False`) so it is not JSON-quoted when the union ends up
-        # nested inside a container type.
-        terms.append(Regex("None"))
+        # `None` is a keyword, not a string value: keep it a dedicated literal
+        # term so it stays Python-style standalone but renders as JSON `null`
+        # when the union ends up nested inside a container type (see #1971).
+        terms.append(NoneLiteral())
     return Alternatives(terms)
 
 
@@ -987,6 +1010,8 @@ def to_regex(term: Term) -> str:
     """
     if isinstance(term, String):
         return re.escape(term.value)
+    elif isinstance(term, NoneLiteral):
+        return "None"
     elif isinstance(term, Regex):
         return f"({term.pattern})"
     elif isinstance(term, JsonSchema):
