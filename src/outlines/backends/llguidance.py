@@ -348,6 +348,72 @@ class LLGuidanceBackend(BaseBackend):
             grammar_spec, self.llg_tokenizer, self.tensor_library_name
         )
 
+    # Matches a Lark grammar's double- or single-quoted string literals, or a
+    # `//`-to-end-of-line comment. Alternation order matters: a string
+    # alternative always starts matching at its opening quote, so a `//`
+    # occurring inside a literal (e.g. `"http://foo"`) is consumed as part of
+    # that literal rather than being mistaken for the start of a comment, and
+    # a literal written inside a real comment is never extracted at all,
+    # since only the `dq`/`sq` groups are inspected by the caller.
+    _LITERAL_OR_COMMENT_RE = re.compile(
+        r'"(?P<dq>(?:[^"\\]|\\.)*)"'
+        r"|'(?P<sq>(?:[^'\\]|\\.)*)'"
+        r"|//[^\n]*"
+    )
+    # The backslash escapes a grammar author can realistically write inside a
+    # Lark string literal: \\, \", \', \n, \t, \r, and \uXXXX.
+    _ESCAPE_RE = re.compile(r"\\u([0-9a-fA-F]{4})|\\(.)")
+    _SIMPLE_ESCAPES = {"n": "\n", "t": "\t", "r": "\r", "\\": "\\", '"': '"', "'": "'"}
+
+    @classmethod
+    def _decode_literal_escapes(cls, literal: str) -> str:
+        """Decode backslash escapes in a raw grammar string literal.
+
+        Parameters
+        ----------
+        literal: str
+            The literal's source text, as captured between its quotes.
+
+        Returns
+        -------
+        str
+            The string the literal denotes, so it can be compared against
+            actual token text rather than against its escaped source form.
+
+        """
+        def _replace(match: "re.Match[str]") -> str:
+            hex_digits, other = match.groups()
+            if hex_digits is not None:
+                return chr(int(hex_digits, 16))
+            return cls._SIMPLE_ESCAPES.get(other, other)
+
+        return cls._ESCAPE_RE.sub(_replace, literal)
+
+    def _extract_grammar_literals(self, grammar: str) -> set[str]:
+        """Extract every quoted string literal's decoded text from a grammar.
+
+        Parameters
+        ----------
+        grammar: str
+            The context-free grammar to scan.
+
+        Returns
+        -------
+        set[str]
+            The decoded text of every double- or single-quoted literal found
+            outside of a `//` comment.
+
+        """
+        literals = set()
+        for match in self._LITERAL_OR_COMMENT_RE.finditer(grammar):
+            raw = match.group("dq")
+            if raw is None:
+                raw = match.group("sq")
+            if raw is None:
+                continue  # a `//` comment match; its contents are not grammar text
+            literals.add(self._decode_literal_escapes(raw))
+        return literals
+
     def _check_grammar_literals_against_special_tokens(self, grammar: str) -> None:
         """Raise a clear error if a grammar literal matches an atomic token.
 
@@ -364,6 +430,13 @@ class LLGuidanceBackend(BaseBackend):
         conflicting token named, is far more actionable than the downstream
         parser failure.
 
+        The check considers both `"..."` and `'...'` literals (Lark accepts
+        either), decodes standard backslash escapes before comparing, and
+        ignores literal-looking text inside `//` comments. It only catches an
+        *exact* match between a literal and an atomic token — a literal that
+        merely embeds the token's text as a substring (e.g. `"<think>: go"`)
+        is not detected.
+
         Parameters
         ----------
         grammar: str
@@ -372,7 +445,7 @@ class LLGuidanceBackend(BaseBackend):
         """
         if not self._atomic_literal_tokens:
             return
-        literals = set(re.findall(r'"((?:[^"\\]|\\.)*)"', grammar))
+        literals = self._extract_grammar_literals(grammar)
         conflicts = sorted(literals & self._atomic_literal_tokens)
         if conflicts:
             raise ValueError(

@@ -249,3 +249,48 @@ def test_cfg_logits_processor_rejects_literal_matching_added_non_special_token()
     grammar = '?start: "<think>" "yes"'
     with pytest.raises(ValueError, match="<think>"):
         backend.get_cfg_logits_processor(grammar)
+
+
+def test_cfg_logits_processor_rejects_single_quoted_literal_matching_special_token():
+    """Lark accepts single- and double-quoted string literals interchangeably,
+    so the check must scan both quote styles, not just double quotes.
+    """
+    model = model_transformers()
+    backend = LLGuidanceBackend(model)
+    grammar = "?start: '<|endoftext|>' \"yes\""
+    with pytest.raises(ValueError, match="<\\|endoftext\\|>"):
+        backend.get_cfg_logits_processor(grammar)
+
+
+def test_cfg_logits_processor_rejects_escaped_literal_matching_special_token():
+    """A literal's source text can differ from the text it denotes (e.g. a
+    \\uXXXX escape), so the check must decode escapes before comparing
+    against token text rather than comparing raw source characters.
+    """
+    model = model_transformers()
+    backend = LLGuidanceBackend(model)
+    grammar = '?start: "\\u003c|endoftext|\\u003e" "yes"'
+    with pytest.raises(ValueError, match="<\\|endoftext\\|>"):
+        backend.get_cfg_logits_processor(grammar)
+
+
+def test_cfg_logits_processor_ignores_literal_inside_comment(cfg_ebnf):
+    """A special token's text appearing inside a `//` comment is not grammar
+    text and must not trigger a false-positive rejection.
+    """
+    model = model_transformers()
+    backend = LLGuidanceBackend(model)
+    grammar = f'// example: "<|endoftext|>"\n{cfg_ebnf}'
+    processor = backend.get_cfg_logits_processor(grammar)
+    assert isinstance(processor, LLGuidanceLogitsProcessor)
+
+
+def test_cfg_logits_processor_allows_literal_containing_special_token_as_url():
+    """A `//` inside a string literal (e.g. a URL scheme) is part of the
+    literal's text, not the start of a comment, and must not be truncated.
+    """
+    model = model_transformers()
+    backend = LLGuidanceBackend(model)
+    grammar = '?start: "http://example.com" "yes"'
+    processor = backend.get_cfg_logits_processor(grammar)
+    assert isinstance(processor, LLGuidanceLogitsProcessor)
