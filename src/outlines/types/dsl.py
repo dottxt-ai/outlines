@@ -279,6 +279,53 @@ class CFG(Term):
         return cls(definition)
 
 
+def _until_literal_pattern(delimiter: str) -> str:
+    """Build a regex matching any text that does not contain ``delimiter``.
+
+    ``outlines-core`` does not support lookaheads, so the negative-lookahead
+    form ``((?!delimiter).)*`` is expanded into an equivalent alternation: at
+    every position the next characters may match a proper prefix of
+    ``delimiter`` only if the following character breaks the match.
+    """
+    if not delimiter:
+        raise ValueError("`until` expects a non-empty delimiter string.")
+    alternatives = [
+        f"{''.join(re.escape(c) for c in delimiter[:index])}[^{re.escape(char)}]"
+        for index, char in enumerate(delimiter)
+    ]
+    return "(" + "|".join(alternatives) + ")*"
+
+
+@dataclass
+class Anything(Term):
+    """Term matching any sequence of characters, i.e. ``.*``.
+
+    Provides an :meth:`until` helper to match free-form text up to (but not
+    including) a literal delimiter, which is convenient for reasoning models
+    that emit unstructured text before a closing tag such as ``</think>``.
+
+    Examples
+    --------
+
+    >>> from outlines.types import anything, either
+    >>> outline = "<think>" + anything.until("</think>") + "</think>" + either("yes", "no")
+
+    """
+
+    def _display_node(self) -> str:
+        return "Anything()"
+
+    def __repr__(self):
+        return "Anything()"
+
+    def until(self, delimiter: str) -> "Regex":
+        """Match any text up to, but not including, the literal ``delimiter``."""
+        return Regex(_until_literal_pattern(delimiter))
+
+
+anything = Anything()
+
+
 class JsonSchema(Term):
     """Class representing a JSON schema.
 
@@ -989,6 +1036,8 @@ def to_regex(term: Term) -> str:
         return re.escape(term.value)
     elif isinstance(term, Regex):
         return f"({term.pattern})"
+    elif isinstance(term, Anything):
+        return "(.*)"
     elif isinstance(term, JsonSchema):
         regex_str = build_regex_from_schema(term.schema, term.whitespace_pattern)
         return f"({regex_str})"

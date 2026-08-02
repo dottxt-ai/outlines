@@ -21,6 +21,7 @@ from pydantic import BaseModel
 from outlines import grammars, types
 from outlines.types.dsl import (
     Alternatives,
+    Anything,
     JsonSchema,
     KleenePlus,
     KleeneStar,
@@ -35,6 +36,7 @@ from outlines.types.dsl import (
     String,
     Term,
     either,
+    anything,
     CFG,
     _handle_dict,
     _handle_list,
@@ -1248,3 +1250,43 @@ def test_to_regex():
 
     with pytest.raises(TypeError):
         to_regex(Term())
+
+
+def test_dsl_anything():
+    assert isinstance(anything, Anything)
+    assert to_regex(anything) == "(.*)"
+    assert anything.matches("literally anything 123 !@#")
+    assert anything.matches("")
+
+
+def test_dsl_anything_until():
+    term = anything.until("</think>")
+    assert isinstance(term, Regex)
+    assert to_regex(term) == (
+        "(([^<]|<[^/]|</[^t]|</t[^h]|</th[^i]|</thi[^n]|</thin[^k]|</think[^>])*)"
+    )
+    assert term.matches("free-form reasoning\nwith newlines and < brackets")
+    assert term.matches("")
+    assert not term.matches("it stops at </think> here")
+    assert not term.matches("</think>")
+
+
+def test_dsl_anything_until_escapes_special_characters():
+    # The delimiter is a literal, so regex metacharacters must be escaped.
+    term = anything.until(".")
+    assert to_regex(term) == r"(([^\.])*)"
+    assert term.matches("no dots here")
+    assert not term.matches("a.b")
+
+
+def test_dsl_anything_until_empty_delimiter_raises():
+    with pytest.raises(ValueError, match="non-empty delimiter"):
+        anything.until("")
+
+
+def test_dsl_anything_until_reasoning_outline():
+    outline = "<think>" + anything.until("</think>") + "</think>" + either("yes", "no")
+    assert outline.matches("<think>some reasoning</think>yes")
+    assert outline.matches("<think></think>no")
+    assert not outline.matches("<think>reasoning</think>maybe")
+    assert not outline.matches("no think tags yes")
