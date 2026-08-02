@@ -206,6 +206,7 @@ from outlines.types.dsl import to_regex
         (types.e164, "+04155552671", False),  # country code cannot start with 0
         (types.e164, "+1 415 555 2671", False),  # spacing is not canonical form
         (types.e164, "+1-415-555-2671", False),  # hyphens are not canonical form
+        (types.e164, "+123456789012345", True),  # exactly 15 digits, the maximum
         (types.e164, "+1234567890123456", False),  # more than 15 digits
         (types.e164, "+1", False),  # country code alone
         (types.e164, "", False),
