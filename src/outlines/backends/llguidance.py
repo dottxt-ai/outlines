@@ -226,9 +226,13 @@ class LLGuidanceBackend(BaseBackend):
             Every token string the tokenizer treats as atomic.
 
         """
+        # `added_tokens_decoder` was added in transformers 4.34; guard against
+        # older installations so a CFG-only feature doesn't break JSON-schema
+        # and regex users who happen to have an older tokenizer.
+        added_tokens_decoder = getattr(hf_tokenizer, "added_tokens_decoder", {})
         added = {
             added_token.content
-            for added_token in hf_tokenizer.added_tokens_decoder.values()
+            for added_token in added_tokens_decoder.values()
         }
         return frozenset(hf_tokenizer.all_special_tokens) | frozenset(added)
 
@@ -401,7 +405,11 @@ class LLGuidanceBackend(BaseBackend):
         -------
         set[str]
             The decoded text of every double- or single-quoted literal found
-            outside of a `//` comment.
+            outside of a `//` comment. Note: the scanner matches quoted runs
+            by syntax alone and does not distinguish Lark string literals from
+            quoted content embedded inside regexp terminals (e.g. the `"[^"`
+            portion of `STR: /"[^"]*"/`). Such fragments cannot equal a real
+            token string, so they cannot produce false positives.
 
         """
         literals = set()
