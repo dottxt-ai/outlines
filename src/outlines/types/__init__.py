@@ -224,12 +224,17 @@ bic = Regex(
 # non-zero digit, and at most fifteen digits in total. Spacing, hyphens, and
 # national dialing prefixes are intentionally excluded, and number assignment
 # is not validated. For national conventions see the `locale` submodule.
+# Like the other built-in string types, this is meant for standalone use: inside
+# a JSON container it is currently generated unquoted (#1962).
 e164 = Regex(r"\+[1-9]\d{1,14}")
 
 # Geographic coordinates in signed decimal degrees. Latitude is bounded to
 # [-90, 90] and longitude to [-180, 180]; the bounds themselves admit only a
 # zero fractional part. Leading zeros in the integer part and the
 # degree-minute-second and cardinal-direction notations are excluded.
+# These are text forms meant for standalone use: inside a JSON container they
+# are currently generated unquoted (#1962), which parses as a number rather
+# than the string the schema declares.
 latitude = Regex(r"[+-]?(?:90(?:\.0+)?|[1-8]?\d(?:\.\d+)?)")
 longitude = Regex(r"[+-]?(?:180(?:\.0+)?|(?:1[0-7]\d|[1-9]?\d)(?:\.\d+)?)")
 
