@@ -1187,6 +1187,7 @@ def test_e2e_optional_none_renders_json_null_in_containers():
     standalone = to_regex(python_types_to_terms(PyOptional[int]))
     assert _re.fullmatch(standalone, "None")
     assert not _re.fullmatch(standalone, '"None"')
+    assert not _re.fullmatch(standalone, "null")
 
     list_pattern = to_regex(python_types_to_terms(list[PyOptional[int]]))
     assert _re.fullmatch(list_pattern, "[null]")

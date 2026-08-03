@@ -893,6 +893,7 @@ def _ensure_json_quoted(term: Term, quote_regex: bool = False) -> Term:
     if isinstance(term, NoneLiteral):
         json_null = Regex("null")
         if quote_regex:
+            # Dict keys must be JSON strings, so ``null`` is quoted too.
             return Sequence([String('"'), json_null, String('"')])
         return json_null
     if isinstance(term, Alternatives):
