@@ -89,6 +89,8 @@ __all__ = [
     "hex_color",
     "slug",
     "credit_card",
+    "iban",
+    "bic",
     # Document-specific types
     "sentence",
     "paragraph",
@@ -189,6 +191,29 @@ credit_card = Regex(
     r"|(?:2131|1800|35[0-9]{3})[0-9]{11}"  # JCB
     r"|(?:5018|5020|5038|5893|6304|6759|676[1-3])[0-9]{8,15}"  # Maestro
     r"|62[0-9]{14,17}"  # UnionPay 62-prefix; includes Discover 622126-622925 co-brand
+)
+
+# ISO 13616 IBANs in electronic format: a country code, two check digits and a
+# country-specific basic bank account number of up to 30 characters. The check
+# digits are computed with ISO 7064 MOD 97-10 and therefore always fall between
+# 02 and 98. Neither the checksum itself nor the per-country account number
+# length and layout are validated, and the print format with spaces every four
+# characters is excluded.
+iban = Regex(
+    r"[A-Z]{2}"  # country code
+    r"(?:0[2-9]|[1-8][0-9]|9[0-8])"  # check digits
+    r"[A-Z0-9]{11,30}"  # basic bank account number
+)
+
+# ISO 9362 business identifier codes, also known as SWIFT codes. The location
+# code excludes 0 and 1 as its first character and the letter O as its second,
+# per the standard. The country code is only checked for shape here; use
+# `outlines.types.countries.Alpha2` to restrict it to assigned codes.
+bic = Regex(
+    r"[A-Z]{4}"  # institution code
+    r"[A-Z]{2}"  # country code
+    r"[A-Z2-9][A-NP-Z0-9]"  # location code
+    r"(?:[A-Z0-9]{3})?"  # optional branch code, "XXX" for the head office
 )
 
 # Document-specific types

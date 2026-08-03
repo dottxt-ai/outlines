@@ -171,6 +171,34 @@ from outlines.types.dsl import to_regex
         (types.credit_card, "41111111111111111111", False),  # too long (20 digits)
         (types.credit_card, "3782822463100050", False),  # Amex prefix, wrong length
         (types.credit_card, "", False),
+        (types.iban, "GB82WEST12345698765432", True),
+        (types.iban, "DE89370400440532013000", True),
+        (types.iban, "FR1420041010050500013M02606", True),  # letters in the BBAN
+        (types.iban, "NO9386011117947", True),  # shortest, 15 characters
+        (types.iban, "MT84MALT011000012345MTLCAST001S", True),
+        (types.iban, "GB02WEST12345698765432", True),  # lowest check digits
+        (types.iban, "GB98WEST12345698765432", True),  # highest check digits
+        (types.iban, "GB00WEST12345698765432", False),  # check digits below 02
+        (types.iban, "GB99WEST12345698765432", False),  # check digits above 98
+        (types.iban, "GB82 WEST 1234 5698 7654 32", False),  # print format
+        (types.iban, "gb82west12345698765432", False),  # lowercase
+        (types.iban, "G182WEST12345698765432", False),  # digit in the country code
+        (types.iban, "GB82WEST1234", False),  # too short
+        (types.iban, "GB82WEST123456987654321234567890123", False),  # over 34
+        (types.iban, "", False),
+        (types.bic, "DEUTDEFF", True),  # institution, country and location only
+        (types.bic, "DEUTDEFF500", True),  # with a branch code
+        (types.bic, "NEDSZAJJXXX", True),  # head office branch code
+        (types.bic, "UNCRIT2B912", True),  # digit in the location code
+        (types.bic, "DEUTDE0F", False),  # location code starting with 0
+        (types.bic, "DEUTDE1F", False),  # location code starting with 1
+        (types.bic, "DEUTDEFO", False),  # letter O in the location code
+        (types.bic, "DEUT1EFF", False),  # digit in the country code
+        (types.bic, "DEUTDEF", False),  # too short
+        (types.bic, "DEUTDEFF50", False),  # incomplete branch code
+        (types.bic, "DEUTDEFF5000", False),  # too long
+        (types.bic, "deutdeff", False),  # lowercase
+        (types.bic, "", False),
     ],
 )
 def test_type_regex(custom_type, test_string, should_match):
