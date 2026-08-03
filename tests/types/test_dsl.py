@@ -1219,14 +1219,15 @@ def test_e2e_optional_none_not_quoted_in_containers():
         (types.hex_str, "0x1f"),
         (types.credit_card, "4111111111111111"),
         (types.char, "x"),
+        (types.email, "a@b.com"),
     ],
 )
 def test_e2e_string_shaped_builtin_terms_quoted_in_containers(term, value):
     """String-shaped built-in terms (``list[types.email]`` etc.) must be
     JSON-quoted inside containers; the bare spelling is not valid JSON.
-    ``types.email``/``types.isbn`` are excluded from the parameter set because
-    their patterns contain ``^``/``$`` anchors that cannot be embedded in a
-    container regex at all (pre-existing limitation, independent of quoting)."""
+    ``types.isbn`` is excluded from the parameter set because its pattern
+    contains ``^``/``$`` anchors that cannot be embedded in a container regex
+    at all (pre-existing limitation, independent of quoting)."""
     list_pattern = to_regex(python_types_to_terms(list[term]))
     assert _re.fullmatch(list_pattern, f'["{value}"]')
     assert not _re.fullmatch(list_pattern, f"[{value}]")
