@@ -2,9 +2,11 @@ import sys
 from dataclasses import is_dataclass
 from typing import Any, List, Literal, Optional, Union
 
+import pytest
 from pydantic import BaseModel, TypeAdapter
 from pydantic_core import PydanticUndefined
 
+from outlines.types.dsl import JsonSchema, to_regex
 from outlines.types.json_schema_utils import (
     schema_type_to_python,
     json_schema_dict_to_typeddict,
@@ -500,7 +502,9 @@ def test_json_schema_dict_to_pydantic_recursive_ref():
 
     result = json_schema_dict_to_pydantic(schema, "Node")
     assert result.model_fields["value"].annotation is int
-    assert result.model_fields["children"].annotation == Optional[List[Any]]
+    # The item type is the back edge, left unconstrained so the cycle ends.
+    assert result.model_fields["children"].annotation == Optional[List[Optional[Any]]]
+    assert to_regex(JsonSchema(result))
 
 
 def test_schema_type_to_python_any_of():
@@ -581,3 +585,83 @@ def test_pydantic_nested_model_round_trip():
     assert issubclass(address, BaseModel)
     assert address.model_fields["street"].annotation is str
     assert address.model_fields["city"].annotation is str
+
+
+def _recursive_schema(required_back_edge: bool) -> dict:
+    required = ["value", "next"] if required_back_edge else ["value"]
+    return {
+        "$defs": {
+            "Node": {
+                "type": "object",
+                "properties": {
+                    "value": {"type": "integer"},
+                    "next": {"$ref": "#/$defs/Node"},
+                },
+                "required": required,
+            }
+        },
+        "$ref": "#/$defs/Node",
+    }
+
+
+@pytest.mark.parametrize("required_back_edge", [True, False])
+def test_recursive_schema_round_trips_through_to_regex(required_back_edge):
+    """The back edge must serialize to a shape the regex backend accepts.
+
+    A bare ``Any`` round-trips to a property with no ``type``, which
+    ``to_regex`` rejects, so converting a recursive schema has to leave the
+    back edge as ``Optional[Any]``. Asserting on the annotation alone would
+    not catch a regression here.
+    """
+    model = json_schema_dict_to_pydantic(
+        _recursive_schema(required_back_edge), "Node"
+    )
+
+    assert model.model_fields["value"].annotation is int
+    assert model.model_fields["next"].annotation == Optional[Any]
+
+    # The whole point: this must not raise.
+    assert to_regex(JsonSchema(model))
+
+
+def test_mutually_recursive_schema_round_trips_through_to_regex():
+    schema = {
+        "$defs": {
+            "A": {
+                "type": "object",
+                "properties": {"b": {"$ref": "#/$defs/B"}},
+                "required": ["b"],
+            },
+            "B": {
+                "type": "object",
+                "properties": {"a": {"$ref": "#/$defs/A"}},
+                "required": ["a"],
+            },
+        },
+        "$ref": "#/$defs/A",
+    }
+
+    model = json_schema_dict_to_pydantic(schema, "A")
+    assert to_regex(JsonSchema(model))
+
+
+def test_nested_model_round_trips_through_to_regex():
+    """Before $ref resolution this raised rather than losing constraints."""
+
+    class Address(BaseModel):
+        street: str
+        city: str
+
+    class Person(BaseModel):
+        name: str
+        address: Address
+
+    model = json_schema_dict_to_pydantic(Person.model_json_schema(), "Person")
+    assert to_regex(JsonSchema(model))
+
+
+@pytest.mark.parametrize("keyword", ["anyOf", "oneOf", "allOf"])
+def test_combinator_drops_non_dict_members(keyword):
+    """A member that is not a subschema is dropped by every combinator."""
+    assert schema_type_to_python({keyword: [{"type": "integer"}, "junk"]}, "pydantic") is int
+    assert schema_type_to_python({keyword: ["junk"]}, "pydantic") is Any

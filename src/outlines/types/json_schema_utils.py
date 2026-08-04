@@ -115,6 +115,15 @@ def schema_type_to_python(
     Any
         The Python type
 
+    Notes
+    -----
+    The back edge of a recursive schema is intentionally left unconstrained,
+    as ``Optional[Any]``. It is the designed stopping point rather than a
+    missed conversion: a finite regex cannot express an unbounded tree, and
+    null is the only way an instance of a required self-reference can
+    terminate. Narrowing it to a bare ``Any`` would produce a property with no
+    ``type``, which the regex backend rejects.
+
     """
     # ``$defs`` live on the top-level schema, so the root has to travel with
     # the recursion; without it a nested ``$ref`` has nothing to resolve against.
@@ -123,11 +132,20 @@ def schema_type_to_python(
 
     if "$ref" in schema:
         ref = schema["$ref"]
-        # A recursive schema (a model referencing itself, directly or through
-        # a cycle) has no finite Python type here, so the cycle is broken with
-        # ``Any`` rather than recursing until the stack runs out.
+        # A recursive schema (a model referencing itself, directly or through a
+        # cycle) has no finite Python type here, so the back edge is left
+        # deliberately unconstrained rather than recursing until the stack runs
+        # out. This is the designed stopping point, not a missed conversion: a
+        # finite regex cannot express an unbounded tree.
+        #
+        # ``Optional[Any]`` rather than ``Any``, because the back edge has to
+        # round-trip to a schema the regex backend accepts. A bare ``Any``
+        # serializes to a property with no ``type`` (``{"title": "Next"}``),
+        # which ``to_regex`` rejects outright; ``Optional[Any]`` serializes to
+        # ``{"anyOf": [{}, {"type": "null"}]}``, which it accepts. Null is also
+        # the only way an instance of a *required* self-reference can terminate.
         if ref in _seen:
-            return Any
+            return Optional[Any]
         resolved = _resolve_ref(ref, root)
         if resolved is None:
             return Any
@@ -135,6 +153,11 @@ def schema_type_to_python(
             resolved, caller_target_type, root=root, _seen=_seen | {ref}
         )
 
+    # A member that is not a dict is not a subschema. Every combinator drops
+    # those and falls back to ``Any`` once nothing valid is left, rather than
+    # raising: an unusable member should not make the whole schema unusable.
+    # This is separate from a well-formed ``allOf`` of several object
+    # subschemas, which is left as ``Any`` for the reason given below.
     for keyword in ("anyOf", "oneOf"):
         if keyword in schema:
             members = tuple(
