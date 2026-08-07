@@ -125,12 +125,22 @@ class Template:
 def build_template_from_string(
     content: str, filters: Dict[str, Callable] = {}
 ) -> jinja2.Template:
-    # Dedent, and remove extra linebreak
-    cleaned_template = inspect.cleandoc(content)
+    # Whether the original content ends on a fully blank line (i.e. two or
+    # more consecutive linebreaks), ignoring any horizontal whitespace on
+    # that line. Checked against the raw content, since `cleandoc` below
+    # would otherwise collapse this information away.
+    ends_with_linebreak = re.sub(r"[^\S\n]+", "", content).endswith("\n\n")
 
-    # Add linebreak if there were any extra linebreaks that
-    # `cleandoc` would have removed
-    ends_with_linebreak = content.replace(" ", "").endswith("\n\n")
+    # Dedent, and remove extra linebreak. `cleandoc` only fully drops a
+    # trailing whitespace-only line when its indentation doesn't exceed the
+    # common margin of the rest of the content (e.g. once tabs are expanded
+    # to spaces): an over-indented or tab-indented trailing blank line is
+    # left behind as leftover whitespace instead of being removed. Strip
+    # that leftover explicitly so it doesn't leak into the rendered
+    # template; the `ends_with_linebreak` check above restores a single
+    # trailing linebreak when the original content warrants one.
+    cleaned_template = inspect.cleandoc(content).rstrip()
+
     if ends_with_linebreak:
         cleaned_template += "\n"
 
