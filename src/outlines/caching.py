@@ -5,6 +5,7 @@ import contextlib
 import functools
 import os
 import tempfile
+from contextvars import ContextVar
 from typing import Callable, Optional
 
 import cloudpickle
@@ -12,6 +13,14 @@ from diskcache import Cache, Disk
 from diskcache.core import ENOVAL, UNKNOWN, args_to_key, full_name
 
 _caching_enabled = True
+_caching_enabled_override: ContextVar[Optional[bool]] = ContextVar(
+    "outlines_caching_enabled", default=None
+)
+
+
+def _is_caching_enabled() -> bool:
+    override = _caching_enabled_override.get()
+    return _caching_enabled if override is None else override
 
 
 class CloudpickleDisk(Disk): # pragma: no cover
@@ -113,7 +122,7 @@ def cache(expire: Optional[float] = None, typed=False, ignore=()):
         if asyncio.iscoroutinefunction(cached_function):  # pragma: no cover
 
             async def wrapper(*args, **kwargs):
-                if not _caching_enabled:
+                if not _is_caching_enabled():
                     return await cached_function(*args, **kwargs)
 
                 cache_key = wrapper.__cache_key__(*args, **kwargs)
@@ -128,7 +137,7 @@ def cache(expire: Optional[float] = None, typed=False, ignore=()):
         else:
 
             def wrapper(*args, **kwargs):
-                if not _caching_enabled:
+                if not _is_caching_enabled():
                     return cached_function(*args, **kwargs)
 
                 cache_key = wrapper.__cache_key__(*args, **kwargs)
@@ -185,11 +194,8 @@ def clear_cache():
 
 @contextlib.contextmanager
 def cache_disabled():
-    # outlines.caching._caching_enabled
-    global _caching_enabled
-    original_state = _caching_enabled
-    _caching_enabled = False
+    token = _caching_enabled_override.set(False)
     try:
         yield
     finally:
-        _caching_enabled = original_state
+        _caching_enabled_override.reset(token)
