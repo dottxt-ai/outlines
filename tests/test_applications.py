@@ -1,4 +1,5 @@
 from typing import Any
+from unittest.mock import MagicMock, call, patch
 
 import jinja2
 import pytest
@@ -91,3 +92,17 @@ def test_application_generator_reuse(model, another_model):
     assert application.model == another_model
     assert application.model != first_model
     assert application.generator != first_generator
+
+
+def test_application_rebuilds_generator_when_output_type_changes():
+    with patch("outlines.applications.Generator") as MockGenerator:
+        template = MagicMock()
+        application = Application(template, output_type=int)
+        model = MagicMock()
+
+        application(model, {})
+        application(model, {})
+        application.output_type = str
+        application(model, {})
+
+        assert MockGenerator.call_args_list == [call(model, int), call(model, str)]

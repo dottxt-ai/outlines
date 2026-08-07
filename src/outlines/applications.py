@@ -72,6 +72,7 @@ class Application:
             BlackBoxGenerator, SteerableGenerator
         ]] = None
         self.model: Optional[Model] = None
+        self._generator_output_type: Any = None
 
     def __call__(
         self,
@@ -95,12 +96,14 @@ class Application:
         """
         if model is None:
             raise ValueError("you must provide a model")
+        output_type = self.output_type
         # We save the generator to avoid creating a new one for each call.
-        # If the model has changed since the last call, we create a new
-        # generator.
-        if model != self.model:
+        # If the model or the output type has changed since the last call,
+        # we create a new generator.
+        if model != self.model or output_type != self._generator_output_type:
             self.model = model
-            self.generator = Generator(model, self.output_type)  # type: ignore
+            self._generator_output_type = output_type
+            self.generator = Generator(model, output_type)  # type: ignore
 
         prompt = self.template(**template_vars)
         assert self.generator is not None
