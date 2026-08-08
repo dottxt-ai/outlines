@@ -110,6 +110,51 @@ def test_gemini_type_adapter_input_chat(adapter, image):
     }
 
 
+def test_gemini_type_adapter_input_chat_system(adapter):
+    input_message = Chat(messages=[
+        {"role": "system", "content": "You are a helpful assistant."},
+        {"role": "user", "content": "Hello"},
+    ])
+    result = adapter.format_input(input_message)
+    assert result == {
+        "system_instruction": "You are a helpful assistant.",
+        "contents": [
+            {"role": "user", "parts": [{"text": "Hello"}]},
+        ],
+    }
+
+
+def test_gemini_type_adapter_input_chat_system_not_first(adapter):
+    input_message = Chat(messages=[
+        {"role": "user", "content": "Hello"},
+        {"role": "system", "content": "Be concise."},
+        {"role": "user", "content": "Bye"},
+    ])
+    result = adapter.format_input(input_message)
+    assert result == {
+        "system_instruction": "Be concise.",
+        "contents": [
+            {"role": "user", "parts": [{"text": "Hello"}]},
+            {"role": "user", "parts": [{"text": "Bye"}]},
+        ],
+    }
+
+
+def test_gemini_type_adapter_input_chat_multiple_system(adapter):
+    input_message = Chat(messages=[
+        {"role": "system", "content": "You are a helpful assistant."},
+        {"role": "system", "content": "Be concise."},
+        {"role": "user", "content": "Hello"},
+    ])
+    result = adapter.format_input(input_message)
+    assert result == {
+        "system_instruction": "You are a helpful assistant.\nBe concise.",
+        "contents": [
+            {"role": "user", "parts": [{"text": "Hello"}]},
+        ],
+    }
+
+
 def test_gemini_type_adapter_input_invalid(adapter):
     @dataclass
     class Audio:

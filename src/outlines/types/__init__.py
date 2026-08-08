@@ -89,6 +89,11 @@ __all__ = [
     "hex_color",
     "slug",
     "credit_card",
+    "iban",
+    "bic",
+    "e164",
+    "latitude",
+    "longitude",
     # Document-specific types
     "sentence",
     "paragraph",
@@ -190,6 +195,48 @@ credit_card = Regex(
     r"|(?:5018|5020|5038|5893|6304|6759|676[1-3])[0-9]{8,15}"  # Maestro
     r"|62[0-9]{14,17}"  # UnionPay 62-prefix; includes Discover 622126-622925 co-brand
 )
+
+# ISO 13616 IBANs in electronic format: a country code, two check digits and a
+# country-specific basic bank account number of up to 30 characters. The check
+# digits are computed with ISO 7064 MOD 97-10 and therefore always fall between
+# 02 and 98. Neither the checksum itself nor the per-country account number
+# length and layout are validated, and the print format with spaces every four
+# characters is excluded.
+iban = Regex(
+    r"[A-Z]{2}"  # country code
+    r"(?:0[2-9]|[1-8][0-9]|9[0-8])"  # check digits
+    r"[A-Z0-9]{11,30}"  # basic bank account number
+)
+
+# ISO 9362 business identifier codes, also known as SWIFT codes. The location
+# code excludes 0 and 1 as its first character and the letter O as its second,
+# per the standard. The country code is only checked for shape here; use
+# `outlines.types.countries.Alpha2` to restrict it to assigned codes.
+bic = Regex(
+    r"[A-Z]{4}"  # institution code
+    r"[A-Z]{2}"  # country code
+    r"[A-Z2-9][A-NP-Z0-9]"  # location code
+    r"(?:[A-Z0-9]{3})?"  # optional branch code, "XXX" for the head office
+)
+
+# ITU-T E.164 international phone numbers: https://www.itu.int/rec/T-REC-E.164
+# Canonical text form only: a leading plus, a country code starting with a
+# non-zero digit, and at most fifteen digits in total. Spacing, hyphens, and
+# national dialing prefixes are intentionally excluded, and number assignment
+# is not validated. For national conventions see the `locale` submodule.
+# Like the other built-in string types, this is meant for standalone use: inside
+# a JSON container it is currently generated unquoted (#1962).
+e164 = Regex(r"\+[1-9]\d{1,14}")
+
+# Geographic coordinates in signed decimal degrees. Latitude is bounded to
+# [-90, 90] and longitude to [-180, 180]; the bounds themselves admit only a
+# zero fractional part. Leading zeros in the integer part and the
+# degree-minute-second and cardinal-direction notations are excluded.
+# These are text forms meant for standalone use: inside a JSON container they
+# are currently generated unquoted (#1962), which parses as a number rather
+# than the string the schema declares.
+latitude = Regex(r"[+-]?(?:90(?:\.0+)?|[1-8]?\d(?:\.\d+)?)")
+longitude = Regex(r"[+-]?(?:180(?:\.0+)?|(?:1[0-7]\d|[1-9]?\d)(?:\.\d+)?)")
 
 # Document-specific types
 sentence = Regex(r"[A-Z].*\s*[.!?]")
