@@ -31,6 +31,7 @@ class MockStreamingChunk:
             choice = MagicMock()
             delta = MagicMock()
             delta.content = content
+            delta.refusal = None
             choice.delta = delta
             self.choices = [choice]
 
