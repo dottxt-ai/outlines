@@ -28,7 +28,7 @@ class AnthropicTypeAdapter(ModelTypeAdapter):
 
     @singledispatchmethod
     def format_input(self, model_input):
-        """Generate the `messages` argument to pass to the client.
+        """Generate the input arguments to pass to the client.
 
         Parameters
         ----------
@@ -38,7 +38,7 @@ class AnthropicTypeAdapter(ModelTypeAdapter):
         Returns
         -------
         dict
-            The `messages` argument to pass to the client.
+            The input arguments to pass to the client.
 
         """
         raise TypeError(
@@ -63,16 +63,30 @@ class AnthropicTypeAdapter(ModelTypeAdapter):
 
     @format_input.register(Chat)
     def format_chat_model_input(self, model_input: Chat) -> dict:
-        """Generate the `messages` argument to pass to the client when the user
+        """Generate the input arguments to pass to the client when the user
         passes a Chat instance.
 
         """
-        return {
+        system_prompts = []
+        first_message_index = 0
+
+        for message in model_input.messages:
+            if message["role"] != "system":
+                break
+            system_prompts.append(message["content"])
+            first_message_index += 1
+
+        formatted_input: dict[str, Any] = {
             "messages": [
                 self._create_message(message["role"], message["content"])
-                for message in model_input.messages
+                for message in model_input.messages[first_message_index:]
             ]
         }
+
+        if system_prompts:
+            formatted_input["system"] = "\n".join(system_prompts)
+
+        return formatted_input
 
     def _create_message(self, role: str, content: str | list) -> dict:
         """Create a message."""
