@@ -37,8 +37,8 @@ Users need to provide a short biography, with a minimum of 10 and a maximum of 3
 
 ```python
 class DatingProfile(BaseModel):
-    bio: constr(str, min_length=10, max_length=300)
-    job: constr(str, max_lengt=50)
+    bio: constr(min_length=10, max_length=300)
+    job: constr(max_length=50)
     interests: conlist(str, min_length=1, max_length=5)  # type: ignore
     qna1: QuestionAnswer
     qna2: QuestionAnswer
