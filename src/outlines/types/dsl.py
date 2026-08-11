@@ -873,6 +873,45 @@ def _is_builtin_term(term: Term, names: tuple[str, ...]) -> bool:
     return any(term is getattr(types, name, None) for name in names)
 
 
+# Built-in ``Regex`` singletons that are JSON scalars and must stay bare inside
+# containers, and string-shaped singletons that must be JSON-quoted there.
+# ``types.string`` is handled separately by the pattern guard in
+# ``_ensure_json_quoted``, so it is not listed here.
+BARE_TERMS = (
+    "integer",
+    "number",
+    "boolean",
+    "digit",
+    "newline",
+    "whitespace",
+    "paragraph",
+    "sentence",
+    "date",
+    "time",
+    "datetime",
+    "latitude",
+    "longitude",
+)
+
+QUOTED_TERMS = (
+    "email",
+    "uuid4",
+    "ipv4",
+    "ipv6",
+    "isbn",
+    "mac_address",
+    "semver",
+    "slug",
+    "hex_color",
+    "hex_str",
+    "credit_card",
+    "char",
+    "iban",
+    "bic",
+    "e164",
+)
+
+
 def _ensure_json_quoted(term: Term, quote_regex: bool = False) -> Term:
     """Wrap ``String`` terms in double quotes for JSON container contexts.
 
@@ -897,40 +936,9 @@ def _ensure_json_quoted(term: Term, quote_regex: bool = False) -> Term:
         # control-character terms bare (escaping them is a follow-up, #1962),
         # leave temporals to #1961, and quote the string-shaped built-ins so
         # containers like ``list[types.email]`` generate valid JSON.
-        if _is_builtin_term(
-            term,
-            (
-                "integer",
-                "number",
-                "boolean",
-                "digit",
-                "newline",
-                "whitespace",
-                "paragraph",
-                "sentence",
-                "date",
-                "time",
-                "datetime",
-            ),
-        ):
+        if _is_builtin_term(term, BARE_TERMS):
             return term
-        if _is_builtin_term(
-            term,
-            (
-                "email",
-                "uuid4",
-                "ipv4",
-                "ipv6",
-                "isbn",
-                "mac_address",
-                "semver",
-                "slug",
-                "hex_color",
-                "hex_str",
-                "credit_card",
-                "char",
-            ),
-        ):
+        if _is_builtin_term(term, QUOTED_TERMS):
             return Sequence([String('"'), term, String('"')])
     return term
 

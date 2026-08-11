@@ -20,6 +20,8 @@ from pydantic import BaseModel
 
 from outlines import grammars, types
 from outlines.types.dsl import (
+    BARE_TERMS,
+    QUOTED_TERMS,
     Alternatives,
     JsonSchema,
     KleenePlus,
@@ -1232,6 +1234,9 @@ def test_e2e_optional_none_not_quoted_in_containers():
         (types.credit_card, "4111111111111111"),
         (types.char, "x"),
         (types.email, "a@b.com"),
+        (types.iban, "DE89370400440532013000"),
+        (types.bic, "DEUTDEFF"),
+        (types.e164, "+14155552671"),
     ],
 )
 def test_e2e_string_shaped_builtin_terms_quoted_in_containers(term, value):
@@ -1266,6 +1271,32 @@ def test_e2e_json_scalar_builtin_terms_stay_bare_in_containers(term, value):
     list_pattern = to_regex(python_types_to_terms(list[term]))
     assert _re.fullmatch(list_pattern, f"[{value}]")
     assert not _re.fullmatch(list_pattern, f'["{value}"]')
+
+
+@pytest.mark.parametrize(
+    "term,value",
+    [
+        (types.latitude, "45.5"),
+        (types.longitude, "-73.6"),
+    ],
+)
+def test_e2e_number_shaped_builtin_terms_stay_bare_in_containers(term, value):
+    """Number-shaped built-ins (latitude/longitude) stay bare; they are
+    classified explicitly rather than falling through the allowlist."""
+    list_pattern = to_regex(python_types_to_terms(list[term]))
+    assert _re.fullmatch(list_pattern, f"[{value}]")
+    assert not _re.fullmatch(list_pattern, f'["{value}"]')
+
+
+def test_every_builtin_regex_term_is_classified():
+    """Every built-in ``Regex`` singleton is classified as bare or quoted, so a
+    future type PR cannot silently reopen #1962 by falling through."""
+    builtins = {
+        name
+        for name in dir(types)
+        if not name.startswith("_") and isinstance(getattr(types, name), Regex)
+    }
+    assert not builtins - (set(BARE_TERMS) | set(QUOTED_TERMS) | {"string"})
 
 
 def test_e2e_control_char_builtin_terms_left_bare_in_containers():
