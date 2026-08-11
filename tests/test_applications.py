@@ -31,9 +31,9 @@ def test_application_initialization():
     application = Application(template, output_type)
 
     assert application.template == template
-    assert application.output_type == output_type
-    assert application.model is None
-    assert application.generator is None
+    assert application._output_type == output_type
+    assert application._model is None
+    assert application._generator is None
 
 
 def test_application_generator_no_model():
@@ -80,14 +80,14 @@ def test_application_generator_reuse(model, another_model):
     application = Application(template, output_type)
 
     application(model, {"value": "example"}, max_new_tokens=10)
-    first_generator = application.generator
-    first_model = application.model
+    first_generator = application._generator
+    first_model = application._model
 
     application(model, {"value": "example"}, max_new_tokens=10)
-    assert application.model == first_model
-    assert application.generator == first_generator
+    assert application._model == first_model
+    assert application._generator == first_generator
 
     application(another_model, {"value": "example"}, max_new_tokens=10)
-    assert application.model == another_model
-    assert application.model != first_model
-    assert application.generator != first_generator
+    assert application._model == another_model
+    assert application._model != first_model
+    assert application._generator != first_generator
