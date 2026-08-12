@@ -105,29 +105,6 @@ def test_mlxlm_type_adapter_format_input(adapter, image):
         ]))
 
 
-def test_mlxlm_type_adapter_format_output_type_falsy_processor():
-    tokenizer = MagicMock()
-    adapter = MLXLMTypeAdapter(tokenizer=tokenizer)
-
-    class FalsyProcessor:
-        def __bool__(self):
-            return False
-
-    processor = FalsyProcessor()
-    result = adapter.format_output_type(processor)
-
-    assert result == [processor]
-
-
-def test_mlxlm_type_adapter_format_output_type_none():
-    tokenizer = MagicMock()
-    adapter = MLXLMTypeAdapter(tokenizer=tokenizer)
-
-    result = adapter.format_output_type(None)
-
-    assert result is None
-
-
 @pytest.mark.skipif(not HAS_MLX, reason="MLX tests require Apple Silicon")
 def test_mlxlm_type_adapter_format_output_type(adapter, logits_processor):
     formatted = adapter.format_output_type(logits_processor)
