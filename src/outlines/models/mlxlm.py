@@ -94,9 +94,9 @@ class MLXLMTypeAdapter(ModelTypeAdapter):
             The logits processor argument to be passed to the model.
 
         """
-        if not output_type:
-            return None
-        return [output_type]
+        if output_type is not None:
+            return [output_type]
+        return None
 
 
 class MLXLM(Model):
