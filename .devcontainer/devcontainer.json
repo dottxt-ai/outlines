@@ -1,0 +1,19 @@
+{
+  "name": "dottxt-ai",
+  "image": "mcr.microsoft.com/devcontainers/python:3.12",
+  "runArgs": [
+    "--device=nvidia.com/gpu=all"
+  ],
+  "hostRequirements": {
+    "gpu": "optional"
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/conda:1": {},
+    "ghcr.io/devcontainers/features/nvidia-cuda:1": {
+      "installCudnn": true,
+      "installToolkit": true,
+      "cudaVersion": "12.4"
+    },
+    "ghcr.io/devcontainers/features/rust:1": {}
+  }
+}

@@ -1,0 +1,27 @@
+name: Release PyPi
+
+on:
+  release:
+    types:
+      - created
+jobs:
+  release-job:
+    name: Build and publish on PyPi
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+    - name: Set up Python
+      uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5
+      with:
+        python-version: "3.10"
+    - name: Build SDist and Wheel
+      run: ./.github/scripts/build_sdist_and_wheel.sh
+    - name: Check that the package version matches the Release name
+      run: |
+        grep -Rq "^Version: ${GITHUB_REF:10}$" src/outlines.egg-info/PKG-INFO
+    - name: Publish to PyPi
+      uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b # v1.14.0
+      with:
+        user: __token__
+        password: ${{ secrets.PYPI_TOKEN }}

@@ -1,0 +1,260 @@
+"""Output types for structured generation and regex DSL."""
+
+from outlines.types.dsl import (
+    CFG,
+    Choice,
+    JsonSchema,
+    Regex,
+    at_least,
+    at_most,
+    between,
+    cfg,
+    either,
+    exactly,
+    json_schema,
+    one_or_more,
+    optional,
+    regex,
+    zero_or_more,
+)
+
+from . import locale
+
+try:
+    from . import airports
+except ImportError:  # pragma: no cover
+    class AirportImportError:
+        """Dummy module that raises an error when accessed."""
+        def __getattr__(self, name):
+            raise ImportError(
+                "The 'airportsdata' package is required to use airport types. "
+                "Install it with: pip install 'outlines[airports]'"
+            )
+
+    airports = AirportImportError()  # type: ignore
+
+try:
+    from . import countries
+except ImportError:  # pragma: no cover
+    class CountryImportError:
+        """Dummy module that raises an error when accessed."""
+        def __getattr__(self, name):
+            raise ImportError(
+                "The 'iso3166' package is required to use country types. "
+                "Install it with: pip install 'outlines[countries]'"
+            )
+
+    countries = CountryImportError()  # type: ignore
+
+__all__ = [
+    # Submodules
+    "airports",
+    "countries",
+    "locale",
+    # DSL functions and classes
+    "Regex",
+    "CFG",
+    "Choice",
+    "JsonSchema",
+    "regex",
+    "cfg",
+    "json_schema",
+    "optional",
+    "either",
+    "exactly",
+    "at_least",
+    "at_most",
+    "between",
+    "zero_or_more",
+    "one_or_more",
+    # Python types
+    "string",
+    "integer",
+    "boolean",
+    "number",
+    "date",
+    "time",
+    "datetime",
+    # Basic regex types
+    "digit",
+    "char",
+    "newline",
+    "whitespace",
+    "hex_str",
+    "uuid4",
+    "ipv4",
+    "ipv6",
+    "semver",
+    "mac_address",
+    "hex_color",
+    "slug",
+    "credit_card",
+    "iban",
+    "bic",
+    "e164",
+    "latitude",
+    "longitude",
+    # Document-specific types
+    "sentence",
+    "paragraph",
+    "email",
+    "isbn",
+]
+
+
+# Python types
+string = Regex(r'"[^"]*"')
+integer = Regex(r"[+-]?(0|[1-9][0-9]*)")
+boolean = Regex("(True|False)")
+number = Regex(rf"{integer.pattern}(\.[0-9]+)?([eE][+-]?[0-9]+)?")
+date = Regex(r"(\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])")
+time = Regex(r"([0-1][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])")
+datetime = Regex(rf"({date.pattern})(\s)({time.pattern})")
+
+# Basic regex types
+digit = Regex(r"\d")
+char = Regex(r"\w")
+newline = Regex(r"(\r\n|\r|\n)")  # Matched new lines on Linux, Windows & MacOS
+whitespace = Regex(r"\s")
+hex_str = Regex(r"(0x)?[a-fA-F0-9]+")
+uuid4 = Regex(
+    r"[a-fA-F0-9]{8}-"
+    r"[a-fA-F0-9]{4}-"
+    r"4[a-fA-F0-9]{3}-"
+    r"[89abAB][a-fA-F0-9]{3}-"
+    r"[a-fA-F0-9]{12}"
+)
+ipv4 = Regex(
+    r"((25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])\.){3}"
+    r"(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])"
+)
+
+# SemVer 2.0.0: https://semver.org/
+# This enforces the MAJOR.MINOR.PATCH numeric components and their leading-zero
+# rules. Prerelease and build metadata are intentionally matched more broadly
+# than the full spec's dot-separated identifier rules to keep the regex compact.
+semver = Regex(
+    r"(0|[1-9]\d*)\."
+    r"(0|[1-9]\d*)\."
+    r"(0|[1-9]\d*)"
+    r"(?:-[0-9A-Za-z.-]+)?"
+    r"(?:\+[0-9A-Za-z.-]+)?"
+)
+
+# IEEE RA EUI-48 identifiers: https://standards.ieee.org/faqs/regauth/
+# This validates only the common colon-separated six-octet text form for MAC
+# addresses. It does not validate assignment, OUI ownership, or local/multicast
+# bits, and excludes other textual forms such as hyphen-separated addresses.
+mac_address = Regex(r"[0-9A-Fa-f]{2}(:[0-9A-Fa-f]{2}){5}")
+
+# RFC 4291 IPv6 addresses: https://datatracker.ietf.org/doc/html/rfc4291
+# Covers the full eight-group colon-hex notation, :: zero-compression in any
+# position, and both IPv4-mapped (::ffff:a.b.c.d) and IPv4-embedded
+# (a:b:c:d::x.y.z.w) forms. Zone IDs and prefix lengths are out of scope.
+ipv6 = Regex(
+    r"(?:[0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4}"
+    r"|(?:[0-9A-Fa-f]{1,4}:){1,7}:"
+    r"|(?:[0-9A-Fa-f]{1,4}:){1,6}:[0-9A-Fa-f]{1,4}"
+    r"|(?:[0-9A-Fa-f]{1,4}:){1,5}(?::[0-9A-Fa-f]{1,4}){1,2}"
+    r"|(?:[0-9A-Fa-f]{1,4}:){1,4}(?::[0-9A-Fa-f]{1,4}){1,3}"
+    r"|(?:[0-9A-Fa-f]{1,4}:){1,3}(?::[0-9A-Fa-f]{1,4}){1,4}"
+    r"|(?:[0-9A-Fa-f]{1,4}:){1,2}(?::[0-9A-Fa-f]{1,4}){1,5}"
+    r"|[0-9A-Fa-f]{1,4}:(?::[0-9A-Fa-f]{1,4}){1,6}"
+    r"|:(?::[0-9A-Fa-f]{1,4}){1,7}"
+    r"|::"
+    r"|::(?:[Ff]{4}(?::0{1,4})?:)(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])"
+    r"(?:\.(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])){3}"
+    r"|(?:[0-9A-Fa-f]{1,4}:){1,4}:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])"
+    r"(?:\.(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])){3}"
+)
+
+# CSS hexadecimal color notation: https://www.w3.org/TR/css-color-4/#hex-notation
+# This matches only the ubiquitous three-digit (#rgb) and six-digit (#rrggbb)
+# forms. The four- and eight-digit forms that encode an alpha channel are
+# intentionally excluded to keep the type to the canonical opaque-color syntax.
+hex_color = Regex(r"#(?:[0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})")
+
+# URL slugs in the lowercase-hyphenated form produced by common web framework
+# slugify helpers: ASCII lowercase alphanumeric groups separated by single
+# hyphens. Uppercase letters, underscores, and leading, trailing, or
+# consecutive hyphens are excluded, as is the empty string.
+slug = Regex(r"[a-z0-9]+(?:-[a-z0-9]+)*")
+
+# Payment card numbers (PANs) for common card networks, matched by issuer prefix
+# and length. The same prefixes may cover credit, debit and prepaid cards, so
+# this validates the number format only, not the Luhn checksum. Each branch is
+# annotated below.
+credit_card = Regex(
+    r"4[0-9]{12}(?:[0-9]{3}(?:[0-9]{3})?)?"  # Visa (13, 16 or 19 digits)
+    r"|5[1-5][0-9]{14}"  # Mastercard (51-55)
+    r"|2(?:22[1-9]|2[3-9][0-9]|[3-6][0-9]{2}|7[01][0-9]|720)[0-9]{12}"  # Mastercard (2221-2720)
+    r"|3[47][0-9]{13}"  # American Express
+    r"|3(?:0[0-5]|[68][0-9])[0-9]{11}"  # Diners Club
+    r"|6(?:011[0-9]{12}|4[4-9][0-9]{13}|5[0-9]{14})"  # Discover (6011, 644-649, 65)
+    r"|(?:2131|1800|35[0-9]{3})[0-9]{11}"  # JCB
+    r"|(?:5018|5020|5038|5893|6304|6759|676[1-3])[0-9]{8,15}"  # Maestro
+    r"|62[0-9]{14,17}"  # UnionPay 62-prefix; includes Discover 622126-622925 co-brand
+)
+
+# ISO 13616 IBANs in electronic format: a country code, two check digits and a
+# country-specific basic bank account number of up to 30 characters. The check
+# digits are computed with ISO 7064 MOD 97-10 and therefore always fall between
+# 02 and 98. Neither the checksum itself nor the per-country account number
+# length and layout are validated, and the print format with spaces every four
+# characters is excluded.
+iban = Regex(
+    r"[A-Z]{2}"  # country code
+    r"(?:0[2-9]|[1-8][0-9]|9[0-8])"  # check digits
+    r"[A-Z0-9]{11,30}"  # basic bank account number
+)
+
+# ISO 9362 business identifier codes, also known as SWIFT codes. The location
+# code excludes 0 and 1 as its first character and the letter O as its second,
+# per the standard. The country code is only checked for shape here; use
+# `outlines.types.countries.Alpha2` to restrict it to assigned codes.
+bic = Regex(
+    r"[A-Z]{4}"  # institution code
+    r"[A-Z]{2}"  # country code
+    r"[A-Z2-9][A-NP-Z0-9]"  # location code
+    r"(?:[A-Z0-9]{3})?"  # optional branch code, "XXX" for the head office
+)
+
+# ITU-T E.164 international phone numbers: https://www.itu.int/rec/T-REC-E.164
+# Canonical text form only: a leading plus, a country code starting with a
+# non-zero digit, and at most fifteen digits in total. Spacing, hyphens, and
+# national dialing prefixes are intentionally excluded, and number assignment
+# is not validated. For national conventions see the `locale` submodule.
+# Like the other built-in string types, this is meant for standalone use: inside
+# a JSON container it is currently generated unquoted (#1962).
+e164 = Regex(r"\+[1-9]\d{1,14}")
+
+# Geographic coordinates in signed decimal degrees. Latitude is bounded to
+# [-90, 90] and longitude to [-180, 180]; the bounds themselves admit only a
+# zero fractional part. Leading zeros in the integer part and the
+# degree-minute-second and cardinal-direction notations are excluded.
+# These are text forms meant for standalone use: inside a JSON container they
+# are currently generated unquoted (#1962), which parses as a number rather
+# than the string the schema declares.
+latitude = Regex(r"[+-]?(?:90(?:\.0+)?|[1-8]?\d(?:\.\d+)?)")
+longitude = Regex(r"[+-]?(?:180(?:\.0+)?|(?:1[0-7]\d|[1-9]?\d)(?:\.\d+)?)")
+
+# Document-specific types
+sentence = Regex(r"[A-Z].*\s*[.!?]")
+paragraph = Regex(rf"{sentence.pattern}(?:\s+{sentence.pattern})*\n+")
+
+
+# The following regex is FRC 5322 compliant and was found at:
+# https://emailregex.com/
+email = Regex(
+    r"""(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])"""
+)
+
+# Matches any ISBN number. Note that this is not completely correct as not all
+# 10 or 13 digits numbers are valid ISBNs. See https://en.wikipedia.org/wiki/ISBN
+# Taken from O'Reilly's Regular Expression Cookbook:
+# https://www.oreilly.com/library/view/regular-expressions-cookbook/9781449327453/ch04s13.html
+#
+# TODO: The check digit can only be computed by calling a function to compute it dynamically
+isbn = Regex(
+    r"(?:ISBN(?:-1[03])?:? )?(?=[0-9X]{10}$|(?=(?:[0-9]+[- ]){3})[- 0-9X]{13}$|97[89][0-9]{10}$|(?=(?:[0-9]+[- ]){4})[- 0-9]{17}$)(?:97[89][- ]?)?[0-9]{1,5}[- ]?[0-9]+[- ]?[0-9]+[- ]?[0-9X]"
+)

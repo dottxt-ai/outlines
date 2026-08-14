@@ -1,0 +1,152 @@
+---
+title: Models
+---
+
+# Models
+
+## Overview
+
+Outlines models are objects that wrap an inference client or engine. Models provide a standardized interface to generate structured text.
+
+All Outlines model classes have an associated loader function to facilitate initializing a model instance. The name of this function is `from_` plus the name of the model in lower-case letters. For instance, Outlines has a `Transformers` model and an associated `from_transformers` loader function. The parameters to load a model are specific to each provider, please consult the documentation of the model you want to use for more information.
+
+After having created a model instance, you can either directly call it to generate text or first create a reusable generator that you would then call.
+
+The input you must provide to a model to generate text can be a simple text prompt or a vision or chat input for models that support them. See the [model inputs section](../core/inputs.md) for more information on model inputs formats.
+
+In all cases, you can provide an `output_type` to constrain the format of the generation output. See the [output types section](../core/output_types.md) for more information on constrained generation.
+
+For instance:
+
+```python
+from outlines import from_transformers, Generator
+import transformers
+
+# Create a model
+model = from_transformers(
+    transformers.AutoModelForCausalLM.from_pretrained("microsoft/Phi-3-mini-4k-instruct"),
+    transformers.AutoTokenizer.from_pretrained("microsoft/Phi-3-mini-4k-instruct"),
+)
+
+# Call it directly
+response = model("How many countries are there in the world", max_new_tokens=20)
+print(response) # 'There are 200 countries in the world.'
+
+# Call it directly with an output_type
+response = model("How many countries are there in the world", int, max_new_tokens=20)
+print(response) # '200'
+
+# Create a generator first and then call it
+generator = Generator(model, int)
+response = generator("How many countries are there in the world")
+print(response) # '200'
+```
+
+Some models support streaming through a `stream` method. It takes the same argument as the `__call__` method, but returns an iterator instead of a string.
+
+For instance:
+
+```python
+from outlines import from_openai, Generator
+import openai
+
+# Create the model
+model = from_openai(
+    openai.OpenAI(),
+    "gpt-4o"
+)
+
+# Stream the response
+for chunk in model.stream("Tell a short story about a cat.", max_tokens=50):
+    print(chunk) # 'This...'
+```
+
+Additionally, some models support batch processing through a `batch` method. It's similar to the `__call__` method, but takes a list of prompts instead of a single prompt and returns a list of strings.
+
+For instance:
+
+```python
+from outlines import from_transformers, Generator
+import transformers
+
+# Create a model
+model = from_transformers(
+    transformers.AutoModelForCausalLM.from_pretrained("microsoft/Phi-3-mini-4k-instruct"),
+    transformers.AutoTokenizer.from_pretrained("microsoft/Phi-3-mini-4k-instruct"),
+)
+
+# Call it directly
+response = model.batch(["What's the capital of Latvia?", "What's the capital of Estonia?"], max_new_tokens=20)
+print(response) # ['Riga', 'Tallinn']
+```
+
+## Features Matrix
+
+In alphabetical order:
+
+| | [Anthropic](anthropic.md) | [Dottxt](dottxt.md) | [Gemini](gemini.md) | [LlamaCpp](llamacpp.md) | [LM Studio](lmstudio.md) | [MLXLM](mlxlm.md) | [Mistral](mistral.md) | [Ollama](ollama.md) | [OpenAI](openai.md) | [SGLang](sglang.md) | [TGI](tgi.md) | [Transformers](transformers.md) | [Transformers MultiModal](transformers_multimodal.md) | [VLLM](vllm.md) | [VLLMOffline](vllm_offline.md) |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| **Output Types** | | | | | | | | | | | | | | | |
+| Simple Types | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| JSON Schema | ❌ | ✅ | 🟠 | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Multiple Choice | ❌ | ❌ | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Regex | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Grammar | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | 🟠 | ❌ | ✅ | ✅ | ✅ | ✅ |
+| **Generation Features** | | | | | | | | | | | | | | | |
+| Async | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ | ❌ |
+| Streaming | ✅ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ | ❌ |
+| Vision | ✅ | ❌ | ✅ | ❌ | ✅ | ❌ | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ |
+| Batching | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ | ✅ | ❌ | ✅ |
+
+## Model Types
+
+Models can be divided into two categories: local models and server-based models.
+
+In the case of local models, the text generation happens within the inference library object used to instantiate the model. This gives Outlines direct access to the generation process (through a logits processor) and means all structured generation output types are available.
+
+The local models available are the following:
+
+- LlamaCpp
+- MLXLM
+- Transformers
+- TransformersMultiModal
+- VLLMOffline
+
+In the case of server-based models, the model is initialized with a client that sends a request to a server that is in charge of the actual text generation. As a result, we have limited control over text generation and some output types are not supported. The server on which the text generation happens can either be remote (with OpenAI or Anthopic for instance) or local (with SGLang for instance).
+
+The server-based models available are the following:
+
+- Anthropic
+- Dottxt
+- Gemini
+- LM Studio
+- Mistral
+- Ollama
+- OpenAI
+- SgLang
+- TGI
+- VLLM
+
+Some models have an async version. To use them, just pass the async version of the provider object to their loading function. It will then return a `Async<ModelName>` instance with the same methods and features as the regular sync instance.
+
+For instance:
+
+```python
+from outlines import from_tgi
+from huggingface_hub import AsyncInferenceClient
+
+model = from_tgi(
+    AsyncInferenceClient("http://localhost:8000/v1")
+)
+print(type(model)) # outlines.models.tgi.AsyncTGI
+```
+
+The models that have an async version are the following:
+
+- LM Studio
+- Mistral
+- Ollama
+- OpenAI
+- SgLang
+- TGI
+- VLLM

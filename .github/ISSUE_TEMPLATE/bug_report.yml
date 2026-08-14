@@ -1,0 +1,87 @@
+# Issue template inspired by NumPy's excellent template:
+# https://github.com/numpy/numpy/edit/main/.github/ISSUE_TEMPLATE/bug-report.yml
+name: 🐞 Bug report
+description: Create a bug report to help us reproduce and fix it.
+title: "<Please write a descriptive title>"
+labels: ["bug"]
+
+body:
+  - type: markdown
+    attributes:
+      value: >-
+        Thank you for taking the time to file a bug report. First, carefully read
+        the following before everything else:
+
+          - Does your issue only arise in a library that uses Outlines? If so,
+            submit your issue to this library's issue tracker.
+          - Did you check the issue tracker for open and closed issues that may be
+            related to your bug?
+
+  - type: textarea
+    attributes:
+      label: "Describe the issue as clearly as possible:"
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: "Steps/code to reproduce the bug:"
+      description: >
+        A short code example that reproduces the problem/missing feature. It
+        should be self-contained, i.e., can be copy-pasted into the Python
+        interpreter or run as-is via `python myproblem.py`.
+      placeholder: |
+        import outlines
+
+        << your code here >>
+      render: python
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: "Expected result:"
+      description: >
+        Please describe what you expect the above example to output.
+      placeholder: |
+        << the expected result here >>
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: "Error message:"
+      description: >
+        Please include the full error message, if any.
+      placeholder: |
+        << Full traceback starting from `Traceback: ...` >>
+      render: shell
+
+  - type: textarea
+    attributes:
+      label: "Outlines/Python version information:"
+      description: |
+          Please run the following code and paste the output here.
+          python -c "from outlines import _version; print(_version.__version__)";
+          python -c "import sys; print('Python', sys.version)";
+          pip freeze;
+      value: |
+          Version information
+          <details>
+          ```
+          (command output here)
+          ```
+          </details>
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: "Context for the issue:"
+      description: |
+        Please explain how this issue affects your work or why it should be prioritized.
+      placeholder: |
+        << your explanation here >>
+    validations:
+      required: false

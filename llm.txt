@@ -1,0 +1,181 @@
+# Outlines Codebase Reference
+
+## Overview
+
+Outlines is a library for structured generation for type-safe LLMs. It ensures outputs conform to specified formats (JSON schemas, regex patterns, grammars) by constraining the token generation process, or calling an API that uses this process.
+
+**Core insight**: Instead of generating text and hoping it matches a format, Outlines makes it impossible for the model to generate invalid outputs by masking invalid tokens during generation.
+
+**Note**: The codebase has undergone significant refactoring. Core FSM functionality has been extracted to the `outlines-core` package.
+
+## Usage Examples
+
+For comprehensive usage examples, see:
+- **README.md**: Quick start examples for JSON generation, regex constraints, and choice selection
+- **docs/cookbook/**: Detailed examples including:
+  - `docs/cookbook/prompting.md`: Advanced prompting techniques
+  - `docs/cookbook/models.md`: Working with different model providers
+  - `docs/cookbook/humaneval.md`: Code generation examples
+  - `docs/cookbook/qa-with-citations.md`: Question answering with structured citations
+  - `docs/cookbook/deploy-to-servers.md`: Deployment examples with vLLM and TGI
+- **examples/**: Standalone example scripts
+  - `examples/lark_grammar.py`: Grammar-based generation
+  - `examples/math_generate_code.py`: Code generation with constraints
+  - `examples/multiple_sglang_backend.py`: Using multiple backend servers
+- **tests/**: Test files contain many practical usage patterns
+
+## Architecture
+
+### Layer Stack
+
+```
+User API (outlines.models)
+    ↓
+Generator Classes (SteerableGenerator, BlackBoxGenerator)
+    ↓
+Type System (types/dsl.py: Pydantic → JsonSchema → Regex)
+    ↓
+FSM Compilation (outlines-core: regex → FSM via interegular)
+    ↓
+Guide System (processors/guide.py: FSM state management)
+    ↓
+Logits Processing (processors/structured.py: token masking)
+    ↓
+Model Providers (transformers, OpenAI, etc.)
+```
+
+### Key Design Decisions
+
+1. **FSM-based constraints**: For local models, constraints compile to finite state machines that track valid next tokens
+2. **Provider abstraction**: Same constraint system works across local models (transformers) and APIs (OpenAI)
+3. **Lazy compilation**: FSMs are compiled on first use and cached persistently
+4. **Token-level control**: Constraints apply at the token level, not character level
+5. **Type-driven API**: Python types are the primary interface for specifying constraints
+
+## Core Components
+
+### Models (`outlines/models/`)
+Base classes and implementations for different model providers:
+- `SteerableModel`: For models where we control logits (transformers, llama.cpp)
+- `BlackBoxModel`: For API models with structured output support (OpenAI, Anthropic)
+- Each provider has an adapter class handling input and output format conversion
+
+Key files:
+- `base.py`: Abstract base classes defining the model interface
+- `transformers.py`: Integration with HuggingFace transformers
+- `openai.py`: OpenAI API integration
+- `gemini.py`: Gemini integration
+- `mlxlm.py`: MLX-LM integration
+- `vllm_offline.py`: vLLM integration
+- `llamacpp.py`: llama.cpp integration
+- `ollama.py`: Ollama integration
+- `vllm.py`: Integration with vLLM servers
+- `tgi.py`: Integration with text-generation-inferece servers
+- `sglang.py`: Integration with SGLang servers
+
+### Generation (`outlines/generator.py`)
+Handles the generation process:
+- `generator.py`: Main `Generator` class implementations (root level)
+- Stream functionality is now integrated into generator classes
+
+Base classes and implementations for different model providers:
+- `BlackBoxGenerator`: For API models with structured outputs support
+- `SteerableGenerator`: For modesl where we control the logits
+
+### FSM System (`outlines/fsm/` and `outlines/processors/`)
+Core constraint enforcement:
+- `processors/guide.py`: Base `Guide` class and `RegexGuide` implementation
+- `fsm/parsing.py`: Lark-based CFG parsing with `PartialLark` parser
+- Regex to FSM compilation now uses `outlines_core.fsm` module
+
+Key concepts:
+- **Guide**: Manages FSM state during generation
+- **State transitions**: Precomputed mapping of (state, token) → next_state
+- **Token masking**: For each state, compute which tokens are valid
+
+### Type System (`outlines/types/`)
+Type conversion pipeline:
+- `dsl.py`: Term DSL defining constraint language (Sequence, Choice, etc.) and JSON schema to regex conversion
+- `__init__.py`: Common regex types and DSL functions
+- Python types → Term DSL → Regex → FSM
+
+### Logits Processors (`outlines/processors/`)
+Apply constraints during generation:
+- `structured.py`: Main `StructuredLogitsProcessor`
+- `base_logits_processor.py`: Abstract base class
+- Processors mask invalid tokens by setting their logits to -inf
+
+## Key Algorithms
+
+### FSM Compilation Pipeline
+1. **Pattern definition**: User provides Pydantic model, regex, or grammar
+2. **Schema to regex**: Convert complex types to regex patterns
+   - JSON schemas become regex matching valid JSON
+   - Pydantic models extract JSON schema then convert
+3. **Regex to FSM**: Use interegular library to build FSM
+4. **FSM to token map**: For each FSM state, compute valid tokens
+   - Handle multi-character tokens
+   - Account for token boundaries
+5. **Guide creation**: Wrap FSM with state tracking
+
+### Token Masking Process
+```python
+# Simplified logits processing
+def process_logits(logits, current_state, guide):
+    valid_tokens = guide.get_valid_tokens(current_state)
+    mask = torch.full_like(logits, -float('inf'))
+    mask[valid_tokens] = 0
+    return logits + mask
+```
+
+## File Organization
+
+```
+outlines/
+├── __init__.py              # Public API exports
+├── generator.py             # Main Generator classes
+├── models/                  # Model integrations
+│   ├── base.py             # Abstract base classes
+│   ├── transformers.py     # HuggingFace support
+│   └── [provider].py       # Other providers (openai, anthropic, etc.)
+├── fsm/                     # FSM engine
+│   ├── __init__.py
+│   └── parsing.py          # Grammar parsing
+├── types/                   # Type system
+│   ├── __init__.py         # Common regex types and DSL exports
+│   ├── dsl.py              # Term DSL and JSON schema conversion
+│   └── utils.py            # Type checking utilities
+├── processors/              # Logits processing and guides
+│   ├── guide.py            # Guide implementations
+│   ├── structured.py       # Main processor
+│   └── tensor_adapters/    # Framework-specific tensor handling
+├── caching.py               # Caching system
+├── grammars/                # Grammar files (.lark)
+```
+
+## Extension Points
+
+### Adding a Model Provider
+1. Create model class inheriting from `SteerableModel` or `BlackBoxModel`
+2. Implement required methods: `generate()`, `generate_stream()`
+3. Add constructor function in `outlines/__init__.py`
+4. Handle provider-specific input and structured output formats with a `TypeAdapter`
+
+### Adding a Constraint Type
+1. Define new Term subclass in `types/dsl.py`
+2. Implement `to_regex()` conversion
+3. Register type handler for Python type conversion in `python_types_to_terms()`
+4. Add tests for FSM compilation
+
+### Custom Logits Processor
+1. Inherit from `OutlinesLogitsProcessor`
+2. Implement `process_logits()` method
+3. Handle batch processing and state management
+4. Register with generator
+
+## Common Patterns in Codebase
+
+1. **Factory functions**: `from_transformers()`, `from_openai()` hide complexity
+2. **Abstract base classes**: Define interfaces for models, processors, guides
+3. **Lazy imports**: Optional dependencies imported only when needed
+5. **Type adapters**: Convert between Outlines types and provider formats

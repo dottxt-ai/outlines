@@ -1,0 +1,1262 @@
+import datetime
+import json
+import re as _re
+import sys
+import tempfile
+from dataclasses import dataclass
+from enum import Enum
+from typing import (
+    Literal,
+    Tuple,
+    Union,
+    get_args,
+    Optional as PyOptional
+)
+
+import jsonschema
+import pytest
+from genson import SchemaBuilder
+from pydantic import BaseModel
+
+from outlines import grammars, types
+from outlines.types.dsl import (
+    Alternatives,
+    JsonSchema,
+    KleenePlus,
+    KleeneStar,
+    Optional,
+    QuantifyBetween,
+    QuantifyExact,
+    QuantifyMaximum,
+    QuantifyMinimum,
+    Choice,
+    Regex,
+    Sequence,
+    String,
+    Term,
+    either,
+    CFG,
+    _handle_dict,
+    _handle_list,
+    _handle_literal,
+    _handle_tuple,
+    _handle_union,
+    _ensure_json_quoted,
+    json_schema,
+    one_or_more,
+    zero_or_more,
+    optional,
+    between,
+    at_most,
+    at_least,
+    exactly,
+    regex,
+    python_types_to_terms,
+    to_regex,
+)
+from outlines.types.utils import (
+    is_pydantic_model,
+    is_typed_dict,
+    is_dataclass,
+)
+
+if sys.version_info >= (3, 12):
+    from typing import TypedDict
+else:
+    from typing_extensions import TypedDict
+
+
+def test_dsl_init():
+    string = String("test")
+    assert string.value == "test"
+    assert repr(string) == "String(value='test')"
+    assert string.display_ascii_tree() == "└── String('test')\n"
+
+    choice = Choice(["a", "b"])
+    assert choice.items == ["a", "b"]
+    assert repr(choice) == "Choice(items=['a', 'b'])"
+    assert choice.display_ascii_tree() == "└── Choice(['a', 'b'])\n"
+
+    regex = Regex("[0-9]")
+    assert regex.pattern == "[0-9]"
+    assert repr(regex) == "Regex(pattern='[0-9]')"
+    assert regex.display_ascii_tree() == "└── Regex('[0-9]')\n"
+
+    schema = JsonSchema('{ "type": "string" }')
+    assert schema.schema == '{ "type": "string" }'
+    assert repr(schema) == 'JsonSchema(schema=\'{ "type": "string" }\')'
+    assert schema.display_ascii_tree() == "└── JsonSchema('{ \"type\": \"string\" }')\n"
+
+    kleene_star = KleeneStar(string)
+    assert kleene_star.term == string
+    assert repr(kleene_star) == "KleeneStar(term=String(value='test'))"
+    assert kleene_star.display_ascii_tree() == "└── KleeneStar(*)\n    └── String('test')\n"
+
+    kleene_plus = KleenePlus(string)
+    assert kleene_plus.term == string
+    assert repr(kleene_plus) == "KleenePlus(term=String(value='test'))"
+    assert kleene_plus.display_ascii_tree() == "└── KleenePlus(+)\n    └── String('test')\n"
+
+    optional = Optional(string)
+    assert optional.term == string
+    assert repr(optional) == "Optional(term=String(value='test'))"
+    assert optional.display_ascii_tree() == "└── Optional(?)\n    └── String('test')\n"
+
+    alternatives = Alternatives([string, regex])
+    assert alternatives.terms[0] == string
+    assert alternatives.terms[1] == regex
+    assert (
+        repr(alternatives)
+        == "Alternatives(terms=[String(value='test'), Regex(pattern='[0-9]')])"
+    )
+    assert alternatives.display_ascii_tree() == "└── Alternatives(|)\n    ├── String('test')\n    └── Regex('[0-9]')\n"
+
+    sequence = Sequence([string, regex])
+    assert sequence.terms[0] == string
+    assert sequence.terms[1] == regex
+    assert (
+        repr(sequence)
+        == "Sequence(terms=[String(value='test'), Regex(pattern='[0-9]')])"
+    )
+    assert sequence.display_ascii_tree() == "└── Sequence\n    ├── String('test')\n    └── Regex('[0-9]')\n"
+
+    exact = QuantifyExact(string, 3)
+    assert exact.term == string
+    assert exact.count == 3
+    assert repr(exact) == "QuantifyExact(term=String(value='test'), count=3)"
+    assert exact.display_ascii_tree() == "└── Quantify({3})\n    └── String('test')\n"
+
+    minimum = QuantifyMinimum(string, 3)
+    assert minimum.term == string
+    assert minimum.min_count == 3
+    assert repr(minimum) == "QuantifyMinimum(term=String(value='test'), min_count=3)"
+    assert minimum.display_ascii_tree() == "└── Quantify({3,})\n    └── String('test')\n"
+
+    maximum = QuantifyMaximum(string, 3)
+    assert maximum.term == string
+    assert maximum.max_count == 3
+    assert repr(maximum) == "QuantifyMaximum(term=String(value='test'), max_count=3)"
+    assert maximum.display_ascii_tree() == "└── Quantify({,3})\n    └── String('test')\n"
+
+    with pytest.raises(ValueError, match="`count` must be a non-negative integer"):
+        QuantifyExact(string, -1)
+
+    with pytest.raises(ValueError, match="`min_count` must be a non-negative integer"):
+        QuantifyMinimum(string, -1)
+
+    with pytest.raises(ValueError, match="`max_count` must be a non-negative integer"):
+        QuantifyMaximum(string, -1)
+
+    between = QuantifyBetween(string, 1, 3)
+    assert between.term == string
+    assert between.min_count == 1
+    assert between.max_count == 3
+    assert (
+        repr(between)
+        == "QuantifyBetween(term=String(value='test'), min_count=1, max_count=3)"
+    )
+    assert between.display_ascii_tree() == "└── Quantify({1,3})\n    └── String('test')\n"
+
+    with pytest.raises(
+        ValueError, match="`max_count` must be greater than `min_count`"
+    ):
+        QuantifyBetween(string, 3, 1)
+
+    with pytest.raises(ValueError, match="`min_count` must be a non-negative integer"):
+        QuantifyBetween(string, -2, -1)
+
+
+def test_dsl_term_methods():
+    a = String("a")
+    b = Regex("[0-9]")
+    c = "c"
+
+    assert a + b == Sequence([a, b])
+    assert a + c == Sequence([a, String(c)])
+    assert a.__radd__(b) == Sequence([b, a])
+    assert a.__radd__(c) == Sequence([String(c), a])
+
+    assert a | b == Alternatives([a, b])
+    assert a | c == Alternatives([a, String(c)])
+    assert a.__ror__(b) == Alternatives([b, a])
+    assert a.__ror__(c) == Alternatives([String(c), a])
+
+    core_schema = a.__get_pydantic_core_schema__("", "")
+    validator = a.__get_validator__(core_schema)
+    assert validator("a") == "a"
+    with pytest.raises(
+        ValueError,
+        match="Input should be in the language of the regular expression",
+    ):
+        validator("b")
+
+    assert a.__get_pydantic_json_schema__("", "") == {"type": "string", "pattern": "a"}
+
+    assert a.matches("a")
+    assert not a.matches("b")
+
+    assert a.display_ascii_tree() == "└── String('a')\n"
+
+    with pytest.raises(NotImplementedError):
+        Term()._display_node()
+
+    assert a._display_children("") == ""
+
+    assert a.__str__() == "└── String('a')\n"
+
+def test_dsl_sequence():
+    a = String("a")
+    b = String("b")
+
+    sequence = a + b
+    assert isinstance(sequence, Sequence)
+    assert sequence.terms[0] == a
+    assert sequence.terms[1] == b
+
+    sequence = "a" + b
+    assert isinstance(sequence, Sequence)
+    assert isinstance(sequence.terms[0], String)
+    assert sequence.terms[0].value == "a"
+    assert sequence.terms[1].value == "b"
+
+    sequence = a + "b"
+    assert isinstance(sequence, Sequence)
+    assert isinstance(sequence.terms[1], String)
+    assert sequence.terms[0].value == "a"
+    assert sequence.terms[1].value == "b"
+
+
+def test_dsl_alternatives():
+    a = String("a")
+    b = String("b")
+
+    alt = either(a, b)
+    assert isinstance(alt, Alternatives)
+    assert isinstance(alt.terms[0], String)
+    assert isinstance(alt.terms[1], String)
+
+    alt = either("a", "b")
+    assert isinstance(alt, Alternatives)
+    assert isinstance(alt.terms[0], String)
+    assert isinstance(alt.terms[1], String)
+
+    alt = either("a", b)
+    assert isinstance(alt, Alternatives)
+    assert isinstance(alt.terms[0], String)
+    assert isinstance(alt.terms[1], String)
+
+
+def test_dsl_optional():
+    a = String("a")
+
+    opt = a.optional()
+    assert isinstance(opt, Optional)
+
+    opt = optional("a")
+    assert isinstance(opt, Optional)
+    assert isinstance(opt.term, String)
+
+    opt = a.optional()
+    assert isinstance(opt, Optional)
+
+
+def test_dsl_exactly():
+    a = String("a")
+
+    rep = a.exactly(2)
+    assert isinstance(rep, QuantifyExact)
+    assert rep.count == 2
+
+    rep = exactly(2, "a")
+    assert isinstance(rep, QuantifyExact)
+    assert isinstance(rep.term, String)
+
+    rep = a.exactly(2)
+    assert isinstance(rep, QuantifyExact)
+
+
+def test_dsl_at_least():
+    a = String("a")
+
+    rep = a.at_least(2)
+    assert isinstance(rep, QuantifyMinimum)
+    assert rep.min_count == 2
+
+    rep = at_least(2, "a")
+    assert isinstance(rep, QuantifyMinimum)
+    assert isinstance(rep.term, String)
+
+    rep = a.at_least(2)
+    assert isinstance(rep, QuantifyMinimum)
+
+
+def test_dsl_at_most():
+    a = String("a")
+
+    rep = a.at_most(2)
+    assert isinstance(rep, QuantifyMaximum)
+    assert rep.max_count == 2
+
+    rep = at_most(2, "a")
+    assert isinstance(rep, QuantifyMaximum)
+    assert isinstance(rep.term, String)
+
+    rep = a.at_most(2)
+    assert isinstance(rep, QuantifyMaximum)
+
+
+def test_between():
+    a = String("a")
+
+    rep = a.between(1, 2)
+    assert isinstance(rep, QuantifyBetween)
+    assert rep.min_count == 1
+    assert rep.max_count == 2
+
+    rep = between(1, 2, "a")
+    assert isinstance(rep, QuantifyBetween)
+    assert isinstance(rep.term, String)
+
+    rep = a.between(1, 2)
+    assert isinstance(rep, QuantifyBetween)
+
+
+def test_dsl_zero_or_more():
+    a = String("a")
+
+    rep = a.zero_or_more()
+    assert isinstance(rep, KleeneStar)
+
+    rep = zero_or_more("a")
+    assert isinstance(rep, KleeneStar)
+    assert isinstance(rep.term, String)
+
+    rep = a.zero_or_more()
+    assert isinstance(rep, KleeneStar)
+
+
+def test_dsl_one_or_more():
+    a = String("a")
+
+    rep = a.one_or_more()
+    assert isinstance(rep, KleenePlus)
+
+    rep = one_or_more("a")
+    assert isinstance(rep, KleenePlus)
+    assert isinstance(rep.term, String)
+
+    rep = a.zero_or_more()
+    assert isinstance(rep, KleeneStar)
+
+
+def test_dsl_aliases():
+    test = regex("[0-9]")
+    assert isinstance(test, Regex)
+
+    test = json_schema('{"type": "string"}')
+    assert isinstance(test, JsonSchema)
+
+
+def test_dsl_term_pydantic_simple():
+    a = String("a")
+
+    class Model(BaseModel):
+        field: a
+
+    schema = Model.model_json_schema()
+    assert schema == {
+        "properties": {"field": {"pattern": "a", "title": "Field", "type": "string"}},
+        "required": ["field"],
+        "title": "Model",
+        "type": "object",
+    }
+
+
+def test_dsl_term_pydantic_combination():
+    a = String("a")
+    b = String("b")
+    c = String("c")
+
+    class Model(BaseModel):
+        field: either((a + b), c)
+
+    schema = Model.model_json_schema()
+    assert schema == {
+        "properties": {
+            "field": {"pattern": "(ab|c)", "title": "Field", "type": "string"}
+        },
+        "required": ["field"],
+        "title": "Model",
+        "type": "object",
+    }
+
+
+def test_dsl_display():
+    a = String("a")
+    b = String("b")
+    c = Regex("[0-9]")
+    d = Sequence([KleeneStar(Alternatives([a, b])), c])
+
+    tree = str(d)
+    assert (
+        tree
+        == "└── Sequence\n    ├── KleeneStar(*)\n    │   └── Alternatives(|)\n    │       ├── String('a')\n    │       └── String('b')\n    └── Regex('[0-9]')\n"
+    )
+
+
+def test_cfg():
+    cfg_string = """
+?start: expr
+?expr: NUMBER
+"""
+    cfg = types.cfg(cfg_string)
+    assert isinstance(cfg, CFG)
+    assert cfg.definition.strip() == "?start: expr\n?expr: NUMBER"
+    assert cfg._display_node() == "CFG('\n?start: expr\n?expr: NUMBER\n')"
+    assert cfg.__repr__() == "CFG(definition='\n?start: expr\n?expr: NUMBER\n')"
+    assert cfg == types.cfg(cfg_string)
+    assert not cfg == "a"
+
+
+def test_json_schema():
+    # variables to be used in the tests
+    json_schema = types.json_schema('{"type": "object", "properties": {"foo": {"type": "string"}, "bar": {"type": "integer"}}, "required": ["foo"]}')
+    schema_builder_instance = SchemaBuilder()
+    schema_builder_instance.add_schema({"type": "object", "properties": {"foo": {"type": "string"}, "bar": {"type": "integer"}}, "required": ["foo"]})
+    class MyPydanticModel(BaseModel):
+        foo: str
+        bar: PyOptional[int] = None
+    class MyTypedDict(TypedDict):
+        foo: str
+        bar: int
+    @dataclass
+    class MyDataClass:
+        foo: str
+        bar: PyOptional[int] = None
+
+    # init dict
+    schema = types.json_schema({"type": "string"})
+    assert schema.schema == '{"type": "string"}'
+
+    # init str
+    schema = types.json_schema('{"type": "string"}')
+    assert schema.schema == '{"type": "string"}'
+
+    # init Pydantic model
+    schema = types.json_schema(MyPydanticModel)
+    assert schema.schema == '{"properties": {"foo": {"title": "Foo", "type": "string"}, "bar": {"anyOf": [{"type": "integer"}, {"type": "null"}], "default": null, "title": "Bar"}}, "required": ["foo"], "title": "MyPydanticModel", "type": "object"}'
+
+    # init TypedDict
+    schema = types.json_schema(MyTypedDict)
+    assert schema.schema == '{"properties": {"foo": {"title": "Foo", "type": "string"}, "bar": {"title": "Bar", "type": "integer"}}, "required": ["foo", "bar"], "title": "MyTypedDict", "type": "object"}'
+
+    # init dataclass
+    schema = types.json_schema(MyDataClass)
+    assert schema.schema == '{"properties": {"foo": {"title": "Foo", "type": "string"}, "bar": {"anyOf": [{"type": "integer"}, {"type": "null"}], "default": null, "title": "Bar"}}, "required": ["foo"], "title": "MyDataClass", "type": "object"}'
+
+    # init SchemaBuilder
+    schema = types.json_schema(schema_builder_instance)
+    assert schema.schema == '{"$schema": "http://json-schema.org/schema#", "type": "object", "properties": {"foo": {"type": "string"}, "bar": {"type": "integer"}}, "required": ["foo"]}'
+
+    # init unsupported type
+    with pytest.raises(ValueError, match="Cannot parse schema"):
+        types.json_schema(1)
+
+    # init invalide JSON schema
+    with pytest.raises(jsonschema.exceptions.SchemaError):
+        types.json_schema({"type": "strin"})
+
+    # is_json_schema
+    assert not JsonSchema.is_json_schema(None)
+    assert not JsonSchema.is_json_schema('{"type": "string"}')
+    assert not JsonSchema.is_json_schema({"type": "string"})
+    assert JsonSchema.is_json_schema(json_schema)
+    assert JsonSchema.is_json_schema(schema_builder_instance)
+    assert JsonSchema.is_json_schema(MyPydanticModel)
+    assert JsonSchema.is_json_schema(MyTypedDict)
+    assert JsonSchema.is_json_schema(MyDataClass)
+
+    # convert_to
+    assert JsonSchema.convert_to(json_schema, ["str"]) == json_schema.schema
+    assert JsonSchema.convert_to(json_schema, ["dict"]) == json.loads(json_schema.schema)
+    assert JsonSchema.convert_to(MyPydanticModel, ["pydantic"]) == MyPydanticModel
+    assert JsonSchema.convert_to(MyTypedDict, ["typeddict"]) == MyTypedDict
+    assert JsonSchema.convert_to(MyDataClass, ["dataclass"]) == MyDataClass
+    assert JsonSchema.convert_to(schema_builder_instance, ["genson"]) == schema_builder_instance
+    assert JsonSchema.convert_to(MyPydanticModel, ["str"]) == JsonSchema(MyPydanticModel).schema
+    assert JsonSchema.convert_to(MyPydanticModel, ["dict"]) == json.loads(JsonSchema(MyPydanticModel).schema)
+    assert is_pydantic_model(JsonSchema.convert_to(json_schema, ["pydantic"]))
+    assert is_typed_dict(JsonSchema.convert_to(json_schema, ["typeddict"]))
+    assert is_dataclass(JsonSchema.convert_to(json_schema, ["dataclass"]))
+    with pytest.raises(ValueError, match="Cannot convert schema type"):
+        JsonSchema.convert_to(json_schema, ["genson"])
+
+    # other methods
+    schema = types.json_schema('{"type": "string"}')
+    assert schema._display_node() == "JsonSchema('{\"type\": \"string\"}')"
+    assert schema.__repr__() == "JsonSchema(schema='{\"type\": \"string\"}')"
+    assert schema == types.json_schema('{"type": "string"}')
+    assert not schema == "a"
+
+
+def test_dsl_cfg_from_file():
+    grammar_content = """
+    ?start: expression
+    ?expression: term (("+" | "-") term)*
+    ?term: factor (("*" | "/") factor)*
+    ?factor: NUMBER
+    """
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=True) as temp_file:
+        temp_file.write(grammar_content)
+        temp_file.flush()
+        temp_file_path = temp_file.name
+        cfg = CFG.from_file(temp_file_path)
+        assert cfg == CFG(grammar_content)
+
+
+def test_dsl_json_schema_from_file():
+    schema_content = """
+    {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string"
+            }
+        }
+    }
+    """
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=True) as temp_file:
+        temp_file.write(schema_content)
+        temp_file.flush()
+        temp_file_path = temp_file.name
+        schema = JsonSchema.from_file(temp_file_path)
+        assert schema == JsonSchema(schema_content)
+
+
+def test_json_schema_equality_includes_whitespace_pattern():
+    schema = {"type": "string"}
+
+    assert JsonSchema(schema, whitespace_pattern=r"[ ]?") == JsonSchema(
+        schema, whitespace_pattern=r"[ ]?"
+    )
+    assert JsonSchema(schema, whitespace_pattern=r"[ ]?") != JsonSchema(
+        schema, whitespace_pattern=r"[\n\t ]*"
+    )
+    assert JsonSchema(schema) != JsonSchema(schema, whitespace_pattern=r"[ ]?")
+
+
+def test_dsl_python_types_to_terms():
+    with pytest.raises(RecursionError):
+        python_types_to_terms(None, 11)
+
+    term = Term()
+    assert python_types_to_terms(term) == term
+
+    assert python_types_to_terms(int) == types.integer
+    assert python_types_to_terms(float) == types.number
+    assert python_types_to_terms(bool) == types.boolean
+    assert python_types_to_terms(str) == types.string
+    assert python_types_to_terms(datetime.time) == types.time
+    assert python_types_to_terms(datetime.date) == types.date
+    assert python_types_to_terms(datetime.datetime) == types.datetime
+    assert python_types_to_terms(dict) == types.CFG(grammars.json)
+
+    string_instance = "a"
+    assert python_types_to_terms(string_instance) == String(string_instance)
+    int_instance = 1
+    assert python_types_to_terms(int_instance) == Regex(r"1")
+    float_instance = 1.0
+    assert python_types_to_terms(float_instance) == Regex(r"1\.0")
+
+    @dataclass
+    class DataClass:
+        a: int
+        b: str
+
+    assert python_types_to_terms(DataClass) == JsonSchema(
+        {
+            "properties": {"a": {"title": "A", "type": "integer"}, "b": {"title": "B", "type": "string"}},
+            "required": ["a", "b"],
+            "title": "DataClass",
+            "type": "object",
+        }
+    )
+
+    class SomeTypedDict(TypedDict):
+        a: int
+        b: str
+
+    assert python_types_to_terms(SomeTypedDict) == JsonSchema(
+        {
+            "properties": {"a": {"title": "A", "type": "integer"}, "b": {"title": "B", "type": "string"}},
+            "required": ["a", "b"],
+            "title": "SomeTypedDict",
+            "type": "object",
+        }
+    )
+
+    class PydanticModel(BaseModel):
+        a: int
+        b: str
+
+    assert python_types_to_terms(PydanticModel) == JsonSchema(
+        {
+            "properties": {"a": {"title": "A", "type": "integer"}, "b": {"title": "B", "type": "string"}},
+            "required": ["a", "b"],
+            "title": "PydanticModel",
+            "type": "object",
+        }
+    )
+
+    builder = SchemaBuilder()
+    builder.add_schema({"type": "object", "properties": {}})
+    builder.add_object({"hi": "there"})
+    builder.add_object({"hi": 5})
+    assert python_types_to_terms(builder) == JsonSchema(
+        {
+            "$schema": "http://json-schema.org/schema#",
+            "type": "object",
+            "properties": {"hi": {"type": ["integer", "string"]}},
+            "required": ["hi"]
+        }
+    )
+
+    def func(a: int, b: str):
+        return (a, b)
+
+    assert python_types_to_terms(func) == JsonSchema(
+        {
+            "type": "object",
+            "properties": {
+                "a": {"title": "A", "type": "integer"},
+                "b": {"title": "B", "type": "string"},
+            },
+            "required": ["a", "b"],
+            "title": "func",
+        }
+    )
+
+    class SomeEnum(Enum):
+        a = "a"
+        b = int
+        c = func
+
+    result = python_types_to_terms(SomeEnum)
+    assert isinstance(result, Alternatives)
+    assert len(result.terms) == 3
+    assert result.terms[0] == String("a")
+    assert result.terms[1] == types.integer
+    assert isinstance(result.terms[2], JsonSchema)
+    schema_dict = json.loads(result.terms[2].schema)
+    assert schema_dict == {
+        "properties": {
+            "a": {"title": "A", "type": "integer"},
+            "b": {"title": "B", "type": "string"},
+        },
+        "required": ["a", "b"],
+        "title": "func",
+        "type": "object",
+    }
+
+    # for generic types we only test the dispatch as the functions that
+    # convert to terms are tested in distinct tests below
+    assert python_types_to_terms(Literal["a", "b"]) == _handle_literal(("a", "b"))
+    assert python_types_to_terms(Union[int, str]) == _handle_union((int, str), recursion_depth=0)
+    # PEP 604 unions must dispatch the same way as typing.Union/Optional
+    assert python_types_to_terms(int | str) == python_types_to_terms(Union[int, str])
+    assert python_types_to_terms(str | None) == python_types_to_terms(PyOptional[str])
+    assert python_types_to_terms(list[int | str]) == python_types_to_terms(list[Union[int, str]])
+    assert python_types_to_terms(list[int]) == _handle_list((int,), recursion_depth=0)
+    assert python_types_to_terms(tuple[int, str]) == _handle_tuple((int, str), recursion_depth=0)
+    assert python_types_to_terms(dict[int, str]) == _handle_dict((int, str), recursion_depth=0)
+
+    # type not supported
+    with pytest.raises(TypeError, match="is currently not supported"):
+        python_types_to_terms(bytes)
+
+
+def test_dsl_enum_with_instance_method_is_not_a_choice():
+    """A plain instance method defined in the enum's class body must not be
+    picked up as a generation choice. Both this method and a bare function
+    assigned as a member's value (`SomeEnum.c` above) show up as the same
+    `FunctionType` in `__dict__`, so the two have to be told apart by more
+    than just their type."""
+
+    class Color(Enum):
+        RED = "red"
+        GREEN = "green"
+        BLUE = "blue"
+
+        def describe(self) -> str:
+            return f"This color is {self.value}"
+
+    result = python_types_to_terms(Color)
+    assert isinstance(result, Alternatives)
+    assert len(result.terms) == 3
+    assert result.terms == [String("red"), String("green"), String("blue")]
+
+
+def test_dsl_handle_literal():
+    literal = Literal["a", 1]
+    result = _handle_literal(get_args(literal))
+    assert isinstance(result, Alternatives)
+    assert len(result.terms) == 2
+    assert result.terms[0] == String("a")
+    assert result.terms[1] == Regex(r"1")
+
+
+def test_dsl_literal_bool():
+    # Literal[True] and Literal[False] previously raised TypeError; ensure they resolve.
+    result_true = python_types_to_terms(Literal[True])
+    assert isinstance(result_true, Alternatives)
+    assert result_true.terms == [Regex("True")]
+    result_false = python_types_to_terms(Literal[False])
+    assert result_false.terms == [Regex("False")]
+    result_both = python_types_to_terms(Literal[True, False])
+    assert result_both == Alternatives([Regex("True"), Regex("False")])
+
+
+def test_dsl_numeric_literal_escapes_regex_metacharacters():
+    # A float's ``.`` must match literally, not act as a regex wildcard.
+    term = python_types_to_terms(1.5)
+    assert to_regex(term) == r"(1\.5)"
+    assert term.matches("1.5") is True
+    assert term.matches("1x5") is False
+
+    # Same guarantee through the common ``Literal`` path...
+    literal_term = python_types_to_terms(Literal[1.5])
+    assert literal_term.matches("1x5") is False
+
+    # ...and for float-valued Enums.
+    class Ratio(float, Enum):
+        HALF = 1.5
+
+    enum_term = python_types_to_terms(Ratio)
+    assert enum_term.matches("1x5") is False
+
+    # Parity with string literals, which were already escaped.
+    assert python_types_to_terms("1.5").matches("1x5") is False
+
+
+def test_dsl_handle_union():
+    # test simple Union
+    simple_union = Union[int, str]
+    result = _handle_union(get_args(simple_union), recursion_depth=0)
+    assert isinstance(result, Alternatives)
+    assert len(result.terms) == 2
+    assert result.terms[0] == types.integer
+    assert result.terms[1] == types.string
+
+    # test with Optional[T]
+    optional_type = PyOptional[int]
+    result = _handle_union(get_args(optional_type), recursion_depth=0)
+    assert isinstance(result, Alternatives)
+    assert len(result.terms) == 2
+    assert result.terms[0] == types.integer
+    assert result.terms[1] == Regex("None")
+
+    # test with more complex types
+    class TestModel(BaseModel):
+        field: str
+
+    class TestEnum(Enum):
+        a = "a"
+        b = "b"
+
+    complex_union = Union[TestModel, TestEnum]
+    result = _handle_union(get_args(complex_union), recursion_depth=0)
+    assert isinstance(result, Alternatives)
+    assert len(result.terms) == 2
+    assert isinstance(result.terms[0], JsonSchema)
+    assert isinstance(result.terms[1], Alternatives)
+    assert len(result.terms[1].terms) == 2
+    assert result.terms[1].terms[0] == String("a")
+    assert result.terms[1].terms[1] == String("b")
+
+
+def test_dsl_handle_union_multiple_members_with_none():
+    # Regression: only the 2-arg Optional[T] case handled None; a union with >=2
+    # non-None members plus None fell into the general branch and crashed with
+    # "Type NoneType is currently not supported".
+    result = _handle_union(get_args(Union[int, str, None]), recursion_depth=0)
+    assert isinstance(result, Alternatives)
+    assert types.integer in result.terms
+    assert types.string in result.terms
+    assert Regex("None") in result.terms
+
+    # Optional[Union[...]] (same args after flattening) must also not crash.
+    nested = _handle_union(get_args(PyOptional[Union[int, str]]), recursion_depth=0)
+    assert isinstance(nested, Alternatives)
+    assert Regex("None") in nested.terms
+
+
+def test_dsl_handle_list():
+    with pytest.raises(TypeError):
+        _handle_list(None, recursion_depth=0)
+
+    with pytest.raises(TypeError):
+        _handle_list((), recursion_depth=0)
+
+    # The error message should interpolate the offending args, not show a
+    # literal "{args}" placeholder.
+    with pytest.raises(TypeError, match=r"got \(<class 'int'>, <class 'str'>\)"):
+        _handle_list((int, str), recursion_depth=0)
+
+    # simple type
+    list_type = list[int]
+    result = _handle_list(get_args(list_type), recursion_depth=0)
+    assert isinstance(result, Sequence)
+    assert len(result.terms) == 4
+    assert result.terms[0] == String("[")
+    assert result.terms[1] == types.integer
+    assert isinstance(result.terms[2], KleeneStar)
+    assert result.terms[2].term == Sequence([String(", "), types.integer])
+    assert result.terms[3] == String("]")
+
+    # more complex type
+    list_type = list[Union[int, str]]
+    result = _handle_list(get_args(list_type), recursion_depth=0)
+    assert isinstance(result, Sequence)
+    assert len(result.terms) == 4
+    assert result.terms[0] == String("[")
+    assert result.terms[1] == _handle_union(get_args(Union[int, str]), recursion_depth=0)
+    assert isinstance(result.terms[2], KleeneStar)
+    assert result.terms[2].term == Sequence([String(", "), _handle_union(get_args(Union[int, str]), recursion_depth=0)])
+    assert result.terms[3] == String("]")
+
+
+def test_dsl_handle_tuple():
+    # empty tuple
+    tuple_type = Tuple[()]
+    result = _handle_tuple(get_args(tuple_type), recursion_depth=0)
+    assert isinstance(result, String)
+    assert result.value == "()"
+
+    # tuple with ellipsis
+    tuple_type = tuple[int, ...]
+    result = _handle_tuple(get_args(tuple_type), recursion_depth=0)
+    assert isinstance(result, Sequence)
+    assert len(result.terms) == 4
+    assert result.terms[0] == String("(")
+    assert result.terms[1] == types.integer
+    assert isinstance(result.terms[2], KleeneStar)
+    assert result.terms[2].term == Sequence([String(", "), types.integer])
+    assert result.terms[3] == String(")")
+
+    # tuple with fixed length
+    tuple_type = tuple[int, str]
+    result = _handle_tuple(get_args(tuple_type), recursion_depth=0)
+    assert isinstance(result, Sequence)
+    assert len(result.terms) == 5
+    assert result.terms[0] == String("(")
+    assert result.terms[1] == types.integer
+    assert result.terms[2] == String(", ")
+    assert result.terms[3] == types.string
+    assert result.terms[4] == String(")")
+
+    # tuple with fixed length and complex types
+    tuple_type = tuple[int, Union[str, int]]
+    result = _handle_tuple(get_args(tuple_type), recursion_depth=0)
+    assert isinstance(result, Sequence)
+    assert len(result.terms) == 5
+    assert result.terms[0] == String("(")
+    assert result.terms[1] == types.integer
+    assert result.terms[2] == String(", ")
+    assert result.terms[3] == _handle_union(get_args(Union[str, int]), recursion_depth=0)
+    assert result.terms[4] == String(")")
+
+
+def test_dsl_handle_dict():
+    # args of incorrect length
+    with pytest.raises(TypeError):
+        incorrect_dict_type = dict[int, str, int]
+        _handle_dict(get_args(incorrect_dict_type), recursion_depth=0)
+
+    # correct type with a str key: no extra quoting needed, types.string
+    # is already self-quoted
+    dict_type = dict[str, int]
+    result = _handle_dict(get_args(dict_type), recursion_depth=0)
+    assert isinstance(result, Sequence)
+    assert len(result.terms) == 3
+    assert result.terms[0] == String("{")
+    assert isinstance(result.terms[1], Optional)
+    assert isinstance(result.terms[1].term, Sequence)
+    assert len(result.terms[1].term.terms) == 4
+    assert result.terms[1].term.terms[0] == types.string
+    assert result.terms[1].term.terms[1] == String(":")
+    assert result.terms[1].term.terms[2] == types.integer
+    assert result.terms[1].term.terms[3] == KleeneStar(Sequence([String(", "), types.string, String(":"), types.integer]))
+    assert result.terms[2] == String("}")
+
+    # non-str key (e.g. int): JSON object keys must always be double-quoted
+    # strings, so the bare `types.integer` regex must be wrapped in quotes
+    # even though the Python key type is `int`.
+    dict_type = dict[int, str]
+    result = _handle_dict(get_args(dict_type), recursion_depth=0)
+    quoted_int_key = Sequence([String('"'), types.integer, String('"')])
+    assert result.terms[1].term.terms[0] == quoted_int_key
+    assert result.terms[1].term.terms[2] == types.string
+
+    # non-str key nested in an Alternatives (Literal ints go through
+    # _handle_literal): each member must be quoted, not just a top-level Regex
+    dict_type = dict[Literal[1, 2, 3], str]
+    result = _handle_dict(get_args(dict_type), recursion_depth=0)
+    key_term = result.terms[1].term.terms[0]
+    assert isinstance(key_term, Alternatives)
+    assert key_term.terms == [
+        Sequence([String('"'), Regex(str(i)), String('"')]) for i in (1, 2, 3)
+    ]
+
+
+def test_ensure_json_quoted_string():
+    """String terms are wrapped in double-quote delimiters."""
+    term = String("hello")
+    result = _ensure_json_quoted(term)
+    assert isinstance(result, String)
+    assert result == String('"hello"')
+
+
+def test_ensure_json_quoted_alternatives():
+    """Each branch of an Alternatives is independently quoted."""
+    term = Alternatives([String("a"), String("b")])
+    result = _ensure_json_quoted(term)
+    assert isinstance(result, Alternatives)
+    assert len(result.terms) == 2
+    for branch in result.terms:
+        assert isinstance(branch, String)
+        assert branch.value.startswith('"') and branch.value.endswith('"')
+
+
+def test_ensure_json_quoted_passthrough():
+    """Non-String, non-Alternatives terms are returned unchanged."""
+    regex_term = types.integer
+    assert _ensure_json_quoted(regex_term) is regex_term
+
+    seq = Sequence([String("a"), String("b")])
+    assert _ensure_json_quoted(seq) is seq
+
+
+def test_list_of_literals_quoted():
+    """Literal strings inside List are JSON-quoted."""
+    list_type = list[Literal["cat", "dog"]]
+    result = _handle_list(get_args(list_type), recursion_depth=0)
+    assert isinstance(result, Sequence)
+    assert result.terms[0] == String("[")
+    item = result.terms[1]
+    assert isinstance(item, Alternatives)
+    for branch in item.terms:
+        assert isinstance(branch, String)
+        assert branch.value.startswith('"') and branch.value.endswith('"')
+
+
+def test_tuple_of_literals_quoted():
+    """Literal strings inside fixed Tuple are JSON-quoted."""
+    tuple_type = Tuple[Literal["x"], Literal["y"]]
+    result = _handle_tuple(get_args(tuple_type), recursion_depth=0)
+    assert isinstance(result, Sequence)
+    assert result.terms[0] == String("(")
+    first_item = result.terms[1]
+    assert isinstance(first_item, Alternatives)
+    assert isinstance(first_item.terms[0], String)
+    assert first_item.terms[0].value.startswith('"')
+
+
+def test_dict_literal_key_quoted():
+    """Literal string keys in Dict are JSON-quoted."""
+    dict_type = dict[Literal["k1", "k2"], int]
+    result = _handle_dict(get_args(dict_type), recursion_depth=0)
+    assert isinstance(result, Sequence)
+    inner = result.terms[1]
+    assert isinstance(inner, Optional)
+    key_term = inner.term.terms[0]
+    assert isinstance(key_term, Alternatives)
+    for branch in key_term.terms:
+        assert isinstance(branch, String)
+        assert branch.value.startswith('"') and branch.value.endswith('"')
+
+
+def test_list_of_int_unchanged():
+    """Non-string types in List are not wrapped in quotes."""
+    list_type = list[int]
+    result = _handle_list(get_args(list_type), recursion_depth=0)
+    assert result.terms[1] == types.integer
+
+
+def test_ensure_json_quoted_sequence_passthrough():
+    """A Sequence term (already structured) passes through unchanged."""
+    seq = Sequence([String("a"), String("b")])
+    assert _ensure_json_quoted(seq) is seq
+
+
+def test_ensure_json_quoted_regex_passthrough():
+    """Regex terms (e.g. types.string) already include quotes internally."""
+    assert _ensure_json_quoted(types.string) is types.string
+    assert _ensure_json_quoted(types.integer) is types.integer
+    assert _ensure_json_quoted(types.boolean) is types.boolean
+
+
+def test_list_single_literal():
+    """A single-variant Literal inside list is still quoted."""
+    list_type = list[Literal["only"]]
+    result = _handle_list(get_args(list_type), recursion_depth=0)
+    item = result.terms[1]
+    assert isinstance(item, Alternatives)
+    branch = item.terms[0]
+    assert isinstance(branch, String)
+    assert branch == String('"only"')
+
+
+def test_dict_literal_value_quoted():
+    """Literal string values (not just keys) in Dict are JSON-quoted."""
+    dict_type = dict[str, Literal["yes", "no"]]
+    result = _handle_dict(get_args(dict_type), recursion_depth=0)
+    inner = result.terms[1]
+    assert isinstance(inner, Optional)
+    value_term = inner.term.terms[2]
+    assert isinstance(value_term, Alternatives)
+    for branch in value_term.terms:
+        assert isinstance(branch, String)
+        assert branch.value.startswith('"') and branch.value.endswith('"')
+
+
+def test_tuple_ellipsis_literal_quoted():
+    """Variable-length Tuple with Literal element type is JSON-quoted."""
+    tuple_type = Tuple[Literal["a", "b"], ...]
+    result = _handle_tuple(get_args(tuple_type), recursion_depth=0)
+    assert isinstance(result, Sequence)
+    item = result.terms[1]
+    assert isinstance(item, Alternatives)
+    for branch in item.terms:
+        assert isinstance(branch, String)
+        assert branch.value.startswith('"') and branch.value.endswith('"')
+
+
+def test_list_of_bool_unchanged():
+    """Boolean types in List are not wrapped in quotes."""
+    list_type = list[bool]
+    result = _handle_list(get_args(list_type), recursion_depth=0)
+    assert result.terms[1] == types.boolean
+
+
+def test_dict_int_value_unchanged():
+    """Non-string value type in Dict is not wrapped in quotes."""
+    dict_type = dict[str, int]
+    result = _handle_dict(get_args(dict_type), recursion_depth=0)
+    inner = result.terms[1]
+    assert isinstance(inner, Optional)
+    value_term = inner.term.terms[2]
+    assert value_term == types.integer
+
+
+def test_ensure_json_quoted_nested_alternatives():
+    """Nested Alternatives are recursively quoted."""
+    inner_alt = Alternatives([String("x"), String("y")])
+    outer_alt = Alternatives([inner_alt, String("z")])
+    result = _ensure_json_quoted(outer_alt)
+    assert isinstance(result, Alternatives)
+    inner_result = result.terms[0]
+    assert isinstance(inner_result, Alternatives)
+    for branch in inner_result.terms:
+        assert isinstance(branch, String)
+        assert branch.value.startswith('"') and branch.value.endswith('"')
+    z_result = result.terms[1]
+    assert isinstance(z_result, String)
+    assert z_result == String('"z"')
+
+
+def test_literal_with_special_characters():
+    """Literal strings with spaces and punctuation are quoted correctly."""
+    list_type = list[Literal["hello world", "foo-bar"]]
+    result = _handle_list(get_args(list_type), recursion_depth=0)
+    item = result.terms[1]
+    assert isinstance(item, Alternatives)
+    assert len(item.terms) == 2
+    for branch in item.terms:
+        assert isinstance(branch, String)
+        assert branch.value.startswith('"') and branch.value.endswith('"')
+
+
+# ---------------------------------------------------------------------------
+# End-to-end regex tests for JSON quoting in containers
+# These verify the full pipeline: python_types_to_terms → to_regex → re.fullmatch
+# ---------------------------------------------------------------------------
+
+
+def test_e2e_list_literal_matches_quoted_json():
+    """List[Literal[...]] regex matches JSON-quoted strings and rejects bare words."""
+    pattern = to_regex(python_types_to_terms(list[Literal["Paris", "London"]]))
+    assert _re.fullmatch(pattern, '["Paris"]')
+    assert _re.fullmatch(pattern, '["Paris", "London"]')
+    assert _re.fullmatch(pattern, '["London", "Paris", "London"]')
+    assert not _re.fullmatch(pattern, "[Paris]")
+    assert not _re.fullmatch(pattern, "['Paris']")
+
+
+def test_e2e_standalone_literal_no_quotes():
+    """Standalone Literal (not inside container) should NOT add quotes."""
+    pattern = to_regex(python_types_to_terms(Literal["cat", "dog"]))
+    assert _re.fullmatch(pattern, "cat")
+    assert _re.fullmatch(pattern, "dog")
+    assert not _re.fullmatch(pattern, '"cat"')
+
+
+def test_e2e_list_literal_empty_string():
+    """Empty string literal inside List produces quoted empty string."""
+    pattern = to_regex(python_types_to_terms(list[Literal[""]]))
+    assert _re.fullmatch(pattern, '[""]')
+    assert _re.fullmatch(pattern, '["", ""]')
+    assert not _re.fullmatch(pattern, "[]")
+
+
+def test_e2e_list_mixed_literal_string_and_int():
+    """Mixed Literal with string and int: only string values are quoted."""
+    pattern = to_regex(python_types_to_terms(list[Literal["a", 1]]))
+    assert _re.fullmatch(pattern, '["a"]')
+    assert _re.fullmatch(pattern, "[1]")
+    assert _re.fullmatch(pattern, '["a", 1]')
+    assert _re.fullmatch(pattern, '[1, "a"]')
+    assert not _re.fullmatch(pattern, "[a]")
+
+
+def test_e2e_dict_literal_keys_quoted():
+    """Dict with Literal keys produces JSON-quoted keys."""
+    pattern = to_regex(python_types_to_terms(dict[Literal["k1", "k2"], int]))
+    assert _re.fullmatch(pattern, '{"k1":0}')
+    assert _re.fullmatch(pattern, '{"k1":42, "k2":-7}')
+    assert not _re.fullmatch(pattern, "{k1:0}")
+
+
+def test_e2e_dict_literal_values_quoted():
+    """Dict with Literal string values produces JSON-quoted values."""
+    pattern = to_regex(python_types_to_terms(dict[str, Literal["yes", "no"]]))
+    assert _re.fullmatch(pattern, '{"answer":"yes"}')
+    assert _re.fullmatch(pattern, '{"a":"yes", "b":"no"}')
+
+
+def test_e2e_tuple_fixed_literal_quoted():
+    """Fixed-length Tuple with Literal elements produces JSON-quoted strings."""
+    pattern = to_regex(python_types_to_terms(Tuple[Literal["x"], Literal["y"]]))
+    assert _re.fullmatch(pattern, '("x", "y")')
+    assert not _re.fullmatch(pattern, "(x, y)")
+
+
+def test_e2e_tuple_variadic_literal_quoted():
+    """Variable-length Tuple with Literal produces JSON-quoted strings."""
+    pattern = to_regex(python_types_to_terms(Tuple[Literal["a", "b"], ...]))
+    assert _re.fullmatch(pattern, '("a")')
+    assert _re.fullmatch(pattern, '("a", "b", "a")')
+    assert not _re.fullmatch(pattern, "(a)")
+
+
+def test_e2e_list_enum_string_values_quoted():
+    """Enum with string members inside List produces JSON-quoted values."""
+
+    class Color(Enum):
+        RED = "red"
+        BLUE = "blue"
+
+    pattern = to_regex(python_types_to_terms(list[Color]))
+    assert _re.fullmatch(pattern, '["red"]')
+    assert _re.fullmatch(pattern, '["red", "blue"]')
+    assert not _re.fullmatch(pattern, "[red]")
+
+
+def test_e2e_list_int_not_quoted():
+    """List[int] should not have any quoting applied."""
+    pattern = to_regex(python_types_to_terms(list[int]))
+    assert _re.fullmatch(pattern, "[42]")
+    assert _re.fullmatch(pattern, "[1, 2, 3]")
+    assert not _re.fullmatch(pattern, '["1"]')
+
+
+def test_e2e_list_literal_special_characters():
+    """Literal strings with spaces and hyphens are quoted correctly in regex."""
+    pattern = to_regex(python_types_to_terms(list[Literal["hello world", "foo-bar"]]))
+    assert _re.fullmatch(pattern, '["hello world"]')
+    assert _re.fullmatch(pattern, '["hello world", "foo-bar"]')
+    assert not _re.fullmatch(pattern, "[hello world]")
+
+
+def test_e2e_dict_literal_key_and_enum_value():
+    """Dict with Literal keys and Enum values: both quoted."""
+
+    class Status(Enum):
+        ON = "on"
+        OFF = "off"
+
+    pattern = to_regex(python_types_to_terms(dict[Literal["switch"], Status]))
+    assert _re.fullmatch(pattern, '{"switch":"on"}')
+    assert _re.fullmatch(pattern, '{"switch":"off"}')
+    assert not _re.fullmatch(pattern, "{switch:on}")
+
+
+def test_e2e_optional_none_not_quoted_in_containers():
+    """The ``None`` from ``Optional``/``Union`` must stay a bare keyword inside
+    containers, exactly as it is standalone, and must not be JSON-quoted like a
+    string literal."""
+    # Standalone Optional already matches the bare ``None`` keyword.
+    standalone = to_regex(python_types_to_terms(PyOptional[int]))
+    assert _re.fullmatch(standalone, "None")
+    assert not _re.fullmatch(standalone, '"None"')
+
+    list_pattern = to_regex(python_types_to_terms(list[PyOptional[int]]))
+    assert _re.fullmatch(list_pattern, "[None]")
+    assert _re.fullmatch(list_pattern, "[1, None]")
+    assert not _re.fullmatch(list_pattern, '["None"]')
+
+    dict_pattern = to_regex(python_types_to_terms(dict[str, PyOptional[int]]))
+    assert _re.fullmatch(dict_pattern, '{"a":None}')
+    assert not _re.fullmatch(dict_pattern, '{"a":"None"}')
+
+    tuple_pattern = to_regex(python_types_to_terms(Tuple[PyOptional[int], int]))
+    assert _re.fullmatch(tuple_pattern, "(None, 5)")
+    assert not _re.fullmatch(tuple_pattern, '("None", 5)')
+
+    # A genuine ``Literal["None"]`` string is still quoted inside containers.
+    literal_pattern = to_regex(python_types_to_terms(list[Literal["None"]]))
+    assert _re.fullmatch(literal_pattern, '["None"]')
+    assert not _re.fullmatch(literal_pattern, "[None]")
+
+
+def test_to_regex():
+    string_term = String("hello")
+    assert to_regex(string_term) == r"hello"
+
+    regex_term = Regex("[0-9]+")
+    assert to_regex(regex_term) == r"([0-9]+)"
+
+    json_schema_term = JsonSchema({"type": "integer"})
+    assert to_regex(json_schema_term) == r"((-)?(0|[1-9][0-9]*))"
+
+    choice_term = Choice(["a", "b", "c"])
+    assert to_regex(choice_term) == r"(a|b|c)"
+
+    kleene_star = KleeneStar(String("a"))
+    assert to_regex(kleene_star) == r"(a)*"
+
+    kleene_plus = KleenePlus(String("a"))
+    assert to_regex(kleene_plus) == r"(a)+"
+
+    optional_term = Optional(String("a"))
+    assert to_regex(optional_term) == r"(a)?"
+
+    alt_term = Alternatives([String("a"), String("b")])
+    assert to_regex(alt_term) == r"(a|b)"
+
+    seq_term = Sequence([String("a"), String("b")])
+    assert to_regex(seq_term) == r"ab"
+
+    exact_term = QuantifyExact(String("a"), 3)
+    assert to_regex(exact_term) == r"(a){3}"
+
+    min_term = QuantifyMinimum(String("a"), 2)
+    assert to_regex(min_term) == r"(a){2,}"
+
+    max_term = QuantifyMaximum(String("a"), 5)
+    assert to_regex(max_term) == r"(a){0,5}"
+
+    between_term = QuantifyBetween(String("a"), 1, 3)
+    assert to_regex(between_term) == r"(a){1,3}"
+
+    with pytest.raises(TypeError):
+        to_regex(Term())

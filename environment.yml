@@ -1,0 +1,23 @@
+# To use:
+#
+#   $ conda env create -f environment.yml  # `mamba` works too for this command
+#   $ conda activate dottxt-ai
+#
+name: dottxt-ai
+channels:
+  - conda-forge
+  - huggingface
+dependencies:
+  - python==3.10.0
+  - jinja2
+  - numpy
+  - pydantic
+  - scipy
+  - pytest
+  - pre-commit
+  - referencing
+  - jsonschema
+  - transformers
+  - pip
+  - pip:
+    - -e ".[test]"

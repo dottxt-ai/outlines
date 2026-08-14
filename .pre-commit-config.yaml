@@ -1,0 +1,20 @@
+repos:
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v5.0.0
+  hooks:
+    -   id: check-merge-conflict
+    -   id: debug-statements
+    -   id: end-of-file-fixer
+    -   id: trailing-whitespace
+- repo: https://github.com/pre-commit/mirrors-mypy
+  rev: v1.14.1
+  hooks:
+    - id: mypy
+      args: [--allow-redefinition]
+      exclude: ^examples/
+      additional_dependencies: [types-tqdm, types-Pillow, urllib3]
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  rev: v0.9.1
+  hooks:
+    - id: ruff
+      args: ["--config=pyproject.toml"]

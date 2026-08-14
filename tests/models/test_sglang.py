@@ -1,0 +1,424 @@
+# ATTENTION: When running this test with an actual SGLang server, use the
+# llguidance backend (--grammar-backend llguidance)
+# The outlines backend does not support the EBNF grammar. The xgrammar
+# backend is slow and buggy.
+
+import io
+import os
+import re
+import warnings
+from typing import AsyncGenerator, Generator
+
+import pytest
+from PIL import Image as PILImage
+from openai import AsyncOpenAI, OpenAI
+
+from outlines.inputs import Chat, Image
+from outlines.models.sglang import SGLang, AsyncSGLang, from_sglang
+from outlines.types.dsl import CFG, Regex, JsonSchema
+from tests.test_utils.mock_openai_client import MockOpenAIClient, MockAsyncOpenAIClient
+
+
+EBNF_YES_NO_GRAMMAR = """
+root ::= answer
+answer ::= "yes" | "no"
+"""
+
+# Image for testing
+width, height = 1, 1
+white_background = (255, 255, 255)
+image = PILImage.new("RGB", (width, height), white_background)
+buffer = io.BytesIO()
+image.save(buffer, format="PNG")
+buffer.seek(0)
+image = PILImage.open(buffer)
+image_input = Image(image)
+
+
+# If the SGLANG_SERVER_URL environment variable is set, use the real SGLang server
+# Otherwise, use the mock server
+sglang_server_url = os.environ.get("SGLANG_SERVER_URL")
+sglang_model_name = os.environ.get(
+    "SGLANG_MODEL_NAME", "qwen/qwen2.5-0.5b-instruct"
+)
+if sglang_server_url:
+    openai_client = OpenAI(base_url=sglang_server_url, api_key="foo")
+    async_openai_client = AsyncOpenAI(base_url=sglang_server_url, api_key="foo")
+else:
+    warnings.warn("No SGLang server URL provided, using mock server")
+    openai_client = MockOpenAIClient()
+    async_openai_client = MockAsyncOpenAIClient()
+
+mock_responses = [
+    (
+        {
+            'messages': [
+                {'role': "user", 'content': 'Respond with a single word.'}
+            ],
+            'model': sglang_model_name,
+        },
+        "foo"
+    ),
+    (
+        {
+            'messages': [
+                {'role': "user", 'content': 'Respond with a single word.'}
+            ],
+            'model': sglang_model_name,
+            'stream': True
+        },
+        ["foo", "bar"]
+    ),
+    (
+        {
+            'messages': [
+                {'role': "user", 'content': 'Respond with a single word.'}
+            ],
+            'n': 2,
+            'model': sglang_model_name,
+        },
+        ["foo", "bar"]
+    ),
+    (
+        {
+            'messages': [{'role': "user", 'content': 'foo?'}],
+            'model': sglang_model_name,
+            'max_tokens': 10,
+            'response_format': {
+                'type': 'json_schema',
+                'json_schema': {
+                    'name': 'default',
+                    'strict': True,
+                    'schema': {
+                        'type': 'object',
+                        'properties': {'bar': {'type': 'string'}},
+                        'additionalProperties': False
+                    }
+                }
+            }
+        },
+        '{"foo": "bar"}'
+    ),
+    (
+        {
+            'messages': [{'role': "user", 'content': 'foo?'}],
+            'model': sglang_model_name,
+            'max_tokens': 10,
+            'extra_body': {
+                'regex': '([0-9]{3})',
+            },
+        },
+        "123"
+    ),
+    (
+        {
+            'messages': [{'role': "user", 'content': 'foo?'}],
+            'model': sglang_model_name,
+            'max_tokens': 10,
+            'extra_body': {
+                'ebnf': EBNF_YES_NO_GRAMMAR,
+            },
+        },
+        "yes"
+    ),
+    (
+        {
+            'messages': [
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": "hello"},
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/png;base64,{image_input.image_str}"
+                            },
+                        },
+                    ]
+                }
+            ],
+            'model': sglang_model_name,
+            'max_tokens': 10,
+        },
+        "foo"
+    ),
+    (
+        {
+            'messages': [
+                {"role": "system", "content": "prompt"},
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": "hello"},
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/png;base64,{image_input.image_str}"
+                            },
+                        },
+                    ],
+                },
+                {"role": "assistant", "content": "response"},
+            ],
+            'model': sglang_model_name,
+            'max_tokens': 10,
+        },
+        "foo"
+    )
+]
+
+
+# If the SGLANG_SERVER_URL environment variable is not set, add the mock
+# responses to the mock clients
+if not sglang_server_url:
+    async_openai_client.add_mock_responses(mock_responses)
+    openai_client.add_mock_responses(mock_responses)
+
+
+@pytest.fixture
+def sync_model():
+    return SGLang(openai_client, model_name=sglang_model_name)
+
+
+@pytest.fixture
+def sync_model_no_model_name():
+    return SGLang(openai_client)
+
+
+@pytest.fixture
+def async_model():
+    return AsyncSGLang(async_openai_client, model_name=sglang_model_name)
+
+
+@pytest.fixture
+def async_model_no_model_name():
+    return AsyncSGLang(async_openai_client)
+
+
+def test_sglang_init():
+    # We do not rely on the mock server here because we need an object
+    # of type OpenAI and AsyncOpenAI to test the init function.
+    openai_client = OpenAI(base_url="http://localhost:11434", api_key="foo")
+    async_openai_client = AsyncOpenAI(base_url="http://localhost:11434", api_key="foo")
+
+    # Sync with model name
+    model = from_sglang(openai_client, sglang_model_name)
+    assert isinstance(model, SGLang)
+    assert model.client == openai_client
+    assert model.model_name == sglang_model_name
+
+    # Sync without model name
+    model = from_sglang(openai_client)
+    assert isinstance(model, SGLang)
+    assert model.client == openai_client
+    assert model.model_name is None
+
+    # Async with model name
+    model = from_sglang(async_openai_client, sglang_model_name)
+    assert isinstance(model, AsyncSGLang)
+    assert model.client == async_openai_client
+    assert model.model_name == sglang_model_name
+
+    # Async without model name
+    model = from_sglang(async_openai_client)
+    assert isinstance(model, AsyncSGLang)
+    assert model.client == async_openai_client
+    assert model.model_name is None
+
+    with pytest.raises(ValueError, match="Unsupported client type"):
+        from_sglang("foo")
+
+
+@pytest.mark.parametrize("model_cls", [SGLang, AsyncSGLang])
+def test_sglang_build_client_args_merges_user_extra_body(model_cls):
+    # `_build_client_args` must merge the structured-output payload into the
+    # user's own `extra_body`, not clobber it wholesale.
+    model = model_cls(openai_client, sglang_model_name)
+
+    client_args = model._build_client_args(
+        "foo?", output_type=Regex(r"[0-9]{3}"), extra_body={"user_key": "user_value"}
+    )
+
+    assert client_args["extra_body"]["user_key"] == "user_value"
+    assert client_args["extra_body"]["regex"] == "([0-9]{3})"
+
+
+def test_sglang_sync_simple_call(sync_model):
+    result = sync_model("Respond with a single word.",)
+    assert isinstance(result, str)
+
+
+def test_sglang_sync_streaming(sync_model_no_model_name):
+    result = sync_model_no_model_name.stream(
+        "Respond with a single word.",
+        model=sglang_model_name,
+    )
+    assert isinstance(result, Generator)
+    assert isinstance(next(result), str)
+
+
+def test_sglang_sync_batch(sync_model):
+    with pytest.raises(NotImplementedError, match="does not support"):
+        sync_model.batch(
+            ["Respond with one word.", "Respond with one word."],
+        )
+
+
+def test_sglang_sync_vision(sync_model):
+    result = sync_model(["hello", image_input], max_tokens=10)
+    assert isinstance(result, str)
+
+
+def test_sglang_sync_vision_chat(sync_model):
+    result = sync_model(
+        Chat(messages=[
+            {"role": "system", "content": "prompt"},
+            {"role": "user", "content": [
+                "hello",
+                image_input,
+            ]},
+            {"role": "assistant", "content": "response"},
+        ]),
+        max_tokens=10,
+    )
+    assert isinstance(result, str)
+
+
+def test_sglang_sync_multiple_samples(sync_model):
+    result = sync_model("Respond with a single word.", n=2)
+    assert isinstance(result, list)
+    assert len(result) == 2
+    assert isinstance(result[0], str)
+    assert isinstance(result[1], str)
+
+
+def test_sglang_sync_json(sync_model):
+    json_string = (
+        '{"type": "object", "properties":'
+        + ' {"bar": {"type": "string"}}}'
+    )
+    result = sync_model("foo?", JsonSchema(json_string), max_tokens=10)
+    assert isinstance(result, str)
+    assert "bar" in result
+
+
+def test_sglang_sync_regex(sync_model):
+    result = sync_model("foo?", Regex(r"[0-9]{3}"), max_tokens=10)
+    assert isinstance(result, str)
+    assert re.match(r"[0-9]{3}", result)
+
+
+def test_sglang_sync_cfg(sync_model):
+    with pytest.warns(
+        UserWarning,
+        match="SGLang grammar-based structured outputs expects an EBNF"
+    ):
+        result = sync_model("foo?", CFG(EBNF_YES_NO_GRAMMAR), max_tokens=10)
+        assert isinstance(result, str)
+        assert result in ["yes", "no"]
+
+
+@pytest.mark.asyncio
+async def test_sglang_async_simple_call(async_model):
+    result = await async_model("Respond with a single word.",)
+    assert isinstance(result, str)
+
+
+@pytest.mark.asyncio
+async def test_sglang_async_streaming(async_model_no_model_name):
+    result = async_model_no_model_name.stream(
+        "Respond with a single word.",
+        model=sglang_model_name,
+    )
+    assert isinstance(result, AsyncGenerator)
+    async for chunk in result:
+        assert isinstance(chunk, str)
+        break  # Just check the first chunk
+
+
+@pytest.mark.asyncio
+async def test_sglang_async_batch(async_model):
+    with pytest.raises(NotImplementedError, match="does not support"):
+        await async_model.batch(
+            ["Respond with one word.", "Respond with one word."],
+        )
+
+
+@pytest.mark.asyncio
+async def test_sglang_async_vision(async_model):
+    result = await async_model(["hello", image_input], max_tokens=10)
+    assert isinstance(result, str)
+
+
+@pytest.mark.asyncio
+async def test_sglang_async_vision_chat(async_model):
+    result = await async_model(
+        Chat(messages=[
+            {"role": "system", "content": "prompt"},
+            {"role": "user", "content": [
+                "hello",
+                image_input,
+            ]},
+            {"role": "assistant", "content": "response"},
+        ]),
+        max_tokens=10,
+    )
+    assert isinstance(result, str)
+
+
+@pytest.mark.asyncio
+async def test_sglang_async_multiple_samples(async_model):
+    result = await async_model("Respond with a single word.", n=2)
+    assert isinstance(result, list)
+    assert len(result) == 2
+    assert isinstance(result[0], str)
+    assert isinstance(result[1], str)
+
+
+@pytest.mark.asyncio
+async def test_sglang_async_json(async_model):
+    json_string = (
+        '{"type": "object", "properties":'
+        + ' {"bar": {"type": "string"}}}'
+    )
+    result = await async_model("foo?", JsonSchema(json_string), max_tokens=10)
+    assert isinstance(result, str)
+    assert "bar" in result
+
+
+@pytest.mark.asyncio
+async def test_sglang_async_regex(async_model):
+    result = await async_model("foo?", Regex(r"[0-9]{3}"), max_tokens=10)
+    assert isinstance(result, str)
+    assert re.match(r"[0-9]{3}", result)
+
+
+@pytest.mark.asyncio
+async def test_sglang_async_cfg(async_model):
+    result = await async_model("foo?", CFG(EBNF_YES_NO_GRAMMAR), max_tokens=10)
+    assert isinstance(result, str)
+    assert result in ["yes", "no"]
+
+
+@pytest.mark.parametrize("model_cls", [SGLang, AsyncSGLang])
+def test_sglang_build_client_args_does_not_mutate_caller_extra_body(model_cls):
+    """Caller-provided extra_body must not be mutated across calls (#1931)."""
+    # openai_client / sglang_model_name are module-level mock client globals,
+    # not pytest fixtures (same pattern as test_sglang_build_client_args_merges_*).
+    model = model_cls(openai_client, sglang_model_name)
+
+    shared = {"user_key": "user_value"}
+    snapshot = dict(shared)
+
+    args1 = model._build_client_args(
+        "foo?", output_type=Regex(r"[0-9]{3}"), extra_body=shared
+    )
+    assert shared == snapshot
+    assert args1["extra_body"] is not shared
+    assert args1["extra_body"]["user_key"] == "user_value"
+    assert args1["extra_body"]["regex"] == "([0-9]{3})"
+
+    args2 = model._build_client_args("foo?", output_type=None, extra_body=shared)
+    assert shared == snapshot
+    # unconstrained call must not inherit previous structured-output keys
+    assert "regex" not in args2.get("extra_body", {})

@@ -1,0 +1,9 @@
+service: "service:Outlines"
+labels:
+  owner: bentoml-team
+  stage: demo
+include:
+- "*.py"
+python:
+  requirements_txt: "./requirements.txt"
+  lock_packages: false

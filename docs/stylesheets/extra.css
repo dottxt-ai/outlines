@@ -1,0 +1,420 @@
+@font-face {
+    font-family: "Source Code Pro Custom", monospace;
+    src: url(https://fonts.googleapis.com/css2?family=Source+Code+Pro:ital,wght@0,200..900;1,200..900&display=swap);
+}
+
+/* Header/banner styling */
+.md-header {
+    background-color: #DFD1B6 !important;
+}
+
+:root > * {
+    /* Notion-like color palette */
+    --md-default-fg-color: #37352f;
+    --md-default-fg-color--light: #73706c;
+    --md-default-fg-color--lighter: #9b9a97;
+    --md-default-bg-color: #ffffff;
+    --md-default-bg-color--light: #f7f6f3;
+    --md-default-bg-color--lighter: #edece9;
+
+    /* Typography */
+    --md-text-font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    --md-code-font: "Source Code Pro", Consolas, "Liberation Mono", Menlo, monospace;
+
+    /* Notion-like link colors */
+    --md-typeset-a-color: #37352f;
+    --md-accent-fg-color: #eb5757;
+
+    /* Background colors */
+    --md-code-bg-color: #f7f6f3;
+    --md-code-fg-color: #eb5757;
+}
+
+/* Code block styling */
+.highlight pre,
+.md-typeset pre code,
+.md-typeset .highlight pre,
+.md-typeset .highlighttable pre {
+    background-color: #2E3440 !important; /* Nord's darkest blue (nord0) */
+    border-radius: 4px !important; /* Subtle rounded corners like Notion */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08) !important; /* Subtle shadow */
+    border: none !important; /* No border for cleaner look */
+}
+
+/* Adjust padding from code content */
+.md-code__content {
+    padding: 1em 1.5em !important; /* Increased top/bottom padding */
+}
+
+/* Style only inline code (not code blocks) */
+.md-typeset :not(pre) > code {
+    background-color: rgba(135, 131, 120, 0.15); /* Notion's exact inline code background */
+    color: #E35A26; /* Orange color for inline code */
+    border-radius: 3px; /* Subtle rounded corners */
+    padding: 0.2em 0.4em; /* Notion-like padding */
+    font-weight: 500; /* Medium weight */
+    font-size: 0.85em; /* Slightly smaller than body text */
+    border: none;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+/* Override code block container background */
+.md-typeset .highlight,
+.md-typeset .highlighttable {
+    background-color: #ffffff !important; /* Match page background */
+    border-radius: 4px !important; /* Match code block radius */
+    overflow: hidden; /* Ensure child elements respect borders */
+}
+
+/* Ensure proper spacing for the entire code block */
+.md-typeset pre {
+    margin: 1.5em 0 !important;
+}
+
+/* Style the copy button with Nord snow grey */
+.md-clipboard {
+    color: #D8DEE9 !important; /* Nord snow storm */
+    top: 0.75em !important; /* Lower the button more */
+    right: 0.5em !important; /* Add some spacing from right edge */
+}
+
+.md-clipboard:hover {
+    color: #ECEFF4 !important; /* Brighter snow storm on hover */
+}
+
+.md-clipboard:after {
+    color: #D8DEE9 !important;
+}
+
+/* Style scrollbars with Nord colors */
+.md-typeset pre::-webkit-scrollbar {
+    height: 0.4rem;
+    width: 0.4rem;
+}
+
+.md-typeset pre::-webkit-scrollbar-track {
+    background-color: #3B4252; /* Nord1 */
+}
+
+.md-typeset pre::-webkit-scrollbar-thumb {
+    background-color: #4C566A; /* Nord3 */
+    border-radius: 0.2rem;
+}
+
+.md-typeset pre::-webkit-scrollbar-thumb:hover {
+    background-color: #D8DEE9; /* Nord snow storm on hover */
+}
+
+/* Firefox scrollbar styling */
+.md-typeset pre {
+    scrollbar-width: thin;
+    scrollbar-color: #4C566A #3B4252;
+}
+
+/* Notion-like visual hierarchy */
+.md-typeset h1 {
+    font-weight: 600;
+    font-size: 2.5rem;
+    line-height: 1.2;
+    margin-top: 2.5rem;
+    margin-bottom: 0.75rem;
+    color: #37352f;
+    letter-spacing: -0.01em;
+}
+
+.md-typeset h2 {
+    font-weight: 600;
+    font-size: 1.875rem;
+    line-height: 1.3;
+    margin-top: 2.5rem;
+    margin-bottom: 0.75rem;
+    color: #37352f;
+    letter-spacing: -0.005em;
+    border: none;
+    padding: 0;
+}
+
+.md-typeset h3 {
+    font-weight: 500;
+    font-size: 1.5rem;
+    line-height: 1.3;
+    margin-top: 2rem;
+    margin-bottom: 0.75rem;
+    color: #37352f;
+    letter-spacing: -0.003em;
+}
+
+.md-typeset h4 {
+    font-weight: 500;
+    font-size: 1.25rem;
+    line-height: 1.3;
+    margin-top: 1.75rem;
+    margin-bottom: 0.5rem;
+    color: #37352f;
+}
+
+.md-typeset h5 {
+    font-weight: 500;
+    font-size: 1rem;
+    line-height: 1.4;
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+    color: #37352f;
+}
+
+.md-typeset h6 {
+    font-weight: 500;
+    font-size: 0.875rem;
+    line-height: 1.4;
+    margin-top: 1.25rem;
+    margin-bottom: 0.5rem;
+    color: #37352f;
+    text-transform: none;
+    letter-spacing: normal;
+}
+
+/* Notion-like paragraph styling */
+.md-typeset p {
+    line-height: 1.5;
+    margin-bottom: 1em; /* More whitespace */
+    color: #37352f;
+    font-weight: 400;
+}
+
+/* Reduce font size for navigation */
+.md-nav__link {
+    font-size: 0.6875rem; /* 11px */
+}
+
+/* Reduce font size for TOC */
+.md-nav--secondary .md-nav__link {
+    font-size: 0.6875rem; /* 11px */
+}
+
+/* Reduce spacing between navigation items */
+.md-nav__item {
+    margin: 0;
+}
+
+.md-nav__link {
+    padding-top: 0;
+    padding-bottom: 0;
+    line-height: 1.2; /* Tighter line height */
+}
+
+/* Make navigation sections more compact */
+.md-nav__title {
+    line-height: 1.2;
+    padding: 0.2rem 0.5rem;
+    margin-bottom: 0.2rem;
+}
+
+/* Reduce TOC line height for compactness */
+.md-nav--secondary .md-nav__link {
+    line-height: 1.2;
+}
+
+/* Notion-like list styling */
+.md-typeset ul,
+.md-typeset ol {
+    margin-top: 0.25em; /* Reduced top margin to sit closer to text */
+    margin-bottom: 1em; /* Match paragraph spacing */
+    color: #37352f;
+}
+
+.md-typeset li {
+    line-height: 1.5;
+    margin-bottom: 0.15rem; /* Slightly more spacing between list items */
+    font-weight: 400;
+}
+
+/* Notion-style links */
+.md-typeset a {
+    color: #37352f;
+    text-decoration: underline;
+    text-decoration-color: rgba(55, 53, 47, 0.4);
+    text-underline-offset: 2px;
+    transition: text-decoration-color 0.1s ease;
+}
+
+.md-typeset a:hover {
+    text-decoration-color: rgba(55, 53, 47, 0.8);
+    background-color: rgba(55, 53, 47, 0.04);
+}
+
+/* Make important elements stand out */
+.md-typeset strong {
+    font-weight: 600;
+    color: #37352f;
+}
+
+/* Better spacing for code blocks in relation to text */
+.md-typeset pre {
+    margin: 1.5em 0 !important; /* More whitespace around code blocks */
+}
+
+/* Notion-style tables */
+.md-typeset table {
+    border-collapse: collapse;
+    margin: 1rem 0;
+}
+
+.md-typeset table th {
+    font-weight: 600;
+    background-color: #f7f6f3;
+    color: #37352f;
+    border: 1px solid #e1e0dd;
+    padding: 0.5rem 0.75rem;
+}
+
+.md-typeset table td {
+    border: 1px solid #e1e0dd;
+    padding: 0.5rem 0.75rem;
+}
+
+/* Notion-style blockquotes */
+.md-typeset blockquote {
+    border-left: 3px solid #37352f;
+    padding-left: 1rem;
+    margin: 1rem 0;
+    color: #37352f;
+    background: transparent;
+}
+
+/* Page styling */
+.md-content {
+    background-color: #ffffff;
+}
+
+.md-sidebar {
+    background-color: #fbfbfa;
+}
+
+/* Remove shadows for cleaner look */
+.md-header,
+.md-tabs {
+    box-shadow: none;
+    border-bottom: 1px solid #e1e0dd;
+}
+
+/* Admonition styling with custom palette */
+.md-typeset .admonition,
+.md-typeset details {
+    border-radius: 4px;
+    border: none;
+    box-shadow: none;
+    font-size: 0.6875rem; /* Very small font size - 11px */
+    padding: 0.75rem;
+    margin: 1rem 0;
+}
+
+/* Note/Info - Blue */
+.md-typeset .admonition.note,
+.md-typeset details.note,
+.md-typeset .admonition.info,
+.md-typeset details.info {
+    background-color: rgba(127, 154, 207, 0.1) !important;
+    border-left: 4px solid #7F9ACF !important;
+}
+
+.md-typeset .note > .admonition-title,
+.md-typeset .note > summary,
+.md-typeset .info > .admonition-title,
+.md-typeset .info > summary {
+    background-color: rgba(127, 154, 207, 0.2) !important;
+    border-left: none !important;
+}
+
+/* Additional specificity for info type and custom types that should be blue */
+.md-typeset .admonition.admonition-info,
+.md-typeset details.details-info,
+.md-typeset .admonition.installation,
+.md-typeset .admonition.example,
+.md-typeset .admonition.abstract,
+.md-typeset .admonition.summary,
+.md-typeset .admonition.tldr {
+    background-color: rgba(127, 154, 207, 0.1) !important;
+    border-left: 4px solid #7F9ACF !important;
+}
+
+/* Titles for custom blue admonitions */
+.md-typeset .installation > .admonition-title,
+.md-typeset .example > .admonition-title,
+.md-typeset .abstract > .admonition-title,
+.md-typeset .summary > .admonition-title,
+.md-typeset .tldr > .admonition-title {
+    background-color: rgba(127, 154, 207, 0.2) !important;
+    border-left: none !important;
+}
+
+/* Warning/Caution - Yellow */
+.md-typeset .admonition.warning,
+.md-typeset details.warning,
+.md-typeset .admonition.caution,
+.md-typeset details.caution {
+    background-color: rgba(189, 147, 47, 0.1);
+    border-left: 4px solid #BD932F;
+}
+
+.md-typeset .warning > .admonition-title,
+.md-typeset .warning > summary,
+.md-typeset .caution > .admonition-title,
+.md-typeset .caution > summary {
+    background-color: rgba(189, 147, 47, 0.2);
+    border-left: none;
+}
+
+/* Danger/Error - Orange */
+.md-typeset .admonition.danger,
+.md-typeset details.danger,
+.md-typeset .admonition.error,
+.md-typeset details.error {
+    background-color: rgba(227, 90, 38, 0.1);
+    border-left: 4px solid #E35A26;
+}
+
+.md-typeset .danger > .admonition-title,
+.md-typeset .danger > summary,
+.md-typeset .error > .admonition-title,
+.md-typeset .error > summary {
+    background-color: rgba(227, 90, 38, 0.2);
+    border-left: none;
+}
+
+/* Success/Tip/Hint - Green */
+.md-typeset .admonition.success,
+.md-typeset details.success,
+.md-typeset .admonition.tip,
+.md-typeset details.tip,
+.md-typeset .admonition.hint,
+.md-typeset details.hint {
+    background-color: rgba(166, 180, 163, 0.1);
+    border-left: 4px solid #A6B4A3;
+}
+
+.md-typeset .success > .admonition-title,
+.md-typeset .success > summary,
+.md-typeset .tip > .admonition-title,
+.md-typeset .tip > summary,
+.md-typeset .hint > .admonition-title,
+.md-typeset .hint > summary {
+    background-color: rgba(166, 180, 163, 0.2);
+    border-left: none;
+}
+
+/* General admonition title styling */
+.md-typeset .admonition-title,
+.md-typeset summary {
+    font-weight: 600;
+    font-size: 0.6875rem; /* Very small - 11px */
+    padding: 0.5rem 0.75rem;
+    margin: -0.75rem -0.75rem 0.5rem -0.75rem;
+    border-radius: 4px 4px 0 0;
+}
+
+/* Ensure consistent icon styling */
+.md-typeset .admonition > .admonition-title::before,
+.md-typeset details > summary::before {
+    font-size: 1rem;
+    margin-right: 0.5rem;
+}

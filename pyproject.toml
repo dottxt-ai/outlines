@@ -1,0 +1,222 @@
+[build-system]
+requires = ["setuptools>=45", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "outlines"
+authors= [{name = "Outlines Developers"}]
+description = "Probabilistic Generative Model Programming"
+requires-python = ">=3.10,<3.14"
+license = {text = "Apache-2.0"}
+keywords=[
+    "machine learning",
+    "deep learning",
+    "language models",
+    "structured generation",
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Information Technology",
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+   "jinja2",
+   "cloudpickle",
+   "diskcache",
+   "pydantic>=2.0",
+   "jsonschema",
+   "pillow",
+   "typing_extensions",
+   "outlines_core==0.2.14",
+   "genson",
+]
+dynamic = ["version"]
+
+[project.optional-dependencies]
+anthropic = ["anthropic"]
+dottxt = ["dottxt"]
+gemini = ["google-genai"]
+llamacpp = ["huggingface-hub", "llama-cpp-python", "numba"]
+mlxlm = ["datasets", "mlx", "mlx-lm"]
+lmstudio = ["lmstudio"]
+ollama = ["ollama"]
+openai = ["openai"]
+mistral = ["mistralai"]
+sglang = ["openai"]
+tgi = ["huggingface_hub"]
+transformers = ["accelerate", "datasets", "transformers", "setuptools", "sentencepiece"]
+vllm = ["openai"]
+xgrammar = ["xgrammar"]
+llguidance = ["llguidance"]
+airports = ["airportsdata"]
+countries = ["iso3166"]
+test = [
+    "pre-commit",
+    "pytest",
+    "pytest-cov",
+    "pytest-mock",
+    "pytest-asyncio",
+    "coverage[toml]>=5.1",
+    "diff-cover",
+    "accelerate",
+    "beartype<0.16.0",
+    "responses",
+    "llama-cpp-python",
+    "mlx-lm>=0.19.2; platform_machine == 'arm64' and sys_platform == 'darwin'",
+    "huggingface_hub",
+    "openai>=1.0.0",
+    "datasets",
+    "anthropic",
+    "google-genai",
+    "mistralai",
+    "transformers",
+    "pillow",
+    "jax",
+    "flax",
+    "numpy>=2.0.0,<2.2.0",
+    "numba",
+    "torch>2.3.0",
+    "tensorflow",
+    "tf-keras",
+    "ollama",
+    "lmstudio",
+    "dottxt>=0.2.0",
+    "sentencepiece",
+    "mkdocs_gen_files",
+    "llguidance",
+    "xgrammar",
+    "airportsdata",
+    "iso3166",
+    "requests",
+]
+
+[dependency-groups]
+# Note: vllm is excluded from the lock file due to circular dependency with outlines-core.
+# For GPU testing, install vllm manually: pip install vllm
+test-gpu = ["outlines[test]"]
+
+[project.urls]
+homepage = "https://github.com/dottxt-ai/outlines"
+documentation = "https://dottxt-ai.github.io/outlines/"
+repository = "https://github.com/dottxt-ai/outlines"
+
+[project.readme]
+file="README.md"
+content-type = "text/markdown"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["outlines*"]
+
+[tool.setuptools.package-data]
+"outlines" = ["py.typed", "grammars/*.lark"]
+
+[tool.setuptools_scm]
+write_to = "src/outlines/_version.py"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = [
+    "error",
+    "ignore::pydantic.warnings.PydanticDeprecatedSince20",
+    "ignore::FutureWarning:transformers.*",
+    "ignore::FutureWarning:huggingface_hub.*",
+    "ignore::UserWarning",
+    "ignore::DeprecationWarning:pyairports.*",
+    "ignore::DeprecationWarning:jax.*",
+    "ignore::DeprecationWarning:flax.*",
+    "ignore::DeprecationWarning:torch.*",
+]
+
+[tool.mypy]
+exclude=["examples"]
+enable_incomplete_feature = ["Unpack"]
+
+[[tool.mypy.overrides]]
+module = [
+    "jax",
+    "jaxlib",
+    "jax.numpy",
+    "jinja2",
+    "jsonschema.*",
+    "anthropic.*",
+    "google.*",
+    "mistralai.*",
+    "mamba_ssm.*",
+    "mlx_lm.*",
+    "mlx.*",
+    "numpy.*",
+    "cloudpickle.*",
+    "diskcache.*",
+    "pydantic.*",
+    "pydantic_core.*",
+    "pytest",
+    "referencing.*",
+    "torch.*",
+    "transformers.*",
+    "llama_cpp",
+    "httpx",
+    "huggingface_hub",
+    "huggingface_hub.*",
+    "datasets.*",
+    "openai.*",
+    "requests.*",
+    "responses.*",
+    "vllm.*",
+    "iso3166.*",
+    "airportsdata.*",
+    "outlines_core.*",
+    "genson",
+    "lmstudio.*",
+    "ollama.*",
+    "dottxt.*",
+    "tensorflow",
+    "tensorflow.*",
+    "tf-keras",
+    "tf-keras.*",
+    "mkdocs_gen_files.*",
+    "llguidance.*",
+    "xgrammar.*",
+]
+ignore_missing_imports = true
+
+[tool.coverage.run]
+# we omit the files that require a GPU or Apple Silicon
+# as well as the models that make API calls
+omit = [
+    "src/outlines/_version.py",
+    "src/outlines/models/anthropic.py",
+    "src/outlines/models/dottxt.py",
+    "src/outlines/models/gemini.py",
+    "src/outlines/models/mlxlm.py",
+    "src/outlines/models/openai.py",
+    "src/outlines/models/mistral.py",
+    "src/outlines/models/vllm_offline.py",
+    "src/outlines/processors/tensor_adapters/mlx.py",
+    "tests/*",
+]
+branch = true
+relative_files = true
+
+[tool.coverage.report]
+show_missing = true
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "\\.\\.\\.",
+]
+
+[tool.diff_cover]
+compare_branch = "origin/main"
+diff_range_notation = ".."
+
+[tool.docformatter]
+style = "numpy"
+in-place = true
+
+[tool.ruff.lint]
+ignore = [ "E731", "F401" ]
