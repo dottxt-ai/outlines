@@ -75,6 +75,13 @@ class SGLangTypeAdapter(ModelTypeAdapter):
             )
             return {"extra_body": {"ebnf": term.definition}}
         elif isinstance(term, JsonSchema):
+            if term.whitespace_pattern is not None:
+                raise NotImplementedError(
+                    "The SGLang backend does not support the "
+                    "`whitespace_pattern` argument. Set the whitespace "
+                    "pattern on the SGLang server instead, e.g. with "
+                    "`--constrained-json-whitespace-pattern`."
+                )
             return OpenAITypeAdapter().format_json_output_type(
                 json.loads(term.schema)
             )

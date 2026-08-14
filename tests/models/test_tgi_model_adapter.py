@@ -62,13 +62,9 @@ def test_tgi_type_adapter_output_type(
             "value": json.loads(JSON_SCHEMA_STRING),
         }
     }
-    # whitespace_pattern is ignored
-    assert type_adapter.format_output_type(json_schema_whitespace_instance) == {
-        "grammar": {
-            "type": "json",
-            "value": json.loads(JSON_SCHEMA_STRING),
-        }
-    }
+    # TGI does not support per-request whitespace patterns
+    with pytest.raises(NotImplementedError, match="whitespace_pattern"):
+        type_adapter.format_output_type(json_schema_whitespace_instance)
     assert type_adapter.format_output_type(int) == {
         "grammar": {
             "type": "regex",
