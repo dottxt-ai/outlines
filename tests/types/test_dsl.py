@@ -545,6 +545,42 @@ def test_json_schema_equality_includes_whitespace_pattern():
     assert JsonSchema(schema) != JsonSchema(schema, whitespace_pattern=r"[ ]?")
 
 
+def test_json_schema_is_hashable():
+    schema = {"type": "string"}
+
+    a = JsonSchema(schema)
+    b = JsonSchema(schema)
+    assert hash(a) == hash(b), "equal JsonSchema instances must hash equally"
+    assert len({a, b}) == 1, "equal JsonSchema instances deduplicate in a set"
+    assert {a: "value"}[b] == "value", "JsonSchema is usable as a dict key"
+
+    different = JsonSchema({"type": "number"})
+    assert hash(a) != hash(different)
+
+    whitespace = JsonSchema(schema, whitespace_pattern=r"[ ]?")
+    assert hash(a) != hash(whitespace)
+
+
+def test_json_schema_hash_key_order_insensitive():
+    a = JsonSchema(
+        {"type": "object", "properties": {"x": {"type": "string"}}}
+    )
+    b = JsonSchema(
+        {"properties": {"x": {"type": "string"}}, "type": "object"}
+    )
+    assert a == b
+    assert hash(a) == hash(b), "schemas equal under __eq__ must hash equally"
+
+
+def test_cfg_is_hashable():
+    a = CFG("root ::= [0-9]+")
+    b = CFG("root ::= [0-9]+")
+    assert hash(a) == hash(b), "equal CFG instances must hash equally"
+    assert len({a, b}) == 1
+    assert {a: "value"}[b] == "value", "CFG is usable as a dict key"
+    assert hash(a) != hash(CFG("root ::= [0-9]*"))
+
+
 def test_dsl_python_types_to_terms():
     with pytest.raises(RecursionError):
         python_types_to_terms(None, 11)

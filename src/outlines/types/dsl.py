@@ -260,6 +260,9 @@ class CFG(Term):
             return False
         return self.definition == other.definition
 
+    def __hash__(self):
+        return hash(self.definition)
+
     @classmethod
     def from_file(cls, path: str) -> "CFG":
         """Create a CFG instance from a file containing a CFG definition.
@@ -459,6 +462,13 @@ class JsonSchema(Term):
                 self.schema == other.schema
                 and self.whitespace_pattern == other.whitespace_pattern
             )
+
+    def __hash__(self):
+        try:
+            normalised = json.dumps(json.loads(self.schema), sort_keys=True)
+        except json.JSONDecodeError:  # pragma: no cover
+            normalised = self.schema
+        return hash((normalised, self.whitespace_pattern))
 
     @classmethod
     def from_file(cls, path: str) -> "JsonSchema":
