@@ -69,6 +69,33 @@ def test_schema_type_to_python_union_keyword_with_outer_type():
     )
 
 
+def test_schema_type_to_python_union_keyword_boolean_subschemas():
+    """Boolean JSON Schema branches must not reach the dict converter."""
+
+    assert (
+        schema_type_to_python(
+            {"anyOf": [{"type": "integer"}, False]},
+            "pydantic",
+        )
+        is int
+    )
+    assert (
+        schema_type_to_python(
+            {"oneOf": [{"type": "string"}, False]},
+            "pydantic",
+        )
+        is str
+    )
+    assert (
+        schema_type_to_python(
+            {"anyOf": [{"type": "integer"}, True]},
+            "pydantic",
+        )
+        is Any
+    )
+    assert schema_type_to_python({"oneOf": [True]}, "pydantic") is Any
+
+
 def test_schema_type_to_python_enum():
     schema = {"enum": ["red", "green", "blue"]}
     result = schema_type_to_python(schema, "pydantic")

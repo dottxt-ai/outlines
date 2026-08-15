@@ -44,9 +44,17 @@ def schema_type_to_python(
 
     for keyword in ("anyOf", "oneOf"):
         if keyword in schema and "type" not in schema:
+            branches = schema[keyword]
+            # Boolean schemas are legal JSON Schema subschemas. ``true`` is
+            # always valid, so the best Python-type approximation is Any;
+            # ``false`` contributes no branch. Ignore both rather than
+            # passing a bool into the dict-oriented recursive converter.
+            if any(branch is True for branch in branches):
+                return Any
             members = tuple(
                 schema_type_to_python(member, caller_target_type)
-                for member in schema[keyword]
+                for member in branches
+                if isinstance(member, dict)
             )
             return Union[members] if members else Any  # type: ignore
 
