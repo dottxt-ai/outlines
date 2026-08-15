@@ -111,3 +111,19 @@ def test_mlxlm_type_adapter_format_output_type(adapter, logits_processor):
     assert isinstance(formatted, list)
     assert len(formatted) == 1
     assert isinstance(formatted[0], OutlinesCoreLogitsProcessor)
+
+
+@pytest.mark.skipif(not HAS_MLX, reason="MLX tests require Apple Silicon")
+def test_mlxlm_type_adapter_format_output_type_none(adapter):
+    assert adapter.format_output_type(None) is None
+
+
+@pytest.mark.skipif(not HAS_MLX, reason="MLX tests require Apple Silicon")
+def test_mlxlm_type_adapter_format_output_type_falsy_processor(adapter):
+    class FalsyProcessor:
+        def __bool__(self):
+            return False
+
+    processor = FalsyProcessor()
+    formatted = adapter.format_output_type(processor)
+    assert formatted == [processor]

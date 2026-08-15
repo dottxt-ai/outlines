@@ -155,3 +155,19 @@ def test_mlxlm_batch_output_type(model):
             ["Respond with one word.", "Respond with one word."],
             Regex(r"[0-9]")
         )
+
+
+@pytest.mark.skipif(not HAS_MLX, reason="MLX tests require Apple Silicon")
+def test_mlxlm_batch_falsy_output_type(model):
+    class FalsyOutputType:
+        def __bool__(self):
+            return False
+
+    with pytest.raises(
+        NotImplementedError,
+        match="mlx-lm does not support constrained generation with batching."
+    ):
+        model.batch(
+            ["Respond with one word.", "Respond with one word."],
+            FalsyOutputType(),
+        )
