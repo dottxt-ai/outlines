@@ -100,6 +100,47 @@ def test_disable_cache(test_cache):
     assert len(store) == store_size + 1
 
 
+
+def test_cache_disabled_restores_state():
+    import outlines.caching as caching
+
+    token = caching._caching_enabled.set(True)
+    try:
+        with caching.cache_disabled():
+            assert caching._caching_enabled.get() is False
+        assert caching._caching_enabled.get() is True
+    finally:
+        caching._caching_enabled.reset(token)
+
+
+def test_cache_disabled_is_async_safe():
+    import asyncio
+
+    import outlines.caching as caching
+
+    token = caching._caching_enabled.set(True)
+    try:
+
+        async def coroutine_a(entered, done):
+            with caching.cache_disabled():
+                entered.set()
+                await done.wait()
+
+        async def coroutine_b(entered, done):
+            await entered.wait()
+            observed = caching._caching_enabled.get()
+            done.set()
+            return observed
+
+        async def main():
+            entered, done = asyncio.Event(), asyncio.Event()
+            return await asyncio.gather(coroutine_a(entered, done), coroutine_b(entered, done))
+
+        results = asyncio.run(main())
+        assert results == [None, True], "another coroutine must not see cache_disabled state"
+    finally:
+        caching._caching_enabled.reset(token)
+
 def test_clear_cache(test_cache):
     """Make sure that we can clear the cache."""
     import outlines
