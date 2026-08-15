@@ -709,11 +709,11 @@ def test_dsl_literal_bool():
     # Literal[True] and Literal[False] previously raised TypeError; ensure they resolve.
     result_true = python_types_to_terms(Literal[True])
     assert isinstance(result_true, Alternatives)
-    assert result_true.terms == [Regex("True")]
+    assert result_true.terms == [Regex("true")]
     result_false = python_types_to_terms(Literal[False])
-    assert result_false.terms == [Regex("False")]
+    assert result_false.terms == [Regex("false")]
     result_both = python_types_to_terms(Literal[True, False])
-    assert result_both == Alternatives([Regex("True"), Regex("False")])
+    assert result_both == Alternatives([Regex("true"), Regex("false")])
 
 
 def test_dsl_numeric_literal_escapes_regex_metacharacters():
@@ -1036,6 +1036,27 @@ def test_list_of_bool_unchanged():
     list_type = list[bool]
     result = _handle_list(get_args(list_type), recursion_depth=0)
     assert result.terms[1] == types.boolean
+
+
+def test_boolean_literals_are_json_compatible():
+    """Boolean values and bool containers emit JSON literals, not Python True/False."""
+    assert python_types_to_terms(Literal[True]).terms == [Regex("true")]
+    assert python_types_to_terms(Literal[False]).terms == [Regex("false")]
+
+    # types.boolean only matches the JSON lowercase literals
+    assert types.boolean.matches("true")
+    assert types.boolean.matches("false")
+    assert not types.boolean.matches("True")
+    assert not types.boolean.matches("False")
+
+    # A bool inside a container produces JSON-valid output
+    list_regex = to_regex(python_types_to_terms(list[bool]))
+    assert "True" not in list_regex
+    assert "False" not in list_regex
+
+    list_term = python_types_to_terms(list[Literal[True]])
+    assert list_term.matches("[true]")
+    assert not list_term.matches("[True]")
 
 
 def test_dict_int_value_unchanged():
