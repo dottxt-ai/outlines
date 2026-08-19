@@ -384,6 +384,14 @@ def test_get_fn_source():
     assert get_fn_source(sample_function).strip() == source
 
 
+def test_get_fn_source_async_function():
+    async def async_sample_function(x):
+        return x
+
+    source = "async def async_sample_function(x):\n    return x"
+    assert get_fn_source(async_sample_function).strip() == source
+
+
 def test_get_fn_signature():
     with pytest.raises(TypeError, match="The `source` filter only applies to callables."):
         get_fn_signature(1)
