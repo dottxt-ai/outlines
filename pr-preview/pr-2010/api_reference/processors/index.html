@@ -5101,28 +5101,28 @@ tensors using the appropriate library for the model (numpy, torch...).</p>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-135">135</a></span>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-136">136</a></span>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-137">137</a></span></pre></div></td><td class="code"><div><pre style="line-height: 125%;"><span></span><code><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14"></a><span style="color: #81A1C1; font-weight: bold">class</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">OutlinesLogitsProcessor</span><span style="color: #ECEFF4">:</span>
-</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">&quot;&quot;&quot;Base class for logits processors.</span>
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">"""Base class for logits processors.</span>
 </span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16"></a><span style="color: #616E87">    This class implements a shared `__call__` method is called by the models</span>
 </span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17"></a><span style="color: #616E87">    and returns the processed logits. It relies on the `process_logits` method</span>
 </span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18"></a><span style="color: #616E87">    that must be implemented by the subclasses to do the actual processing. The</span>
 </span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19"></a><span style="color: #616E87">    `tensor_adapter` attribute, created at initialization based on the</span>
 </span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20"></a><span style="color: #616E87">    tensor library name specified in the constructor, is used to manipulate the</span>
 </span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21"></a><span style="color: #616E87">    tensors using the appropriate library for the model (numpy, torch...).</span>
-</span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22"></a><span style="color: #616E87">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22"></a><span style="color: #616E87">    """</span>
 </span><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23"></a>    <span style="color: #D8DEE9">tensor_adapter</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">TensorAdapterImplementation</span>
 </span><span id="__span-0-24"><a id="__codelineno-0-24" name="__codelineno-0-24"></a>
 </span><span id="__span-0-25"><a id="__codelineno-0-25" name="__codelineno-0-25"></a>    <span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">__init__</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">self</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">tensor_library_name</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">str</span><span style="color: #ECEFF4">):</span>
-</span><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26"></a><span style="color: #D8DEE9">        </span><span style="color: #616E87">&quot;&quot;&quot;</span>
+</span><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26"></a><span style="color: #D8DEE9">        </span><span style="color: #616E87">"""</span>
 </span><span id="__span-0-27"><a id="__codelineno-0-27" name="__codelineno-0-27"></a><span style="color: #616E87">        Parameters</span>
 </span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28"></a><span style="color: #616E87">        ----------</span>
 </span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29"></a><span style="color: #616E87">        tensor_library_name</span>
 </span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30"></a><span style="color: #616E87">            The name of the library to use to manipulate tensors. Possible</span>
-</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31"></a><span style="color: #616E87">            values are &quot;mlx&quot;, &quot;numpy&quot; and &quot;torch&quot;. You must choose the library</span>
+</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31"></a><span style="color: #616E87">            values are "mlx", "numpy" and "torch". You must choose the library</span>
 </span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32"></a><span style="color: #616E87">            that your model is using.</span>
-</span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33"></a><span style="color: #616E87">        &quot;&quot;&quot;</span>
+</span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33"></a><span style="color: #616E87">        """</span>
 </span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34"></a>        <span style="color: #616E87; font-style: italic"># Temporary fix as torch raises a warning that can cause can an error</span>
 </span><span id="__span-0-35"><a id="__codelineno-0-35" name="__codelineno-0-35"></a>        <span style="color: #616E87; font-style: italic"># with python 3.12.</span>
-</span><span id="__span-0-36"><a id="__codelineno-0-36" name="__codelineno-0-36"></a>        <span style="color: #81A1C1; font-weight: bold">if</span> <span style="color: #D8DEE9">tensor_library_name</span> <span style="color: #81A1C1; font-weight: bold">==</span> <span style="color: #A3BE8C">&quot;torch&quot;</span><span style="color: #ECEFF4">:</span>
+</span><span id="__span-0-36"><a id="__codelineno-0-36" name="__codelineno-0-36"></a>        <span style="color: #81A1C1; font-weight: bold">if</span> <span style="color: #D8DEE9">tensor_library_name</span> <span style="color: #81A1C1; font-weight: bold">==</span> <span style="color: #A3BE8C">"torch"</span><span style="color: #ECEFF4">:</span>
 </span><span id="__span-0-37"><a id="__codelineno-0-37" name="__codelineno-0-37"></a>            <span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">torch._dynamo</span>
 </span><span id="__span-0-38"><a id="__codelineno-0-38" name="__codelineno-0-38"></a>
 </span><span id="__span-0-39"><a id="__codelineno-0-39" name="__codelineno-0-39"></a>            <span style="color: #D8DEE9">torch</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">_dynamo</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">config</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">suppress_errors</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #81A1C1; font-weight: bold">True</span>
@@ -5130,24 +5130,24 @@ tensors using the appropriate library for the model (numpy, torch...).</p>
 </span><span id="__span-0-41"><a id="__codelineno-0-41" name="__codelineno-0-41"></a>        <span style="color: #D8DEE9">tensor_adapter_class</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">tensor_adapters</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">get</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">tensor_library_name</span><span style="color: #ECEFF4">)</span>
 </span><span id="__span-0-42"><a id="__codelineno-0-42" name="__codelineno-0-42"></a>        <span style="color: #81A1C1; font-weight: bold">if</span> <span style="color: #D8DEE9">tensor_adapter_class</span> <span style="color: #81A1C1; font-weight: bold">is</span> <span style="color: #81A1C1; font-weight: bold">None</span><span style="color: #ECEFF4">:</span>
 </span><span id="__span-0-43"><a id="__codelineno-0-43" name="__codelineno-0-43"></a>            <span style="color: #81A1C1; font-weight: bold">raise</span> <span style="color: #BF616A">NotImplementedError</span><span style="color: #ECEFF4">(</span>
-</span><span id="__span-0-44"><a id="__codelineno-0-44" name="__codelineno-0-44"></a>                <span style="color: #A3BE8C">f&quot;Library {</span><span style="color: #D8DEE9">tensor_library_name</span><span style="color: #A3BE8C">} is not available&quot;</span>
+</span><span id="__span-0-44"><a id="__codelineno-0-44" name="__codelineno-0-44"></a>                <span style="color: #A3BE8C">f"Library {</span><span style="color: #D8DEE9">tensor_library_name</span><span style="color: #A3BE8C">} is not available"</span>
 </span><span id="__span-0-45"><a id="__codelineno-0-45" name="__codelineno-0-45"></a>            <span style="color: #ECEFF4">)</span>
 </span><span id="__span-0-46"><a id="__codelineno-0-46" name="__codelineno-0-46"></a>        <span style="color: #81A1C1">self</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">tensor_adapter</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">tensor_adapter_class</span><span style="color: #ECEFF4">()</span>  <span style="color: #616E87; font-style: italic"># type: ignore</span>
 </span><span id="__span-0-47"><a id="__codelineno-0-47" name="__codelineno-0-47"></a>
 </span><span id="__span-0-48"><a id="__codelineno-0-48" name="__codelineno-0-48"></a>    <span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">reset</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">self</span><span style="color: #ECEFF4">):</span>
-</span><span id="__span-0-49"><a id="__codelineno-0-49" name="__codelineno-0-49"></a><span style="color: #D8DEE9">        </span><span style="color: #616E87">&quot;&quot;&quot;Reset the logits processor for a new generation</span>
+</span><span id="__span-0-49"><a id="__codelineno-0-49" name="__codelineno-0-49"></a><span style="color: #D8DEE9">        </span><span style="color: #616E87">"""Reset the logits processor for a new generation</span>
 </span><span id="__span-0-50"><a id="__codelineno-0-50" name="__codelineno-0-50"></a>
 </span><span id="__span-0-51"><a id="__codelineno-0-51" name="__codelineno-0-51"></a><span style="color: #616E87">        Only implement this method in subclasses if the logits processor</span>
 </span><span id="__span-0-52"><a id="__codelineno-0-52" name="__codelineno-0-52"></a><span style="color: #616E87">        needs to be reset for a new generation.</span>
 </span><span id="__span-0-53"><a id="__codelineno-0-53" name="__codelineno-0-53"></a>
-</span><span id="__span-0-54"><a id="__codelineno-0-54" name="__codelineno-0-54"></a><span style="color: #616E87">        &quot;&quot;&quot;</span>
+</span><span id="__span-0-54"><a id="__codelineno-0-54" name="__codelineno-0-54"></a><span style="color: #616E87">        """</span>
 </span><span id="__span-0-55"><a id="__codelineno-0-55" name="__codelineno-0-55"></a>        <span style="color: #81A1C1; font-weight: bold">pass</span> <span style="color: #616E87; font-style: italic"># pragma: no cover</span>
 </span><span id="__span-0-56"><a id="__codelineno-0-56" name="__codelineno-0-56"></a>
 </span><span id="__span-0-57"><a id="__codelineno-0-57" name="__codelineno-0-57"></a>    <span style="color: #D08770">@abstractmethod</span>
 </span><span id="__span-0-58"><a id="__codelineno-0-58" name="__codelineno-0-58"></a>    <span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">process_logits</span><span style="color: #ECEFF4">(</span>
 </span><span id="__span-0-59"><a id="__codelineno-0-59" name="__codelineno-0-59"></a>        <span style="color: #81A1C1">self</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">input_ids</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">TensorType</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">logits</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">TensorType</span>
 </span><span id="__span-0-60"><a id="__codelineno-0-60" name="__codelineno-0-60"></a>    <span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #D8DEE9">TensorType</span><span style="color: #ECEFF4">:</span>
-</span><span id="__span-0-61"><a id="__codelineno-0-61" name="__codelineno-0-61"></a><span style="color: #D8DEE9">        </span><span style="color: #616E87">&quot;&quot;&quot;Main method to implement for logits processors subclasses.</span>
+</span><span id="__span-0-61"><a id="__codelineno-0-61" name="__codelineno-0-61"></a><span style="color: #D8DEE9">        </span><span style="color: #616E87">"""Main method to implement for logits processors subclasses.</span>
 </span><span id="__span-0-62"><a id="__codelineno-0-62" name="__codelineno-0-62"></a><span style="color: #616E87">        This method applies a mask on the logits to bias the generation.</span>
 </span><span id="__span-0-63"><a id="__codelineno-0-63" name="__codelineno-0-63"></a><span style="color: #616E87">        It is called by the `__call__` method that standardizes the shape of</span>
 </span><span id="__span-0-64"><a id="__codelineno-0-64" name="__codelineno-0-64"></a><span style="color: #616E87">        `input_ids` and `logits` to ensure they are 2D tensors.</span>
@@ -5168,13 +5168,13 @@ tensors using the appropriate library for the model (numpy, torch...).</p>
 </span><span id="__span-0-79"><a id="__codelineno-0-79" name="__codelineno-0-79"></a><span style="color: #616E87">        -------</span>
 </span><span id="__span-0-80"><a id="__codelineno-0-80" name="__codelineno-0-80"></a><span style="color: #616E87">        TensorType</span>
 </span><span id="__span-0-81"><a id="__codelineno-0-81" name="__codelineno-0-81"></a><span style="color: #616E87">            The processed logits as a 2D tensor.</span>
-</span><span id="__span-0-82"><a id="__codelineno-0-82" name="__codelineno-0-82"></a><span style="color: #616E87">        &quot;&quot;&quot;</span>
+</span><span id="__span-0-82"><a id="__codelineno-0-82" name="__codelineno-0-82"></a><span style="color: #616E87">        """</span>
 </span><span id="__span-0-83"><a id="__codelineno-0-83" name="__codelineno-0-83"></a>        <span style="color: #81A1C1; font-weight: bold">...</span>
 </span><span id="__span-0-84"><a id="__codelineno-0-84" name="__codelineno-0-84"></a>
 </span><span id="__span-0-85"><a id="__codelineno-0-85" name="__codelineno-0-85"></a>    <span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">__call__</span><span style="color: #ECEFF4">(</span>
 </span><span id="__span-0-86"><a id="__codelineno-0-86" name="__codelineno-0-86"></a>        <span style="color: #81A1C1">self</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">input_ids</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">TensorType</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">logits</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">TensorType</span>
 </span><span id="__span-0-87"><a id="__codelineno-0-87" name="__codelineno-0-87"></a>    <span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #D8DEE9">TensorType</span><span style="color: #ECEFF4">:</span>
-</span><span id="__span-0-88"><a id="__codelineno-0-88" name="__codelineno-0-88"></a><span style="color: #D8DEE9">        </span><span style="color: #616E87">&quot;&quot;&quot;Entrypoint for logits processors, this is the method that is</span>
+</span><span id="__span-0-88"><a id="__codelineno-0-88" name="__codelineno-0-88"></a><span style="color: #D8DEE9">        </span><span style="color: #616E87">"""Entrypoint for logits processors, this is the method that is</span>
 </span><span id="__span-0-89"><a id="__codelineno-0-89" name="__codelineno-0-89"></a><span style="color: #616E87">        called by the model.</span>
 </span><span id="__span-0-90"><a id="__codelineno-0-90" name="__codelineno-0-90"></a><span style="color: #616E87">        Because different models use different structures to store the</span>
 </span><span id="__span-0-91"><a id="__codelineno-0-91" name="__codelineno-0-91"></a><span style="color: #616E87">        input_ids and logits, we standardize their format to 2D tensors</span>
@@ -5191,7 +5191,7 @@ tensors using the appropriate library for the model (numpy, torch...).</p>
 </span><span id="__span-0-102"><a id="__codelineno-0-102" name="__codelineno-0-102"></a><span style="color: #616E87">        -------</span>
 </span><span id="__span-0-103"><a id="__codelineno-0-103" name="__codelineno-0-103"></a><span style="color: #616E87">        TensorType</span>
 </span><span id="__span-0-104"><a id="__codelineno-0-104" name="__codelineno-0-104"></a><span style="color: #616E87">            The processed logits as a tensor.</span>
-</span><span id="__span-0-105"><a id="__codelineno-0-105" name="__codelineno-0-105"></a><span style="color: #616E87">        &quot;&quot;&quot;</span>
+</span><span id="__span-0-105"><a id="__codelineno-0-105" name="__codelineno-0-105"></a><span style="color: #616E87">        """</span>
 </span><span id="__span-0-106"><a id="__codelineno-0-106" name="__codelineno-0-106"></a>        <span style="color: #616E87; font-style: italic"># if input_ids is 1D and logits is 2D with a single sequence,</span>
 </span><span id="__span-0-107"><a id="__codelineno-0-107" name="__codelineno-0-107"></a>        <span style="color: #616E87; font-style: italic"># reshape input_ids to 2D (needed for mlx-lm)</span>
 </span><span id="__span-0-108"><a id="__codelineno-0-108" name="__codelineno-0-108"></a>        <span style="color: #81A1C1; font-weight: bold">if</span> <span style="color: #ECEFF4">(</span>
@@ -5219,8 +5219,8 @@ tensors using the appropriate library for the model (numpy, torch...).</p>
 </span><span id="__span-0-130"><a id="__codelineno-0-130" name="__codelineno-0-130"></a>            <span style="color: #ECEFF4">)</span>
 </span><span id="__span-0-131"><a id="__codelineno-0-131" name="__codelineno-0-131"></a>        <span style="color: #81A1C1; font-weight: bold">else</span><span style="color: #ECEFF4">:</span>
 </span><span id="__span-0-132"><a id="__codelineno-0-132" name="__codelineno-0-132"></a>            <span style="color: #81A1C1; font-weight: bold">raise</span> <span style="color: #BF616A">ValueError</span><span style="color: #ECEFF4">(</span>
-</span><span id="__span-0-133"><a id="__codelineno-0-133" name="__codelineno-0-133"></a>                <span style="color: #A3BE8C">f&quot;Logits shape {</span><span style="color: #81A1C1">self</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">tensor_adapter</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">shape</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">logits</span><span style="color: #ECEFF4">)</span><span style="color: #A3BE8C">} is not &quot;</span>
-</span><span id="__span-0-134"><a id="__codelineno-0-134" name="__codelineno-0-134"></a>                <span style="color: #81A1C1; font-weight: bold">+</span> <span style="color: #A3BE8C">&quot;supported&quot;</span>
+</span><span id="__span-0-133"><a id="__codelineno-0-133" name="__codelineno-0-133"></a>                <span style="color: #A3BE8C">f"Logits shape {</span><span style="color: #81A1C1">self</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">tensor_adapter</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">shape</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">logits</span><span style="color: #ECEFF4">)</span><span style="color: #A3BE8C">} is not "</span>
+</span><span id="__span-0-134"><a id="__codelineno-0-134" name="__codelineno-0-134"></a>                <span style="color: #81A1C1; font-weight: bold">+</span> <span style="color: #A3BE8C">"supported"</span>
 </span><span id="__span-0-135"><a id="__codelineno-0-135" name="__codelineno-0-135"></a>            <span style="color: #ECEFF4">)</span>
 </span><span id="__span-0-136"><a id="__codelineno-0-136" name="__codelineno-0-136"></a>
 </span><span id="__span-0-137"><a id="__codelineno-0-137" name="__codelineno-0-137"></a>        <span style="color: #81A1C1; font-weight: bold">return</span> <span style="color: #D8DEE9">processed_logits</span>
@@ -5387,7 +5387,7 @@ returned.</p>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-137">137</a></span></pre></div></td><td class="code"><div><pre style="line-height: 125%;"><span></span><code><span id="__span-0-85"><a id="__codelineno-0-85" name="__codelineno-0-85"></a><span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">__call__</span><span style="color: #ECEFF4">(</span>
 </span><span id="__span-0-86"><a id="__codelineno-0-86" name="__codelineno-0-86"></a>    <span style="color: #81A1C1">self</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">input_ids</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">TensorType</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">logits</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">TensorType</span>
 </span><span id="__span-0-87"><a id="__codelineno-0-87" name="__codelineno-0-87"></a><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #D8DEE9">TensorType</span><span style="color: #ECEFF4">:</span>
-</span><span id="__span-0-88"><a id="__codelineno-0-88" name="__codelineno-0-88"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">&quot;&quot;&quot;Entrypoint for logits processors, this is the method that is</span>
+</span><span id="__span-0-88"><a id="__codelineno-0-88" name="__codelineno-0-88"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">"""Entrypoint for logits processors, this is the method that is</span>
 </span><span id="__span-0-89"><a id="__codelineno-0-89" name="__codelineno-0-89"></a><span style="color: #616E87">    called by the model.</span>
 </span><span id="__span-0-90"><a id="__codelineno-0-90" name="__codelineno-0-90"></a><span style="color: #616E87">    Because different models use different structures to store the</span>
 </span><span id="__span-0-91"><a id="__codelineno-0-91" name="__codelineno-0-91"></a><span style="color: #616E87">    input_ids and logits, we standardize their format to 2D tensors</span>
@@ -5404,7 +5404,7 @@ returned.</p>
 </span><span id="__span-0-102"><a id="__codelineno-0-102" name="__codelineno-0-102"></a><span style="color: #616E87">    -------</span>
 </span><span id="__span-0-103"><a id="__codelineno-0-103" name="__codelineno-0-103"></a><span style="color: #616E87">    TensorType</span>
 </span><span id="__span-0-104"><a id="__codelineno-0-104" name="__codelineno-0-104"></a><span style="color: #616E87">        The processed logits as a tensor.</span>
-</span><span id="__span-0-105"><a id="__codelineno-0-105" name="__codelineno-0-105"></a><span style="color: #616E87">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-105"><a id="__codelineno-0-105" name="__codelineno-0-105"></a><span style="color: #616E87">    """</span>
 </span><span id="__span-0-106"><a id="__codelineno-0-106" name="__codelineno-0-106"></a>    <span style="color: #616E87; font-style: italic"># if input_ids is 1D and logits is 2D with a single sequence,</span>
 </span><span id="__span-0-107"><a id="__codelineno-0-107" name="__codelineno-0-107"></a>    <span style="color: #616E87; font-style: italic"># reshape input_ids to 2D (needed for mlx-lm)</span>
 </span><span id="__span-0-108"><a id="__codelineno-0-108" name="__codelineno-0-108"></a>    <span style="color: #81A1C1; font-weight: bold">if</span> <span style="color: #ECEFF4">(</span>
@@ -5432,8 +5432,8 @@ returned.</p>
 </span><span id="__span-0-130"><a id="__codelineno-0-130" name="__codelineno-0-130"></a>        <span style="color: #ECEFF4">)</span>
 </span><span id="__span-0-131"><a id="__codelineno-0-131" name="__codelineno-0-131"></a>    <span style="color: #81A1C1; font-weight: bold">else</span><span style="color: #ECEFF4">:</span>
 </span><span id="__span-0-132"><a id="__codelineno-0-132" name="__codelineno-0-132"></a>        <span style="color: #81A1C1; font-weight: bold">raise</span> <span style="color: #BF616A">ValueError</span><span style="color: #ECEFF4">(</span>
-</span><span id="__span-0-133"><a id="__codelineno-0-133" name="__codelineno-0-133"></a>            <span style="color: #A3BE8C">f&quot;Logits shape {</span><span style="color: #81A1C1">self</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">tensor_adapter</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">shape</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">logits</span><span style="color: #ECEFF4">)</span><span style="color: #A3BE8C">} is not &quot;</span>
-</span><span id="__span-0-134"><a id="__codelineno-0-134" name="__codelineno-0-134"></a>            <span style="color: #81A1C1; font-weight: bold">+</span> <span style="color: #A3BE8C">&quot;supported&quot;</span>
+</span><span id="__span-0-133"><a id="__codelineno-0-133" name="__codelineno-0-133"></a>            <span style="color: #A3BE8C">f"Logits shape {</span><span style="color: #81A1C1">self</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">tensor_adapter</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">shape</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">logits</span><span style="color: #ECEFF4">)</span><span style="color: #A3BE8C">} is not "</span>
+</span><span id="__span-0-134"><a id="__codelineno-0-134" name="__codelineno-0-134"></a>            <span style="color: #81A1C1; font-weight: bold">+</span> <span style="color: #A3BE8C">"supported"</span>
 </span><span id="__span-0-135"><a id="__codelineno-0-135" name="__codelineno-0-135"></a>        <span style="color: #ECEFF4">)</span>
 </span><span id="__span-0-136"><a id="__codelineno-0-136" name="__codelineno-0-136"></a>
 </span><span id="__span-0-137"><a id="__codelineno-0-137" name="__codelineno-0-137"></a>    <span style="color: #81A1C1; font-weight: bold">return</span> <span style="color: #D8DEE9">processed_logits</span>
@@ -5513,17 +5513,17 @@ that your model is using.</p>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-44">44</a></span>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-45">45</a></span>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-46">46</a></span></pre></div></td><td class="code"><div><pre style="line-height: 125%;"><span></span><code><span id="__span-0-25"><a id="__codelineno-0-25" name="__codelineno-0-25"></a><span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">__init__</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">self</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">tensor_library_name</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">str</span><span style="color: #ECEFF4">):</span>
-</span><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">&quot;&quot;&quot;</span>
+</span><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">"""</span>
 </span><span id="__span-0-27"><a id="__codelineno-0-27" name="__codelineno-0-27"></a><span style="color: #616E87">    Parameters</span>
 </span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28"></a><span style="color: #616E87">    ----------</span>
 </span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29"></a><span style="color: #616E87">    tensor_library_name</span>
 </span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30"></a><span style="color: #616E87">        The name of the library to use to manipulate tensors. Possible</span>
-</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31"></a><span style="color: #616E87">        values are &quot;mlx&quot;, &quot;numpy&quot; and &quot;torch&quot;. You must choose the library</span>
+</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31"></a><span style="color: #616E87">        values are "mlx", "numpy" and "torch". You must choose the library</span>
 </span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32"></a><span style="color: #616E87">        that your model is using.</span>
-</span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33"></a><span style="color: #616E87">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33"></a><span style="color: #616E87">    """</span>
 </span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34"></a>    <span style="color: #616E87; font-style: italic"># Temporary fix as torch raises a warning that can cause can an error</span>
 </span><span id="__span-0-35"><a id="__codelineno-0-35" name="__codelineno-0-35"></a>    <span style="color: #616E87; font-style: italic"># with python 3.12.</span>
-</span><span id="__span-0-36"><a id="__codelineno-0-36" name="__codelineno-0-36"></a>    <span style="color: #81A1C1; font-weight: bold">if</span> <span style="color: #D8DEE9">tensor_library_name</span> <span style="color: #81A1C1; font-weight: bold">==</span> <span style="color: #A3BE8C">&quot;torch&quot;</span><span style="color: #ECEFF4">:</span>
+</span><span id="__span-0-36"><a id="__codelineno-0-36" name="__codelineno-0-36"></a>    <span style="color: #81A1C1; font-weight: bold">if</span> <span style="color: #D8DEE9">tensor_library_name</span> <span style="color: #81A1C1; font-weight: bold">==</span> <span style="color: #A3BE8C">"torch"</span><span style="color: #ECEFF4">:</span>
 </span><span id="__span-0-37"><a id="__codelineno-0-37" name="__codelineno-0-37"></a>        <span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">torch._dynamo</span>
 </span><span id="__span-0-38"><a id="__codelineno-0-38" name="__codelineno-0-38"></a>
 </span><span id="__span-0-39"><a id="__codelineno-0-39" name="__codelineno-0-39"></a>        <span style="color: #D8DEE9">torch</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">_dynamo</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">config</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">suppress_errors</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #81A1C1; font-weight: bold">True</span>
@@ -5531,7 +5531,7 @@ that your model is using.</p>
 </span><span id="__span-0-41"><a id="__codelineno-0-41" name="__codelineno-0-41"></a>    <span style="color: #D8DEE9">tensor_adapter_class</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">tensor_adapters</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">get</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">tensor_library_name</span><span style="color: #ECEFF4">)</span>
 </span><span id="__span-0-42"><a id="__codelineno-0-42" name="__codelineno-0-42"></a>    <span style="color: #81A1C1; font-weight: bold">if</span> <span style="color: #D8DEE9">tensor_adapter_class</span> <span style="color: #81A1C1; font-weight: bold">is</span> <span style="color: #81A1C1; font-weight: bold">None</span><span style="color: #ECEFF4">:</span>
 </span><span id="__span-0-43"><a id="__codelineno-0-43" name="__codelineno-0-43"></a>        <span style="color: #81A1C1; font-weight: bold">raise</span> <span style="color: #BF616A">NotImplementedError</span><span style="color: #ECEFF4">(</span>
-</span><span id="__span-0-44"><a id="__codelineno-0-44" name="__codelineno-0-44"></a>            <span style="color: #A3BE8C">f&quot;Library {</span><span style="color: #D8DEE9">tensor_library_name</span><span style="color: #A3BE8C">} is not available&quot;</span>
+</span><span id="__span-0-44"><a id="__codelineno-0-44" name="__codelineno-0-44"></a>            <span style="color: #A3BE8C">f"Library {</span><span style="color: #D8DEE9">tensor_library_name</span><span style="color: #A3BE8C">} is not available"</span>
 </span><span id="__span-0-45"><a id="__codelineno-0-45" name="__codelineno-0-45"></a>        <span style="color: #ECEFF4">)</span>
 </span><span id="__span-0-46"><a id="__codelineno-0-46" name="__codelineno-0-46"></a>    <span style="color: #81A1C1">self</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">tensor_adapter</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">tensor_adapter_class</span><span style="color: #ECEFF4">()</span>  <span style="color: #616E87; font-style: italic"># type: ignore</span>
 </span></code></pre></div></td></tr></table></div>
@@ -5670,7 +5670,7 @@ sequence ordering in models like vLLM</p>
 </span><span id="__span-0-58"><a id="__codelineno-0-58" name="__codelineno-0-58"></a><span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">process_logits</span><span style="color: #ECEFF4">(</span>
 </span><span id="__span-0-59"><a id="__codelineno-0-59" name="__codelineno-0-59"></a>    <span style="color: #81A1C1">self</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">input_ids</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">TensorType</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">logits</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">TensorType</span>
 </span><span id="__span-0-60"><a id="__codelineno-0-60" name="__codelineno-0-60"></a><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #D8DEE9">TensorType</span><span style="color: #ECEFF4">:</span>
-</span><span id="__span-0-61"><a id="__codelineno-0-61" name="__codelineno-0-61"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">&quot;&quot;&quot;Main method to implement for logits processors subclasses.</span>
+</span><span id="__span-0-61"><a id="__codelineno-0-61" name="__codelineno-0-61"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">"""Main method to implement for logits processors subclasses.</span>
 </span><span id="__span-0-62"><a id="__codelineno-0-62" name="__codelineno-0-62"></a><span style="color: #616E87">    This method applies a mask on the logits to bias the generation.</span>
 </span><span id="__span-0-63"><a id="__codelineno-0-63" name="__codelineno-0-63"></a><span style="color: #616E87">    It is called by the `__call__` method that standardizes the shape of</span>
 </span><span id="__span-0-64"><a id="__codelineno-0-64" name="__codelineno-0-64"></a><span style="color: #616E87">    `input_ids` and `logits` to ensure they are 2D tensors.</span>
@@ -5691,7 +5691,7 @@ sequence ordering in models like vLLM</p>
 </span><span id="__span-0-79"><a id="__codelineno-0-79" name="__codelineno-0-79"></a><span style="color: #616E87">    -------</span>
 </span><span id="__span-0-80"><a id="__codelineno-0-80" name="__codelineno-0-80"></a><span style="color: #616E87">    TensorType</span>
 </span><span id="__span-0-81"><a id="__codelineno-0-81" name="__codelineno-0-81"></a><span style="color: #616E87">        The processed logits as a 2D tensor.</span>
-</span><span id="__span-0-82"><a id="__codelineno-0-82" name="__codelineno-0-82"></a><span style="color: #616E87">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-82"><a id="__codelineno-0-82" name="__codelineno-0-82"></a><span style="color: #616E87">    """</span>
 </span><span id="__span-0-83"><a id="__codelineno-0-83" name="__codelineno-0-83"></a>    <span style="color: #81A1C1; font-weight: bold">...</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
@@ -5725,12 +5725,12 @@ needs to be reset for a new generation.</p>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-53">53</a></span>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-54">54</a></span>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-55">55</a></span></pre></div></td><td class="code"><div><pre style="line-height: 125%;"><span></span><code><span id="__span-0-48"><a id="__codelineno-0-48" name="__codelineno-0-48"></a><span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">reset</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">self</span><span style="color: #ECEFF4">):</span>
-</span><span id="__span-0-49"><a id="__codelineno-0-49" name="__codelineno-0-49"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">&quot;&quot;&quot;Reset the logits processor for a new generation</span>
+</span><span id="__span-0-49"><a id="__codelineno-0-49" name="__codelineno-0-49"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">"""Reset the logits processor for a new generation</span>
 </span><span id="__span-0-50"><a id="__codelineno-0-50" name="__codelineno-0-50"></a>
 </span><span id="__span-0-51"><a id="__codelineno-0-51" name="__codelineno-0-51"></a><span style="color: #616E87">    Only implement this method in subclasses if the logits processor</span>
 </span><span id="__span-0-52"><a id="__codelineno-0-52" name="__codelineno-0-52"></a><span style="color: #616E87">    needs to be reset for a new generation.</span>
 </span><span id="__span-0-53"><a id="__codelineno-0-53" name="__codelineno-0-53"></a>
-</span><span id="__span-0-54"><a id="__codelineno-0-54" name="__codelineno-0-54"></a><span style="color: #616E87">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-54"><a id="__codelineno-0-54" name="__codelineno-0-54"></a><span style="color: #616E87">    """</span>
 </span><span id="__span-0-55"><a id="__codelineno-0-55" name="__codelineno-0-55"></a>    <span style="color: #81A1C1; font-weight: bold">pass</span> <span style="color: #616E87; font-style: italic"># pragma: no cover</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
@@ -5937,28 +5937,28 @@ tensors using the appropriate library for the model (numpy, torch...).</p>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-135">135</a></span>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-136">136</a></span>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-137">137</a></span></pre></div></td><td class="code"><div><pre style="line-height: 125%;"><span></span><code><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14"></a><span style="color: #81A1C1; font-weight: bold">class</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">OutlinesLogitsProcessor</span><span style="color: #ECEFF4">:</span>
-</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">&quot;&quot;&quot;Base class for logits processors.</span>
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">"""Base class for logits processors.</span>
 </span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16"></a><span style="color: #616E87">    This class implements a shared `__call__` method is called by the models</span>
 </span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17"></a><span style="color: #616E87">    and returns the processed logits. It relies on the `process_logits` method</span>
 </span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18"></a><span style="color: #616E87">    that must be implemented by the subclasses to do the actual processing. The</span>
 </span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19"></a><span style="color: #616E87">    `tensor_adapter` attribute, created at initialization based on the</span>
 </span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20"></a><span style="color: #616E87">    tensor library name specified in the constructor, is used to manipulate the</span>
 </span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21"></a><span style="color: #616E87">    tensors using the appropriate library for the model (numpy, torch...).</span>
-</span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22"></a><span style="color: #616E87">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22"></a><span style="color: #616E87">    """</span>
 </span><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23"></a>    <span style="color: #D8DEE9">tensor_adapter</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">TensorAdapterImplementation</span>
 </span><span id="__span-0-24"><a id="__codelineno-0-24" name="__codelineno-0-24"></a>
 </span><span id="__span-0-25"><a id="__codelineno-0-25" name="__codelineno-0-25"></a>    <span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">__init__</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">self</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">tensor_library_name</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">str</span><span style="color: #ECEFF4">):</span>
-</span><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26"></a><span style="color: #D8DEE9">        </span><span style="color: #616E87">&quot;&quot;&quot;</span>
+</span><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26"></a><span style="color: #D8DEE9">        </span><span style="color: #616E87">"""</span>
 </span><span id="__span-0-27"><a id="__codelineno-0-27" name="__codelineno-0-27"></a><span style="color: #616E87">        Parameters</span>
 </span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28"></a><span style="color: #616E87">        ----------</span>
 </span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29"></a><span style="color: #616E87">        tensor_library_name</span>
 </span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30"></a><span style="color: #616E87">            The name of the library to use to manipulate tensors. Possible</span>
-</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31"></a><span style="color: #616E87">            values are &quot;mlx&quot;, &quot;numpy&quot; and &quot;torch&quot;. You must choose the library</span>
+</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31"></a><span style="color: #616E87">            values are "mlx", "numpy" and "torch". You must choose the library</span>
 </span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32"></a><span style="color: #616E87">            that your model is using.</span>
-</span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33"></a><span style="color: #616E87">        &quot;&quot;&quot;</span>
+</span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33"></a><span style="color: #616E87">        """</span>
 </span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34"></a>        <span style="color: #616E87; font-style: italic"># Temporary fix as torch raises a warning that can cause can an error</span>
 </span><span id="__span-0-35"><a id="__codelineno-0-35" name="__codelineno-0-35"></a>        <span style="color: #616E87; font-style: italic"># with python 3.12.</span>
-</span><span id="__span-0-36"><a id="__codelineno-0-36" name="__codelineno-0-36"></a>        <span style="color: #81A1C1; font-weight: bold">if</span> <span style="color: #D8DEE9">tensor_library_name</span> <span style="color: #81A1C1; font-weight: bold">==</span> <span style="color: #A3BE8C">&quot;torch&quot;</span><span style="color: #ECEFF4">:</span>
+</span><span id="__span-0-36"><a id="__codelineno-0-36" name="__codelineno-0-36"></a>        <span style="color: #81A1C1; font-weight: bold">if</span> <span style="color: #D8DEE9">tensor_library_name</span> <span style="color: #81A1C1; font-weight: bold">==</span> <span style="color: #A3BE8C">"torch"</span><span style="color: #ECEFF4">:</span>
 </span><span id="__span-0-37"><a id="__codelineno-0-37" name="__codelineno-0-37"></a>            <span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">torch._dynamo</span>
 </span><span id="__span-0-38"><a id="__codelineno-0-38" name="__codelineno-0-38"></a>
 </span><span id="__span-0-39"><a id="__codelineno-0-39" name="__codelineno-0-39"></a>            <span style="color: #D8DEE9">torch</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">_dynamo</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">config</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">suppress_errors</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #81A1C1; font-weight: bold">True</span>
@@ -5966,24 +5966,24 @@ tensors using the appropriate library for the model (numpy, torch...).</p>
 </span><span id="__span-0-41"><a id="__codelineno-0-41" name="__codelineno-0-41"></a>        <span style="color: #D8DEE9">tensor_adapter_class</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">tensor_adapters</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">get</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">tensor_library_name</span><span style="color: #ECEFF4">)</span>
 </span><span id="__span-0-42"><a id="__codelineno-0-42" name="__codelineno-0-42"></a>        <span style="color: #81A1C1; font-weight: bold">if</span> <span style="color: #D8DEE9">tensor_adapter_class</span> <span style="color: #81A1C1; font-weight: bold">is</span> <span style="color: #81A1C1; font-weight: bold">None</span><span style="color: #ECEFF4">:</span>
 </span><span id="__span-0-43"><a id="__codelineno-0-43" name="__codelineno-0-43"></a>            <span style="color: #81A1C1; font-weight: bold">raise</span> <span style="color: #BF616A">NotImplementedError</span><span style="color: #ECEFF4">(</span>
-</span><span id="__span-0-44"><a id="__codelineno-0-44" name="__codelineno-0-44"></a>                <span style="color: #A3BE8C">f&quot;Library {</span><span style="color: #D8DEE9">tensor_library_name</span><span style="color: #A3BE8C">} is not available&quot;</span>
+</span><span id="__span-0-44"><a id="__codelineno-0-44" name="__codelineno-0-44"></a>                <span style="color: #A3BE8C">f"Library {</span><span style="color: #D8DEE9">tensor_library_name</span><span style="color: #A3BE8C">} is not available"</span>
 </span><span id="__span-0-45"><a id="__codelineno-0-45" name="__codelineno-0-45"></a>            <span style="color: #ECEFF4">)</span>
 </span><span id="__span-0-46"><a id="__codelineno-0-46" name="__codelineno-0-46"></a>        <span style="color: #81A1C1">self</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">tensor_adapter</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">tensor_adapter_class</span><span style="color: #ECEFF4">()</span>  <span style="color: #616E87; font-style: italic"># type: ignore</span>
 </span><span id="__span-0-47"><a id="__codelineno-0-47" name="__codelineno-0-47"></a>
 </span><span id="__span-0-48"><a id="__codelineno-0-48" name="__codelineno-0-48"></a>    <span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">reset</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">self</span><span style="color: #ECEFF4">):</span>
-</span><span id="__span-0-49"><a id="__codelineno-0-49" name="__codelineno-0-49"></a><span style="color: #D8DEE9">        </span><span style="color: #616E87">&quot;&quot;&quot;Reset the logits processor for a new generation</span>
+</span><span id="__span-0-49"><a id="__codelineno-0-49" name="__codelineno-0-49"></a><span style="color: #D8DEE9">        </span><span style="color: #616E87">"""Reset the logits processor for a new generation</span>
 </span><span id="__span-0-50"><a id="__codelineno-0-50" name="__codelineno-0-50"></a>
 </span><span id="__span-0-51"><a id="__codelineno-0-51" name="__codelineno-0-51"></a><span style="color: #616E87">        Only implement this method in subclasses if the logits processor</span>
 </span><span id="__span-0-52"><a id="__codelineno-0-52" name="__codelineno-0-52"></a><span style="color: #616E87">        needs to be reset for a new generation.</span>
 </span><span id="__span-0-53"><a id="__codelineno-0-53" name="__codelineno-0-53"></a>
-</span><span id="__span-0-54"><a id="__codelineno-0-54" name="__codelineno-0-54"></a><span style="color: #616E87">        &quot;&quot;&quot;</span>
+</span><span id="__span-0-54"><a id="__codelineno-0-54" name="__codelineno-0-54"></a><span style="color: #616E87">        """</span>
 </span><span id="__span-0-55"><a id="__codelineno-0-55" name="__codelineno-0-55"></a>        <span style="color: #81A1C1; font-weight: bold">pass</span> <span style="color: #616E87; font-style: italic"># pragma: no cover</span>
 </span><span id="__span-0-56"><a id="__codelineno-0-56" name="__codelineno-0-56"></a>
 </span><span id="__span-0-57"><a id="__codelineno-0-57" name="__codelineno-0-57"></a>    <span style="color: #D08770">@abstractmethod</span>
 </span><span id="__span-0-58"><a id="__codelineno-0-58" name="__codelineno-0-58"></a>    <span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">process_logits</span><span style="color: #ECEFF4">(</span>
 </span><span id="__span-0-59"><a id="__codelineno-0-59" name="__codelineno-0-59"></a>        <span style="color: #81A1C1">self</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">input_ids</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">TensorType</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">logits</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">TensorType</span>
 </span><span id="__span-0-60"><a id="__codelineno-0-60" name="__codelineno-0-60"></a>    <span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #D8DEE9">TensorType</span><span style="color: #ECEFF4">:</span>
-</span><span id="__span-0-61"><a id="__codelineno-0-61" name="__codelineno-0-61"></a><span style="color: #D8DEE9">        </span><span style="color: #616E87">&quot;&quot;&quot;Main method to implement for logits processors subclasses.</span>
+</span><span id="__span-0-61"><a id="__codelineno-0-61" name="__codelineno-0-61"></a><span style="color: #D8DEE9">        </span><span style="color: #616E87">"""Main method to implement for logits processors subclasses.</span>
 </span><span id="__span-0-62"><a id="__codelineno-0-62" name="__codelineno-0-62"></a><span style="color: #616E87">        This method applies a mask on the logits to bias the generation.</span>
 </span><span id="__span-0-63"><a id="__codelineno-0-63" name="__codelineno-0-63"></a><span style="color: #616E87">        It is called by the `__call__` method that standardizes the shape of</span>
 </span><span id="__span-0-64"><a id="__codelineno-0-64" name="__codelineno-0-64"></a><span style="color: #616E87">        `input_ids` and `logits` to ensure they are 2D tensors.</span>
@@ -6004,13 +6004,13 @@ tensors using the appropriate library for the model (numpy, torch...).</p>
 </span><span id="__span-0-79"><a id="__codelineno-0-79" name="__codelineno-0-79"></a><span style="color: #616E87">        -------</span>
 </span><span id="__span-0-80"><a id="__codelineno-0-80" name="__codelineno-0-80"></a><span style="color: #616E87">        TensorType</span>
 </span><span id="__span-0-81"><a id="__codelineno-0-81" name="__codelineno-0-81"></a><span style="color: #616E87">            The processed logits as a 2D tensor.</span>
-</span><span id="__span-0-82"><a id="__codelineno-0-82" name="__codelineno-0-82"></a><span style="color: #616E87">        &quot;&quot;&quot;</span>
+</span><span id="__span-0-82"><a id="__codelineno-0-82" name="__codelineno-0-82"></a><span style="color: #616E87">        """</span>
 </span><span id="__span-0-83"><a id="__codelineno-0-83" name="__codelineno-0-83"></a>        <span style="color: #81A1C1; font-weight: bold">...</span>
 </span><span id="__span-0-84"><a id="__codelineno-0-84" name="__codelineno-0-84"></a>
 </span><span id="__span-0-85"><a id="__codelineno-0-85" name="__codelineno-0-85"></a>    <span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">__call__</span><span style="color: #ECEFF4">(</span>
 </span><span id="__span-0-86"><a id="__codelineno-0-86" name="__codelineno-0-86"></a>        <span style="color: #81A1C1">self</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">input_ids</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">TensorType</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">logits</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">TensorType</span>
 </span><span id="__span-0-87"><a id="__codelineno-0-87" name="__codelineno-0-87"></a>    <span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #D8DEE9">TensorType</span><span style="color: #ECEFF4">:</span>
-</span><span id="__span-0-88"><a id="__codelineno-0-88" name="__codelineno-0-88"></a><span style="color: #D8DEE9">        </span><span style="color: #616E87">&quot;&quot;&quot;Entrypoint for logits processors, this is the method that is</span>
+</span><span id="__span-0-88"><a id="__codelineno-0-88" name="__codelineno-0-88"></a><span style="color: #D8DEE9">        </span><span style="color: #616E87">"""Entrypoint for logits processors, this is the method that is</span>
 </span><span id="__span-0-89"><a id="__codelineno-0-89" name="__codelineno-0-89"></a><span style="color: #616E87">        called by the model.</span>
 </span><span id="__span-0-90"><a id="__codelineno-0-90" name="__codelineno-0-90"></a><span style="color: #616E87">        Because different models use different structures to store the</span>
 </span><span id="__span-0-91"><a id="__codelineno-0-91" name="__codelineno-0-91"></a><span style="color: #616E87">        input_ids and logits, we standardize their format to 2D tensors</span>
@@ -6027,7 +6027,7 @@ tensors using the appropriate library for the model (numpy, torch...).</p>
 </span><span id="__span-0-102"><a id="__codelineno-0-102" name="__codelineno-0-102"></a><span style="color: #616E87">        -------</span>
 </span><span id="__span-0-103"><a id="__codelineno-0-103" name="__codelineno-0-103"></a><span style="color: #616E87">        TensorType</span>
 </span><span id="__span-0-104"><a id="__codelineno-0-104" name="__codelineno-0-104"></a><span style="color: #616E87">            The processed logits as a tensor.</span>
-</span><span id="__span-0-105"><a id="__codelineno-0-105" name="__codelineno-0-105"></a><span style="color: #616E87">        &quot;&quot;&quot;</span>
+</span><span id="__span-0-105"><a id="__codelineno-0-105" name="__codelineno-0-105"></a><span style="color: #616E87">        """</span>
 </span><span id="__span-0-106"><a id="__codelineno-0-106" name="__codelineno-0-106"></a>        <span style="color: #616E87; font-style: italic"># if input_ids is 1D and logits is 2D with a single sequence,</span>
 </span><span id="__span-0-107"><a id="__codelineno-0-107" name="__codelineno-0-107"></a>        <span style="color: #616E87; font-style: italic"># reshape input_ids to 2D (needed for mlx-lm)</span>
 </span><span id="__span-0-108"><a id="__codelineno-0-108" name="__codelineno-0-108"></a>        <span style="color: #81A1C1; font-weight: bold">if</span> <span style="color: #ECEFF4">(</span>
@@ -6055,8 +6055,8 @@ tensors using the appropriate library for the model (numpy, torch...).</p>
 </span><span id="__span-0-130"><a id="__codelineno-0-130" name="__codelineno-0-130"></a>            <span style="color: #ECEFF4">)</span>
 </span><span id="__span-0-131"><a id="__codelineno-0-131" name="__codelineno-0-131"></a>        <span style="color: #81A1C1; font-weight: bold">else</span><span style="color: #ECEFF4">:</span>
 </span><span id="__span-0-132"><a id="__codelineno-0-132" name="__codelineno-0-132"></a>            <span style="color: #81A1C1; font-weight: bold">raise</span> <span style="color: #BF616A">ValueError</span><span style="color: #ECEFF4">(</span>
-</span><span id="__span-0-133"><a id="__codelineno-0-133" name="__codelineno-0-133"></a>                <span style="color: #A3BE8C">f&quot;Logits shape {</span><span style="color: #81A1C1">self</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">tensor_adapter</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">shape</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">logits</span><span style="color: #ECEFF4">)</span><span style="color: #A3BE8C">} is not &quot;</span>
-</span><span id="__span-0-134"><a id="__codelineno-0-134" name="__codelineno-0-134"></a>                <span style="color: #81A1C1; font-weight: bold">+</span> <span style="color: #A3BE8C">&quot;supported&quot;</span>
+</span><span id="__span-0-133"><a id="__codelineno-0-133" name="__codelineno-0-133"></a>                <span style="color: #A3BE8C">f"Logits shape {</span><span style="color: #81A1C1">self</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">tensor_adapter</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">shape</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">logits</span><span style="color: #ECEFF4">)</span><span style="color: #A3BE8C">} is not "</span>
+</span><span id="__span-0-134"><a id="__codelineno-0-134" name="__codelineno-0-134"></a>                <span style="color: #81A1C1; font-weight: bold">+</span> <span style="color: #A3BE8C">"supported"</span>
 </span><span id="__span-0-135"><a id="__codelineno-0-135" name="__codelineno-0-135"></a>            <span style="color: #ECEFF4">)</span>
 </span><span id="__span-0-136"><a id="__codelineno-0-136" name="__codelineno-0-136"></a>
 </span><span id="__span-0-137"><a id="__codelineno-0-137" name="__codelineno-0-137"></a>        <span style="color: #81A1C1; font-weight: bold">return</span> <span style="color: #D8DEE9">processed_logits</span>
@@ -6223,7 +6223,7 @@ returned.</p>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-137">137</a></span></pre></div></td><td class="code"><div><pre style="line-height: 125%;"><span></span><code><span id="__span-0-85"><a id="__codelineno-0-85" name="__codelineno-0-85"></a><span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">__call__</span><span style="color: #ECEFF4">(</span>
 </span><span id="__span-0-86"><a id="__codelineno-0-86" name="__codelineno-0-86"></a>    <span style="color: #81A1C1">self</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">input_ids</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">TensorType</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">logits</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">TensorType</span>
 </span><span id="__span-0-87"><a id="__codelineno-0-87" name="__codelineno-0-87"></a><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #D8DEE9">TensorType</span><span style="color: #ECEFF4">:</span>
-</span><span id="__span-0-88"><a id="__codelineno-0-88" name="__codelineno-0-88"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">&quot;&quot;&quot;Entrypoint for logits processors, this is the method that is</span>
+</span><span id="__span-0-88"><a id="__codelineno-0-88" name="__codelineno-0-88"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">"""Entrypoint for logits processors, this is the method that is</span>
 </span><span id="__span-0-89"><a id="__codelineno-0-89" name="__codelineno-0-89"></a><span style="color: #616E87">    called by the model.</span>
 </span><span id="__span-0-90"><a id="__codelineno-0-90" name="__codelineno-0-90"></a><span style="color: #616E87">    Because different models use different structures to store the</span>
 </span><span id="__span-0-91"><a id="__codelineno-0-91" name="__codelineno-0-91"></a><span style="color: #616E87">    input_ids and logits, we standardize their format to 2D tensors</span>
@@ -6240,7 +6240,7 @@ returned.</p>
 </span><span id="__span-0-102"><a id="__codelineno-0-102" name="__codelineno-0-102"></a><span style="color: #616E87">    -------</span>
 </span><span id="__span-0-103"><a id="__codelineno-0-103" name="__codelineno-0-103"></a><span style="color: #616E87">    TensorType</span>
 </span><span id="__span-0-104"><a id="__codelineno-0-104" name="__codelineno-0-104"></a><span style="color: #616E87">        The processed logits as a tensor.</span>
-</span><span id="__span-0-105"><a id="__codelineno-0-105" name="__codelineno-0-105"></a><span style="color: #616E87">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-105"><a id="__codelineno-0-105" name="__codelineno-0-105"></a><span style="color: #616E87">    """</span>
 </span><span id="__span-0-106"><a id="__codelineno-0-106" name="__codelineno-0-106"></a>    <span style="color: #616E87; font-style: italic"># if input_ids is 1D and logits is 2D with a single sequence,</span>
 </span><span id="__span-0-107"><a id="__codelineno-0-107" name="__codelineno-0-107"></a>    <span style="color: #616E87; font-style: italic"># reshape input_ids to 2D (needed for mlx-lm)</span>
 </span><span id="__span-0-108"><a id="__codelineno-0-108" name="__codelineno-0-108"></a>    <span style="color: #81A1C1; font-weight: bold">if</span> <span style="color: #ECEFF4">(</span>
@@ -6268,8 +6268,8 @@ returned.</p>
 </span><span id="__span-0-130"><a id="__codelineno-0-130" name="__codelineno-0-130"></a>        <span style="color: #ECEFF4">)</span>
 </span><span id="__span-0-131"><a id="__codelineno-0-131" name="__codelineno-0-131"></a>    <span style="color: #81A1C1; font-weight: bold">else</span><span style="color: #ECEFF4">:</span>
 </span><span id="__span-0-132"><a id="__codelineno-0-132" name="__codelineno-0-132"></a>        <span style="color: #81A1C1; font-weight: bold">raise</span> <span style="color: #BF616A">ValueError</span><span style="color: #ECEFF4">(</span>
-</span><span id="__span-0-133"><a id="__codelineno-0-133" name="__codelineno-0-133"></a>            <span style="color: #A3BE8C">f&quot;Logits shape {</span><span style="color: #81A1C1">self</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">tensor_adapter</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">shape</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">logits</span><span style="color: #ECEFF4">)</span><span style="color: #A3BE8C">} is not &quot;</span>
-</span><span id="__span-0-134"><a id="__codelineno-0-134" name="__codelineno-0-134"></a>            <span style="color: #81A1C1; font-weight: bold">+</span> <span style="color: #A3BE8C">&quot;supported&quot;</span>
+</span><span id="__span-0-133"><a id="__codelineno-0-133" name="__codelineno-0-133"></a>            <span style="color: #A3BE8C">f"Logits shape {</span><span style="color: #81A1C1">self</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">tensor_adapter</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">shape</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">logits</span><span style="color: #ECEFF4">)</span><span style="color: #A3BE8C">} is not "</span>
+</span><span id="__span-0-134"><a id="__codelineno-0-134" name="__codelineno-0-134"></a>            <span style="color: #81A1C1; font-weight: bold">+</span> <span style="color: #A3BE8C">"supported"</span>
 </span><span id="__span-0-135"><a id="__codelineno-0-135" name="__codelineno-0-135"></a>        <span style="color: #ECEFF4">)</span>
 </span><span id="__span-0-136"><a id="__codelineno-0-136" name="__codelineno-0-136"></a>
 </span><span id="__span-0-137"><a id="__codelineno-0-137" name="__codelineno-0-137"></a>    <span style="color: #81A1C1; font-weight: bold">return</span> <span style="color: #D8DEE9">processed_logits</span>
@@ -6349,17 +6349,17 @@ that your model is using.</p>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-44">44</a></span>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-45">45</a></span>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-46">46</a></span></pre></div></td><td class="code"><div><pre style="line-height: 125%;"><span></span><code><span id="__span-0-25"><a id="__codelineno-0-25" name="__codelineno-0-25"></a><span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">__init__</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">self</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">tensor_library_name</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">str</span><span style="color: #ECEFF4">):</span>
-</span><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">&quot;&quot;&quot;</span>
+</span><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">"""</span>
 </span><span id="__span-0-27"><a id="__codelineno-0-27" name="__codelineno-0-27"></a><span style="color: #616E87">    Parameters</span>
 </span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28"></a><span style="color: #616E87">    ----------</span>
 </span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29"></a><span style="color: #616E87">    tensor_library_name</span>
 </span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30"></a><span style="color: #616E87">        The name of the library to use to manipulate tensors. Possible</span>
-</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31"></a><span style="color: #616E87">        values are &quot;mlx&quot;, &quot;numpy&quot; and &quot;torch&quot;. You must choose the library</span>
+</span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31"></a><span style="color: #616E87">        values are "mlx", "numpy" and "torch". You must choose the library</span>
 </span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32"></a><span style="color: #616E87">        that your model is using.</span>
-</span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33"></a><span style="color: #616E87">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33"></a><span style="color: #616E87">    """</span>
 </span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34"></a>    <span style="color: #616E87; font-style: italic"># Temporary fix as torch raises a warning that can cause can an error</span>
 </span><span id="__span-0-35"><a id="__codelineno-0-35" name="__codelineno-0-35"></a>    <span style="color: #616E87; font-style: italic"># with python 3.12.</span>
-</span><span id="__span-0-36"><a id="__codelineno-0-36" name="__codelineno-0-36"></a>    <span style="color: #81A1C1; font-weight: bold">if</span> <span style="color: #D8DEE9">tensor_library_name</span> <span style="color: #81A1C1; font-weight: bold">==</span> <span style="color: #A3BE8C">&quot;torch&quot;</span><span style="color: #ECEFF4">:</span>
+</span><span id="__span-0-36"><a id="__codelineno-0-36" name="__codelineno-0-36"></a>    <span style="color: #81A1C1; font-weight: bold">if</span> <span style="color: #D8DEE9">tensor_library_name</span> <span style="color: #81A1C1; font-weight: bold">==</span> <span style="color: #A3BE8C">"torch"</span><span style="color: #ECEFF4">:</span>
 </span><span id="__span-0-37"><a id="__codelineno-0-37" name="__codelineno-0-37"></a>        <span style="color: #81A1C1; font-weight: bold">import</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">torch._dynamo</span>
 </span><span id="__span-0-38"><a id="__codelineno-0-38" name="__codelineno-0-38"></a>
 </span><span id="__span-0-39"><a id="__codelineno-0-39" name="__codelineno-0-39"></a>        <span style="color: #D8DEE9">torch</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">_dynamo</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">config</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">suppress_errors</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #81A1C1; font-weight: bold">True</span>
@@ -6367,7 +6367,7 @@ that your model is using.</p>
 </span><span id="__span-0-41"><a id="__codelineno-0-41" name="__codelineno-0-41"></a>    <span style="color: #D8DEE9">tensor_adapter_class</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">tensor_adapters</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">get</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">tensor_library_name</span><span style="color: #ECEFF4">)</span>
 </span><span id="__span-0-42"><a id="__codelineno-0-42" name="__codelineno-0-42"></a>    <span style="color: #81A1C1; font-weight: bold">if</span> <span style="color: #D8DEE9">tensor_adapter_class</span> <span style="color: #81A1C1; font-weight: bold">is</span> <span style="color: #81A1C1; font-weight: bold">None</span><span style="color: #ECEFF4">:</span>
 </span><span id="__span-0-43"><a id="__codelineno-0-43" name="__codelineno-0-43"></a>        <span style="color: #81A1C1; font-weight: bold">raise</span> <span style="color: #BF616A">NotImplementedError</span><span style="color: #ECEFF4">(</span>
-</span><span id="__span-0-44"><a id="__codelineno-0-44" name="__codelineno-0-44"></a>            <span style="color: #A3BE8C">f&quot;Library {</span><span style="color: #D8DEE9">tensor_library_name</span><span style="color: #A3BE8C">} is not available&quot;</span>
+</span><span id="__span-0-44"><a id="__codelineno-0-44" name="__codelineno-0-44"></a>            <span style="color: #A3BE8C">f"Library {</span><span style="color: #D8DEE9">tensor_library_name</span><span style="color: #A3BE8C">} is not available"</span>
 </span><span id="__span-0-45"><a id="__codelineno-0-45" name="__codelineno-0-45"></a>        <span style="color: #ECEFF4">)</span>
 </span><span id="__span-0-46"><a id="__codelineno-0-46" name="__codelineno-0-46"></a>    <span style="color: #81A1C1">self</span><span style="color: #81A1C1; font-weight: bold">.</span><span style="color: #D8DEE9">tensor_adapter</span> <span style="color: #81A1C1; font-weight: bold">=</span> <span style="color: #D8DEE9">tensor_adapter_class</span><span style="color: #ECEFF4">()</span>  <span style="color: #616E87; font-style: italic"># type: ignore</span>
 </span></code></pre></div></td></tr></table></div>
@@ -6506,7 +6506,7 @@ sequence ordering in models like vLLM</p>
 </span><span id="__span-0-58"><a id="__codelineno-0-58" name="__codelineno-0-58"></a><span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">process_logits</span><span style="color: #ECEFF4">(</span>
 </span><span id="__span-0-59"><a id="__codelineno-0-59" name="__codelineno-0-59"></a>    <span style="color: #81A1C1">self</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">input_ids</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">TensorType</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">logits</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">TensorType</span>
 </span><span id="__span-0-60"><a id="__codelineno-0-60" name="__codelineno-0-60"></a><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #D8DEE9">TensorType</span><span style="color: #ECEFF4">:</span>
-</span><span id="__span-0-61"><a id="__codelineno-0-61" name="__codelineno-0-61"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">&quot;&quot;&quot;Main method to implement for logits processors subclasses.</span>
+</span><span id="__span-0-61"><a id="__codelineno-0-61" name="__codelineno-0-61"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">"""Main method to implement for logits processors subclasses.</span>
 </span><span id="__span-0-62"><a id="__codelineno-0-62" name="__codelineno-0-62"></a><span style="color: #616E87">    This method applies a mask on the logits to bias the generation.</span>
 </span><span id="__span-0-63"><a id="__codelineno-0-63" name="__codelineno-0-63"></a><span style="color: #616E87">    It is called by the `__call__` method that standardizes the shape of</span>
 </span><span id="__span-0-64"><a id="__codelineno-0-64" name="__codelineno-0-64"></a><span style="color: #616E87">    `input_ids` and `logits` to ensure they are 2D tensors.</span>
@@ -6527,7 +6527,7 @@ sequence ordering in models like vLLM</p>
 </span><span id="__span-0-79"><a id="__codelineno-0-79" name="__codelineno-0-79"></a><span style="color: #616E87">    -------</span>
 </span><span id="__span-0-80"><a id="__codelineno-0-80" name="__codelineno-0-80"></a><span style="color: #616E87">    TensorType</span>
 </span><span id="__span-0-81"><a id="__codelineno-0-81" name="__codelineno-0-81"></a><span style="color: #616E87">        The processed logits as a 2D tensor.</span>
-</span><span id="__span-0-82"><a id="__codelineno-0-82" name="__codelineno-0-82"></a><span style="color: #616E87">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-82"><a id="__codelineno-0-82" name="__codelineno-0-82"></a><span style="color: #616E87">    """</span>
 </span><span id="__span-0-83"><a id="__codelineno-0-83" name="__codelineno-0-83"></a>    <span style="color: #81A1C1; font-weight: bold">...</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
@@ -6561,12 +6561,12 @@ needs to be reset for a new generation.</p>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-53">53</a></span>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-54">54</a></span>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-55">55</a></span></pre></div></td><td class="code"><div><pre style="line-height: 125%;"><span></span><code><span id="__span-0-48"><a id="__codelineno-0-48" name="__codelineno-0-48"></a><span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">reset</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">self</span><span style="color: #ECEFF4">):</span>
-</span><span id="__span-0-49"><a id="__codelineno-0-49" name="__codelineno-0-49"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">&quot;&quot;&quot;Reset the logits processor for a new generation</span>
+</span><span id="__span-0-49"><a id="__codelineno-0-49" name="__codelineno-0-49"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">"""Reset the logits processor for a new generation</span>
 </span><span id="__span-0-50"><a id="__codelineno-0-50" name="__codelineno-0-50"></a>
 </span><span id="__span-0-51"><a id="__codelineno-0-51" name="__codelineno-0-51"></a><span style="color: #616E87">    Only implement this method in subclasses if the logits processor</span>
 </span><span id="__span-0-52"><a id="__codelineno-0-52" name="__codelineno-0-52"></a><span style="color: #616E87">    needs to be reset for a new generation.</span>
 </span><span id="__span-0-53"><a id="__codelineno-0-53" name="__codelineno-0-53"></a>
-</span><span id="__span-0-54"><a id="__codelineno-0-54" name="__codelineno-0-54"></a><span style="color: #616E87">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-54"><a id="__codelineno-0-54" name="__codelineno-0-54"></a><span style="color: #616E87">    """</span>
 </span><span id="__span-0-55"><a id="__codelineno-0-55" name="__codelineno-0-55"></a>    <span style="color: #81A1C1; font-weight: bold">pass</span> <span style="color: #616E87; font-style: italic"># pragma: no cover</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
@@ -6941,7 +6941,7 @@ handle torch tensors.</p>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-255">255</a></span>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-256">256</a></span>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-257">257</a></span></pre></div></td><td class="code"><div><pre style="line-height: 125%;"><span></span><code><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12"></a><span style="color: #81A1C1; font-weight: bold">class</span><span style="color: #D8DEE9"> </span><span style="color: #8FBCBB">TensorAdapter</span><span style="color: #ECEFF4">(</span><span style="color: #D8DEE9">ABC</span><span style="color: #ECEFF4">):</span>
-</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">&quot;&quot;&quot;Abstract base class for tensor adapters.</span>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">"""Abstract base class for tensor adapters.</span>
 </span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14"></a>
 </span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15"></a><span style="color: #616E87">    This class defines the interface for tensor adapters that are used to</span>
 </span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16"></a><span style="color: #616E87">    manipulate tensors in different libraries. Concrete implementations of</span>
@@ -6953,12 +6953,12 @@ handle torch tensors.</p>
 </span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22"></a><span style="color: #616E87">    must make sure that their `full_like` and `concatenate` methods can</span>
 </span><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23"></a><span style="color: #616E87">    handle torch tensors.</span>
 </span><span id="__span-0-24"><a id="__codelineno-0-24" name="__codelineno-0-24"></a>
-</span><span id="__span-0-25"><a id="__codelineno-0-25" name="__codelineno-0-25"></a><span style="color: #616E87">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-25"><a id="__codelineno-0-25" name="__codelineno-0-25"></a><span style="color: #616E87">    """</span>
 </span><span id="__span-0-26"><a id="__codelineno-0-26" name="__codelineno-0-26"></a>    <span style="color: #D8DEE9">library_name</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">str</span>
 </span><span id="__span-0-27"><a id="__codelineno-0-27" name="__codelineno-0-27"></a>
 </span><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28"></a>    <span style="color: #D08770">@abstractmethod</span>
 </span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29"></a>    <span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">shape</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">self</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">tensor</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">TensorType</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #81A1C1">list</span><span style="color: #ECEFF4">[</span><span style="color: #81A1C1">int</span><span style="color: #ECEFF4">]:</span>
-</span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30"></a><span style="color: #D8DEE9">        </span><span style="color: #616E87">&quot;&quot;&quot;Get the shape of the tensor.</span>
+</span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30"></a><span style="color: #D8DEE9">        </span><span style="color: #616E87">"""Get the shape of the tensor.</span>
 </span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31"></a>
 </span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32"></a><span style="color: #616E87">        Parameters</span>
 </span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33"></a><span style="color: #616E87">        ----------</span>
@@ -6971,12 +6971,12 @@ handle torch tensors.</p>
 </span><span id="__span-0-40"><a id="__codelineno-0-40" name="__codelineno-0-40"></a><span style="color: #616E87">            The shape of the tensor. The list contains as many elements as</span>
 </span><span id="__span-0-41"><a id="__codelineno-0-41" name="__codelineno-0-41"></a><span style="color: #616E87">            there are dimensions in the tensor.</span>
 </span><span id="__span-0-42"><a id="__codelineno-0-42" name="__codelineno-0-42"></a>
-</span><span id="__span-0-43"><a id="__codelineno-0-43" name="__codelineno-0-43"></a><span style="color: #616E87">        &quot;&quot;&quot;</span>
+</span><span id="__span-0-43"><a id="__codelineno-0-43" name="__codelineno-0-43"></a><span style="color: #616E87">        """</span>
 </span><span id="__span-0-44"><a id="__codelineno-0-44" name="__codelineno-0-44"></a>        <span style="color: #81A1C1; font-weight: bold">...</span>
 </span><span id="__span-0-45"><a id="__codelineno-0-45" name="__codelineno-0-45"></a>
 </span><span id="__span-0-46"><a id="__codelineno-0-46" name="__codelineno-0-46"></a>    <span style="color: #D08770">@abstractmethod</span>
 </span><span id="__span-0-47"><a id="__codelineno-0-47" name="__codelineno-0-47"></a>    <span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">unsqueeze</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">self</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">tensor</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">TensorType</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #D8DEE9">TensorType</span><span style="color: #ECEFF4">:</span>
-</span><span id="__span-0-48"><a id="__codelineno-0-48" name="__codelineno-0-48"></a><span style="color: #D8DEE9">        </span><span style="color: #616E87">&quot;&quot;&quot;Add a dimension to the tensor at axis 0.</span>
+</span><span id="__span-0-48"><a id="__codelineno-0-48" name="__codelineno-0-48"></a><span style="color: #D8DEE9">        </span><span style="color: #616E87">"""Add a dimension to the tensor at axis 0.</span>
 </span><span id="__span-0-49"><a id="__codelineno-0-49" name="__codelineno-0-49"></a>
 </span><span id="__span-0-50"><a id="__codelineno-0-50" name="__codelineno-0-50"></a><span style="color: #616E87">        Parameters</span>
 </span><span id="__span-0-51"><a id="__codelineno-0-51" name="__codelineno-0-51"></a><span style="color: #616E87">        ----------</span>
@@ -6988,12 +6988,12 @@ handle torch tensors.</p>
 </span><span id="__span-0-57"><a id="__codelineno-0-57" name="__codelineno-0-57"></a><span style="color: #616E87">        TensorType</span>
 </span><span id="__span-0-58"><a id="__codelineno-0-58" name="__codelineno-0-58"></a><span style="color: #616E87">            The tensor with an additional dimension.</span>
 </span><span id="__span-0-59"><a id="__codelineno-0-59" name="__codelineno-0-59"></a>
-</span><span id="__span-0-60"><a id="__codelineno-0-60" name="__codelineno-0-60"></a><span style="color: #616E87">        &quot;&quot;&quot;</span>
+</span><span id="__span-0-60"><a id="__codelineno-0-60" name="__codelineno-0-60"></a><span style="color: #616E87">        """</span>
 </span><span id="__span-0-61"><a id="__codelineno-0-61" name="__codelineno-0-61"></a>        <span style="color: #81A1C1; font-weight: bold">...</span>
 </span><span id="__span-0-62"><a id="__codelineno-0-62" name="__codelineno-0-62"></a>
 </span><span id="__span-0-63"><a id="__codelineno-0-63" name="__codelineno-0-63"></a>    <span style="color: #D08770">@abstractmethod</span>
 </span><span id="__span-0-64"><a id="__codelineno-0-64" name="__codelineno-0-64"></a>    <span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">squeeze</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">self</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">tensor</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">TensorType</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #D8DEE9">TensorType</span><span style="color: #ECEFF4">:</span>
-</span><span id="__span-0-65"><a id="__codelineno-0-65" name="__codelineno-0-65"></a><span style="color: #D8DEE9">        </span><span style="color: #616E87">&quot;&quot;&quot;Remove a dimension from the tensor at axis 0.</span>
+</span><span id="__span-0-65"><a id="__codelineno-0-65" name="__codelineno-0-65"></a><span style="color: #D8DEE9">        </span><span style="color: #616E87">"""Remove a dimension from the tensor at axis 0.</span>
 </span><span id="__span-0-66"><a id="__codelineno-0-66" name="__codelineno-0-66"></a>
 </span><span id="__span-0-67"><a id="__codelineno-0-67" name="__codelineno-0-67"></a><span style="color: #616E87">        Parameters</span>
 </span><span id="__span-0-68"><a id="__codelineno-0-68" name="__codelineno-0-68"></a><span style="color: #616E87">        ----------</span>
@@ -7005,12 +7005,12 @@ handle torch tensors.</p>
 </span><span id="__span-0-74"><a id="__codelineno-0-74" name="__codelineno-0-74"></a><span style="color: #616E87">        TensorType</span>
 </span><span id="__span-0-75"><a id="__codelineno-0-75" name="__codelineno-0-75"></a><span style="color: #616E87">            The tensor with one less dimension.</span>
 </span><span id="__span-0-76"><a id="__codelineno-0-76" name="__codelineno-0-76"></a>
-</span><span id="__span-0-77"><a id="__codelineno-0-77" name="__codelineno-0-77"></a><span style="color: #616E87">        &quot;&quot;&quot;</span>
+</span><span id="__span-0-77"><a id="__codelineno-0-77" name="__codelineno-0-77"></a><span style="color: #616E87">        """</span>
 </span><span id="__span-0-78"><a id="__codelineno-0-78" name="__codelineno-0-78"></a>        <span style="color: #81A1C1; font-weight: bold">...</span>
 </span><span id="__span-0-79"><a id="__codelineno-0-79" name="__codelineno-0-79"></a>
 </span><span id="__span-0-80"><a id="__codelineno-0-80" name="__codelineno-0-80"></a>    <span style="color: #D08770">@abstractmethod</span>
 </span><span id="__span-0-81"><a id="__codelineno-0-81" name="__codelineno-0-81"></a>    <span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">to_list</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">self</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">tensor</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">TensorType</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #81A1C1">list</span><span style="color: #ECEFF4">:</span>
-</span><span id="__span-0-82"><a id="__codelineno-0-82" name="__codelineno-0-82"></a><span style="color: #D8DEE9">        </span><span style="color: #616E87">&quot;&quot;&quot;Convert the tensor to a list.</span>
+</span><span id="__span-0-82"><a id="__codelineno-0-82" name="__codelineno-0-82"></a><span style="color: #D8DEE9">        </span><span style="color: #616E87">"""Convert the tensor to a list.</span>
 </span><span id="__span-0-83"><a id="__codelineno-0-83" name="__codelineno-0-83"></a>
 </span><span id="__span-0-84"><a id="__codelineno-0-84" name="__codelineno-0-84"></a><span style="color: #616E87">        Parameters</span>
 </span><span id="__span-0-85"><a id="__codelineno-0-85" name="__codelineno-0-85"></a><span style="color: #616E87">        ----------</span>
@@ -7022,12 +7022,12 @@ handle torch tensors.</p>
 </span><span id="__span-0-91"><a id="__codelineno-0-91" name="__codelineno-0-91"></a><span style="color: #616E87">        list</span>
 </span><span id="__span-0-92"><a id="__codelineno-0-92" name="__codelineno-0-92"></a><span style="color: #616E87">            The tensor as a list.</span>
 </span><span id="__span-0-93"><a id="__codelineno-0-93" name="__codelineno-0-93"></a>
-</span><span id="__span-0-94"><a id="__codelineno-0-94" name="__codelineno-0-94"></a><span style="color: #616E87">        &quot;&quot;&quot;</span>
+</span><span id="__span-0-94"><a id="__codelineno-0-94" name="__codelineno-0-94"></a><span style="color: #616E87">        """</span>
 </span><span id="__span-0-95"><a id="__codelineno-0-95" name="__codelineno-0-95"></a>        <span style="color: #81A1C1; font-weight: bold">...</span>
 </span><span id="__span-0-96"><a id="__codelineno-0-96" name="__codelineno-0-96"></a>
 </span><span id="__span-0-97"><a id="__codelineno-0-97" name="__codelineno-0-97"></a>    <span style="color: #D08770">@abstractmethod</span>
 </span><span id="__span-0-98"><a id="__codelineno-0-98" name="__codelineno-0-98"></a>    <span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">to_scalar</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">self</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">tensor</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">TensorType</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #D8DEE9">Any</span><span style="color: #ECEFF4">:</span>
-</span><span id="__span-0-99"><a id="__codelineno-0-99" name="__codelineno-0-99"></a><span style="color: #D8DEE9">        </span><span style="color: #616E87">&quot;&quot;&quot;Return the only element of the tensor.</span>
+</span><span id="__span-0-99"><a id="__codelineno-0-99" name="__codelineno-0-99"></a><span style="color: #D8DEE9">        </span><span style="color: #616E87">"""Return the only element of the tensor.</span>
 </span><span id="__span-0-100"><a id="__codelineno-0-100" name="__codelineno-0-100"></a>
 </span><span id="__span-0-101"><a id="__codelineno-0-101" name="__codelineno-0-101"></a><span style="color: #616E87">        Parameters</span>
 </span><span id="__span-0-102"><a id="__codelineno-0-102" name="__codelineno-0-102"></a><span style="color: #616E87">        ----------</span>
@@ -7039,12 +7039,12 @@ handle torch tensors.</p>
 </span><span id="__span-0-108"><a id="__codelineno-0-108" name="__codelineno-0-108"></a><span style="color: #616E87">        Any</span>
 </span><span id="__span-0-109"><a id="__codelineno-0-109" name="__codelineno-0-109"></a><span style="color: #616E87">            The only element of the tensor.</span>
 </span><span id="__span-0-110"><a id="__codelineno-0-110" name="__codelineno-0-110"></a>
-</span><span id="__span-0-111"><a id="__codelineno-0-111" name="__codelineno-0-111"></a><span style="color: #616E87">        &quot;&quot;&quot;</span>
+</span><span id="__span-0-111"><a id="__codelineno-0-111" name="__codelineno-0-111"></a><span style="color: #616E87">        """</span>
 </span><span id="__span-0-112"><a id="__codelineno-0-112" name="__codelineno-0-112"></a>        <span style="color: #81A1C1; font-weight: bold">...</span>
 </span><span id="__span-0-113"><a id="__codelineno-0-113" name="__codelineno-0-113"></a>
 </span><span id="__span-0-114"><a id="__codelineno-0-114" name="__codelineno-0-114"></a>    <span style="color: #D08770">@abstractmethod</span>
-</span><span id="__span-0-115"><a id="__codelineno-0-115" name="__codelineno-0-115"></a>    <span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">full_like</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">self</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">tensor</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;torch.Tensor&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">fill_value</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">Any</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #D8DEE9">TensorType</span><span style="color: #ECEFF4">:</span> <span style="color: #616E87; font-style: italic"># type: ignore</span>
-</span><span id="__span-0-116"><a id="__codelineno-0-116" name="__codelineno-0-116"></a><span style="color: #D8DEE9">        </span><span style="color: #616E87">&quot;&quot;&quot;Create a tensor with the same shape as the input tensor filled</span>
+</span><span id="__span-0-115"><a id="__codelineno-0-115" name="__codelineno-0-115"></a>    <span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">full_like</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">self</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">tensor</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">"torch.Tensor"</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">fill_value</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">Any</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #D8DEE9">TensorType</span><span style="color: #ECEFF4">:</span> <span style="color: #616E87; font-style: italic"># type: ignore</span>
+</span><span id="__span-0-116"><a id="__codelineno-0-116" name="__codelineno-0-116"></a><span style="color: #D8DEE9">        </span><span style="color: #616E87">"""Create a tensor with the same shape as the input tensor filled</span>
 </span><span id="__span-0-117"><a id="__codelineno-0-117" name="__codelineno-0-117"></a><span style="color: #616E87">        with a scalar value.</span>
 </span><span id="__span-0-118"><a id="__codelineno-0-118" name="__codelineno-0-118"></a>
 </span><span id="__span-0-119"><a id="__codelineno-0-119" name="__codelineno-0-119"></a><span style="color: #616E87">        ATTENTION: This method receives a torch tensor regardless of the</span>
@@ -7063,14 +7063,14 @@ handle torch tensors.</p>
 </span><span id="__span-0-132"><a id="__codelineno-0-132" name="__codelineno-0-132"></a><span style="color: #616E87">            A tensor with the same shape as the input tensor filled with the</span>
 </span><span id="__span-0-133"><a id="__codelineno-0-133" name="__codelineno-0-133"></a><span style="color: #616E87">            specified value.</span>
 </span><span id="__span-0-134"><a id="__codelineno-0-134" name="__codelineno-0-134"></a>
-</span><span id="__span-0-135"><a id="__codelineno-0-135" name="__codelineno-0-135"></a><span style="color: #616E87">        &quot;&quot;&quot;</span>
+</span><span id="__span-0-135"><a id="__codelineno-0-135" name="__codelineno-0-135"></a><span style="color: #616E87">        """</span>
 </span><span id="__span-0-136"><a id="__codelineno-0-136" name="__codelineno-0-136"></a>        <span style="color: #81A1C1; font-weight: bold">...</span>
 </span><span id="__span-0-137"><a id="__codelineno-0-137" name="__codelineno-0-137"></a>
 </span><span id="__span-0-138"><a id="__codelineno-0-138" name="__codelineno-0-138"></a>    <span style="color: #D08770">@abstractmethod</span>
 </span><span id="__span-0-139"><a id="__codelineno-0-139" name="__codelineno-0-139"></a>    <span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">concatenate</span><span style="color: #ECEFF4">(</span>
-</span><span id="__span-0-140"><a id="__codelineno-0-140" name="__codelineno-0-140"></a>        <span style="color: #81A1C1">self</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">tensors</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">list</span><span style="color: #ECEFF4">[</span><span style="color: #D8DEE9">Union</span><span style="color: #ECEFF4">[</span><span style="color: #A3BE8C">&quot;torch.Tensor&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">TensorType</span><span style="color: #ECEFF4">]]</span>
+</span><span id="__span-0-140"><a id="__codelineno-0-140" name="__codelineno-0-140"></a>        <span style="color: #81A1C1">self</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">tensors</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">list</span><span style="color: #ECEFF4">[</span><span style="color: #D8DEE9">Union</span><span style="color: #ECEFF4">[</span><span style="color: #A3BE8C">"torch.Tensor"</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">TensorType</span><span style="color: #ECEFF4">]]</span>
 </span><span id="__span-0-141"><a id="__codelineno-0-141" name="__codelineno-0-141"></a>    <span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #D8DEE9">TensorType</span><span style="color: #ECEFF4">:</span>
-</span><span id="__span-0-142"><a id="__codelineno-0-142" name="__codelineno-0-142"></a><span style="color: #D8DEE9">        </span><span style="color: #616E87">&quot;&quot;&quot;Concatenate a list of tensors along axis 0.</span>
+</span><span id="__span-0-142"><a id="__codelineno-0-142" name="__codelineno-0-142"></a><span style="color: #D8DEE9">        </span><span style="color: #616E87">"""Concatenate a list of tensors along axis 0.</span>
 </span><span id="__span-0-143"><a id="__codelineno-0-143" name="__codelineno-0-143"></a>
 </span><span id="__span-0-144"><a id="__codelineno-0-144" name="__codelineno-0-144"></a><span style="color: #616E87">        ATTENTION: This method can either receive a list of torch tensors or</span>
 </span><span id="__span-0-145"><a id="__codelineno-0-145" name="__codelineno-0-145"></a><span style="color: #616E87">        a list of tensors from the library used.</span>
@@ -7085,12 +7085,12 @@ handle torch tensors.</p>
 </span><span id="__span-0-154"><a id="__codelineno-0-154" name="__codelineno-0-154"></a><span style="color: #616E87">        TensorType</span>
 </span><span id="__span-0-155"><a id="__codelineno-0-155" name="__codelineno-0-155"></a><span style="color: #616E87">            The concatenated tensor.</span>
 </span><span id="__span-0-156"><a id="__codelineno-0-156" name="__codelineno-0-156"></a>
-</span><span id="__span-0-157"><a id="__codelineno-0-157" name="__codelineno-0-157"></a><span style="color: #616E87">        &quot;&quot;&quot;</span>
+</span><span id="__span-0-157"><a id="__codelineno-0-157" name="__codelineno-0-157"></a><span style="color: #616E87">        """</span>
 </span><span id="__span-0-158"><a id="__codelineno-0-158" name="__codelineno-0-158"></a>        <span style="color: #81A1C1; font-weight: bold">...</span>
 </span><span id="__span-0-159"><a id="__codelineno-0-159" name="__codelineno-0-159"></a>
 </span><span id="__span-0-160"><a id="__codelineno-0-160" name="__codelineno-0-160"></a>    <span style="color: #D08770">@abstractmethod</span>
 </span><span id="__span-0-161"><a id="__codelineno-0-161" name="__codelineno-0-161"></a>    <span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">get_device</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">self</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">tensor</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">TensorType</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #81A1C1">str</span><span style="color: #ECEFF4">:</span>
-</span><span id="__span-0-162"><a id="__codelineno-0-162" name="__codelineno-0-162"></a><span style="color: #D8DEE9">        </span><span style="color: #616E87">&quot;&quot;&quot;Get the name of the tensor&#39;s device.</span>
+</span><span id="__span-0-162"><a id="__codelineno-0-162" name="__codelineno-0-162"></a><span style="color: #D8DEE9">        </span><span style="color: #616E87">"""Get the name of the tensor's device.</span>
 </span><span id="__span-0-163"><a id="__codelineno-0-163" name="__codelineno-0-163"></a>
 </span><span id="__span-0-164"><a id="__codelineno-0-164" name="__codelineno-0-164"></a><span style="color: #616E87">        Parameters</span>
 </span><span id="__span-0-165"><a id="__codelineno-0-165" name="__codelineno-0-165"></a><span style="color: #616E87">        ----------</span>
@@ -7100,14 +7100,14 @@ handle torch tensors.</p>
 </span><span id="__span-0-169"><a id="__codelineno-0-169" name="__codelineno-0-169"></a><span style="color: #616E87">        Returns</span>
 </span><span id="__span-0-170"><a id="__codelineno-0-170" name="__codelineno-0-170"></a><span style="color: #616E87">        -------</span>
 </span><span id="__span-0-171"><a id="__codelineno-0-171" name="__codelineno-0-171"></a><span style="color: #616E87">        str</span>
-</span><span id="__span-0-172"><a id="__codelineno-0-172" name="__codelineno-0-172"></a><span style="color: #616E87">            The name of the tensor&#39;s device.</span>
+</span><span id="__span-0-172"><a id="__codelineno-0-172" name="__codelineno-0-172"></a><span style="color: #616E87">            The name of the tensor's device.</span>
 </span><span id="__span-0-173"><a id="__codelineno-0-173" name="__codelineno-0-173"></a>
-</span><span id="__span-0-174"><a id="__codelineno-0-174" name="__codelineno-0-174"></a><span style="color: #616E87">        &quot;&quot;&quot;</span>
+</span><span id="__span-0-174"><a id="__codelineno-0-174" name="__codelineno-0-174"></a><span style="color: #616E87">        """</span>
 </span><span id="__span-0-175"><a id="__codelineno-0-175" name="__codelineno-0-175"></a>        <span style="color: #81A1C1; font-weight: bold">...</span>
 </span><span id="__span-0-176"><a id="__codelineno-0-176" name="__codelineno-0-176"></a>
 </span><span id="__span-0-177"><a id="__codelineno-0-177" name="__codelineno-0-177"></a>    <span style="color: #D08770">@abstractmethod</span>
 </span><span id="__span-0-178"><a id="__codelineno-0-178" name="__codelineno-0-178"></a>    <span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">to_device</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">self</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">tensor</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">TensorType</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">device</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">str</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #D8DEE9">TensorType</span><span style="color: #ECEFF4">:</span>
-</span><span id="__span-0-179"><a id="__codelineno-0-179" name="__codelineno-0-179"></a><span style="color: #D8DEE9">        </span><span style="color: #616E87">&quot;&quot;&quot;Move the tensor to a specified device.</span>
+</span><span id="__span-0-179"><a id="__codelineno-0-179" name="__codelineno-0-179"></a><span style="color: #D8DEE9">        </span><span style="color: #616E87">"""Move the tensor to a specified device.</span>
 </span><span id="__span-0-180"><a id="__codelineno-0-180" name="__codelineno-0-180"></a>
 </span><span id="__span-0-181"><a id="__codelineno-0-181" name="__codelineno-0-181"></a><span style="color: #616E87">        Parameters</span>
 </span><span id="__span-0-182"><a id="__codelineno-0-182" name="__codelineno-0-182"></a><span style="color: #616E87">        ----------</span>
@@ -7121,12 +7121,12 @@ handle torch tensors.</p>
 </span><span id="__span-0-190"><a id="__codelineno-0-190" name="__codelineno-0-190"></a><span style="color: #616E87">        TensorType</span>
 </span><span id="__span-0-191"><a id="__codelineno-0-191" name="__codelineno-0-191"></a><span style="color: #616E87">            The tensor moved to the specified device.</span>
 </span><span id="__span-0-192"><a id="__codelineno-0-192" name="__codelineno-0-192"></a>
-</span><span id="__span-0-193"><a id="__codelineno-0-193" name="__codelineno-0-193"></a><span style="color: #616E87">        &quot;&quot;&quot;</span>
+</span><span id="__span-0-193"><a id="__codelineno-0-193" name="__codelineno-0-193"></a><span style="color: #616E87">        """</span>
 </span><span id="__span-0-194"><a id="__codelineno-0-194" name="__codelineno-0-194"></a>        <span style="color: #81A1C1; font-weight: bold">...</span>
 </span><span id="__span-0-195"><a id="__codelineno-0-195" name="__codelineno-0-195"></a>
 </span><span id="__span-0-196"><a id="__codelineno-0-196" name="__codelineno-0-196"></a>    <span style="color: #D08770">@abstractmethod</span>
 </span><span id="__span-0-197"><a id="__codelineno-0-197" name="__codelineno-0-197"></a>    <span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">boolean_ones_like</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">self</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">tensor</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">TensorType</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #D8DEE9">TensorType</span><span style="color: #ECEFF4">:</span>
-</span><span id="__span-0-198"><a id="__codelineno-0-198" name="__codelineno-0-198"></a><span style="color: #D8DEE9">        </span><span style="color: #616E87">&quot;&quot;&quot;Create a boolean ones tensor with the same shape as the input</span>
+</span><span id="__span-0-198"><a id="__codelineno-0-198" name="__codelineno-0-198"></a><span style="color: #D8DEE9">        </span><span style="color: #616E87">"""Create a boolean ones tensor with the same shape as the input</span>
 </span><span id="__span-0-199"><a id="__codelineno-0-199" name="__codelineno-0-199"></a><span style="color: #616E87">        tensor.</span>
 </span><span id="__span-0-200"><a id="__codelineno-0-200" name="__codelineno-0-200"></a>
 </span><span id="__span-0-201"><a id="__codelineno-0-201" name="__codelineno-0-201"></a><span style="color: #616E87">        Parameters</span>
@@ -7139,14 +7139,14 @@ handle torch tensors.</p>
 </span><span id="__span-0-208"><a id="__codelineno-0-208" name="__codelineno-0-208"></a><span style="color: #616E87">        TensorType</span>
 </span><span id="__span-0-209"><a id="__codelineno-0-209" name="__codelineno-0-209"></a><span style="color: #616E87">            A boolean ones tensor with the same shape as the input tensor.</span>
 </span><span id="__span-0-210"><a id="__codelineno-0-210" name="__codelineno-0-210"></a>
-</span><span id="__span-0-211"><a id="__codelineno-0-211" name="__codelineno-0-211"></a><span style="color: #616E87">        &quot;&quot;&quot;</span>
+</span><span id="__span-0-211"><a id="__codelineno-0-211" name="__codelineno-0-211"></a><span style="color: #616E87">        """</span>
 </span><span id="__span-0-212"><a id="__codelineno-0-212" name="__codelineno-0-212"></a>        <span style="color: #81A1C1; font-weight: bold">...</span>
 </span><span id="__span-0-213"><a id="__codelineno-0-213" name="__codelineno-0-213"></a>
 </span><span id="__span-0-214"><a id="__codelineno-0-214" name="__codelineno-0-214"></a>    <span style="color: #D08770">@abstractmethod</span>
 </span><span id="__span-0-215"><a id="__codelineno-0-215" name="__codelineno-0-215"></a>    <span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">apply_mask</span><span style="color: #ECEFF4">(</span>
 </span><span id="__span-0-216"><a id="__codelineno-0-216" name="__codelineno-0-216"></a>        <span style="color: #81A1C1">self</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">tensor</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">TensorType</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">mask</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">TensorType</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">value</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">Any</span>
 </span><span id="__span-0-217"><a id="__codelineno-0-217" name="__codelineno-0-217"></a>    <span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #D8DEE9">TensorType</span><span style="color: #ECEFF4">:</span>
-</span><span id="__span-0-218"><a id="__codelineno-0-218" name="__codelineno-0-218"></a><span style="color: #D8DEE9">        </span><span style="color: #616E87">&quot;&quot;&quot;Fill the elements of the tensor where the mask is True with the</span>
+</span><span id="__span-0-218"><a id="__codelineno-0-218" name="__codelineno-0-218"></a><span style="color: #D8DEE9">        </span><span style="color: #616E87">"""Fill the elements of the tensor where the mask is True with the</span>
 </span><span id="__span-0-219"><a id="__codelineno-0-219" name="__codelineno-0-219"></a><span style="color: #616E87">        specified value.</span>
 </span><span id="__span-0-220"><a id="__codelineno-0-220" name="__codelineno-0-220"></a>
 </span><span id="__span-0-221"><a id="__codelineno-0-221" name="__codelineno-0-221"></a><span style="color: #616E87">        Parameters</span>
@@ -7163,14 +7163,14 @@ handle torch tensors.</p>
 </span><span id="__span-0-232"><a id="__codelineno-0-232" name="__codelineno-0-232"></a><span style="color: #616E87">        TensorType</span>
 </span><span id="__span-0-233"><a id="__codelineno-0-233" name="__codelineno-0-233"></a><span style="color: #616E87">            The tensor with the mask applied.</span>
 </span><span id="__span-0-234"><a id="__codelineno-0-234" name="__codelineno-0-234"></a>
-</span><span id="__span-0-235"><a id="__codelineno-0-235" name="__codelineno-0-235"></a><span style="color: #616E87">        &quot;&quot;&quot;</span>
+</span><span id="__span-0-235"><a id="__codelineno-0-235" name="__codelineno-0-235"></a><span style="color: #616E87">        """</span>
 </span><span id="__span-0-236"><a id="__codelineno-0-236" name="__codelineno-0-236"></a>        <span style="color: #81A1C1; font-weight: bold">...</span>
 </span><span id="__span-0-237"><a id="__codelineno-0-237" name="__codelineno-0-237"></a>
 </span><span id="__span-0-238"><a id="__codelineno-0-238" name="__codelineno-0-238"></a>    <span style="color: #D08770">@abstractmethod</span>
 </span><span id="__span-0-239"><a id="__codelineno-0-239" name="__codelineno-0-239"></a>    <span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">argsort_descending</span><span style="color: #ECEFF4">(</span>
 </span><span id="__span-0-240"><a id="__codelineno-0-240" name="__codelineno-0-240"></a>        <span style="color: #81A1C1">self</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">tensor</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">TensorType</span>
 </span><span id="__span-0-241"><a id="__codelineno-0-241" name="__codelineno-0-241"></a>    <span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #D8DEE9">TensorType</span><span style="color: #ECEFF4">:</span>
-</span><span id="__span-0-242"><a id="__codelineno-0-242" name="__codelineno-0-242"></a><span style="color: #D8DEE9">        </span><span style="color: #616E87">&quot;&quot;&quot;Return the indices that would sort the tensor in descending order</span>
+</span><span id="__span-0-242"><a id="__codelineno-0-242" name="__codelineno-0-242"></a><span style="color: #D8DEE9">        </span><span style="color: #616E87">"""Return the indices that would sort the tensor in descending order</span>
 </span><span id="__span-0-243"><a id="__codelineno-0-243" name="__codelineno-0-243"></a><span style="color: #616E87">        along axis -1.</span>
 </span><span id="__span-0-244"><a id="__codelineno-0-244" name="__codelineno-0-244"></a>
 </span><span id="__span-0-245"><a id="__codelineno-0-245" name="__codelineno-0-245"></a><span style="color: #616E87">        Parameters</span>
@@ -7184,7 +7184,7 @@ handle torch tensors.</p>
 </span><span id="__span-0-253"><a id="__codelineno-0-253" name="__codelineno-0-253"></a><span style="color: #616E87">            The indices that would sort the tensor in descending order along</span>
 </span><span id="__span-0-254"><a id="__codelineno-0-254" name="__codelineno-0-254"></a><span style="color: #616E87">            axis -1.</span>
 </span><span id="__span-0-255"><a id="__codelineno-0-255" name="__codelineno-0-255"></a>
-</span><span id="__span-0-256"><a id="__codelineno-0-256" name="__codelineno-0-256"></a><span style="color: #616E87">        &quot;&quot;&quot;</span>
+</span><span id="__span-0-256"><a id="__codelineno-0-256" name="__codelineno-0-256"></a><span style="color: #616E87">        """</span>
 </span><span id="__span-0-257"><a id="__codelineno-0-257" name="__codelineno-0-257"></a>        <span style="color: #81A1C1; font-weight: bold">...</span>
 </span></code></pre></div></td></tr></table></div>
               </details>
@@ -7335,7 +7335,7 @@ specified value.</p>
 </span><span id="__span-0-215"><a id="__codelineno-0-215" name="__codelineno-0-215"></a><span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">apply_mask</span><span style="color: #ECEFF4">(</span>
 </span><span id="__span-0-216"><a id="__codelineno-0-216" name="__codelineno-0-216"></a>    <span style="color: #81A1C1">self</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">tensor</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">TensorType</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">mask</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">TensorType</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">value</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">Any</span>
 </span><span id="__span-0-217"><a id="__codelineno-0-217" name="__codelineno-0-217"></a><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #D8DEE9">TensorType</span><span style="color: #ECEFF4">:</span>
-</span><span id="__span-0-218"><a id="__codelineno-0-218" name="__codelineno-0-218"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">&quot;&quot;&quot;Fill the elements of the tensor where the mask is True with the</span>
+</span><span id="__span-0-218"><a id="__codelineno-0-218" name="__codelineno-0-218"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">"""Fill the elements of the tensor where the mask is True with the</span>
 </span><span id="__span-0-219"><a id="__codelineno-0-219" name="__codelineno-0-219"></a><span style="color: #616E87">    specified value.</span>
 </span><span id="__span-0-220"><a id="__codelineno-0-220" name="__codelineno-0-220"></a>
 </span><span id="__span-0-221"><a id="__codelineno-0-221" name="__codelineno-0-221"></a><span style="color: #616E87">    Parameters</span>
@@ -7352,7 +7352,7 @@ specified value.</p>
 </span><span id="__span-0-232"><a id="__codelineno-0-232" name="__codelineno-0-232"></a><span style="color: #616E87">    TensorType</span>
 </span><span id="__span-0-233"><a id="__codelineno-0-233" name="__codelineno-0-233"></a><span style="color: #616E87">        The tensor with the mask applied.</span>
 </span><span id="__span-0-234"><a id="__codelineno-0-234" name="__codelineno-0-234"></a>
-</span><span id="__span-0-235"><a id="__codelineno-0-235" name="__codelineno-0-235"></a><span style="color: #616E87">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-235"><a id="__codelineno-0-235" name="__codelineno-0-235"></a><span style="color: #616E87">    """</span>
 </span><span id="__span-0-236"><a id="__codelineno-0-236" name="__codelineno-0-236"></a>    <span style="color: #81A1C1; font-weight: bold">...</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
@@ -7459,7 +7459,7 @@ axis -1.</p>
 </span><span id="__span-0-239"><a id="__codelineno-0-239" name="__codelineno-0-239"></a><span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">argsort_descending</span><span style="color: #ECEFF4">(</span>
 </span><span id="__span-0-240"><a id="__codelineno-0-240" name="__codelineno-0-240"></a>    <span style="color: #81A1C1">self</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">tensor</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">TensorType</span>
 </span><span id="__span-0-241"><a id="__codelineno-0-241" name="__codelineno-0-241"></a><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #D8DEE9">TensorType</span><span style="color: #ECEFF4">:</span>
-</span><span id="__span-0-242"><a id="__codelineno-0-242" name="__codelineno-0-242"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">&quot;&quot;&quot;Return the indices that would sort the tensor in descending order</span>
+</span><span id="__span-0-242"><a id="__codelineno-0-242" name="__codelineno-0-242"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">"""Return the indices that would sort the tensor in descending order</span>
 </span><span id="__span-0-243"><a id="__codelineno-0-243" name="__codelineno-0-243"></a><span style="color: #616E87">    along axis -1.</span>
 </span><span id="__span-0-244"><a id="__codelineno-0-244" name="__codelineno-0-244"></a>
 </span><span id="__span-0-245"><a id="__codelineno-0-245" name="__codelineno-0-245"></a><span style="color: #616E87">    Parameters</span>
@@ -7473,7 +7473,7 @@ axis -1.</p>
 </span><span id="__span-0-253"><a id="__codelineno-0-253" name="__codelineno-0-253"></a><span style="color: #616E87">        The indices that would sort the tensor in descending order along</span>
 </span><span id="__span-0-254"><a id="__codelineno-0-254" name="__codelineno-0-254"></a><span style="color: #616E87">        axis -1.</span>
 </span><span id="__span-0-255"><a id="__codelineno-0-255" name="__codelineno-0-255"></a>
-</span><span id="__span-0-256"><a id="__codelineno-0-256" name="__codelineno-0-256"></a><span style="color: #616E87">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-256"><a id="__codelineno-0-256" name="__codelineno-0-256"></a><span style="color: #616E87">    """</span>
 </span><span id="__span-0-257"><a id="__codelineno-0-257" name="__codelineno-0-257"></a>    <span style="color: #81A1C1; font-weight: bold">...</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
@@ -7574,7 +7574,7 @@ tensor.</p>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-211">211</a></span>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-212">212</a></span></pre></div></td><td class="code"><div><pre style="line-height: 125%;"><span></span><code><span id="__span-0-196"><a id="__codelineno-0-196" name="__codelineno-0-196"></a><span style="color: #D08770">@abstractmethod</span>
 </span><span id="__span-0-197"><a id="__codelineno-0-197" name="__codelineno-0-197"></a><span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">boolean_ones_like</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">self</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">tensor</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">TensorType</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #D8DEE9">TensorType</span><span style="color: #ECEFF4">:</span>
-</span><span id="__span-0-198"><a id="__codelineno-0-198" name="__codelineno-0-198"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">&quot;&quot;&quot;Create a boolean ones tensor with the same shape as the input</span>
+</span><span id="__span-0-198"><a id="__codelineno-0-198" name="__codelineno-0-198"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">"""Create a boolean ones tensor with the same shape as the input</span>
 </span><span id="__span-0-199"><a id="__codelineno-0-199" name="__codelineno-0-199"></a><span style="color: #616E87">    tensor.</span>
 </span><span id="__span-0-200"><a id="__codelineno-0-200" name="__codelineno-0-200"></a>
 </span><span id="__span-0-201"><a id="__codelineno-0-201" name="__codelineno-0-201"></a><span style="color: #616E87">    Parameters</span>
@@ -7587,7 +7587,7 @@ tensor.</p>
 </span><span id="__span-0-208"><a id="__codelineno-0-208" name="__codelineno-0-208"></a><span style="color: #616E87">    TensorType</span>
 </span><span id="__span-0-209"><a id="__codelineno-0-209" name="__codelineno-0-209"></a><span style="color: #616E87">        A boolean ones tensor with the same shape as the input tensor.</span>
 </span><span id="__span-0-210"><a id="__codelineno-0-210" name="__codelineno-0-210"></a>
-</span><span id="__span-0-211"><a id="__codelineno-0-211" name="__codelineno-0-211"></a><span style="color: #616E87">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-211"><a id="__codelineno-0-211" name="__codelineno-0-211"></a><span style="color: #616E87">    """</span>
 </span><span id="__span-0-212"><a id="__codelineno-0-212" name="__codelineno-0-212"></a>    <span style="color: #81A1C1; font-weight: bold">...</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
@@ -7693,9 +7693,9 @@ a list of tensors from the library used.</p>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-157">157</a></span>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-158">158</a></span></pre></div></td><td class="code"><div><pre style="line-height: 125%;"><span></span><code><span id="__span-0-138"><a id="__codelineno-0-138" name="__codelineno-0-138"></a><span style="color: #D08770">@abstractmethod</span>
 </span><span id="__span-0-139"><a id="__codelineno-0-139" name="__codelineno-0-139"></a><span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">concatenate</span><span style="color: #ECEFF4">(</span>
-</span><span id="__span-0-140"><a id="__codelineno-0-140" name="__codelineno-0-140"></a>    <span style="color: #81A1C1">self</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">tensors</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">list</span><span style="color: #ECEFF4">[</span><span style="color: #D8DEE9">Union</span><span style="color: #ECEFF4">[</span><span style="color: #A3BE8C">&quot;torch.Tensor&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">TensorType</span><span style="color: #ECEFF4">]]</span>
+</span><span id="__span-0-140"><a id="__codelineno-0-140" name="__codelineno-0-140"></a>    <span style="color: #81A1C1">self</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">tensors</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">list</span><span style="color: #ECEFF4">[</span><span style="color: #D8DEE9">Union</span><span style="color: #ECEFF4">[</span><span style="color: #A3BE8C">"torch.Tensor"</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">TensorType</span><span style="color: #ECEFF4">]]</span>
 </span><span id="__span-0-141"><a id="__codelineno-0-141" name="__codelineno-0-141"></a><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #D8DEE9">TensorType</span><span style="color: #ECEFF4">:</span>
-</span><span id="__span-0-142"><a id="__codelineno-0-142" name="__codelineno-0-142"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">&quot;&quot;&quot;Concatenate a list of tensors along axis 0.</span>
+</span><span id="__span-0-142"><a id="__codelineno-0-142" name="__codelineno-0-142"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">"""Concatenate a list of tensors along axis 0.</span>
 </span><span id="__span-0-143"><a id="__codelineno-0-143" name="__codelineno-0-143"></a>
 </span><span id="__span-0-144"><a id="__codelineno-0-144" name="__codelineno-0-144"></a><span style="color: #616E87">    ATTENTION: This method can either receive a list of torch tensors or</span>
 </span><span id="__span-0-145"><a id="__codelineno-0-145" name="__codelineno-0-145"></a><span style="color: #616E87">    a list of tensors from the library used.</span>
@@ -7710,7 +7710,7 @@ a list of tensors from the library used.</p>
 </span><span id="__span-0-154"><a id="__codelineno-0-154" name="__codelineno-0-154"></a><span style="color: #616E87">    TensorType</span>
 </span><span id="__span-0-155"><a id="__codelineno-0-155" name="__codelineno-0-155"></a><span style="color: #616E87">        The concatenated tensor.</span>
 </span><span id="__span-0-156"><a id="__codelineno-0-156" name="__codelineno-0-156"></a>
-</span><span id="__span-0-157"><a id="__codelineno-0-157" name="__codelineno-0-157"></a><span style="color: #616E87">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-157"><a id="__codelineno-0-157" name="__codelineno-0-157"></a><span style="color: #616E87">    """</span>
 </span><span id="__span-0-158"><a id="__codelineno-0-158" name="__codelineno-0-158"></a>    <span style="color: #81A1C1; font-weight: bold">...</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
@@ -7835,8 +7835,8 @@ specified value.</p>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-134">134</a></span>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-135">135</a></span>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-136">136</a></span></pre></div></td><td class="code"><div><pre style="line-height: 125%;"><span></span><code><span id="__span-0-114"><a id="__codelineno-0-114" name="__codelineno-0-114"></a><span style="color: #D08770">@abstractmethod</span>
-</span><span id="__span-0-115"><a id="__codelineno-0-115" name="__codelineno-0-115"></a><span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">full_like</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">self</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">tensor</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">&quot;torch.Tensor&quot;</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">fill_value</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">Any</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #D8DEE9">TensorType</span><span style="color: #ECEFF4">:</span> <span style="color: #616E87; font-style: italic"># type: ignore</span>
-</span><span id="__span-0-116"><a id="__codelineno-0-116" name="__codelineno-0-116"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">&quot;&quot;&quot;Create a tensor with the same shape as the input tensor filled</span>
+</span><span id="__span-0-115"><a id="__codelineno-0-115" name="__codelineno-0-115"></a><span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">full_like</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">self</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">tensor</span><span style="color: #ECEFF4">:</span> <span style="color: #A3BE8C">"torch.Tensor"</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">fill_value</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">Any</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #D8DEE9">TensorType</span><span style="color: #ECEFF4">:</span> <span style="color: #616E87; font-style: italic"># type: ignore</span>
+</span><span id="__span-0-116"><a id="__codelineno-0-116" name="__codelineno-0-116"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">"""Create a tensor with the same shape as the input tensor filled</span>
 </span><span id="__span-0-117"><a id="__codelineno-0-117" name="__codelineno-0-117"></a><span style="color: #616E87">    with a scalar value.</span>
 </span><span id="__span-0-118"><a id="__codelineno-0-118" name="__codelineno-0-118"></a>
 </span><span id="__span-0-119"><a id="__codelineno-0-119" name="__codelineno-0-119"></a><span style="color: #616E87">    ATTENTION: This method receives a torch tensor regardless of the</span>
@@ -7855,7 +7855,7 @@ specified value.</p>
 </span><span id="__span-0-132"><a id="__codelineno-0-132" name="__codelineno-0-132"></a><span style="color: #616E87">        A tensor with the same shape as the input tensor filled with the</span>
 </span><span id="__span-0-133"><a id="__codelineno-0-133" name="__codelineno-0-133"></a><span style="color: #616E87">        specified value.</span>
 </span><span id="__span-0-134"><a id="__codelineno-0-134" name="__codelineno-0-134"></a>
-</span><span id="__span-0-135"><a id="__codelineno-0-135" name="__codelineno-0-135"></a><span style="color: #616E87">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-135"><a id="__codelineno-0-135" name="__codelineno-0-135"></a><span style="color: #616E87">    """</span>
 </span><span id="__span-0-136"><a id="__codelineno-0-136" name="__codelineno-0-136"></a>    <span style="color: #81A1C1; font-weight: bold">...</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
@@ -7954,7 +7954,7 @@ specified value.</p>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-174">174</a></span>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-175">175</a></span></pre></div></td><td class="code"><div><pre style="line-height: 125%;"><span></span><code><span id="__span-0-160"><a id="__codelineno-0-160" name="__codelineno-0-160"></a><span style="color: #D08770">@abstractmethod</span>
 </span><span id="__span-0-161"><a id="__codelineno-0-161" name="__codelineno-0-161"></a><span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">get_device</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">self</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">tensor</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">TensorType</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #81A1C1">str</span><span style="color: #ECEFF4">:</span>
-</span><span id="__span-0-162"><a id="__codelineno-0-162" name="__codelineno-0-162"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">&quot;&quot;&quot;Get the name of the tensor&#39;s device.</span>
+</span><span id="__span-0-162"><a id="__codelineno-0-162" name="__codelineno-0-162"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">"""Get the name of the tensor's device.</span>
 </span><span id="__span-0-163"><a id="__codelineno-0-163" name="__codelineno-0-163"></a>
 </span><span id="__span-0-164"><a id="__codelineno-0-164" name="__codelineno-0-164"></a><span style="color: #616E87">    Parameters</span>
 </span><span id="__span-0-165"><a id="__codelineno-0-165" name="__codelineno-0-165"></a><span style="color: #616E87">    ----------</span>
@@ -7964,9 +7964,9 @@ specified value.</p>
 </span><span id="__span-0-169"><a id="__codelineno-0-169" name="__codelineno-0-169"></a><span style="color: #616E87">    Returns</span>
 </span><span id="__span-0-170"><a id="__codelineno-0-170" name="__codelineno-0-170"></a><span style="color: #616E87">    -------</span>
 </span><span id="__span-0-171"><a id="__codelineno-0-171" name="__codelineno-0-171"></a><span style="color: #616E87">    str</span>
-</span><span id="__span-0-172"><a id="__codelineno-0-172" name="__codelineno-0-172"></a><span style="color: #616E87">        The name of the tensor&#39;s device.</span>
+</span><span id="__span-0-172"><a id="__codelineno-0-172" name="__codelineno-0-172"></a><span style="color: #616E87">        The name of the tensor's device.</span>
 </span><span id="__span-0-173"><a id="__codelineno-0-173" name="__codelineno-0-173"></a>
-</span><span id="__span-0-174"><a id="__codelineno-0-174" name="__codelineno-0-174"></a><span style="color: #616E87">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-174"><a id="__codelineno-0-174" name="__codelineno-0-174"></a><span style="color: #616E87">    """</span>
 </span><span id="__span-0-175"><a id="__codelineno-0-175" name="__codelineno-0-175"></a>    <span style="color: #81A1C1; font-weight: bold">...</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
@@ -8067,7 +8067,7 @@ there are dimensions in the tensor.</p>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-43">43</a></span>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-44">44</a></span></pre></div></td><td class="code"><div><pre style="line-height: 125%;"><span></span><code><span id="__span-0-28"><a id="__codelineno-0-28" name="__codelineno-0-28"></a><span style="color: #D08770">@abstractmethod</span>
 </span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29"></a><span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">shape</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">self</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">tensor</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">TensorType</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #81A1C1">list</span><span style="color: #ECEFF4">[</span><span style="color: #81A1C1">int</span><span style="color: #ECEFF4">]:</span>
-</span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">&quot;&quot;&quot;Get the shape of the tensor.</span>
+</span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">"""Get the shape of the tensor.</span>
 </span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31"></a>
 </span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32"></a><span style="color: #616E87">    Parameters</span>
 </span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33"></a><span style="color: #616E87">    ----------</span>
@@ -8080,7 +8080,7 @@ there are dimensions in the tensor.</p>
 </span><span id="__span-0-40"><a id="__codelineno-0-40" name="__codelineno-0-40"></a><span style="color: #616E87">        The shape of the tensor. The list contains as many elements as</span>
 </span><span id="__span-0-41"><a id="__codelineno-0-41" name="__codelineno-0-41"></a><span style="color: #616E87">        there are dimensions in the tensor.</span>
 </span><span id="__span-0-42"><a id="__codelineno-0-42" name="__codelineno-0-42"></a>
-</span><span id="__span-0-43"><a id="__codelineno-0-43" name="__codelineno-0-43"></a><span style="color: #616E87">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-43"><a id="__codelineno-0-43" name="__codelineno-0-43"></a><span style="color: #616E87">    """</span>
 </span><span id="__span-0-44"><a id="__codelineno-0-44" name="__codelineno-0-44"></a>    <span style="color: #81A1C1; font-weight: bold">...</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
@@ -8179,7 +8179,7 @@ there are dimensions in the tensor.</p>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-77">77</a></span>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-78">78</a></span></pre></div></td><td class="code"><div><pre style="line-height: 125%;"><span></span><code><span id="__span-0-63"><a id="__codelineno-0-63" name="__codelineno-0-63"></a><span style="color: #D08770">@abstractmethod</span>
 </span><span id="__span-0-64"><a id="__codelineno-0-64" name="__codelineno-0-64"></a><span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">squeeze</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">self</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">tensor</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">TensorType</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #D8DEE9">TensorType</span><span style="color: #ECEFF4">:</span>
-</span><span id="__span-0-65"><a id="__codelineno-0-65" name="__codelineno-0-65"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">&quot;&quot;&quot;Remove a dimension from the tensor at axis 0.</span>
+</span><span id="__span-0-65"><a id="__codelineno-0-65" name="__codelineno-0-65"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">"""Remove a dimension from the tensor at axis 0.</span>
 </span><span id="__span-0-66"><a id="__codelineno-0-66" name="__codelineno-0-66"></a>
 </span><span id="__span-0-67"><a id="__codelineno-0-67" name="__codelineno-0-67"></a><span style="color: #616E87">    Parameters</span>
 </span><span id="__span-0-68"><a id="__codelineno-0-68" name="__codelineno-0-68"></a><span style="color: #616E87">    ----------</span>
@@ -8191,7 +8191,7 @@ there are dimensions in the tensor.</p>
 </span><span id="__span-0-74"><a id="__codelineno-0-74" name="__codelineno-0-74"></a><span style="color: #616E87">    TensorType</span>
 </span><span id="__span-0-75"><a id="__codelineno-0-75" name="__codelineno-0-75"></a><span style="color: #616E87">        The tensor with one less dimension.</span>
 </span><span id="__span-0-76"><a id="__codelineno-0-76" name="__codelineno-0-76"></a>
-</span><span id="__span-0-77"><a id="__codelineno-0-77" name="__codelineno-0-77"></a><span style="color: #616E87">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-77"><a id="__codelineno-0-77" name="__codelineno-0-77"></a><span style="color: #616E87">    """</span>
 </span><span id="__span-0-78"><a id="__codelineno-0-78" name="__codelineno-0-78"></a>    <span style="color: #81A1C1; font-weight: bold">...</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
@@ -8308,7 +8308,7 @@ there are dimensions in the tensor.</p>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-193">193</a></span>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-194">194</a></span></pre></div></td><td class="code"><div><pre style="line-height: 125%;"><span></span><code><span id="__span-0-177"><a id="__codelineno-0-177" name="__codelineno-0-177"></a><span style="color: #D08770">@abstractmethod</span>
 </span><span id="__span-0-178"><a id="__codelineno-0-178" name="__codelineno-0-178"></a><span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">to_device</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">self</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">tensor</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">TensorType</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">device</span><span style="color: #ECEFF4">:</span> <span style="color: #81A1C1">str</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #D8DEE9">TensorType</span><span style="color: #ECEFF4">:</span>
-</span><span id="__span-0-179"><a id="__codelineno-0-179" name="__codelineno-0-179"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">&quot;&quot;&quot;Move the tensor to a specified device.</span>
+</span><span id="__span-0-179"><a id="__codelineno-0-179" name="__codelineno-0-179"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">"""Move the tensor to a specified device.</span>
 </span><span id="__span-0-180"><a id="__codelineno-0-180" name="__codelineno-0-180"></a>
 </span><span id="__span-0-181"><a id="__codelineno-0-181" name="__codelineno-0-181"></a><span style="color: #616E87">    Parameters</span>
 </span><span id="__span-0-182"><a id="__codelineno-0-182" name="__codelineno-0-182"></a><span style="color: #616E87">    ----------</span>
@@ -8322,7 +8322,7 @@ there are dimensions in the tensor.</p>
 </span><span id="__span-0-190"><a id="__codelineno-0-190" name="__codelineno-0-190"></a><span style="color: #616E87">    TensorType</span>
 </span><span id="__span-0-191"><a id="__codelineno-0-191" name="__codelineno-0-191"></a><span style="color: #616E87">        The tensor moved to the specified device.</span>
 </span><span id="__span-0-192"><a id="__codelineno-0-192" name="__codelineno-0-192"></a>
-</span><span id="__span-0-193"><a id="__codelineno-0-193" name="__codelineno-0-193"></a><span style="color: #616E87">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-193"><a id="__codelineno-0-193" name="__codelineno-0-193"></a><span style="color: #616E87">    """</span>
 </span><span id="__span-0-194"><a id="__codelineno-0-194" name="__codelineno-0-194"></a>    <span style="color: #81A1C1; font-weight: bold">...</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
@@ -8421,7 +8421,7 @@ there are dimensions in the tensor.</p>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-94">94</a></span>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-95">95</a></span></pre></div></td><td class="code"><div><pre style="line-height: 125%;"><span></span><code><span id="__span-0-80"><a id="__codelineno-0-80" name="__codelineno-0-80"></a><span style="color: #D08770">@abstractmethod</span>
 </span><span id="__span-0-81"><a id="__codelineno-0-81" name="__codelineno-0-81"></a><span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">to_list</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">self</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">tensor</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">TensorType</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #81A1C1">list</span><span style="color: #ECEFF4">:</span>
-</span><span id="__span-0-82"><a id="__codelineno-0-82" name="__codelineno-0-82"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">&quot;&quot;&quot;Convert the tensor to a list.</span>
+</span><span id="__span-0-82"><a id="__codelineno-0-82" name="__codelineno-0-82"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">"""Convert the tensor to a list.</span>
 </span><span id="__span-0-83"><a id="__codelineno-0-83" name="__codelineno-0-83"></a>
 </span><span id="__span-0-84"><a id="__codelineno-0-84" name="__codelineno-0-84"></a><span style="color: #616E87">    Parameters</span>
 </span><span id="__span-0-85"><a id="__codelineno-0-85" name="__codelineno-0-85"></a><span style="color: #616E87">    ----------</span>
@@ -8433,7 +8433,7 @@ there are dimensions in the tensor.</p>
 </span><span id="__span-0-91"><a id="__codelineno-0-91" name="__codelineno-0-91"></a><span style="color: #616E87">    list</span>
 </span><span id="__span-0-92"><a id="__codelineno-0-92" name="__codelineno-0-92"></a><span style="color: #616E87">        The tensor as a list.</span>
 </span><span id="__span-0-93"><a id="__codelineno-0-93" name="__codelineno-0-93"></a>
-</span><span id="__span-0-94"><a id="__codelineno-0-94" name="__codelineno-0-94"></a><span style="color: #616E87">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-94"><a id="__codelineno-0-94" name="__codelineno-0-94"></a><span style="color: #616E87">    """</span>
 </span><span id="__span-0-95"><a id="__codelineno-0-95" name="__codelineno-0-95"></a>    <span style="color: #81A1C1; font-weight: bold">...</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
@@ -8532,7 +8532,7 @@ there are dimensions in the tensor.</p>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-111">111</a></span>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-112">112</a></span></pre></div></td><td class="code"><div><pre style="line-height: 125%;"><span></span><code><span id="__span-0-97"><a id="__codelineno-0-97" name="__codelineno-0-97"></a><span style="color: #D08770">@abstractmethod</span>
 </span><span id="__span-0-98"><a id="__codelineno-0-98" name="__codelineno-0-98"></a><span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">to_scalar</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">self</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">tensor</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">TensorType</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #D8DEE9">Any</span><span style="color: #ECEFF4">:</span>
-</span><span id="__span-0-99"><a id="__codelineno-0-99" name="__codelineno-0-99"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">&quot;&quot;&quot;Return the only element of the tensor.</span>
+</span><span id="__span-0-99"><a id="__codelineno-0-99" name="__codelineno-0-99"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">"""Return the only element of the tensor.</span>
 </span><span id="__span-0-100"><a id="__codelineno-0-100" name="__codelineno-0-100"></a>
 </span><span id="__span-0-101"><a id="__codelineno-0-101" name="__codelineno-0-101"></a><span style="color: #616E87">    Parameters</span>
 </span><span id="__span-0-102"><a id="__codelineno-0-102" name="__codelineno-0-102"></a><span style="color: #616E87">    ----------</span>
@@ -8544,7 +8544,7 @@ there are dimensions in the tensor.</p>
 </span><span id="__span-0-108"><a id="__codelineno-0-108" name="__codelineno-0-108"></a><span style="color: #616E87">    Any</span>
 </span><span id="__span-0-109"><a id="__codelineno-0-109" name="__codelineno-0-109"></a><span style="color: #616E87">        The only element of the tensor.</span>
 </span><span id="__span-0-110"><a id="__codelineno-0-110" name="__codelineno-0-110"></a>
-</span><span id="__span-0-111"><a id="__codelineno-0-111" name="__codelineno-0-111"></a><span style="color: #616E87">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-111"><a id="__codelineno-0-111" name="__codelineno-0-111"></a><span style="color: #616E87">    """</span>
 </span><span id="__span-0-112"><a id="__codelineno-0-112" name="__codelineno-0-112"></a>    <span style="color: #81A1C1; font-weight: bold">...</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
@@ -8643,7 +8643,7 @@ there are dimensions in the tensor.</p>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-60">60</a></span>
 <span style="color: #D8DEE9; background-color: #242933; padding-left: 5px; padding-right: 5px;"><a href="#__codelineno-0-61">61</a></span></pre></div></td><td class="code"><div><pre style="line-height: 125%;"><span></span><code><span id="__span-0-46"><a id="__codelineno-0-46" name="__codelineno-0-46"></a><span style="color: #D08770">@abstractmethod</span>
 </span><span id="__span-0-47"><a id="__codelineno-0-47" name="__codelineno-0-47"></a><span style="color: #81A1C1; font-weight: bold">def</span><span style="color: #D8DEE9"> </span><span style="color: #88C0D0">unsqueeze</span><span style="color: #ECEFF4">(</span><span style="color: #81A1C1">self</span><span style="color: #ECEFF4">,</span> <span style="color: #D8DEE9">tensor</span><span style="color: #ECEFF4">:</span> <span style="color: #D8DEE9">TensorType</span><span style="color: #ECEFF4">)</span> <span style="color: #81A1C1; font-weight: bold">-&gt;</span> <span style="color: #D8DEE9">TensorType</span><span style="color: #ECEFF4">:</span>
-</span><span id="__span-0-48"><a id="__codelineno-0-48" name="__codelineno-0-48"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">&quot;&quot;&quot;Add a dimension to the tensor at axis 0.</span>
+</span><span id="__span-0-48"><a id="__codelineno-0-48" name="__codelineno-0-48"></a><span style="color: #D8DEE9">    </span><span style="color: #616E87">"""Add a dimension to the tensor at axis 0.</span>
 </span><span id="__span-0-49"><a id="__codelineno-0-49" name="__codelineno-0-49"></a>
 </span><span id="__span-0-50"><a id="__codelineno-0-50" name="__codelineno-0-50"></a><span style="color: #616E87">    Parameters</span>
 </span><span id="__span-0-51"><a id="__codelineno-0-51" name="__codelineno-0-51"></a><span style="color: #616E87">    ----------</span>
@@ -8655,7 +8655,7 @@ there are dimensions in the tensor.</p>
 </span><span id="__span-0-57"><a id="__codelineno-0-57" name="__codelineno-0-57"></a><span style="color: #616E87">    TensorType</span>
 </span><span id="__span-0-58"><a id="__codelineno-0-58" name="__codelineno-0-58"></a><span style="color: #616E87">        The tensor with an additional dimension.</span>
 </span><span id="__span-0-59"><a id="__codelineno-0-59" name="__codelineno-0-59"></a>
-</span><span id="__span-0-60"><a id="__codelineno-0-60" name="__codelineno-0-60"></a><span style="color: #616E87">    &quot;&quot;&quot;</span>
+</span><span id="__span-0-60"><a id="__codelineno-0-60" name="__codelineno-0-60"></a><span style="color: #616E87">    """</span>
 </span><span id="__span-0-61"><a id="__codelineno-0-61" name="__codelineno-0-61"></a>    <span style="color: #81A1C1; font-weight: bold">...</span>
 </span></code></pre></div></td></tr></table></div>
             </details>
@@ -8841,7 +8841,7 @@ there are dimensions in the tensor.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="August 15, 2026 10:32:04 UTC"><span class="timeago" datetime="2026-08-15T10:32:04+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="August 15, 2026 10:32:04 UTC">2026-08-15</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="August 21, 2026 19:36:45 UTC"><span class="timeago" datetime="2026-08-21T19:36:45+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="August 21, 2026 19:36:45 UTC">2026-08-21</span>
   </span>
 
     
@@ -8851,7 +8851,7 @@ there are dimensions in the tensor.</p>
     <span class="md-icon" title="Created">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="August 15, 2026 10:32:04 UTC"><span class="timeago" datetime="2026-08-15T10:32:04+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="August 15, 2026 10:32:04 UTC">2026-08-15</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="August 21, 2026 19:36:45 UTC"><span class="timeago" datetime="2026-08-21T19:36:45+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="August 21, 2026 19:36:45 UTC">2026-08-21</span>
   </span>
 
     
