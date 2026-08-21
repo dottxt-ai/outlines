@@ -4857,7 +4857,7 @@
 <p><em>If you are using <code>uv</code></em>:</p>
 <div class="language-shell highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>uv<span style="color: #D8DEE9"> </span>venv
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span style="color: #81A1C1">source</span><span style="color: #D8DEE9"> </span>.venv/bin/activate
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span style="color: #81A1C1">alias</span><span style="color: #D8DEE9"> pip</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #A3BE8C">&quot;uv pip&quot;</span><span style="color: #D8DEE9"> </span><span style="color: #616E87; font-style: italic"># ... or just remember to prepend any pip command with uv in the rest of this guide</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span style="color: #81A1C1">alias</span><span style="color: #D8DEE9"> pip</span><span style="color: #81A1C1; font-weight: bold">=</span><span style="color: #A3BE8C">"uv pip"</span><span style="color: #D8DEE9"> </span><span style="color: #616E87; font-style: italic"># ... or just remember to prepend any pip command with uv in the rest of this guide</span>
 </span></code></pre></div>
 <p><em>If you are using <code>venv</code></em>:</p>
 <div class="language-shell highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>python<span style="color: #D8DEE9"> </span>-m<span style="color: #D8DEE9"> </span>venv<span style="color: #D8DEE9"> </span>.venv
@@ -4867,15 +4867,15 @@
 <div class="language-shell highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>conda<span style="color: #D8DEE9"> </span>env<span style="color: #D8DEE9"> </span>create<span style="color: #D8DEE9"> </span>-f<span style="color: #D8DEE9"> </span>environment.yml
 </span></code></pre></div>
 <p>Then install the dependencies in editable mode, and install the <code>pre-commit</code> hooks:</p>
-<p><div class="language-shell highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>pip<span style="color: #D8DEE9"> </span>install<span style="color: #D8DEE9"> </span>-e<span style="color: #D8DEE9"> </span><span style="color: #A3BE8C">&quot;.[test]&quot;</span>
+<p><div class="language-shell highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>pip<span style="color: #D8DEE9"> </span>install<span style="color: #D8DEE9"> </span>-e<span style="color: #D8DEE9"> </span><span style="color: #A3BE8C">".[test]"</span>
 </span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>pre-commit<span style="color: #D8DEE9"> </span>install
 </span></code></pre></div>
 If you own a GPU and want to run the vLLM tests you will have to run:</p>
-<div class="language-shell highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>pip<span style="color: #D8DEE9"> </span>install<span style="color: #D8DEE9"> </span>-e<span style="color: #D8DEE9"> </span><span style="color: #A3BE8C">&quot;.[test-gpu]&quot;</span>
+<div class="language-shell highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>pip<span style="color: #D8DEE9"> </span>install<span style="color: #D8DEE9"> </span>-e<span style="color: #D8DEE9"> </span><span style="color: #A3BE8C">".[test-gpu]"</span>
 </span></code></pre></div>
 <p>instead.</p>
 <p>Outlines provides optional dependencies for different supported backends, which you can install with</p>
-<div class="language-shell highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>pip<span style="color: #D8DEE9"> </span>install<span style="color: #D8DEE9"> </span><span style="color: #A3BE8C">&quot;.[vllm]&quot;</span>
+<div class="language-shell highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>pip<span style="color: #D8DEE9"> </span>install<span style="color: #D8DEE9"> </span><span style="color: #A3BE8C">".[vllm]"</span>
 </span></code></pre></div>
 <p>A list of supported optional dependencies can be found in the <a href="https://dottxt-ai.github.io/outlines/latest/guide/installation/">installation guide</a>.</p>
 <h3 id="using-vscode-devcontainer-github-codespaces">Using VSCode DevContainer / GitHub Codespaces</h3>
@@ -4915,7 +4915,7 @@ It will be updated every time you make a change.</p>
 <p>Create a new branch on your fork, commit and push the changes:</p>
 <div class="language-shell highlight" style="background: #2E3440"><pre style="line-height: 125%;"><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>git<span style="color: #D8DEE9"> </span>checkout<span style="color: #D8DEE9"> </span>-b<span style="color: #D8DEE9"> </span>new-branch
 </span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>git<span style="color: #D8DEE9"> </span>add<span style="color: #D8DEE9"> </span>.
-</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>git<span style="color: #D8DEE9"> </span>commit<span style="color: #D8DEE9"> </span>-m<span style="color: #D8DEE9"> </span><span style="color: #A3BE8C">&quot;Changes I made&quot;</span>
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>git<span style="color: #D8DEE9"> </span>commit<span style="color: #D8DEE9"> </span>-m<span style="color: #D8DEE9"> </span><span style="color: #A3BE8C">"Changes I made"</span>
 </span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>git<span style="color: #D8DEE9"> </span>push<span style="color: #D8DEE9"> </span>origin<span style="color: #D8DEE9"> </span>new-branch
 </span></code></pre></div>
 <p>Then you can <a href="https://github.com/dottxt-ai/outlines/pulls">open a pull request</a> on GitHub. It should prompt you to do so. Every subsequent change that you make on your branch will update the pull request.</p>
@@ -4942,7 +4942,7 @@ It will be updated every time you make a change.</p>
     <span class="md-icon" title="Last update">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1zM12.5 7v5.2l4 2.4-1 1L11 13V7zM11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="August 15, 2026 09:05:51 UTC"><span class="timeago" datetime="2026-08-15T09:05:51+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="August 15, 2026 09:05:51 UTC">2026-08-15</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="August 21, 2026 19:36:51 UTC"><span class="timeago" datetime="2026-08-21T19:36:51+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="August 21, 2026 19:36:51 UTC">2026-08-21</span>
   </span>
 
     
@@ -4952,7 +4952,7 @@ It will be updated every time you make a change.</p>
     <span class="md-icon" title="Created">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3z"/></svg>
     </span>
-    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="August 15, 2026 09:05:51 UTC"><span class="timeago" datetime="2026-08-15T09:05:51+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="August 15, 2026 09:05:51 UTC">2026-08-15</span>
+    <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago" title="August 21, 2026 19:36:51 UTC"><span class="timeago" datetime="2026-08-21T19:36:51+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date" title="August 21, 2026 19:36:51 UTC">2026-08-21</span>
   </span>
 
     
