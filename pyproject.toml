@@ -181,6 +181,8 @@ module = [
     "mkdocs_gen_files.*",
     "llguidance.*",
     "xgrammar.*",
+    "urllib3",
+    "urllib3.*",
 ]
 ignore_missing_imports = true
 
