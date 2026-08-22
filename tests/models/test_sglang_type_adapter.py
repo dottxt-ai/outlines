@@ -149,7 +149,7 @@ def test_sglang_type_adapter_output_type(
             },
         }
     }
-    # whitespace pattern is ignored
+    # whitespace pattern is preserved in extra_body
     assert type_adapter.format_output_type(json_schema_whitespace_instance) == {
         "response_format": {
             "type": "json_schema",
@@ -161,7 +161,8 @@ def test_sglang_type_adapter_output_type(
                     "additionalProperties": False,
                 },
             },
-        }
+        },
+        "extra_body": {"whitespace_pattern": "\n"},
     }
     assert type_adapter.format_output_type(int) == {
         "extra_body": {"regex": "([+-]?(0|[1-9][0-9]*))"}
