@@ -1,5 +1,7 @@
 import pytest
 import re
+import sys
+from types import ModuleType
 from enum import Enum
 from typing import Generator
 
@@ -155,3 +157,22 @@ def test_mlxlm_batch_output_type(model):
             ["Respond with one word.", "Respond with one word."],
             Regex(r"[0-9]")
         )
+
+
+def test_mlxlm_batch_rejects_falsy_output_type(monkeypatch):
+    """Batch generation rejects output types even when their truth value is false."""
+    fake_mlx_lm = ModuleType("mlx_lm")
+    fake_mlx_lm.batch_generate = lambda *args, **kwargs: []
+    monkeypatch.setitem(sys.modules, "mlx_lm", fake_mlx_lm)
+
+    model = object.__new__(MLXLM)
+
+    class FalsyOutputType:
+        def __bool__(self):
+            return False
+
+    with pytest.raises(
+        NotImplementedError,
+        match="mlx-lm does not support constrained generation with batching.",
+    ):
+        model.generate_batch([], FalsyOutputType())
