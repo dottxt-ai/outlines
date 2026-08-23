@@ -149,9 +149,9 @@ def test_sglang_type_adapter_output_type(
             },
         }
     }
-    # whitespace pattern is ignored
     assert type_adapter.format_output_type(json_schema_whitespace_instance) == {
         "response_format": {
+            "whitespace_pattern": "\n",
             "type": "json_schema",
             "json_schema": {
                 "name": "default",
