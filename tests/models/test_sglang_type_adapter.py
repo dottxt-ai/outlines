@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from PIL import Image as PILImage
 
 from outlines.inputs import Chat, Image
-from outlines.models.sglang import SGLangTypeAdapter
+from outlines.models.sglang import SGLang, SGLangTypeAdapter
 from outlines.types import CFG, JsonSchema
 
 
@@ -166,3 +166,15 @@ def test_sglang_type_adapter_output_type(
     assert type_adapter.format_output_type(int) == {
         "extra_body": {"regex": "([+-]?(0|[1-9][0-9]*))"}
     }
+
+
+def test_sglang_build_client_args_preserves_whitespace_pattern(
+    json_schema_whitespace_instance,
+):
+    model = SGLang(client=object(), model_name="test-model")
+
+    client_args = model._build_client_args(
+        "prompt", json_schema_whitespace_instance
+    )
+
+    assert client_args["response_format"]["whitespace_pattern"] == "\n"
