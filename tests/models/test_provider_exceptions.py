@@ -153,6 +153,38 @@ def _refusal_response():
     )
 
 
+def _stream_chunk(*deltas):
+    return SimpleNamespace(
+        choices=[SimpleNamespace(delta=delta) for delta in deltas]
+    )
+
+
+def _streamed_refusal_chunks():
+    return [
+        _stream_chunk(
+            SimpleNamespace(
+                content="must-not-yield",
+                refusal="safety refusal",
+            )
+        )
+    ]
+
+
+def _streamed_non_refusal_chunks():
+    return [
+        _stream_chunk(),
+        _stream_chunk(
+            SimpleNamespace(content="first"),
+            SimpleNamespace(content="ignored", refusal="safety refusal"),
+        ),
+    ]
+
+
+async def _async_items(items):
+    for item in items:
+        yield item
+
+
 class DottxtSchema(BaseModel):
     value: str
 
@@ -195,8 +227,28 @@ SYNC_STREAM_CASES    = [p.sync_stream_case()     for p in PROVIDERS if p.model_s
 ASYNC_GENERATE_CASES = [p.async_generate_case()  for p in PROVIDERS if p.model_async]
 ASYNC_STREAM_CASES   = [p.async_stream_case()    for p in PROVIDERS if p.model_async and p.has_stream]
 
-SYNC_REFUSAL_CASES  = [pytest.param(p.model_sync,  p.name, id=p.name) for p in PROVIDERS if p.has_refusal and p.model_sync]
-ASYNC_REFUSAL_CASES = [pytest.param(p.model_async, p.name, id=p.name) for p in PROVIDERS if p.has_refusal and p.model_async]
+REFUSAL_MESSAGES = {
+    "openai": "OpenAI refused to answer the request: safety refusal",
+    "vllm": "The vLLM server refused to answer the request: safety refusal",
+    "sglang": "The SGLang server refused to answer the request: safety refusal",
+}
+
+SYNC_REFUSAL_CASES = [
+    pytest.param(p.model_sync, p.name, REFUSAL_MESSAGES[p.name], id=p.name)
+    for p in PROVIDERS if p.has_refusal and p.model_sync
+]
+ASYNC_REFUSAL_CASES = [
+    pytest.param(p.model_async, p.name, REFUSAL_MESSAGES[p.name], id=p.name)
+    for p in PROVIDERS if p.has_refusal and p.model_async
+]
+SYNC_REFUSAL_MODEL_CASES = [
+    pytest.param(p.model_sync, id=p.name)
+    for p in PROVIDERS if p.has_refusal and p.model_sync
+]
+ASYNC_REFUSAL_MODEL_CASES = [
+    pytest.param(p.model_async, id=p.name)
+    for p in PROVIDERS if p.has_refusal and p.model_async
+]
 
 
 @pytest.mark.parametrize("case", SYNC_GENERATE_CASES)
@@ -303,27 +355,97 @@ async def test_pass_through_non_provider_errors_stream_async(case):
     assert exc_info.value is original
 
 
-@pytest.mark.parametrize("model_cls, provider", SYNC_REFUSAL_CASES)
-def test_refusal_raises_generation_error_sync(model_cls, provider):
+@pytest.mark.parametrize(
+    "model_cls, provider, expected_message", SYNC_REFUSAL_CASES
+)
+def test_refusal_raises_generation_error_sync(
+    model_cls, provider, expected_message
+):
     client = _chat_completions(Mock(return_value=_refusal_response()))
     model = model_cls(client)
 
-    with pytest.raises(GenerationError, match="refused to answer the request") as exc_info:
+    with pytest.raises(GenerationError) as exc_info:
         model.generate("hello")
 
     assert exc_info.value.provider == provider
+    assert str(exc_info.value) == expected_message
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("model_cls, provider", ASYNC_REFUSAL_CASES)
-async def test_refusal_raises_generation_error_async(model_cls, provider):
+@pytest.mark.parametrize(
+    "model_cls, provider, expected_message", ASYNC_REFUSAL_CASES
+)
+async def test_refusal_raises_generation_error_async(
+    model_cls, provider, expected_message
+):
     client = _chat_completions(AsyncMock(return_value=_refusal_response()))
     model = model_cls(client)
 
-    with pytest.raises(GenerationError, match="refused to answer the request") as exc_info:
+    with pytest.raises(GenerationError) as exc_info:
         await model.generate("hello")
 
     assert exc_info.value.provider == provider
+    assert str(exc_info.value) == expected_message
+
+
+@pytest.mark.parametrize(
+    "model_cls, provider, expected_message", SYNC_REFUSAL_CASES
+)
+def test_streamed_refusal_raises_generation_error_sync(
+    model_cls, provider, expected_message
+):
+    client = _chat_completions(
+        Mock(return_value=iter(_streamed_refusal_chunks()))
+    )
+    model = model_cls(client)
+
+    with pytest.raises(GenerationError) as exc_info:
+        next(model.stream("hello"))
+
+    assert exc_info.value.provider == provider
+    assert str(exc_info.value) == expected_message
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "model_cls, provider, expected_message", ASYNC_REFUSAL_CASES
+)
+async def test_streamed_refusal_raises_generation_error_async(
+    model_cls, provider, expected_message
+):
+    client = _chat_completions(
+        AsyncMock(return_value=_async_items(_streamed_refusal_chunks()))
+    )
+    model = model_cls(client)
+
+    with pytest.raises(GenerationError) as exc_info:
+        await _anext(model.stream("hello"))
+
+    assert exc_info.value.provider == provider
+    assert str(exc_info.value) == expected_message
+
+
+@pytest.mark.parametrize("model_cls", SYNC_REFUSAL_MODEL_CASES)
+def test_streamed_non_refusal_deltas_sync(model_cls):
+    client = _chat_completions(
+        Mock(return_value=iter(_streamed_non_refusal_chunks()))
+    )
+    model = model_cls(client)
+
+    assert list(model.stream("hello")) == ["first"]
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("model_cls", ASYNC_REFUSAL_MODEL_CASES)
+async def test_streamed_non_refusal_deltas_async(model_cls):
+    client = _chat_completions(
+        AsyncMock(return_value=_async_items(_streamed_non_refusal_chunks()))
+    )
+    model = model_cls(client)
+
+    result = [chunk async for chunk in model.stream("hello")]
+
+    assert result == ["first"]
 
 
 # ---------------------------------------------------------------------------
