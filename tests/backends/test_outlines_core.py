@@ -110,18 +110,18 @@ def test_outlines_core_processor_numpy(regex):
 
 
 @pytest.mark.skipif(not HAS_MLX, reason="MLX tests require Apple Silicon")
-def test_outlines_core_processor_mlx():
+def test_outlines_core_processor_mlx(regex):
     model = model_mlxlm()
-    tokenizer = model.mlx_tokenizer
+    tokenizer = model.hf_tokenizer
     backend = OutlinesCoreBackend(model)
-    index = Index(r"[0-9]{3}", backend.vocabulary)
+    index = Index(regex, backend.vocabulary)
     processor = OutlinesCoreLogitsProcessor(index, "mlx")
     for _ in range(2):
         input_ids = simulate_model_calling_processor(
-            processor, "mlx", len(tokenizer.vocabulary), tokenizer.eos_token_id, 2
+            processor, "mlx", len(tokenizer.get_vocab()), tokenizer.eos_token_id, 2
         )
-        assert re.match(regex, tokenizer.decode(input_ids[0]))
-        assert re.match(regex, tokenizer.decode(input_ids[1]))
+        assert re.match(regex, tokenizer.decode(input_ids[0].tolist()))
+        assert re.match(regex, tokenizer.decode(input_ids[1].tolist()))
 
 
 def test_create_vocabulary_preserves_duplicate_token_ids():

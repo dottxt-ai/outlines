@@ -124,7 +124,7 @@ def test_llguidance_processor_numpy(regex):
 @pytest.mark.skipif(not HAS_MLX, reason="MLX tests require Apple Silicon")
 def test_llguidance_processor_mlx(regex):
     model = model_mlxlm()
-    tokenizer = model.mlx_tokenizer
+    tokenizer = model.hf_tokenizer
     llg_tokenizer = LLGuidanceBackend(model).llg_tokenizer
     grammar_spec = llguidance.grammar_from("regex", regex)
     processor = LLGuidanceLogitsProcessor(grammar_spec, llg_tokenizer, "mlx")
@@ -132,12 +132,12 @@ def test_llguidance_processor_mlx(regex):
         input_ids = simulate_model_calling_processor(
             processor,
             "mlx",
-            len(tokenizer.vocabulary),
+            len(tokenizer.get_vocab()),
             tokenizer.eos_token_id,
             2
         )
-        assert re.match(regex, tokenizer.decode(input_ids[0]))
-        assert re.match(regex, tokenizer.decode(input_ids[1]))
+        assert re.match(regex, tokenizer.decode(input_ids[0].tolist()))
+        assert re.match(regex, tokenizer.decode(input_ids[1].tolist()))
 
 
 models = [

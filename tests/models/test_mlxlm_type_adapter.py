@@ -1,13 +1,18 @@
-import pytest
 import io
+import sys
+from types import ModuleType, SimpleNamespace
 from unittest.mock import MagicMock
 
+import pytest
 from outlines_core import Index, Vocabulary
 from PIL import Image as PILImage
 
 from outlines.backends.outlines_core import OutlinesCoreLogitsProcessor
 from outlines.inputs import Chat, Image
-from outlines.models.mlxlm import MLXLMTypeAdapter
+from outlines.models.mlxlm import (
+    MLXLMMultiModalTypeAdapter,
+    MLXLMTypeAdapter,
+)
 
 try:
     import mlx_lm
@@ -73,6 +78,156 @@ def test_mlxlm_type_adapter_format_input_without_template():
     result = adapter.format_input(message)
 
     assert result == "prompt"
+
+
+@pytest.mark.parametrize(
+    ("model_type", "formatted_prompt"),
+    [
+        ("gemma3", "Describe this.<start_of_image>"),
+        ("phi3_v", "<|image_1|>Describe this."),
+        ("paligemma", "<image>Describe this."),
+    ],
+)
+def test_mlxlm_multimodal_type_adapter_uses_model_prompt_formatter(
+    monkeypatch, image, model_type, formatted_prompt
+):
+    processor = MagicMock()
+    config = SimpleNamespace(model_type=model_type)
+    formatter = MagicMock(return_value=formatted_prompt)
+    mlx_vlm = ModuleType("mlx_vlm")
+    mlx_vlm.apply_chat_template = formatter
+    monkeypatch.setitem(sys.modules, "mlx_vlm", mlx_vlm)
+
+    adapter = MLXLMMultiModalTypeAdapter(
+        processor=processor,
+        config=config,
+    )
+    image_asset = Image(image)
+    result = adapter.format_input(Chat([{
+        "role": "user",
+        "content": ["Describe this.", image_asset],
+    }]))
+
+    assert result == {
+        "prompt": formatted_prompt,
+        "images": [image_asset.image],
+    }
+    formatter.assert_called_once_with(
+        processor,
+        config,
+        [{"role": "user", "content": "Describe this."}],
+        num_images=1,
+    )
+
+
+def test_mlxlm_multimodal_type_adapter_rejects_output_type():
+    adapter = MLXLMMultiModalTypeAdapter(
+        processor=MagicMock(),
+        config=SimpleNamespace(model_type="smolvlm"),
+    )
+
+    assert adapter.format_output_type(None) is None
+    with pytest.raises(NotImplementedError, match="structured generation"):
+        adapter.format_output_type(MagicMock())
+
+
+def test_mlxlm_multimodal_type_adapter_rejects_later_turn_images(
+    monkeypatch, image
+):
+    formatter = MagicMock(return_value="formatted_prompt")
+    mlx_vlm = ModuleType("mlx_vlm")
+    mlx_vlm.apply_chat_template = formatter
+    monkeypatch.setitem(sys.modules, "mlx_vlm", mlx_vlm)
+    adapter = MLXLMMultiModalTypeAdapter(
+        processor=MagicMock(),
+        config=SimpleNamespace(model_type="smolvlm"),
+    )
+
+    with pytest.raises(ValueError, match="first user message"):
+        adapter.format_input(Chat([
+            {"role": "user", "content": "Remember this."},
+            {"role": "assistant", "content": "Okay."},
+            {
+                "role": "user",
+                "content": ["Describe this.", Image(image)],
+            },
+        ]))
+
+    formatter.assert_not_called()
+
+
+def test_mlxlm_multimodal_type_adapter_rejects_images_after_two_messages(
+    monkeypatch, image
+):
+    formatter = MagicMock(return_value="formatted_prompt")
+    mlx_vlm = ModuleType("mlx_vlm")
+    mlx_vlm.apply_chat_template = formatter
+    monkeypatch.setitem(sys.modules, "mlx_vlm", mlx_vlm)
+    adapter = MLXLMMultiModalTypeAdapter(
+        processor=MagicMock(),
+        config=SimpleNamespace(model_type="smolvlm"),
+    )
+
+    with pytest.raises(ValueError, match="first or second message"):
+        adapter.format_input(Chat([
+            {"role": "system", "content": "First instruction."},
+            {"role": "system", "content": "Second instruction."},
+            {
+                "role": "user",
+                "content": ["Describe this.", Image(image)],
+            },
+        ]))
+
+    formatter.assert_not_called()
+
+
+def test_mlxlm_multimodal_type_adapter_rejects_two_leading_user_messages(
+    monkeypatch, image
+):
+    formatter = MagicMock(return_value="formatted_prompt")
+    mlx_vlm = ModuleType("mlx_vlm")
+    mlx_vlm.apply_chat_template = formatter
+    monkeypatch.setitem(sys.modules, "mlx_vlm", mlx_vlm)
+    adapter = MLXLMMultiModalTypeAdapter(
+        processor=MagicMock(),
+        config=SimpleNamespace(model_type="smolvlm"),
+    )
+
+    with pytest.raises(ValueError, match="first two messages"):
+        adapter.format_input(Chat([
+            {
+                "role": "user",
+                "content": ["Describe this.", Image(image)],
+            },
+            {"role": "user", "content": "Focus on the background."},
+        ]))
+
+    formatter.assert_not_called()
+
+
+@pytest.mark.parametrize("model_type", ["paligemma", "molmo", "florence2"])
+def test_mlxlm_multimodal_type_adapter_rejects_prompt_only_chat_history(
+    monkeypatch, image, model_type
+):
+    formatter = MagicMock(return_value="formatted_prompt")
+    mlx_vlm = ModuleType("mlx_vlm")
+    mlx_vlm.apply_chat_template = formatter
+    monkeypatch.setitem(sys.modules, "mlx_vlm", mlx_vlm)
+    adapter = MLXLMMultiModalTypeAdapter(
+        processor=MagicMock(),
+        config=SimpleNamespace(model_type=model_type),
+    )
+
+    with pytest.raises(ValueError, match="single user message"):
+        adapter.format_input(Chat([
+            {
+                "role": "user",
+                "content": ["Describe this.", Image(image)],
+            },
+            {"role": "assistant", "content": "Prior answer."},
+        ]))
+
+    formatter.assert_not_called()
 
 
 @pytest.mark.skipif(not HAS_MLX, reason="MLX tests require Apple Silicon")
