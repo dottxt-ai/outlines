@@ -126,11 +126,11 @@ def build_template_from_string(
     content: str, filters: Dict[str, Callable] = {}
 ) -> jinja2.Template:
     # Dedent, and remove extra linebreak
-    cleaned_template = inspect.cleandoc(content)
+    cleaned_template = inspect.cleandoc(content).rstrip()
 
     # Add linebreak if there were any extra linebreaks that
     # `cleandoc` would have removed
-    ends_with_linebreak = content.replace(" ", "").endswith("\n\n")
+    ends_with_linebreak = re.search(r"\n[^\S\r\n]*\n\s*$", content) is not None
     if ends_with_linebreak:
         cleaned_template += "\n"
 

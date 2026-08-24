@@ -348,6 +348,13 @@ def test_template_from_str_with_extra_linebreaks():
     assert template.render(name="World") == "Hello, World!\n"
 
 
+@pytest.mark.parametrize("indentation", ["        ", "\t"])
+def test_template_from_str_with_indented_trailing_blank_line(indentation):
+    content = f"\n    Hello, {{{{ name }}}}!\n\n\n{indentation}"
+    template = build_template_from_string(content)
+    assert template.render(name="World") == "Hello, World!\n"
+
+
 def test_get_fn_name():
     with pytest.raises(TypeError):
         get_fn_name(1)
