@@ -101,7 +101,7 @@ print(response) # The image shows a black puppy with a curious and attentive exp
 
 #### Chat
 
-You can also use chat inputs with the `Ollama` model. To do so, call the model with a `Chat` instance. The content of messsage within the chat can be vision inputs as described above.
+You can also use chat inputs with the `Ollama` model. To do so, call the model with a `Chat` instance. The content of message within the chat can be vision inputs as described above.
 
 For instance:
 

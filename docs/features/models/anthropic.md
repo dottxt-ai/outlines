@@ -94,7 +94,7 @@ print(response) # 'This is a picture of a black dog.'
 
 #### Chat
 
-You can also use chat inputs with the `Anthropic` model. To do so, call the model with a `Chat` instance. The content of messsage within the chat can be vision inputs as described above.
+You can also use chat inputs with the `Anthropic` model. To do so, call the model with a `Chat` instance. The content of message within the chat can be vision inputs as described above.
 
 For instance:
 

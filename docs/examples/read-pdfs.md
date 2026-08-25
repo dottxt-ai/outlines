@@ -218,7 +218,7 @@ The [arXiv paper identifier](https://info.arxiv.org/help/arxiv_identifier.html) 
 
 arXiv identifiers are optionally followed by a version number, i.e. `arXiv:YYMM.NNNNNvX`.
 
-We can use a regular expression to define this patter:
+We can use a regular expression to define this pattern:
 
 ```python
 from outlines.types import Regex

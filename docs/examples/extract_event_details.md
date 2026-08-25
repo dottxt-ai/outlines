@@ -31,4 +31,4 @@ and the extracted event information will be:
 ```
 
 
-To find out more about this use case, we recommend the project developped by [Joseph Rudoler](https://x.com/JRudoler) the [ICS Generator](https://github.com/jrudoler/ics-generator)
+To find out more about this use case, we recommend the project developed by [Joseph Rudoler](https://x.com/JRudoler) the [ICS Generator](https://github.com/jrudoler/ics-generator)

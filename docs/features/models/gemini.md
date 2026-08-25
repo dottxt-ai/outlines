@@ -2,7 +2,7 @@
 
 !!! Installation
 
-    You need to install the `google.genai` libray to be able to use the Gemini API in Outlines. Install all optional dependencies of the `Gemini` model with: `pip install "outlines[gemini]"`.
+    You need to install the `google.genai` library to be able to use the Gemini API in Outlines. Install all optional dependencies of the `Gemini` model with: `pip install "outlines[gemini]"`.
 
     You also need to have a Gemini API key. This API key must either be set as an environment variable called `GEMINI_API_KEY` or be provided to the `google.genai.Client` class when instantiating it.
 
@@ -90,7 +90,7 @@ print(response) # 'This is a picture of a black dog.'
 
 #### Chat
 
-You can also use chat inputs with the `Gemini` model. To do so, call the model with a `Chat` instance. The content of messsage within the chat can be vision inputs as described above.
+You can also use chat inputs with the `Gemini` model. To do so, call the model with a `Chat` instance. The content of message within the chat can be vision inputs as described above.
 
 For instance:
 
@@ -167,7 +167,7 @@ class PizzaOrBurger(Enum):
 # Create the model
 model = outlines.from_gemini(genai.Client(), "gemini-1.5-flash-latest")
 
-# Call it with the ouput type to generate structured text
+# Call it with the output type to generate structured text
 result = model("Pizza or burger?", PizzaOrBurger, max_output_tokens=20)
 print(result) # 'pizza'
 ```
@@ -194,7 +194,7 @@ class Character(BaseModel):
 # Create the model
 model = outlines.from_gemini(genai.Client(), "gemini-1.5-flash-latest")
 
-# Call it with the ouput type to generate structured text
+# Call it with the output type to generate structured text
 result = model("Create a character", Character)
 print(result) # '{"name": "Evelyn", "age": 34, "skills": ["archery", "stealth", "alchemy"]}'
 print(Character.model_validate_json(result)) # name=Evelyn, age=34, skills=['archery', 'stealth', 'alchemy']
@@ -218,7 +218,7 @@ class Character:
 # Create the model
 model = outlines.from_gemini(genai.Client(), "gemini-1.5-flash-latest")
 
-# Call it with the ouput type to generate structured text
+# Call it with the output type to generate structured text
 result = model("Create a character", list[Character])
 print(result) # '[{"name": "Evelyn", "age": 34, "skills": ["archery", "stealth", "alchemy"]}, {["name":...'
 ```

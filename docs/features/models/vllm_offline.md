@@ -58,7 +58,7 @@ print(response) # 'Riga'
 
 #### Chat
 
-You can also use chat inputs with the `VLLMOffline` model. To do so, call the model with a `Chat` instance. The content of messsage within the chat can be vision inputs as described above.
+You can also use chat inputs with the `VLLMOffline` model. To do so, call the model with a `Chat` instance. The content of message within the chat can be vision inputs as described above.
 
 For instance:
 

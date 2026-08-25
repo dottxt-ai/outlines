@@ -40,7 +40,7 @@ print(response) # "girl"
 
 Instead of providing an Outlines `Template` instance, you can provide a `Callable` that returns a string. The parameters of the callable are used as the variables of the template such that you must provide values for them in the dictionary when calling the application.
 
-For instance, we can create the same example as above using a a function instead of a template:
+For instance, we can create the same example as above using a function instead of a template:
 
 ```python
 from typing import Literal
