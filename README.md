@@ -612,7 +612,7 @@ print(few_shot_prompt)
 | Feature | Description | Documentation |
 |---------|-------------|:-------------:|
 | **Prompt templates** | Separate complex prompts from code | [Template Guide →](https://dottxt-ai.github.io/outlines/latest/features/utility/template/) |
-| **Custome types** | Intuitive interface to build complex types | [Python Types Guide →](https://dottxt-ai.github.io/outlines/latest/features/core/output_types/#basic-python-types) |
+| **Custom types** | Intuitive interface to build complex types | [Python Types Guide →](https://dottxt-ai.github.io/outlines/latest/features/core/output_types/#basic-python-types) |
 | **Applications** | Encapsulate templates and types into functions | [Application Guide →](https://dottxt-ai.github.io/outlines/latest/features/utility/application/) |
 
 ## About .txt

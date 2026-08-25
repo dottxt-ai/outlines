@@ -27,7 +27,7 @@ model = outlines.from_transformers(
 result = model("What is the capital of France?", output_type, backend="llguidance")
 print(result) # 'Paris'
 
-generator = outlines.Generaor(model, output_type)
+generator = outlines.Generator(model, output_type)
 result = generator("What is the capital of France?", backend="xgrammar")
 print(result) # 'Paris'
 ```
@@ -40,7 +40,7 @@ If you do not provide a value for the `backend` argument, the default value will
 
 ## Features matrix
 
-As mentioned previously, selecting the structured generation backend is only applicable to steerable models, so `Transformers`, `LlmaCpp` and `MLXLM`. Additionaly, some backends do not support some models within those or some output types.
+As mentioned previously, selecting the structured generation backend is only applicable to steerable models, so `Transformers`, `LlamaCpp` and `MLXLM`. Additionally, some backends do not support some models within those or some output types.
 
 | | outlines_core | llguidance | xgrammar |
 |---|---|---|---|

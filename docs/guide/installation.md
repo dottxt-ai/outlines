@@ -34,7 +34,7 @@ pip install outlines
 
 To use Outlines models, you need to install the Python libraries for the associated inference engines/clients. Such libraries are not part of the general installation as you should only install the libraries needed for the specific models you want to use.
 
-Outlines models with the installation of their associated additional depencies:
+Outlines models with the installation of their associated additional dependencies:
 
 - [Anthropic](../features/models/anthropic.md): `pip install anthropic`
 - [Dottxt](../features/models/dottxt.md): `pip install dottxt`

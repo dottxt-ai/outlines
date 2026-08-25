@@ -13,7 +13,7 @@ The model input is the first argument of the `__call__`, `stream` and `batch` me
 There are 3 types of model inputs:
 
 - **Text prompts** - Simple strings
-- **Multimodal inputs** - List containning a string prompt along with assets
+- **Multimodal inputs** - List containing a string prompt along with assets
 - **Chat inputs** - `Chat` instances containing messages
 
 ## Text Prompts
@@ -131,7 +131,7 @@ print(prompt)
 # {'role': 'system', 'content': 'You are a helpful assistant.'}
 # {'role': 'user', 'content': 'How are you doing today?'}
 
-# Remove the last messsage
+# Remove the last message
 last_message = prompt.pop()
 print(last_message)
 # {'role': 'user', 'content': 'How are you doing today?'}
