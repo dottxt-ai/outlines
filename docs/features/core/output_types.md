@@ -205,7 +205,7 @@ To help you create complex regex patterns yourself, you can use the Outlines [re
 
 ### Context-Free Grammars
 
-Outlines allows you to generate text that respects the syntax of a context-free grammar. Context-free grammars are defined using [Lark](https://lark-parser.readthedocs.io/en/latest/index.html), a grammar language. Since grammars are expressed as a string, Large CFG strings should be be wrapped in an `outlines.types.CFG` object. For instance:
+Outlines allows you to generate text that respects the syntax of a context-free grammar. Context-free grammars are defined using [Lark](https://lark-parser.readthedocs.io/en/latest/index.html), a grammar language. Since grammars are expressed as a string, Large CFG strings should be wrapped in an `outlines.types.CFG` object. For instance:
 
 ```python
 from outlines.types import CFG
