@@ -69,8 +69,8 @@ def test_anthropic_type_adapter_input_chat(adapter, image):
     ])
     result = adapter.format_input(model_input)
     assert result == {
+        "system": "prompt",
         "messages": [
-            {"role": "system", "content": "prompt"},
             {"role": "user", "content": [
                 {
                     "type": "image",
@@ -84,6 +84,27 @@ def test_anthropic_type_adapter_input_chat(adapter, image):
             ]},
             {"role": "assistant", "content": "response"},
         ]
+    }
+
+
+def test_anthropic_type_adapter_preserves_mid_conversation_system_messages(adapter):
+    model_input = Chat(messages=[
+        {"role": "system", "content": "global instruction"},
+        {"role": "system", "content": "additional context"},
+        {"role": "user", "content": "hello"},
+        {"role": "system", "content": "new instruction"},
+        {"role": "assistant", "content": "response"},
+    ])
+
+    result = adapter.format_input(model_input)
+
+    assert result == {
+        "system": "global instruction\nadditional context",
+        "messages": [
+            {"role": "user", "content": "hello"},
+            {"role": "system", "content": "new instruction"},
+            {"role": "assistant", "content": "response"},
+        ],
     }
 
 
