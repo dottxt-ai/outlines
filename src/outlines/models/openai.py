@@ -16,7 +16,10 @@ from pydantic import BaseModel
 from outlines.exceptions import GenerationError, normalize_provider_errors
 from outlines.inputs import Chat, Image
 from outlines.models.base import AsyncModel, Model, ModelTypeAdapter
-from outlines.models.utils import set_additional_properties_false_json_schema
+from outlines.models.utils import (
+    set_additional_properties_false_json_schema,
+    split_multimodal_input,
+)
 from outlines.types import JsonSchema, Regex, CFG
 from outlines.types.utils import is_native_dict
 
@@ -103,8 +106,7 @@ class OpenAITypeAdapter(ModelTypeAdapter):
             }
 
         elif isinstance(content, list):
-            prompt = content[0]
-            images = content[1:]
+            prompt, images = split_multimodal_input(content)
 
             if not all(isinstance(image, Image) for image in images):
                 raise ValueError("All assets provided must be of type Image")

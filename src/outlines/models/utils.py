@@ -1,3 +1,15 @@
+from typing import Any
+
+
+def split_multimodal_input(content: list[Any]) -> tuple[str, list[Any]]:
+    """Split a multimodal input into its text prompt and assets."""
+    if not content:
+        raise ValueError("Content list cannot be empty.")
+    if not isinstance(content[0], str):
+        raise ValueError("The first item in the content list must be a string.")
+    return content[0], content[1:]
+
+
 def set_additional_properties_false_json_schema(schema: dict) -> dict:
     """Set additionalProperties to False on all object schemas.
 
