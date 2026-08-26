@@ -34,6 +34,8 @@ from outlines.types.dsl import to_regex
         (types.integer, "019", False),
         (types.integer, "1.9", False),
         (types.integer, "a", False),
+        (types.integer, "+5", False),  # JSON numbers have no leading +
+        (types.number, "+10", False),  # JSON numbers have no leading +
         (types.boolean, "True", True),
         (types.boolean, "False", True),
         (types.boolean, "true", False),
@@ -277,3 +279,45 @@ def test_type_enum(custom_type, test_string, should_match):
 
     does_match = test_string in custom_type.__members__
     assert does_match is should_match
+
+
+def test_scalar_string_matches_json_escapes():
+    """types.string only accepts valid JSON strings, including the standard escapes."""
+    bs = chr(92)  # backslash
+
+    # Standard JSON escape sequences are allowed
+    assert types.string.matches('"a' + bs + '"b"')  # "a\"b"
+    assert types.string.matches('"a' + bs + bs + 'b"')  # "a\\b"
+    assert types.string.matches('"a' + bs + '/b"')  # "a\/b"
+    assert types.string.matches('"a' + bs + 'nb"')  # "a\nb"
+    assert types.string.matches('"a' + bs + 'tb"')  # "a\tb"
+    assert types.string.matches('"a' + bs + 'fb"')  # "a\fb"
+    assert types.string.matches('"a' + bs + 'rb"')  # "a\rb"
+    assert types.string.matches('"a' + bs + 'bb"')  # "a\bb"
+
+    # Raw control characters, unescaped quotes and unknown escapes are not valid JSON
+    assert not types.string.matches('"a' + chr(10) + 'b"')
+    assert not types.string.matches('"a' + chr(9) + 'b"')
+    assert not types.string.matches('"a"b"')
+    assert not types.string.matches('"a' + bs + 'qb"')  # \q is not a JSON escape
+
+
+def test_scalar_numbers_reject_leading_plus():
+    """JSON numbers have no leading '+', matching the JSON-schema path."""
+    assert not types.integer.matches("+5")
+    assert not types.number.matches("+10")
+    assert not types.number.matches("+.5")
+    assert types.integer.matches("-5")
+    assert types.number.matches("-10.5e+3")
+
+
+def test_string_container_accepts_json_escapes():
+    """list[str] output containing an escaped quote is valid JSON."""
+    from typing import List
+
+    from outlines.types.dsl import python_types_to_terms, to_regex
+
+    list_regex = to_regex(python_types_to_terms(List[str]))
+    bs = chr(92)
+    assert re.fullmatch(list_regex, '["a' + bs + '"b"]')  # ["a\"b"]
+    assert not re.fullmatch(list_regex, '["a"b"]')  # unescaped quote
