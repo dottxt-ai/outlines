@@ -545,6 +545,25 @@ def test_json_schema_equality_includes_whitespace_pattern():
     assert JsonSchema(schema) != JsonSchema(schema, whitespace_pattern=r"[ ]?")
 
 
+def test_json_schema_and_cfg_are_hashable():
+    # JsonSchema and CFG define __eq__; without __hash__ that makes them
+    # unhashable and unusable in sets / as dict keys.
+    a = JsonSchema('{"type": "object", "a": 1, "b": 2}')
+    # equal schemas that differ only in key order / whitespace must hash equal
+    b = JsonSchema('{"b": 2, "a": 1, "type": "object"}')
+    assert a == b
+    assert hash(a) == hash(b)
+    assert len({a, b}) == 1
+    assert {a: "v"}[b] == "v"
+    assert a != JsonSchema('{"type": "integer"}')
+    assert len({a, JsonSchema('{"type": "integer"}')}) == 2
+
+    grammar = 'start: "a"'
+    assert hash(CFG(grammar)) == hash(CFG(grammar))
+    assert len({CFG(grammar), CFG(grammar)}) == 1
+    assert len({CFG("x"), CFG("y")}) == 2
+
+
 def test_dsl_python_types_to_terms():
     with pytest.raises(RecursionError):
         python_types_to_terms(None, 11)
