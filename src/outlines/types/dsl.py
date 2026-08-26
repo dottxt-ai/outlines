@@ -466,12 +466,9 @@ class JsonSchema(Term):
     def __hash__(self):
         # __eq__ compares the *parsed* schema, so hash the canonical (key-sorted)
         # form: two schemas that differ only in key order or whitespace are equal
-        # and must hash equal. Non-JSON input falls back to the raw string, which
-        # matches the JSONDecodeError branch of __eq__.
-        try:
-            canonical = json.dumps(json.loads(self.schema), sort_keys=True)
-        except json.JSONDecodeError:
-            canonical = self.schema
+        # and must hash equal. __init__ validates self.schema as JSON, so
+        # json.loads cannot fail here.
+        canonical = json.dumps(json.loads(self.schema), sort_keys=True)
         return hash((canonical, self.whitespace_pattern))
 
     @classmethod
