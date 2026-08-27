@@ -105,7 +105,7 @@ __all__ = [
 # Python types
 string = Regex(r'"[^"]*"')
 integer = Regex(r"[+-]?(0|[1-9][0-9]*)")
-boolean = Regex("(True|False)")
+boolean = Regex("(true|false)")
 number = Regex(rf"{integer.pattern}(\.[0-9]+)?([eE][+-]?[0-9]+)?")
 date = Regex(r"(\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])")
 time = Regex(r"([0-1][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])")
