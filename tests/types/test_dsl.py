@@ -6,7 +6,9 @@ import tempfile
 from dataclasses import dataclass
 from enum import Enum
 from typing import (
+    FrozenSet,
     Literal,
+    Set,
     Tuple,
     Union,
     get_args,
@@ -673,6 +675,14 @@ def test_dsl_python_types_to_terms():
     # type not supported
     with pytest.raises(TypeError, match="is currently not supported"):
         python_types_to_terms(bytes)
+
+    # Unsupported *parametrized* generics (e.g. ``set[int]``) are ``callable()``
+    # but are not a function/class signature, so they must raise the same clear
+    # "is currently not supported" TypeError as their bare counterparts rather
+    # than the misleading "Each argument must have a type annotation" ValueError.
+    for unsupported in (set[int], Set[int], FrozenSet[str], frozenset[int]):
+        with pytest.raises(TypeError, match="is currently not supported"):
+            python_types_to_terms(unsupported)
 
 
 def test_dsl_enum_with_instance_method_is_not_a_choice():
