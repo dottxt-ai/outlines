@@ -349,6 +349,9 @@ def _provider_exception_map(provider: str) -> dict[type, type[APIError]]:
         }
 
     if provider == "dottxt":
+        # Import the package first so an unavailable/blocked optional SDK is
+        # detected even when its exceptions submodule is still cached.
+        importlib.import_module("urllib3")
         urllib3_exc = importlib.import_module("urllib3.exceptions")
         return {
             # NewConnectionError subclasses ConnectTimeoutError, so it must come first
