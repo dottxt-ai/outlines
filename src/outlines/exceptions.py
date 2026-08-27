@@ -349,7 +349,7 @@ def _provider_exception_map(provider: str) -> dict[type, type[APIError]]:
         }
 
     if provider == "dottxt":
-        import urllib3.exceptions as urllib3_exc
+        urllib3_exc = importlib.import_module("urllib3.exceptions")
         return {
             # NewConnectionError subclasses ConnectTimeoutError, so it must come first
             urllib3_exc.NewConnectionError: APIConnectionError,
