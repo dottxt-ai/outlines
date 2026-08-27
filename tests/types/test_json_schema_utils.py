@@ -26,6 +26,75 @@ def test_schema_type_to_python_simple_types():
     assert schema_type_to_python({"type": "object"}, "foo") is Any
     assert schema_type_to_python({}, "pydantic") is Any
 
+    assert schema_type_to_python(
+        {"anyOf": [{"type": "integer"}, {"type": "string"}]}, "pydantic"
+    ) == Union[int, str]
+    assert schema_type_to_python(
+        {"oneOf": [{"type": "boolean"}, {"type": "null"}]}, "pydantic"
+    ) == Optional[bool]
+
+
+def test_json_schema_dict_to_pydantic_union_keywords():
+    schema = {
+        "type": "object",
+        "properties": {
+            "value": {"anyOf": [{"type": "integer"}, {"type": "string"}]},
+        },
+        "required": ["value"],
+    }
+
+    result = json_schema_dict_to_pydantic(schema, "UnionValue")
+    assert result.model_fields["value"].annotation == Union[int, str]
+    assert result.model_json_schema()["properties"]["value"]["anyOf"]
+    assert result(value=1).model_dump()["value"] == 1
+    assert result(value="one").model_dump()["value"] == "one"
+
+
+def test_schema_type_to_python_union_keyword_with_outer_type():
+    """Sibling ``type`` constraints must not be widened by union branches."""
+
+    assert (
+        schema_type_to_python(
+            {"type": "string", "anyOf": [{"minLength": 1}, {"const": "x"}]},
+            "pydantic",
+        )
+        is str
+    )
+    assert (
+        schema_type_to_python(
+            {"type": "string", "oneOf": [{"const": "x"}, {"const": 1}]},
+            "pydantic",
+        )
+        is str
+    )
+
+
+def test_schema_type_to_python_union_keyword_boolean_subschemas():
+    """Boolean JSON Schema branches must not reach the dict converter."""
+
+    assert (
+        schema_type_to_python(
+            {"anyOf": [{"type": "integer"}, False]},
+            "pydantic",
+        )
+        is int
+    )
+    assert (
+        schema_type_to_python(
+            {"oneOf": [{"type": "string"}, False]},
+            "pydantic",
+        )
+        is str
+    )
+    assert (
+        schema_type_to_python(
+            {"anyOf": [{"type": "integer"}, True]},
+            "pydantic",
+        )
+        is Any
+    )
+    assert schema_type_to_python({"oneOf": [True]}, "pydantic") is Any
+
 
 def test_schema_type_to_python_enum():
     schema = {"enum": ["red", "green", "blue"]}

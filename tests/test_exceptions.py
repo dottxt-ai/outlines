@@ -706,25 +706,21 @@ class TestExceptionMapTGI:
 
 
 class TestExceptionMapDottxt:
-    @pytest.fixture(autouse=True)
-    def _require_dottxt(self):
-        pytest.importorskip("urllib3")
+    @pytest.fixture
+    def urllib3_exceptions(self):
+        return pytest.importorskip("urllib3.exceptions")
 
-    def test_connect_timeout(self):
-        from urllib3.exceptions import ConnectTimeoutError
-        _check_mapping(ConnectTimeoutError, "dottxt", APITimeoutError)
+    def test_connect_timeout(self, urllib3_exceptions):
+        _check_mapping(urllib3_exceptions.ConnectTimeoutError, "dottxt", APITimeoutError)
 
-    def test_read_timeout(self):
-        from urllib3.exceptions import ReadTimeoutError
-        _check_mapping(ReadTimeoutError, "dottxt", APITimeoutError)
+    def test_read_timeout(self, urllib3_exceptions):
+        _check_mapping(urllib3_exceptions.ReadTimeoutError, "dottxt", APITimeoutError)
 
-    def test_max_retry_error(self):
-        from urllib3.exceptions import MaxRetryError
-        _check_mapping(MaxRetryError, "dottxt", APIConnectionError)
+    def test_max_retry_error(self, urllib3_exceptions):
+        _check_mapping(urllib3_exceptions.MaxRetryError, "dottxt", APIConnectionError)
 
-    def test_new_connection_error(self):
-        from urllib3.exceptions import NewConnectionError
-        _check_mapping(NewConnectionError, "dottxt", APIConnectionError)
+    def test_new_connection_error(self, urllib3_exceptions):
+        _check_mapping(urllib3_exceptions.NewConnectionError, "dottxt", APIConnectionError)
 
 
 # vLLM and SGLang both reuse the OpenAI SDK client, so they share the OpenAI
