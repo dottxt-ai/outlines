@@ -67,11 +67,11 @@ class Application:
 
         """
         self.template = template
-        self.output_type = output_type
-        self.generator: Optional[Union[
+        self._output_type = output_type
+        self._generator: Optional[Union[
             BlackBoxGenerator, SteerableGenerator
         ]] = None
-        self.model: Optional[Model] = None
+        self._model: Optional[Model] = None
 
     def __call__(
         self,
@@ -98,10 +98,10 @@ class Application:
         # We save the generator to avoid creating a new one for each call.
         # If the model has changed since the last call, we create a new
         # generator.
-        if model != self.model:
-            self.model = model
-            self.generator = Generator(model, self.output_type)  # type: ignore
+        if model != self._model:
+            self._model = model
+            self._generator = Generator(model, self._output_type)  # type: ignore
 
         prompt = self.template(**template_vars)
-        assert self.generator is not None
-        return self.generator(prompt, **inference_kwargs)
+        assert self._generator is not None
+        return self._generator(prompt, **inference_kwargs)
