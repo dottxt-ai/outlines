@@ -1,4 +1,8 @@
-"""Integration with the `llama-cpp-python` library."""
+"""Integration with the `llama-cpp-python` library.
+
+Local runtime calls intentionally bypass
+outlines.exceptions.normalize_provider_errors().
+"""
 
 import ctypes
 from functools import singledispatchmethod
