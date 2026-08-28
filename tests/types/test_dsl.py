@@ -534,6 +534,18 @@ def test_dsl_json_schema_from_file():
         assert schema == JsonSchema(schema_content)
 
 
+def test_json_schema_equality_includes_whitespace_pattern():
+    schema = {"type": "string"}
+
+    assert JsonSchema(schema, whitespace_pattern=r"[ ]?") == JsonSchema(
+        schema, whitespace_pattern=r"[ ]?"
+    )
+    assert JsonSchema(schema, whitespace_pattern=r"[ ]?") != JsonSchema(
+        schema, whitespace_pattern=r"[\n\t ]*"
+    )
+    assert JsonSchema(schema) != JsonSchema(schema, whitespace_pattern=r"[ ]?")
+
+
 def test_dsl_python_types_to_terms():
     with pytest.raises(RecursionError):
         python_types_to_terms(None, 11)
