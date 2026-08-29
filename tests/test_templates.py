@@ -34,6 +34,10 @@ def function_with_annotations(x: int, y: str) -> str:
 def function_with_no_docstring(x, y):
     return x * y
 
+def function_with_paren_default(a, b=(1, 2), c="x"):
+    """Function whose default value contains a closing paren."""
+    return a
+
 class CallableClass:
     def __call__(self):
         pass
@@ -385,12 +389,14 @@ def test_get_fn_source():
 
 
 def test_get_fn_signature():
-    with pytest.raises(TypeError, match="The `source` filter only applies to callables."):
+    with pytest.raises(TypeError, match="The `signature` filter only applies to callables."):
         get_fn_signature(1)
     sample_function_signature = "x, y=2"
     assert get_fn_signature(sample_function) == sample_function_signature
     function_with_annotations_signature = "x: int, y: str"
     assert get_fn_signature(function_with_annotations) == function_with_annotations_signature
+    # A closing paren inside a default value used to truncate the signature.
+    assert get_fn_signature(function_with_paren_default) == "a, b=(1, 2), c='x'"
 
 
 def test_get_schema():
