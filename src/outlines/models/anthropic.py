@@ -194,7 +194,10 @@ class Anthropic(Model):
                 **messages,
                 **inference_kwargs,
             )
-        return completion.content[0].text
+        for block in completion.content:
+            if block.type == "text":
+                return block.text
+        raise ValueError("Anthropic response did not contain a text block.")
 
     def generate_batch(
         self,
