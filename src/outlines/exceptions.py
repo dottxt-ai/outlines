@@ -358,6 +358,12 @@ def _provider_exception_map(provider: str) -> dict[type, type[APIError]]:
             urllib3_exc.MaxRetryError: APIConnectionError,
         }
 
+    if provider == "lmstudio":
+        return {
+            ConnectionError: APIConnectionError,
+            TimeoutError: APITimeoutError,
+        }
+
     # Unknown provider: no SDK-specific mapping available.
     # normalize_provider_exception will fall back to status-code inspection.
     return {}
