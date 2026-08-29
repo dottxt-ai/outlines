@@ -2,9 +2,11 @@ import sys
 from dataclasses import is_dataclass
 from typing import Any, List, Literal, Optional, Union
 
+import pytest
 from pydantic import BaseModel, TypeAdapter
 from pydantic_core import PydanticUndefined
 
+from outlines.types.dsl import JsonSchema, to_regex
 from outlines.types.json_schema_utils import (
     schema_type_to_python,
     json_schema_dict_to_typeddict,
@@ -415,3 +417,251 @@ def test_json_schema_dict_to_dataclass_optional_before_required():
     instance = result(user_id=5)
     assert instance.user_id == 5
     assert instance.nickname is None
+
+
+def test_schema_type_to_python_local_ref():
+    schema = {
+        "type": "object",
+        "properties": {"address": {"$ref": "#/$defs/Address"}},
+        "required": ["address"],
+        "$defs": {
+            "Address": {
+                "type": "object",
+                "properties": {"city": {"type": "string"}},
+                "required": ["city"],
+            }
+        },
+    }
+
+    result = json_schema_dict_to_pydantic(schema, "Person")
+    address = result.model_fields["address"].annotation
+    assert issubclass(address, BaseModel)
+    assert address.model_fields["city"].annotation is str
+
+
+def test_schema_type_to_python_ref_definitions_keyword():
+    # Draft-07 uses "definitions" where 2020-12 uses "$defs".
+    schema = {
+        "type": "object",
+        "properties": {"count": {"$ref": "#/definitions/Count"}},
+        "required": ["count"],
+        "definitions": {"Count": {"type": "integer"}},
+    }
+
+    result = json_schema_dict_to_pydantic(schema, "Model")
+    assert result.model_fields["count"].annotation is int
+
+
+def test_schema_type_to_python_unresolvable_ref():
+    # A remote ref and a dangling pointer are both left as Any rather than
+    # raising, so an unsupported schema degrades instead of breaking.
+    remote = {"$ref": "https://example.com/schema.json"}
+    dangling = {"$ref": "#/$defs/Missing"}
+
+    assert schema_type_to_python(remote, "pydantic") is Any
+    assert schema_type_to_python(dangling, "pydantic") is Any
+
+
+def test_json_schema_dict_to_pydantic_root_ref():
+    # Pydantic emits a top-level $ref for a self-referential model; the
+    # properties live one indirection away from the document root.
+    schema = {
+        "$defs": {
+            "Node": {
+                "type": "object",
+                "properties": {"value": {"type": "integer"}},
+                "required": ["value"],
+            }
+        },
+        "$ref": "#/$defs/Node",
+    }
+
+    result = json_schema_dict_to_pydantic(schema, "Node")
+    assert result.model_fields["value"].annotation is int
+
+
+def test_json_schema_dict_to_pydantic_recursive_ref():
+    # A cycle has no finite Python type, so it resolves to Any instead of
+    # recursing until the stack runs out.
+    schema = {
+        "$defs": {
+            "Node": {
+                "type": "object",
+                "properties": {
+                    "value": {"type": "integer"},
+                    "children": {
+                        "type": "array",
+                        "items": {"$ref": "#/$defs/Node"},
+                    },
+                },
+                "required": ["value"],
+            }
+        },
+        "$ref": "#/$defs/Node",
+    }
+
+    result = json_schema_dict_to_pydantic(schema, "Node")
+    assert result.model_fields["value"].annotation is int
+    # The item type is the back edge, left unconstrained so the cycle ends.
+    assert result.model_fields["children"].annotation == Optional[List[Optional[Any]]]
+    assert to_regex(JsonSchema(result))
+
+
+def test_schema_type_to_python_any_of():
+    schema = {"anyOf": [{"type": "string"}, {"type": "integer"}]}
+    assert schema_type_to_python(schema, "pydantic") == Union[str, int]
+
+
+def test_schema_type_to_python_one_of():
+    schema = {"oneOf": [{"type": "string"}, {"type": "null"}]}
+    assert schema_type_to_python(schema, "pydantic") == Optional[str]
+
+
+def test_schema_type_to_python_all_of_single():
+    # A one-element allOf is an alias for its subschema. Two or more require
+    # merging competing keywords and stay Any.
+    assert schema_type_to_python({"allOf": [{"type": "integer"}]}, "pydantic") is int
+    assert (
+        schema_type_to_python(
+            {"allOf": [{"type": "integer"}, {"type": "string"}]}, "pydantic"
+        )
+        is Any
+    )
+
+
+def test_json_schema_dict_to_typeddict_ref():
+    schema = {
+        "type": "object",
+        "properties": {"address": {"$ref": "#/$defs/Address"}},
+        "required": ["address"],
+        "$defs": {
+            "Address": {
+                "type": "object",
+                "properties": {"city": {"type": "string"}},
+                "required": ["city"],
+            }
+        },
+    }
+
+    result = json_schema_dict_to_typeddict(schema, "Person")
+    assert isinstance(result, _TypedDictMeta)
+    assert isinstance(result.__annotations__["address"], _TypedDictMeta)
+
+
+def test_json_schema_dict_to_dataclass_ref():
+    schema = {
+        "type": "object",
+        "properties": {"address": {"$ref": "#/$defs/Address"}},
+        "required": ["address"],
+        "$defs": {
+            "Address": {
+                "type": "object",
+                "properties": {"city": {"type": "string"}},
+                "required": ["city"],
+            }
+        },
+    }
+
+    result = json_schema_dict_to_dataclass(schema, "Person")
+    assert is_dataclass(result)
+    assert is_dataclass(result.__annotations__["address"])
+
+
+def test_pydantic_nested_model_round_trip():
+    # The end-to-end case: a nested Pydantic model serialized to JSON Schema
+    # and converted back must keep its nested structure.
+    class Address(BaseModel):
+        street: str
+        city: str
+
+    class Person(BaseModel):
+        name: str
+        address: Address
+
+    result = json_schema_dict_to_pydantic(Person.model_json_schema(), "Person")
+    address = result.model_fields["address"].annotation
+
+    assert result.model_fields["name"].annotation is str
+    assert issubclass(address, BaseModel)
+    assert address.model_fields["street"].annotation is str
+    assert address.model_fields["city"].annotation is str
+
+
+def _recursive_schema(required_back_edge: bool) -> dict:
+    required = ["value", "next"] if required_back_edge else ["value"]
+    return {
+        "$defs": {
+            "Node": {
+                "type": "object",
+                "properties": {
+                    "value": {"type": "integer"},
+                    "next": {"$ref": "#/$defs/Node"},
+                },
+                "required": required,
+            }
+        },
+        "$ref": "#/$defs/Node",
+    }
+
+
+@pytest.mark.parametrize("required_back_edge", [True, False])
+def test_recursive_schema_round_trips_through_to_regex(required_back_edge):
+    """The back edge must serialize to a shape the regex backend accepts.
+
+    A bare ``Any`` round-trips to a property with no ``type``, which
+    ``to_regex`` rejects, so converting a recursive schema has to leave the
+    back edge as ``Optional[Any]``. Asserting on the annotation alone would
+    not catch a regression here.
+    """
+    model = json_schema_dict_to_pydantic(
+        _recursive_schema(required_back_edge), "Node"
+    )
+
+    assert model.model_fields["value"].annotation is int
+    assert model.model_fields["next"].annotation == Optional[Any]
+
+    # The whole point: this must not raise.
+    assert to_regex(JsonSchema(model))
+
+
+def test_mutually_recursive_schema_round_trips_through_to_regex():
+    schema = {
+        "$defs": {
+            "A": {
+                "type": "object",
+                "properties": {"b": {"$ref": "#/$defs/B"}},
+                "required": ["b"],
+            },
+            "B": {
+                "type": "object",
+                "properties": {"a": {"$ref": "#/$defs/A"}},
+                "required": ["a"],
+            },
+        },
+        "$ref": "#/$defs/A",
+    }
+
+    model = json_schema_dict_to_pydantic(schema, "A")
+    assert to_regex(JsonSchema(model))
+
+
+def test_nested_model_round_trips_through_to_regex():
+    """Before $ref resolution this raised rather than losing constraints."""
+
+    class Address(BaseModel):
+        street: str
+        city: str
+
+    class Person(BaseModel):
+        name: str
+        address: Address
+
+    model = json_schema_dict_to_pydantic(Person.model_json_schema(), "Person")
+    assert to_regex(JsonSchema(model))
+
+
+@pytest.mark.parametrize("keyword", ["anyOf", "oneOf", "allOf"])
+def test_combinator_drops_non_dict_members(keyword):
+    """A member that is not a subschema is dropped by every combinator."""
+    assert schema_type_to_python({keyword: [{"type": "integer"}, "junk"]}, "pydantic") is int
+    assert schema_type_to_python({keyword: ["junk"]}, "pydantic") is Any
