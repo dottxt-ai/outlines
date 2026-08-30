@@ -1,5 +1,6 @@
 """Backend class for LLGuidance."""
 
+import re
 import warnings
 from typing import TYPE_CHECKING
 
@@ -193,6 +194,47 @@ class LLGuidanceBackend(BaseBackend):
         self.llg = llg
         self.tensor_library_name = model.tensor_library_name
         self.llg_tokenizer = self._create_llg_tokenizer(model)
+        self._atomic_literal_tokens: frozenset[str] = (
+            self._get_atomic_literal_tokens(model.hf_tokenizer)
+            if isinstance(model, Transformers)
+            else frozenset()
+        )
+
+    @staticmethod
+    def _get_atomic_literal_tokens(hf_tokenizer) -> frozenset[str]:
+        """Return every token string the tokenizer always emits atomically.
+
+        This is `all_special_tokens` (e.g. `<|endoftext|>`) plus every entry
+        in `added_tokens_decoder`, regardless of its individual `special`
+        flag. Reasoning-model chat templates commonly register tokens like
+        `<think>`/`</think>` as added-but-not-special (`special=False`) so
+        they survive `skip_special_tokens=True` decoding, but the tokenizer
+        still pulls them out of the input via its added-tokens split before
+        ordinary BPE merging runs — the same atomic, non-byte-decomposable
+        behavior that makes `all_special_tokens` entries conflict with a
+        grammar literal. The `special` flag only governs decode-time
+        stripping; it isn't a marker of which tokens bypass BPE.
+
+        Parameters
+        ----------
+        hf_tokenizer
+            The Hugging Face tokenizer to inspect.
+
+        Returns
+        -------
+        frozenset[str]
+            Every token string the tokenizer treats as atomic.
+
+        """
+        # `added_tokens_decoder` was added in transformers 4.34; guard against
+        # older installations so a CFG-only feature doesn't break JSON-schema
+        # and regex users who happen to have an older tokenizer.
+        added_tokens_decoder = getattr(hf_tokenizer, "added_tokens_decoder", {})
+        added = {
+            added_token.content
+            for added_token in added_tokens_decoder.values()
+        }
+        return frozenset(hf_tokenizer.all_special_tokens) | frozenset(added)
 
     def _create_llg_tokenizer(self, model: SteerableModel) -> "LLGTokenizer":
         """Create an llg tokenizer from the Outlines model's tokenizer.
@@ -300,6 +342,7 @@ class LLGuidanceBackend(BaseBackend):
             The logits processor to use to constrain the generation.
 
         """
+        self._check_grammar_literals_against_special_tokens(grammar)
         # We try both lark and ebnf
         try:
             grammar_spec = self.llg.grammar_from("grammar", grammar)
@@ -308,3 +351,118 @@ class LLGuidanceBackend(BaseBackend):
         return LLGuidanceLogitsProcessor(
             grammar_spec, self.llg_tokenizer, self.tensor_library_name
         )
+
+    # Matches a Lark grammar's double- or single-quoted string literals, or a
+    # `//`-to-end-of-line comment. Alternation order matters: a string
+    # alternative always starts matching at its opening quote, so a `//`
+    # occurring inside a literal (e.g. `"http://foo"`) is consumed as part of
+    # that literal rather than being mistaken for the start of a comment, and
+    # a literal written inside a real comment is never extracted at all,
+    # since only the `dq`/`sq` groups are inspected by the caller.
+    _LITERAL_OR_COMMENT_RE = re.compile(
+        r'"(?P<dq>(?:[^"\\]|\\.)*)"'
+        r"|'(?P<sq>(?:[^'\\]|\\.)*)'"
+        r"|//[^\n]*"
+    )
+    # The backslash escapes a grammar author can realistically write inside a
+    # Lark string literal: \\, \", \', \n, \t, \r, and \uXXXX.
+    _ESCAPE_RE = re.compile(r"\\u([0-9a-fA-F]{4})|\\(.)")
+    _SIMPLE_ESCAPES = {"n": "\n", "t": "\t", "r": "\r", "\\": "\\", '"': '"', "'": "'"}
+
+    @classmethod
+    def _decode_literal_escapes(cls, literal: str) -> str:
+        """Decode backslash escapes in a raw grammar string literal.
+
+        Parameters
+        ----------
+        literal: str
+            The literal's source text, as captured between its quotes.
+
+        Returns
+        -------
+        str
+            The string the literal denotes, so it can be compared against
+            actual token text rather than against its escaped source form.
+
+        """
+        def _replace(match: "re.Match[str]") -> str:
+            hex_digits, other = match.groups()
+            if hex_digits is not None:
+                return chr(int(hex_digits, 16))
+            return cls._SIMPLE_ESCAPES.get(other, other)
+
+        return cls._ESCAPE_RE.sub(_replace, literal)
+
+    def _extract_grammar_literals(self, grammar: str) -> set[str]:
+        """Extract every quoted string literal's decoded text from a grammar.
+
+        Parameters
+        ----------
+        grammar: str
+            The context-free grammar to scan.
+
+        Returns
+        -------
+        set[str]
+            The decoded text of every double- or single-quoted literal found
+            outside of a `//` comment. Note: the scanner matches quoted runs
+            by syntax alone and does not distinguish Lark string literals from
+            quoted content embedded inside regexp terminals (e.g. the `"[^"`
+            portion of `STR: /"[^"]*"/`). Such fragments cannot equal a real
+            token string, so they cannot produce false positives.
+
+        """
+        literals = set()
+        for match in self._LITERAL_OR_COMMENT_RE.finditer(grammar):
+            raw = match.group("dq")
+            if raw is None:
+                raw = match.group("sq")
+            if raw is None:
+                continue  # a `//` comment match; its contents are not grammar text
+            literals.add(self._decode_literal_escapes(raw))
+        return literals
+
+    def _check_grammar_literals_against_special_tokens(self, grammar: str) -> None:
+        """Raise a clear error if a grammar literal matches an atomic token.
+
+        When a quoted literal in the grammar exactly matches a token the
+        tokenizer always emits atomically — a "true" special token (e.g.
+        `<|endoftext|>`) or an added-but-not-special token (e.g. `<think>` on
+        reasoning-model tokenizers, which is commonly registered with
+        `special=False` so `skip_special_tokens=True` doesn't strip it) —
+        llguidance's parser can fail with an opaque `ParserTooComplex` error
+        at generation time: the model may emit the literal as a single atomic
+        token, which the parser cannot match against a literal-string
+        terminal the way it matches ordinary, byte-decomposable tokens.
+        Surfacing this at grammar compilation time, with the actual
+        conflicting token named, is far more actionable than the downstream
+        parser failure.
+
+        The check considers both `"..."` and `'...'` literals (Lark accepts
+        either), decodes standard backslash escapes before comparing, and
+        ignores literal-looking text inside `//` comments. It only catches an
+        *exact* match between a literal and an atomic token — a literal that
+        merely embeds the token's text as a substring (e.g. `"<think>: go"`)
+        is not detected.
+
+        Parameters
+        ----------
+        grammar: str
+            The context-free grammar to check.
+
+        """
+        if not self._atomic_literal_tokens:
+            return
+        literals = self._extract_grammar_literals(grammar)
+        conflicts = sorted(literals & self._atomic_literal_tokens)
+        if conflicts:
+            raise ValueError(
+                "The grammar contains the literal(s) "
+                f"{conflicts} which exactly match a token the tokenizer "
+                "always emits atomically. The llguidance backend cannot "
+                "reliably constrain generation around such a token used as "
+                "ordinary grammar text, as the model may emit it as a "
+                "single atomic token that the parser cannot match against a "
+                "literal-string terminal. Avoid embedding the text of a "
+                "special or added token as a literal in your grammar."
+            )
