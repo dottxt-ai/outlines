@@ -149,8 +149,9 @@ mac_address = Regex(r"[0-9A-Fa-f]{2}(:[0-9A-Fa-f]{2}){5}")
 
 # RFC 4291 IPv6 addresses: https://datatracker.ietf.org/doc/html/rfc4291
 # Covers the full eight-group colon-hex notation, :: zero-compression in any
-# position, and both IPv4-mapped (::ffff:a.b.c.d) and IPv4-embedded
-# (a:b:c:d::x.y.z.w) forms. Zone IDs and prefix lengths are out of scope.
+# position, and the IPv4-embedded forms x:x:x:x:x:x:d.d.d.d and
+# ::d.d.d.d in every legal degree of compression (which subsumes the
+# IPv4-mapped ::ffff:d.d.d.d). Zone IDs and prefix lengths are out of scope.
 ipv6 = Regex(
     r"(?:[0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4}"
     r"|(?:[0-9A-Fa-f]{1,4}:){1,7}:"
@@ -162,9 +163,29 @@ ipv6 = Regex(
     r"|[0-9A-Fa-f]{1,4}:(?::[0-9A-Fa-f]{1,4}){1,6}"
     r"|:(?::[0-9A-Fa-f]{1,4}){1,7}"
     r"|::"
-    r"|::(?:[Ff]{4}(?::0{1,4})?:)(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])"
+    # x:x:x:x:x:x:d.d.d.d -- the uncompressed IPv4-embedded form, which also
+    # covers the canonical IPv4-mapped address 0:0:0:0:0:ffff:d.d.d.d.
+    r"|(?:[0-9A-Fa-f]{1,4}:){6}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])"
     r"(?:\.(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])){3}"
-    r"|(?:[0-9A-Fa-f]{1,4}:){1,4}:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])"
+    # Compressed IPv4-embedded forms: L groups before `::` and R after, where
+    # the trailing d.d.d.d occupies two groups and `::` stands for at least
+    # one, so L + R + 2 <= 7. L == 0 is the leading-`::` case (::d.d.d.d,
+    # ::ffff:d.d.d.d).
+    r"|::(?:[0-9A-Fa-f]{1,4}:){0,5}(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])"
+    r"(?:\.(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])){3}"
+    r"|(?:[0-9A-Fa-f]{1,4}:){1}:(?:[0-9A-Fa-f]{1,4}:){0,4}"
+    r"(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])"
+    r"(?:\.(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])){3}"
+    r"|(?:[0-9A-Fa-f]{1,4}:){2}:(?:[0-9A-Fa-f]{1,4}:){0,3}"
+    r"(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])"
+    r"(?:\.(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])){3}"
+    r"|(?:[0-9A-Fa-f]{1,4}:){3}:(?:[0-9A-Fa-f]{1,4}:){0,2}"
+    r"(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])"
+    r"(?:\.(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])){3}"
+    r"|(?:[0-9A-Fa-f]{1,4}:){4}:(?:[0-9A-Fa-f]{1,4}:){0,1}"
+    r"(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])"
+    r"(?:\.(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])){3}"
+    r"|(?:[0-9A-Fa-f]{1,4}:){5}:(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])"
     r"(?:\.(?:25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9]?[0-9])){3}"
 )
 
