@@ -2,6 +2,7 @@
 
 import asyncio
 import contextlib
+import contextvars
 import functools
 import os
 import tempfile
@@ -12,6 +13,17 @@ from diskcache import Cache, Disk
 from diskcache.core import ENOVAL, UNKNOWN, args_to_key, full_name
 
 _caching_enabled = True
+
+# Set by `cache_disabled()`. A ContextVar rather than a plain global so that
+# disabling the cache inside one task does not leak into concurrent tasks
+# that never opted in.
+_cache_disabled_scope: contextvars.ContextVar[bool] = contextvars.ContextVar(
+    "outlines_cache_disabled_scope", default=False
+)
+
+
+def _cache_is_enabled() -> bool:
+    return _caching_enabled and not _cache_disabled_scope.get()
 
 
 class CloudpickleDisk(Disk): # pragma: no cover
@@ -113,7 +125,7 @@ def cache(expire: Optional[float] = None, typed=False, ignore=()):
         if asyncio.iscoroutinefunction(cached_function):  # pragma: no cover
 
             async def wrapper(*args, **kwargs):
-                if not _caching_enabled:
+                if not _cache_is_enabled():
                     return await cached_function(*args, **kwargs)
 
                 cache_key = wrapper.__cache_key__(*args, **kwargs)
@@ -128,7 +140,7 @@ def cache(expire: Optional[float] = None, typed=False, ignore=()):
         else:
 
             def wrapper(*args, **kwargs):
-                if not _caching_enabled:
+                if not _cache_is_enabled():
                     return cached_function(*args, **kwargs)
 
                 cache_key = wrapper.__cache_key__(*args, **kwargs)
@@ -185,11 +197,8 @@ def clear_cache():
 
 @contextlib.contextmanager
 def cache_disabled():
-    # outlines.caching._caching_enabled
-    global _caching_enabled
-    original_state = _caching_enabled
-    _caching_enabled = False
+    token = _cache_disabled_scope.set(True)
     try:
         yield
     finally:
-        _caching_enabled = original_state
+        _cache_disabled_scope.reset(token)
