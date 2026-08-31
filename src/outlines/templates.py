@@ -245,7 +245,7 @@ def get_fn_source(fn: Callable):
         raise TypeError("The `source` filter only applies to callables.")
 
     source = textwrap.dedent(inspect.getsource(fn))
-    re_search = re.search(re.compile(r"(\bdef\b.*)", re.DOTALL), source)
+    re_search = re.search(re.compile(r"((?:async\s+)?\bdef\b.*)", re.DOTALL), source)
     if re_search is not None:
         source = re_search.group(0)
     else:  # pragma: no cover
