@@ -1,6 +1,8 @@
 import json
+
 import pytest
 
+from outlines.inputs import Chat
 from outlines.models.tgi import TGITypeAdapter
 from outlines.types import CFG, JsonSchema
 
@@ -45,9 +47,18 @@ def test_tgi_type_adapter_input_text(type_adapter):
 def test_tgi_type_adapter_input_invalid(type_adapter):
     with pytest.raises(
         NotImplementedError,
-        match="is not available with TGI",
-    ):
+        match=r"The input type <class 'dict'> is not available with TGI",
+    ) as exc_info:
         type_adapter.format_input({"foo": "bar"})
+    assert "built-in function input" not in str(exc_info.value)
+
+    chat = Chat([{"role": "user", "content": "prompt"}])
+    with pytest.raises(
+        NotImplementedError,
+        match=r"The input type <class 'outlines.inputs.Chat'> is not available with TGI",
+    ) as exc_info:
+        type_adapter.format_input(chat)
+    assert "built-in function input" not in str(exc_info.value)
 
 
 def test_tgi_type_adapter_output_type(
