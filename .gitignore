@@ -17,6 +17,10 @@ docs/build
 logs
 .worktrees/
 
+# Analysis and tracking files
+analyze-*.md
+tracking.md
+
 # AI agent config
 .claude/
 .cursor/
