@@ -450,9 +450,15 @@ class JsonSchema(Term):
         try:
             self_dict = json.loads(self.schema)
             other_dict = json.loads(other.schema)
-            return self_dict == other_dict
+            return (
+                self_dict == other_dict
+                and self.whitespace_pattern == other.whitespace_pattern
+            )
         except json.JSONDecodeError:  # pragma: no cover
-            return self.schema == other.schema
+            return (
+                self.schema == other.schema
+                and self.whitespace_pattern == other.whitespace_pattern
+            )
 
     @classmethod
     def from_file(cls, path: str) -> "JsonSchema":
