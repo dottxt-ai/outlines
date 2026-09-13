@@ -187,7 +187,7 @@ class Transformers(Model):
         device_dtype: Optional["torch.dtype"] = None,
     ):
         """
-        Parameters:
+        Parameters
         ----------
         model
             A `PreTrainedModel`, or any model that is compatible with the
