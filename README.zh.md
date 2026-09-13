@@ -4,13 +4,13 @@
 <img src="./docs/assets/images/logo-dark-mode.svg#gh-dark-mode-only" alt="Outlines Logo" width=300></img>
 
 
- 🗒️ *Structured outputs for LLMs* 🗒️
+ 🗒️ *面向大语言模型（LLM）的结构化输出引擎* 🗒️
 
-Made with ❤👷️ by the team at [.txt](https://dottxt.co)
-<br>Trusted by NVIDIA, Cohere, HuggingFace, vLLM, etc.
+由 [.txt](https://dottxt.co) 团队倾情❤👷️打造  
+<br>深受 NVIDIA、Cohere、HuggingFace、vLLM 等业界顶尖团队的信赖
 
 <p align="center">
-  <b>English</b> · <a href="README.zh.md">简体中文</a>
+  <a href="README.md">English</a> · <b>简体中文</b>
 </p>
 
 <!-- Project Badges -->
@@ -23,74 +23,74 @@ Made with ❤👷️ by the team at [.txt](https://dottxt.co)
 [![Blog][dottxt-blog-badge]][dottxt-blog]
 [![Twitter][twitter-badge]][twitter]
 
-<br>The .txt API is currently in early access. **[Request access here →](https://h1xbpbfsf0w.typeform.com/to/fwQNWmS8?utm_source=github&utm_medium=organic&utm_campaign=outlines)**
+<br>.txt 官方 API 当前处于早期抢先体验阶段。**[点击此处申请体验 →](https://h1xbpbfsf0w.typeform.com/to/fwQNWmS8?utm_source=github&utm_medium=organic&utm_campaign=outlines)**
 
 
 </div>
 
-## 🚀 Building the future of structured generation
+## 🚀 构建结构化生成的未来 (Building the future of structured generation)
 
-We're working with select partners to develop new interfaces to structured generation.
+我们正与精选合作伙伴紧密协作，共同开发面向结构化生成的新一代交互接口。
 
-Need XML, FHIR, custom schemas or grammars? Let's talk.
+无论您需要 XML、FHIR 医疗数据标准、自定义 Schema 模式还是上下文无关文法（Grammar），欢迎随时与我们交流。
 
-Audit your schema: share one schema, we show you what breaks under generation, the constraints that fix it, and compliance rates before and after. Sign up [here](https://h1xbpbfsf0w.typeform.com/to/rtFUraA2?typeform).
+模式审查服务：只需分享一份您的 Schema，我们将向您展示在常规生成下可能发生的异常破损点、修复它的约束方案，以及前后的结构合规达标率。欢迎在[此处报名](https://h1xbpbfsf0w.typeform.com/to/rtFUraA2?typeform)。
 
-## Table of Contents
+## 目录 (Table of Contents)
 
-- [Why Outlines?](#why-outlines)
-- [Quickstart](#quickstart)
-- [Real-World Examples](#real-world-examples)
-  - [🙋‍♂️ Customer Support Triage](#customer-support-triage)
-  - [📦 E-commerce Product Categorization](#e-commerce-product-categorization)
-  - [📊 Parse Event Details with Incomplete Data](#parse-event-details-with-incomplete-data)
-  - [🗂️ Categorize Documents into Predefined Types](#categorize-documents-into-predefined-types)
-  - [📅 Schedule a Meeting with Function Calling](#schedule-a-meeting-with-function-calling)
-  - [📝 Dynamically Generate Prompts with Re-usable Templates](#dynamically-generate-prompts-with-re-usable-templates)
-- [They Use Outlines](#they-use-outlines)
-- [Model Integrations](#model-integrations)
-- [Core Features](#core-features)
-- [Other Features](#other-features)
-- [About .txt](#about-txt)
-- [Community](#community)
+- [为什么选择 Outlines？](#为什么选择-outlines)
+- [快速上手](#快速上手)
+- [生产级实战案例](#生产级实战案例)
+  - [🙋‍♂️ 客户支持工单分流](#-客户支持工单分流)
+  - [📦 电商商品分类与属性提取](#-电商商品分类与属性提取)
+  - [📊 容忍不完整数据的事件信息解析](#-容忍不完整数据的事件信息解析)
+  - [🗂️ 文档预定义类别分类](#️-文档预定义类别分类)
+  - [📅 基于函数调用的会议自动预约](#-基于函数调用的会议自动预约)
+  - [📝 基于可复用模板动态生成 Prompt](#-基于可复用模板动态生成-prompt)
+- [谁在使用 Outlines](#谁在使用-outlines)
+- [模型生态集成](#模型生态集成)
+- [核心特性](#核心特性)
+- [其他实用特性](#其他实用特性)
+- [关于 .txt](#关于-txt)
+- [社区与交流](#社区与交流)
 
 <div align="center"><img src="./docs/assets/images/install.png" width=300></img></div>
 
-## Why Outlines?
+## 为什么选择 Outlines？
 
-LLMs are powerful but their outputs are unpredictable. Most solutions attempt to fix bad outputs after generation using parsing, regex, or fragile code that breaks easily.
+大语言模型（LLM）能力极其强大，但其输出却充满了随机性与不可预测性。业界大多数方案往往试图在生成完成后通过二次解析、复杂的正则表达式或脆弱的字符串后处理代码来补救错误输出。
 
-Outlines guarantees structured outputs during generation — directly from any LLM.
+**Outlines 则从底层直接保证：在生成过程中（Token 采样阶段）100% 输出符合要求的确定性结构化数据。**
 
-- **Works with any model** - Same code runs across OpenAI, Ollama, vLLM, and more
-- **Simple integration** - Just pass your desired output type: `model(prompt, output_type)`
-- **Guaranteed valid structure** - No more parsing headaches or broken JSON
-- **Provider independence** - Switch models without changing code
+- **通用模型适配**：同一套代码可无缝运行于 OpenAI、Ollama、vLLM、Transformers 等主流后端
+- **极简集成接口**：仅需传入预期的输出类型即可调用：`model(prompt, output_type)`
+- **严格保证结构有效**：彻底告别解析报错或 JSON 格式破损的困扰
+- **摆脱供应商绑定**：自由切换底层推理模型而无需重构业务代码
 
 
-### The Outlines Philosophy
+### Outlines 设计哲学
 
 <div align="center"><img src="./docs/assets/images/use_philosophy.png" width=300></img></div>
 
-Outlines follows a simple pattern that mirrors Python's own type system. Simply specify the desired output type, and Outlines will ensure your data matches that structure exactly:
+Outlines 遵循与 Python 原生类型系统完全镜像的优雅设计模式。只需声明预期的返回类型，Outlines 即可确保模型生成的数据与该结构毫厘不差地契合：
 
-- For a yes/no response, use `Literal["Yes", "No"]`
-- For numerical values, use `int`
-- For complex objects, define a structure with a [Pydantic model](https://docs.pydantic.dev/latest/)
+- 对于 Yes/No 或多选二元分类，直接使用 `Literal["Yes", "No"]`
+- 对于数值型输出，直接使用 `int` 或 `float`
+- 对于复杂的结构化实体，通过标准的 [Pydantic 模型](https://docs.pydantic.dev/latest/) 进行声明定义
 
-## Quickstart
+## 快速上手
 
-Getting started with outlines is simple:
+开启 Outlines 之旅只需简单几步：
 
-### 1. Install outlines
+### 1. 安装 Outlines
 
-``` shell
+```shell
 pip install outlines
 ```
 
-### 2. Connect to your preferred model
+### 2. 连接到你喜爱的模型
 
-``` python
+```python
 import outlines
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
@@ -102,28 +102,28 @@ model = outlines.from_transformers(
 )
 ```
 
-### 3. Start with simple structured outputs
+### 3. 运行基础结构化输出
 
-``` python
+```python
 from typing import Literal
 from pydantic import BaseModel
 
 
-# Simple classification
+# 基础情感分类
 sentiment = model(
     "Analyze: 'This product completely changed my life!'",
     Literal["Positive", "Negative", "Neutral"]
 )
 print(sentiment)  # "Positive"
 
-# Extract specific types
+# 严格提取特定基础类型
 temperature = model("What's the boiling point of water in Celsius?", int)
 print(temperature)  # 100
 ```
 
-### 4. Create complex structures
+### 4. 构建复杂嵌套结构
 
-``` python
+```python
 from pydantic import BaseModel
 from enum import Enum
 
@@ -151,15 +151,15 @@ print(f"Pros: {review.pros}")           # "Pros: ['great battery life', 'stunnin
 print(f"Summary: {review.summary}")     # "Summary: Good laptop with great display but thermal issues"
 ```
 
-## Real-world examples
+## 生产级实战案例 (Real-world examples)
 
-Here are production-ready examples showing how Outlines solves common problems:
+以下是展示 Outlines 如何解决实际工程难题的生产就绪级实战代码：
 
-<details id="customer-support-triage"><summary><b>🙋‍♂️ Customer Support Triage</b>
-<br>This example shows how to convert a free-form customer email into a structured service ticket. By parsing attributes like priority, category, and escalation flags, the code enables automated routing and handling of support issues.
+<details id="customer-support-triage"><summary><b>🙋‍♂️ 客户支持工单分流 (Customer Support Triage)</b>
+<br>本示例演示如何将自由格式的客户非结构化邮件转化为结构化的服务工单。通过自动解析优先级、分类以及是否需人工介入升级标记，实现支持工单的自动化路由与处理。
 </summary>
 
-``` python
+```python
 import outlines
 from enum import Enum
 from pydantic import BaseModel
@@ -216,15 +216,15 @@ ticket = model(
     max_new_tokens=500
 )
 
-# Use structured data to route the ticket
+# 使用结构化数据自动路由工单
 ticket = ServiceTicket.model_validate_json(ticket)
 if ticket.priority == "urgent" or ticket.requires_manager:
     alert_manager(ticket)
 ```
 </details>
 
-<details id="e-commerce-product-categorization"><summary><b>📦 E-commerce product categorization</b>
-<br>This use case demonstrates how outlines can transform product descriptions into structured categorization data (e.g., main category, sub-category, and attributes) to streamline tasks such as inventory management. Each product description is processed automatically, reducing manual categorization overhead.
+<details id="e-commerce-product-categorization"><summary><b>📦 电商商品分类与属性提取 (E-commerce product categorization)</b>
+<br>此用例展示 Outlines 如何将商品描述自动转化为结构化分类数据（如主品类、子品类与关键属性），大幅优化库存管理效率。每个商品描述均可批量自动处理，显著降低人工标注成本。
 </summary>
 
 ```python
@@ -251,7 +251,7 @@ class ProductCategory(BaseModel):
     attributes: List[str]
     brand_match: Optional[str]
 
-# Process product descriptions in batches
+# 批量处理商品描述
 product_descriptions = [
     "Apple iPhone 15 Pro Max 256GB Titanium, 6.7-inch Super Retina XDR display with ProMotion",
     "Organic Cotton T-Shirt, Men's Medium, Navy Blue, 100% Sustainable Materials",
@@ -267,14 +267,14 @@ Categorize this product:
 <|im_start|>assistant
 """)
 
-# Get structured categorization for all products
+# 对所有商品获取结构化分类结果
 categories = model(
     [template(description=desc) for desc in product_descriptions],
     ProductCategory,
     max_new_tokens=200
 )
 
-# Use categorization for inventory management
+# 将结构化分类用于库存系统流转
 categories = [
     ProductCategory.model_validate_json(category) for category in categories
 ]
@@ -283,8 +283,8 @@ for product, category in zip(product_descriptions, categories):
 ```
 </details>
 
-<details id="parse-event-details-with-incomplete-data"><summary><b>📊 Parse event details with incomplete data</b>
-<br>This example uses outlines to parse event descriptions into structured information (like event name, date, location, type, and topics), even handling cases where the data is incomplete. It leverages union types to return either structured event data or a fallback “I don’t know” answer, ensuring robust extraction in varying scenarios.
+<details id="parse-event-details-with-incomplete-data"><summary><b>📊 容忍不完整数据的事件信息解析 (Parse event details with incomplete data)</b>
+<br>本示例使用 Outlines 将活动文本解析为结构化数据（如活动名称、日期、地点、类型与主题），即使在数据残缺时亦能优雅应对。通过联合类型（Union Types），模型可确定性地返回结构化事件或保底返回“I don't know”，确保系统在各类复杂输入下的强鲁棒性。
 </summary>
 
 ```python
@@ -310,7 +310,7 @@ class EventType(str, Enum):
 
 
 class EventInfo(BaseModel):
-    """Structured information about a tech event"""
+    """科技活动的结构化描述"""
     name: str
     date: str
     location: str
@@ -318,25 +318,25 @@ class EventInfo(BaseModel):
     topics: List[str]
     registration_required: bool
 
-# Create a union type that can either be a structured EventInfo or "I don't know"
+# 创建联合类型：可以返回结构化的 EventInfo 或返回字面量 "I don't know"
 EventResponse = Union[EventInfo, Literal["I don't know"]]
 
-# Sample event descriptions
+# 示例活动文本
 event_descriptions = [
-    # Complete information
+    # 信息完整的活动
     """
     Join us for DevCon 2023, the premier developer conference happening on November 15-17, 2023
     at the San Francisco Convention Center. Topics include AI/ML, cloud infrastructure, and web3.
     Registration is required.
     """,
 
-    # Insufficient information
+    # 信息不足的活动
     """
     Tech event next week. More details coming soon!
     """
 ]
 
-# Process events
+# 执行事件提取
 results = []
 for description in event_descriptions:
     prompt = f"""
@@ -361,31 +361,31 @@ If the information available does not allow you to fill this JSON, and only then
 <|im_end|>
 <|im_start|>assistant
 """
-    # Union type allows the model to return structured data or "I don't know"
+    # 联合类型允许模型选择返回有效结构体或明确拒绝回答
     result = model(prompt, EventResponse, max_new_tokens=200)
     results.append(result)
 
-# Display results
+# 展示结果
 for i, result in enumerate(results):
     print(f"Event {i+1}:")
     if isinstance(result, str):
         print(f"  {result}")
     else:
-        # It's an EventInfo object
+        # 解析为 EventInfo 结构化对象
         print(f"  Name: {result.name}")
         print(f"  Type: {result.event_type}")
         print(f"  Date: {result.date}")
         print(f"  Topics: {', '.join(result.topics)}")
     print()
 
-# Use structured data in downstream processing
+# 将提取到的结构化数据无缝传递至下游系统
 structured_count = sum(1 for r in results if isinstance(r, EventInfo))
 print(f"Successfully extracted data for {structured_count} of {len(results)} events")
 ```
 </details>
 
-<details id="categorize-documents-into-predefined-types"><summary><b>🗂️ Categorize documents into predefined types</b>
-<br>In this case, outlines classifies documents into predefined categories (e.g., “Financial Report,” “Legal Contract”) using a literal type specification. The resulting classifications are displayed in both a table format and through a category distribution summary, illustrating how structured outputs can simplify content management.
+<details id="categorize-documents-into-predefined-types"><summary><b>🗂️ 文档预定义类别分类 (Categorize documents into predefined types)</b>
+<br>在此案例中，Outlines 利用 Literal 字面量类型规范将文档严格归类为预设类别（如“财务报告”、“法律合同”）。提取结果既可以转化为表格展示，也可汇总类别分布，生动展示结构化输出对内容治理的赋能。
 </summary>
 
 ```python
@@ -402,7 +402,7 @@ model = outlines.from_transformers(
 )
 
 
-# Define classification categories using Literal
+# 通过 Literal 约束严格合法的分类标签
 DocumentCategory = Literal[
     "Financial Report",
     "Legal Contract",
@@ -411,7 +411,7 @@ DocumentCategory = Literal[
     "Personal Correspondence"
 ]
 
-# Sample documents to classify
+# 待分类的测试文档片段
 documents = [
     "Q3 Financial Summary: Revenue increased by 15% year-over-year to $12.4M. EBITDA margin improved to 23% compared to 19% in Q3 last year. Operating expenses...",
 
@@ -435,22 +435,22 @@ Document:
 <|im_start|>assistant
 """)
 
-# Classify documents
+# 批量执行文档分类
 def classify_documents(texts: List[str]) -> List[DocumentCategory]:
     results = []
 
     for text in texts:
         prompt = template(document=text)
-        # The model must return one of the predefined categories
+        # 模型被强制约束仅能输出预设类别之一
         category = model(prompt, DocumentCategory, max_new_tokens=200)
         results.append(category)
 
     return results
 
-# Perform classification
+# 执行分类
 classifications = classify_documents(documents)
 
-# Create a simple results table
+# 汇总为 Pandas 结构化表格
 results_df = pd.DataFrame({
     "Document": [doc[:50] + "..." for doc in documents],
     "Classification": classifications
@@ -458,7 +458,7 @@ results_df = pd.DataFrame({
 
 print(results_df)
 
-# Count documents by category
+# 按类别统计频次分布
 category_counts = pd.Series(classifications).value_counts()
 print("\nCategory Distribution:")
 print(category_counts)
@@ -466,8 +466,8 @@ print(category_counts)
 </details>
 
 <details>
-<summary id="schedule-a-meeting-with-function-calling"><b>📅 Schedule a meeting from requests with Function Calling</b>
-<br>This example demonstrates how outlines can interpret a natural language meeting request and translate it into a structured format matching a predefined function’s parameters. Once the meeting details are extracted (e.g., title, date, duration, attendees), they are used to automatically schedule the meeting.
+<summary id="schedule-a-meeting-with-function-calling"><b>📅 基于函数调用的会议自动预约 (Schedule a meeting from requests with Function Calling)</b>
+<br>本范例演示 Outlines 如何精准理解自然语言会议诉求，并将其转化为与预定义 Python 函数签名参数完全匹配的结构化实参。成功提取后，即可直接展开调用实现自动预约。
 </summary>
 
 ```python
@@ -485,7 +485,7 @@ model = outlines.from_transformers(
 )
 
 
-# Define a function with typed parameters
+# 定义具有严格类型注记的函数签名
 def schedule_meeting(
     title: str,
     date: date,
@@ -494,8 +494,7 @@ def schedule_meeting(
     location: Optional[str] = None,
     agenda_items: Optional[List[str]] = None
 ):
-    """Schedule a meeting with the specified details"""
-    # In a real app, this would create the meeting
+    """使用指定详情预约会议"""
     meeting = {
         "title": title,
         "date": date,
@@ -506,14 +505,14 @@ def schedule_meeting(
     }
     return f"Meeting '{title}' scheduled for {date} with {len(attendees)} attendees"
 
-# Natural language request
+# 自然语言原始需求
 user_request = """
 I need to set up a product roadmap review with the engineering team for next
 Tuesday at 2pm. It should last 90 minutes. Please invite john@example.com,
 sarah@example.com, and the product team at product@example.com.
 """
 
-# Outlines automatically infers the required structure from the function signature
+# Outlines 会自动从目标函数的签名中反向推导所需的生成结构
 prompt = f"""
 <|im_start|>user
 Extract the meeting details from this request:
@@ -524,11 +523,11 @@ Extract the meeting details from this request:
 """
 meeting_params = model(prompt, schedule_meeting, max_new_tokens=200)
 
-# The result is a dictionary matching the function parameters
+# 返回结果为符合函数入参要求的结构化数据
 meeting_params = json.loads(meeting_params)
 print(meeting_params)
 
-# Call the function with the extracted parameters
+# 直接以解包字典形式调用目标业务函数
 result = schedule_meeting(**meeting_params)
 print(result)
 # "Meeting 'Product Roadmap Review' scheduled for 2023-10-17 with 3 attendees"
@@ -536,8 +535,8 @@ print(result)
 </details>
 
 <details>
-<summary id="dynamically-generate-prompts-with-re-usable-templates"><b>📝 Dynamically generate prompts with re-usable templates</b>
-<br>Using Jinja-based templates, this example shows how to generate dynamic prompts for tasks like sentiment analysis. It illustrates how to easily re-use and customize prompts—including few-shot learning strategies—for different content types while ensuring the outputs remain structured.
+<summary id="dynamically-generate-prompts-with-re-usable-templates"><b>📝 基于可复用模板动态生成 Prompt (Dynamically generate prompts with re-usable templates)</b>
+<br>借助基于 Jinja 的模板引擎，本例展示了如何为情感分析等任务动态生成提示词。它演示了如何便捷地跨不同内容类型定制、重用提示词逻辑（包含 Few-shot 少样本提示），同时全程确保模型输出保持结构化。
 </summary>
 
 ```python
@@ -553,7 +552,7 @@ model = outlines.from_transformers(
 )
 
 
-# 1. Create a reusable template with Jinja syntax
+# 1. 使用 Jinja 语法构建可复用模板
 sentiment_template = outlines.Template.from_string("""
 <|im_start>user
 Analyze the sentiment of the following {{ content_type }}:
@@ -565,18 +564,18 @@ Provide your analysis as either "Positive", "Negative", or "Neutral".
 <|im_start>assistant
 """)
 
-# 2. Generate prompts with different parameters
+# 2. 传入动态参数渲染 Prompt
 review = "This restaurant exceeded all my expectations. Fantastic service!"
 prompt = sentiment_template(content_type="review", text=review)
 
-# 3. Use the templated prompt with structured generation
+# 3. 结合模板渲染结果进行结构化生成
 result = model(prompt, Literal["Positive", "Negative", "Neutral"])
 print(result)  # "Positive"
 
-# Templates can also be loaded from files
+# 模板同样支持从独立外部文件加载
 example_template = outlines.Template.from_file("templates/few_shot.txt")
 
-# Use with examples for few-shot learning
+# 结合少样本示例实现 Few-shot 推理
 examples = [
     ("The food was cold", "Negative"),
     ("The staff was friendly", "Positive")
@@ -586,57 +585,57 @@ print(few_shot_prompt)
 ```
 </details>
 
-## They use outlines
+## 谁在使用 Outlines (They use outlines)
 
 <div align="center">
 <img src="./docs/assets/images/readme-light.png#gh-light-mode-only" alt="Users Logo"></img>
 <img src="./docs/assets/images/readme-dark.png#gh-dark-mode-only" alt="Users Logo"></img>
 </div>
 
-## Model Integrations
+## 模型生态集成 (Model Integrations)
 
-| Model type | Description | Documentation |
+| 模型类别 | 说明 | 官方文档 |
 |---------|-------------|:-------------:|
-| **Server Support** | vLLM and Ollama | [Server Integrations →](https://dottxt-ai.github.io/outlines/latest/features/models/) |
-| **Local Model Support** | transformers and llama.cpp | [Model Integrations →](https://dottxt-ai.github.io/outlines/latest/features/models/) |
-| **API Support** | OpenAI, Gemini, and [Dottxt](https://h1xbpbfsf0w.typeform.com/to/fwQNWmS8?utm_source=github&utm_medium=organic&utm_campaign=outlines) | [API Integrations →](https://dottxt-ai.github.io/outlines/latest/features/models/) |
+| **服务端推理后端** | vLLM 与 Ollama | [服务端集成指南 →](https://dottxt-ai.github.io/outlines/latest/features/models/) |
+| **本地模型后端** | transformers 与 llama.cpp | [本地模型集成指南 →](https://dottxt-ai.github.io/outlines/latest/features/models/) |
+| **云端 API 支持** | OpenAI、Gemini 以及 [Dottxt](https://h1xbpbfsf0w.typeform.com/to/fwQNWmS8?utm_source=github&utm_medium=organic&utm_campaign=outlines) | [API 服务集成指南 →](https://dottxt-ai.github.io/outlines/latest/features/models/) |
 
-## Core Features
+## 核心特性 (Core Features)
 
-| Feature | Description | Documentation |
+| 核心特性 | 功能描述 | 官方文档 |
 |---------|-------------|:-------------:|
-| **Multiple Choices** | Constrain outputs to predefined options | [Multiple Choices Guide →](https://dottxt-ai.github.io/outlines/latest/features/core/output_types/#multiple-choices) |
-| **Function Calls** | Infer structure from function signatures | [Function Guide →](https://dottxt-ai.github.io/outlines/latest/features/core/output_types/#json-schemas) |
-| **JSON/Pydantic** | Generate outputs matching JSON schemas | [JSON Guide →](https://dottxt-ai.github.io/outlines/latest/features/core/output_types/#json-schemas) |
-| **Regular Expressions** | Generate text following a regex pattern | [Regex Guide →](https://dottxt-ai.github.io/outlines/latest/features/core/output_types/#regex-patterns) |
-| **Grammars** | Enforce complex output structures | [Grammar Guide →](https://dottxt-ai.github.io/outlines/latest/features/core/output_types/#context-free-grammars) |
+| **多选项枚举限制 (Multiple Choices)** | 强制将模型输出约束至预定义的选项列表中 | [多选项使用指南 →](https://dottxt-ai.github.io/outlines/latest/features/core/output_types/#multiple-choices) |
+| **函数调用入参生成 (Function Calls)** | 自动根据 Python 函数入参签名反向推导所需输出结构 | [函数调用指南 →](https://dottxt-ai.github.io/outlines/latest/features/core/output_types/#json-schemas) |
+| **JSON / Pydantic 约束** | 保证生成完全符合 JSON Schema 与 Pydantic 数据规范的文本 | [JSON 生成指南 →](https://dottxt-ai.github.io/outlines/latest/features/core/output_types/#json-schemas) |
+| **正则表达式约束 (Regular Expressions)** | 严格按照正则表达式模式匹配引导生成文本 | [正则约束指南 →](https://dottxt-ai.github.io/outlines/latest/features/core/output_types/#regex-patterns) |
+| **文法约束生成 (Grammars)** | 强制执行复杂的上下文无关文法（CFG）生成语法解析树 | [文法约束指南 →](https://dottxt-ai.github.io/outlines/latest/features/core/output_types/#context-free-grammars) |
 
-## Other Features
+## 其他实用特性 (Other Features)
 
-| Feature | Description | Documentation |
+| 实用特性 | 功能描述 | 官方文档 |
 |---------|-------------|:-------------:|
-| **Prompt templates** | Separate complex prompts from code | [Template Guide →](https://dottxt-ai.github.io/outlines/latest/features/utility/template/) |
-| **Custome types** | Intuitive interface to build complex types | [Python Types Guide →](https://dottxt-ai.github.io/outlines/latest/features/core/output_types/#basic-python-types) |
-| **Applications** | Encapsulate templates and types into functions | [Application Guide →](https://dottxt-ai.github.io/outlines/latest/features/utility/application/) |
+| **Prompt 模板引擎** | 将复杂的提示词渲染逻辑与业务核心代码解耦 | [模板引擎指南 →](https://dottxt-ai.github.io/outlines/latest/features/utility/template/) |
+| **自定义类型扩展** | 提供直观的接口构建高级自定义类型系统 | [Python 类型指南 →](https://dottxt-ai.github.io/outlines/latest/features/core/output_types/#basic-python-types) |
+| **应用封装 (Applications)** | 将渲染模板与结构约束一并封装为高阶函数 | [应用封装指南 →](https://dottxt-ai.github.io/outlines/latest/features/utility/application/) |
 
-## About .txt
+## 关于 .txt (About .txt)
 
 <div align="center">
 <img src="./docs/assets/images/dottxt-light.svg#gh-light-mode-only" alt="dottxt logo" width=100></img>
 <img src="./docs/assets/images/dottxt-dark.svg#gh-dark-mode-only" alt="dottxt logo" width=100></img>
 </div>
 
-Outlines is developed and maintained by [.txt](https://dottxt.co), a company dedicated to making LLMs more reliable for production applications.
+Outlines 由 [.txt](https://dottxt.co) 公司全力开发并持续维护，我们致力于让 LLM 在生产级关键应用场景中更加稳健可靠。
 
-Our focus is on advancing structured generation technology through:
+我们的核心方向聚焦于推动结构化生成技术的突破与落地：
 
-- 🧪 **Cutting-edge Research**: We publish our findings on [structured generation](http://blog.dottxt.co/performance-gsm8k.html)
-- 🚀 **Enterprise-grade solutions**: You can license [our enterprise-grade libraries](https://docs.dottxt.co).
-- 🧩 **Open Source Collaboration**: We believe in building in public and contributing to the community
+- 🧪 **前沿学术研究**：我们持续公开发布关于[结构化生成技术与性能](http://blog.dottxt.co/performance-gsm8k.html)的最新科研成果
+- 🚀 **企业级解决方案**：提供高吞吐、生产级的[企业商用函数库授权](https://docs.dottxt.co)
+- 🧩 **开源协同生态**：我们坚信公开构建（Build in Public）并积极反哺开源社区
 
-Follow us on [Twitter](https://twitter.com/dottxtai) or check out our [blog](https://blog.dottxt.co/) to stay updated on our latest work in making LLMs more reliable.
+欢迎在 [Twitter (X)](https://twitter.com/dottxtai) 上关注我们，或查阅我们的[技术博客](https://blog.dottxt.co/)，获取关于构建高可靠 LLM 应用的最新动态。
 
-## Community
+## 社区与交流 (Community)
 
 <div align="center" style="margin-bottom: 1em;">
 
@@ -647,14 +646,15 @@ Follow us on [Twitter](https://twitter.com/dottxtai) or check out our [blog](htt
 
 </div>
 
-- 💡 **Have an idea?** Come chat with us on [Discord][discord]
-- 🐞 **Found a bug?** Open an [issue](https://github.com/dottxt-ai/outlines/issues)
-- 🧩  **Want to contribute?** Consult our [contribution guide](https://dottxt-ai.github.io/outlines/latest/community/contribute/).
+- 💡 **有新想法？** 欢迎加入 [Discord][discord] 官方频道与我们交流探讨
+- 🐞 **发现了 Bug？** 欢迎随时提交 GitHub [Issue](https://github.com/dottxt-ai/outlines/issues)
+- 🧩 **想参与贡献？** 请参考官方[贡献指南](https://dottxt-ai.github.io/outlines/latest/community/contribute/)
 
+## 引用 Outlines (Cite Outlines)
 
-## Cite Outlines
+如果您在学术科研或工程应用中受益于 Outlines，请按照如下格式引用我们的学术论文：
 
-```
+```bibtex
 @article{willard2023efficient,
   title={Efficient Guided Generation for Large Language Models},
   author={Willard, Brandon T and Louf, R{\'e}mi},
@@ -679,3 +679,7 @@ Follow us on [Twitter](https://twitter.com/dottxtai) or check out our [blog](htt
 [stars-badge]: https://img.shields.io/github/stars/dottxt-ai/outlines?style=flat-square&logo=github&color=BD932F&logoColor=white
 [twitter-badge]: https://img.shields.io/twitter/follow/dottxtai?style=flat-square&logo=x&logoColor=white&color=bd932f
 [twitter]: https://x.com/dottxtai
+
+---
+
+> 💡 **文档维护说明**：本中文文档由社区志愿者（@JasonYeYuhe）翻译维护，最后同步更新于 2026年09月13日。如发现内容与官方英文原版存在差异或新特性滞后，欢迎提交 PR 共同完善！
