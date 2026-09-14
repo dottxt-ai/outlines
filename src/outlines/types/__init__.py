@@ -109,7 +109,9 @@ boolean = Regex("(True|False)")
 number = Regex(rf"{integer.pattern}(\.[0-9]+)?([eE][+-]?[0-9]+)?")
 date = Regex(r"(\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])")
 time = Regex(r"([0-1][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])")
-datetime = Regex(rf"({date.pattern})(\s)({time.pattern})")
+# ISO 8601/RFC 3339 date-times separate the date and time with "T" (or "t");
+# a space is also commonly accepted (e.g. `datetime.isoformat(sep=" ")`).
+datetime = Regex(rf"({date.pattern})([Tt\s])({time.pattern})")
 
 # Basic regex types
 digit = Regex(r"\d")
