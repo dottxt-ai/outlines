@@ -5,6 +5,8 @@ def set_additional_properties_false_json_schema(schema: dict) -> dict:
     ``additionalProperties`` to False unless it is already present. An object
     schema is one whose ``type`` is ``"object"`` or, for a nullable object, a
     list containing ``"object"`` (e.g. ``["object", "null"]``).
+    Only schema-bearing keywords are traversed; instance values such as
+    ``const``, ``enum``, ``default`` and ``examples`` are left unchanged.
 
     Parameters
     ----------
@@ -31,8 +33,20 @@ def set_additional_properties_false_json_schema(schema: dict) -> dict:
             )
             if is_object and "additionalProperties" not in node:
                 node["additionalProperties"] = False
-            for value in node.values():
-                _walk(value)
+            for key, value in node.items():
+                if key in (
+                    "$defs", "definitions", "properties", "patternProperties",
+                    "dependentSchemas", "dependencies",
+                ):
+                    for subschema in value.values():
+                        _walk(subschema)
+                elif key in (
+                    "allOf", "anyOf", "oneOf", "not", "if", "then", "else",
+                    "items", "prefixItems", "additionalItems", "contains",
+                    "additionalProperties", "propertyNames",
+                    "unevaluatedItems", "unevaluatedProperties", "contentSchema",
+                ):
+                    _walk(value)
         elif isinstance(node, list):
             for item in node:
                 _walk(item)
