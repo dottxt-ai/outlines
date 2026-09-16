@@ -538,7 +538,7 @@ class TransformersMultiModalTypeAdapter(ModelTypeAdapter):
         if asset_type == Image:
             return {
                 "text": prompt,
-                "images": [asset.image for asset in assets]
+                "images": [asset.get_pil_image() for asset in assets]
             }
         elif asset_type == Audio: # pragma: no cover
             return {

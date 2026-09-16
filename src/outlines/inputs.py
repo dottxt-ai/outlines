@@ -18,23 +18,84 @@ class Image:
     Parameters
     ----------
     image
-        The image to use in the text generation.
+        The image to use in the text generation. Either a PIL image, raw
+        image bytes, or an image URL. URLs are passed through unchanged
+        to providers that natively support them. Local models cannot
+        fetch URLs: pass PIL or bytes instead.
 
     """
-    image: PILImage.Image
+    image: PILImage.Image | bytes | str
+    image_str: Optional[str] = None
+    image_format: Optional[str] = None
 
     def __post_init__(self):
-        image = self.image
-
-        if not image.format:
+        if self.is_pil():
+            assert isinstance(self.image, PILImage.Image)
+            if not self.image.format:
+                raise TypeError(
+                    "Could not read the format of the image passed to the model."
+                )
+            buffer = BytesIO()
+            self.image.save(buffer, format=self.image.format)
+            self.image_str = base64.b64encode(buffer.getvalue()).decode("utf-8")
+            self.image_format = f"image/{self.image.format.lower()}"
+        elif self.is_bytes():
+            assert isinstance(self.image, bytes)
+            try:
+                pil_image = PILImage.open(BytesIO(self.image))
+                pil_image.load()
+            except Exception as e:
+                raise TypeError(
+                    "Could not read the image bytes passed to the model."
+                ) from e
+            if not pil_image.format:
+                raise TypeError(
+                    "Could not read the format of the image passed to the model."
+                )
+            self.image_str = base64.b64encode(self.image).decode("utf-8")
+            self.image_format = f"image/{pil_image.format.lower()}"
+        elif self.is_url():
+            self.image_str = None
+            self.image_format = None
+        else:
             raise TypeError(
-                "Could not read the format of the image passed to the model."
+                "Unsupported image type. "
+                f"Got {type(self.image)}. "
+                "Image must be a PIL image, bytes, or an image URL string."
             )
 
-        buffer = BytesIO()
-        image.save(buffer, format=image.format)
-        self.image_str = base64.b64encode(buffer.getvalue()).decode("utf-8")
-        self.image_format = f"image/{image.format.lower()}"
+    def is_pil(self) -> bool:
+        """Check if the image is a PIL image."""
+        return isinstance(self.image, PILImage.Image)
+
+    def is_bytes(self) -> bool:
+        """Check if the image is raw bytes."""
+        return isinstance(self.image, bytes)
+
+    def is_url(self) -> bool:
+        """Check if the image is a URL string."""
+        return (
+            isinstance(self.image, str)
+            and self.image.startswith(("http://", "https://"))
+        )
+
+    def get_pil_image(self) -> PILImage.Image:
+        """Return the image as a PIL image.
+
+        Bytes are converted with PIL. URLs raise as local models
+        cannot fetch remote images.
+        """
+        if self.is_pil():
+            assert isinstance(self.image, PILImage.Image)
+            return self.image
+        elif self.is_bytes():
+            assert isinstance(self.image, bytes)
+            return PILImage.open(BytesIO(self.image))
+        else:
+            raise ValueError(
+                "URL images are not supported here. "
+                "Provide a PIL image or image bytes instead."
+            )
 
 
 @dataclass

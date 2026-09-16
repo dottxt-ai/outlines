@@ -131,6 +131,13 @@ class OpenAITypeAdapter(ModelTypeAdapter):
 
     def _create_img_content(self, image: Image) -> dict:
         """Create the content for an image input."""
+        if image.is_url():
+            return {
+                "type": "image_url",
+                "image_url": {
+                    "url": image.image,
+                },
+            }
         return {
             "type": "image_url",
             "image_url": {
