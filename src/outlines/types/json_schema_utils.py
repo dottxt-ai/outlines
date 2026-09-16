@@ -44,6 +44,22 @@ def schema_type_to_python(
 
     t = schema.get("type")
 
+    if "anyOf" in schema or "oneOf" in schema:
+        # ``oneOf`` requires exactly one branch to match, which ``Union``
+        # cannot express (Union matches if any branch matches). Mapping both
+        # keywords to Union is still strictly better than widening to ``Any``:
+        # it preserves the set of allowed value types instead of dropping the
+        # constraint entirely. This mirrors the ``type``-array handling below,
+        # which is the JSON Schema spelling of the same union.
+        branches = schema["anyOf"] if "anyOf" in schema else schema["oneOf"]
+        members = tuple(
+            schema_type_to_python(branch, caller_target_type)
+            for branch in branches
+        )
+        return Union[members] if members else Any  # type: ignore
+
+    t = schema.get("type")
+
     if isinstance(t, list):
         # JSON Schema allows ``type`` to be a list of type names, e.g. the
         # common nullable form ``["string", "null"]``. Map each member to a

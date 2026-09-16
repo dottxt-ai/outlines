@@ -33,6 +33,47 @@ def test_schema_type_to_python_enum():
     assert result == Literal[("red", "green", "blue")]
 
 
+def test_schema_type_to_python_any_of():
+    schema = {"anyOf": [{"type": "integer"}, {"type": "string"}]}
+    result = schema_type_to_python(schema, "pydantic")
+    assert result == Union[int, str]
+
+
+def test_schema_type_to_python_any_of_nullable():
+    # The common Pydantic spelling of Optional[int]
+    schema = {"anyOf": [{"type": "integer"}, {"type": "null"}]}
+    result = schema_type_to_python(schema, "pydantic")
+    assert result == Optional[int]
+
+
+def test_schema_type_to_python_one_of():
+    schema = {"oneOf": [{"type": "boolean"}, {"type": "null"}]}
+    result = schema_type_to_python(schema, "pydantic")
+    assert result == Optional[bool]
+
+
+def test_schema_type_to_python_any_of_empty():
+    assert schema_type_to_python({"anyOf": []}, "pydantic") is Any
+    assert schema_type_to_python({"oneOf": []}, "pydantic") is Any
+
+
+def test_schema_type_to_python_any_of_round_trip():
+    # Regression for #1950: a property using anyOf/oneOf used to widen to
+    # Any when round-tripped through json_schema_dict_to_pydantic, because
+    # schema_type_to_python only handled the type-array spelling of a union
+    # and not the anyOf/oneOf spelling that Pydantic itself emits.
+    schema = {
+        "type": "object",
+        "title": "RoundTrip",
+        "properties": {
+            "value": {"anyOf": [{"type": "integer"}, {"type": "string"}]},
+        },
+        "required": ["value"],
+    }
+    model = schema_type_to_python(schema, "pydantic")
+    assert model.model_fields["value"].annotation == Union[int, str]
+
+
 def test_schema_type_to_python_array():
     # String items
     schema = {"type": "array", "items": {"type": "string"}}
