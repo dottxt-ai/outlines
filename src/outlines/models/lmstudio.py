@@ -34,10 +34,16 @@ class LMStudioTypeAdapter(ModelTypeAdapter):
         LMStudio's SDK only accepts file paths, raw bytes, or binary IO objects.
         Unlike Ollama which accepts base64 directly, we must decode from base64.
         """
+        if image.is_url():
+            raise ValueError(
+                "URL images are not supported with LMStudio. "
+                "Provide a PIL image or image bytes instead."
+            )
         import base64
 
         import lmstudio as lms
 
+        assert image.image_str is not None
         image_bytes = base64.b64decode(image.image_str)
         return lms.prepare_image(image_bytes)
 

@@ -153,6 +153,11 @@ class GeminiTypeAdapter(ModelTypeAdapter):
 
     def _create_img_part(self, image: Image) -> dict:
         """Create an image input part for a message."""
+        if image.is_url():
+            raise ValueError(
+                "URL images are not supported with Gemini. "
+                "Provide a PIL image or image bytes instead."
+            )
         return {
             "inline_data": {
                 "mime_type": image.image_format,
