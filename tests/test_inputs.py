@@ -184,6 +184,9 @@ def test_image_bytes_transformers():
     result = adapter.format_input(["prompt", bytes_image])
     assert result["text"] == "prompt"
     assert len(result["images"]) == 1
+    assert isinstance(result["images"][0], PILImage.Image)
+    assert result["images"][0].size == (10, 10)
+    assert result["images"][0].getpixel((0, 0)) == (255, 0, 0)
 
 
 def test_video_initialization():
