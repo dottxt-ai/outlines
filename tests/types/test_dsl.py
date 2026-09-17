@@ -545,6 +545,14 @@ def test_json_schema_equality_includes_whitespace_pattern():
     assert JsonSchema(schema) != JsonSchema(schema, whitespace_pattern=r"[ ]?")
 
 
+def test_datetime_accepts_iso8601_separator():
+    assert types.datetime.matches("2022-03-23T10:15:30")
+    assert types.datetime.matches("2022-03-23t10:15:30")
+    assert types.datetime.matches("2022-03-23 10:15:30")
+    assert types.datetime.matches(datetime.datetime(2022, 3, 23, 10, 15, 30).isoformat())
+    assert not types.datetime.matches("2022-03-23X10:15:30")
+
+
 def test_dsl_python_types_to_terms():
     with pytest.raises(RecursionError):
         python_types_to_terms(None, 11)
