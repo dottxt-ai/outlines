@@ -877,7 +877,7 @@ def _ensure_json_quoted(term: Term, quote_regex: bool = False) -> Term:
     ``Dict[Literal[1, 2], str]``) are quoted as well.
     """
     if isinstance(term, String):
-        return String(f'"{term.value}"')
+        return String(json.dumps(term.value, ensure_ascii=False))
     if isinstance(term, Alternatives):
         quoted = [_ensure_json_quoted(t, quote_regex) for t in term.terms]
         return Alternatives(quoted)
