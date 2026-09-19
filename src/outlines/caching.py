@@ -112,6 +112,7 @@ def cache(expire: Optional[float] = None, typed=False, ignore=()):
 
         if asyncio.iscoroutinefunction(cached_function):  # pragma: no cover
 
+            @functools.wraps(cached_function)
             async def wrapper(*args, **kwargs):
                 if not _caching_enabled:
                     return await cached_function(*args, **kwargs)
@@ -127,6 +128,7 @@ def cache(expire: Optional[float] = None, typed=False, ignore=()):
 
         else:
 
+            @functools.wraps(cached_function)
             def wrapper(*args, **kwargs):
                 if not _caching_enabled:
                     return cached_function(*args, **kwargs)
