@@ -1177,6 +1177,31 @@ def test_e2e_list_literal_special_characters():
     assert not _re.fullmatch(pattern, "[hello world]")
 
 
+def test_e2e_list_literal_requires_json_escapes():
+    """Literal strings that need JSON escaping must match the encoding
+    ``json.dumps`` produces, and must not match the same text left raw."""
+    for value in ['say "hi"', "x\\y", "tab\there", "line\nbreak"]:
+        pattern = to_regex(python_types_to_terms(list[Literal[value]]))
+        assert _re.fullmatch(pattern, json.dumps([value])), value
+        assert not _re.fullmatch(pattern, '["' + value + '"]'), value
+
+
+def test_e2e_dict_and_tuple_literal_require_json_escapes():
+    """Dict keys/values and Tuple elements go through the same JSON quoting."""
+    value = 'say "hi"'
+    escaped = 'say \\"hi\\"'
+
+    dict_pattern = to_regex(python_types_to_terms(dict[Literal[value], str]))
+    assert _re.fullmatch(
+        dict_pattern, json.dumps({value: "x"}, separators=(",", ":"))
+    )
+    assert not _re.fullmatch(dict_pattern, '{"' + value + '":"x"}')
+
+    tuple_pattern = to_regex(python_types_to_terms(Tuple[Literal[value]]))
+    assert _re.fullmatch(tuple_pattern, '("' + escaped + '")')
+    assert not _re.fullmatch(tuple_pattern, '("' + value + '")')
+
+
 def test_e2e_dict_literal_key_and_enum_value():
     """Dict with Literal keys and Enum values: both quoted."""
 
