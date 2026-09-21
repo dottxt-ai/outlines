@@ -274,8 +274,9 @@ def _isbn_group_alternatives(digits: int, groups: int, first_max: int) -> list[s
 
     def walk(prefix: list[int], remaining: int, left: int) -> None:
         if left == 1:
-            if remaining >= 1:
-                splits.append(prefix + [remaining])
+            # `remaining` is always >= 1 here: the loop bound below reserves one
+            # digit for every group still to be filled.
+            splits.append(prefix + [remaining])
             return
         for size in range(1, remaining - left + 2):
             if not prefix and size > first_max:
