@@ -252,9 +252,52 @@ email = Regex(
 # Matches any ISBN number. Note that this is not completely correct as not all
 # 10 or 13 digits numbers are valid ISBNs. See https://en.wikipedia.org/wiki/ISBN
 # Taken from O'Reilly's Regular Expression Cookbook:
-# https://www.oreilly.com/library/view/regular-expressions-cookbook/9781449327453/ch04s13.html
+# ISBN-10 and ISBN-13 in their common text forms.
 #
-# TODO: The check digit can only be computed by calling a function to compute it dynamically
+# The widely-copied cookbook regex for this
+# (https://www.oreilly.com/library/view/regular-expressions-cookbook/9781449327453/ch04s13.html)
+# pins the total length with lookaheads containing `$`. That works for
+# validation but cannot be compiled to a finite automaton, so it is unusable
+# for the constrained generation these types exist for -- outlines-core raises
+# "Failed to build DFA error building NFA" and interegular raises
+# "Unsupported '$'".
+#
+# The constraint those lookaheads express is regular: they only fix how many
+# separators a grouped ISBN may carry. Enumerating the digit-group splits says
+# the same thing without lookaround, and accepts exactly the same strings.
+#
+# TODO: The check digit can only be computed by calling a function to compute
+# it dynamically.
+def _isbn_group_alternatives(digits: int, groups: int, first_max: int) -> list[str]:
+    """Every way to split `digits` across `groups` separated runs of digits."""
+    splits: list[list[int]] = []
+
+    def walk(prefix: list[int], remaining: int, left: int) -> None:
+        if left == 1:
+            if remaining >= 1:
+                splits.append(prefix + [remaining])
+            return
+        for size in range(1, remaining - left + 2):
+            if not prefix and size > first_max:
+                break
+            walk(prefix + [size], remaining - size, left - 1)
+
+    walk([], digits, groups)
+    return [
+        "[- ]".join(rf"[0-9]{{{size}}}" for size in sizes) + r"[- ][0-9X]"
+        for sizes in splits
+    ]
+
+
+_isbn_grouped = _isbn_group_alternatives(9, 3, 5)
 isbn = Regex(
-    r"(?:ISBN(?:-1[03])?:? )?(?=[0-9X]{10}$|(?=(?:[0-9]+[- ]){3})[- 0-9X]{13}$|97[89][0-9]{10}$|(?=(?:[0-9]+[- ]){4})[- 0-9]{17}$)(?:97[89][- ]?)?[0-9]{1,5}[- ]?[0-9]+[- ]?[0-9]+[- ]?[0-9X]"
+    r"(?:ISBN(?:-1[03])?:? )?(?:"
+    + "|".join(
+        [r"97[89][0-9]{10}"]
+        + [r"97[89][- ]" + alt for alt in _isbn_grouped]
+        + [r"[0-9]{9}[0-9X]"]
+        + _isbn_grouped
+    )
+    + r")"
 )
+
