@@ -862,7 +862,21 @@ def _get_enum_members(ptype: EnumMeta) -> List[Any]:
 
 
 def _handle_literal(args: tuple) -> Alternatives:
-    return Alternatives([python_types_to_terms(arg) for arg in args])
+    # `None` is a legal `Literal` member, and it has to resolve the same way
+    # `_handle_union` resolves it for `Optional[...]`. Recursing into `None` (or
+    # `NoneType`) reached no handler and raised
+    # "Type None is currently not supported".
+    has_none = type(None) in args or None in args
+    terms = [
+        python_types_to_terms(arg)
+        for arg in args
+        if arg not in (type(None), None)
+    ]
+    if has_none:
+        # Like `True`/`False`, `None` is a keyword rather than a string value, so
+        # it stays a `Regex` and is not JSON-quoted inside a container type.
+        terms.append(Regex("None"))
+    return Alternatives(terms)
 
 
 def _ensure_json_quoted(term: Term, quote_regex: bool = False) -> Term:
