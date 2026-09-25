@@ -439,6 +439,20 @@ def test_get_schema_from_signature_respects_defaults():
     assert schema["properties"]["c"]["default"] == "hi"
 
 
+def test_get_schema_from_signature_ignores_var_parameters():
+    # *args and **kwargs parameters can never be bound via ** unpacking,
+    # so they must not appear in the schema.
+    def fn(a: int, *args: str, b: bool = True, **kwargs: float):
+        ...
+
+    schema = get_schema_from_signature(fn)
+    assert list(schema["properties"].keys()) == ["a", "b"]
+    assert schema["required"] == ["a"]
+
+    # every JSON object valid to the schema can be passed to fn via **
+    fn(**{"a": 1})
+
+
 def test_get_schema_from_enum(sample_complex_enum, sample_empty_enum):
     schema = get_schema_from_enum(sample_complex_enum)
     assert JsonSchema(schema)
