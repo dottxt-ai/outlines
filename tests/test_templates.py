@@ -74,6 +74,16 @@ class PydanticUnionClass(BaseModel):
     equipment: Union[Armor, Weapon]
 
 
+class PydanticRecursiveClass(BaseModel):
+    name: str
+    nxt: Optional["PydanticRecursiveClass"] = None
+
+
+class PydanticRepeatedClass(BaseModel):
+    first: PydanticClass
+    second: PydanticClass
+
+
 def test_vision_initialization():
     # Create a simple image for testing
     image = PILImage.new("RGB", (10, 10), color="red")
@@ -430,6 +440,24 @@ def test_get_schema():
     assert (
         pydantic_union_schema_output
         == '{\n  "name": "<name>",\n  "equipment": "<equipment>"\n}'
+    )
+
+
+def test_get_schema_recursive_model():
+    # A field that refers back to an enclosing model cannot be expanded
+    # infinitely: like container-wrapped recursive fields (e.g.
+    # `Optional[list["Model"]]`), it renders a `<name>` placeholder instead of
+    # recursing forever.
+    pydantic_recursive_schema_output = get_schema(PydanticRecursiveClass)
+    assert pydantic_recursive_schema_output == (
+        '{\n  "name": "<name>",\n  "nxt": "<nxt>"\n}'
+    )
+
+    # Repeated (non-recursive) references are still expanded for each field.
+    pydantic_repeated_schema_output = get_schema(PydanticRepeatedClass)
+    assert pydantic_repeated_schema_output == (
+        '{\n  "first": {\n    "foo": "<foo>"\n  },'
+        '\n  "second": {\n    "foo": "<foo>"\n  }\n}'
     )
 
 
