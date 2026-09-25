@@ -705,6 +705,27 @@ def test_dsl_handle_literal():
     assert result.terms[1] == Regex(r"1")
 
 
+def test_dsl_literal_none():
+    """`Literal[None]` and `Literal[..., None]` must resolve, not raise.
+
+    Regression test: `_handle_literal` recursed into `None`/`NoneType`, which has no
+    handler, and raised "Type None is currently not supported".
+    """
+    result = python_types_to_terms(Literal[None])
+    assert isinstance(result, Alternatives)
+    assert result.terms == [Regex("None")]
+
+    result = python_types_to_terms(Literal["a", "b", None])
+    assert isinstance(result, Alternatives)
+    assert result.terms == [String("a"), String("b"), Regex("None")]
+
+    # The same member resolves to the same term through the Union path.
+    assert Regex("None") in python_types_to_terms(PyOptional[Literal["a"]]).terms
+
+    # And the result is a usable term, not just constructed.
+    assert isinstance(to_regex(python_types_to_terms(Literal[None])), str)
+
+
 def test_dsl_literal_bool():
     # Literal[True] and Literal[False] previously raised TypeError; ensure they resolve.
     result_true = python_types_to_terms(Literal[True])
