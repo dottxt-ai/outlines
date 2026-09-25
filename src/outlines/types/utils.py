@@ -197,6 +197,9 @@ def get_schema_from_signature(fn: Callable) -> dict:
     signature = inspect.signature(fn)
     arguments = {}
     for name, arg in signature.parameters.items():
+        if arg.kind in (inspect.Parameter.VAR_POSITIONAL, inspect.Parameter.VAR_KEYWORD):
+            # *args and **kwargs parameters cannot be bound via ** unpacking.
+            continue
         if arg.annotation == inspect._empty:
             raise ValueError("Each argument must have a type annotation")
         elif arg.default is inspect._empty:
