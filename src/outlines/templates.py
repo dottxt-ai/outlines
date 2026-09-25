@@ -298,7 +298,7 @@ def get_schema_pydantic(model: Type[BaseModel]):
     return json.dumps(schema, indent=2)
 
 
-def parse_pydantic_schema(raw_schema, definitions):
+def parse_pydantic_schema(raw_schema, definitions, seen_refs=()):
     """Parse the output of `Basemodel.[schema|model_json_schema]()`.
 
     This recursively follows the references to other schemas in case
@@ -308,23 +308,32 @@ def parse_pydantic_schema(raw_schema, definitions):
     """
     if "properties" not in raw_schema:
         return parse_pydantic_schema_value(
-            raw_schema.get("title", "value"), raw_schema, definitions
+            raw_schema.get("title", "value"), raw_schema, definitions, seen_refs
         )
 
     simple_schema = {}
     for name, value in raw_schema["properties"].items():
-        simple_schema[name] = parse_pydantic_schema_value(name, value, definitions)
+        simple_schema[name] = parse_pydantic_schema_value(
+            name, value, definitions, seen_refs
+        )
 
     return simple_schema
 
 
-def parse_pydantic_schema_value(name, schema, definitions):
+def parse_pydantic_schema_value(name, schema, definitions, seen_refs=()):
     """Render a single Pydantic schema property for prompt examples."""
     if "description" in schema:
         return schema["description"]
     elif "$ref" in schema:
+        # A reference that is already being expanded higher up the path
+        # points back at a recursive model: render a placeholder instead of
+        # recursing forever, like container-wrapped recursive fields do.
+        if schema["$ref"] in seen_refs:
+            return f"<{name}>"
         refs = schema["$ref"].split("/")
-        return parse_pydantic_schema(definitions[refs[2]], definitions)
+        return parse_pydantic_schema(
+            definitions[refs[2]], definitions, seen_refs + (schema["$ref"],)
+        )
     elif "enum" in schema:
         values = " | ".join(str(value) for value in schema["enum"])
         return f"<{values}>"
@@ -338,7 +347,9 @@ def parse_pydantic_schema_value(name, schema, definitions):
             member for member in schema["anyOf"] if member.get("type") != "null"
         ]
         if len(non_null) == 1:
-            return parse_pydantic_schema_value(name, non_null[0], definitions)
+            return parse_pydantic_schema_value(
+                name, non_null[0], definitions, seen_refs
+            )
         return f"<{name}>"
     else:
         return f"<{name}>"
