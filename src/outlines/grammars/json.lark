@@ -2,18 +2,22 @@
 
 ?value: object
 | array
-| ESCAPED_STRING
-| SIGNED_NUMBER      -> number
+| STRING
+| NUMBER             -> number
 | "true"             -> true
 | "false"            -> false
 | "null"             -> null
 
 array  : "[" [value ("," value)*] "]"
 object : "{" [pair ("," pair)*] "}"
-pair   : ESCAPED_STRING ":" value
+pair   : STRING ":" value
 
-%import common.ESCAPED_STRING
-%import common.SIGNED_NUMBER
+// Strings and numbers as defined by RFC 8259: the `common` terminals
+// `ESCAPED_STRING` and `SIGNED_NUMBER` also accept invalid JSON such as
+// `"\q"`, `.5`, `1.`, `+1` or `01`.
+STRING: /"([^"\\\x00-\x1F]|\\(["\\\/bfnrt]|u[0-9a-fA-F]{4}))*"/
+NUMBER: /-?(0|[1-9][0-9]*)(\.[0-9]+)?([eE][+-]?[0-9]+)?/
+
 %import common.WS
 
 %ignore WS
