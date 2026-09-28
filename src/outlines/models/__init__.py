@@ -10,6 +10,7 @@ from typing import Union
 
 from .anthropic import Anthropic, from_anthropic
 from .base import Model, ModelTypeAdapter
+from .blockrun import AsyncBlockRun, BlockRun, from_blockrun
 from .dottxt import AsyncDottxt, Dottxt, from_dottxt
 from .gemini import Gemini, from_gemini
 from .llamacpp import LlamaCpp, from_llamacpp
@@ -32,6 +33,7 @@ from .vllm_offline import VLLMOffline, from_vllm_offline
 SteerableModel = Union[LlamaCpp, MLXLM, Transformers]
 BlackBoxModel = Union[
     Anthropic,
+    BlockRun,
     Dottxt,
     Gemini,
     LMStudio,
@@ -44,6 +46,7 @@ BlackBoxModel = Union[
     VLLMOffline,
 ]
 AsyncBlackBoxModel = Union[
+    AsyncBlockRun,
     AsyncDottxt,
     AsyncLMStudio,
     AsyncMistral,
@@ -60,6 +63,9 @@ __all__ = [
     "from_anthropic",
     "Model",
     "ModelTypeAdapter",
+    "AsyncBlockRun",
+    "BlockRun",
+    "from_blockrun",
     "AsyncDottxt",
     "Dottxt",
     "from_dottxt",
