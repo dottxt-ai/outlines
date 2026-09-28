@@ -38,6 +38,7 @@ dynamic = ["version"]
 
 [project.optional-dependencies]
 anthropic = ["anthropic"]
+blockrun = ["blockrun-llm"]
 dottxt = ["dottxt"]
 gemini = ["google-genai"]
 llamacpp = ["huggingface-hub", "llama-cpp-python", "numba"]
