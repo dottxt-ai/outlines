@@ -143,7 +143,7 @@ class AsyncBlockRun(AsyncModel):
             inference_kwargs["response_format"] = response_format
 
         with normalize_provider_errors(PROVIDER):
-            stream = await self.client.chat_completion_stream(
+            stream = self.client.chat_completion_stream(
                 model=self.model_name,
                 messages=prompt,
                 **inference_kwargs,
