@@ -716,6 +716,23 @@ def test_dsl_literal_bool():
     assert result_both == Alternatives([Regex("True"), Regex("False")])
 
 
+def test_dsl_literal_none():
+    # Literal[None] and Literal[..., None] previously raised TypeError; ensure they resolve.
+    result_none = python_types_to_terms(Literal[None])
+    assert isinstance(result_none, Alternatives)
+    assert result_none.terms == [Regex("None")]
+    result_mixed = python_types_to_terms(Literal["a", "b", None])
+    assert result_mixed == Alternatives([String("a"), String("b"), Regex("None")])
+    result_ordered = python_types_to_terms(Literal["a", None, "b"])
+    assert result_ordered == Alternatives([String("a"), Regex("None"), String("b")])
+    result_dup = python_types_to_terms(Literal[None, None])
+    assert result_dup == Alternatives([Regex("None")])
+
+    # Direct None and type(None) terms
+    assert python_types_to_terms(None) == Regex("None")
+    assert python_types_to_terms(type(None)) == Regex("None")
+
+
 def test_dsl_numeric_literal_escapes_regex_metacharacters():
     # A float's ``.`` must match literally, not act as a regex wildcard.
     term = python_types_to_terms(1.5)
@@ -1216,6 +1233,19 @@ def test_e2e_optional_none_not_quoted_in_containers():
     literal_pattern = to_regex(python_types_to_terms(list[Literal["None"]]))
     assert _re.fullmatch(literal_pattern, '["None"]')
     assert not _re.fullmatch(literal_pattern, "[None]")
+
+
+def test_e2e_literal_none():
+    """Literal[None] and Literal[..., None] regex matching for standalone types."""
+    standalone = to_regex(python_types_to_terms(Literal[None]))
+    assert _re.fullmatch(standalone, "None")
+    assert not _re.fullmatch(standalone, '"None"')
+
+    mixed_standalone = to_regex(python_types_to_terms(Literal["a", "b", None]))
+    assert _re.fullmatch(mixed_standalone, "a")
+    assert _re.fullmatch(mixed_standalone, "b")
+    assert _re.fullmatch(mixed_standalone, "None")
+    assert not _re.fullmatch(mixed_standalone, "c")
 
 
 def test_to_regex():
