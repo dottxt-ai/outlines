@@ -2,7 +2,7 @@ import base64
 from enum import Enum
 import os
 import tempfile
-from typing import Optional, Union
+from typing import Literal, Optional, Union
 
 import pytest
 from PIL import Image as PILImage
@@ -20,6 +20,7 @@ from outlines.templates import (
     get_fn_source,
     get_fn_signature,
     get_schema,
+    parse_pydantic_schema,
 )
 
 
@@ -72,6 +73,13 @@ class Weapon(str, Enum):
 class PydanticUnionClass(BaseModel):
     name: str
     equipment: Union[Armor, Weapon]
+
+
+class PydanticConstClass(BaseModel):
+    role: Literal["admin"]
+    count: Literal[0]
+    flag: Literal[False]
+    maybe: Literal["admin"] | None = None
 
 
 def test_vision_initialization():
@@ -431,6 +439,22 @@ def test_get_schema():
         pydantic_union_schema_output
         == '{\n  "name": "<name>",\n  "equipment": "<equipment>"\n}'
     )
+
+    pydantic_const_schema_output = get_schema(PydanticConstClass)
+    assert pydantic_const_schema_output == (
+        '{\n  "role": "<admin>",'
+        '\n  "count": "<0>",'
+        '\n  "flag": "<False>",'
+        '\n  "maybe": "<admin>"\n}'
+    )
+
+
+def test_parse_pydantic_schema_const_null():
+    rendered = parse_pydantic_schema(
+        {"properties": {"empty": {"const": None, "type": "null"}}},
+        None,
+    )
+    assert rendered == {"empty": "<None>"}
 
 
 def test_render_trailing_whitespace_preserves_linebreak():

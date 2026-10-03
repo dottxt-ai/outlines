@@ -328,6 +328,8 @@ def parse_pydantic_schema_value(name, schema, definitions):
     elif "enum" in schema:
         values = " | ".join(str(value) for value in schema["enum"])
         return f"<{values}>"
+    elif "const" in schema:
+        return f"<{schema['const']}>"
     elif "anyOf" in schema:
         # `Optional[T]` is rendered as an `anyOf` of `T` and `null`. Recurse into
         # the single non-null member so the field renders like its underlying type
