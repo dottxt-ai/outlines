@@ -154,6 +154,7 @@ module = [
     "diskcache.*",
     "pydantic.*",
     "pydantic_core.*",
+    "annotated_types",
     "pytest",
     "referencing.*",
     "torch.*",
