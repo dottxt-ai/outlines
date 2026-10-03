@@ -174,11 +174,17 @@ print(result) # 'pizza'
 
 #### JSON Schema
 
-Gemini supports only three types of objects used to define a JSON Schema:
+Gemini supports the following types used to define a JSON Schema:
 
 - Pydantic classes
 - Dataclasses
 - TypedDicts
+- JSON Schema dictionaries or strings wrapped with `outlines.json_schema`
+- GenSON `SchemaBuilder` instances
+
+Numeric `minimum` and `maximum` bounds are preserved when converting wrapped
+JSON Schemas to Python classes for the Google SDK.
+Schemas must use the subset supported by Gemini and the installed Google SDK.
 
 ```python
 from typing import List
@@ -202,7 +208,7 @@ print(Character.model_validate_json(result)) # name=Evelyn, age=34, skills=['arc
 
 #### Lists of Structured Objects
 
-A specificity of Gemini is that, despite not supporting regex, it does support a list of structured objects as an output type. To use it, put any of three available types described above in the typing `List` class
+A specificity of Gemini is that, despite not supporting regex, it does support a list of structured objects as an output type. To use it, put any of the available types described above in the built-in `list` class.
 
 ```python
 from dataclasses import dataclass
