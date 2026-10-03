@@ -65,7 +65,7 @@ class VLLMTypeAdapter(ModelTypeAdapter):
             return {"structured_outputs": {"grammar": term.definition}}
         elif isinstance(term, JsonSchema):
             structured_outputs = {"json": json.loads(term.schema)}
-            if term.whitespace_pattern:
+            if term.whitespace_pattern is not None:
                 structured_outputs["whitespace_pattern"] = term.whitespace_pattern
             return {"structured_outputs": structured_outputs}
         else:

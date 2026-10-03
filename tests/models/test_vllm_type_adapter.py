@@ -145,3 +145,18 @@ def test_vllm_type_adapter_output_type(
     assert type_adapter.format_output_type(int) == {
         "structured_outputs": {"regex": "([+-]?(0|[1-9][0-9]*))"}
     }
+
+
+def test_vllm_type_adapter_forwards_empty_whitespace_pattern(type_adapter):
+    """Empty whitespace_pattern must be forwarded; it forbids whitespace.
+
+    None leaves the backend default, which allows spaces. "" is a different
+    pattern and must not be dropped by a truthiness check.
+    """
+    schema = JsonSchema(JSON_SCHEMA_STRING, whitespace_pattern="")
+    assert type_adapter.format_output_type(schema) == {
+        "structured_outputs": {
+            "json": json.loads(JSON_SCHEMA_STRING),
+            "whitespace_pattern": "",
+        }
+    }
