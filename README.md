@@ -671,7 +671,7 @@ Follow us on [Twitter](https://twitter.com/dottxtai) or check out our [blog](htt
 [pypistats]: https://pypistats.org/packages/outlines
 [pypi-version-badge]: https://img.shields.io/pypi/v/outlines?style=flat-square&logoColor=white&color=ddb8ca
 [pypi]: https://pypi.org/project/outlines/
-[stars]: https://github.com/dottxt-ai/outlines/stargazers
+[stars]: https://github.com/dottxt-ai/outlines
 [stars-badge]: https://img.shields.io/github/stars/dottxt-ai/outlines?style=flat-square&logo=github&color=BD932F&logoColor=white
 [twitter-badge]: https://img.shields.io/twitter/follow/dottxtai?style=flat-square&logo=x&logoColor=white&color=bd932f
 [twitter]: https://x.com/dottxtai
