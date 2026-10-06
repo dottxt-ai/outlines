@@ -14,6 +14,7 @@ from outlines.generator import Generator as Generator
 from outlines.inputs import Audio as Audio
 from outlines.inputs import Image as Image
 from outlines.inputs import Video as Video
+from outlines.memory import MemoryAugmentedGenerator as MemoryAugmentedGenerator
 from outlines.models import *  # noqa: F403
 from outlines.templates import Template as Template
 from outlines.templates import Vision as Vision
