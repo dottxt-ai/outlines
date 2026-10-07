@@ -1,10 +1,11 @@
 import re
+from datetime import datetime
 
 import pytest
 from pydantic import BaseModel
 
 from outlines import types
-from outlines.types.dsl import to_regex
+from outlines.types.dsl import JsonSchema, python_types_to_terms, to_regex
 
 
 @pytest.mark.parametrize(
@@ -59,6 +60,22 @@ from outlines.types.dsl import to_regex
         (types.time, "01:23:61", False),
         (types.time, "01:61:59", False),
         (types.time, "24:23:59", False),
+        (types.datetime, "2022-03-23T10:15:30", True),
+        (types.datetime, "2022-03-23t10:15:30", True),
+        (types.datetime, "2022-03-23 10:15:30", True),
+        (types.datetime, "2022-03-23\t10:15:30", True),
+        (types.datetime, "2022-03-23\n10:15:30", True),
+        (types.datetime, "2022-01-01t00:00:00", True),
+        (types.datetime, "2022-12-31T23:59:59", True),
+        (types.datetime, "2022-03-23X10:15:30", False),
+        (types.datetime, "2022-03-2310:15:30", False),
+        (types.datetime, "2022-03-23TT10:15:30", False),
+        (types.datetime, "2022-03-23  10:15:30", False),
+        (types.datetime, "2022-13-23T10:15:30", False),
+        (types.datetime, "2022-03-32T10:15:30", False),
+        (types.datetime, "2022-03-23T24:15:30", False),
+        (types.datetime, "2022-03-23T10:60:30", False),
+        (types.datetime, "2022-03-23T10:15:60", False),
         (types.sentence, "The temperature is 23.5 degrees !", True),
         (types.sentence, "Did you earn $1,234.56 last month  ?", True),
         (types.sentence, "The #1 player scored 100 points .", True),
@@ -245,6 +262,21 @@ def test_type_regex(custom_type, test_string, should_match):
     regex_str = to_regex(custom_type)
     does_match = re.fullmatch(regex_str, test_string) is not None
     assert does_match is should_match
+
+
+@pytest.mark.parametrize("separator", ["T", "t", " "])
+def test_datetime_isoformat(separator):
+    value = datetime(2022, 3, 23, 10, 15, 30).isoformat(sep=separator)
+
+    assert types.datetime.matches(value)
+    assert python_types_to_terms(datetime).matches(value)
+
+    class Model(BaseModel):
+        attr: types.datetime
+
+    model = Model(attr=value)
+    assert model.attr == value
+    assert JsonSchema(Model).matches(model.model_dump_json())
 
 
 @pytest.mark.parametrize(
