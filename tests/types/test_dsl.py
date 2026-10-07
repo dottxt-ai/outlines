@@ -1,3 +1,4 @@
+import builtins
 import datetime
 import json
 import re as _re
@@ -531,6 +532,33 @@ def test_dsl_json_schema_from_file():
         temp_file_path = temp_file.name
         schema = JsonSchema.from_file(temp_file_path)
         assert schema == JsonSchema(schema_content)
+
+
+@pytest.fixture
+def cp1252_default_open(monkeypatch):
+    # Reproduce Windows, where open() without encoding= uses the locale codepage.
+    real_open = builtins.open
+
+    def open_with_cp1252_default(file, mode="r", *args, encoding=None, **kwargs):
+        if "b" not in mode:
+            encoding = encoding or "cp1252"
+        return real_open(file, mode, *args, encoding=encoding, **kwargs)
+
+    monkeypatch.setattr(builtins, "open", open_with_cp1252_default)
+
+
+def test_dsl_cfg_from_file_non_ascii(tmp_path, cp1252_default_open):
+    grammar_content = '?start: "café" | "naïve"\n'
+    path = tmp_path / "grammar.lark"
+    path.write_bytes(grammar_content.encode("utf-8"))
+    assert CFG.from_file(str(path)) == CFG(grammar_content)
+
+
+def test_dsl_json_schema_from_file_non_ascii(tmp_path, cp1252_default_open):
+    schema_content = {"type": "string", "enum": ["café", "naïve"]}
+    path = tmp_path / "schema.json"
+    path.write_bytes(json.dumps(schema_content, ensure_ascii=False).encode("utf-8"))
+    assert JsonSchema.from_file(str(path)) == JsonSchema(schema_content)
 
 
 def test_json_schema_equality_includes_whitespace_pattern():
