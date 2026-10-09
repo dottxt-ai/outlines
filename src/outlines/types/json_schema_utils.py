@@ -2,7 +2,7 @@
 
 import sys
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import Any, Dict, List, Literal, Optional, Tuple, Union
 
 from pydantic import BaseModel, create_model
 
@@ -66,7 +66,23 @@ def schema_type_to_python(
     elif t == "null":
         return type(None)
     elif t == "array":
+        # ``prefixItems`` (JSON Schema 2020-12) and a list-valued ``items``
+        # (draft-07 and earlier) both describe a fixed-position "tuple" array.
+        # Map those to a typed ``Tuple[...]``: the DSL already supports tuples
+        # when going the other way (Python type -> regex), so the JSON Schema
+        # path must too, rather than raising ``AttributeError`` on list
+        # ``items`` or silently collapsing ``prefixItems`` to ``List[Any]``.
+        prefix_items = schema.get("prefixItems")
         items = schema.get("items", {})
+        if prefix_items is None and isinstance(items, list):
+            prefix_items = items
+            items = {}
+        if prefix_items is not None:
+            members = tuple(
+                schema_type_to_python(member, caller_target_type)
+                for member in prefix_items
+            )
+            return Tuple[members] if members else Tuple  # type: ignore
         if items:
             item_type = schema_type_to_python(items, caller_target_type)
         else:

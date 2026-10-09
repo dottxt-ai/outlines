@@ -1,6 +1,6 @@
 import sys
 from dataclasses import is_dataclass
-from typing import Any, List, Literal, Optional, Union
+from typing import Any, List, Literal, Optional, Tuple, Union
 
 from pydantic import BaseModel, TypeAdapter
 from pydantic_core import PydanticUndefined
@@ -48,6 +48,27 @@ def test_schema_type_to_python_array():
     schema = {"type": "array"}
     result = schema_type_to_python(schema, "pydantic")
     assert result == List[Any]
+
+
+def test_schema_type_to_python_array_prefix_items():
+    # JSON Schema 2020-12 tuple form: ``prefixItems`` describes fixed positions.
+    schema = {
+        "type": "array",
+        "prefixItems": [{"type": "string"}, {"type": "integer"}],
+    }
+    result = schema_type_to_python(schema, "pydantic")
+    assert result == Tuple[str, int]
+
+
+def test_schema_type_to_python_array_list_items():
+    # Draft-07 and earlier tuple form: ``items`` is a list of schemas. This
+    # used to raise ``AttributeError: 'list' object has no attribute 'get'``.
+    schema = {
+        "type": "array",
+        "items": [{"type": "string"}, {"type": "boolean"}],
+    }
+    result = schema_type_to_python(schema, "pydantic")
+    assert result == Tuple[str, bool]
 
 
 def test_schema_type_to_python_object():
