@@ -161,6 +161,22 @@ def test_xgrammar_backend(model, tensor_library_name, json_schema, regex, cfg):
             assert "name" in response
 
 
+def test_xgrammar_backend_model_vocab_larger_than_tokenizer(regex):
+    hf_tokenizer = transformers.AutoTokenizer.from_pretrained("erwanf/gpt2-mini")
+    hf_model = transformers.AutoModelForCausalLM.from_pretrained("erwanf/gpt2-mini")
+    hf_model.resize_token_embeddings(
+        len(hf_tokenizer), pad_to_multiple_of=64, mean_resizing=False
+    )
+    assert hf_model.config.vocab_size > len(hf_tokenizer.get_vocab())
+    model = outlines.from_transformers(hf_model, hf_tokenizer)
+
+    generator = outlines.Generator(
+        model, outlines.types.Regex(regex), backend="xgrammar"
+    )
+    response = generator("Hello, how are you?", max_new_tokens=10)
+    assert re.fullmatch(regex, response)
+
+
 def test_xgrammar_backend_invalid_model():
     with pytest.raises(
         ValueError,
