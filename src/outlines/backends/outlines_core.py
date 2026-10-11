@@ -197,11 +197,11 @@ class OutlinesCoreBackend(BaseBackend):
             eos_token = tokenizer.eos_token
             token_to_str = tokenizer.convert_token_to_string
         elif isinstance(model, MLXLM):  # pragma: no cover
-            tokenizer = model.mlx_tokenizer  # type: ignore
+            tokenizer = model.tokenizer  # type: ignore
             vocabulary = tokenizer.get_vocab()
             eos_token_id = tokenizer.eos_token_id
             eos_token = tokenizer.eos_token
-            token_to_str = lambda token: tokenizer.convert_tokens_to_string([token])  # type: ignore
+            token_to_str = tokenizer.convert_token_to_string
         else:  # pragma: no cover
             raise ValueError(f"Unsupported model type: {type(model)}")
 

@@ -11,9 +11,11 @@ from outlines.backends.outlines_core import (
     OutlinesCoreBackend,
     OutlinesCoreLogitsProcessor,
 )
+from outlines.models.mlxlm import MLXLM
 from tests.backends.test_backends_utils import simulate_model_calling_processor
 
 try:
+    import mlx.core as mx
     import mlx_lm
 
     HAS_MLX = True
@@ -122,6 +124,58 @@ def test_outlines_core_processor_mlx():
         )
         assert re.match(regex, tokenizer.decode(input_ids[0]))
         assert re.match(regex, tokenizer.decode(input_ids[1]))
+
+
+@pytest.mark.skipif(not HAS_MLX, reason="MLX tests require Apple Silicon")
+def test_outlines_core_mlxlm_vocabulary_keeps_sentencepiece_spaces():
+    """Test that the MLXLM branch of the backend does not strip the leading
+    space of sentencepiece-style tokens when it builds the Outlines Core
+    vocabulary.
+    """
+    hf_tokenizer = transformers.AutoTokenizer.from_pretrained(
+        "hf-internal-testing/tiny-random-LlamaForCausalLM"
+    )
+    # The backend only reads the tokenizer, so the model can be a stub.
+    model = MLXLM(object(), mlx_lm.tokenizer_utils.TokenizerWrapper(hf_tokenizer))
+
+    backend = OutlinesCoreBackend(model)
+    vocabulary = backend.vocabulary
+
+    vocab = hf_tokenizer.get_vocab()
+    space_token_ids = vocabulary.get(" ")
+    assert space_token_ids is not None
+    assert vocab["<0x20>"] in space_token_ids
+    assert vocab["▁"] in space_token_ids
+    assert vocab["▁b"] in vocabulary.get(" b")
+
+
+@pytest.mark.skipif(not HAS_MLX, reason="MLX tests require Apple Silicon")
+def test_outlines_core_mlxlm_processor_output_respects_regex():
+    """Test that the text allowed by the processor matches the regex for
+    sentencepiece-style MLXLM tokenizers, whose space-carrying tokens must
+    not be invisible to the FSM.
+    """
+    hf_tokenizer = transformers.AutoTokenizer.from_pretrained(
+        "hf-internal-testing/tiny-random-LlamaForCausalLM"
+    )
+    model = MLXLM(object(), mlx_lm.tokenizer_utils.TokenizerWrapper(hf_tokenizer))
+
+    backend = OutlinesCoreBackend(model)
+    processor = backend.get_regex_logits_processor("[0-9]+")
+
+    input_ids = []
+    for _ in range(8):
+        logits = mx.zeros((1, hf_tokenizer.vocab_size))
+        output = processor.process_logits(
+            mx.array([input_ids]) if input_ids else mx.array([[0]]), logits
+        )
+        next_token_id = int(mx.argmax(output[0]))
+        if next_token_id == hf_tokenizer.eos_token_id:
+            break
+        input_ids.append(next_token_id)
+
+    text = hf_tokenizer.decode(input_ids)
+    assert re.fullmatch("[0-9]+", text) is not None
 
 
 def test_create_vocabulary_preserves_duplicate_token_ids():
