@@ -5,7 +5,10 @@ from typing import Generator, AsyncGenerator
 
 import pytest
 from PIL import Image as PILImage
-from mistralai import Mistral as MistralClient
+try:
+    from mistralai.client import Mistral as MistralClient
+except ImportError:
+    from mistralai import Mistral as MistralClient
 from pydantic import BaseModel
 
 import outlines

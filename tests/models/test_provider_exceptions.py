@@ -348,7 +348,11 @@ def test_openai_bad_request_normalizes():
 
 def test_mistral_bad_request_normalizes():
     import httpx
-    from mistralai.models.sdkerror import SDKError
+
+    try:
+        from mistralai.client.errors import SDKError
+    except ImportError:
+        from mistralai.models.sdkerror import SDKError
 
     request = httpx.Request("POST", "https://api.mistral.ai/v1/chat/completions")
     response = httpx.Response(400, request=request)
