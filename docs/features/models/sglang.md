@@ -17,7 +17,7 @@ python -m sglang.launch_server \
   --port 30000
 ```
 
-Follow the [Installation instructions](https://docs.sglang.ai/start/install.html) for more information on how to set up a SGLang server for your particular setup.
+Follow the [Installation instructions](https://docs.sglang.io/docs/get-started/install) for more information on how to set up a SGLang server for your particular setup.
 
 As the SGLang client relies on the `openai` python sdk, you need to have the `openai` package installed. Install all optional dependencies of the `SGLang` model with: `pip install "outlines[sglang]"`.
 
@@ -25,7 +25,7 @@ When launching your SGLang server, you can specify the backend engine to use for
 
 ## Model Initialization
 
-To load the model, you can use the `from_sglang` function. The argument of the function is either an `OpenAI` or `AsyncOpenAI` instance from the `openai` library. Make sure the value of the `base_url` argument of the `OpenAI` client points to your running SGLang server. Consult the [SGLang documentation](https://docs.sglang.ai/backend/send_request.html) on using an OpenAI client with an SGLang server for more information.
+To load the model, you can use the `from_sglang` function. The argument of the function is either an `OpenAI` or `AsyncOpenAI` instance from the `openai` library. Make sure the value of the `base_url` argument of the `OpenAI` client points to your running SGLang server. Consult the [SGLang documentation](https://docs.sglang.io/docs/basic_usage/send_request) on using an OpenAI client with an SGLang server for more information.
 
 Based on whether the `openai` client instance is synchronous or asynchronous, you will receive a `SGLang` or `AsyncSGLang` model instance.
 
@@ -279,4 +279,4 @@ When calling the model, you can provide optional parameters on top of the prompt
 
 An optional parameter of particular interest is `extra_body`, which is a dictionary containing arguments that are specific to SGLang and are not part of the standard `openai` interface.
 
-See the [SGLang documentation](https://docs.sglang.ai/backend/openai_api_completions.html) on parameters for the OpenAI-compatible server for more information on inference parameters.
+See the [SGLang documentation](https://docs.sglang.io/docs/basic_usage/openai_api_completions) on parameters for the OpenAI-compatible server for more information on inference parameters.
