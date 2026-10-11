@@ -28,7 +28,7 @@ from outlines.types.utils import (
 )
 
 if TYPE_CHECKING:
-    from mistralai import Mistral as MistralClient
+    from mistralai.client import Mistral as MistralClient
 
 PROVIDER = "mistral"
 
@@ -78,7 +78,11 @@ class MistralTypeAdapter(ModelTypeAdapter):
             A list of Mistral message objects.
 
         """
-        from mistralai import UserMessage
+        # mistralai 2.0+ moved the message classes to mistralai.client.models.
+        try:
+            from mistralai.client.models import UserMessage
+        except ImportError:
+            from mistralai import UserMessage
 
         return [UserMessage(content=model_input)]
 
@@ -98,7 +102,10 @@ class MistralTypeAdapter(ModelTypeAdapter):
             A list of Mistral message objects.
 
         """
-        from mistralai import UserMessage
+        try:
+            from mistralai.client.models import UserMessage
+        except ImportError:
+            from mistralai import UserMessage
 
         return [UserMessage(content=self._create_message_content(model_input))]
 
@@ -117,7 +124,14 @@ class MistralTypeAdapter(ModelTypeAdapter):
             A list of Mistral message objects.
 
         """
-        from mistralai import UserMessage, AssistantMessage, SystemMessage
+        try:
+            from mistralai.client.models import (
+                UserMessage,
+                AssistantMessage,
+                SystemMessage,
+            )
+        except ImportError:
+            from mistralai import UserMessage, AssistantMessage, SystemMessage
 
         messages = []
 
@@ -542,7 +556,11 @@ def from_mistral(
         An Outlines Mistral or AsyncMistral model instance.
 
     """
-    from mistralai import Mistral as MistralClient
+    # mistralai 2.0+ moved the client class to mistralai.client.
+    try:
+        from mistralai.client import Mistral as MistralClient
+    except ImportError:
+        from mistralai import Mistral as MistralClient
 
     if not isinstance(client, MistralClient):
         raise ValueError(

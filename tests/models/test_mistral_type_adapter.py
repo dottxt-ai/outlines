@@ -7,11 +7,18 @@ from typing import Literal
 import pytest
 from PIL import Image as PILImage
 from genson import SchemaBuilder
-from mistralai import (
-    AssistantMessage,
-    SystemMessage,
-    UserMessage,
-)
+try:
+    from mistralai.client.models import (
+        AssistantMessage,
+        SystemMessage,
+        UserMessage,
+    )
+except ImportError:
+    from mistralai import (
+        AssistantMessage,
+        SystemMessage,
+        UserMessage,
+    )
 from pydantic import BaseModel
 
 from outlines.inputs import Chat, Image
