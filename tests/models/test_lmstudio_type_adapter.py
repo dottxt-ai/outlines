@@ -49,6 +49,15 @@ _FAKE_FILE_HANDLE = {
 }
 
 
+# The `lmstudio` SDK does not expose a public accessor for the messages a
+# `Chat` instance contains, so the tests read its history directly.
+def _chat_entries(chat):
+    return [
+        (message["role"], [part["text"] for part in message["content"]])
+        for message in chat._history.to_dict()["messages"]
+    ]
+
+
 @pytest.fixture
 def image():
     width, height = 1, 1
@@ -107,6 +116,69 @@ def test_lmstudio_type_adapter_input_chat_no_system(adapter):
 
     import lmstudio as lms
     assert isinstance(result, lms.Chat)
+
+
+def test_lmstudio_type_adapter_input_chat_system_not_first(adapter):
+    chat_input = Chat(messages=[
+        {"role": "user", "content": "Hello"},
+        {"role": "system", "content": "Be concise."},
+        {"role": "user", "content": "Bye"},
+    ])
+    result = adapter.format_input(chat_input)
+
+    import lmstudio as lms
+    assert isinstance(result, lms.Chat)
+    assert _chat_entries(result) == [
+        ("user", ["Hello"]),
+        ("system", ["Be concise."]),
+        ("user", ["Bye"]),
+    ]
+
+
+def test_lmstudio_type_adapter_input_chat_multiple_system(adapter):
+    chat_input = Chat(messages=[
+        {"role": "system", "content": "You are a helpful assistant."},
+        {"role": "system", "content": "Be concise."},
+        {"role": "user", "content": "Hello"},
+    ])
+    result = adapter.format_input(chat_input)
+
+    import lmstudio as lms
+    assert isinstance(result, lms.Chat)
+    assert _chat_entries(result) == [
+        ("system", ["You are a helpful assistant.\nBe concise."]),
+        ("user", ["Hello"]),
+    ]
+
+
+def test_lmstudio_type_adapter_input_chat_empty_system_message(adapter):
+    chat_input = Chat(messages=[
+        {"role": "system", "content": ""},
+        {"role": "user", "content": "Hello"},
+    ])
+    result = adapter.format_input(chat_input)
+
+    import lmstudio as lms
+    assert isinstance(result, lms.Chat)
+    assert _chat_entries(result) == [
+        ("system", [""]),
+        ("user", ["Hello"]),
+    ]
+
+
+def test_lmstudio_type_adapter_input_chat_trailing_system(adapter):
+    chat_input = Chat(messages=[
+        {"role": "user", "content": "Hello"},
+        {"role": "system", "content": "Be concise."},
+    ])
+    result = adapter.format_input(chat_input)
+
+    import lmstudio as lms
+    assert isinstance(result, lms.Chat)
+    assert _chat_entries(result) == [
+        ("user", ["Hello"]),
+        ("system", ["Be concise."]),
+    ]
 
 
 def test_lmstudio_type_adapter_input_chat_with_image(adapter, image, monkeypatch):

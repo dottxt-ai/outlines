@@ -84,21 +84,29 @@ class LMStudioTypeAdapter(ModelTypeAdapter):
 
     @format_input.register(Chat)
     def format_chat_model_input(self, model_input: Chat) -> "LMStudioChat":
-        """Convert Outlines Chat to LMStudio Chat with image support."""
+        """Convert Outlines Chat to LMStudio Chat with image support.
+
+        System messages are added at the position they appear in. Consecutive
+        system messages are joined, as the `lmstudio` SDK does not support
+        multiple consecutive system prompts.
+
+        """
         from lmstudio import Chat as LMSChat
 
-        system_prompt = None
-        messages = model_input.messages
+        chat = LMSChat()
+        system_contents: list[str] = []
 
-        if messages and messages[0]["role"] == "system":
-            system_prompt = messages[0]["content"]
-            messages = messages[1:]
-
-        chat = LMSChat(system_prompt) if system_prompt else LMSChat()
-
-        for message in messages:
+        for message in model_input.messages:
             role = message["role"]
             content = message["content"]
+
+            if role == "system":
+                system_contents.append(content)
+                continue
+
+            if system_contents:
+                chat.add_system_prompt("\n".join(system_contents))
+                system_contents = []
 
             if role == "user":
                 if isinstance(content, str):
@@ -120,6 +128,9 @@ class LMStudioTypeAdapter(ModelTypeAdapter):
                 chat.add_assistant_response(content)
             else:
                 raise ValueError(f"Unsupported role: {role}")
+
+        if system_contents:
+            chat.add_system_prompt("\n".join(system_contents))
 
         return chat
 
