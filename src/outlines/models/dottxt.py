@@ -234,7 +234,7 @@ class AsyncDottxt(AsyncModel):
 
         if "model" not in inference_kwargs:
             raise ValueError(
-                "A model identifier is required. Pass it to `from_dottxt_async()` "
+                "A model identifier is required. Pass it to `from_dottxt()` "
                 "or as a `model=` keyword argument at generation time."
             )
 

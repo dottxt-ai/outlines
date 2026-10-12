@@ -164,6 +164,16 @@ async def test_dottxt_async_missing_model(async_model_no_model_name):
         await async_model_no_model_name("prompt", User)
 
 
+@pytest.mark.asyncio
+async def test_dottxt_async_missing_model_error_names_existing_factory(
+    async_model_no_model_name,
+):
+    with pytest.raises(
+        ValueError, match=r"Pass it to `from_dottxt\(\)`"
+    ):
+        await async_model_no_model_name("prompt", User)
+
+
 def test_dottxt_async_wrong_output_type(async_model_no_model_name):
     with pytest.raises(TypeError, match="You must provide an output type"):
         # format_output_type is sync and raises before the coroutine is awaited
