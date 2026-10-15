@@ -55,6 +55,25 @@ from outlines.types.dsl import to_regex
         (types.date, "2022-13-23", False),
         (types.date, "2022-00-23", False),
         (types.date, "32-03-2022", False),
+        # Day ranges are per-month, so impossible dates are rejected
+        (types.date, "2022-04-30", True),
+        (types.date, "2022-04-31", False),
+        (types.date, "2022-06-31", False),
+        (types.date, "2022-09-31", False),
+        (types.date, "2022-11-31", False),
+        (types.date, "2022-02-28", True),
+        (types.date, "2022-02-30", False),
+        (types.date, "2022-02-31", False),
+        # February 29th only exists in leap years
+        (types.date, "2024-02-29", True),
+        (types.date, "2023-02-29", False),
+        # Century years are leap only when divisible by 400
+        (types.date, "2000-02-29", True),
+        (types.date, "1900-02-29", False),
+        (types.date, "2100-02-29", False),
+        # datetime composes date, so it inherits the same day ranges
+        (types.datetime, "2024-02-29 10:30:00", True),
+        (types.datetime, "2023-02-29 10:30:00", False),
         (types.time, "01:23:59", True),
         (types.time, "01:23:61", False),
         (types.time, "01:61:59", False),
