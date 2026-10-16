@@ -203,6 +203,22 @@ def test_outlines_core_backend(model, tensor_library_name, json_schema, regex, c
             assert "name" in response
 
 
+def test_outlines_core_backend_reuses_vocabulary():
+    model = model_transformers()
+    with patch.object(
+        OutlinesCoreBackend,
+        "create_outlines_core_vocabulary",
+        wraps=OutlinesCoreBackend.create_outlines_core_vocabulary,
+    ) as create_vocabulary:
+        backend = OutlinesCoreBackend(model)
+        assert OutlinesCoreBackend(model).vocabulary is backend.vocabulary
+        assert create_vocabulary.call_count == 1
+
+        other_backend = OutlinesCoreBackend(model_transformers())
+        assert other_backend.vocabulary is not backend.vocabulary
+        assert create_vocabulary.call_count == 2
+
+
 def test_create_vocabulary_preserves_distinct_decoded_strings():
     """Test that tokens decoding to distinct strings each get their own entry
     and that eos_token is correctly excluded from the vocabulary.

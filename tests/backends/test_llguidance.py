@@ -1,7 +1,9 @@
 import re
+from unittest.mock import patch
 
 import llama_cpp
 import llguidance
+import llguidance.hf
 import pytest
 import transformers
 from llguidance import LLTokenizer
@@ -201,6 +203,20 @@ def test_llguidance_backend(model, tensor_library_name, json_schema, regex, cfg_
         else:
             response = generator("Create a character", max_tokens=20)
             assert response[0] == "{"
+
+
+def test_llguidance_backend_reuses_llg_tokenizer():
+    model = model_transformers()
+    with patch(
+        "llguidance.hf.from_tokenizer", wraps=llguidance.hf.from_tokenizer
+    ) as from_tokenizer:
+        backend = LLGuidanceBackend(model)
+        assert LLGuidanceBackend(model).llg_tokenizer is backend.llg_tokenizer
+        assert from_tokenizer.call_count == 1
+
+        other_backend = LLGuidanceBackend(model_transformers())
+        assert other_backend.llg_tokenizer is not backend.llg_tokenizer
+        assert from_tokenizer.call_count == 2
 
 
 def test_json_schema_logits_processor_rejects_whitespace_pattern():
