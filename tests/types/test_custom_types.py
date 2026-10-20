@@ -171,6 +171,65 @@ from outlines.types.dsl import to_regex
         (types.credit_card, "41111111111111111111", False),  # too long (20 digits)
         (types.credit_card, "3782822463100050", False),  # Amex prefix, wrong length
         (types.credit_card, "", False),
+        (types.iban, "GB82WEST12345698765432", True),
+        (types.iban, "DE89370400440532013000", True),
+        (types.iban, "FR1420041010050500013M02606", True),  # letters in the BBAN
+        (types.iban, "NO9386011117947", True),  # shortest, 15 characters
+        (types.iban, "MT84MALT011000012345MTLCAST001S", True),
+        (types.iban, "GB02WEST12345698765432", True),  # lowest check digits
+        (types.iban, "GB98WEST12345698765432", True),  # highest check digits
+        (types.iban, "GB00WEST12345698765432", False),  # check digits below 02
+        (types.iban, "GB99WEST12345698765432", False),  # check digits above 98
+        (types.iban, "GB82 WEST 1234 5698 7654 32", False),  # print format
+        (types.iban, "gb82west12345698765432", False),  # lowercase
+        (types.iban, "G182WEST12345698765432", False),  # digit in the country code
+        (types.iban, "GB82WEST1234", False),  # too short
+        (types.iban, "GB82WEST123456987654321234567890123", False),  # over 34
+        (types.iban, "", False),
+        (types.bic, "DEUTDEFF", True),  # institution, country and location only
+        (types.bic, "DEUTDEFF500", True),  # with a branch code
+        (types.bic, "NEDSZAJJXXX", True),  # head office branch code
+        (types.bic, "UNCRIT2B912", True),  # digit in the location code
+        (types.bic, "DEUTDE0F", False),  # location code starting with 0
+        (types.bic, "DEUTDE1F", False),  # location code starting with 1
+        (types.bic, "DEUTDEFO", False),  # letter O in the location code
+        (types.bic, "DEUT1EFF", False),  # digit in the country code
+        (types.bic, "DEUTDEF", False),  # too short
+        (types.bic, "DEUTDEFF50", False),  # incomplete branch code
+        (types.bic, "DEUTDEFF5000", False),  # too long
+        (types.bic, "deutdeff", False),  # lowercase
+        (types.bic, "", False),
+        (types.e164, "+14155552671", True),
+        (types.e164, "+442071838750", True),
+        (types.e164, "+8613800138000", True),
+        (types.e164, "14155552671", False),  # missing plus sign
+        (types.e164, "+04155552671", False),  # country code cannot start with 0
+        (types.e164, "+1 415 555 2671", False),  # spacing is not canonical form
+        (types.e164, "+1-415-555-2671", False),  # hyphens are not canonical form
+        (types.e164, "+123456789012345", True),  # exactly 15 digits, the maximum
+        (types.e164, "+1234567890123456", False),  # more than 15 digits
+        (types.e164, "+1", False),  # country code alone
+        (types.e164, "", False),
+        (types.latitude, "0", True),
+        (types.latitude, "45.5231", True),
+        (types.latitude, "-90", True),
+        (types.latitude, "90.0", True),
+        (types.latitude, "+27.9881", True),
+        (types.latitude, "90.5", False),  # above upper bound
+        (types.latitude, "-91", False),  # below lower bound
+        (types.latitude, "05", False),  # leading zero
+        (types.latitude, "45.", False),  # trailing decimal point
+        (types.latitude, "", False),
+        (types.longitude, "0", True),
+        (types.longitude, "-122.6765", True),
+        (types.longitude, "180", True),
+        (types.longitude, "180.00", True),
+        (types.longitude, "+179.9999", True),
+        (types.longitude, "180.1", False),  # above upper bound
+        (types.longitude, "-181", False),  # below lower bound
+        (types.longitude, "005", False),  # leading zeros
+        (types.longitude, "12.", False),  # trailing decimal point
+        (types.longitude, "", False),
     ],
 )
 def test_type_regex(custom_type, test_string, should_match):

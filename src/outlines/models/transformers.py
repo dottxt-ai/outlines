@@ -68,6 +68,16 @@ class TransformerTokenizer(Tokenizer):
 
         return string
 
+    def _fingerprint(self) -> str:
+        """Content fingerprint of the wrapped tokenizer.
+
+        Shared by `__eq__` and `__hash__` so the two cannot disagree about
+        what makes two tokenizers the same.
+        """
+        from datasets.fingerprint import Hasher
+
+        return Hasher.hash(self.tokenizer)
+
     def __eq__(self, other):
         if isinstance(other, type(self)):
             if hasattr(self, "model_name") and hasattr(self, "kwargs"):
@@ -75,13 +85,16 @@ class TransformerTokenizer(Tokenizer):
                     other.model_name == self.model_name and other.kwargs == self.kwargs
                 )
             else:
-                return other.tokenizer == self.tokenizer
+                # `PreTrainedTokenizerBase` does not define `__eq__`, so
+                # comparing the wrapped tokenizers directly is an identity
+                # check. Two tokenizers loaded separately from the same model
+                # would compare unequal while hashing equal, since `__hash__`
+                # is content-based. Compare the same fingerprint instead.
+                return self._fingerprint() == other._fingerprint()
         return NotImplemented
 
     def __hash__(self):
-        from datasets.fingerprint import Hasher
-
-        return hash(Hasher.hash(self.tokenizer))
+        return hash(self._fingerprint())
 
     def __getstate__(self):
         state = {"tokenizer": self.tokenizer}
