@@ -120,6 +120,7 @@ The server-based models available are the following:
 - Dottxt
 - Gemini
 - LM Studio
+- MiniMax
 - Mistral
 - Ollama
 - OpenAI

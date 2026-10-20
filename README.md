@@ -595,7 +595,7 @@ print(few_shot_prompt)
 |---------|-------------|:-------------:|
 | **Server Support** | vLLM and Ollama | [Server Integrations →](https://dottxt-ai.github.io/outlines/latest/features/models/) |
 | **Local Model Support** | transformers and llama.cpp | [Model Integrations →](https://dottxt-ai.github.io/outlines/latest/features/models/) |
-| **API Support** | OpenAI, Gemini, and [Dottxt](https://h1xbpbfsf0w.typeform.com/to/fwQNWmS8?utm_source=github&utm_medium=organic&utm_campaign=outlines) | [API Integrations →](https://dottxt-ai.github.io/outlines/latest/features/models/) |
+| **API Support** | OpenAI, Gemini, MiniMax, and [Dottxt](https://h1xbpbfsf0w.typeform.com/to/fwQNWmS8?utm_source=github&utm_medium=organic&utm_campaign=outlines) | [API Integrations →](https://dottxt-ai.github.io/outlines/latest/features/models/) |
 
 ## Core Features
 

@@ -245,7 +245,7 @@ def _build_exception_map(provider: str) -> dict[type, type[APIError]]:
 
 
 def _provider_exception_map(provider: str) -> dict[type, type[APIError]]:
-    if provider in ("openai", "vllm", "sglang"):  # vLLM and SGLang use the OpenAI SDK client
+    if provider in ("openai", "vllm", "sglang", "minimax"):  # vLLM, SGLang and MiniMax use the OpenAI SDK client
         import openai
         return {
             openai.AuthenticationError: AuthenticationError,
