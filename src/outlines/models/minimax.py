@@ -10,10 +10,10 @@ regional endpoints are available and share the same request format:
 The base URLs are exposed as :data:`MINIMAX_BASE_URLS` so callers can select a
 region when instantiating their ``openai`` client.
 
-Available models include ``MiniMax-M3`` (1,000,000 token context window, with
-text, image and video input) and ``MiniMax-M2.7`` (204,800 token context
-window, text input). ``MiniMaxTypeAdapter`` formats text, image and video
-inputs into the content parts expected by the OpenAI-compatible endpoint.
+The default text model is ``MiniMax-M3.1-Flash``; ``MiniMax-M3`` is also
+available. Explicit model names are passed through unchanged.
+``MiniMaxTypeAdapter`` formats text, image and video inputs into the content
+parts expected by the OpenAI-compatible endpoint.
 """
 
 from functools import singledispatchmethod
@@ -187,11 +187,14 @@ class MiniMax(Model):
             An `openai.OpenAI` client instance whose `base_url` is set to a
             MiniMax endpoint (see `MINIMAX_BASE_URLS`).
         model_name
-            The name of the model to use, e.g. `"MiniMax-M3"`.
+            The model name. Defaults to `"MiniMax-M3.1-Flash"` when omitted.
+            Explicit model names are passed through unchanged.
 
         """
         self.client = client
-        self.model_name = model_name
+        self.model_name = (
+            "MiniMax-M3.1-Flash" if model_name is None else model_name
+        )
         self.type_adapter = MiniMaxTypeAdapter()
 
     def generate(
@@ -321,11 +324,14 @@ class AsyncMiniMax(AsyncModel):
             An `openai.AsyncOpenAI` client instance whose `base_url` is set to
             a MiniMax endpoint (see `MINIMAX_BASE_URLS`).
         model_name
-            The name of the model to use, e.g. `"MiniMax-M3"`.
+            The model name. Defaults to `"MiniMax-M3.1-Flash"` when omitted.
+            Explicit model names are passed through unchanged.
 
         """
         self.client = client
-        self.model_name = model_name
+        self.model_name = (
+            "MiniMax-M3.1-Flash" if model_name is None else model_name
+        )
         self.type_adapter = MiniMaxTypeAdapter()
 
     async def generate(
@@ -457,7 +463,7 @@ def from_minimax(
             api_key="MINIMAX_API_KEY",
             base_url=MINIMAX_BASE_URLS["global_en"],
         )
-        model = outlines.from_minimax(client, "MiniMax-M3")
+        model = outlines.from_minimax(client)  # MiniMax-M3.1-Flash by default
 
     Parameters
     ----------
@@ -465,7 +471,9 @@ def from_minimax(
         An `openai.OpenAI` or `openai.AsyncOpenAI` instance whose `base_url`
         is set to a MiniMax endpoint (see `MINIMAX_BASE_URLS`).
     model_name
-        The name of the model to use, e.g. `"MiniMax-M3"` or `"MiniMax-M2.7"`.
+        The model name, defaulting to `"MiniMax-M3.1-Flash"`. Use
+        `"MiniMax-M3"` to select M3. Explicit model names are passed through
+        unchanged, including saved legacy and custom IDs.
 
     Returns
     -------

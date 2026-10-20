@@ -11,7 +11,7 @@
 To create a MiniMax model instance, use the `from_minimax` function. It takes 2 arguments:
 
 - `client`: an `openai.OpenAI` or `openai.AsyncOpenAI` instance whose `base_url` is set to a MiniMax endpoint
-- `model_name`: the name of the model you want to use (optional)
+- `model_name`: the name of the model you want to use (optional; defaults to `MiniMax-M3.1-Flash`)
 
 MiniMax provides two OpenAI-compatible regional endpoints, exposed as `MINIMAX_BASE_URLS`:
 
@@ -34,11 +34,13 @@ client = openai.OpenAI(
 # Create the model
 model = outlines.from_minimax(
     client,
-    "MiniMax-M3"
+    "MiniMax-M3.1-Flash"
 )
 ```
 
-Available models include `MiniMax-M3` (1,000,000 token context window, with text, image and video input) and `MiniMax-M2.7` (204,800 token context window, text input). Check the [MiniMax documentation](https://platform.minimax.io/docs/api-reference/api-overview) for an up-to-date list of available models.
+Use `MiniMax-M3.1-Flash` (the default) or `MiniMax-M3`. Flash has a 1,000,000-token context window and supports up to 524,288 output tokens. Explicit model names, including saved legacy and custom IDs, are passed through unchanged. A `model=` argument on a generation call overrides the constructor's model.
+
+Flash uses adaptive thinking by default. You can pass `reasoning_effort="low"`, `"medium"`, `"high"`, `"xhigh"`, or `"max"` (the API default); `"none"` and disabled thinking are not supported for Flash. M3 accepts adaptive or disabled thinking and ignores reasoning effort. The adapter forwards explicit inference arguments without rewriting them. See the [MiniMax model documentation](https://platform.minimax.io/docs/guides/models-intro) for the current model contract.
 
 ## Text Generation
 
@@ -51,7 +53,6 @@ from outlines.models.minimax import MINIMAX_BASE_URLS
 
 model = outlines.from_minimax(
     openai.OpenAI(base_url=MINIMAX_BASE_URLS["global_en"]),
-    "MiniMax-M3",
 )
 
 result = model("What's the capital of Latvia?", max_tokens=20)

@@ -167,7 +167,7 @@ def test_minimax_init_from_client():
 
     model = from_minimax(client)
     assert isinstance(model, MiniMax)
-    assert model.model_name is None
+    assert model.model_name == "MiniMax-M3.1-Flash"
 
     model = from_minimax(async_client, MODEL_NAME)
     assert isinstance(model, AsyncMiniMax)
