@@ -214,7 +214,7 @@ def test_dsl_term_pydantic_rejects_non_string_values():
     payload = Model(field="123")
     assert payload.field == "123"
     assert isinstance(payload.field, str)
-    with pytest.raises(ValidationError):
+    with pytest.raises(ValidationError, match="Input should be a string"):
         Model(field=123)
 
     # The guard is an isinstance check rather than an exact type check, so
