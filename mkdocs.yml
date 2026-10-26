@@ -143,6 +143,7 @@ nav:
                     - OpenRouter: features/models/openrouter.md
                     - OrcaRouter: features/models/orcarouter.md
                     - Requesty: features/models/requesty.md
+                    - Runcrate: features/models/runcrate.md
                     - SGLang: features/models/sglang.md
                     - TGI: features/models/tgi.md
                     - Transformers: features/models/transformers.md
