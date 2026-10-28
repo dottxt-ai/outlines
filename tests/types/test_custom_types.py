@@ -277,3 +277,17 @@ def test_type_enum(custom_type, test_string, should_match):
 
     does_match = test_string in custom_type.__members__
     assert does_match is should_match
+
+
+@pytest.mark.parametrize(
+    "test_string,should_match",
+    [
+        ("2022-03-23T10:15:30", True),  # ISO 8601 canonical form
+        ("2022-03-23t10:15:30", True),  # ISO 8601 also allows lowercase t
+        ("2022-03-23 10:15:30", True),  # space separator, was the only accepted form
+        ("2022-03-23X10:15:30", False),
+        ("2022-03-23 24:00:00", False),  # hour 24 is invalid
+    ],
+)
+def test_datetime_separator(test_string, should_match):
+    assert types.datetime.matches(test_string) is should_match
