@@ -26,6 +26,55 @@ __all__ = ["LlamaCpp", "from_llamacpp"]
 SPIECE_UNDERLINE = "\u2581"
 
 
+def _with_sampling_params(processor, params: Dict[str, Any]):
+    """Make an Outlines processor receive the sampling parameters.
+
+    llama-cpp-python passes `top_k`, `top_p`, `temp`, ... to its processors as
+    positional arguments, while Outlines processors take them as keyword
+    arguments. The processor is wrapped so the call is adapted.
+
+    """
+    call = _outlines_call(processor)
+
+    def __call__(self, input_ids, logits, **kwargs):
+        return call(self, input_ids, logits, **params)
+
+    processor.__class__ = type(
+        processor.__class__.__name__ + "WithSamplingParams",
+        (processor.__class__,),
+        {"__call__": __call__},
+    )
+    return processor
+
+
+def _outlines_call(processor):
+    """The `__call__` of an Outlines processor that takes the parameters."""
+    for cls in type(processor).__mro__:
+        code = getattr(cls.__call__, "__code__", None)
+        if code is not None and "params" in code.co_varnames:
+            return cls.__call__
+    return type(processor).__call__
+
+
+def _with_llama_cpp_wrapper(wrapped, params: Dict[str, Any]):
+    """Make a `LlamaLogitsProcessor` pass the sampling parameters on.
+
+    Since llama-cpp-python 0.2.77 `LogitsProcessorList` wraps every processor
+    in a `LlamaLogitsProcessor`, whose `__call__(input_ids, scores)` keeps the
+    sampling parameters as attributes of itself instead of forwarding them,
+    and the processor is called on its own only for the first token.
+
+    """
+    processor = getattr(wrapped, "logits_processor", None)
+    if processor is None:
+        # Older versions call the processors themselves, the parameters are
+        # already passed and `_with_sampling_params` is all that is needed.
+        return wrapped
+    return _with_sampling_params(
+        getattr(processor, "logits_processor", processor), params
+    )
+
+
 class LlamaCppTokenizer(Tokenizer):
     def __init__(self, model: "Llama"):
         self.tokenizer = model.tokenizer()
@@ -219,7 +268,9 @@ class LlamaCppTypeAdapter(ModelTypeAdapter):
         ]
 
     def format_output_type(
-        self, output_type: Optional[OutlinesLogitsProcessor] = None,
+        self,
+        output_type: Optional[OutlinesLogitsProcessor] = None,
+        **inference_kwargs: Any,
     ) -> Optional["LogitsProcessorList"]:
         """Generate the logits processor argument to pass to the model.
 
@@ -227,6 +278,11 @@ class LlamaCppTypeAdapter(ModelTypeAdapter):
         ----------
         output_type
             The logits processor provided.
+        inference_kwargs
+            The keyword arguments the caller passes to the model. Outlines
+            grammars need the sampling parameters (`top_k`, `temp`, ...) to
+            mask the tokens the sampler could pick, so they are given to the
+            processor.
 
         Returns
         -------
@@ -237,7 +293,22 @@ class LlamaCppTypeAdapter(ModelTypeAdapter):
         from llama_cpp import LogitsProcessorList
 
         if output_type is not None:
-            return LogitsProcessorList([output_type])
+            # llama-cpp-python wraps every processor in a
+            # `LlamaLogitsProcessor`, which calls it with `(input_ids,
+            # scores)` only and keeps the sampling parameters as attributes of
+            # itself. Outlines processors take them as keyword arguments, so
+            # the wrapper is patched to forward the ones the caller passed.
+            params = {
+                key: value
+                for key, value in inference_kwargs.items()
+                if key not in ("logits_processor", "stream")
+            }
+            processors = LogitsProcessorList(
+                [_with_sampling_params(output_type, params)]
+            )
+            for index, item in enumerate(processors):
+                processors[index] = _with_llama_cpp_wrapper(item, params)
+            return processors
         return None
 
 
@@ -301,14 +372,18 @@ class LlamaCpp(Model):
         if isinstance(prompt, str):
             completion = self.model(
                 prompt,
-                logits_processor=self.type_adapter.format_output_type(output_type),
+                logits_processor=self.type_adapter.format_output_type(
+                    output_type, **inference_kwargs
+                ),
                 **inference_kwargs,
             )
             result = completion["choices"][0]["text"]
         elif isinstance(prompt, list):
             completion = self.model.create_chat_completion(
                 prompt,
-                logits_processor=self.type_adapter.format_output_type(output_type),
+                logits_processor=self.type_adapter.format_output_type(
+                    output_type, **inference_kwargs
+                ),
                 **inference_kwargs,
             )
             result = completion["choices"][0]["message"]["content"]
@@ -357,7 +432,9 @@ class LlamaCpp(Model):
         if isinstance(prompt, str):
             generator = self.model(
                 prompt,
-                logits_processor=self.type_adapter.format_output_type(output_type),
+                logits_processor=self.type_adapter.format_output_type(
+                    output_type, **inference_kwargs
+                ),
                 stream=True,
                 **inference_kwargs,
             )
@@ -367,7 +444,9 @@ class LlamaCpp(Model):
         elif isinstance(prompt, list):
             generator = self.model.create_chat_completion(
                 prompt,
-                logits_processor=self.type_adapter.format_output_type(output_type),
+                logits_processor=self.type_adapter.format_output_type(
+                    output_type, **inference_kwargs
+                ),
                 stream=True,
                 **inference_kwargs,
             )
