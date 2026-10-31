@@ -260,13 +260,24 @@ def get_fn_signature(fn: Callable):
         raise TypeError("The `source` filter only applies to callables.")
 
     source = textwrap.dedent(inspect.getsource(fn))
-    re_search = re.search(re.compile(r"\(([^)]+)\)"), source)
+    # Start after the `def` keyword so that the parentheses of a decorator are
+    # not mistaken for the signature, then scan up to the matching closing
+    # parenthesis: a default value such as `(1, 2)` is parenthesised as well.
+    re_search = re.search(re.compile(r"\bdef\b[^(]*\("), source)
     if re_search is None:  # pragma: no cover
-        signature = ""
-    else:
-        signature = re_search.group(1)
+        return ""
 
-    return signature
+    start = re_search.end()
+    depth = 1
+    for index, character in enumerate(source[start:], start):
+        if character == "(":
+            depth += 1
+        elif character == ")":
+            depth -= 1
+            if depth == 0:
+                return source[start:index]
+
+    return ""  # pragma: no cover
 
 
 @functools.singledispatch

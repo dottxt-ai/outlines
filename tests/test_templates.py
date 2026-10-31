@@ -34,6 +34,22 @@ def function_with_annotations(x: int, y: str) -> str:
 def function_with_no_docstring(x, y):
     return x * y
 
+def function_with_parenthesised_default(a: int, b: tuple = (1, 2)) -> int:
+    """Function whose default value contains parentheses."""
+    return a + len(b)
+
+def a_decorator(argument):
+    """Decorator factory, its own parentheses end up in the function's source."""
+    def inner(fn):
+        return fn
+
+    return inner
+
+@a_decorator("an argument")
+def decorated_function(x: int) -> int:
+    """Decorated function."""
+    return x
+
 class CallableClass:
     def __call__(self):
         pass
@@ -391,6 +407,20 @@ def test_get_fn_signature():
     assert get_fn_signature(sample_function) == sample_function_signature
     function_with_annotations_signature = "x: int, y: str"
     assert get_fn_signature(function_with_annotations) == function_with_annotations_signature
+
+
+def test_get_fn_signature_with_parenthesised_default():
+    # The first closing parenthesis belongs to the default value, not to the
+    # signature, so it must not end the match.
+    assert (
+        get_fn_signature(function_with_parenthesised_default)
+        == "a: int, b: tuple = (1, 2)"
+    )
+
+
+def test_get_fn_signature_ignores_decorator_arguments():
+    # The decorator's parentheses appear before the ones of the signature.
+    assert get_fn_signature(decorated_function) == "x: int"
 
 
 def test_get_schema():
