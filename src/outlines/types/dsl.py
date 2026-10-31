@@ -238,6 +238,23 @@ class Regex(Term):
 
 
 @dataclass
+class NoneLiteral(Term):
+    """Class representing the ``None`` member of an ``Optional``/``Union`` type.
+
+    The term keeps the Python spelling when rendered standalone, but
+    ``_ensure_json_quoted`` converts it to the JSON spelling ``null``
+    inside JSON containers. A dedicated class (rather than a plain
+    ``Regex("None")``) ensures user-provided regexes are never rewritten.
+    """
+
+    def _display_node(self) -> str:
+        return "NoneLiteral()"
+
+    def __repr__(self):
+        return "NoneLiteral()"
+
+
+@dataclass
 class CFG(Term):
     """Class representing a context-free grammar.
 
@@ -869,7 +886,9 @@ def _ensure_json_quoted(term: Term, quote_regex: bool = False) -> Term:
     """Wrap ``String`` terms in double quotes for JSON container contexts.
 
     String literals (from ``Literal``/``Enum``) inside containers must be
-    JSON-quoted so the generated regex matches valid JSON. With
+    JSON-quoted so the generated regex matches valid JSON. The ``None``
+    member of a union must instead take its JSON spelling ``null`` (still
+    unquoted, as it is a keyword rather than a string value). With
     ``quote_regex``, bare ``Regex`` terms are quoted too (needed for ``Dict``
     keys, which JSON always requires to be strings); ``types.string`` is never
     re-quoted since its pattern already includes the quotes. Both cases recurse
@@ -878,6 +897,11 @@ def _ensure_json_quoted(term: Term, quote_regex: bool = False) -> Term:
     """
     if isinstance(term, String):
         return String(f'"{term.value}"')
+    if isinstance(term, NoneLiteral):
+        json_null = Regex("null")
+        if quote_regex:
+            return Sequence([String('"'), json_null, String('"')])
+        return json_null
     if isinstance(term, Alternatives):
         quoted = [_ensure_json_quoted(t, quote_regex) for t in term.terms]
         return Alternatives(quoted)
@@ -898,10 +922,11 @@ def _handle_union(args: tuple, recursion_depth: int) -> Alternatives:
         if arg not in (type(None), None)
     ]
     if has_none:
-        # `None` is a keyword, not a string value: keep it a `Regex` (like
-        # `True`/`False`) so it is not JSON-quoted when the union ends up
-        # nested inside a container type.
-        terms.append(Regex("None"))
+        # `None` is a keyword, not a string value: keep it a dedicated
+        # `NoneLiteral` term so it is not JSON-quoted when the union ends
+        # up nested inside a container type. `_ensure_json_quoted` renders
+        # it with the JSON spelling `null` in that context.
+        terms.append(NoneLiteral())
     return Alternatives(terms)
 
 
@@ -993,6 +1018,8 @@ def to_regex(term: Term) -> str:
     """
     if isinstance(term, String):
         return re.escape(term.value)
+    elif isinstance(term, NoneLiteral):
+        return "None"
     elif isinstance(term, Regex):
         return f"({term.pattern})"
     elif isinstance(term, JsonSchema):
