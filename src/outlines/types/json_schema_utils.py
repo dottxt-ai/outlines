@@ -83,6 +83,37 @@ def schema_type_to_python(
 
     return Any
 
+def ensure_object_schema(schema: dict, target_type: str) -> None:
+    """Ensure a JSON schema describes an object before container conversion.
+
+    Converting a top-level non-object schema (a scalar, enum or array) to a
+    Python container type (Pydantic model, TypedDict or dataclass) would
+    silently produce an empty class and drop every constraint the schema
+    defines, so we refuse instead.
+
+    Parameters
+    ----------
+    schema: dict
+        The JSON schema to validate
+    target_type: str
+        The target container type, used in the error message
+
+    Raises
+    ------
+    ValueError
+        If the schema does not describe a JSON object
+
+    """
+    t = schema.get("type")
+    types = t if isinstance(t, list) else [t]
+    if "object" not in types and "properties" not in schema:
+        described = schema.get("type", "no type")
+        raise ValueError(
+            f"Cannot convert the JSON schema ({described}) to a {target_type}: "
+            "only object schemas can be converted, otherwise the schema's "
+            "constraints would be silently dropped."
+        )
+
 
 def json_schema_dict_to_typeddict(
     schema: dict,
@@ -103,6 +134,7 @@ def json_schema_dict_to_typeddict(
         The TypedDict class
 
     """
+    ensure_object_schema(schema, "TypedDict")
     required = set(schema.get("required", []))
     properties = schema.get("properties", {})
 
@@ -138,6 +170,7 @@ def json_schema_dict_to_pydantic(
         The Pydantic BaseModel class
 
     """
+    ensure_object_schema(schema, "Pydantic model")
     required = set(schema.get("required", []))
     properties = schema.get("properties", {})
 
@@ -172,6 +205,7 @@ def json_schema_dict_to_dataclass(
         The dataclass
 
     """
+    ensure_object_schema(schema, "dataclass")
     required = set(schema.get("required", []))
     properties = schema.get("properties", {})
 

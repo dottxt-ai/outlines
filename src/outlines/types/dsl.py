@@ -413,6 +413,7 @@ class JsonSchema(Term):
             schema_str = cls(schema).schema
         schema_dict = json.loads(schema_str)
 
+        last_error: Exception | None = None
         for target_type in target_types:
             try:
                 # Convert the JSON schema string to the target type
