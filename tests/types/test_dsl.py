@@ -1260,3 +1260,15 @@ def test_to_regex():
 
     with pytest.raises(TypeError):
         to_regex(Term())
+
+
+def test_json_schema_convert_to_non_object_raises():
+    """Non-object schemas must not silently convert to empty models.
+
+    Converting e.g. a top-level enum schema used to yield an empty
+    Pydantic model, so the target model generated without any constraint.
+    """
+    enum_schema = JsonSchema(json.dumps({"type": "string", "enum": ["red", "green"]}))
+
+    with pytest.warns(UserWarning), pytest.raises(ValueError, match="constraints would be"):
+        JsonSchema.convert_to(enum_schema, ["dataclass", "typeddict", "pydantic"])

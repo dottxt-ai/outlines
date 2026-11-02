@@ -2,6 +2,7 @@ import sys
 from dataclasses import is_dataclass
 from typing import Any, List, Literal, Optional, Union
 
+import pytest
 from pydantic import BaseModel, TypeAdapter
 from pydantic_core import PydanticUndefined
 
@@ -415,3 +416,35 @@ def test_json_schema_dict_to_dataclass_optional_before_required():
     instance = result(user_id=5)
     assert instance.user_id == 5
     assert instance.nickname is None
+
+
+def test_non_object_schema_conversion_raises():
+    """Converting a top-level non-object schema must raise instead of
+    silently producing an empty class that drops all constraints."""
+    non_object_schemas = [
+        {"type": "string", "enum": ["red", "green"]},  # top-level enum
+        {"enum": ["yes", "no"]},  # bare enum
+        {"type": "integer"},  # top-level scalar
+        {"type": "array", "items": {"type": "integer"}},  # top-level array
+    ]
+
+    for schema in non_object_schemas:
+        for convert in (
+            json_schema_dict_to_pydantic,
+            json_schema_dict_to_typeddict,
+            json_schema_dict_to_dataclass,
+        ):
+            with pytest.raises(ValueError, match="constraints would be"):
+                convert(schema)
+
+
+def test_object_schemas_without_type_keyword_convert():
+    """A schema that omits `type` but defines `properties` is an object."""
+    schema = {
+        "properties": {"name": {"type": "string"}},
+        "required": ["name"],
+    }
+    pydantic_props = json_schema_dict_to_pydantic(schema).model_json_schema()["properties"]
+    assert pydantic_props["name"]["type"] == "string"
+    assert "name" in json_schema_dict_to_typeddict(schema).__annotations__
+    assert "name" in json_schema_dict_to_dataclass(schema).__annotations__
