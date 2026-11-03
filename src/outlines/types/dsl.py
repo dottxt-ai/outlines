@@ -230,6 +230,21 @@ class Regex(Term):
     """
     pattern: str
 
+    def __post_init__(self):
+        """Validate the pattern at construction time.
+
+        An invalid pattern would otherwise surface only later, when the term
+        is compiled by ``Term.matches``/``Term.validate`` or by the model
+        backend, with a message citing the internally wrapped pattern instead
+        of the one the user passed.
+        """
+        try:
+            re.compile(self.pattern)
+        except re.error as error:
+            raise ValueError(
+                f"Regex: invalid regular expression {self.pattern!r}: {error}"
+            ) from error
+
     def _display_node(self) -> str:
         return f"Regex('{self.pattern}')"
 
