@@ -1,4 +1,6 @@
 import sys
+
+import pytest
 from dataclasses import is_dataclass
 from typing import Any, List, Literal, Optional, Union
 
@@ -415,3 +417,34 @@ def test_json_schema_dict_to_dataclass_optional_before_required():
     instance = result(user_id=5)
     assert instance.user_id == 5
     assert instance.nickname is None
+
+
+@pytest.mark.parametrize(
+    "converter",
+    [json_schema_dict_to_pydantic, json_schema_dict_to_typeddict, json_schema_dict_to_dataclass],
+    ids=["pydantic", "typeddict", "dataclass"],
+    )
+def test_required_listing_an_undefined_property_raises(converter):
+    schema = {
+        "type": "object",
+        "properties": {"name": {"type": "string"}},
+        "required": ["name", "age"],
+    }
+
+    with pytest.raises(ValueError, match="not defined in"):
+        converter(schema, "Person")
+
+
+@pytest.mark.parametrize(
+    "converter",
+    [json_schema_dict_to_pydantic, json_schema_dict_to_typeddict, json_schema_dict_to_dataclass],
+    ids=["pydantic", "typeddict", "dataclass"],
+    )
+def test_required_listing_defined_properties_still_converts(converter):
+    schema = {
+        "type": "object",
+        "properties": {"name": {"type": "string"}, "age": {"type": "integer"}},
+        "required": ["name", "age"],
+    }
+
+    assert converter(schema, "Person") is not None

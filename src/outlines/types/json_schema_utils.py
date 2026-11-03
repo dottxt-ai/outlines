@@ -12,6 +12,25 @@ else:  # pragma: no cover
     from typing_extensions import _TypedDictMeta, NotRequired, TypedDict  # type: ignore
 
 
+def _check_required_properties(schema: dict) -> None:
+    """Reject a ``required`` list naming properties the schema never defines.
+
+    The converters build the type from ``properties`` only: a name listed in
+    ``required`` but missing there was silently dropped, and the generated
+    model went on to accept an object without a field the source schema
+    requires.
+    """
+    required = schema.get("required") or []
+    properties = schema.get("properties") or {}
+    missing = [name for name in required if name not in properties]
+    if missing:
+        raise ValueError(
+            "JSON Schema `required` lists properties that are not defined in "
+            f"`properties`: {missing}. A required property needs a type, so "
+            "declare it in `properties` as well."
+        )
+
+
 def schema_type_to_python(
     schema: dict,
     caller_target_type: Literal["pydantic", "typeddict", "dataclass"]
@@ -103,6 +122,7 @@ def json_schema_dict_to_typeddict(
         The TypedDict class
 
     """
+    _check_required_properties(schema)
     required = set(schema.get("required", []))
     properties = schema.get("properties", {})
 
@@ -138,6 +158,7 @@ def json_schema_dict_to_pydantic(
         The Pydantic BaseModel class
 
     """
+    _check_required_properties(schema)
     required = set(schema.get("required", []))
     properties = schema.get("properties", {})
 
@@ -172,6 +193,7 @@ def json_schema_dict_to_dataclass(
         The dataclass
 
     """
+    _check_required_properties(schema)
     required = set(schema.get("required", []))
     properties = schema.get("properties", {})
 
