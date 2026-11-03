@@ -33,6 +33,13 @@ def schema_type_to_python(
     """
     if "enum" in schema:
         values = schema["enum"]
+        if not values:
+            # Draft-07 accepts an empty ``enum``; Literal[()] then made pydantic
+            # die with "literal expected cannot be empty" and the typeddict and
+            # dataclass paths silently built a type that could hold nothing.
+            raise ValueError(
+                "JSON Schema `enum` must contain at least one value, got an empty `enum`."
+            )
         return Literal[tuple(values)]
 
     if "const" in schema:
