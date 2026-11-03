@@ -441,3 +441,16 @@ def test_render_trailing_whitespace_preserves_linebreak():
 def test_render_trailing_whitespace_keeps_next_line_indentation():
     src = "\n    A test line \n        An indented line\n    "
     assert build_template_from_string(src).render() == "A test line \n    An indented line"
+
+def test_render_collapses_whitespace_after_punctuation():
+    # Per the documented intent, whitespace runs collapse to a single space
+    # everywhere except immediately after a newline. The old regexs \b
+    # also skipped runs that follow non-word characters like , or .
+    assert (
+        build_template_from_string("Hello,   {{ name }}!").render(name="Bob")
+        == "Hello, Bob!"
+    )
+    assert (
+        build_template_from_string("Wait...   {{ name }}?").render(name="Bob")
+        == "Wait... Bob?"
+    )
