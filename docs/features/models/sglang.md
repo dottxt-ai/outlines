@@ -36,8 +36,8 @@ import openai
 import outlines
 
 # Create the OpenAI client
-sync_openai_client = openai.OpenAI(base_url="http://localhost:11434")
-async_openai_client = openai.AsyncOpenAI(base_url="http://localhost:11434")
+sync_openai_client = openai.OpenAI(base_url="http://localhost:30000/v1")
+async_openai_client = openai.AsyncOpenAI(base_url="http://localhost:30000/v1")
 
 # Create a sync model
 sync_model = outlines.from_sglang(sync_openai_client)
@@ -59,7 +59,7 @@ import openai
 import outlines
 
 # Create the model
-model = outlines.from_openai(openai.OpenAI(base_url="http://localhost:11434"))
+model = outlines.from_openai(openai.OpenAI(base_url="http://localhost:30000/v1"))
 
 # Call it to generate text
 response = model("What's the capital of Latvia?", max_tokens=20)
@@ -81,7 +81,7 @@ import openai
 from outlines.inputs import Image
 
 # Create the model
-model = outlines.from_openai(openai.OpenAI(base_url="http://localhost:11434"))
+model = outlines.from_openai(openai.OpenAI(base_url="http://localhost:30000/v1"))
 
 # Function to get an image
 def get_image(url):
@@ -114,7 +114,7 @@ import outlines
 from outlines.inputs import Chat, Image
 
 # Create the model
-model = outlines.from_openai(openai.OpenAI(base_url="http://localhost:11434"))
+model = outlines.from_openai(openai.OpenAI(base_url="http://localhost:30000/v1"))
 
 # Function to get an image
 def get_image(url):
@@ -146,7 +146,7 @@ import openai
 import outlines
 
 # Create the model
-model = outlines.from_openai(openai.OpenAI(base_url="http://localhost:11434"))
+model = outlines.from_openai(openai.OpenAI(base_url="http://localhost:30000/v1"))
 
 # Stream the response
 for chunk in model.stream("Tell me a short story about a cat.", max_tokens=50):
@@ -165,7 +165,7 @@ import outlines
 
 output_type = int
 
-openai_client = openai.OpenAI(base_url="http://localhost:11434")
+openai_client = openai.OpenAI(base_url="http://localhost:30000/v1")
 model = outlines.from_sglang(openai_client)
 
 result = model("How many countries are there in the world?", output_type)
@@ -184,7 +184,7 @@ class Character(BaseModel):
     age: int
     skills: List[str]
 
-openai_client = openai.OpenAI(base_url="http://localhost:11434")
+openai_client = openai.OpenAI(base_url="http://localhost:30000/v1")
 model = outlines.from_sglang(openai_client)
 
 result = model("Create a character.", Character, frequency_penalty=1.5)
@@ -201,7 +201,7 @@ import outlines
 
 output_type = Literal["Paris", "London", "Rome", "Berlin"]
 
-openai_client = openai.OpenAI(base_url="http://localhost:11434")
+openai_client = openai.OpenAI(base_url="http://localhost:30000/v1")
 model = outlines.from_sglang(openai_client)
 
 result = model("What is the capital of France?", output_type, temperature=0)
@@ -217,7 +217,7 @@ from outlines.types import Regex
 
 output_type = Regex(r"\d{3}-\d{2}-\d{4}")
 
-openai_client = openai.OpenAI(base_url="http://localhost:11434")
+openai_client = openai.OpenAI(base_url="http://localhost:30000/v1")
 model = outlines.from_sglang(openai_client)
 
 result = model("Generate a fake social security number.", output_type, top_p=0.1)
@@ -239,7 +239,7 @@ answer ::= "yes" | "no"
 """
 output_type = CFG(ebnf_grammar)
 
-openai_client = openai.OpenAI(base_url="http://localhost:11434")
+openai_client = openai.OpenAI(base_url="http://localhost:30000/v1")
 model = outlines.from_sglang(openai_client)
 
 result = model("Is the weather good today?", output_type)
@@ -263,7 +263,7 @@ class User(BaseModel):
     age: int
 
 async def generate_user():
-    async_client = openai.AsyncOpenAI(base_url="http://localhost:11434")
+    async_client = openai.AsyncOpenAI(base_url="http://localhost:30000/v1")
     async_model = outlines.from_sglang(async_client)
 
     result = await async_model("Generate a random user profile.", output_type=User)
