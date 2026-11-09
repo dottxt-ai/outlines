@@ -20,12 +20,14 @@ from dataclasses import dataclass
 from enum import EnumMeta
 from types import FunctionType
 from typing import (
+    Annotated,
     Any,
     List,
     Literal,
     Optional as OptionalType,
     Union,
     get_args,
+    get_origin,
 )
 import jsonschema
 from genson import SchemaBuilder
@@ -752,6 +754,9 @@ def python_types_to_terms(ptype: Any, recursion_depth: int = 0) -> Term:
     # First handle Term instances
     if isinstance(ptype, Term):
         return ptype
+
+    if get_origin(ptype) is Annotated:
+        return python_types_to_terms(get_args(ptype)[0], recursion_depth + 1)
 
     # Basic types
     if is_int(ptype):
