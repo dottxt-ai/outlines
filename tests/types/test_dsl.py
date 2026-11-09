@@ -738,6 +738,23 @@ def test_dsl_numeric_literal_escapes_regex_metacharacters():
     assert python_types_to_terms("1.5").matches("1x5") is False
 
 
+def test_dsl_literal_enum_member():
+    class Color(Enum):
+        RED = "red"
+        BLUE = "blue"
+
+    class Mode(str, Enum):
+        FAST = "fast"
+
+    assert python_types_to_terms(Color.RED) == String("red")
+    assert python_types_to_terms(Literal[Color.RED]) == Alternatives([String("red")])
+    assert to_regex(Choice([Color.RED, Color.BLUE])) == "(red|blue)"
+
+    pattern = to_regex(python_types_to_terms(list[Literal[Mode.FAST]]))
+    assert _re.fullmatch(pattern, '["fast"]')
+    assert not _re.fullmatch(pattern, '["Mode.FAST"]')
+
+
 def test_dsl_handle_union():
     # test simple Union
     simple_union = Union[int, str]

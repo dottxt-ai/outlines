@@ -17,7 +17,7 @@ import re
 import sys
 import warnings
 from dataclasses import dataclass
-from enum import EnumMeta
+from enum import Enum, EnumMeta
 from types import FunctionType
 from typing import (
     Any,
@@ -770,6 +770,9 @@ def python_types_to_terms(ptype: Any, recursion_depth: int = 0) -> Term:
         return types.date
     elif is_datetime(ptype):
         return types.datetime
+
+    if isinstance(ptype, Enum):
+        return python_types_to_terms(ptype.value, recursion_depth + 1)
 
     # Basic type instances
     if isinstance(ptype, bool):
