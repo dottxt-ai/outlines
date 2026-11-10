@@ -80,6 +80,11 @@ class OutlinesCoreLogitsProcessor(OutlinesLogitsProcessor):
         self._bitmasks = [
             self.allocate_token_bitmask(vocab_size) for _ in range(batch_size)
         ]
+        if self.tensor_library_name in ("torch", "numpy"):
+            bitmasks = self.tensor_adapter.concatenate(self._bitmasks)
+            if self.tensor_library_name == "torch" and self._bitmasks[0].is_pinned():
+                bitmasks = bitmasks.pin_memory()
+            self._bitmasks = bitmasks
 
     def _bias_logits_mlx(  # pragma: no cover
         self, batch_size: int, logits: TensorType
@@ -109,15 +114,12 @@ class OutlinesCoreLogitsProcessor(OutlinesLogitsProcessor):
         )
 
         for i in range(batch_size):
-            fill_next_token_bitmask(self._guides[i], self._bitmasks[i])
-            self._bitmasks[i] = self.tensor_adapter.to_device(
-                self._bitmasks[i], self.tensor_adapter.get_device(logits)
-            )
-            apply_token_bitmask_inplace(
-                self.tensor_adapter.unsqueeze(logits[i]),  # type: ignore
-                self._bitmasks[i],
-            )
-            self._bitmasks[i] = self.tensor_adapter.to_device(self._bitmasks[i], "cpu")
+            fill_next_token_bitmask(self._guides[i], self._bitmasks[i : i + 1])
+
+        bitmasks = self.tensor_adapter.to_device(
+            self._bitmasks, self.tensor_adapter.get_device(logits)
+        )
+        apply_token_bitmask_inplace(logits, bitmasks)
 
         return logits
 
@@ -129,11 +131,9 @@ class OutlinesCoreLogitsProcessor(OutlinesLogitsProcessor):
         )
 
         for i in range(batch_size):
-            fill_next_token_bitmask(self._guides[i], self._bitmasks[i])
-            apply_token_bitmask_inplace(
-                self.tensor_adapter.unsqueeze(logits[i]),  # type: ignore
-                self._bitmasks[i],
-            )
+            fill_next_token_bitmask(self._guides[i], self._bitmasks[i : i + 1])
+
+        apply_token_bitmask_inplace(logits, self._bitmasks)
 
         return logits
 
@@ -160,8 +160,8 @@ class OutlinesCoreLogitsProcessor(OutlinesLogitsProcessor):
             self._setup(batch_size, vocab_size)
             self.is_first_token = False
         else:
-            for i in range(batch_size):
-                last_token_id = self.tensor_adapter.to_scalar(input_ids[i][-1])  # type: ignore
+            last_token_ids = self.tensor_adapter.to_list(input_ids[:, -1])  # type: ignore
+            for i, last_token_id in enumerate(last_token_ids):
                 # This circumvents issue #227 in outlines_core
                 # Ideally, we would be able to advance all the times as the final
                 # state would accept the eos token leading to itself
