@@ -155,3 +155,19 @@ def test_mlxlm_batch_output_type(model):
             ["Respond with one word.", "Respond with one word."],
             Regex(r"[0-9]")
         )
+
+
+def test_mlxlm_batch_falsy_output_type():
+    from unittest.mock import MagicMock, patch
+
+    class FalsyOutputType:
+        def __bool__(self):
+            return False
+
+    with patch.dict("sys.modules", {"mlx_lm": MagicMock()}):
+        model = MagicMock(spec=MLXLM)
+        with pytest.raises(
+            NotImplementedError,
+            match="mlx-lm does not support constrained generation with batching."
+        ):
+            MLXLM.generate_batch(model, ["hello"], output_type=FalsyOutputType())

@@ -111,3 +111,17 @@ def test_mlxlm_type_adapter_format_output_type(adapter, logits_processor):
     assert isinstance(formatted, list)
     assert len(formatted) == 1
     assert isinstance(formatted[0], OutlinesCoreLogitsProcessor)
+
+
+def test_mlxlm_type_adapter_format_output_type_none_and_falsy():
+    tokenizer = MagicMock()
+    adapter = MLXLMTypeAdapter(tokenizer=tokenizer)
+
+    assert adapter.format_output_type(None) is None
+
+    class FalsyLogitsProcessor:
+        def __bool__(self):
+            return False
+
+    falsy_processor = FalsyLogitsProcessor()
+    assert adapter.format_output_type(falsy_processor) == [falsy_processor]
