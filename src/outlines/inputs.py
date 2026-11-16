@@ -34,7 +34,9 @@ class Image:
         buffer = BytesIO()
         image.save(buffer, format=image.format)
         self.image_str = base64.b64encode(buffer.getvalue()).decode("utf-8")
-        self.image_format = f"image/{image.format.lower()}"
+        # Pillow saves the primary image of an MPO as a plain JPEG
+        image_format = "jpeg" if image.format == "MPO" else image.format.lower()
+        self.image_format = f"image/{image_format}"
 
 
 @dataclass
