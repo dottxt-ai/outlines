@@ -44,6 +44,26 @@ def test_image_initialization():
     assert image_input.image_str == base64.b64encode(buffer.getvalue()).decode("utf-8")
 
 
+def test_image_initialization_mpo():
+    # Pillow opens JPEGs with an MPF gain or depth map (as written by many
+    # phones) as "MPO", but the image is sent as a single-frame JPEG
+    buffer = BytesIO()
+    PILImage.new("RGB", (100, 100), color="red").save(
+        buffer,
+        format="MPO",
+        save_all=True,
+        append_images=[PILImage.new("RGB", (50, 50), color="blue")],
+    )
+    image = PILImage.open(buffer)
+    assert image.format == "MPO"
+
+    image_input = Image(image=image)
+
+    assert image_input.image_format == "image/jpeg"
+    payload = PILImage.open(BytesIO(base64.b64decode(image_input.image_str)))
+    assert payload.format == "JPEG"
+
+
 def test_image_initialization_invalid():
     """Test that Image initialization fails when image has no format."""
     # No format
