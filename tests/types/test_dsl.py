@@ -995,6 +995,117 @@ def test_ensure_json_quoted_regex_passthrough():
     assert _ensure_json_quoted(types.boolean) is types.boolean
 
 
+@pytest.mark.parametrize(
+    "term",
+    [
+        types.integer,
+        types.number,
+        types.boolean,
+        types.digit,
+        types.latitude,
+        types.longitude,
+        types.string,
+    ],
+)
+def test_json_scalar_builtins_stay_bare_in_containers(term):
+    """JSON scalars (and self-quoting `string`) must not gain quotes."""
+    assert _ensure_json_quoted(term) is term
+
+    item = _handle_list((term,), recursion_depth=0).terms[1]
+    assert item is term
+
+
+@pytest.mark.parametrize(
+    "term",
+    [
+        types.email,
+        types.uuid4,
+        types.ipv4,
+        types.ipv6,
+        types.mac_address,
+        types.semver,
+        types.slug,
+        types.hex_color,
+        types.hex_str,
+        types.credit_card,
+        types.char,
+        types.bic,
+        types.e164,
+        types.iban,
+        types.date,
+        types.time,
+        types.datetime,
+        types.locale.us.zip_code,
+        types.locale.us.phone_number,
+    ],
+)
+def test_string_shaped_builtins_quoted_in_containers(term):
+    """Built-in terms that are JSON strings are quoted inside containers."""
+    quoted = Sequence([String('"'), term, String('"')])
+
+    assert _ensure_json_quoted(term) == quoted
+    assert _handle_list((term,), recursion_depth=0).terms[1] == quoted
+    assert _handle_dict((str, term), recursion_depth=0).terms[1].term.terms[2] == quoted
+
+
+def test_user_regex_stays_bare_in_containers():
+    """Only built-in terms are quoted; a user's own Regex is left alone."""
+    term = Regex(r"[a-z]+")
+    assert _handle_list((term,), recursion_depth=0).terms[1] is term
+
+
+def test_rebuilt_builtin_term_is_still_quoted():
+    """Matching on the pattern, so a copy of a built-in is quoted like the original."""
+    rebuilt = Regex(types.email.pattern)
+    assert _handle_list((rebuilt,), recursion_depth=0).terms[1] == Sequence(
+        [String('"'), rebuilt, String('"')]
+    )
+
+
+def test_regex_colliding_with_a_builtin_is_quoted():
+    """`Regex(r"\\w")` is `types.char`; the same pattern gets the same treatment."""
+    term = Regex(r"\w")
+    assert _handle_list((term,), recursion_depth=0).terms[1] == Sequence(
+        [String('"'), term, String('"')]
+    )
+
+
+def test_literal_number_stays_bare_in_containers():
+    """`Literal[1]` becomes a Regex but is still a JSON number, not a string."""
+    item = _handle_list((Literal[1, 2],), recursion_depth=0).terms[1]
+    assert item.terms == [Regex("1"), Regex("2")]
+
+
+@pytest.mark.parametrize(
+    "term,sample",
+    [
+        (types.email, "a@b.com"),
+        (types.uuid4, "123e4567-e89b-42d3-a456-426614174000"),
+        (types.ipv4, "192.168.0.1"),
+        (types.mac_address, "00:1A:2B:3C:4D:5E"),
+        (types.semver, "1.2.3"),
+        (types.slug, "my-post"),
+        (types.hex_color, "#ff0000"),
+        (types.e164, "+14155552671"),
+        (types.date, "2024-01-01"),
+        (types.time, "12:30:00"),
+        (types.datetime, "2024-01-01 12:30:00"),
+        (types.locale.us.zip_code, "12345"),
+        (types.locale.us.phone_number, "(415) 555-0100"),
+    ],
+)
+def test_container_of_builtin_generates_parseable_json(term, sample):
+    """A generation the container's regex accepts also survives `json.loads`."""
+    list_pattern = to_regex(python_types_to_terms(list[term]))
+    assert _re.fullmatch(list_pattern, f'["{sample}"]')
+    assert not _re.fullmatch(list_pattern, f"[{sample}]")
+    assert json.loads(f'["{sample}"]') == [sample]
+
+    dict_pattern = to_regex(python_types_to_terms(dict[str, term]))
+    assert _re.fullmatch(dict_pattern, f'{{"k":"{sample}"}}')
+    assert json.loads(f'{{"k":"{sample}"}}') == {"k": sample}
+
+
 def test_list_single_literal():
     """A single-variant Literal inside list is still quoted."""
     list_type = list[Literal["only"]]

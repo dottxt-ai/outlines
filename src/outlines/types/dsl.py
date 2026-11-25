@@ -865,24 +865,59 @@ def _handle_literal(args: tuple) -> Alternatives:
     return Alternatives([python_types_to_terms(arg) for arg in args])
 
 
+def _json_string_builtin_patterns() -> set:
+    """Patterns of the built-in terms that JSON reads as strings.
+
+    The scalars are listed rather than the terms to quote, so a built-in added
+    later is quoted by default. An allowlist has to be extended with every new
+    term and fails open when it isn't, which is how the missing quotes got
+    here in the first place.
+
+    ``types.string`` is excluded because its pattern carries the quotes
+    already. ``latitude`` and ``longitude`` stay bare despite the leading
+    ``+`` JSON rejects; that is a separate bug from the quoting one.
+    """
+    json_scalars = {
+        types.integer.pattern,
+        types.number.pattern,
+        types.boolean.pattern,
+        types.digit.pattern,
+        types.latitude.pattern,
+        types.longitude.pattern,
+        types.string.pattern,
+    }
+    return {
+        term.pattern
+        for module in (types, types.locale.us)
+        for term in vars(module).values()
+        if isinstance(term, Regex) and term.pattern not in json_scalars
+    }
+
+
 def _ensure_json_quoted(term: Term, quote_regex: bool = False) -> Term:
     """Wrap ``String`` terms in double quotes for JSON container contexts.
 
     String literals (from ``Literal``/``Enum``) inside containers must be
-    JSON-quoted so the generated regex matches valid JSON. With
-    ``quote_regex``, bare ``Regex`` terms are quoted too (needed for ``Dict``
-    keys, which JSON always requires to be strings); ``types.string`` is never
-    re-quoted since its pattern already includes the quotes. Both cases recurse
-    into ``Alternatives``, so ``Regex`` members nested there (e.g.
-    ``Dict[Literal[1, 2], str]``) are quoted as well.
+    JSON-quoted so the generated regex matches valid JSON, and so must the
+    built-in ``Regex`` terms JSON reads as strings (``types.email``,
+    ``types.date``, ...), matched on their pattern so a copy or a
+    reconstruction is treated the same as the module-level term. Any other
+    ``Regex`` is left alone, since nothing records whether it stands for a
+    JSON string or a number. With ``quote_regex``, every bare ``Regex``
+    is quoted (needed for ``Dict`` keys, which JSON always requires to be
+    strings); ``types.string`` is never re-quoted since its pattern already
+    includes the quotes. All cases recurse into ``Alternatives``, so ``Regex``
+    members nested there (e.g. ``Dict[Literal[1, 2], str]``) are quoted as
+    well.
     """
     if isinstance(term, String):
         return String(f'"{term.value}"')
     if isinstance(term, Alternatives):
         quoted = [_ensure_json_quoted(t, quote_regex) for t in term.terms]
         return Alternatives(quoted)
-    if quote_regex and isinstance(term, Regex) and term.pattern != types.string.pattern:
-        return Sequence([String('"'), term, String('"')])
+    if isinstance(term, Regex) and term.pattern != types.string.pattern:
+        if quote_regex or term.pattern in _json_string_builtin_patterns():
+            return Sequence([String('"'), term, String('"')])
     return term
 
 
