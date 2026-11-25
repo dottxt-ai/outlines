@@ -19,7 +19,6 @@ Made with ❤👷️ by the team at [.txt](https://dottxt.co)
 [![Blog][dottxt-blog-badge]][dottxt-blog]
 [![Twitter][twitter-badge]][twitter]
 
-<br>The .txt API is currently in early access. **[Request access here →](https://h1xbpbfsf0w.typeform.com/to/fwQNWmS8?utm_source=github&utm_medium=organic&utm_campaign=outlines)**
 <br>Using open-weight models? Check live per-provider tool-call and structured-output error rates on the **[Tool-call Index →](https://providers.dottxt.ai)** ([`llms.txt`](https://providers.dottxt.ai/llms.txt) for coding agents).
 
 
