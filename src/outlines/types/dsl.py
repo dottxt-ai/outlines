@@ -144,7 +144,11 @@ class Term:
     def validate(self, value: str) -> str:
         pattern = to_regex(self)
         compiled = re.compile(pattern)
-        if not compiled.fullmatch(str(value)):
+        if not is_str_instance(value):
+            raise ValueError(
+                f"Input should be a string in the language of the regular expression {pattern}"
+            )
+        if not compiled.fullmatch(value):
             raise ValueError(
                 f"Input should be in the language of the regular expression {pattern}"
             )
