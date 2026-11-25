@@ -50,6 +50,34 @@ def test_schema_type_to_python_array():
     assert result == List[Any]
 
 
+def test_schema_type_to_python_array_tuple_items():
+    # Draft-07 tuple validation: items is a list of per-position schemas
+    schema = {"type": "array", "items": [{"type": "string"}, {"type": "integer"}]}
+    result = schema_type_to_python(schema, "pydantic")
+    assert result == List[Union[str, int]]
+
+    # Single-member list collapses to that member type
+    schema = {"type": "array", "items": [{"type": "string"}]}
+    result = schema_type_to_python(schema, "pydantic")
+    assert result == List[str]
+
+    # Empty list has no element type to derive
+    schema = {"type": "array", "items": []}
+    result = schema_type_to_python(schema, "pydantic")
+    assert result == List[Any]
+
+
+def test_schema_type_to_python_array_boolean_items():
+    # JSON Schema 2020-12 allows a boolean items schema
+    schema = {"type": "array", "items": True}
+    result = schema_type_to_python(schema, "pydantic")
+    assert result == List[Any]
+
+    schema = {"type": "array", "items": False}
+    result = schema_type_to_python(schema, "pydantic")
+    assert result == List[Any]
+
+
 def test_schema_type_to_python_object():
     schema = {
         "type": "object",

@@ -67,9 +67,19 @@ def schema_type_to_python(
         return type(None)
     elif t == "array":
         items = schema.get("items", {})
-        if items:
+        if isinstance(items, list):
+            # Draft-07 tuple validation: ``items`` is a list of per-position
+            # schemas. Model it as a list of any of the member types rather
+            # than recursing into the list itself (which has no ``.get``).
+            members = tuple(
+                schema_type_to_python(member, caller_target_type) for member in items
+            )
+            item_type = Union[members] if members else Any  # type: ignore
+        elif isinstance(items, dict) and items:
             item_type = schema_type_to_python(items, caller_target_type)
         else:
+            # Missing, empty, or boolean ``items`` (2020-12 allows ``true`` /
+            # ``false``): fall back to an unconstrained element type.
             item_type = Any
         return List[item_type]  # type: ignore
     elif t == "object":
