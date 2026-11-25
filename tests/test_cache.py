@@ -1,3 +1,4 @@
+import asyncio
 import os
 import tempfile
 import unittest
@@ -198,6 +199,40 @@ def test_cache_disabled_decorator(test_cache):
     # scope has exited, cache is enabled again
     fn()
     assert mock.call_count == 2
+
+
+@pytest.mark.asyncio
+async def test_cache_disabled_does_not_leak_across_tasks(test_cache):
+    """cache_disabled() in one task must not disable the cache for other tasks"""
+
+    from outlines.caching import cache_disabled
+
+    calls = []
+
+    @test_cache
+    def fn():
+        calls.append(1)
+        return 1
+
+    fn()
+    assert len(calls) == 1
+
+    entered = asyncio.Event()
+    release = asyncio.Event()
+
+    async def holder():
+        with cache_disabled():
+            entered.set()
+            await release.wait()
+
+    async def other_task():
+        await entered.wait()
+        fn()  # never opted out, so this should still be served from the cache
+        release.set()
+
+    await asyncio.gather(holder(), other_task())
+
+    assert len(calls) == 1
 
 
 @pytest.fixture
