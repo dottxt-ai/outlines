@@ -107,7 +107,19 @@ string = Regex(r'"[^"]*"')
 integer = Regex(r"[+-]?(0|[1-9][0-9]*)")
 boolean = Regex("(True|False)")
 number = Regex(rf"{integer.pattern}(\.[0-9]+)?([eE][+-]?[0-9]+)?")
-date = Regex(r"(\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])")
+# Day ranges are per-month, and February 29th is restricted to leap years, so the
+# pattern only matches dates that exist. Leap years follow the Gregorian rule:
+# divisible by 4, except centuries, which must be divisible by 400. Written
+# without lookarounds so the pattern still compiles to a finite automaton.
+_year = r"(?:000[1-9]|00[1-9]\d|0[1-9]\d\d|[1-9]\d{3})"
+_div_by_4 = r"(?:0[48]|[2468][048]|[13579][26])"
+_leap_year = rf"(?:\d\d{_div_by_4}|{_div_by_4}00)"
+date = Regex(
+    rf"(?:{_year}-(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])"
+    rf"|{_year}-(?:0[469]|11)-(?:0[1-9]|[12]\d|30)"
+    rf"|{_year}-02-(?:0[1-9]|1\d|2[0-8])"
+    rf"|{_leap_year}-02-29)"
+)
 time = Regex(r"([0-1][0-9]|2[0-3]):([0-5][0-9]):([0-5][0-9])")
 datetime = Regex(rf"({date.pattern})(\s)({time.pattern})")
 
