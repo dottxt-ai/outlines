@@ -277,3 +277,58 @@ def test_type_enum(custom_type, test_string, should_match):
 
     does_match = test_string in custom_type.__members__
     assert does_match is should_match
+
+
+def _regex_backed_types():
+    """Every built-in term that is ultimately a regex, with its attribute name."""
+    found = []
+    for name in dir(types):
+        if name.startswith("_"):
+            continue
+        value = getattr(types, name)
+        pattern = getattr(value, "pattern", None)
+        if isinstance(pattern, str):
+            found.append(pytest.param(pattern, id=name))
+    return found
+
+
+@pytest.mark.parametrize("pattern", _regex_backed_types())
+def test_builtin_types_compile_to_an_automaton(pattern):
+    """Built-in terms must be usable for generation, not only for matching.
+
+    `isbn` used to pin its total length with lookaheads containing `$`, which
+    validates fine under `re` but cannot be compiled to an automaton -- so the
+    type raised as soon as anyone generated with it. Lookaround has never been
+    supported (see #456); this keeps a non-compilable term from being added
+    again.
+    """
+    interegular = pytest.importorskip("interegular")
+
+    interegular.parse_pattern(pattern)
+
+
+@pytest.mark.parametrize(
+    "value,should_match",
+    [
+        # flat forms
+        ("0306406152", True),
+        ("080442957X", True),
+        ("9780306406157", True),
+        ("9791234567896", True),
+        # grouped forms, separators counted
+        ("0-306-40615-2", True),
+        ("0 8044 2957 X", True),
+        ("978-0-306-40615-7", True),
+        # with the labelled prefix
+        ("ISBN 0306406152", True),
+        ("ISBN-13: 978-0-306-40615-7", True),
+        # wrong number of digits or separators
+        ("030640615", False),
+        ("03064061529", False),
+        ("0-1-2-3-4-5", False),
+        ("97712345678901", False),
+        ("0-306-40615-Y", False),
+    ],
+)
+def test_isbn_accepts_only_well_formed_isbns(value, should_match):
+    assert bool(re.fullmatch(types.isbn.pattern, value)) is should_match
