@@ -62,13 +62,26 @@ class LlamaCppTokenizer(Tokenizer):
                     0,
                     True
                 )
-                # n < 0 is an error return from llama_token_to_piece;
-                # skip invalid tokens so they don't pollute the vocabulary.
+                # n < 0 is the negated size the piece needs, reported by
+                # llama_token_to_piece when the buffer is too small; retry
+                # with a buffer that fits instead of dropping the token.
                 if n < 0:
-                    continue
+                    needed = -n
+                    big = (ctypes.c_char * needed)()
+                    n = llama_token_to_piece(
+                        vocab,
+                        i,
+                        big,
+                        needed,
+                        0,
+                        True
+                    )
+                    if n < 0:
+                        continue
+                    token_piece = big[:n].decode("utf-8", errors="replace")  # type: ignore
                 # n > size means the piece was truncated; retry with a
                 # larger buffer so distinct tokens are not collapsed.
-                if n > size:
+                elif n > size:
                     big = (ctypes.c_char * n)()
                     llama_token_to_piece(vocab, i, big, n, 0, True)
                     token_piece = big[:n].decode("utf-8", errors="replace")  # type: ignore

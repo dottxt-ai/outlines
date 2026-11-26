@@ -204,6 +204,57 @@ def test_vocab_truncation_retry_path():
     assert tok.eos_token == eos_piece.decode()
 
 
+def test_vocab_long_piece_is_not_dropped():
+    """A piece longer than the initial 32-byte buffer must be retried with a
+    buffer that fits and kept in the vocabulary.
+
+    llama_token_to_piece reports an undersized buffer by returning the
+    negated required size, never a value greater than the buffer size, so
+    the token would otherwise be skipped and be invisible to the FSM.
+    """
+    pieces = {
+        0: b"hello",
+        1: b"x" * 31,  # fits in the initial buffer
+        2: b"</s>",
+        3: b"x" * 33,  # one byte more than the initial buffer
+        4: "é".encode() * 20,  # 40 bytes of multi-byte UTF-8
+    }
+    model = _make_mock_model(n_vocab=len(pieces), eos_id=2, pieces=pieces)
+    calls = []
+
+    def fake_llama_token_to_piece(vocab, token_id, buf, buf_size, *args):
+        data = pieces[token_id]
+        calls.append((token_id, buf_size))
+        # Contract of llama.cpp's llama_token_to_piece: a buffer that is
+        # too small yields the negated required size.
+        if buf_size < len(data):
+            return -len(data)
+        ctypes.memmove(buf, data, len(data))
+        return len(data)
+
+    with patch.dict(
+        "sys.modules",
+        {
+            "llama_cpp": MagicMock(
+                llama_model_get_vocab=MagicMock(return_value=MagicMock()),
+                llama_token_to_piece=fake_llama_token_to_piece,
+            ),
+        },
+    ):
+        tok = LlamaCppTokenizer.__new__(LlamaCppTokenizer)
+        tok.__init__(model)
+
+    assert tok.vocabulary == {
+        piece.decode("utf-8", errors="replace"): token_id
+        for token_id, piece in pieces.items()
+    }
+    # the too-small buffer was reported back, and the retry used the
+    # required size
+    assert (3, 33) in calls
+    assert (4, 40) in calls
+    assert tok.eos_token == "</s>"
+
+
 def test_attention_mask_all_ones_even_with_eos():
     """The attention mask must be all-ones for every token, including EOS."""
     eos_piece = b"</s>"
