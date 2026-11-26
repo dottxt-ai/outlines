@@ -9,6 +9,10 @@
 Made with ❤👷️ by the team at [.txt](https://dottxt.co)
 <br>Trusted by NVIDIA, Cohere, HuggingFace, vLLM, etc.
 
+<p align="center">
+  <b>English</b> · <a href="README.zh.md">简体中文</a>
+</p>
+
 <!-- Project Badges -->
 [![PyPI Version][pypi-version-badge]][pypi]
 [![Downloads][downloads-badge]][pypistats]
