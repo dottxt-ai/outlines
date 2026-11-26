@@ -1,3 +1,7 @@
+from copy import deepcopy
+
+import pytest
+
 from outlines.models.utils import set_additional_properties_false_json_schema
 
 
@@ -112,3 +116,54 @@ def test_set_additional_properties_false_json_schema_string_value_object():
     }
     assert modified_schema == target_schema
     assert "additionalProperties" not in modified_schema["properties"]["kind"]
+
+
+@pytest.mark.parametrize("keyword", ["const", "enum", "default", "examples", "x-data"])
+def test_set_additional_properties_preserves_instance_values(keyword):
+    value = {"type": "object", "nested": {"type": ["object", "null"]}}
+    if keyword in ("enum", "examples"):
+        value = [value]
+    schema = {
+        "type": "object",
+        "properties": {keyword: {"type": "object", keyword: deepcopy(value)}},
+    }
+
+    modified_schema = set_additional_properties_false_json_schema(schema)
+
+    field = modified_schema["properties"][keyword]
+    assert field[keyword] == value
+    assert field["additionalProperties"] is False
+
+
+def test_set_additional_properties_follows_subschemas():
+    schema = {
+        "type": "object",
+        "$defs": {
+            "entry": {
+                "type": "object",
+                "properties": {"default": {"type": "object"}},
+            }
+        },
+        "properties": {
+            "entries": {
+                "type": "array",
+                "items": {"anyOf": [{"type": "object"}, {"type": "null"}]},
+            }
+        },
+        "additionalProperties": {"type": "object"},
+    }
+
+    modified_schema = set_additional_properties_false_json_schema(schema)
+
+    entry = modified_schema["$defs"]["entry"]
+    assert entry["additionalProperties"] is False
+    assert entry["properties"]["default"]["additionalProperties"] is False
+    items = modified_schema["properties"]["entries"]["items"]["anyOf"]
+    assert items == [
+        {"type": "object", "additionalProperties": False},
+        {"type": "null"},
+    ]
+    assert modified_schema["additionalProperties"] == {
+        "type": "object",
+        "additionalProperties": False,
+    }
