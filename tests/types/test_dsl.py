@@ -30,6 +30,7 @@ from outlines.types.dsl import (
     QuantifyMaximum,
     QuantifyMinimum,
     Choice,
+    NoneLiteral,
     Regex,
     Sequence,
     String,
@@ -753,7 +754,7 @@ def test_dsl_handle_union():
     assert isinstance(result, Alternatives)
     assert len(result.terms) == 2
     assert result.terms[0] == types.integer
-    assert result.terms[1] == Regex("None")
+    assert result.terms[1] == NoneLiteral()
 
     # test with more complex types
     class TestModel(BaseModel):
@@ -782,12 +783,12 @@ def test_dsl_handle_union_multiple_members_with_none():
     assert isinstance(result, Alternatives)
     assert types.integer in result.terms
     assert types.string in result.terms
-    assert Regex("None") in result.terms
+    assert NoneLiteral() in result.terms
 
     # Optional[Union[...]] (same args after flattening) must also not crash.
     nested = _handle_union(get_args(PyOptional[Union[int, str]]), recursion_depth=0)
     assert isinstance(nested, Alternatives)
-    assert Regex("None") in nested.terms
+    assert NoneLiteral() in nested.terms
 
 
 def test_dsl_handle_list():
@@ -995,6 +996,17 @@ def test_ensure_json_quoted_regex_passthrough():
     assert _ensure_json_quoted(types.boolean) is types.boolean
 
 
+def test_ensure_json_quoted_none_literal():
+    """``NoneLiteral`` takes the JSON spelling ``null`` inside containers,
+    while a user-provided ``Regex("None")`` is left untouched."""
+    assert _ensure_json_quoted(NoneLiteral()) == Regex("null")
+    assert _ensure_json_quoted(NoneLiteral(), quote_regex=True) == Sequence(
+        [String('"'), Regex("null"), String('"')]
+    )
+    user_none = Regex("None")
+    assert _ensure_json_quoted(user_none) is user_none
+
+
 def test_list_single_literal():
     """A single-variant Literal inside list is still quoted."""
     list_type = list[Literal["only"]]
@@ -1190,27 +1202,38 @@ def test_e2e_dict_literal_key_and_enum_value():
     assert not _re.fullmatch(pattern, "{switch:on}")
 
 
-def test_e2e_optional_none_not_quoted_in_containers():
-    """The ``None`` from ``Optional``/``Union`` must stay a bare keyword inside
-    containers, exactly as it is standalone, and must not be JSON-quoted like a
-    string literal."""
-    # Standalone Optional already matches the bare ``None`` keyword.
+def test_e2e_optional_none_uses_json_null_in_containers():
+    """The ``None`` from ``Optional``/``Union`` keeps the Python spelling
+    standalone, but inside containers it must use the JSON spelling ``null``
+    so the generated pattern accepts what ``json.loads`` accepts. In neither
+    context is it JSON-quoted like a string literal."""
+    # Standalone Optional matches the bare ``None`` keyword.
     standalone = to_regex(python_types_to_terms(PyOptional[int]))
     assert _re.fullmatch(standalone, "None")
     assert not _re.fullmatch(standalone, '"None"')
+    assert not _re.fullmatch(standalone, "null")
 
     list_pattern = to_regex(python_types_to_terms(list[PyOptional[int]]))
-    assert _re.fullmatch(list_pattern, "[None]")
-    assert _re.fullmatch(list_pattern, "[1, None]")
+    assert _re.fullmatch(list_pattern, "[null]")
+    assert _re.fullmatch(list_pattern, "[1, null]")
+    assert not _re.fullmatch(list_pattern, "[None]")
     assert not _re.fullmatch(list_pattern, '["None"]')
 
     dict_pattern = to_regex(python_types_to_terms(dict[str, PyOptional[int]]))
-    assert _re.fullmatch(dict_pattern, '{"a":None}')
+    assert _re.fullmatch(dict_pattern, '{"a":null}')
+    assert not _re.fullmatch(dict_pattern, '{"a":None}')
     assert not _re.fullmatch(dict_pattern, '{"a":"None"}')
 
     tuple_pattern = to_regex(python_types_to_terms(Tuple[PyOptional[int], int]))
-    assert _re.fullmatch(tuple_pattern, "(None, 5)")
+    assert _re.fullmatch(tuple_pattern, "(null, 5)")
+    assert not _re.fullmatch(tuple_pattern, "(None, 5)")
     assert not _re.fullmatch(tuple_pattern, '("None", 5)')
+
+    # As a Dict key the term is quoted like every other key, which yields
+    # the string "null" rather than the keyword.
+    dict_key_pattern = to_regex(python_types_to_terms(dict[PyOptional[int], str]))
+    assert _re.fullmatch(dict_key_pattern, '{"null":"a"}')
+    assert _re.fullmatch(dict_key_pattern, '{"1":"a"}')
 
     # A genuine ``Literal["None"]`` string is still quoted inside containers.
     literal_pattern = to_regex(python_types_to_terms(list[Literal["None"]]))
