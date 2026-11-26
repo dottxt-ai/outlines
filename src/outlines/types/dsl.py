@@ -238,6 +238,19 @@ class Regex(Term):
 
 
 @dataclass
+class BooleanLiteral(Term):
+    """A Python boolean literal with context-sensitive JSON rendering."""
+
+    value: bool
+
+    def _display_node(self) -> str:
+        return f"BooleanLiteral({self.value})"
+
+    def __repr__(self):
+        return f"BooleanLiteral(value={self.value!r})"
+
+
+@dataclass
 class CFG(Term):
     """Class representing a context-free grammar.
 
@@ -773,7 +786,7 @@ def python_types_to_terms(ptype: Any, recursion_depth: int = 0) -> Term:
 
     # Basic type instances
     if isinstance(ptype, bool):
-        return Regex(str(ptype))
+        return BooleanLiteral(ptype)
     elif is_str_instance(ptype):
         return String(ptype)
     elif is_int_instance(ptype) or is_float_instance(ptype):
@@ -866,18 +879,28 @@ def _handle_literal(args: tuple) -> Alternatives:
 
 
 def _ensure_json_quoted(term: Term, quote_regex: bool = False) -> Term:
-    """Wrap ``String`` terms in double quotes for JSON container contexts.
+    """Adapt terms for JSON container contexts.
 
     String literals (from ``Literal``/``Enum``) inside containers must be
-    JSON-quoted so the generated regex matches valid JSON. With
+    JSON-quoted so the generated regex matches valid JSON. Boolean terms also
+    need their lowercase JSON spelling inside containers, while standalone
+    boolean terms remain Python-style for backward compatibility. With
     ``quote_regex``, bare ``Regex`` terms are quoted too (needed for ``Dict``
     keys, which JSON always requires to be strings); ``types.string`` is never
-    re-quoted since its pattern already includes the quotes. Both cases recurse
-    into ``Alternatives``, so ``Regex`` members nested there (e.g.
-    ``Dict[Literal[1, 2], str]``) are quoted as well.
+    re-quoted since its pattern already includes the quotes.
     """
     if isinstance(term, String):
         return String(f'"{term.value}"')
+    if term is types.boolean:
+        json_bool = Regex("(true|false)")
+        if quote_regex:
+            return Sequence([String('"'), json_bool, String('"')])
+        return json_bool
+    if isinstance(term, BooleanLiteral):
+        json_bool = Regex(str(term.value).lower())
+        if quote_regex:
+            return Sequence([String('"'), json_bool, String('"')])
+        return json_bool
     if isinstance(term, Alternatives):
         quoted = [_ensure_json_quoted(t, quote_regex) for t in term.terms]
         return Alternatives(quoted)
@@ -993,6 +1016,8 @@ def to_regex(term: Term) -> str:
     """
     if isinstance(term, String):
         return re.escape(term.value)
+    elif isinstance(term, BooleanLiteral):
+        return str(term.value)
     elif isinstance(term, Regex):
         return f"({term.pattern})"
     elif isinstance(term, JsonSchema):
