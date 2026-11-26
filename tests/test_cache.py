@@ -78,6 +78,40 @@ def test_get_cache(test_cache):
     assert len(store) == store_size + 1
 
 
+def _metadata_target(a, b):
+    """Return the sum of two numbers."""
+    return a + b
+
+
+def test_cache_preserves_function_metadata(test_cache):
+    """The decorator must not clobber the wrapped function's identity.
+
+    Without `functools.wraps` the decorated function is named `wrapper` and
+    qualified as a local of `outlines.caching`, so `pickle` (used e.g. by
+    `multiprocessing` to ship functions to workers) cannot serialize it by
+    reference and raises.
+    """
+    import pickle
+
+    decorated = test_cache(_metadata_target)
+
+    assert decorated.__name__ == "_metadata_target"
+    assert decorated.__qualname__ == "_metadata_target"
+    assert decorated.__doc__ == "Return the sum of two numbers."
+    assert decorated.__module__ == _metadata_target.__module__
+
+    # Pickle resolves functions by `__module__` + `__qualname__`, so the
+    # module-level name must point at the decorated object for the round-trip.
+    globals()["_metadata_target"] = decorated
+    try:
+        restored = pickle.loads(pickle.dumps(decorated))
+    finally:
+        globals()["_metadata_target"] = _metadata_target
+    assert restored is decorated
+
+    assert decorated(1, 2) == 3
+
+
 def test_disable_cache(test_cache):
     """Make sure that we can disable the cache."""
     import outlines
