@@ -188,6 +188,7 @@ nav:
           - Earnings Reports to CSV: examples/earnings-reports.md
           - Receipt Digitization: examples/receipt-digitization.md
           - Extract Events Details: examples/extract_event_details.md
+          - SuperCompress Prompt Compression: examples/supercompress.md
           - Run on the cloud:
                 - BentoML: examples/deploy-using-bentoml.md
                 - Cerebrium: examples/deploy-using-cerebrium.md

@@ -15,6 +15,7 @@ This part of the documentation provides a few cookbooks that you can browse to g
 - [ReAct Agent](react_agent.md): Build an agent with open weights models using regex-structured generation.
 - [Structured Generation from PDFs](read-pdfs.md): Use Outlines with vision-language models to read PDFs and produce structured output.
 - [Earnings reports to CSV](earnings-reports.md): Extract data from earnings reports to CSV using regex-structured generation.
+- [SuperCompress Prompt Compression](supercompress.md): Trim long prompts before JSON-structured generation with an optional third-party library.
 - [Receipt Digitization](receipt-digitization.md): Extract information from a picture of a receipt using structured generation.
 - [Extract Events Details](extract_event_details.md):
 
