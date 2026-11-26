@@ -169,7 +169,10 @@ def _unique_str_keys(values) -> dict:
             result[key] = group[0]
         else:
             for value in group:
-                result[f"{type(value).__name__}_{value}"] = value
+                name = f"{type(value).__name__}_{value}"
+                while name in by_str or name in result:
+                    name += "_"
+                result[name] = value
     return result
 
 

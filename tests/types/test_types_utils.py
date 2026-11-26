@@ -394,6 +394,20 @@ def test_get_enum_from_literal(sample_enum):
     assert getattr(complex_enum, "SampleEnum.A").value == sample_enum.A
 
 
+@pytest.mark.parametrize("source_type", ["literal", "choice"])
+def test_enum_preserves_members_from_distinct_same_named_classes(source_type):
+    first = Enum("State", ["READY"]).READY
+    second = Enum("State", ["READY"]).READY
+    if source_type == "literal":
+        enum = get_enum_from_literal(Literal[first, second])
+    else:
+        enum = get_enum_from_choice(Choice([first, second]))
+
+    assert len(enum) == 2
+    assert any(member.value is first for member in enum)
+    assert any(member.value is second for member in enum)
+
+
 def test_get_enum_from_literal_str_int_collision_preserves_both_members():
     """str(1) == str("1") == "1" previously made the naive `{str(x): x for x in ...}`
     dict comprehension silently drop one of the two values -- whichever came first was
@@ -412,6 +426,25 @@ def test_get_enum_from_choice_str_int_collision_preserves_both_members():
     values = {member.value for member in enum}
     assert values == {"1", 1}
     assert len(list(enum)) == 2
+
+
+@pytest.mark.parametrize("source_type", ["literal", "choice"])
+@pytest.mark.parametrize("items", [
+    ["1", 1, "int_1"],
+    ["int_1", 1, "1"],
+    ["1", 1, "int_1", "int_1_", "str_1", "str_1_"],
+])
+def test_enum_generated_names_do_not_shadow_existing_choices(source_type, items):
+    if source_type == "literal":
+        enum = get_enum_from_literal(Literal[tuple(items)])
+    else:
+        enum = get_enum_from_choice(Choice(items))
+
+    assert len(enum) == len(items)
+    assert {(type(member.value), member.value) for member in enum} == {
+        (type(value), value) for value in items
+    }
+    assert enum["int_1"].value == "int_1"
 
 
 def test_get_schema_from_signature(sample_function, sample_function_missing_type):
