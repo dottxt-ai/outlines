@@ -81,6 +81,15 @@ book = BookRecommendation.model_validate_json(result)
 print(f"{book.title} by {book.author} ({book.year})")
 ```
 
+!!! warning "Structured generation without a prompt"
+
+    Llama/SentencePiece-based tokenizers treat leading spaces specially. When
+    structured generation starts from an empty prompt, Outlines decodes tokens
+    strictly, so a token that normally represents a leading-space word (e.g.
+    `" https"`) can be rejected even though the same token is valid after a
+    prompt. Provide a prompt when using structured generation with these
+    tokenizers to avoid spuriously invalid outputs.
+
 ## Parameters
 
 - `model`: The language model to use for generation
