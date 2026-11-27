@@ -12,16 +12,13 @@ Outlines is a library for structured generation for type-safe LLMs. It ensures o
 
 For comprehensive usage examples, see:
 - **README.md**: Quick start examples for JSON generation, regex constraints, and choice selection
-- **docs/cookbook/**: Detailed examples including:
-  - `docs/cookbook/prompting.md`: Advanced prompting techniques
-  - `docs/cookbook/models.md`: Working with different model providers
-  - `docs/cookbook/humaneval.md`: Code generation examples
-  - `docs/cookbook/qa-with-citations.md`: Question answering with structured citations
-  - `docs/cookbook/deploy-to-servers.md`: Deployment examples with vLLM and TGI
+- **docs/**: Detailed examples including:
+  - `docs/guide/chat_templating.md`: Chat templating for model inputs
+  - `docs/features/models/index.md`: Working with different model providers
+  - `docs/examples/qa-with-citations.md`: Question answering with structured citations
+  - `docs/guide/fastapi_vllm_deployment.md`: Deploying with FastAPI and vLLM
 - **examples/**: Standalone example scripts
-  - `examples/lark_grammar.py`: Grammar-based generation
   - `examples/math_generate_code.py`: Code generation with constraints
-  - `examples/multiple_sglang_backend.py`: Using multiple backend servers
 - **tests/**: Test files contain many practical usage patterns
 
 ## Architecture
