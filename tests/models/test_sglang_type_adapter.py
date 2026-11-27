@@ -149,20 +149,9 @@ def test_sglang_type_adapter_output_type(
             },
         }
     }
-    # whitespace pattern is ignored
-    assert type_adapter.format_output_type(json_schema_whitespace_instance) == {
-        "response_format": {
-            "type": "json_schema",
-            "json_schema": {
-                "name": "default",
-                "strict": True,
-                "schema": {
-                    **json.loads(JSON_SCHEMA_STRING),
-                    "additionalProperties": False,
-                },
-            },
-        }
-    }
+    # the SGLang server only supports a server-side whitespace pattern
+    with pytest.raises(NotImplementedError, match="whitespace_pattern"):
+        type_adapter.format_output_type(json_schema_whitespace_instance)
     assert type_adapter.format_output_type(int) == {
         "extra_body": {"regex": "([+-]?(0|[1-9][0-9]*))"}
     }

@@ -73,6 +73,11 @@ class TGITypeAdapter(ModelTypeAdapter):
                 "TGI does not support CFG-based structured outputs."
             )
         elif isinstance(term, JsonSchema):
+            if term.whitespace_pattern is not None:
+                raise NotImplementedError(
+                    "The TGI backend does not support the "
+                    "`whitespace_pattern` argument."
+                )
             return {
                 "grammar": {
                     "type": "json",
