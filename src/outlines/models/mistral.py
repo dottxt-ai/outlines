@@ -171,10 +171,14 @@ class MistralTypeAdapter(ModelTypeAdapter):
             ]
             for item in content[1:]:
                 if isinstance(item, Image):
-                    data_url = f"data:{item.image_format};base64,{item.image_str}"
+                    if item.is_url():
+                        assert isinstance(item.image, str)
+                        url: str = item.image
+                    else:
+                        url = f"data:{item.image_format};base64,{item.image_str}"
                     content_parts.append({
                         "type": "image_url",
-                        "image_url": {"url": data_url}
+                        "image_url": {"url": url}
                     })
                 else:
                     raise ValueError(

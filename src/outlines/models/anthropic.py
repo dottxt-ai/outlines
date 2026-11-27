@@ -91,14 +91,7 @@ class AnthropicTypeAdapter(ModelTypeAdapter):
                 raise ValueError("All assets provided must be of type Image")
 
             image_content_messages = [
-                {
-                    "type": "image",
-                    "source": {
-                        "type": "base64",
-                        "media_type": image.image_format,
-                        "data": image.image_str,
-                    },
-                }
+                self._create_img_content(image)
                 for image in images
             ]
 
@@ -116,6 +109,25 @@ class AnthropicTypeAdapter(ModelTypeAdapter):
                 "The content must be a string or a list containing a string "
                 "and a list of images."
             )
+
+    def _create_img_content(self, image: Image) -> dict:
+        """Create the content for an image input."""
+        if image.is_url():
+            return {
+                "type": "image",
+                "source": {
+                    "type": "url",
+                    "url": image.image,
+                },
+            }
+        return {
+            "type": "image",
+            "source": {
+                "type": "base64",
+                "media_type": image.image_format,
+                "data": image.image_str,
+            },
+        }
 
     def format_output_type(self, output_type):
         """Not implemented for Anthropic."""

@@ -96,6 +96,13 @@ class OllamaTypeAdapter(ModelTypeAdapter):
             if not all(isinstance(image, Image) for image in images):
                 raise ValueError("All assets provided must be of type Image")
 
+            for image in images:
+                if image.is_url():
+                    raise ValueError(
+                        "URL images are not supported with Ollama. "
+                        "Provide a PIL image or image bytes instead."
+                    )
+
             return {
                 "role": role,
                 "content": prompt,
