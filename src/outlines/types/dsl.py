@@ -862,7 +862,13 @@ def _get_enum_members(ptype: EnumMeta) -> List[Any]:
 
 
 def _handle_literal(args: tuple) -> Alternatives:
-    return Alternatives([python_types_to_terms(arg) for arg in args])
+    # ``Literal[..., None]`` arrives with the bare ``None`` value, which no
+    # handler accepts. Spelling it the same way ``_handle_union`` does keeps
+    # ``Optional[Literal["a"]]`` and ``Literal["a", None]`` equivalent.
+    terms = [
+        Regex("null") if arg is None else python_types_to_terms(arg) for arg in args
+    ]
+    return Alternatives(terms)
 
 
 def _ensure_json_quoted(term: Term, quote_regex: bool = False) -> Term:

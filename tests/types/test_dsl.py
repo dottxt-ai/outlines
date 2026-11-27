@@ -705,6 +705,36 @@ def test_dsl_handle_literal():
     assert result.terms[1] == Regex(r"1")
 
 
+def test_dsl_literal_none():
+    # Literal[None] / Literal[..., None] used to fall through to the NoneType
+    # handler and raise "Type None is currently not supported", even though
+    # Optional[Literal[...]] and the pydantic path both accept None.
+    assert python_types_to_terms(Literal[None]) == Alternatives([Regex("null")])
+
+    both = python_types_to_terms(Literal["a", None])
+    assert isinstance(both, Alternatives)
+    assert String("a") in both.terms
+    assert Regex("null") in both.terms
+
+    assert to_regex(both) == "(a|(null))"
+    assert both.matches("null") is True
+    assert both.matches("a") is True
+    assert both.matches("None") is False
+
+    # Inside a container the None member has to stay a bare `null`, not a
+    # JSON-quoted string, i.e. `[null]` and `[1, null]` but not `[None]`.
+    item = Alternatives([Regex(r"1"), Regex("null")])
+    container = to_regex(
+        Sequence(
+            [String("["), item, KleeneStar(Sequence([String(", "), item])), String("]")]
+        )
+    )
+    assert _re.fullmatch(container, "[null]") is not None
+    assert _re.fullmatch(container, "[1, null]") is not None
+    assert _re.fullmatch(container, "[None]") is None
+    assert _re.fullmatch(container, '["null"]') is None
+
+
 def test_dsl_literal_bool():
     # Literal[True] and Literal[False] previously raised TypeError; ensure they resolve.
     result_true = python_types_to_terms(Literal[True])
