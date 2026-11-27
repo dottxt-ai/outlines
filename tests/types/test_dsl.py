@@ -383,7 +383,7 @@ def test_dsl_term_pydantic_combination():
     schema = Model.model_json_schema()
     assert schema == {
         "properties": {
-            "field": {"pattern": "(ab|c)", "title": "Field", "type": "string"}
+            "field": {"pattern": "(?:ab|c)", "title": "Field", "type": "string"}
         },
         "required": ["field"],
         "title": "Model",
@@ -719,7 +719,7 @@ def test_dsl_literal_bool():
 def test_dsl_numeric_literal_escapes_regex_metacharacters():
     # A float's ``.`` must match literally, not act as a regex wildcard.
     term = python_types_to_terms(1.5)
-    assert to_regex(term) == r"(1\.5)"
+    assert to_regex(term) == r"(?:1\.5)"
     assert term.matches("1.5") is True
     assert term.matches("1x5") is False
 
@@ -1223,40 +1223,61 @@ def test_to_regex():
     assert to_regex(string_term) == r"hello"
 
     regex_term = Regex("[0-9]+")
-    assert to_regex(regex_term) == r"([0-9]+)"
+    assert to_regex(regex_term) == r"(?:[0-9]+)"
 
     json_schema_term = JsonSchema({"type": "integer"})
-    assert to_regex(json_schema_term) == r"((-)?(0|[1-9][0-9]*))"
+    assert to_regex(json_schema_term) == r"(?:(-)?(0|[1-9][0-9]*))"
 
     choice_term = Choice(["a", "b", "c"])
-    assert to_regex(choice_term) == r"(a|b|c)"
+    assert to_regex(choice_term) == r"(?:a|b|c)"
 
     kleene_star = KleeneStar(String("a"))
-    assert to_regex(kleene_star) == r"(a)*"
+    assert to_regex(kleene_star) == r"(?:a)*"
 
     kleene_plus = KleenePlus(String("a"))
-    assert to_regex(kleene_plus) == r"(a)+"
+    assert to_regex(kleene_plus) == r"(?:a)+"
 
     optional_term = Optional(String("a"))
-    assert to_regex(optional_term) == r"(a)?"
+    assert to_regex(optional_term) == r"(?:a)?"
 
     alt_term = Alternatives([String("a"), String("b")])
-    assert to_regex(alt_term) == r"(a|b)"
+    assert to_regex(alt_term) == r"(?:a|b)"
 
     seq_term = Sequence([String("a"), String("b")])
     assert to_regex(seq_term) == r"ab"
 
     exact_term = QuantifyExact(String("a"), 3)
-    assert to_regex(exact_term) == r"(a){3}"
+    assert to_regex(exact_term) == r"(?:a){3}"
 
     min_term = QuantifyMinimum(String("a"), 2)
-    assert to_regex(min_term) == r"(a){2,}"
+    assert to_regex(min_term) == r"(?:a){2,}"
 
     max_term = QuantifyMaximum(String("a"), 5)
-    assert to_regex(max_term) == r"(a){0,5}"
+    assert to_regex(max_term) == r"(?:a){0,5}"
 
     between_term = QuantifyBetween(String("a"), 1, 3)
-    assert to_regex(between_term) == r"(a){1,3}"
+    assert to_regex(between_term) == r"(?:a){1,3}"
 
     with pytest.raises(TypeError):
         to_regex(Term())
+
+
+def test_to_regex_groups_are_non_capturing():
+    """A capturing wrapper would renumber the groups inside a user's pattern,
+    breaking numbered backreferences."""
+    for pattern, value in [
+        (r"(a)\1", "aa"),
+        (r"(ab)+\1", "ababab"),
+        (r"([xy])z\1", "xzx"),
+        (r"(a)(b)\2\1", "abba"),
+    ]:
+        term = Regex(pattern)
+        assert term.matches(value) == (_re.fullmatch(pattern, value) is not None)
+
+    nested = KleeneStar(Regex(r"(a)\1"))
+    assert nested.matches("aa")
+    assert nested.matches("aaaa")
+    assert not nested.matches("ab")
+
+    # Named backreferences are unaffected by renumbering and must keep working.
+    assert Regex(r"(?P<c>a)(?P=c)").matches("aa")

@@ -991,36 +991,38 @@ def to_regex(term: Term) -> str:
         The regular expression as a string.
 
     """
+    # Groups bind operators, they never capture: a capturing wrapper renumbers
+    # the groups inside it and breaks numbered backreferences in user patterns.
     if isinstance(term, String):
         return re.escape(term.value)
     elif isinstance(term, Regex):
-        return f"({term.pattern})"
+        return f"(?:{term.pattern})"
     elif isinstance(term, JsonSchema):
         regex_str = build_regex_from_schema(term.schema, term.whitespace_pattern)
-        return f"({regex_str})"
+        return f"(?:{regex_str})"
     elif isinstance(term, Choice):
         regexes = [to_regex(python_types_to_terms(item)) for item in term.items]
-        return f"({'|'.join(regexes)})"
+        return f"(?:{'|'.join(regexes)})"
     elif isinstance(term, KleeneStar):
-        return f"({to_regex(term.term)})*"
+        return f"(?:{to_regex(term.term)})*"
     elif isinstance(term, KleenePlus):
-        return f"({to_regex(term.term)})+"
+        return f"(?:{to_regex(term.term)})+"
     elif isinstance(term, Optional):
-        return f"({to_regex(term.term)})?"
+        return f"(?:{to_regex(term.term)})?"
     elif isinstance(term, Alternatives):
         regexes = [to_regex(subterm) for subterm in term.terms]
-        return f"({'|'.join(regexes)})"
+        return f"(?:{'|'.join(regexes)})"
     elif isinstance(term, Sequence):
         regexes = [to_regex(subterm) for subterm in term.terms]
         return f"{''.join(regexes)}"
     elif isinstance(term, QuantifyExact):
-        return f"({to_regex(term.term)}){{{term.count}}}"
+        return f"(?:{to_regex(term.term)}){{{term.count}}}"
     elif isinstance(term, QuantifyMinimum):
-        return f"({to_regex(term.term)}){{{term.min_count},}}"
+        return f"(?:{to_regex(term.term)}){{{term.min_count},}}"
     elif isinstance(term, QuantifyMaximum):
-        return f"({to_regex(term.term)}){{0,{term.max_count}}}"
+        return f"(?:{to_regex(term.term)}){{0,{term.max_count}}}"
     elif isinstance(term, QuantifyBetween):
-        return f"({to_regex(term.term)}){{{term.min_count},{term.max_count}}}"
+        return f"(?:{to_regex(term.term)}){{{term.min_count},{term.max_count}}}"
     else:
         raise TypeError(
             f"Cannot convert object {repr(term)} to a regular expression."
