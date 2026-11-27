@@ -237,7 +237,7 @@ class Regex(Term):
         return f"Regex(pattern='{self.pattern}')"
 
 
-@dataclass
+@dataclass(unsafe_hash=True)
 class CFG(Term):
     """Class representing a context-free grammar.
 
@@ -459,6 +459,13 @@ class JsonSchema(Term):
                 self.schema == other.schema
                 and self.whitespace_pattern == other.whitespace_pattern
             )
+
+    def __hash__(self):
+        try:
+            normalised = json.dumps(json.loads(self.schema), sort_keys=True)
+        except json.JSONDecodeError:  # pragma: no cover
+            normalised = self.schema
+        return hash((normalised, self.whitespace_pattern))
 
     @classmethod
     def from_file(cls, path: str) -> "JsonSchema":
