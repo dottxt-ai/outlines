@@ -4,8 +4,9 @@ Local runtime calls intentionally bypass
 outlines.exceptions.normalize_provider_errors().
 """
 
+from collections.abc import Iterator
 from functools import singledispatchmethod
-from typing import TYPE_CHECKING, Iterator, List, Optional
+from typing import TYPE_CHECKING, List, Optional
 
 try:
     from transformers import PreTrainedTokenizerBase
@@ -20,9 +21,11 @@ from outlines.processors import OutlinesLogitsProcessor
 
 if TYPE_CHECKING:
     from typing import Union
-    import mlx.nn as nn
+
+    from mlx import nn
     from mlx_lm.tokenizer_utils import TokenizerWrapper
     from transformers import PreTrainedTokenizer
+
     MLXTokenizer = Union["TokenizerWrapper", "PreTrainedTokenizer"]
 
 __all__ = ["MLXLM", "from_mlxlm"]
@@ -31,7 +34,9 @@ __all__ = ["MLXLM", "from_mlxlm"]
 class MLXLMTypeAdapter(ModelTypeAdapter):
     """Type adapter for the `MLXLM` model."""
 
-    def __init__(self, tokenizer: "PreTrainedTokenizer", has_chat_template: bool = False):
+    def __init__(
+        self, tokenizer: "PreTrainedTokenizer", has_chat_template: bool = False
+    ):
         self.tokenizer = tokenizer
         self.has_chat_template = has_chat_template
 
@@ -58,14 +63,15 @@ class MLXLMTypeAdapter(ModelTypeAdapter):
     @format_input.register(str)
     def format_str_input(self, model_input: str) -> str:
         if self.has_chat_template:
-            return self.format_chat_input(Chat([{"role": "user", "content": model_input}]))
+            return self.format_chat_input(
+                Chat([{"role": "user", "content": model_input}])
+            )
         return model_input
 
     @format_input.register(Chat)
     def format_chat_input(self, model_input: Chat) -> str:
         if not all(
-            isinstance(message["content"], str)
-            for message in model_input.messages
+            isinstance(message["content"], str) for message in model_input.messages
         ):
             raise ValueError(
                 "mlx-lm does not support multi-modal messages."
@@ -79,8 +85,9 @@ class MLXLMTypeAdapter(ModelTypeAdapter):
         )
 
     def format_output_type(
-        self, output_type: Optional[OutlinesLogitsProcessor] = None,
-    ) -> Optional[List[OutlinesLogitsProcessor]]:
+        self,
+        output_type: OutlinesLogitsProcessor | None = None,
+    ) -> list[OutlinesLogitsProcessor] | None:
         """Generate the logits processor argument to pass to the model.
 
         Parameters
@@ -94,7 +101,7 @@ class MLXLMTypeAdapter(ModelTypeAdapter):
             The logits processor argument to be passed to the model.
 
         """
-        if not output_type:
+        if output_type is None:
             return None
         return [output_type]
 
@@ -131,17 +138,18 @@ class MLXLM(Model):
         # tokenizer may be a mlx_lm.TokenizerWrapper (whose ._tokenizer is a
         # PreTrainedTokenizerFast) or a PreTrainedTokenizerFast passed directly
         inner = getattr(tokenizer, "_tokenizer", tokenizer)
-        hf_tokenizer = inner if isinstance(inner, PreTrainedTokenizerBase) else tokenizer
+        hf_tokenizer = (
+            inner if isinstance(inner, PreTrainedTokenizerBase) else tokenizer
+        )
         self.tokenizer = TransformerTokenizer(hf_tokenizer)
         self.type_adapter = MLXLMTypeAdapter(
-            tokenizer=tokenizer,
-            has_chat_template=_check_hf_chat_template(tokenizer)
+            tokenizer=tokenizer, has_chat_template=_check_hf_chat_template(tokenizer)
         )
 
     def generate(
         self,
         model_input: str,
-        output_type: Optional[OutlinesLogitsProcessor] = None,
+        output_type: OutlinesLogitsProcessor | None = None,
         **kwargs,
     ) -> str:
         """Generate text using `mlx-lm`.
@@ -175,7 +183,7 @@ class MLXLM(Model):
     def generate_batch(
         self,
         model_input: list[str],
-        output_type: Optional[OutlinesLogitsProcessor] = None,
+        output_type: OutlinesLogitsProcessor | None = None,
         **kwargs,
     ) -> list[str]:
         """Generate a batch of text using `mlx-lm`.
@@ -198,7 +206,7 @@ class MLXLM(Model):
         """
         from mlx_lm import batch_generate
 
-        if output_type:
+        if output_type is not None:
             raise NotImplementedError(
                 "mlx-lm does not support constrained generation with batching."
                 + "You cannot provide an `output_type` with this method."
@@ -234,7 +242,7 @@ class MLXLM(Model):
     def generate_stream(
         self,
         model_input: str,
-        output_type: Optional[OutlinesLogitsProcessor] = None,
+        output_type: OutlinesLogitsProcessor | None = None,
         **kwargs,
     ) -> Iterator[str]:
         """Stream text using `mlx-lm`.

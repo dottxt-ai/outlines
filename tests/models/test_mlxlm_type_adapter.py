@@ -1,7 +1,7 @@
-import pytest
 import io
 from unittest.mock import MagicMock
 
+import pytest
 from outlines_core import Index, Vocabulary
 from PIL import Image as PILImage
 
@@ -10,8 +10,8 @@ from outlines.inputs import Chat, Image
 from outlines.models.mlxlm import MLXLMTypeAdapter
 
 try:
-    import mlx_lm
     import mlx.core as mx
+    import mlx_lm
 
     HAS_MLX = mx.metal.is_available()
 except ImportError:
@@ -75,6 +75,22 @@ def test_mlxlm_type_adapter_format_input_without_template():
     assert result == "prompt"
 
 
+class FalsyLogitsProcessor:
+    def __len__(self):
+        return 0
+
+
+def test_mlxlm_type_adapter_format_output_type_none_and_falsy():
+    tokenizer = MagicMock()
+    adapter = MLXLMTypeAdapter(tokenizer=tokenizer, has_chat_template=False)
+
+    assert adapter.format_output_type(None) is None
+
+    falsy_lp = FalsyLogitsProcessor()
+    formatted = adapter.format_output_type(falsy_lp)
+    assert formatted == [falsy_lp]
+
+
 @pytest.mark.skipif(not HAS_MLX, reason="MLX tests require Apple Silicon")
 def test_mlxlm_type_adapter_format_input(adapter, image):
     # Anything else than a string/Chat (invalid)
@@ -97,12 +113,15 @@ def test_mlxlm_type_adapter_format_input(adapter, image):
 
     # Multi-modal (invalid)
     with pytest.raises(
-        ValueError,
-        match="mlx-lm does not support multi-modal messages."
+        ValueError, match="mlx-lm does not support multi-modal messages."
     ):
-        adapter.format_input(Chat(messages=[
-            {"role": "user", "content": ["prompt", Image(image)]},
-        ]))
+        adapter.format_input(
+            Chat(
+                messages=[
+                    {"role": "user", "content": ["prompt", Image(image)]},
+                ]
+            )
+        )
 
 
 @pytest.mark.skipif(not HAS_MLX, reason="MLX tests require Apple Silicon")
