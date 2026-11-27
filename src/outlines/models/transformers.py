@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING, Any, List, Optional, Tuple, Union
 
 from outlines.inputs import Audio, Chat, Image, Video
 from outlines.models.base import Model, ModelTypeAdapter
+from outlines.models.utils import split_multimodal_input
 from outlines.models.tokenizer import Tokenizer, _check_hf_chat_template
 from outlines.processors import OutlinesLogitsProcessor
 
@@ -448,8 +449,7 @@ class TransformersMultiModalTypeAdapter(ModelTypeAdapter):
             if all(isinstance(item, dict) for item in content): # HF multimodal chat template
                 return {"role": role, "content": content}, self._extract_assets_from_content(content)
             else: # list of string + assets
-                prompt = content[0]
-                assets = content[1:]
+                prompt, assets = split_multimodal_input(content)
                 assets_dict = [self._format_asset_for_template(asset) for asset in assets]
 
                 return {"role": role, "content": [
@@ -521,8 +521,7 @@ class TransformersMultiModalTypeAdapter(ModelTypeAdapter):
 
     @format_input.register(list)
     def format_list_input(self, model_input: list) -> dict:
-        prompt = model_input[0]
-        assets = model_input[1:]
+        prompt, assets = split_multimodal_input(model_input)
 
         if not assets:  # handle empty assets case
             return {"text": prompt}

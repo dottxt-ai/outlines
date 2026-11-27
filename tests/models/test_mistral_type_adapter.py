@@ -108,7 +108,7 @@ def test_mistral_type_adapter_input_invalid(adapter, image):
 
     with pytest.raises(
         ValueError,
-        match="The first item in the list should be a string.",
+        match="The first item in the content list must be a string.",
     ):
         adapter.format_input([Image(image)])
 

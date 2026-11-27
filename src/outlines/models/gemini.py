@@ -13,6 +13,7 @@ from typing import (
 from outlines.exceptions import normalize_provider_errors
 from outlines.inputs import Image, Chat
 from outlines.models.base import Model, ModelTypeAdapter
+from outlines.models.utils import split_multimodal_input
 from outlines.types import CFG, Choice, JsonSchema, Regex
 from outlines.types.utils import (
     is_enum,
@@ -116,8 +117,7 @@ class GeminiTypeAdapter(ModelTypeAdapter):
             }
 
         elif isinstance(content, list):
-            prompt = content[0]
-            images = content[1:]
+            prompt, images = split_multimodal_input(content)
 
             if not all(isinstance(image, Image) for image in images):
                 raise ValueError("All assets provided must be of type Image")

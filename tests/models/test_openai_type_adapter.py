@@ -122,6 +122,12 @@ def test_openai_type_adapter_input_invalid(adapter):
     ):
         _ = adapter.format_input(["prompt", Audio("file")])
 
+    with pytest.raises(ValueError, match="Content list cannot be empty"):
+        _ = adapter.format_input([])
+
+    with pytest.raises(ValueError, match="first item.*must be a string"):
+        _ = adapter.format_input([Image])
+
     with pytest.raises(
         ValueError,
         match="The content must be a string or a list",

@@ -17,6 +17,7 @@ from typing import (
 
 from outlines.inputs import Chat, Image
 from outlines.models.base import AsyncModel, Model, ModelTypeAdapter
+from outlines.models.utils import split_multimodal_input
 from outlines.types import CFG, JsonSchema, Regex
 
 if TYPE_CHECKING:
@@ -71,8 +72,7 @@ class LMStudioTypeAdapter(ModelTypeAdapter):
         """Handle list input containing prompt and images."""
         from lmstudio import Chat as LMSChat
 
-        prompt = model_input[0]
-        images = model_input[1:]
+        prompt, images = split_multimodal_input(model_input)
 
         if not all(isinstance(img, Image) for img in images):
             raise ValueError("All assets provided must be of type Image")
@@ -104,8 +104,7 @@ class LMStudioTypeAdapter(ModelTypeAdapter):
                 if isinstance(content, str):
                     chat.add_user_message(content)
                 elif isinstance(content, list):
-                    prompt = content[0]
-                    images = content[1:]
+                    prompt, images = split_multimodal_input(content)
                     if not all(isinstance(img, Image) for img in images):
                         raise ValueError("All assets provided must be of type Image")
                     image_handles = [self._prepare_lmstudio_image(img) for img in images]

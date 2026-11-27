@@ -1,4 +1,19 @@
-from outlines.models.utils import set_additional_properties_false_json_schema
+import pytest
+
+from outlines.models.utils import (
+    set_additional_properties_false_json_schema,
+    split_multimodal_input,
+)
+
+
+def test_split_multimodal_input():
+    assert split_multimodal_input(["prompt", "asset"]) == ("prompt", ["asset"])
+
+
+@pytest.mark.parametrize("content", [[], [object()]])
+def test_split_multimodal_input_rejects_missing_text_prompt(content):
+    with pytest.raises(ValueError):
+        split_multimodal_input(content)
 
 
 def test_set_additional_properties_false_json_schema():

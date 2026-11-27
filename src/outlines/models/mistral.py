@@ -17,7 +17,10 @@ from pydantic import TypeAdapter
 from outlines.exceptions import normalize_provider_errors
 from outlines.inputs import Chat, Image
 from outlines.models.base import AsyncModel, Model, ModelTypeAdapter
-from outlines.models.utils import set_additional_properties_false_json_schema
+from outlines.models.utils import (
+    set_additional_properties_false_json_schema,
+    split_multimodal_input,
+)
 from outlines.types import JsonSchema, Regex, CFG
 from outlines.types.utils import (
     is_dataclass,
@@ -158,18 +161,13 @@ class MistralTypeAdapter(ModelTypeAdapter):
         if isinstance(content, str):
             return content
         elif isinstance(content, list):
-            if not content:
-                raise ValueError("Content list cannot be empty.")
-            if not isinstance(content[0], str):
-                raise ValueError(
-                    "The first item in the list should be a string."
-                )
-            if len(content) == 1:
-                return content[0]
+            prompt, assets = split_multimodal_input(content)
+            if not assets:
+                return prompt
             content_parts: List[Dict[str, Union[str, Dict[str, str]]]] = [
-                {"type": "text", "text": content[0]}
+                {"type": "text", "text": prompt}
             ]
-            for item in content[1:]:
+            for item in assets:
                 if isinstance(item, Image):
                     data_url = f"data:{item.image_format};base64,{item.image_str}"
                     content_parts.append({
