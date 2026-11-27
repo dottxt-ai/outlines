@@ -385,12 +385,28 @@ def test_get_fn_source():
 
 
 def test_get_fn_signature():
-    with pytest.raises(TypeError, match="The `source` filter only applies to callables."):
+    with pytest.raises(TypeError, match="The `signature` filter only applies to callables."):
         get_fn_signature(1)
     sample_function_signature = "x, y=2"
     assert get_fn_signature(sample_function) == sample_function_signature
     function_with_annotations_signature = "x: int, y: str"
     assert get_fn_signature(function_with_annotations) == function_with_annotations_signature
+
+    def lookup(name: str, aliases: tuple = ("a", "b")) -> str:
+        return name
+
+    assert get_fn_signature(lookup) == "name: str, aliases: tuple = ('a', 'b')"
+
+    def decorator_with_args(arg):
+        def wrapper(fn):
+            return fn
+        return wrapper
+
+    @decorator_with_args("some_arg")
+    def decorated(x: int) -> int:
+        return x
+
+    assert get_fn_signature(decorated) == "x: int"
 
 
 def test_get_schema():

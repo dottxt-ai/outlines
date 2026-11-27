@@ -257,16 +257,14 @@ def get_fn_source(fn: Callable):
 def get_fn_signature(fn: Callable):
     """Return the signature of a callable."""
     if not callable(fn):
-        raise TypeError("The `source` filter only applies to callables.")
+        raise TypeError("The `signature` filter only applies to callables.")
 
-    source = textwrap.dedent(inspect.getsource(fn))
-    re_search = re.search(re.compile(r"\(([^)]+)\)"), source)
-    if re_search is None:  # pragma: no cover
-        signature = ""
-    else:
-        signature = re_search.group(1)
+    try:
+        signature = inspect.signature(fn)
+    except (ValueError, TypeError):  # pragma: no cover
+        return ""
 
-    return signature
+    return ", ".join(str(param) for param in signature.parameters.values())
 
 
 @functools.singledispatch
