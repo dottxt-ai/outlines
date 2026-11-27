@@ -1,8 +1,10 @@
 import sys
+import pytest
 from dataclasses import is_dataclass
+from copy import deepcopy
 from typing import Any, List, Literal, Optional, Union
 
-from pydantic import BaseModel, TypeAdapter
+from pydantic import BaseModel, TypeAdapter, ValidationError
 from pydantic_core import PydanticUndefined
 
 from outlines.types.json_schema_utils import (
@@ -31,6 +33,44 @@ def test_schema_type_to_python_enum():
     schema = {"enum": ["red", "green", "blue"]}
     result = schema_type_to_python(schema, "pydantic")
     assert result == Literal[("red", "green", "blue")]
+
+
+@pytest.mark.parametrize("convert", [
+    json_schema_dict_to_pydantic,
+    json_schema_dict_to_typeddict,
+    json_schema_dict_to_dataclass,
+])
+@pytest.mark.parametrize("numeric_schema,valid,invalid", [
+    ({"type": "integer", "minimum": 1, "maximum": 5}, [1, 3, 5], [0, 6]),
+    ({"type": "number", "minimum": -0.5, "maximum": 0.5}, [-0.5, 0.0, 0.5], [-0.6, 0.6]),
+    ({"type": "integer", "maximum": 0}, [-1, 0], [1]),
+    ({"type": "number", "minimum": 0}, [0.0, 0.1], [-0.1]),
+    ({"type": ["integer", "null"], "minimum": 1, "maximum": 5}, [None, 1, 5], [0, 6]),
+])
+def test_json_schema_numeric_bounds(convert, numeric_schema, valid, invalid):
+    schema = {
+        "type": "object",
+        "properties": {"value": numeric_schema},
+        "required": ["value"],
+    }
+    original = deepcopy(schema)
+    adapter = TypeAdapter(convert(schema))
+    converted_schema = adapter.json_schema()
+    assert converted_schema["required"] == ["value"]
+    converted = converted_schema["properties"]["value"]
+    if "anyOf" in converted:
+        converted = converted["anyOf"][0]
+    for keyword in ("minimum", "maximum"):
+        if keyword in numeric_schema:
+            assert converted[keyword] == numeric_schema[keyword]
+    for value in valid:
+        adapter.validate_python({"value": value})
+    for value in invalid:
+        with pytest.raises(ValidationError):
+            adapter.validate_python({"value": value})
+    with pytest.raises(ValidationError):
+        adapter.validate_python({})
+    assert schema == original
 
 
 def test_schema_type_to_python_array():

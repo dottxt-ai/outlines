@@ -180,6 +180,9 @@ def test_gemini_type_adapter_output_invalid(adapter):
     with pytest.raises(TypeError, match="CFG-based structured outputs"):
         adapter.format_output_type(cfg(""))
 
+    with pytest.raises(TypeError, match="list items output type"):
+        adapter.format_output_type(list[int])
+
 
 def test_gemini_type_adapter_output_none(adapter):
     result = adapter.format_output_type(None)
@@ -216,7 +219,8 @@ def test_gemini_type_adapter_output_dataclass(adapter):
 
 
 def test_gemini_type_adapter_output_list_dataclass(adapter):
-    class User(BaseModel):
+    @dataclass
+    class User:
         user_id: int
         name: str
 
@@ -240,7 +244,7 @@ def test_gemini_type_adapter_output_typed_dict(adapter):
 
 
 def test_gemini_type_adapter_output_list_typed_dict(adapter):
-    class User(BaseModel):
+    class User(TypedDict):
         user_id: int
         name: str
 

@@ -2,8 +2,9 @@
 
 import sys
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import Annotated, Any, Dict, List, Literal, Optional, Union
 
+from annotated_types import Interval
 from pydantic import BaseModel, create_model
 
 if sys.version_info >= (3, 12):  # pragma: no cover
@@ -57,10 +58,14 @@ def schema_type_to_python(
 
     if t == "string":
         return str
-    elif t == "integer":
-        return int
-    elif t == "number":
-        return float
+    elif t in ("integer", "number"):
+        numeric_type = int if t == "integer" else float
+        if "minimum" in schema or "maximum" in schema:
+            return Annotated[
+                numeric_type,
+                Interval(ge=schema.get("minimum"), le=schema.get("maximum")),
+            ]
+        return numeric_type
     elif t == "boolean":
         return bool
     elif t == "null":
