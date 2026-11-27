@@ -75,9 +75,14 @@ class SGLangTypeAdapter(ModelTypeAdapter):
             )
             return {"extra_body": {"ebnf": term.definition}}
         elif isinstance(term, JsonSchema):
-            return OpenAITypeAdapter().format_json_output_type(
+            output_dict = OpenAITypeAdapter().format_json_output_type(
                 json.loads(term.schema)
             )
+            if term.whitespace_pattern is not None:
+                output_dict.setdefault("extra_body", {})["whitespace_pattern"] = (
+                    term.whitespace_pattern
+                )
+            return output_dict
         else:
             return {"extra_body": {"regex": to_regex(term)}}
 
