@@ -209,3 +209,88 @@ def test_json_schema_logits_processor_rejects_whitespace_pattern():
     schema = '{"type": "object"}'
     with pytest.raises(NotImplementedError, match="whitespace_pattern"):
         backend.get_json_schema_logits_processor(schema, whitespace_pattern=" ")
+
+
+def test_cfg_logits_processor_rejects_literal_matching_special_token():
+    """A grammar literal exactly matching a special token (e.g. the `<think>`
+    tag on reasoning-model tokenizers) can make llguidance's parser fail with
+    an opaque `ParserTooComplex` error at generation time, since the model
+    may emit the literal as a single atomic special token that the parser
+    can't match against a literal-string terminal. The backend should catch
+    this at grammar-compile time instead. See #1771.
+    """
+    model = model_transformers()
+    backend = LLGuidanceBackend(model)
+    grammar = '?start: "<|endoftext|>" "yes"'
+    with pytest.raises(ValueError, match="<\\|endoftext\\|>"):
+        backend.get_cfg_logits_processor(grammar)
+
+
+def test_cfg_logits_processor_allows_literal_not_matching_special_token(cfg_ebnf):
+    """A grammar with no literal matching a special token compiles as usual."""
+    model = model_transformers()
+    backend = LLGuidanceBackend(model)
+    processor = backend.get_cfg_logits_processor(cfg_ebnf)
+    assert isinstance(processor, LLGuidanceLogitsProcessor)
+
+
+def test_cfg_logits_processor_rejects_literal_matching_added_non_special_token():
+    """Reasoning-model tokenizers commonly register tokens like `<think>` as
+    added-but-not-special (`special=False`), e.g. Qwen3-4B-Thinking, so that
+    `skip_special_tokens=True` decoding doesn't strip them. Such a token is
+    absent from `all_special_tokens` but is still emitted atomically by the
+    tokenizer, so it conflicts with a grammar literal exactly like a true
+    special token does. This is the exact scenario reported in #1771.
+    """
+    model = model_transformers()
+    model.hf_tokenizer.add_tokens(["<think>"], special_tokens=False)
+    assert "<think>" not in model.hf_tokenizer.all_special_tokens
+    backend = LLGuidanceBackend(model)
+    grammar = '?start: "<think>" "yes"'
+    with pytest.raises(ValueError, match="<think>"):
+        backend.get_cfg_logits_processor(grammar)
+
+
+def test_cfg_logits_processor_rejects_single_quoted_literal_matching_special_token():
+    """Lark accepts single- and double-quoted string literals interchangeably,
+    so the check must scan both quote styles, not just double quotes.
+    """
+    model = model_transformers()
+    backend = LLGuidanceBackend(model)
+    grammar = "?start: '<|endoftext|>' \"yes\""
+    with pytest.raises(ValueError, match="<\\|endoftext\\|>"):
+        backend.get_cfg_logits_processor(grammar)
+
+
+def test_cfg_logits_processor_rejects_escaped_literal_matching_special_token():
+    """A literal's source text can differ from the text it denotes (e.g. a
+    \\uXXXX escape), so the check must decode escapes before comparing
+    against token text rather than comparing raw source characters.
+    """
+    model = model_transformers()
+    backend = LLGuidanceBackend(model)
+    grammar = '?start: "\\u003c|endoftext|\\u003e" "yes"'
+    with pytest.raises(ValueError, match="<\\|endoftext\\|>"):
+        backend.get_cfg_logits_processor(grammar)
+
+
+def test_cfg_logits_processor_ignores_literal_inside_comment(cfg_ebnf):
+    """A special token's text appearing inside a `//` comment is not grammar
+    text and must not trigger a false-positive rejection.
+    """
+    model = model_transformers()
+    backend = LLGuidanceBackend(model)
+    grammar = f'// example: "<|endoftext|>"\n{cfg_ebnf}'
+    processor = backend.get_cfg_logits_processor(grammar)
+    assert isinstance(processor, LLGuidanceLogitsProcessor)
+
+
+def test_cfg_logits_processor_allows_literal_containing_special_token_as_url():
+    """A `//` inside a string literal (e.g. a URL scheme) is part of the
+    literal's text, not the start of a comment, and must not be truncated.
+    """
+    model = model_transformers()
+    backend = LLGuidanceBackend(model)
+    grammar = '?start: "http://example.com" "yes"'
+    processor = backend.get_cfg_logits_processor(grammar)
+    assert isinstance(processor, LLGuidanceLogitsProcessor)
