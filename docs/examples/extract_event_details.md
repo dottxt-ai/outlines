@@ -11,7 +11,7 @@ Let see how to extract the event details from the message with the MLX
 library dedicated to Apple Silicon processor (M series).
 
 ```python
---8<-- "docs/cookbook/extract_event_details.py"
+--8<-- "docs/examples/extract_event_details.py"
 ```
 
 The output will be:
