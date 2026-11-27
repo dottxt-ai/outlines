@@ -33,6 +33,8 @@ class OutlinesCoreLogitsProcessor(OutlinesLogitsProcessor):
         self.index = index
         self.tensor_library_name = tensor_library_name
         self.is_first_token = True
+        self._generated_sequences: List[tuple[int, ...]] = []
+        self._advance_counts: List[List[int]] = []
         super().__init__(tensor_library_name)
 
     def reset(self) -> None:
@@ -137,6 +139,54 @@ class OutlinesCoreLogitsProcessor(OutlinesLogitsProcessor):
 
         return logits
 
+    def _advance_guides(self, sequences: List[tuple[int, ...]]) -> None:
+        """Match guides to surviving prefixes and replay changed suffixes."""
+        available: Dict[tuple[int, ...], List[int]] = {}
+        for i, prefix in enumerate(self._generated_sequences):
+            available.setdefault(prefix, []).append(i)
+
+        # Reserve guides for surviving parents before reusing discarded beams.
+        parents = [available.get(sequence[:-1], []) for sequence in sequences]
+        selected = [indices.pop() if indices else None for indices in parents]
+        spare = iter(i for indices in available.values() for i in indices)
+        order = [i if i is not None else next(spare) for i in selected]
+        guides = [self._guides[i] for i in order]
+        advance_counts = []
+        for sequence, i, guide in zip(sequences, order, guides):
+            prefix = self._generated_sequences[i]
+            counts = self._advance_counts[i]
+            common = len(prefix)
+            if sequence[:-1] != prefix:
+                common = next(
+                    (
+                        j
+                        for j, (old, new) in enumerate(zip(prefix, sequence))
+                        if old != new
+                    ),
+                    min(len(prefix), len(sequence)),
+                )
+            rollback = counts[-1] - counts[common]
+            if rollback > guide.get_allowed_rollback():
+                # A discarded beam may diverge beyond the bounded state cache.
+                guide.reset()
+                common = 0
+                counts = [0]
+            elif common < len(prefix):
+                guide.rollback_state(rollback)
+                counts = counts[: common + 1]
+            for token_id in sequence[common:]:
+                # Finished beams may receive padding tokens (outlines_core#227).
+                advance = not guide.is_finished() or guide.accepts_tokens(
+                    [token_id]
+                )
+                if advance:
+                    guide.advance(token_id=token_id, return_tokens=False)
+                counts.append(counts[-1] + int(advance))
+            advance_counts.append(counts)
+        self._guides = guides
+        self._generated_sequences = sequences
+        self._advance_counts = advance_counts
+
     def process_logits(self, input_ids: TensorType, logits: TensorType) -> TensorType:
         """Use the guides to bias the logits.
 
@@ -158,17 +208,24 @@ class OutlinesCoreLogitsProcessor(OutlinesLogitsProcessor):
 
         if self.is_first_token:
             self._setup(batch_size, vocab_size)
+            self._prompt_length = self.tensor_adapter.shape(input_ids)[1]
+            self._generated_sequences = [()] * batch_size
+            self._advance_counts = [[0] for _ in range(batch_size)]
             self.is_first_token = False
+        elif batch_size == 1:
+            # A single sequence has no beam ancestry to recover.
+            token_id = self.tensor_adapter.to_list(input_ids[:, -1])[0]  # type: ignore
+            guide = self._guides[0]
+            if not guide.is_finished() or guide.accepts_tokens([token_id]):
+                guide.advance(token_id=token_id, return_tokens=False)
         else:
-            for i in range(batch_size):
-                last_token_id = self.tensor_adapter.to_scalar(input_ids[i][-1])  # type: ignore
-                # This circumvents issue #227 in outlines_core
-                # Ideally, we would be able to advance all the times as the final
-                # state would accept the eos token leading to itself
-                if not self._guides[i].is_finished() or self._guides[i].accepts_tokens(
-                    [last_token_id]
-                ):
-                    self._guides[i].advance(token_id=last_token_id, return_tokens=False)
+            sequences = [
+                tuple(sequence)
+                for sequence in self.tensor_adapter.to_list(
+                    input_ids[:, self._prompt_length :]  # type: ignore
+                )
+            ]
+            self._advance_guides(sequences)
 
         return self.bias_logits(batch_size, logits)
 
