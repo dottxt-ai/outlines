@@ -42,7 +42,7 @@ class TGITypeAdapter(ModelTypeAdapter):
 
         """
         raise NotImplementedError(
-            f"The input type {input} is not available with TGI. "
+            f"The input type {type(model_input)} is not available with TGI. "
             + "The only available type is `str`."
         )
 
