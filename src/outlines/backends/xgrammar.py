@@ -128,8 +128,12 @@ class XGrammarBackend(BaseBackend):
 
         if isinstance(model, Transformers):
             tokenizer = model.hf_tokenizer
+            # The model's vocabulary can be padded beyond the tokenizer's, and
+            # xgrammar needs the size of the logits it will mask.
+            vocab_size = model.model.config.get_text_config().vocab_size
         elif isinstance(model, MLXLM): # pragma: no cover
             tokenizer = model.mlx_tokenizer._tokenizer
+            vocab_size = len(tokenizer.get_vocab())
         else: # pragma: no cover
             raise ValueError(
                 "The xgrammar backend only supports Transformers and "
@@ -138,7 +142,7 @@ class XGrammarBackend(BaseBackend):
 
         tokenizer_info = xgr.TokenizerInfo.from_huggingface(
             tokenizer,
-            vocab_size=len(tokenizer.get_vocab())
+            vocab_size=vocab_size
         )
         self.grammar_compiler = xgr.GrammarCompiler(tokenizer_info)
         self.tensor_library_name = model.tensor_library_name
