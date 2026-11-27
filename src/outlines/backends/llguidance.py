@@ -2,6 +2,7 @@
 
 import warnings
 from typing import TYPE_CHECKING
+from weakref import WeakKeyDictionary
 
 from outlines.backends.base import BaseBackend
 from outlines.models import LlamaCpp, MLXLM, SteerableModel, Transformers
@@ -15,6 +16,12 @@ if TYPE_CHECKING:
 
 
 SUPPORTED_TENSOR_LIBRARIES = ["numpy", "mlx", "torch"]
+
+# Creating an llg tokenizer takes up to a second for large vocabularies, so it
+# is done once per model instead of once per logits processor.
+_llg_tokenizers: "WeakKeyDictionary[SteerableModel, LLGTokenizer]" = (
+    WeakKeyDictionary()
+)
 
 
 class LLGuidanceLogitsProcessor(OutlinesLogitsProcessor):
@@ -192,7 +199,11 @@ class LLGuidanceBackend(BaseBackend):
 
         self.llg = llg
         self.tensor_library_name = model.tensor_library_name
-        self.llg_tokenizer = self._create_llg_tokenizer(model)
+        llg_tokenizer = _llg_tokenizers.get(model)
+        if llg_tokenizer is None:
+            llg_tokenizer = self._create_llg_tokenizer(model)
+            _llg_tokenizers[model] = llg_tokenizer
+        self.llg_tokenizer = llg_tokenizer
 
     def _create_llg_tokenizer(self, model: SteerableModel) -> "LLGTokenizer":
         """Create an llg tokenizer from the Outlines model's tokenizer.

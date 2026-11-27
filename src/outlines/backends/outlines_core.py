@@ -1,6 +1,7 @@
 """Backend class for Outlines Core."""
 
 from typing import Callable, Dict, List
+from weakref import WeakKeyDictionary
 
 from outlines_core import Guide, Index, Vocabulary
 from outlines_core.json_schema import build_regex_from_schema
@@ -173,6 +174,11 @@ class OutlinesCoreLogitsProcessor(OutlinesLogitsProcessor):
         return self.bias_logits(batch_size, logits)
 
 
+# Building a vocabulary converts every token of the tokenizer to a string, so
+# it is done once per model instead of once per logits processor.
+_vocabularies: "WeakKeyDictionary[SteerableModel, Vocabulary]" = WeakKeyDictionary()
+
+
 class OutlinesCoreBackend(BaseBackend):
     """Backend for Outlines Core."""
 
@@ -182,6 +188,28 @@ class OutlinesCoreBackend(BaseBackend):
         ----------
         model
             The Outlines model of the user.
+
+        """
+        vocabulary = _vocabularies.get(model)
+        if vocabulary is None:
+            vocabulary = self._create_vocabulary(model)
+            _vocabularies[model] = vocabulary
+        self.vocabulary = vocabulary
+        self.eos_token_id = vocabulary.get_eos_token_id()
+        self.tensor_library_name = model.tensor_library_name
+
+    def _create_vocabulary(self, model: SteerableModel) -> Vocabulary:
+        """Create an Outlines Core Vocabulary from the Outlines model's tokenizer.
+
+        Parameters
+        ----------
+        model
+            The Outlines model of the user.
+
+        Returns
+        -------
+        Vocabulary
+            The Outlines Core Vocabulary instance.
 
         """
         if isinstance(model, Transformers):
@@ -205,11 +233,9 @@ class OutlinesCoreBackend(BaseBackend):
         else:  # pragma: no cover
             raise ValueError(f"Unsupported model type: {type(model)}")
 
-        self.eos_token_id = eos_token_id
-        self.vocabulary = self.create_outlines_core_vocabulary(
+        return self.create_outlines_core_vocabulary(
             vocabulary, eos_token_id, eos_token, token_to_str
         )
-        self.tensor_library_name = model.tensor_library_name
 
     def get_json_schema_logits_processor(
         self, json_schema: str, whitespace_pattern: str | None = None
