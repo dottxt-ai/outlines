@@ -1,7 +1,10 @@
 import io
+from types import SimpleNamespace
 from typing import Generator
+from unittest.mock import MagicMock
 
 from anthropic import Anthropic as AnthropicClient
+from anthropic.types import TextBlock, ThinkingBlock
 from PIL import Image as PILImage
 import pytest
 
@@ -81,6 +84,24 @@ def test_anthropic_wrong_output_type():
     with pytest.raises(NotImplementedError, match="is not available"):
         model = Anthropic(AnthropicClient(), MODEL_NAME)
         model.generate("prompt", Foo(1))
+
+
+def test_anthropic_response_uses_text_after_thinking_block():
+    client = MagicMock()
+    client.messages.create.return_value = SimpleNamespace(
+        content=[
+            ThinkingBlock(
+                signature="signature",
+                thinking="internal reasoning",
+                type="thinking",
+            ),
+            TextBlock(text="final answer", type="text"),
+        ]
+    )
+
+    model = Anthropic(client, MODEL_NAME)
+
+    assert model.generate("prompt", max_tokens=1) == "final answer"
 
 
 @pytest.mark.api_call
