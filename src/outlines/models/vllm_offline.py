@@ -93,7 +93,7 @@ class VLLMOfflineTypeAdapter(ModelTypeAdapter):
             return {"grammar": term.definition}
         elif isinstance(term, JsonSchema):
             guided_decoding_params = {"json": json.loads(term.schema)}
-            if term.whitespace_pattern:
+            if term.whitespace_pattern is not None:
                 guided_decoding_params["whitespace_pattern"] = term.whitespace_pattern
             return guided_decoding_params
         else:
