@@ -29,6 +29,8 @@ from outlines.types.dsl import to_regex
         (types.email, "myemail", False),
         (types.email, "eitan@gmail", False),
         (types.email, "eitan@my.custom.domain", True),
+        (types.email, "John.Doe@Example.com", True),  # RFC 5322 atext includes A-Z
+        (types.email, "john@example.COM", True),  # RFC 1035 domains are case-insensitive
         (types.integer, "-19", True),
         (types.integer, "19", True),
         (types.integer, "019", False),
