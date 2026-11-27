@@ -26,7 +26,8 @@ Every regex component in this DSL is a **Term**. Here are two primary types:
 - **`Regex`**: Represents an existing regex pattern string.
 
 ```python
-from outlines.types import String, Regex
+from outlines.types import Regex
+from outlines.types.dsl import String, to_regex
 
 # A literal string "hello"
 literal = String("hello")   # Internally represents "hello"
@@ -34,11 +35,8 @@ literal = String("hello")   # Internally represents "hello"
 # A regex pattern to match one or more digits
 digit = Regex(r"[0-9]+")     # Internally represents the pattern [0-9]+
 
-# Converting to standard regex strings:
-from outlines.types.dsl import to_regex
-
 print(to_regex(literal))  # Output: hello
-print(to_regex(digit))    # Output: [0-9]+
+print(to_regex(digit))    # Output: ([0-9]+)
 ```
 
 ---
@@ -68,7 +66,7 @@ This method restricts the term to appear exactly `count` times.
 ```python
 # Example: exactly 5 digits
 five_digits = Regex(r"\d").exactly(5)
-print(to_regex(five_digits))  # Output: (\d){5}
+print(to_regex(five_digits))  # Output: ((\d)){5}
 ```
 
 You can also use the `exactly` function:
@@ -77,8 +75,8 @@ You can also use the `exactly` function:
 from outlines.types import exactly
 
 # Example: exactly 5 digits
-five_digits = exactly(Regex(r"\d"), 5)
-print(to_regex(five_digits))  # Output: (\d){5}
+five_digits = exactly(5, Regex(r"\d"))
+print(to_regex(five_digits))  # Output: ((\d)){5}
 ```
 
 #### `optional()`
@@ -108,7 +106,7 @@ This method indicates that the term must appear at least once.
 ```python
 # Example: one or more alphabetic characters
 letters = Regex(r"[A-Za-z]").one_or_more()
-print(to_regex(letters))  # Output: ([A-Za-z])+
+print(to_regex(letters))  # Output: (([A-Za-z]))+
 ```
 
 You can also use the `one_or_more` function:
@@ -118,7 +116,7 @@ from outlines.types import one_or_more
 
 # Example: one or more alphabetic characters
 letters = one_or_more(Regex(r"[A-Za-z]"))
-print(to_regex(letters))  # Output: ([A-Za-z])+
+print(to_regex(letters))  # Output: (([A-Za-z]))+
 
 ```
 
@@ -129,7 +127,7 @@ This method indicates that the term can occur zero or more times.
 ```python
 # Example: zero or more spaces
 spaces = String(" ").zero_or_more()
-print(to_regex(spaces))  # Output: ( )*
+print(to_regex(spaces))  # Output: (\ )*
 ```
 
 You can also use the `zero_or_more` function:
@@ -139,7 +137,7 @@ from outlines.types import zero_or_more
 
 # Example: zero or more spaces
 spaces = zero_or_more(" ")
-print(to_regex(spaces))  # Output: ( )*
+print(to_regex(spaces))  # Output: (\ )*
 ```
 
 #### `between(min_count, max_count)`
@@ -149,7 +147,7 @@ This method indicates that the term can appear any number of times between `min_
 ```python
 # Example: Between 2 and 4 word characters
 word_chars = Regex(r"\w").between(2, 4)
-print(to_regex(word_chars))  # Output: (\w){2,4}
+print(to_regex(word_chars))  # Output: ((\w)){2,4}
 ```
 
 You can also use the `between` function:
@@ -158,8 +156,8 @@ You can also use the `between` function:
 from outlines.types import between
 
 # Example: Between 2 and 4 word characters
-word_chars = between(Regex(r"\w"), 2, 4)
-print(to_regex(word_chars))  # Output: (\w){2,4}
+word_chars = between(2, 4, Regex(r"\w"))
+print(to_regex(word_chars))  # Output: ((\w)){2,4}
 ```
 
 #### `at_least(count)`
@@ -169,7 +167,7 @@ This method indicates that the term must appear at least `count` times.
 ```python
 # Example: At least 3 digits
 at_least_three = Regex(r"\d").at_least(3)
-print(to_regex(at_least_three))  # Output: (\d){3,}
+print(to_regex(at_least_three))  # Output: ((\d)){3,}
 ```
 
 You can also use the `at_least` function:
@@ -178,8 +176,8 @@ You can also use the `at_least` function:
 from outlines.types import at_least
 
 # Example: At least 3 digits
-at_least_three = at_least(Regex(r"\d"), 3)
-print(to_regex(at_least_three))  # Output: (\d){3,}
+at_least_three = at_least(3, Regex(r"\d"))
+print(to_regex(at_least_three))  # Output: ((\d)){3,}
 ```
 
 #### `at_most(count)`
@@ -189,7 +187,7 @@ This method indicates that the term can appear at most `count` times.
 ```python
 # Example: At most 3 digits
 up_to_three = Regex(r"\d").at_most(3)
-print(to_regex(up_to_three))  # Output: (\d){0,3}
+print(to_regex(up_to_three))  # Output: ((\d)){0,3}
 ```
 
 You can also use the `at_most` function:
@@ -198,8 +196,8 @@ You can also use the `at_most` function:
 from outlines.types import at_most
 
 # Example: At most 3 digits
-up_to_three = at_most(Regex(r"\d"), 3)
-print(to_regex(up_to_three))  # Output: (\d){0,3}
+up_to_three = at_most(3, Regex(r"\d"))
+print(to_regex(up_to_three))  # Output: ((\d)){0,3}
 ```
 
 ---
