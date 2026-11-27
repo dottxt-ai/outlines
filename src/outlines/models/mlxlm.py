@@ -198,7 +198,7 @@ class MLXLM(Model):
         """
         from mlx_lm import batch_generate
 
-        if output_type:
+        if output_type is not None:
             raise NotImplementedError(
                 "mlx-lm does not support constrained generation with batching."
                 + "You cannot provide an `output_type` with this method."
