@@ -1,7 +1,9 @@
 """Locale-specific regex patterns."""
 
-from . import us
+from . import ca, uk, us
 
 __all__ = [
+    "ca",
+    "uk",
     "us",
 ]
