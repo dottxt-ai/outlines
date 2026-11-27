@@ -239,7 +239,11 @@ model = outlines.from_vllm_offline(
     LLM("microsoft/Phi-3-mini-4k-instruct")
 )
 
-result = model("Write an addition.", output_type)
+result = model(
+    "Write an addition.",
+    output_type,
+    sampling_params=SamplingParams(max_tokens=100),
+)
 print(result) # '23 + 48'
 ```
 

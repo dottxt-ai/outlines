@@ -102,6 +102,55 @@ def test_llguidance_processor_torch(regex):
         assert re.match(regex, hf_tokenizer.decode(input_ids[1]))
 
 
+def test_cfg_arithmetic_termination_eos_reachable(cfg_lark):
+    """The guide must always allow EOS once the grammar can complete.
+
+    Regression test for https://github.com/dottxt-ai/outlines/issues/1478:
+    the docs arithmetic example hung forever, generating an infinite `*1.5`
+    repetition tail. The repetition itself is valid per the grammar, but
+    generation must always be *able* to terminate: the EOS token has to be
+    part of the allowed tokens every time the grammar is in an accepting
+    state, otherwise the model can never stop on its own.
+    """
+    import torch
+
+    model = model_transformers()
+    tokenizer = model.tokenizer
+    hf_tokenizer = model.hf_tokenizer
+    backend = LLGuidanceBackend(model)
+    processor = backend.get_cfg_logits_processor(cfg_lark)
+
+    vocab_size = len(tokenizer.get_vocab())
+    eos_token_id = tokenizer.eos_token_id
+
+    def eos_allowed_after(text):
+        # Drive the processor the way `transformers` generation does: the
+        # first call sets the matcher up, each following call consumes the
+        # last token of `input_ids` and returns the mask for the next token.
+        processor.reset()
+        input_ids = torch.tensor([[eos_token_id]])  # dummy 1-token prompt
+        processor(input_ids, torch.zeros(1, vocab_size))
+        for token_id in hf_tokenizer(text, add_special_tokens=False)["input_ids"]:
+            input_ids = torch.cat([input_ids, torch.tensor([[token_id]])], dim=1)
+            biased_logits = processor(input_ids, torch.zeros(1, vocab_size))
+        return bool(torch.isfinite(biased_logits[0, eos_token_id]).item())
+
+    # Accepting states: a complete expression was generated, EOS must be
+    # allowed so generation can terminate instead of looping forever.
+    assert eos_allowed_after("4")
+    assert eos_allowed_after("(4-2)")
+    # The issue's infinite loop: EOS must stay reachable at every step of
+    # the `*1.5` repetition cycle.
+    assert eos_allowed_after("4*1.5")
+    assert eos_allowed_after("4*1.5*1.5*1.5")
+
+    # Non-accepting states: the expression is incomplete, EOS must not be
+    # allowed.
+    assert not eos_allowed_after("4*")
+    assert not eos_allowed_after("4+")
+    assert not eos_allowed_after("(")
+
+
 def test_llguidance_processor_numpy(regex):
     model = model_llamacpp()
     tokenizer = model.tokenizer

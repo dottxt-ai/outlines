@@ -338,7 +338,12 @@ output_type = CFG(arithmetic_grammar)
 openai_client = openai.OpenAI(base_url="http://0.0.0.0:8000/v1", api_key="token-abc123")
 model = outlines.from_vllm(openai_client, "microsoft/Phi-3-mini-4k-instruct")
 
-result = model("Write an addition.", output_type, extra_body={"guided_decoding_backend": "outlines"})
+result = model(
+    "Write an addition.",
+    output_type,
+    max_tokens=100,
+    extra_body={"guided_decoding_backend": "outlines"},
+)
 print(result) # '23 + 48'
 ```
 
