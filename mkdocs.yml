@@ -134,6 +134,7 @@ nav:
                     - Anthropic: features/models/anthropic.md
                     - Dottxt: features/models/dottxt.md
                     - Gemini: features/models/gemini.md
+                    - HopBase: features/models/hopbase.md
                     - Llamacpp: features/models/llamacpp.md
                     - LM Studio: features/models/lmstudio.md
                     - Mlx-lm: features/models/mlxlm.md
