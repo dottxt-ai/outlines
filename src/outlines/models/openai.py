@@ -335,8 +335,16 @@ class OpenAI(Model):
                 **inference_kwargs
             )
             for chunk in stream:
-                if chunk.choices and chunk.choices[0].delta.content is not None:
-                    yield chunk.choices[0].delta.content
+                if chunk.choices:
+                    delta = chunk.choices[0].delta
+                    refusal = getattr(delta, "refusal", None)
+                    if refusal is not None:
+                        raise GenerationError(
+                            f"OpenAI refused to answer the request: {refusal}",
+                            provider=PROVIDER,
+                        )
+                    if delta.content is not None:
+                        yield delta.content
 
 
 class AsyncOpenAI(AsyncModel):
@@ -465,8 +473,16 @@ class AsyncOpenAI(AsyncModel):
                 **inference_kwargs
             )
             async for chunk in stream:
-                if chunk.choices and chunk.choices[0].delta.content is not None:
-                    yield chunk.choices[0].delta.content
+                if chunk.choices:
+                    delta = chunk.choices[0].delta
+                    refusal = getattr(delta, "refusal", None)
+                    if refusal is not None:
+                        raise GenerationError(
+                            f"OpenAI refused to answer the request: {refusal}",
+                            provider=PROVIDER,
+                        )
+                    if delta.content is not None:
+                        yield delta.content
 
 
 def from_openai(

@@ -187,8 +187,17 @@ class VLLM(Model):
                 **client_args, stream=True,
             )
             for chunk in stream:  # pragma: no cover
-                if chunk.choices and chunk.choices[0].delta.content is not None:
-                    yield chunk.choices[0].delta.content
+                if chunk.choices:
+                    delta = chunk.choices[0].delta
+                    refusal = getattr(delta, "refusal", None)
+                    if refusal is not None:
+                        raise GenerationError(
+                            f"The vLLM server refused to answer the request: "
+                            f"{refusal}",
+                            provider=PROVIDER,
+                        )
+                    if delta.content is not None:
+                        yield delta.content
 
     def _build_client_args(
         self,
@@ -332,8 +341,17 @@ class AsyncVLLM(AsyncModel):
                 stream=True,
             )
             async for chunk in stream:  # pragma: no cover
-                if chunk.choices and chunk.choices[0].delta.content is not None:
-                    yield chunk.choices[0].delta.content
+                if chunk.choices:
+                    delta = chunk.choices[0].delta
+                    refusal = getattr(delta, "refusal", None)
+                    if refusal is not None:
+                        raise GenerationError(
+                            f"The vLLM server refused to answer the request: "
+                            f"{refusal}",
+                            provider=PROVIDER,
+                        )
+                    if delta.content is not None:
+                        yield delta.content
 
     def _build_client_args(
         self,
