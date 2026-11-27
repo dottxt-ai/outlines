@@ -1,6 +1,6 @@
 """Integration with the `lmstudio` library.
 
-Local runtime calls intentionally bypass
+Provider/runtime calls are normalized via
 outlines.exceptions.normalize_provider_errors().
 """
 
@@ -15,12 +15,15 @@ from typing import (
     cast,
 )
 
+from outlines.exceptions import normalize_provider_errors
 from outlines.inputs import Chat, Image
 from outlines.models.base import AsyncModel, Model, ModelTypeAdapter
 from outlines.types import CFG, JsonSchema, Regex
 
 if TYPE_CHECKING:
     from lmstudio import AsyncClient, Chat as LMStudioChat, Client
+
+PROVIDER = "lmstudio"
 
 __all__ = ["LMStudio", "AsyncLMStudio", "from_lmstudio"]
 
@@ -214,7 +217,12 @@ class LMStudio(Model):
             kwargs["model"] = self.model_name
 
         model_key = kwargs.pop("model", None)
-        model = self.client.llm.model(model_key) if model_key else self.client.llm.model()
+        with normalize_provider_errors(PROVIDER):
+            model = (
+                self.client.llm.model(model_key)
+                if model_key
+                else self.client.llm.model()
+            )
 
         formatted_input = self.type_adapter.format_input(model_input)
         response_format = self.type_adapter.format_output_type(output_type)
@@ -222,7 +230,8 @@ class LMStudio(Model):
         if response_format is not None:
             kwargs["response_format"] = response_format
 
-        result = model.respond(formatted_input, **kwargs)
+        with normalize_provider_errors(PROVIDER):
+            result = model.respond(formatted_input, **kwargs)
         return result.content
 
     def generate_batch(
@@ -264,7 +273,12 @@ class LMStudio(Model):
             kwargs["model"] = self.model_name
 
         model_key = kwargs.pop("model", None)
-        model = self.client.llm.model(model_key) if model_key else self.client.llm.model()
+        with normalize_provider_errors(PROVIDER):
+            model = (
+                self.client.llm.model(model_key)
+                if model_key
+                else self.client.llm.model()
+            )
 
         formatted_input = self.type_adapter.format_input(model_input)
         response_format = self.type_adapter.format_output_type(output_type)
@@ -272,9 +286,10 @@ class LMStudio(Model):
         if response_format is not None:
             kwargs["response_format"] = response_format
 
-        stream = model.respond_stream(formatted_input, **kwargs)
-        for fragment in stream:
-            yield fragment.content
+        with normalize_provider_errors(PROVIDER):
+            stream = model.respond_stream(formatted_input, **kwargs)
+            for fragment in stream:
+                yield fragment.content
 
 
 class AsyncLMStudio(AsyncModel):
@@ -342,7 +357,12 @@ class AsyncLMStudio(AsyncModel):
             kwargs["model"] = self.model_name
 
         model_key = kwargs.pop("model", None)
-        model = await self.client.llm.model(model_key) if model_key else await self.client.llm.model()
+        with normalize_provider_errors(PROVIDER):
+            model = (
+                await self.client.llm.model(model_key)
+                if model_key
+                else await self.client.llm.model()
+            )
 
         formatted_input = self.type_adapter.format_input(model_input)
         response_format = self.type_adapter.format_output_type(output_type)
@@ -350,7 +370,8 @@ class AsyncLMStudio(AsyncModel):
         if response_format is not None:
             kwargs["response_format"] = response_format
 
-        result = await model.respond(formatted_input, **kwargs)
+        with normalize_provider_errors(PROVIDER):
+            result = await model.respond(formatted_input, **kwargs)
         return result.content
 
     async def generate_batch(
@@ -396,7 +417,12 @@ class AsyncLMStudio(AsyncModel):
             kwargs["model"] = self.model_name
 
         model_key = kwargs.pop("model", None)
-        model = await self.client.llm.model(model_key) if model_key else await self.client.llm.model()
+        with normalize_provider_errors(PROVIDER):
+            model = (
+                await self.client.llm.model(model_key)
+                if model_key
+                else await self.client.llm.model()
+            )
 
         formatted_input = self.type_adapter.format_input(model_input)
         response_format = self.type_adapter.format_output_type(output_type)
@@ -404,9 +430,10 @@ class AsyncLMStudio(AsyncModel):
         if response_format is not None:
             kwargs["response_format"] = response_format
 
-        stream = await model.respond_stream(formatted_input, **kwargs)
-        async for fragment in stream:
-            yield fragment.content
+        with normalize_provider_errors(PROVIDER):
+            stream = await model.respond_stream(formatted_input, **kwargs)
+            async for fragment in stream:
+                yield fragment.content
 
 
 def from_lmstudio(

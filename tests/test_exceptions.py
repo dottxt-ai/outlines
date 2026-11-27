@@ -8,6 +8,7 @@ Each provider section can be run independently:
     pytest tests/test_exceptions.py -k "ollama"
     pytest tests/test_exceptions.py -k "tgi"
     pytest tests/test_exceptions.py -k "dottxt"
+    pytest tests/test_exceptions.py -k "lmstudio"
     pytest tests/test_exceptions.py -k "vllm"
     pytest tests/test_exceptions.py -k "sglang"
 """
@@ -725,6 +726,24 @@ class TestExceptionMapDottxt:
     def test_new_connection_error(self):
         from urllib3.exceptions import NewConnectionError
         _check_mapping(NewConnectionError, "dottxt", APIConnectionError)
+
+
+class TestExceptionMapLMStudio:
+    def test_connection_error(self):
+        _check_mapping(ConnectionError, "lmstudio", APIConnectionError)
+
+    def test_timeout_error(self):
+        _check_mapping(TimeoutError, "lmstudio", APITimeoutError)
+
+    def test_status_code_fallback(self):
+        class LMStudioError(Exception):
+            status_code = 429
+
+        result = normalize_provider_exception(
+            LMStudioError("rate limited"),
+            "lmstudio",
+        )
+        assert isinstance(result, RateLimitError)
 
 
 # vLLM and SGLang both reuse the OpenAI SDK client, so they share the OpenAI
