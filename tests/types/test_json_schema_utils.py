@@ -2,9 +2,11 @@ import sys
 from dataclasses import is_dataclass
 from typing import Any, List, Literal, Optional, Union
 
-from pydantic import BaseModel, TypeAdapter
+import pytest
+from pydantic import BaseModel, TypeAdapter, ValidationError
 from pydantic_core import PydanticUndefined
 
+from outlines.types.dsl import JsonSchema
 from outlines.types.json_schema_utils import (
     schema_type_to_python,
     json_schema_dict_to_typeddict,
@@ -415,3 +417,44 @@ def test_json_schema_dict_to_dataclass_optional_before_required():
     instance = result(user_id=5)
     assert instance.user_id == 5
     assert instance.nickname is None
+
+
+def test_pydantic_conversion_forbids_extra_keys_at_the_declared_level():
+    schema = {
+        "type": "object",
+        "properties": {
+            "order": {
+                "type": "object",
+                "properties": {"quantity": {"type": "integer"}},
+                "additionalProperties": False,
+            }
+        },
+        "required": ["order"],
+        "additionalProperties": False,
+    }
+    model = JsonSchema.convert_to(JsonSchema(schema), ["pydantic"])
+    valid = {"order": {"quantity": 2}}
+    assert model.model_validate(valid).model_dump() == valid
+
+    for payload, location in [
+        ({**valid, "extra": 1}, ("extra",)),
+        ({"order": {"quantity": 2, "extra": 1}}, ("order", "extra")),
+    ]:
+        with pytest.raises(ValidationError) as error:
+            model.model_validate(payload)
+        assert error.value.errors()[0]["loc"] == location
+        assert error.value.errors()[0]["type"] == "extra_forbidden"
+
+    exported = model.model_json_schema()
+    assert exported["additionalProperties"] is False
+    assert next(iter(exported["$defs"].values()))["additionalProperties"] is False
+
+
+@pytest.mark.parametrize("rules", [
+    {},
+    {"additionalProperties": True},
+    {"additionalProperties": False, "patternProperties": {"^x_": {"type": "integer"}}},
+])
+def test_pydantic_conversion_keeps_open_or_pattern_keys_valid(rules):
+    model = json_schema_dict_to_pydantic({"type": "object", **rules})
+    model.model_validate({"x_count": 1})

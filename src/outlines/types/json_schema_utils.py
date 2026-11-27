@@ -4,7 +4,7 @@ import sys
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Literal, Optional, Union
 
-from pydantic import BaseModel, create_model
+from pydantic import BaseModel, ConfigDict, create_model
 
 if sys.version_info >= (3, 12):  # pragma: no cover
     from typing import _TypedDictMeta, NotRequired, TypedDict  # type: ignore
@@ -150,7 +150,13 @@ def json_schema_dict_to_pydantic(
         else:
             field_definitions[property] = (typ, ...)
 
-    return create_model(name or "AnonymousPydanticModel", **field_definitions)
+    # Pattern properties can also admit keys outside the declared fields.
+    config = (
+        ConfigDict(extra="forbid")
+        if schema.get("additionalProperties") is False and not schema.get("patternProperties")
+        else None
+    )
+    return create_model(name or "AnonymousPydanticModel", __config__=config, **field_definitions)
 
 
 def json_schema_dict_to_dataclass(
