@@ -81,6 +81,54 @@ book = BookRecommendation.model_validate_json(result)
 print(f"{book.title} by {book.author} ({book.year})")
 ```
 
+## Optional Memory Augmentation
+
+`MemoryAugmentedGenerator` wraps an existing generator to recall previous outputs
+as examples and store each completed output. Install and configure your memory
+client separately; Outlines does not require a memory SDK. For example, with a
+synchronous `DakeraClient` and the model and schema from the example above:
+
+```python
+import os
+
+from dakera import DakeraClient
+from outlines import Generator, MemoryAugmentedGenerator
+
+memory = DakeraClient(
+    base_url="http://localhost:3300",
+    api_key=os.environ["DAKERA_API_KEY"],
+)
+generator = MemoryAugmentedGenerator(
+    Generator(model, BookRecommendation),
+    memory,
+    agent_id="book-recommendations",
+    top_k=2,
+)
+result = generator("Recommend a science fiction book.", max_new_tokens=200)
+book = BookRecommendation.model_validate_json(result)
+```
+
+The memory client must implement synchronous `recall(agent_id=..., query=...,
+top_k=...)` and `store_memory(agent_id=..., content=..., metadata=...)` methods.
+Recall may return `None` or an object with a `memories` sequence whose entries
+have a `content` string. `agent_id` selects the memory namespace and defaults to
+`"outlines-agent"`; `top_k` must be a positive integer and defaults to `2`.
+
+Each call queries memory using the original prompt. Recalled outputs are
+prepended as examples; when recall returns no memories, the original prompt is
+passed unchanged. Generation options are forwarded to the wrapped generator,
+which continues to enforce its output constraints. The raw generated string is
+stored with `metadata={"source": prompt[:100]}` and returned unchanged. Memory
+quality and filtering are the memory backend's responsibility.
+
+This wrapper supports synchronous, non-streaming calls with string prompts and
+a single raw string result. Multiple outputs and other non-string results raise
+`TypeError` without being stored. The constructor rejects asynchronous generators
+and asynchronous memory operations. The wrapper does not provide batch,
+streaming, or asynchronous methods. Recall, generation, and storage errors
+propagate to the caller; a storage failure therefore raises instead of returning
+the generated result.
+
 ## Parameters
 
 - `model`: The language model to use for generation
@@ -130,3 +178,5 @@ person = Person.model_validate_json(result)
 ```
 
 ::: outlines.generator.Generator
+
+::: outlines.memory.MemoryAugmentedGenerator
