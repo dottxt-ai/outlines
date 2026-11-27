@@ -25,7 +25,7 @@ def read_grammar(
 
     """
     full_path = base_grammar_path / grammar_file_name
-    with open(full_path) as file:
+    with open(full_path, encoding="utf-8") as file:
         return file.read()
 
 

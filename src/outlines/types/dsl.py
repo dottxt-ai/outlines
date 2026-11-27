@@ -274,7 +274,7 @@ class CFG(Term):
             A CFG instance.
 
         """
-        with open(path, "r") as f:
+        with open(path, "r", encoding="utf-8") as f:
             definition = f.read()
         return cls(definition)
 
@@ -475,7 +475,7 @@ class JsonSchema(Term):
             A JsonSchema instance.
 
         """
-        with open(path, "r") as f:
+        with open(path, "r", encoding="utf-8") as f:
             schema = json.load(f)
         return cls(schema)
 
