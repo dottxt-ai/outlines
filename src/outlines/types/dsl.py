@@ -26,6 +26,7 @@ from typing import (
     Optional as OptionalType,
     Union,
     get_args,
+    get_origin,
 )
 import jsonschema
 from genson import SchemaBuilder
@@ -817,7 +818,13 @@ def python_types_to_terms(ptype: Any, recursion_depth: int = 0) -> Term:
     elif is_typing_dict(ptype):
         return _handle_dict(args, recursion_depth)
 
-    if is_callable(ptype):
+    # Only treat ``ptype`` as a callable (function/class signature) when it is
+    # not a parametrized generic. Parametrized generics such as ``set[int]`` or
+    # ``Set[int]`` are ``callable()`` yet unsupported here; without this guard
+    # they fall into the callable branch and raise the misleading
+    # "Each argument must have a type annotation" instead of the clear
+    # "Type ... is currently not supported" error below.
+    if get_origin(ptype) is None and is_callable(ptype):
         return JsonSchema(get_schema_from_signature(ptype))
 
     type_name = getattr(ptype, "__name__", ptype)
