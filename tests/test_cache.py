@@ -1,5 +1,7 @@
+import asyncio
 import os
 import tempfile
+import threading
 import unittest
 from importlib import reload
 
@@ -198,6 +200,66 @@ def test_cache_disabled_decorator(test_cache):
     # scope has exited, cache is enabled again
     fn()
     assert mock.call_count == 2
+
+
+@pytest.mark.asyncio
+async def test_cache_disabled_does_not_leak_to_concurrent_tasks():
+    """Ensure cache_disabled does not affect tasks that did not enter it"""
+
+    from outlines.caching import _is_caching_enabled, cache_disabled
+
+    disabled = asyncio.Event()
+    observed = asyncio.Event()
+    states = {}
+
+    async def with_cache_disabled():
+        with cache_disabled():
+            disabled.set()
+            await observed.wait()
+            states["inside"] = _is_caching_enabled()
+
+    async def concurrent():
+        await disabled.wait()
+        states["outside"] = _is_caching_enabled()
+        observed.set()
+
+    await asyncio.gather(with_cache_disabled(), concurrent())
+
+    assert states["inside"] is False
+    assert states["outside"] is True
+
+
+@pytest.mark.asyncio
+async def test_cache_disabled_restores_state_across_await():
+    """Ensure cache_disabled restores the previous state when the block awaits"""
+
+    from outlines.caching import _is_caching_enabled, cache_disabled
+
+    with cache_disabled():
+        await asyncio.sleep(0)
+        assert _is_caching_enabled() is False
+
+    assert _is_caching_enabled() is True
+
+
+def test_disable_cache_applies_to_other_threads():
+    """Ensure disable_cache remains a process-wide switch"""
+
+    import outlines.caching
+
+    states = []
+    original_state = outlines.caching._caching_enabled
+    try:
+        outlines.caching.disable_cache()
+        thread = threading.Thread(
+            target=lambda: states.append(outlines.caching._is_caching_enabled())
+        )
+        thread.start()
+        thread.join()
+    finally:
+        outlines.caching._caching_enabled = original_state
+
+    assert states == [False]
 
 
 @pytest.fixture
