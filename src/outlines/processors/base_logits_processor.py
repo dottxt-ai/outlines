@@ -1,6 +1,6 @@
 """Base class for logits processors."""
 
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from typing import TypeVar
 
 from outlines.processors.tensor_adapters import (
@@ -11,7 +11,7 @@ from outlines.processors.tensor_adapters import (
 TensorType = TypeVar('TensorType')
 
 
-class OutlinesLogitsProcessor:
+class OutlinesLogitsProcessor(ABC):
     """Base class for logits processors.
     This class implements a shared `__call__` method is called by the models
     and returns the processed logits. It relies on the `process_logits` method

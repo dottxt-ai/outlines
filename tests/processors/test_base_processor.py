@@ -92,3 +92,14 @@ def test_base_logits_processor_init_library_name(library):
     assert processor.tensor_adapter is not None
     with pytest.raises(NotImplementedError):
         processor = MockLogitsProcessor("foo")
+
+
+def test_base_logits_processor_requires_process_logits():
+    """A subclass that leaves `process_logits` out must be refused at
+    instantiation. Without that refusal `__call__` returns None to the sampler.
+    """
+    class Incomplete(OutlinesLogitsProcessor):
+        pass
+
+    with pytest.raises(TypeError, match="process_logits"):
+        Incomplete("numpy")
