@@ -773,7 +773,9 @@ def python_types_to_terms(ptype: Any, recursion_depth: int = 0) -> Term:
 
     # Basic type instances
     if isinstance(ptype, bool):
-        return Regex(str(ptype))
+        # JSON booleans are lowercase literals; str(True) would emit
+        # "True", which json.loads rejects.
+        return Regex("true" if ptype else "false")
     elif is_str_instance(ptype):
         return String(ptype)
     elif is_int_instance(ptype) or is_float_instance(ptype):
