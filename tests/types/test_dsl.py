@@ -6,6 +6,7 @@ import tempfile
 from dataclasses import dataclass
 from enum import Enum
 from typing import (
+    Annotated,
     Literal,
     Tuple,
     Union,
@@ -694,6 +695,17 @@ def test_dsl_enum_with_instance_method_is_not_a_choice():
     assert isinstance(result, Alternatives)
     assert len(result.terms) == 3
     assert result.terms == [String("red"), String("green"), String("blue")]
+
+
+def test_dsl_annotated_output_types():
+    assert python_types_to_terms(Annotated[int, "meta"]) == types.integer
+    assert python_types_to_terms(Annotated[list[int], "meta"]) == python_types_to_terms(list[int])
+    assert python_types_to_terms(Annotated[Literal["a", "b"], "meta"]) == python_types_to_terms(Literal["a", "b"])
+    assert python_types_to_terms(Annotated[datetime.date, "meta"]) == types.date
+    assert python_types_to_terms(Annotated[PyOptional[int], "meta"]) == python_types_to_terms(PyOptional[int])
+
+    pattern = to_regex(python_types_to_terms(list[Annotated[Literal["a"], "meta"]]))
+    assert _re.fullmatch(pattern, '["a", "a"]')
 
 
 def test_dsl_handle_literal():
