@@ -2,7 +2,8 @@ import sys
 from dataclasses import is_dataclass
 from typing import Any, List, Literal, Optional, Union
 
-from pydantic import BaseModel, TypeAdapter
+import pytest
+from pydantic import BaseModel, TypeAdapter, ValidationError
 from pydantic_core import PydanticUndefined
 
 from outlines.types.json_schema_utils import (
@@ -66,7 +67,7 @@ def test_schema_type_to_python_object():
     assert issubclass(pydantic_result, BaseModel)
     assert pydantic_result.__name__ == "TestObject"
     assert pydantic_result.model_fields["name"].annotation is str
-    assert pydantic_result.model_fields["age"].annotation == Optional[int]
+    assert pydantic_result.model_fields["age"].annotation is int
 
     # Typeddict caller
     typeddict_result = schema_type_to_python(schema, "typeddict")
@@ -228,9 +229,9 @@ def test_json_schema_dict_to_pydantic_basic():
     assert result.__name__ == "Person"
 
     assert result.model_fields["name"].annotation is str
-    assert result.model_fields["age"].annotation == Optional[int]
+    assert result.model_fields["age"].annotation is int
     assert result.model_fields["name"].default == PydanticUndefined
-    result.model_fields["age"].default is None
+    assert result.model_fields["age"].default is None
 
 
 def test_json_schema_dict_to_pydantic_nullable_type_array():
@@ -285,7 +286,7 @@ def test_json_schema_dict_to_pydantic_array_enum():
     assert issubclass(result, BaseModel)
     assert result.__name__ == "AnonymousPydanticModel"
 
-    assert result.model_fields["tags"].annotation == Optional[List[str]]
+    assert result.model_fields["tags"].annotation == List[str]
     assert result.model_fields["status"].annotation == Literal[("active", "inactive", "pending")]
     assert result.model_fields["tags"].default is None
     assert result.model_fields["status"].default == PydanticUndefined
@@ -316,7 +317,7 @@ def test_json_schema_dict_to_pydantic_nested_object():
 
     field = result.model_fields["field"].annotation
     assert field.model_fields["name"].annotation is str
-    assert field.model_fields["age"].annotation == Optional[int]
+    assert field.model_fields["age"].annotation is int
     assert field.model_fields["name"].default == PydanticUndefined
     assert field.model_fields["age"].default is None
 
@@ -415,3 +416,39 @@ def test_json_schema_dict_to_dataclass_optional_before_required():
     instance = result(user_id=5)
     assert instance.user_id == 5
     assert instance.nickname is None
+
+
+def test_json_schema_dict_to_pydantic_optional_not_nullable():
+    """Non-required fields must stay non-nullable unless schema allows null.
+
+    JSON Schema ``required`` only controls key presence. Wrapping optional
+    fields in ``Optional`` widens generation to accept null values the source
+    schema forbids (#1948).
+    """
+    schema = {
+        "type": "object",
+        "properties": {
+            "name": {"type": "string"},
+            "age": {"type": "integer"},
+            "tags": {"type": "array", "items": {"type": "string"}},
+            "note": {"type": ["string", "null"]},
+        },
+        "required": ["name"],
+    }
+
+    M = json_schema_dict_to_pydantic(schema, "Person")
+    assert M.model_fields["age"].annotation is int
+    assert M.model_fields["tags"].annotation == List[str]
+    # Explicitly nullable schema keeps null.
+    assert M.model_fields["note"].annotation == Optional[str]
+
+    emitted = M.model_json_schema()
+    assert "null" not in str(emitted["properties"]["age"])
+    assert emitted["properties"]["age"]["type"] == "integer"
+    # omit ok, null rejected
+    assert M(name="x").age is None
+    assert M(name="x", age=3).age == 3
+    with pytest.raises(ValidationError):
+        M(name="x", age=None)
+    # note may be null because schema allows it
+    assert M(name="x", note=None).note is None
