@@ -441,3 +441,22 @@ def test_render_trailing_whitespace_preserves_linebreak():
 def test_render_trailing_whitespace_keeps_next_line_indentation():
     src = "\n    A test line \n        An indented line\n    "
     assert build_template_from_string(src).render() == "A test line \n    An indented line"
+
+
+def test_render_over_indented_trailing_blank_line_collapses_to_one_linebreak():
+    # The trailing blank line is indented past the template's common margin
+    # (4 spaces here vs. 8 trailing spaces). `cleandoc` then leaves behind
+    # leftover whitespace instead of dropping the line entirely; it must
+    # still collapse to a single trailing linebreak like the evenly
+    # indented case in `test_template_from_str_with_extra_linebreaks`.
+    src = "\n    Hello, {{ name }}!\n\n\n        "
+    assert build_template_from_string(src).render(name="World") == "Hello, World!\n"
+
+
+def test_render_tab_indented_trailing_blank_line_collapses_to_one_linebreak():
+    # Same as above, but the trailing blank line is a tab rather than
+    # over-indented spaces. `cleandoc` expands tabs before computing the
+    # dedent margin, so a lone trailing tab hits the same leftover-whitespace
+    # case even though it "looks like" less indentation than the content.
+    src = "\n    Hello, {{ name }}!\n\n\n\t"
+    assert build_template_from_string(src).render(name="World") == "Hello, World!\n"
