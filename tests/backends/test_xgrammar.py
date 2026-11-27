@@ -90,9 +90,9 @@ def test_xgr_processor_torch(regex):
 
 
 @pytest.mark.skipif(not HAS_MLX, reason="MLX tests require Apple Silicon")
-def test_xgr_processor_mlx(tokenizer_info):
+def test_xgr_processor_mlx(regex):
     model = model_mlxlm()
-    tokenizer = model.mlx_tokenizer
+    tokenizer = model.hf_tokenizer
     tokenizer_info = TokenizerInfo.from_huggingface(
         tokenizer,
         vocab_size=len(tokenizer.get_vocab())
@@ -108,8 +108,8 @@ def test_xgr_processor_mlx(tokenizer_info):
             tokenizer.eos_token_id,
             2
         )
-        assert re.match(regex, tokenizer.decode(input_ids[0]))
-        assert re.match(regex, tokenizer.decode(input_ids[1]))
+        assert re.match(regex, tokenizer.decode(input_ids[0].tolist()))
+        assert re.match(regex, tokenizer.decode(input_ids[1].tolist()))
 
 
 models = [(model_transformers(), "torch")]

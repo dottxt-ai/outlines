@@ -197,7 +197,7 @@ class OutlinesCoreBackend(BaseBackend):
             eos_token = tokenizer.eos_token
             token_to_str = tokenizer.convert_token_to_string
         elif isinstance(model, MLXLM):  # pragma: no cover
-            tokenizer = model.mlx_tokenizer  # type: ignore
+            tokenizer = model.hf_tokenizer  # type: ignore
             vocabulary = tokenizer.get_vocab()
             eos_token_id = tokenizer.eos_token_id
             eos_token = tokenizer.eos_token
